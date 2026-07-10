@@ -119,7 +119,19 @@ class LiveSemanticsTests(unittest.TestCase):
                 "then": "review-closeout",
             },
         )
-        self.assertEqual(flow["review_closeout"], {"then": "final-closure"})
+        self.assertEqual(
+            flow["review_closeout"],
+            {
+                "requires_when": "publication-requested",
+                "receipt": "pre-review-SHIP-v1",
+                "after_edit": [
+                    "current-resolved-refold",
+                    "ship",
+                    "review-closeout",
+                ],
+                "then": "final-closure",
+            },
+        )
         self.assertEqual(flow["final_closure"], "closure-decision/v1")
         self.assertEqual(flow["terminal_view"], "final-proof-patch")
 
@@ -147,11 +159,21 @@ class LiveSemanticsTests(unittest.TestCase):
         resolution = (ROOT / "references" / "review-resolution.md").read_text(
             encoding="utf-8"
         )
+        ship = (REPO / "codex/skills/ship/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("selectedLenses: [standard]", closure)
         self.assertIn("reviewLane: standard", closure)
         self.assertIn("lensContract: standard-review-v1", closure)
         self.assertIn("selected_lenses: [standard]", resolution)
         self.assertNotIn("complexity lens", resolution)
+        self.assertIn("review-admission/v1", closure)
+        self.assertIn("review_admission", closure)
+        self.assertIn("review-admission:<admission_digest>", closure)
+        self.assertIn("review.ship_receipt", closure)
+        self.assertIn("blocked-index-observer-flags", closure)
+        self.assertIn("actuation_binding:", ship)
+        self.assertNotIn("review_contract_fingerprint", ship)
+        self.assertIn("Never add or relabel", ship)
+        self.assertIn("review.ship_receipt", ship)
 
     def test_retired_protocol_is_absent_from_live_surfaces(self) -> None:
         paths = [

@@ -47,7 +47,7 @@ skill_decision_contract:
       aliases: [closure, complete]
       terminal: "yes"
     - route_id: ACT-SHIP-HANDOFF
-      description: Hand implementation to the sole public-effect owner, then continue bare invocation into review-closeout.
+      description: Publish immutable pre-review SHIP evidence, then continue bare invocation into review-closeout.
       aliases: [ship-handoff]
       terminal: "no"
     - route_id: ACT-BLOCK
@@ -60,24 +60,24 @@ skill_decision_contract:
       expected_routes: [ACT-RUN, ACT-SHIP-HANDOFF, ACT-REVIEW-CLOSEOUT, ACT-CLOSURE, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts: [actuation-run/v1, current source and artifact binding, selected step before mutation]
-      success_signals: [scope source remains distinct from execution authority, bare invocation orders implement then ship then review-closeout then final closure, explicit implement stops after implementation]
-      failure_signals: [plan grants mutation by itself, bare invocation skips or reorders a phase, ship handoff terminates bare invocation, explicit implement publishes or enters review-closeout, unsupported controller is simulated]
+      success_signals: [scope source remains distinct from execution authority, bare invocation orders implement then ship then review-closeout then final closure, valid ship returns goal continuation with implementation complete, proved review edit returns to ship before CAS, republishing updates the same retained PR URL, explicit implement stops after implementation]
+      failure_signals: [plan grants mutation by itself, bare invocation skips or reorders a phase, review edit enters CAS before republishing, repair shipping creates a second PR, ship handoff terminates bare invocation, SHIP receipt is relabeled with the review epoch, explicit implement publishes or enters review-closeout, unsupported controller is simulated]
       rationale: Execution authority belongs to the run, while invocation syntax selects the ordered lifecycle boundary.
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
       expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [current review source, review-fold classification before review resolution]
-      success_signals: [unqualified review selects triage, explicit closeout is required for review-derived mutation]
-      failure_signals: [raw finding becomes a patch, no-code mode selects a work node]
+      required_artifacts: [current review source, review-fold classification before review resolution, prior SHIP-v1 in review.ship_receipt when publication was requested, gate-derived review-admission/v1 before review mutation]
+      success_signals: [unqualified review selects triage, publication-bearing closeout validates SHIP before admission, admission snapshots the full resolution observer facts and optional prior SHIP, explicit closeout is required for review-derived mutation, completed review edits preserve their admission receipt]
+      failure_signals: [raw finding becomes a patch, publication-bearing review mutation precedes SHIP, no-code mode selects a work node, review-required run is relabeled implement, final resolution retrospectively relabels mutation admission]
       rationale: Review evidence is not mutation authority.
     - clause_id: ACT-RESOLUTION-001
       trigger_refs: [ACT-RESOLVE]
       expected_routes: [ACT-RUN, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts: [review-resolution/v1, owner-boundary strategy, abstraction account, semantic balance]
-      success_signals: [one selected owner node, all added constructs replace named constructs]
-      failure_signals: [one node per comment, local repair adds machinery, dominated abstraction remains]
+      success_signals: [one selected owner node, every resolved node matches one completed admitted edit, one compatible disposition per abstraction, all added constructs replace named constructs]
+      failure_signals: [one node per comment, resolved resolution names an unexecuted node, retain combines with retire collapse or replace for one abstraction, local repair adds machinery, dominated abstraction remains]
       rationale: Resolution should remove the owning cause instead of accumulating review patches.
     - clause_id: ACT-CLOSURE-001
       trigger_refs: [ACT-CLOSE]

@@ -25,17 +25,20 @@ ship_record:
     command:
     result:
     pr_url:
-  actuation_review:
+  actuation_binding:
     actuation_run_id:
     state_fingerprint:
-    review_contract_fingerprint:
-    selected_lenses: []
-    resolution_ref:
-    resolution_digest: # null when actuation review was not required
-    cas_rer_record_ids: []
 ```
 
-`actuation_review` is required when `source=actuation` and the readiness mode
+`actuation_binding` is required when `source=actuation` and the readiness mode
 is ready, update-existing, or promote-draft. It is omitted for direct shipping.
-The binding is copied from a current `closure-decision/v1` and its inputs; it
-must not be reconstructed from PR text.
+The exact two-field binding is copied from the current implementation or
+review-repair `closure-decision/v1`: run ID and state fingerprint are preserved.
+It must not be reconstructed from PR text, extended with review fields, or
+relabeled with later review-closeout evidence. SHIP-v1 is immutable evidence for
+one publication epoch. The ordered actuation lifecycle embeds the complete
+receipt unchanged as `review.ship_receipt` before publication-bearing
+review-closeout admission, then replaces that field with a fresh SHIP-v1 after
+any proved review edit returns `ready-to-ship`.
+That replacement reports `updated` / `update-existing`, retains
+`existing_pr.exists: true`, and uses the exact prior receipt's PR URL.

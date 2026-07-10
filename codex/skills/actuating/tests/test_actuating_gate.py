@@ -21,6 +21,7 @@ from actuating_gate import (  # noqa: E402
     cas_errors,
     canonical_digest,
     decide,
+    expected_review_admission,
     live_artifact,
     live_hunk_ids,
     live_path_states,
@@ -132,11 +133,6 @@ class GateTests(unittest.TestCase):
                     "performed_public_effects": [],
                 }
             ]
-            if review:
-                steps[0]["review_resolution"] = {
-                    "resolution_id": "resolution-at-admission",
-                    "resolution_digest": "sha256:" + "a" * 64,
-                }
         return {
             "version": "actuation-run/v1",
             "run_id": "run-1",
@@ -171,14 +167,33 @@ class GateTests(unittest.TestCase):
                 "publication_requested": False,
             },
         }
-
     def complete_step(self, run: dict) -> dict:
+        self.admit_review_step(run)
         (self.repo / "file.txt").write_text("changed\n", encoding="utf-8")
         return self.finish_step(run, ["file.txt"])
 
-    def finish_step(self, run: dict, changed_paths: list[str]) -> dict:
-        after = self.artifact()
+    def admit_review_step(self, run: dict) -> None:
         step = run["execution"]["steps"][0]
+        if (
+            run["review"]["required"]
+            and step.get("effect") == "edit"
+            and "review_admission" not in step
+        ):
+            errors, derived = validate_run(
+                run,
+                self.repo,
+                self.material_resolution(run),
+            )
+            if errors:
+                raise AssertionError(errors)
+            step["review_admission"] = derived["review_admission"]
+
+    def finish_step(self, run: dict, changed_paths: list[str]) -> dict:
+        step = run["execution"]["steps"][0]
+        if run["review"]["required"] and step.get("effect") == "edit":
+            if "review_admission" not in step:
+                raise AssertionError("review edit mutated without admission")
+        after = self.artifact()
         step.update(
             {
                 "status": "completed",
@@ -244,6 +259,59 @@ class GateTests(unittest.TestCase):
         run["authority"]["allowed_paths"] = ["file.txt", "decoy.txt"]
         run["execution"]["steps"][0]["paths"] = ["decoy.txt"]
         return run
+
+    def add_submodule(self, filename: str, revisions: int) -> list[str]:
+        source_temp = tempfile.TemporaryDirectory()
+        self.addCleanup(source_temp.cleanup)
+        source = Path(source_temp.name)
+        subprocess.run(["git", "init", "-q"], cwd=source, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"],
+            cwd=source,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Test"], cwd=source, check=True
+        )
+        commits = []
+        tracked = source / filename
+        for index in range(1, revisions + 1):
+            tracked.write_text(f"revision-{index}\n", encoding="utf-8")
+            subprocess.run(["git", "add", filename], cwd=source, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", f"revision {index}"],
+                cwd=source,
+                check=True,
+            )
+            commits.append(
+                subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], cwd=source, text=True
+                ).strip()
+            )
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(source),
+                "sm",
+            ],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "add", ".gitmodules", "sm"], cwd=self.repo, check=True
+        )
+        subprocess.run(
+            ["git", "commit", "-qm", "add submodule"], cwd=self.repo, check=True
+        )
+        self.base = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=self.repo, text=True
+        ).strip()
+        return commits
 
     def review_fold(self, run: dict, finding_ids: list[str] | None = None) -> dict:
         finding_ids = [] if finding_ids is None else finding_ids
@@ -378,11 +446,49 @@ class GateTests(unittest.TestCase):
         resolution["finding_ids"] = finding_ids
         resolution["review_folds"] = [self.review_fold(run, finding_ids)]
 
-    def bind_completed_resolution(self, run: dict, resolution: dict) -> None:
-        run["execution"]["steps"][0]["review_resolution"] = {
-            "resolution_id": resolution["resolution_id"],
-            "resolution_digest": resolution["outcome"]["resolution_digest"],
+    def material_resolution(
+        self,
+        run: dict,
+        *,
+        finding_id: str = "finding-1",
+        node_id: str = "step-1",
+        status: str = "pending",
+    ) -> dict:
+        resolution = self.resolution(run)
+        self.bind_resolution_findings(run, resolution, [finding_id])
+        decision = self.decision(run, finding_ids=[finding_id])
+        selected_step = next(
+            step
+            for step in run["execution"]["steps"]
+            if step["step_id"] == node_id
+        )
+        decision["owner_boundary"] = selected_step["owner_boundary"]
+        decision["selected_work_node"] = {
+            "node_id": node_id,
+            "run_id": run["run_id"],
+            "owner_boundary": selected_step["owner_boundary"],
+            "paths": selected_step["paths"],
+            "verifier": selected_step["verifier"],
         }
+        resolution["decisions"] = [decision]
+        resolution["outcome"]["status"] = status
+        resolution["outcome"]["semantic_balance"]["covered_liabilities"] = [
+            "invariant-gap"
+        ]
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+        return resolution
+
+    def redigest_admission(self, admission: dict) -> dict:
+        observations = admission["observations"]
+        return expected_review_admission(
+            admission["review_resolution"],
+            observations["review_source_refs"],
+            observations["changed_paths"],
+            observations["hunk_ids"],
+            admission["ship_receipt"],
+        )
 
     def cas_review_fold(self, run: dict, record: dict) -> dict:
         producer_findings = record["verdict"]["findings"]
@@ -408,12 +514,9 @@ class GateTests(unittest.TestCase):
         return fold
 
     def evidence(self, run: dict) -> dict:
-        admission = run["execution"]["steps"][0].get("review_resolution")
+        admission = run["execution"]["steps"][0].get("review_admission")
         review_refs = (
-            [
-                "review-resolution:"
-                f"{admission['resolution_id']}:{admission['resolution_digest']}"
-            ]
+            [f"review-admission:{admission['admission_digest']}"]
             if isinstance(admission, dict)
             else []
         )
@@ -462,6 +565,56 @@ class GateTests(unittest.TestCase):
                 },
             }
         }
+
+    def ship_record(self, run: dict) -> dict:
+        return {
+            "ship_record": {
+                "record_version": "SHIP-v1",
+                "source": "actuation",
+                "branch": run["artifact"]["branch"],
+                "base_branch": "main",
+                "head_sha": run["artifact"]["head_sha"],
+                "existing_pr": {"exists": False, "url": None, "draft": False},
+                "validation": {
+                    "build": "pass",
+                    "lint": "pass",
+                    "tests": "pass",
+                    "language_specific": "pass",
+                    "acceptance": "pass",
+                },
+                "pr_readiness": {
+                    "mode": "ready",
+                    "reason": "all proof is current",
+                    "draft_allowed_reason": None,
+                },
+                "action": {
+                    "command": "gh pr create",
+                    "result": "created",
+                    "pr_url": "https://github.com/example/repo/pull/1",
+                },
+                "actuation_binding": {
+                    "actuation_run_id": run["run_id"],
+                    "state_fingerprint": run["artifact"]["state_fingerprint"],
+                },
+            }
+        }
+
+    def updated_ship_record(self, run: dict, prior_ship: dict) -> dict:
+        value = self.ship_record(run)
+        prior_url = prior_ship["ship_record"]["action"]["pr_url"]
+        record = value["ship_record"]
+        record["existing_pr"] = {
+            "exists": True,
+            "url": prior_url,
+            "draft": False,
+        }
+        record["pr_readiness"]["mode"] = "update-existing"
+        record["action"] = {
+            "command": "gh pr edit",
+            "result": "updated",
+            "pr_url": prior_url,
+        }
+        return value
 
     def decision(
         self,
@@ -676,40 +829,237 @@ class GateTests(unittest.TestCase):
 
     def test_review_closeout_selection_requires_bound_resolution(self) -> None:
         run = self.run_value(review=True, selected=True)
-        run["execution"]["steps"][0].pop("review_resolution")
+        run["execution"]["steps"][0].pop("review_admission", None)
         errors, _ = validate_run(run, self.repo)
         self.assertIn("blocked-review-resolution-missing", errors)
-        self.assertIn("blocked-resolution-binding", errors)
 
-        resolution = self.resolution(run)
-        self.bind_resolution_findings(run, resolution, ["finding-1"])
-        resolution["decisions"] = [self.decision(run)]
-        resolution["outcome"]["status"] = "pending"
-        resolution["outcome"]["semantic_balance"]["covered_liabilities"] = [
-            "invariant-gap"
-        ]
-        resolution["outcome"]["resolution_digest"] = canonical_digest(
-            resolution_digest_payload(resolution)
+        resolution = self.material_resolution(run)
+        step = run["execution"]["steps"][0]
+        errors, derived = validate_run(run, self.repo, resolution)
+        self.assertEqual(errors, [])
+        self.assertEqual(
+            derived["review_admission"],
+            expected_review_admission(
+                resolution,
+                ["local:audit-1"],
+                [],
+                live_hunk_ids(self.repo, run["artifact"]["base_sha"]),
+            ),
         )
-        run["execution"]["steps"][0]["review_resolution"] = {
-            "resolution_id": resolution["resolution_id"],
-            "resolution_digest": resolution["outcome"]["resolution_digest"],
-        }
+        valid_admission = copy.deepcopy(derived["review_admission"])
+        step["review_admission"] = copy.deepcopy(valid_admission)
         errors, _ = validate_run(run, self.repo, resolution)
         self.assertEqual(errors, [])
 
-        run["execution"]["steps"][0]["review_resolution"][
-            "resolution_digest"
-        ] = "sha256:" + "0" * 64
+        invalid_resolution = copy.deepcopy(resolution)
+        invalid_resolution["outcome"]["resolution_digest"] = "sha256:" + "0" * 64
+        errors, derived = validate_run(run, self.repo, invalid_resolution)
+        self.assertIn("blocked-review-resolution-digest", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        mismatched_node = copy.deepcopy(resolution)
+        mismatched_node["decisions"][0]["selected_work_node"]["node_id"] = (
+            "other-step"
+        )
+        mismatched_node["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(mismatched_node)
+        )
+        errors, derived = validate_run(run, self.repo, mismatched_node)
+        self.assertIn("blocked-resolution-node-unexecuted", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        run["execution"]["steps"][0]["review_admission"]["review_resolution"][
+            "outcome"
+        ]["resolution_digest"] = "sha256:" + "0" * 64
         errors, _ = validate_run(run, self.repo, resolution)
         self.assertIn("blocked-resolution-binding", errors)
-        run["execution"]["steps"][0]["review_resolution"][
-            "resolution_digest"
-        ] = resolution["outcome"]["resolution_digest"]
+        step["review_admission"] = copy.deepcopy(valid_admission)
 
         run["execution"]["steps"][0]["effect"] = "verify"
         errors, _ = validate_run(run, self.repo, resolution)
         self.assertIn("blocked-resolution-node-unexecuted", errors)
+
+    def test_gate_derived_admission_closes_under_later_resolution(self) -> None:
+        run = self.run_value(review=True, selected=True)
+        pending = self.material_resolution(run)
+
+        errors, derived = validate_run(run, self.repo, pending)
+        self.assertEqual(errors, [])
+        admission = derived["review_admission"]
+        self.assertIsNotNone(admission)
+        run["execution"]["steps"][0]["review_admission"] = admission
+        run = self.complete_step(run)
+
+        terminal = self.resolution(run)
+        decision, code = decide(
+            run,
+            terminal,
+            [self.evidence(run)],
+            self.review_records(run, terminal),
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, decision)
+        self.assertEqual(decision["closure_decision"]["verdict"], "complete")
+
+    def test_publication_review_admission_requires_prior_ship(self) -> None:
+        run = self.run_value(review=True, selected=True)
+        run["review"]["publication_requested"] = True
+        pending = self.material_resolution(run)
+
+        errors, derived = validate_run(run, self.repo, pending)
+        self.assertIn("blocked-ship-missing", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        run["review"]["ship_receipt"] = self.ship_record(run)
+        errors, derived = validate_run(run, self.repo, pending)
+        self.assertEqual(errors, [])
+        self.assertIsNotNone(derived["review_admission"])
+
+    def test_publication_edit_requires_reship_before_final_cas(self) -> None:
+        run = self.run_value(review=True, selected=True)
+        run["review"]["publication_requested"] = True
+        prior_ship = self.ship_record(run)
+        run["review"]["ship_receipt"] = prior_ship
+        historical_pr = self.pr_metadata(
+            self.repo, prior_ship["ship_record"]["action"]["pr_url"]
+        )
+        pending = self.material_resolution(run)
+        errors, derived = validate_run(run, self.repo, pending)
+        self.assertEqual(errors, [])
+        admission = derived["review_admission"]
+        self.assertEqual(
+            admission["ship_receipt"], prior_ship
+        )
+        run["execution"]["steps"][0]["review_admission"] = admission
+        run = self.complete_step(run)
+
+        current = self.material_resolution(run, status="resolved")
+        evidence = self.evidence(run)
+
+        forged_history = copy.deepcopy(run)
+        forged_admission = copy.deepcopy(
+            forged_history["execution"]["steps"][0]["review_admission"]
+        )
+        forged_admission["ship_receipt"] = self.ship_record(run)
+        forged_history["execution"]["steps"][0]["review_admission"] = (
+            self.redigest_admission(forged_admission)
+        )
+        blocked, code = decide(
+            forged_history,
+            current,
+            [self.evidence(forged_history)],
+            [],
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-resolution-binding", blocked["closure_decision"]["reasons"]
+        )
+
+        missing_history = copy.deepcopy(run)
+        missing_history["review"].pop("ship_receipt")
+        blocked, code = decide(
+            missing_history,
+            current,
+            [evidence],
+            [],
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-ship-missing", blocked["closure_decision"]["reasons"]
+        )
+
+        self.live_pr_override = historical_pr
+        handback, code = decide(
+            run,
+            current,
+            [evidence],
+            [],
+            None,
+            self.repo,
+        )
+        self.live_pr_override = None
+        self.assertEqual(code, 0, handback)
+        self.assertEqual(handback["closure_decision"]["verdict"], "ready-to-ship")
+        self.assertEqual(
+            handback["closure_decision"]["outcomes"]["next_owner"], "ship"
+        )
+        self.assertEqual(handback["closure_decision"]["review_basis"], [])
+
+        duplicate_ship = self.ship_record(run)
+        duplicate_ship["ship_record"]["action"]["pr_url"] = (
+            "https://github.com/example/repo/pull/2"
+        )
+        duplicate_pr = copy.deepcopy(run)
+        duplicate_pr["review"]["ship_receipt"] = duplicate_ship
+        blocked, code = decide(
+            duplicate_pr,
+            current,
+            [evidence],
+            self.review_records(run, current),
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-ship-pr-continuity",
+            blocked["closure_decision"]["reasons"],
+        )
+
+        fresh_ship = self.updated_ship_record(run, prior_ship)
+        self.assertNotEqual(canonical_digest(fresh_ship), canonical_digest(prior_ship))
+        run["review"]["ship_receipt"] = fresh_ship
+
+        next_run = copy.deepcopy(run)
+        next_run["execution"]["kind"] = "iterative"
+        next_run["execution"]["selected_step_id"] = "step-2"
+        next_run["execution"]["steps"].append(
+            {
+                "step_id": "step-2",
+                "run_id": run["run_id"],
+                "selected_by": "lead",
+                "owner_boundary": "actuating",
+                "effect": "edit",
+                "paths": ["file.txt"],
+                "verifier": ["test"],
+                "changed_paths": [],
+                "status": "selected",
+                "state_before": run["artifact"],
+                "parent_completion_claimed": False,
+                "performed_public_effects": [],
+            }
+        )
+        next_pending = self.material_resolution(
+            next_run,
+            finding_id="finding-2",
+            node_id="step-2",
+        )
+        errors, derived = validate_run(
+            next_run,
+            self.repo,
+            next_pending,
+            [self.evidence(run)],
+        )
+        self.assertEqual(errors, [])
+        self.assertEqual(
+            derived["review_admission"]["ship_receipt"],
+            fresh_ship,
+        )
+
+        final, code = decide(
+            run,
+            current,
+            [evidence],
+            self.review_records(run, current),
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, final)
+        self.assertEqual(final["closure_decision"]["verdict"], "complete")
 
     def test_resolution_rejects_local_growth(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
@@ -739,23 +1089,36 @@ class GateTests(unittest.TestCase):
         resolution["outcome"]["resolution_digest"] = canonical_digest(
             resolution_digest_payload(resolution)
         )
-        self.bind_completed_resolution(run, resolution)
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertIn("blocked-local-repair-growth", errors)
 
-    def test_resolved_node_must_match_completed_review_step(self) -> None:
+    def test_abstraction_cannot_be_retained_and_retired(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
         resolution = self.resolution(run)
         self.bind_resolution_findings(run, resolution, ["finding-1"])
-        resolution["decisions"] = [self.decision(run)]
+        decision = self.decision(run)
+        decision["abstraction_account"].append(
+            {
+                "abstraction": "gate",
+                "disposition": "retire",
+                "obligation_id": "mutation-admission",
+            }
+        )
+        resolution["decisions"] = [decision]
         resolution["outcome"]["status"] = "resolved"
-        resolution["outcome"]["semantic_balance"]["covered_liabilities"] = [
-            "invariant-gap"
-        ]
+        balance = resolution["outcome"]["semantic_balance"]
+        balance["covered_liabilities"] = ["invariant-gap"]
+        balance["required_retirements"] = ["gate"]
+        balance["completed_retirements"] = ["gate"]
         resolution["outcome"]["resolution_digest"] = canonical_digest(
             resolution_digest_payload(resolution)
         )
-        self.bind_completed_resolution(run, resolution)
+        errors, _ = validate_resolution(run, resolution, self.repo)
+        self.assertIn("blocked-abstraction-disposition", errors)
+
+    def test_resolved_node_must_match_completed_admitted_step(self) -> None:
+        run = self.complete_step(self.run_value(review=True, selected=True))
+        resolution = self.material_resolution(run, status="resolved")
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertEqual(errors, [])
 
@@ -765,7 +1128,6 @@ class GateTests(unittest.TestCase):
         resolution["outcome"]["resolution_digest"] = canonical_digest(
             resolution_digest_payload(resolution)
         )
-        self.bind_completed_resolution(run, resolution)
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertIn("blocked-resolution-node-unexecuted", errors)
 
@@ -812,7 +1174,6 @@ class GateTests(unittest.TestCase):
         resolution["outcome"]["resolution_digest"] = canonical_digest(
             resolution_digest_payload(resolution)
         )
-        self.bind_completed_resolution(run, resolution)
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertEqual(errors, [])
 
@@ -919,6 +1280,7 @@ class GateTests(unittest.TestCase):
         run = self.run_value(review=True, selected=True)
         run["authority"]["allowed_paths"] = ["file.txt", "decoy.txt"]
         run["execution"]["steps"][0]["paths"] = ["file.txt", "decoy.txt"]
+        self.admit_review_step(run)
         (self.repo / "file.txt").write_text("changed\n", encoding="utf-8")
         (self.repo / "decoy.txt").write_text("added\n", encoding="utf-8")
         run = self.finish_step(run, ["file.txt", "decoy.txt"])
@@ -1077,7 +1439,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 0, decision)
 
         missing = copy.deepcopy(run)
-        missing["execution"]["steps"][0].pop("review_resolution")
+        missing["execution"]["steps"][0].pop("review_admission")
         decision, code = decide(
             missing,
             resolution,
@@ -1092,14 +1454,86 @@ class GateTests(unittest.TestCase):
             decision["closure_decision"]["reasons"],
         )
 
-        tampered = copy.deepcopy(run)
-        tampered["execution"]["steps"][0]["review_resolution"][
-            "resolution_digest"
-        ] = "sha256:" + "0" * 64
+        for field, value in (
+            ("version", "review-admission/v0"),
+            ("admission_digest", "sha256:" + "0" * 64),
+        ):
+            tampered = copy.deepcopy(run)
+            tampered["execution"]["steps"][0]["review_admission"][field] = value
+            decision, code = decide(
+                tampered,
+                resolution,
+                [evidence],
+                records,
+                None,
+                self.repo,
+            )
+            with self.subTest(field=field):
+                self.assertEqual(code, 2)
+                self.assertIn(
+                    "blocked-resolution-binding",
+                    decision["closure_decision"]["reasons"],
+                )
+
+        original = run["execution"]["steps"][0]["review_admission"]
+        fabricated: list[tuple[str, dict]] = []
+
+        later_resolution = copy.deepcopy(original)
+        later_resolution["review_resolution"] = resolution
+        fabricated.append(
+            ("later-resolution", self.redigest_admission(later_resolution))
+        )
+
+        wrong_sources = copy.deepcopy(original)
+        wrong_sources["observations"]["review_source_refs"] = ["local:other"]
+        fabricated.append(("review-source-refs", self.redigest_admission(wrong_sources)))
+
+        wrong_paths = copy.deepcopy(original)
+        wrong_paths["observations"]["changed_paths"] = ["file.txt", "other.txt"]
+        fabricated.append(("changed-paths", self.redigest_admission(wrong_paths)))
+
+        wrong_hunks = copy.deepcopy(original)
+        wrong_hunks["observations"]["hunk_ids"] = ["sha256:" + "0" * 64]
+        fabricated.append(("hunk-ids", self.redigest_admission(wrong_hunks)))
+
+        extra_field = copy.deepcopy(original)
+        extra_field["resolution_id"] = "forged-redundant-scalar"
+        extra_field["admission_digest"] = canonical_digest(
+            {
+                key: value
+                for key, value in extra_field.items()
+                if key != "admission_digest"
+            }
+        )
+        fabricated.append(("extra-field", extra_field))
+
+        for label, admission in fabricated:
+            tampered = copy.deepcopy(run)
+            tampered["execution"]["steps"][0]["review_admission"] = admission
+            tampered_evidence = self.evidence(tampered)
+            decision, code = decide(
+                tampered,
+                resolution,
+                [tampered_evidence],
+                records,
+                None,
+                self.repo,
+            )
+            with self.subTest(label=label):
+                self.assertEqual(code, 2)
+                self.assertIn(
+                    "blocked-resolution-binding",
+                    decision["closure_decision"]["reasons"],
+                )
+
+        wrong_ref = self.evidence(run)
+        wrong_ref["evidence_fold"]["evidence"]["review_refs"] = [
+            "review-admission:sha256:" + "0" * 64
+        ]
         decision, code = decide(
-            tampered,
+            run,
             resolution,
-            [evidence],
+            [wrong_ref],
             records,
             None,
             self.repo,
@@ -1107,6 +1541,32 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn(
             "blocked-evidence-fold-mismatch",
+            decision["closure_decision"]["reasons"],
+        )
+
+    def test_review_required_history_cannot_be_relabelled_as_implement(self) -> None:
+        run = self.complete_step(self.run_value(review=True, selected=True))
+        terminal = self.resolution(run)
+        records = self.review_records(run, terminal)
+        run["mode"] = "implement"
+        run["execution"]["steps"][0].pop("review_admission")
+        evidence = self.evidence(run)
+
+        decision, code = decide(
+            run,
+            terminal,
+            [evidence],
+            records,
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-review-required-shape",
+            decision["closure_decision"]["reasons"],
+        )
+        self.assertIn(
+            "blocked-resolution-binding",
             decision["closure_decision"]["reasons"],
         )
 
@@ -1175,38 +1635,6 @@ class GateTests(unittest.TestCase):
         )
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertIn("blocked-resolution-node-multiple", errors)
-
-        resolution["outcome"]["status"] = "resolved"
-        resolution["outcome"]["resolution_digest"] = canonical_digest(
-            resolution_digest_payload(resolution)
-        )
-        completed = [
-            {
-                "step_id": node_id,
-                "effect": "edit",
-                "owner_boundary": owner,
-                "paths": ["file.txt"],
-                "verifier": ["test"],
-                "review_resolution": {
-                    "resolution_id": resolution["resolution_id"],
-                    "resolution_digest": "sha256:" + "a" * 64,
-                },
-            }
-            for node_id, owner in (
-                ("step-1", "actuating"),
-                ("step-2", "other-owner"),
-            )
-        ]
-        with patch(
-            "actuating_gate.validate_run",
-            return_value=(
-                [],
-                {"live_changed_paths": ["file.txt"], "completed_steps": completed},
-            ),
-        ):
-            errors, derived = validate_resolution(run, resolution, self.repo)
-        self.assertEqual(errors, [])
-        self.assertEqual(derived["selected_work_nodes"], ["step-1", "step-2"])
 
     def test_replacement_addition_is_scoped_to_its_owner_decision(self) -> None:
         run = self.run_value(review=True, selected=True)
@@ -1884,6 +2312,10 @@ class GateTests(unittest.TestCase):
         cases.append((evidence, "blocked-evidence-fold-shape"))
 
         evidence = self.evidence(run)
+        evidence["evidence_fold"]["evidence"] = None
+        cases.append((evidence, "blocked-evidence-fold-shape"))
+
+        evidence = self.evidence(run)
         orphan = copy.deepcopy(evidence)
         orphan["evidence_fold"]["evidence_id"] = "orphan"
         cases.append(
@@ -1971,6 +2403,37 @@ class GateTests(unittest.TestCase):
             )
             errors, _ = validate_resolution(run, resolution, self.repo)
             self.assertIn("blocked-resolution-out-of-scope", errors)
+
+    def test_cli_canonicalizes_nested_repo_before_path_authorization(self) -> None:
+        nested = self.repo / "nested"
+        nested.mkdir()
+        with tempfile.TemporaryDirectory() as outside:
+            os.symlink(outside, self.repo / "escape")
+            run = self.run_value(selected=True)
+            run["authority"]["allowed_paths"] = ["."]
+            run["execution"]["steps"][0]["paths"] = ["escape/secret.txt"]
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(TOOLS / "actuating_gate.py"),
+                    "validate-run",
+                    "--run",
+                    "-",
+                    "--repo",
+                    str(nested),
+                ],
+                input=json.dumps(run),
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 2, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn(
+            "blocked-step-out-of-scope",
+            payload["actuating_gate"]["errors"],
+        )
 
     def test_dirty_scope_overlap_is_symmetric_and_filesystem_aware(self) -> None:
         scope = self.repo / "scope"
@@ -2071,78 +2534,38 @@ class GateTests(unittest.TestCase):
         self.assertNotEqual(before, after)
 
     def test_submodule_revision_and_dirty_content_change_fingerprint(self) -> None:
-        with tempfile.TemporaryDirectory() as source_dir:
-            source = Path(source_dir)
-            subprocess.run(["git", "init", "-q"], cwd=source, check=True)
-            subprocess.run(
-                ["git", "config", "user.email", "test@example.com"],
-                cwd=source,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "config", "user.name", "Test"], cwd=source, check=True
-            )
-            tracked = source / "tracked.txt"
-            commits = []
-            for index in range(1, 4):
-                tracked.write_text(f"revision-{index}\n", encoding="utf-8")
-                subprocess.run(["git", "add", "tracked.txt"], cwd=source, check=True)
-                subprocess.run(
-                    ["git", "commit", "-qm", f"revision {index}"],
-                    cwd=source,
-                    check=True,
-                )
-                commits.append(
-                    subprocess.check_output(
-                        ["git", "rev-parse", "HEAD"], cwd=source, text=True
-                    ).strip()
-                )
+        commits = self.add_submodule("tracked.txt", 3)
+        subprocess.run(
+            ["git", "-C", "sm", "checkout", "-q", commits[0]],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(["git", "add", "sm"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "pin first revision"],
+            cwd=self.repo,
+            check=True,
+        )
+        self.base = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=self.repo, text=True
+        ).strip()
 
+        fingerprints = []
+        for commit in commits[1:]:
             subprocess.run(
-                [
-                    "git",
-                    "-c",
-                    "protocol.file.allow=always",
-                    "submodule",
-                    "add",
-                    "-q",
-                    str(source),
-                    "sm",
-                ],
+                ["git", "-C", "sm", "checkout", "-q", commit],
                 cwd=self.repo,
                 check=True,
             )
-            subprocess.run(
-                ["git", "-C", "sm", "checkout", "-q", commits[0]],
-                cwd=self.repo,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "add", ".gitmodules", "sm"], cwd=self.repo, check=True
-            )
-            subprocess.run(
-                ["git", "commit", "-qm", "add submodule"], cwd=self.repo, check=True
-            )
-            self.base = subprocess.check_output(
-                ["git", "rev-parse", "HEAD"], cwd=self.repo, text=True
-            ).strip()
+            fingerprints.append(self.artifact()["state_fingerprint"])
+        self.assertNotEqual(*fingerprints)
 
-            fingerprints = []
-            for commit in commits[1:]:
-                subprocess.run(
-                    ["git", "-C", "sm", "checkout", "-q", commit],
-                    cwd=self.repo,
-                    check=True,
-                )
-                fingerprints.append(self.artifact()["state_fingerprint"])
-            self.assertNotEqual(*fingerprints)
-
-            dirty = self.repo / "sm" / "tracked.txt"
-            dirty.write_text("dirty-a\n", encoding="utf-8")
-            dirty_a = self.artifact()["state_fingerprint"]
-            dirty.write_text("dirty-b\n", encoding="utf-8")
-            dirty_b = self.artifact()["state_fingerprint"]
-            self.assertNotEqual(dirty_a, dirty_b)
+        dirty = self.repo / "sm" / "tracked.txt"
+        dirty.write_text("dirty-a\n", encoding="utf-8")
+        dirty_a = self.artifact()["state_fingerprint"]
+        dirty.write_text("dirty-b\n", encoding="utf-8")
+        dirty_b = self.artifact()["state_fingerprint"]
+        self.assertNotEqual(dirty_a, dirty_b)
 
     def test_index_transition_changes_state_and_hunk_layer(self) -> None:
         path = self.repo / "file.txt"
@@ -2263,6 +2686,95 @@ class GateTests(unittest.TestCase):
         run["artifact_initial_path_states"]["file.txt"] = "sha256:" + "0" * 64
         errors, _ = validate_run(run, self.repo)
         self.assertIn("blocked-run-initial-artifact", errors)
+
+    def test_index_observer_flags_are_rejected(self) -> None:
+        for flag, clear in (
+            ("--assume-unchanged", "--no-assume-unchanged"),
+            ("--skip-worktree", "--no-skip-worktree"),
+        ):
+            run = self.run_value(selected=True)
+            subprocess.run(
+                ["git", "update-index", flag, "file.txt"],
+                cwd=self.repo,
+                check=True,
+            )
+            try:
+                (self.repo / "file.txt").write_text("hidden edit\n", encoding="utf-8")
+                errors, _ = validate_run(run, self.repo)
+                with self.subTest(flag=flag):
+                    self.assertIn("blocked-index-observer-flags", errors)
+            finally:
+                subprocess.run(
+                    ["git", "update-index", clear, "file.txt"],
+                    cwd=self.repo,
+                    check=True,
+                )
+                subprocess.run(
+                    ["git", "restore", "file.txt"], cwd=self.repo, check=True
+                )
+
+    def test_initialized_gitlink_index_flags_are_rejected(self) -> None:
+        self.add_submodule("nested.txt", 1)
+        run = self.run_value(selected=True)
+        subprocess.run(
+            ["git", "update-index", "--skip-worktree", "nested.txt"],
+            cwd=self.repo / "sm",
+            check=True,
+        )
+        (self.repo / "sm/nested.txt").write_text(
+            "hidden submodule edit\n", encoding="utf-8"
+        )
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-index-observer-flags", errors)
+
+        subprocess.run(
+            ["git", "submodule", "--quiet", "deinit", "--force", "sm"],
+            cwd=self.repo,
+            check=True,
+        )
+        errors, _ = validate_run(self.run_value(selected=True), self.repo)
+        self.assertNotIn("blocked-index-observer-flags", errors)
+
+    def test_final_rebind_rejects_late_index_observer_flag(self) -> None:
+        run = self.complete_step(self.run_value(review=True, selected=True))
+        resolution = self.resolution(run)
+        records = self.review_records(run, resolution)
+        snapshot = records[0]
+
+        def hide_edit(*_args: object) -> dict:
+            subprocess.run(
+                ["git", "update-index", "--assume-unchanged", "file.txt"],
+                cwd=self.repo,
+                check=True,
+            )
+            (self.repo / "file.txt").write_text("late hidden edit\n", encoding="utf-8")
+            return snapshot
+
+        self.live_cas_mock.side_effect = hide_edit
+        try:
+            decision, code = decide(
+                run,
+                resolution,
+                [self.evidence(run)],
+                records,
+                None,
+                self.repo,
+            )
+        finally:
+            subprocess.run(
+                ["git", "update-index", "--no-assume-unchanged", "file.txt"],
+                cwd=self.repo,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "restore", "file.txt"], cwd=self.repo, check=True
+            )
+            self.live_cas_mock.side_effect = lambda *_: self.live_cas_snapshot
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-index-observer-flags",
+            decision["closure_decision"]["reasons"],
+        )
 
     def test_initial_repo_base_and_branch_remain_authoritative(self) -> None:
         for field, value in (
@@ -2431,18 +2943,14 @@ class GateTests(unittest.TestCase):
         ship = {
             "ship_record": {
                 "record_version": "SHIP-v1",
-                "actuation_review": {
+                "actuation_binding": {
                     "actuation_run_id": run["run_id"],
                     "state_fingerprint": run["artifact"]["state_fingerprint"],
-                    "review_contract_fingerprint": None,
-                    "resolution_digest": None,
-                    "selected_lenses": [],
-                    "cas_rer_record_ids": [],
                 },
                 "action": {"result": "created"},
             }
         }
-        errors, basis = ship_errors(ship, run, {}, [])
+        errors, basis = ship_errors(ship, run)
         self.assertIn("blocked-ship-result", errors)
         self.assertEqual(basis, [])
 
@@ -2457,7 +2965,7 @@ class GateTests(unittest.TestCase):
         cas_problems, _ = cas_errors(snapshot, run, resolution, derived)
         self.assertIn("blocked-cas-unit-stale", cas_problems)
         ship_problems, basis = ship_errors(
-            {"ship_record": {"actuation_review": {}}}, run, derived, []
+            {"ship_record": {"actuation_binding": {}}}, run
         )
         self.assertIn("blocked-ship-binding", ship_problems)
         self.assertEqual(basis, [])
@@ -2465,43 +2973,8 @@ class GateTests(unittest.TestCase):
     def test_complete_actuation_ship_record_is_accepted(self) -> None:
         run = self.commit_step(self.complete_step(self.run_value(selected=True)))
         run["review"]["publication_requested"] = True
-        ship = {
-            "ship_record": {
-                "record_version": "SHIP-v1",
-                "source": "actuation",
-                "branch": run["artifact"]["branch"],
-                "base_branch": "main",
-                "head_sha": run["artifact"]["head_sha"],
-                "existing_pr": {"exists": False, "url": None, "draft": False},
-                "validation": {
-                    "build": "pass",
-                    "lint": "pass",
-                    "tests": "pass",
-                    "language_specific": "pass",
-                    "acceptance": "pass",
-                },
-                "pr_readiness": {
-                    "mode": "ready",
-                    "reason": "all proof is current",
-                    "draft_allowed_reason": None,
-                },
-                "action": {
-                    "command": "gh pr create",
-                    "result": "created",
-                    "pr_url": "https://github.com/example/repo/pull/1",
-                },
-                "actuation_review": {
-                    "actuation_run_id": run["run_id"],
-                    "state_fingerprint": run["artifact"]["state_fingerprint"],
-                    "review_contract_fingerprint": None,
-                    "resolution_ref": None,
-                    "resolution_digest": None,
-                    "selected_lenses": [],
-                    "cas_rer_record_ids": [],
-                },
-            }
-        }
-        errors, basis = ship_errors(ship, run, {}, [])
+        ship = self.ship_record(run)
+        errors, basis = ship_errors(ship, run)
         self.assertEqual(errors, [])
         self.assertEqual(basis, ["https://github.com/example/repo/pull/1"])
         decision, code = decide(
@@ -2512,9 +2985,82 @@ class GateTests(unittest.TestCase):
             ship,
             self.repo,
         )
-        self.assertEqual(code, 0, decision)
-        self.assertEqual(decision["closure_decision"]["verdict"], "complete")
+        self.assertEqual(code, 2, decision)
+        self.assertEqual(decision["closure_decision"]["verdict"], "continue")
+        self.assertEqual(
+            decision["closure_decision"]["outcomes"],
+            {
+                "goal_outcome": "continue",
+                "implementation_outcome": "complete",
+                "next_owner": "goal-actuating",
+            },
+        )
         self.assertIsNone(decision["closure_decision"]["resolution_digest"])
+
+        review_run = self.finish_verify_step(
+            self.run_value(review=True, selected=True)
+        )
+        review_run["review"]["publication_requested"] = True
+        review_run["review"]["ship_receipt"] = ship
+        resolution = self.resolution(review_run)
+        evidence = self.evidence(review_run)
+        evidence["evidence_fold"]["artifact_state"]["changed_paths"] = []
+        records = self.review_records(review_run, resolution)
+
+        embedded_final, code = decide(
+            review_run,
+            resolution,
+            [evidence],
+            records,
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, embedded_final)
+        self.assertEqual(embedded_final["closure_decision"]["verdict"], "complete")
+
+        external_final, code = decide(
+            review_run,
+            resolution,
+            [evidence],
+            records,
+            ship,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-unexpected-input",
+            external_final["closure_decision"]["reasons"],
+        )
+
+        relabeled = copy.deepcopy(ship)
+        relabeled_binding = relabeled["ship_record"]["actuation_binding"]
+        relabeled_binding["review_epoch"] = resolution["outcome"][
+            "resolution_digest"
+        ]
+        errors, _ = ship_errors(relabeled, review_run)
+        self.assertIn("blocked-ship-binding", errors)
+        relabeled_run = copy.deepcopy(review_run)
+        relabeled_run["review"]["ship_receipt"] = relabeled
+        mismatched_final, code = decide(
+            relabeled_run,
+            resolution,
+            [evidence],
+            records,
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-ship-binding",
+            mismatched_final["closure_decision"]["reasons"],
+        )
+
+        for key in ("actuation_run_id", "state_fingerprint"):
+            incomplete = copy.deepcopy(ship)
+            incomplete["ship_record"]["actuation_binding"].pop(key)
+            errors, _ = ship_errors(incomplete, run)
+            with self.subTest(missing_ship_field=key):
+                self.assertIn("blocked-ship-binding", errors)
 
         def mutate_during_pr(repo: Path, url: str) -> dict:
             (self.repo / "file.txt").write_text("late mutation\n", encoding="utf-8")
@@ -2545,7 +3091,7 @@ class GateTests(unittest.TestCase):
             invalid_ship = copy.deepcopy(ship)
             invalid_ship["ship_record"]["validation"]["tests"] = invalid
             with self.subTest(validation=invalid):
-                errors, _ = ship_errors(invalid_ship, run, {}, [])
+                errors, _ = ship_errors(invalid_ship, run)
                 self.assertIn("blocked-ship-validation", errors)
 
         for field in ("baseRefOid", "headRefOid", "headRepository"):
@@ -2559,7 +3105,7 @@ class GateTests(unittest.TestCase):
                 else "other-sha"
             )
             with self.subTest(live_pr_field=field):
-                errors, basis = ship_errors(ship, run, {}, [])
+                errors, basis = ship_errors(ship, run)
                 self.assertIn("blocked-ship-live-pr-mismatch", errors)
                 self.assertEqual(basis, [])
             self.live_pr_override = None
@@ -2574,7 +3120,7 @@ class GateTests(unittest.TestCase):
         record["pr_readiness"]["mode"] = "update-existing"
         record["action"]["result"] = "updated"
         record["action"]["pr_url"] = "https://github.com/example/repo/pull/2"
-        errors, _ = ship_errors(mismatched, run, {}, [])
+        errors, _ = ship_errors(mismatched, run)
         self.assertIn("blocked-ship-result", errors)
 
     def test_cli_non_object_artifact_is_a_structured_block(self) -> None:

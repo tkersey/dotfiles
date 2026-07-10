@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 from datetime import datetime
 import hashlib
 import json
@@ -419,11 +420,14 @@ def binding_errors(
         current = live_artifact(repo, base)
     except ValueError:
         return [f"{prefix}-base-invalid"], {}
-    errors = [
+    errors = ["blocked-index-observer-flags"] if has_index_observer_flags(repo) else []
+    errors.extend(
+        [
         f"{prefix}-stale:{key}"
         for key in ("repo", "base_sha", "branch", "head_sha", "state_fingerprint")
         if text(binding.get(key)) != current[key]
-    ]
+        ]
+    )
     return errors, current
 
 
@@ -470,6 +474,103 @@ def review_contract_payload(
         },
         "semantic_non_growth": True,
     }
+
+
+def expected_review_admission(
+    review_resolution: dict[str, Any],
+    review_source_refs: list[str],
+    changed_paths: list[str],
+    hunk_ids: list[str],
+    ship_receipt: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = {
+        "version": "review-admission/v1",
+        "review_resolution": copy.deepcopy(review_resolution),
+        "observations": {
+            "review_source_refs": copy.deepcopy(review_source_refs),
+            "changed_paths": copy.deepcopy(changed_paths),
+            "hunk_ids": copy.deepcopy(hunk_ids),
+        },
+        "ship_receipt": copy.deepcopy(ship_receipt),
+    }
+    return {**payload, "admission_digest": canonical_digest(payload)}
+
+
+def review_admission_errors(value: Any, step: dict[str, Any]) -> list[str]:
+    if not isinstance(value, dict):
+        return ["blocked-resolution-binding"]
+    review_resolution = value.get("review_resolution")
+    observations = value.get("observations")
+    review_source_refs = (
+        observations.get("review_source_refs")
+        if isinstance(observations, dict)
+        else None
+    )
+    changed_paths = (
+        observations.get("changed_paths") if isinstance(observations, dict) else None
+    )
+    hunk_ids = observations.get("hunk_ids") if isinstance(observations, dict) else None
+    ship_receipt = value.get("ship_receipt")
+    if (
+        not isinstance(review_resolution, dict)
+        or not isinstance(observations, dict)
+        or not has_exact_string_list(review_source_refs)
+        or not has_exact_string_list(changed_paths)
+        or not has_exact_string_list(hunk_ids)
+        or len(review_source_refs) != len(set(review_source_refs))
+        or len(changed_paths) != len(set(changed_paths))
+        or len(hunk_ids) != len(set(hunk_ids))
+        or (ship_receipt is not None and not isinstance(ship_receipt, dict))
+    ):
+        return ["blocked-resolution-binding"]
+    expected = expected_review_admission(
+        review_resolution,
+        review_source_refs,
+        changed_paths,
+        hunk_ids,
+        ship_receipt,
+    )
+    historical_run = {
+        "run_id": step.get("run_id"),
+        "artifact": step.get("state_before"),
+    }
+    try:
+        resolution_problems, _ = _resolution_contract_errors(
+            review_resolution,
+            _admission_resolution_facts(
+                step,
+                review_source_refs,
+                changed_paths,
+                hunk_ids,
+            ),
+        )
+        ship_problems = (
+            static_ship_errors(ship_receipt, historical_run)[0]
+            if ship_receipt is not None
+            else []
+        )
+    except ValueError:
+        return ["blocked-resolution-binding"]
+    if value != expected or resolution_problems or ship_problems:
+        return ["blocked-resolution-binding"]
+    return []
+
+
+def has_index_observer_flags(repo: Path) -> bool:
+    repo = git_root(repo)
+    for row in git(repo, "ls-files", "-v", "-z").split(b"\0"):
+        tag, separator, _ = row.partition(b" ")
+        if separator and (tag == b"S" or tag.islower()):
+            return True
+    for path in gitlink_paths(git(repo, "ls-files", "--stage", "-z")):
+        source = repo / path
+        if (
+            source.is_dir()
+            and (source / ".git").exists()
+            and has_index_observer_flags(source)
+        ):
+            return True
+    return False
 
 
 def path_allowed(path: str, allowed: list[str], repo: Path) -> bool:
@@ -582,6 +683,7 @@ def validate_run(
     *,
     admission_check: bool = True,
 ) -> tuple[list[str], dict[str, Any]]:
+    repo = git_root(repo)
     errors: list[str] = []
     semantics = load_semantics()
     errors.extend(semantic_contract_errors(semantics))
@@ -597,6 +699,10 @@ def validate_run(
     mode = text(run.get("mode"))
     if mode not in modes:
         errors.append("blocked-run-mode")
+    review_value = run.get("review")
+    review_required = (
+        isinstance(review_value, dict) and review_value.get("required") is True
+    )
 
     source = run.get("source")
     if not isinstance(source, dict):
@@ -729,10 +835,32 @@ def validate_run(
     seen_ids: set[str] = set()
     previous_after: dict[str, Any] | None = None
     completed_steps: list[dict[str, Any]] = []
+    review_admission_candidate: dict[str, Any] | None = None
     for index, step in enumerate(steps):
         if index > 0:
             prior = steps[index - 1]
-            if prior.get("status") != "completed" or prior.get("verdict") != "continue":
+            prior_admission = prior.get("review_admission")
+            current_ship = (
+                review_value.get("ship_receipt")
+                if isinstance(review_value, dict)
+                else None
+            )
+            fresh_ship_continuation = bool(
+                prior.get("verdict") == "ready-for-closure"
+                and isinstance(review_value, dict)
+                and review_value.get("publication_requested") is True
+                and isinstance(prior_admission, dict)
+                and isinstance(prior_admission.get("ship_receipt"), dict)
+                and isinstance(current_ship, dict)
+                and canonical_digest(current_ship)
+                != canonical_digest(prior_admission["ship_receipt"])
+                and not ship_epoch_continuity_errors(
+                    prior_admission["ship_receipt"], current_ship
+                )
+            )
+            if prior.get("status") != "completed" or not (
+                prior.get("verdict") == "continue" or fresh_ship_continuation
+            ):
                 errors.append("blocked-step-continuation")
         step_id = text(step.get("step_id"))
         if not step_id or step_id in seen_ids:
@@ -750,24 +878,7 @@ def validate_run(
         effect = text(step.get("effect"))
         if effect not in step_effects:
             errors.append("blocked-step-effect")
-        review_resolution = step.get("review_resolution")
-        if mode == "review-closeout" and effect == "edit":
-            resolution_id = text(
-                review_resolution.get("resolution_id")
-                if isinstance(review_resolution, dict)
-                else None
-            )
-            resolution_digest = text(
-                review_resolution.get("resolution_digest")
-                if isinstance(review_resolution, dict)
-                else None
-            )
-            if (
-                not resolution_id
-                or len(resolution_digest) != 71
-                or not resolution_digest.startswith("sha256:")
-            ):
-                errors.append("blocked-resolution-binding")
+        review_admission = step.get("review_admission")
         step_paths_raw = step.get("paths")
         changed_paths_raw = step.get("changed_paths")
         step_paths = string_list(step_paths_raw)
@@ -808,6 +919,8 @@ def validate_run(
             if changed_paths:
                 errors.append("blocked-step-incomplete")
         elif status == "completed":
+            if review_required and effect == "edit":
+                errors.extend(review_admission_errors(review_admission, step))
             after = step.get("state_after")
             if not isinstance(after, dict):
                 errors.append("blocked-step-incomplete")
@@ -824,6 +937,7 @@ def validate_run(
                 completed_steps.append(
                     {
                         "step_id": step_id,
+                        "run_id": text(step.get("run_id")),
                         "evidence_ref": evidence_ref,
                         "artifact": after,
                         "verdict": text(step.get("verdict")),
@@ -832,7 +946,8 @@ def validate_run(
                         "owner_boundary": text(step.get("owner_boundary")),
                         "paths": step_paths,
                         "verifier": verifier,
-                        "review_resolution": review_resolution,
+                        "state_before": before,
+                        "review_admission": review_admission,
                     }
                 )
             if text(step.get("verdict")) not in {
@@ -864,7 +979,7 @@ def validate_run(
     if not steps and current and initial != current:
         errors.append("blocked-run-initial-artifact")
 
-    review = run.get("review")
+    review = review_value
     if not isinstance(review, dict):
         errors.append("blocked-review-profile-missing")
         review = {}
@@ -872,6 +987,8 @@ def validate_run(
     if not isinstance(required, bool):
         errors.append("blocked-review-required-shape")
     if mode == "review-closeout" and required is not True:
+        errors.append("blocked-review-required-shape")
+    if mode == "implement" and required is True:
         errors.append("blocked-review-required-shape")
     if required is True and not text(review.get("codex_thread_id")):
         errors.append("blocked-review-source-missing")
@@ -891,6 +1008,48 @@ def validate_run(
         and "ship-handoff" not in public_allowed
     ):
         errors.append("blocked-publication-intent")
+    ship_receipt = review.get("ship_receipt")
+    if (
+        mode == "review-closeout"
+        and review.get("publication_requested") is True
+    ):
+        if not isinstance(ship_receipt, dict):
+            errors.append("blocked-ship-missing")
+        elif selected:
+            try:
+                ship_problems, _ = ship_errors(ship_receipt, run)
+            except ValueError:
+                ship_problems = ["blocked-ship-binding"]
+            errors.extend(ship_problems)
+    elif ship_receipt is not None:
+        errors.append("blocked-unexpected-input")
+    for completed in completed_steps:
+        admission = completed.get("review_admission")
+        if (
+            completed.get("effect") == "edit"
+            and isinstance(admission, dict)
+            and (admission.get("ship_receipt") is not None)
+            is not (review.get("publication_requested") is True)
+        ):
+            errors.append("blocked-resolution-binding")
+    prior_publication = next(
+        (
+            completed["review_admission"]["ship_receipt"]
+            for completed in reversed(completed_steps)
+            if completed.get("effect") == "edit"
+            and isinstance(completed.get("review_admission"), dict)
+            and isinstance(
+                completed["review_admission"].get("ship_receipt"), dict
+            )
+        ),
+        None,
+    )
+    if (
+        isinstance(prior_publication, dict)
+        and isinstance(ship_receipt, dict)
+        and canonical_digest(prior_publication) != canonical_digest(ship_receipt)
+    ):
+        errors.extend(ship_epoch_continuity_errors(prior_publication, ship_receipt))
 
     if admission_check and mode == "review-closeout" and selected:
         if resolution is None:
@@ -901,25 +1060,18 @@ def validate_run(
             )
             errors.extend(resolution_errors)
             selected_step = selected[0]
-            matching = [
-                binding
-                for binding in resolution_derived.get("selected_work_bindings", [])
-                if binding.get("node_id") == selected_id
-                and selected_step.get("effect") == "edit"
-                and binding.get("owner_boundary") == selected_step.get("owner_boundary")
-                and sorted(binding.get("paths") or [])
-                == sorted(selected_step.get("paths") or [])
-                and sorted(binding.get("verifier") or [])
-                == sorted(selected_step.get("verifier") or [])
-            ]
-            if len(matching) != 1:
-                errors.append("blocked-resolution-node-unexecuted")
-            admission = selected_step.get("review_resolution")
-            if not isinstance(admission, dict) or admission != {
-                "resolution_id": resolution_derived.get("resolution_id"),
-                "resolution_digest": resolution_derived.get("resolution_digest"),
-            }:
-                errors.append("blocked-resolution-binding")
+            if not resolution_errors:
+                admission = selected_step.get("review_admission")
+                expected_admission = expected_review_admission(
+                    resolution,
+                    string_list(review.get("source_refs")),
+                    string_list(resolution_derived.get("live_changed_paths")),
+                    string_list(resolution_derived.get("live_hunk_ids")),
+                    ship_receipt if isinstance(ship_receipt, dict) else None,
+                )
+                review_admission_candidate = expected_admission
+                if admission is not None and admission != expected_admission:
+                    errors.append("blocked-resolution-binding")
     elif admission_check and resolution is not None and mode != "review-closeout":
         errors.append("blocked-unexpected-input")
 
@@ -931,12 +1083,15 @@ def validate_run(
                 evidence_values, run, completed_steps
             )
             errors.extend(evidence_problems)
+    final_run_errors, _ = binding_errors(run.get("artifact"), repo, "blocked-run")
+    errors.extend(final_run_errors)
 
     derived = {
         "run_digest": canonical_digest(run),
         "current_artifact": current,
         "completed_steps": completed_steps,
         "selected_step_id": selected_id,
+        "review_admission": review_admission_candidate if not errors else None,
         "has_blocked_step": any(step.get("status") == "blocked" for step in steps),
         "live_changed_paths": sorted(live_paths),
     }
@@ -1046,15 +1201,22 @@ def validate_review_folds(
     return sorted(set(errors)), material
 
 
-def validate_resolution(
-    run: dict[str, Any],
+def _resolution_contract_errors(
     resolution: dict[str, Any],
-    repo: Path,
+    facts: dict[str, Any],
 ) -> tuple[list[str], dict[str, Any]]:
-    errors, run_derived = validate_run(run, repo, admission_check=False)
-    semantics = load_semantics()
-    authority = run.get("authority") if isinstance(run.get("authority"), dict) else {}
-    allowed_paths = string_list(authority.get("allowed_paths"))
+    errors: list[str] = []
+    semantics = facts["semantics"]
+    run = {
+        "run_id": facts.get("run_id"),
+        "artifact": facts.get("artifact"),
+        "mode": facts.get("mode"),
+        "review": {"source_refs": facts.get("review_source_refs")},
+    }
+    changed_paths = string_list(facts.get("changed_paths"))
+    expected_hunks = string_list(facts.get("hunk_ids"))
+    allowed_node_bindings = object_list(facts.get("allowed_node_bindings"))
+    admitted_node_binding = facts.get("admitted_node_binding")
     if resolution.get("version") != "review-resolution/v1":
         errors.append("blocked-review-resolution-version")
     if not text(resolution.get("resolution_id")):
@@ -1095,7 +1257,7 @@ def validate_resolution(
     if any(surface not in known_surfaces for surface in surfaces):
         errors.append("blocked-review-surface")
     effective_surfaces = set(surfaces)
-    if len(run_derived.get("live_changed_paths", [])) > 1:
+    if len(changed_paths) > 1:
         effective_surfaces.add("multi-live-path")
     if any(decision.get("strategy") == "replacement-kernel" for decision in decisions):
         effective_surfaces.add("replacement-kernel")
@@ -1131,6 +1293,7 @@ def validate_resolution(
     selected_nodes: list[str] = []
     selected_bindings: list[dict[str, Any]] = []
     retired_abstractions: set[str] = set()
+    retained_abstractions: set[str] = set()
     account_owners: dict[tuple[str, str], list[tuple[str, str]]] = {}
     strategies = set(semantics.get("strategies") or [])
     dispositions = set(semantics.get("abstraction_dispositions") or [])
@@ -1184,6 +1347,8 @@ def validate_resolution(
                 errors.append("blocked-abstraction-disposition")
             if disposition == "retain" and not text(row.get("obligation_id")):
                 errors.append("blocked-abstraction-retain")
+            if disposition == "retain" and abstraction:
+                retained_abstractions.add(abstraction)
             obligation_id = text(row.get("obligation_id"))
             if abstraction and obligation_id:
                 account_owners.setdefault((abstraction, obligation_id), []).append(
@@ -1210,20 +1375,19 @@ def validate_resolution(
                 ):
                     errors.append("blocked-resolution-binding")
                 node_paths = string_list(node.get("paths"))
-                if any(not path_allowed(path, allowed_paths, repo) for path in node_paths):
-                    errors.append("blocked-resolution-out-of-scope")
                 node_id = text(node.get("node_id"))
                 if not node_id:
                     errors.append("blocked-resolution-node-id")
                 selected_nodes.append(node_id)
-                selected_bindings.append(
-                    {
-                        "node_id": node_id,
-                        "owner_boundary": text(node.get("owner_boundary")),
-                        "paths": node_paths,
-                        "verifier": string_list(node.get("verifier")),
-                    }
-                )
+                binding = {
+                    "node_id": node_id,
+                    "owner_boundary": text(node.get("owner_boundary")),
+                    "paths": node_paths,
+                    "verifier": string_list(node.get("verifier")),
+                }
+                selected_bindings.append(binding)
+                if binding not in allowed_node_bindings:
+                    errors.append("blocked-resolution-out-of-scope")
         elif node not in (None, {}):
             errors.append("blocked-resolution-disposition")
         if strategy == "blocked" and not string_list(decision.get("blockers")):
@@ -1235,6 +1399,13 @@ def validate_resolution(
         errors.append("blocked-resolution-node-id")
     if len(selected_nodes) > 1 and outcome_status != "resolved":
         errors.append("blocked-resolution-node-multiple")
+    if isinstance(admitted_node_binding, dict):
+        if outcome_status != "pending" or selected_bindings != [
+            admitted_node_binding
+        ]:
+            errors.append("blocked-resolution-node-unexecuted")
+    if retained_abstractions & retired_abstractions:
+        errors.append("blocked-abstraction-disposition")
     if sorted(covered) != sorted(finding_ids) or len(covered) != len(set(covered)):
         errors.append("blocked-resolution-finding-coverage")
 
@@ -1263,12 +1434,6 @@ def validate_resolution(
         if not isinstance(balance.get(key), list):
             errors.append(f"blocked-semantic-balance:{key}")
     accounted_hunks = string_list(balance.get("accounted_hunks"))
-    artifact = run.get("artifact")
-    base_sha = text(artifact.get("base_sha")) if isinstance(artifact, dict) else ""
-    try:
-        expected_hunks = live_hunk_ids(repo, base_sha) if base_sha else []
-    except ValueError:
-        expected_hunks = []
     if len(accounted_hunks) != len(set(accounted_hunks)):
         errors.append("blocked-semantic-hunks")
     if sorted(accounted_hunks) != expected_hunks:
@@ -1331,27 +1496,7 @@ def validate_resolution(
     expected_digest = canonical_digest(resolution_digest_payload(resolution))
     if text(outcome.get("resolution_digest")) != expected_digest:
         errors.append("blocked-review-resolution-digest")
-    if outcome_status == "resolved":
-        completed_steps = run_derived.get("completed_steps", [])
-        resolution_id = text(resolution.get("resolution_id"))
-        for binding in selected_bindings:
-            matches = [
-                step
-                for step in completed_steps
-                if step.get("step_id") == binding["node_id"]
-                and step.get("effect") == "edit"
-                and step.get("owner_boundary") == binding["owner_boundary"]
-                and sorted(step.get("paths") or []) == sorted(binding["paths"])
-                and sorted(step.get("verifier") or [])
-                == sorted(binding["verifier"])
-                and isinstance(step.get("review_resolution"), dict)
-                and step["review_resolution"].get("resolution_id") == resolution_id
-            ]
-            if len(matches) != 1:
-                errors.append("blocked-resolution-node-unexecuted")
-
     return sorted(set(errors)), {
-        **run_derived,
         "resolution_id": text(resolution.get("resolution_id")),
         "review_contract_fingerprint": expected_contract,
         "resolution_digest": expected_digest,
@@ -1359,7 +1504,124 @@ def validate_resolution(
         "selected_lenses": selected_lenses,
         "selected_work_nodes": selected_nodes,
         "selected_work_bindings": selected_bindings,
+        "live_changed_paths": changed_paths,
+        "live_hunk_ids": expected_hunks,
     }
+
+
+def _node_binding(value: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "node_id": text(value.get("node_id", value.get("step_id"))),
+        "owner_boundary": text(value.get("owner_boundary")),
+        "paths": string_list(value.get("paths")),
+        "verifier": string_list(value.get("verifier")),
+    }
+
+
+def _resolution_nodes(resolution: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        node
+        for decision in object_list(resolution.get("decisions"))
+        if isinstance((node := decision.get("selected_work_node")), dict)
+    ]
+
+
+def _admission_resolution_facts(
+    step: dict[str, Any],
+    review_source_refs: list[str],
+    changed_paths: list[str],
+    hunk_ids: list[str],
+) -> dict[str, Any]:
+    binding = _node_binding(step)
+    return {
+        "semantics": load_semantics(),
+        "run_id": step.get("run_id"),
+        "artifact": step.get("state_before"),
+        "mode": "review-closeout",
+        "review_source_refs": review_source_refs,
+        "changed_paths": changed_paths,
+        "hunk_ids": hunk_ids,
+        "allowed_node_bindings": [binding],
+        "admitted_node_binding": binding,
+    }
+
+
+def _live_resolution_facts(
+    run: dict[str, Any],
+    resolution: dict[str, Any],
+    repo: Path,
+    run_derived: dict[str, Any],
+) -> dict[str, Any]:
+    authority = run.get("authority") if isinstance(run.get("authority"), dict) else {}
+    allowed_paths = string_list(authority.get("allowed_paths"))
+    allowed_node_bindings = [
+        _node_binding(node)
+        for node in _resolution_nodes(resolution)
+        if all(
+            path_allowed(path, allowed_paths, repo)
+            for path in string_list(node.get("paths"))
+        )
+    ]
+    execution = run.get("execution") if isinstance(run.get("execution"), dict) else {}
+    selected = [
+        step
+        for step in object_list(execution.get("steps"))
+        if step.get("status") == "selected"
+    ]
+    artifact = run.get("artifact") if isinstance(run.get("artifact"), dict) else {}
+    try:
+        hunk_ids = live_hunk_ids(repo, text(artifact.get("base_sha")))
+    except ValueError:
+        hunk_ids = []
+    review = run.get("review") if isinstance(run.get("review"), dict) else {}
+    return {
+        "semantics": load_semantics(),
+        "run_id": run.get("run_id"),
+        "artifact": artifact,
+        "mode": run.get("mode"),
+        "review_source_refs": string_list(review.get("source_refs")),
+        "changed_paths": run_derived.get("live_changed_paths", []),
+        "hunk_ids": hunk_ids,
+        "allowed_node_bindings": allowed_node_bindings,
+        "admitted_node_binding": (
+            _node_binding(selected[0])
+            if len(selected) == 1 and selected[0].get("effect") == "edit"
+            else ({} if selected else None)
+        ),
+    }
+
+
+def validate_resolution(
+    run: dict[str, Any],
+    resolution: dict[str, Any],
+    repo: Path,
+) -> tuple[list[str], dict[str, Any]]:
+    repo = git_root(repo)
+    errors, run_derived = validate_run(run, repo, admission_check=False)
+    contract_errors, contract_derived = _resolution_contract_errors(
+        resolution,
+        _live_resolution_facts(run, resolution, repo, run_derived),
+    )
+    errors.extend(contract_errors)
+    outcome = resolution.get("outcome")
+    if isinstance(outcome, dict) and outcome.get("status") == "resolved":
+        completed_steps = run_derived.get("completed_steps", [])
+        for binding in contract_derived.get("selected_work_bindings", []):
+            matches = [
+                step
+                for step in completed_steps
+                if step.get("step_id") == binding["node_id"]
+                and step.get("effect") == "edit"
+                and step.get("owner_boundary") == binding["owner_boundary"]
+                and step.get("paths") == binding["paths"]
+                and step.get("verifier") == binding["verifier"]
+                and not review_admission_errors(
+                    step.get("review_admission"), step
+                )
+            ]
+            if len(matches) != 1:
+                errors.append("blocked-resolution-node-unexecuted")
+    return sorted(set(errors)), {**run_derived, **contract_derived}
 
 
 def normalize_cas(value: dict[str, Any]) -> dict[str, Any]:
@@ -1701,14 +1963,16 @@ def evidence_errors(
         ) != sorted(completed.get("changed_paths") or []):
             errors.append("blocked-evidence-fold-change-mismatch")
         evidence = item.get("evidence")
+        if not isinstance(evidence, dict):
+            errors.append("blocked-evidence-fold-shape")
+            evidence = {}
         commands = (
             evidence.get("commands")
-            if isinstance(evidence, dict) and isinstance(evidence.get("commands"), dict)
+            if isinstance(evidence.get("commands"), dict)
             else {}
         )
         if (
-            not isinstance(evidence, dict)
-            or not isinstance(evidence.get("observed"), list)
+            not isinstance(evidence.get("observed"), list)
             or not evidence.get("observed")
             or any(
                 not isinstance(commands.get(key), list)
@@ -1719,12 +1983,9 @@ def evidence_errors(
             or not isinstance(evidence.get("review_refs"), list)
         ):
             errors.append("blocked-evidence-fold-shape")
-        admission = completed.get("review_resolution")
+        admission = completed.get("review_admission")
         if isinstance(admission, dict):
-            admission_ref = (
-                f"review-resolution:{text(admission.get('resolution_id'))}:"
-                f"{text(admission.get('resolution_digest'))}"
-            )
+            admission_ref = f"review-admission:{text(admission.get('admission_digest'))}"
             if admission_ref not in string_list(evidence.get("review_refs")):
                 errors.append("blocked-evidence-fold-mismatch")
         if (
@@ -1770,11 +2031,9 @@ def evidence_errors(
     return sorted(set(errors)), basis
 
 
-def ship_errors(
+def static_ship_errors(
     ship_value: dict[str, Any],
     run: dict[str, Any],
-    resolution_derived: dict[str, Any],
-    cas_ids: list[str],
 ) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     record = unwrap(ship_value, "ship_record")
@@ -1814,28 +2073,14 @@ def ship_errors(
     )
     if not isinstance(existing.get("exists"), bool):
         errors.append("blocked-ship-result")
-    binding = record.get("actuation_review")
+    binding = record.get("actuation_binding")
     if not isinstance(binding, dict):
         return ["blocked-ship-binding"], []
     expected = {
         "actuation_run_id": run.get("run_id"),
         "state_fingerprint": artifact.get("state_fingerprint"),
-        "review_contract_fingerprint": resolution_derived.get(
-            "review_contract_fingerprint"
-        ),
-        "resolution_digest": resolution_derived.get("resolution_digest"),
-        "resolution_ref": resolution_derived.get("resolution_id") or None,
     }
-    for key, value in expected.items():
-        if binding.get(key) != value:
-            errors.append("blocked-ship-binding")
-    if sorted(
-        set(string_list(binding.get("selected_lenses")))
-    ) != resolution_derived.get("selected_lenses", []):
-        errors.append("blocked-ship-binding")
-    if sorted(set(string_list(binding.get("cas_rer_record_ids")))) != sorted(
-        set(cas_ids)
-    ):
+    if binding != expected:
         errors.append("blocked-ship-binding")
     action = record.get("action") if isinstance(record.get("action"), dict) else {}
     if action.get("result") not in {"created", "updated", "promoted"}:
@@ -1858,6 +2103,56 @@ def ship_errors(
     pr_url = text(action.get("pr_url"))
     if not pr_url:
         errors.append("blocked-ship-result")
+    return sorted(set(errors)), [pr_url] if pr_url else []
+
+
+def ship_epoch_continuity_errors(
+    prior_ship: dict[str, Any],
+    current_ship: dict[str, Any],
+) -> list[str]:
+    try:
+        prior = unwrap(prior_ship, "ship_record")
+        current = unwrap(current_ship, "ship_record")
+    except ValueError:
+        return ["blocked-ship-pr-continuity"]
+    prior_action = (
+        prior.get("action") if isinstance(prior.get("action"), dict) else {}
+    )
+    current_action = (
+        current.get("action") if isinstance(current.get("action"), dict) else {}
+    )
+    readiness = (
+        current.get("pr_readiness")
+        if isinstance(current.get("pr_readiness"), dict)
+        else {}
+    )
+    existing = (
+        current.get("existing_pr")
+        if isinstance(current.get("existing_pr"), dict)
+        else {}
+    )
+    prior_url = text(prior_action.get("pr_url"))
+    if (
+        not prior_url
+        or current_action.get("result") != "updated"
+        or readiness.get("mode") != "update-existing"
+        or existing.get("exists") is not True
+        or existing.get("url") != prior_url
+        or current_action.get("pr_url") != prior_url
+    ):
+        return ["blocked-ship-pr-continuity"]
+    return []
+
+
+def ship_errors(
+    ship_value: dict[str, Any],
+    run: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    errors, static_basis = static_ship_errors(ship_value, run)
+    record = unwrap(ship_value, "ship_record")
+    artifact = run.get("artifact") if isinstance(run.get("artifact"), dict) else {}
+    base_branch = text(record.get("base_branch"))
+    pr_url = static_basis[0] if static_basis else ""
     live_pr_valid = False
     if pr_url:
         try:
@@ -1907,11 +2202,45 @@ def decide(
     repo: Path,
     review_fold_values: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], int]:
+    repo = git_root(repo)
     run_errors, run_derived = validate_run(run, repo)
     errors = list(run_errors)
     mode = text(run.get("mode"))
     review = run.get("review") if isinstance(run.get("review"), dict) else {}
     review_required = bool(review.get("required"))
+    completed_steps = run_derived.get("completed_steps", [])
+    publication_requested = bool(review.get("publication_requested"))
+    embedded_ship = review.get("ship_receipt")
+    embedded_ship_digest = (
+        canonical_digest(embedded_ship) if isinstance(embedded_ship, dict) else ""
+    )
+    last_published_edit = next(
+        (
+            step
+            for step in reversed(completed_steps)
+            if step.get("effect") == "edit"
+            and isinstance(step.get("review_admission"), dict)
+            and isinstance(step["review_admission"].get("ship_receipt"), dict)
+        ),
+        None,
+    )
+    last_publication_admission = (
+        last_published_edit.get("review_admission")
+        if isinstance(last_published_edit, dict)
+        else {}
+    )
+    needs_reship = bool(
+        mode == "review-closeout"
+        and publication_requested
+        and last_published_edit
+        and embedded_ship_digest
+        and embedded_ship_digest
+        == canonical_digest(last_publication_admission.get("ship_receipt"))
+        and (last_published_edit.get("artifact") or {}).get("state_fingerprint")
+        != (last_published_edit.get("state_before") or {}).get(
+            "state_fingerprint"
+        )
+    )
     triage_review_basis: list[str] = []
     triage_human = False
     if mode == "triage":
@@ -1953,8 +2282,6 @@ def decide(
         run_derived.get("completed_steps", []),
     )
     errors.extend(evidence_problems)
-    completed_steps = run_derived.get("completed_steps", [])
-    publication_requested = bool(review.get("publication_requested"))
     if review_required or publication_requested or ship_value is not None:
         completed_scope = {
             path
@@ -1974,7 +2301,7 @@ def decide(
                 errors.append("blocked-artifact-uncommitted")
 
     cas_ids: list[str] = []
-    if review_required and resolution is not None:
+    if review_required and not needs_reship and resolution is not None:
         artifact = run.get("artifact") if isinstance(run.get("artifact"), dict) else {}
         try:
             live_snapshot = live_cas_list(
@@ -1996,7 +2323,6 @@ def decide(
             errors.extend(cas_problems)
     elif cas_values:
         errors.append("blocked-unexpected-input")
-
     outcome = (
         (resolution or {}).get("outcome")
         if isinstance((resolution or {}).get("outcome"), dict)
@@ -2009,6 +2335,8 @@ def decide(
     )
     if needs_resolution and outcome.get("status") not in terminal_resolution_statuses:
         errors.append("blocked-review-resolution-open")
+    if needs_reship and outcome.get("status") != "resolved":
+        errors.append("blocked-review-resolution-open")
     if mode in {"implement", "review-closeout"} and not completed_steps:
         errors.append("blocked-step-not-ready-for-closure")
     if (
@@ -2019,6 +2347,9 @@ def decide(
         errors.append("blocked-step-not-ready-for-closure")
     if ship_value is not None and not publication_requested:
         errors.append("blocked-unexpected-input")
+    if mode == "review-closeout" and ship_value is not None:
+        errors.append("blocked-unexpected-input")
+    effective_ship = embedded_ship if mode == "review-closeout" else ship_value
     ship_basis: list[str] = []
     verdict = "complete"
     goal_outcome = "complete"
@@ -2038,20 +2369,32 @@ def decide(
         verdict = "continue"
         goal_outcome = "continue"
         next_owner = "human"
+    elif needs_reship:
+        verdict = "ready-to-ship"
+        goal_outcome = "continue"
+        next_owner = "ship"
     elif publication_requested:
-        if ship_value is None:
-            verdict = "ready-to-ship"
-            goal_outcome = "continue"
-            next_owner = "ship"
+        if effective_ship is None:
+            if mode == "review-closeout":
+                errors.append("blocked-ship-missing")
+                verdict = "blocked"
+                goal_outcome = "blocked"
+                next_owner = "goal-actuating"
+            else:
+                verdict = "ready-to-ship"
+                goal_outcome = "continue"
+                next_owner = "ship"
         else:
-            ship_problems, ship_basis = ship_errors(
-                ship_value, run, resolution_derived, cas_ids
-            )
+            ship_problems, ship_basis = ship_errors(effective_ship, run)
             errors.extend(ship_problems)
             if ship_problems:
                 verdict = "blocked"
                 goal_outcome = "blocked"
                 next_owner = "ship"
+            elif mode == "implement":
+                verdict = "continue"
+                goal_outcome = "continue"
+                next_owner = "goal-actuating"
 
     final_binding_errors, final_artifact = binding_errors(
         run.get("artifact"), repo, "blocked-run"
@@ -2147,7 +2490,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         run = unwrap(load_data(args.run), "actuation_run")
-        repo = Path(args.repo).resolve()
+        repo = git_root(Path(args.repo).resolve())
         if args.command == "validate-run":
             run_resolution = (
                 unwrap(load_data(args.resolution), "review_resolution")

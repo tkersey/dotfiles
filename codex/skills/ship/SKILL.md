@@ -69,11 +69,6 @@ ship_input:
     closure_verdict: ready-to-ship
     actuation_run_id:
     state_fingerprint:
-    review_contract_fingerprint:
-    selected_lenses: []
-    resolution_ref:
-    resolution_digest: # null when actuation review was not required
-    cas_rer_record_ids: []
   user_requested_pr_mode: ready | draft | update-existing | promote-draft | none
   repo_policy_pr_mode: ready | draft | unknown
 ```
@@ -81,10 +76,13 @@ ship_input:
 If key state is unknown, inspect the repository and PR state before creating or updating a PR.
 
 For `source: actuation`, require a current `closure-decision/v1` with
-`verdict: ready-to-ship`. Preserve its actuation and review binding exactly;
-do not reconstruct it from PR prose. Actuation input cannot use the early draft
-path because draft publication has no valid closure re-entry. A direct ship
-input does not require this object.
+`verdict: ready-to-ship`. That verdict may come from initial implementation or
+from a proved review-closeout repair that must be republished before more
+review. Each SHIP-v1 is immutable for its publication epoch: preserve the run ID
+and state fingerprint in the exact two-field `actuation_binding`.
+Never add or relabel it with review-closeout state. Actuation input cannot use the early
+draft path because draft publication has no valid closure re-entry. A direct
+ship input does not require this object.
 
 ## PR Readiness Policy
 
@@ -98,6 +96,9 @@ Use `draft` only when at least one is true:
 - PR is intentionally being opened for early visibility before readiness;
 - required review context is missing and the user asks to publish anyway;
 - repo policy explicitly requires draft PRs for this branch/workflow.
+
+The ordered post-ship review-closeout phase is a goal continuation, not an
+incomplete implementation task or a draft warrant.
 
 If the branch is fully validated and no blockers remain, do not create a draft PR by default.
 
@@ -165,13 +166,19 @@ Do not pass `--draft` unless the readiness record says `mode: draft`.
 1. Confirm current branch, base branch, head SHA, and repository remote.
 2. Inspect worktree status.
 3. Confirm recent validation signal exists for the current change set; if not, run or request validation.
-4. For actuation input, validate the closure decision and preserve its run,
-   target, contract, lens, resolution, and CAS record bindings.
+4. For actuation input, validate the current implementation or review-repair
+   closure decision and preserve its run and target binding.
 5. Determine PR mode using the readiness policy.
 6. Summarize proof: commands/signals and outcomes.
 7. Build PR body with proof, scope, risks, and remaining follow-ups.
 8. Open/update/promote PR according to `pr_readiness.mode`.
-9. Emit SHIP-v1 for closure recomputation and report PR state.
+9. Emit SHIP-v1 for closure recomputation and report PR state. For the ordered
+   actuation lifecycle, hand the complete immutable receipt back as
+   `review.ship_receipt` before review-closeout admission. A proved review edit
+   returns here before CAS; update the existing PR at the exact URL retained in
+   the prior admission, replace the stale receipt with that fresh SHIP-v1, then
+   resume the next admitted edit or final CAS closeout. Creating another PR is
+   invalid for this handback.
 
 ## PR body contract
 
@@ -229,19 +236,18 @@ ship_record:
     command: "..."
     result: created | updated | promoted | blocked | skipped
     pr_url: "..."
-  actuation_review:
+  actuation_binding:
     actuation_run_id: "..."
     state_fingerprint: "..."
-    review_contract_fingerprint: "..."
-    selected_lenses: []
-    resolution_ref: "..."
-    resolution_digest: "..."
-    cas_rer_record_ids: []
 ```
 
-`actuation_review` is required for actuation ready/update/promote records and
-omitted for direct records. Every field must match the input closure decision.
-Missing or mismatched binding blocks actuation shipping.
+`actuation_binding` is required for actuation ready/update/promote records and
+omitted for direct records. Its exact two-field pre-review shape must match the
+input ready-to-ship closure decision. Missing, extra, relabeled, or mismatched
+binding blocks actuation shipping. The record is never rewritten with later
+resolution or CAS values. Publication-bearing review-closeout embeds this
+complete receipt unchanged as `review.ship_receipt`; a later repair handback
+updates that same PR URL, creates a new SHIP-v1, and replaces that run field.
 After publication, closure must query live PR metadata and match the repository,
 base ref and SHA, head ref and SHA, URL, open state, and ready status; copied
 SHIP fields are not authoritative for those facts.

@@ -9,13 +9,19 @@ booleans or a previously issued decision.
 current repository state
 actuation-run/v1
 review-resolution/v1 when review is required
+embedded review-admission/v1 for every completed review edit
 EF-v1 evidence for every completed material step
 CAS-RER-v1 records for selected review lanes
 SHIP-v1 when publication was requested and performed
 ~~~
 
-Every workflow input must bind to the same repository, base, branch, head, and
-live-state fingerprint. CAS additionally carries its producer-native opaque
+Repository input is canonicalized to the Git worktree root before any path
+authorization. Every workflow input must bind to the same repository, base,
+branch, head, and live-state fingerprint. An index carrying `assume-unchanged`
+or `skip-worktree` flags blocks as `blocked-index-observer-flags`; closure does
+not simulate content hidden from the observer. The same rejection recurses
+through initialized gitlinks; genuinely uninitialized gitlinks have no live
+nested index to inspect. CAS additionally carries its producer-native opaque
 `targetFingerprint`; do not relabel a local state digest as that field.
 
 ## Evidence-fold requirements
@@ -28,6 +34,23 @@ Each completed step resolves its exact `evidence_fold_ref`. Evidence must:
 - contain no proof gap or stale binding;
 - report no deleted tests, weakened assertions, skipped checks, reduced
   coverage, or out-of-goal behavior.
+
+Malformed evidence, including a null evidence body, produces a structured
+blocking reason and never escapes the closure gate.
+
+For a selected review edit, the gate derives `review-admission/v1` only after
+the live resolution exactly selects that step's node, owner boundary, paths,
+and verifier. Embed that receipt as the step's `review_admission` before
+mutation. Its exact payload is the full admission-time `review_resolution`, an
+`observations` block containing review source refs, changed paths, and hunk
+IDs, an optional full SHIP-v1 snapshot, and its canonical `admission_digest`.
+The step remains the sole source of run, artifact, node, owner, paths, and
+verifier facts. Completed-step validation replays the same resolution laws
+against those step facts and the receipt observations; EF-v1 cites
+`review-admission:<admission_digest>` in `review_refs`. The final resolution
+does not retroactively relabel an earlier mutation admission, but every node it
+marks resolved must still match exactly one completed admitted edit by node,
+owner boundary, paths, and verifier.
 
 Node completion remains distinct from goal completion.
 
@@ -100,15 +123,36 @@ No-code modes may return goal `complete` with implementation
 Material work with no publication request completes locally. In the bare
 lifecycle, implementation hands off to `$ship`, then continues through
 `review-closeout` before final closure is recomputed; ship handoff is not a
-terminal goal state. A ship record must carry the same run ID, live-state
-fingerprint, review-contract fingerprint, selected lenses, resolution digest,
-and CAS record IDs. Closure queries live PR metadata and requires its repository,
-base ref and SHA, head ref and SHA, URL, open state, and ready status to match
-the current run and SHIP result.
+terminal goal state. A valid implement-phase SHIP-v1 returns verdict and goal
+`continue`, implementation `complete`, and next owner `goal-actuating`.
+Publication-bearing review-closeout requires that prior valid SHIP-v1 and may
+then complete after current review proof closes. Preserve the complete receipt
+as `review.ship_receipt`; the run gate validates its live PR and artifact
+binding before deriving any review admission. The admission records publication
+intent by snapshotting that complete SHIP receipt. After an edit and EF-v1, a current
+resolved refold must observe that exact admitted node; closure then returns
+`ready-to-ship` before CAS. `$ship` updates the PR and replaces
+`review.ship_receipt` before another edit or final CAS. Final review-closeout
+consumes only the current embedded receipt; a duplicate external SHIP input is
+invalid. The replacement must report `updated` / `update-existing`, retain an
+existing PR, and use the exact PR URL captured by the prior admission; creating
+a second PR cannot continue the review epoch.
+
+A prior review edit ending `ready-for-closure` admits a following selected step
+only when the canonical digest of its SHIP snapshot differs from the newly
+embedded receipt;
+prior EF-v1 and live validation of that fresh receipt remain mandatory.
+
+SHIP-v1 is an immutable pre-review publication handoff. Its exact
+`actuation_binding` contains only `actuation_run_id` and `state_fingerprint`;
+review-contract, resolution, lens, and CAS fields are not part of this object.
+Never extend or relabel it with the later review epoch; final closure validates
+current resolution and CAS evidence separately. Closure queries live PR
+metadata and requires its repository, base ref and SHA, head ref and SHA, URL,
+open state, and ready status to match the current run and SHIP result.
 
 The final proof-patch is a derived human view emitted after the current closure
 decision. It is never an input to that decision.
 
-When review is not required, the review-contract fingerprint, resolution
-reference, and resolution digest remain `null`; SHIP-v1 copies those values
-without inventing an empty-string sentinel.
+An `implement` run cannot declare `review.required: true`; review-required work
+uses `review-closeout`. A mode relabel cannot erase admission history.

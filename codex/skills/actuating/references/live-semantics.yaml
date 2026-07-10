@@ -106,14 +106,24 @@ live_semantics:
       statement: Continuation requires a completed step and current evidence fold.
     - id: review-before-resolution
       statement: Review-derived mutation requires classified findings and a current resolution.
+    - id: review-admission-before-mutation
+      statement: A review edit embeds the gate-derived review-admission receipt with the full resolution observer facts and optional prior SHIP snapshot before mutation and preserves it thereafter.
+    - id: review-mode-profile-alignment
+      statement: Review-required execution uses review-closeout and cannot be relabeled as implement.
+    - id: observable-index-before-mutation
+      statement: Assume-unchanged and skip-worktree flags in the root or any initialized gitlink index block every live binding.
     - id: semantic-non-growth
       statement: Added semantic constructs require live obligations and displaced constructs.
     - id: distinct-standard-suffix
       statement: Standard closure derives from three distinct ordered current clean attempts.
     - id: public-effects-owned-by-ship
       statement: Only ship may perform PR or public tracker effects.
+    - id: ship-precedes-review-closeout
+      statement: Publication-bearing review-closeout validates an embedded immutable SHIP-v1 before admission and every repair publication updates that same retained PR URL.
     - id: closure-is-live
       statement: Completion is recomputed from current repository state and joined evidence.
+    - id: resolved-node-history
+      statement: Every node in a resolved resolution matches exactly one completed admitted edit.
 
   quotient:
     removed_semantic_classes:
@@ -121,6 +131,9 @@ live_semantics:
       - pre-action proof of a post-action fold
       - scalar clean-review counters
       - replayable completion approval
+      - final resolution as mutation admission
+      - relabeled SHIP review epoch
+      - null review-field sentinels in SHIP
       - self-attested proof and success flags
       - duplicate recursive coordinator
       - proof and closure dependency cycle
@@ -136,11 +149,11 @@ live_semantics:
       - obligation_id: artifact-currentness
         handler: binding_errors
         representation: actuation-run.artifact
-        inverse_observation: recover repo base branch head and live-state fingerprint
+        inverse_observation: recover canonical Git root base branch head observable index and live-state fingerprint
       - obligation_id: mutation-admission
         handler: validate_run
-        representation: actuation-run.execution.selected_step_id
-        inverse_observation: recover the one work item admitted before mutation
+        representation: actuation-run.execution.selected_step_id+steps.review_admission
+        inverse_observation: recover the selected work item and its gate-derived review admission before mutation
       - obligation_id: continuation-proof
         handler: evidence_errors
         representation: actuation-run.execution.steps.evidence_fold_ref
@@ -175,8 +188,8 @@ live_semantics:
         inverse_observation: recover goal implementation and next-owner outcomes
       - obligation_id: delivery-boundary
         handler: ship_errors
-        representation: closure-decision.ship_basis
-        inverse_observation: recover whether ship acted on the current target
+        representation: actuation-run.review.ship_receipt+closure-decision.ship_basis
+        inverse_observation: recover whether immutable pre-review SHIP evidence acted on the current target before admission and at closure
       - obligation_id: fail-closed-coordination
         handler: validate_run
         representation: actuation-run.authority.unsupported_coordination_required
@@ -190,6 +203,9 @@ live_semantics:
       terminal: false
       then: review-closeout
     review_closeout:
+      requires_when: publication-requested
+      receipt: pre-review-SHIP-v1
+      after_edit: [current-resolved-refold, ship, review-closeout]
       then: final-closure
     final_closure: closure-decision/v1
     terminal_view: final-proof-patch

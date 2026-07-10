@@ -93,7 +93,14 @@ node is closed.
 
 For review work, preserve the order and artifacts required by `$actuating`'s
 Review law: CAS evidence, RF-v2 classification, current resolution, admitted
-selected node, action evidence, and closure-grade review. `$actuating` alone
+selected node, embedded `review-admission/v1`, action evidence, and
+closure-grade review. For publication-bearing closeout, first preserve the
+complete SHIP-v1 as `review.ship_receipt`. Let the gate validate that receipt
+and derive the admission from the live resolution, embed it in the selected step
+before mutation, and require EF-v1 to cite its canonical admission digest.
+Preserve `review-closeout` while review is required; changing the mode cannot
+retire admission history. A terminal resolution may name only nodes observed in
+completed admitted edits. `$actuating` alone
 defines lens derivation, CAS eligibility, semantic balance, and closure. This
 coordinator schedules those owners without restating their rules.
 
@@ -116,7 +123,14 @@ publish or complete the goal.
 
 For a bare invocation, hand implementation to `$ship`, resume with
 `review-closeout`, and only then ask `$actuating` for the final
-`closure-decision/v1`; do not duplicate or precompute its conditions. Only a
+`closure-decision/v1`; a valid SHIP-v1 returns control here with goal
+`continue`, implementation `complete`, and this coordinator as next owner. Do
+not duplicate or precompute final closure conditions. If an admitted
+publication-bearing review edit completes, obtain its current resolved refold,
+accept `ready-to-ship`, replace `review.ship_receipt` through `$ship`, and only
+then resume another edit or final CAS. The replacement must update the same PR
+URL retained in the prior admission; a newly created PR does not continue the
+review epoch. Only a
 current final closure may feed `$proof-patch`. Explicit implementation-only work
 stops before ship, and local completion for other workflows skips the ship
 branch.
