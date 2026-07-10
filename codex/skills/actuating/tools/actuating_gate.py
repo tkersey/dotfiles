@@ -887,6 +887,8 @@ def validate_run(
             changed_paths_raw
         ):
             errors.append("blocked-step-shape")
+        if len(changed_paths) != len(set(changed_paths)):
+            errors.append("blocked-step-change-mismatch")
         if not step_paths:
             errors.append("blocked-step-paths-missing")
         if any(not path_allowed(path, allowed_paths, repo) for path in step_paths):
@@ -928,7 +930,61 @@ def validate_run(
             previous_after = after
             if effect == "edit" and not changed_paths:
                 errors.append("blocked-step-change-mismatch")
-            if effect != "edit" and changed_paths:
+            if effect == "edit":
+                before_head = text(before.get("head_sha"))
+                after_head = text(after.get("head_sha"))
+                stable_artifact_keys = ("repo", "base_sha", "branch")
+                artifact_transition_valid = not (
+                    not before_head
+                    or not after_head
+                    or any(before.get(key) != after.get(key) for key in stable_artifact_keys)
+                )
+                commit_transition_valid = False
+                if not artifact_transition_valid:
+                    errors.append("blocked-step-change-mismatch")
+                elif before_head != after_head:
+                    try:
+                        subprocess.run(
+                            [
+                                "git",
+                                "merge-base",
+                                "--is-ancestor",
+                                before_head,
+                                after_head,
+                            ],
+                            cwd=repo,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            check=True,
+                        )
+                        commit_transition_valid = True
+                    except subprocess.CalledProcessError:
+                        errors.append("blocked-step-change-mismatch")
+                if kind == "iterative":
+                    if not commit_transition_valid:
+                        errors.append("blocked-step-change-mismatch")
+                    else:
+                        try:
+                            observed_paths = {
+                                path.decode("utf-8", "surrogateescape")
+                                for path in git(
+                                    repo,
+                                    "diff",
+                                    "--ignore-submodules=none",
+                                    "--no-renames",
+                                    "--name-only",
+                                    "-z",
+                                    before_head,
+                                    after_head,
+                                    "--",
+                                ).split(b"\0")
+                                if path
+                            }
+                        except ValueError:
+                            observed_paths = None
+                        if observed_paths != set(changed_paths):
+                            errors.append("blocked-step-change-mismatch")
+            if effect != "edit" and (changed_paths or after != before):
                 errors.append("blocked-step-change-mismatch")
             evidence_ref = text(step.get("evidence_fold_ref"))
             if not evidence_ref:
@@ -974,7 +1030,9 @@ def validate_run(
             for path in set(initial_path_states) | set(current_path_states)
             if initial_path_states.get(path) != current_path_states.get(path)
         }
-        if newly_changed != claimed_paths:
+        if (kind == "direct" and newly_changed != claimed_paths) or (
+            kind == "iterative" and not newly_changed.issubset(claimed_paths)
+        ):
             errors.append("blocked-step-change-mismatch")
     if not steps and current and initial != current:
         errors.append("blocked-run-initial-artifact")

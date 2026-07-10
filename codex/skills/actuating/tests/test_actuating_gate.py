@@ -772,7 +772,7 @@ class GateTests(unittest.TestCase):
         self.assertIn("blocked-step-continuation", errors)
 
     def test_continuation_resolves_prior_evidence(self) -> None:
-        run = self.complete_step(self.run_value(selected=True))
+        run = self.commit_step(self.complete_step(self.run_value(selected=True)))
         run["execution"]["kind"] = "iterative"
         run["execution"]["steps"][0]["verdict"] = "continue"
         run["execution"]["steps"].append(
@@ -2501,6 +2501,82 @@ class GateTests(unittest.TestCase):
         errors, _ = validate_run(run, self.repo)
         self.assertIn("blocked-step-change-mismatch", errors)
 
+    def test_iterative_step_cannot_borrow_an_earlier_path_delta(self) -> None:
+        run = self.run_value(selected=True)
+        run["execution"]["kind"] = "iterative"
+        (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
+        run = self.commit_step(self.finish_step(run, ["file.txt"]))
+        run["execution"]["steps"][0]["verdict"] = "continue"
+
+        before = run["artifact"]
+        second = copy.deepcopy(run["execution"]["steps"][0])
+        second.update(
+            step_id="step-2",
+            state_before=before,
+            state_after=before,
+            evidence_fold_ref="ef-2",
+            verdict="ready-for-closure",
+        )
+        run["execution"]["steps"].append(second)
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-change-mismatch", errors)
+
+    def test_iterative_committed_revert_preserves_exact_step_evidence(self) -> None:
+        run = self.run_value(selected=True)
+        run["execution"]["kind"] = "iterative"
+        (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
+        run = self.commit_step(self.finish_step(run, ["file.txt"]))
+        run["execution"]["steps"][0]["verdict"] = "continue"
+
+        before = run["artifact"]
+        (self.repo / "file.txt").write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", "file.txt"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "revert selected step"],
+            cwd=self.repo,
+            check=True,
+        )
+        after = self.artifact()
+        second = copy.deepcopy(run["execution"]["steps"][0])
+        second.update(
+            step_id="step-2",
+            state_before=before,
+            state_after=after,
+            evidence_fold_ref="ef-2",
+            verdict="ready-for-closure",
+        )
+        run["execution"]["steps"].append(second)
+        run["artifact"] = after
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertEqual(errors, [])
+
+    def test_non_edit_step_preserves_the_complete_artifact(self) -> None:
+        run = self.run_value(selected=True)
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-qm", "history mutation"],
+            cwd=self.repo,
+            check=True,
+        )
+        run["artifact"] = self.artifact()
+        run = self.finish_verify_step(run)
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-change-mismatch", errors)
+
+    def test_direct_committed_edit_requires_descendant_history(self) -> None:
+        (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
+        subprocess.run(["git", "commit", "-qam", "first branch"], cwd=self.repo, check=True)
+        run = self.run_value(selected=True)
+
+        subprocess.run(["git", "reset", "--hard", "HEAD^"], cwd=self.repo, check=True)
+        (self.repo / "file.txt").write_text("sibling\n", encoding="utf-8")
+        run = self.commit_step(self.finish_step(run, ["file.txt"]))
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-change-mismatch", errors)
+
     def test_dangling_untracked_symlink_changes_state_fingerprint(self) -> None:
         before = self.artifact()["state_fingerprint"]
         os.symlink("missing-target", self.repo / "dangling-link")
@@ -2566,6 +2642,55 @@ class GateTests(unittest.TestCase):
         dirty.write_text("dirty-b\n", encoding="utf-8")
         dirty_b = self.artifact()["state_fingerprint"]
         self.assertNotEqual(dirty_a, dirty_b)
+
+    def test_iterative_commit_delta_overrides_submodule_diff_config(self) -> None:
+        commits = self.add_submodule("tracked.txt", 3)
+        run = self.run_value(selected=True)
+        run["execution"]["kind"] = "iterative"
+
+        states = []
+        for index, commit in enumerate((commits[0], commits[-1]), start=1):
+            subprocess.run(
+                ["git", "-C", "sm", "checkout", "-q", commit],
+                cwd=self.repo,
+                check=True,
+            )
+            (self.repo / "file.txt").write_text(f"step-{index}\n", encoding="utf-8")
+            subprocess.run(["git", "add", "file.txt", "sm"], cwd=self.repo, check=True)
+            subprocess.run(
+                ["git", "commit", "-qm", f"step {index}"],
+                cwd=self.repo,
+                check=True,
+            )
+            states.append(self.artifact())
+
+        first = run["execution"]["steps"][0]
+        first.update(
+            changed_paths=["file.txt"],
+            status="completed",
+            state_after=states[0],
+            evidence_fold_ref="ef-1",
+            verdict="continue",
+        )
+        second = copy.deepcopy(first)
+        second.update(
+            step_id="step-2",
+            state_before=states[0],
+            state_after=states[1],
+            evidence_fold_ref="ef-2",
+            verdict="ready-for-closure",
+        )
+        run["execution"]["steps"].append(second)
+        run["execution"]["selected_step_id"] = None
+        run["artifact"] = states[1]
+        subprocess.run(
+            ["git", "config", "diff.ignoreSubmodules", "all"],
+            cwd=self.repo,
+            check=True,
+        )
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-change-mismatch", errors)
 
     def test_index_transition_changes_state_and_hunk_layer(self) -> None:
         path = self.repo / "file.txt"

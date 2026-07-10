@@ -111,10 +111,13 @@ After the action:
 3. Attach that evidence to the completed step.
 4. Continue only after the run validates again.
 
-Each step names its `effect`, exact paths, and falsifiable `verifier`. An edit
-must report changed paths; EF-v1 must independently report the same paths and
-show the verifier in its passed-command evidence. Only a prior step whose
-verdict is `continue` may admit a following step.
+Each step names its `effect`, exact paths, and falsifiable `verifier`. One
+direct edit may remain uncommitted and must exactly match the initial-to-live
+path delta. Every iterative edit advances through a descendant commit whose
+exact diff equals that step's changed paths. A non-edit preserves the complete
+artifact binding. EF-v1 independently reports the same paths and shows the
+verifier in its passed-command evidence. Only a prior step whose verdict is
+`continue` may admit a following step.
 
 A step may finish or block. It cannot complete the parent goal; only
 `closure-decision/v1` owns goal completion.
