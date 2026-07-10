@@ -24,6 +24,8 @@ A good doctrine word activates an operator and leaves an artifact. A weak doctri
   - Cash-out: Tractability Receipt.
 - `factorizing`: decompose the whole into factors with contracts and recomposition.
   - Cash-out: Factorization Map.
+- `orthogonalizing`: separate entangled concerns into independently testable axes without losing their coupling map.
+  - Cash-out: factor/coupling matrix.
 - `winnowing`: factor the whole, retain only live obligations, and remove what no longer earns retention.
   - Cash-out: Winnowing Ledger or Reduction Certificate.
 - `quotienting`: collapse distinctions with no semantic consequence into equivalence classes.
@@ -63,6 +65,53 @@ A good doctrine word activates an operator and leaves an artifact. A weak doctri
   - Cash-out: normal-form restoration receipt.
 - `reconciling`: account for every material input, output, obligation, transition, and residual.
   - Cash-out: Reconciliation Ledger.
+- `conservation-aware`: permit no material state, resource, obligation, or authority to appear or disappear without a witnessed transition.
+  - Cash-out: Conservation Ledger.
+
+## Precedent / norm-setting operators
+
+- `precedential`: recover a prior case, extract its rule, distinguish the current facts, and apply only what still governs.
+  - Cash-out: Precedent Ledger with provenance, analogy, distinctions, freshness, supersession, and action delta.
+- `distinguishing`: identify the facts that prevent a superficially similar precedent from controlling the current case.
+  - Cash-out: distinguishing-facts row.
+- `supersession-aware`: reject a prior rule when newer evidence, policy, architecture, or proof has replaced it.
+  - Cash-out: supersession chain.
+- `nomothetic`: deliberately establish a scoped rule that future cases may inherit.
+  - Cash-out: Nomothetic Receipt with rule, scope, exceptions, authority, and supersession condition.
+- `constitutive`: make a decision that creates or changes the governing structure rather than merely applying it.
+  - Cash-out: Constitutive Receipt.
+
+## Simulation / world-modeling operators
+
+- `emulative`: build an executable surrogate that preserves the behavior relevant to the decision.
+  - Cash-out: Emulation Receipt.
+- `counterfactual`: vary one intervention while naming held-constant assumptions and projected consequences.
+  - Cash-out: Counterfactual Ledger.
+- `dynamical`: model state, transitions, time, delays, feedback, and attractors rather than a static input/output relation.
+  - Cash-out: Dynamics Map.
+- `observational`: define the measurements or outputs by which the model and real system are compared.
+  - Cash-out: Observation Contract.
+- `fidelity-bounded`: state where the surrogate is validated, approximate, unknown, or unsupported.
+  - Cash-out: Fidelity Boundary.
+- `surrogative`: provide a lower-cost or safer stand-in for an expensive, unavailable, slow, or dangerous real system.
+  - Cash-out: Surrogate Contract.
+- `agentic`: model actors as goal-seeking entities with policies, information, incentives, and adaptation.
+  - Cash-out: actor/policy map.
+- `world-modeling`: represent environment, actors, state, actions, observations, constraints, and transition rules explicitly.
+  - Cash-out: World Model.
+
+## Evaluation / judgment operators
+
+- `adjudicative`: judge claims, artifacts, or options against explicit criteria and issue a reasoned disposition.
+  - Cash-out: Adjudication Ledger.
+- `criterial`: declare the standard before scoring, comparing, or ruling.
+  - Cash-out: Criteria Matrix.
+- `evidence-weighted`: weight current evidence and counterevidence rather than authority, fluency, or preference.
+  - Cash-out: Evidence Weighting table.
+- `dispositive`: identify the fact, rule, or test that actually determines the outcome.
+  - Cash-out: Dispositive Factor row.
+- `calibrated`: match confidence, severity, and finality to the evidence.
+  - Cash-out: confidence/disposition ledger.
 
 ## Systems / knowledge extraction
 
@@ -124,7 +173,6 @@ A good doctrine word activates an operator and leaves an artifact. A weak doctri
 - `parsimonious`: minimize assumptions and moving parts.
 - `adversarial`: try to break the first plausible answer.
 - `source-disciplined`: prefer primary and authoritative evidence.
-- `calibrated`: match confidence to evidence.
 - `synthetic`: compress many signals into a concise comparative frame.
 - `coherent`: ensure definitions, behavior, and layers agree globally.
 
@@ -162,6 +210,14 @@ A good doctrine word activates an operator and leaves an artifact. A weak doctri
 - `fixed-point`: stop only when a fresh pass finds no material change.
 - `saturating`: keep iterating while new material findings still appear.
 - `tail-proof`: put the proof and next action where the CLI user will see it.
+
+## Persona nouns
+
+Use persona nouns only when the user explicitly asks for a role/persona. Keep the operating mode separate from the persona.
+
+- `nomothete`: a precedent-setter or lawgiver; pair with `NOMOTHETIC` mode.
+- `arbiter`: a criteria-backed judge; pair with `ADJUDICATIVE` mode.
+- `emulator`: a builder/operator of an executable surrogate; pair with `EMULATIVE` mode.
 
 ## Weak words unless made operational
 
