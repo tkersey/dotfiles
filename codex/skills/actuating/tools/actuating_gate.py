@@ -298,11 +298,12 @@ def live_path_states(repo: Path, base_sha: str) -> dict[str, str]:
     repo = git_root(repo)
     paths = live_changed_paths(repo, base_sha)
     base_entries = entry_map(git(repo, "ls-tree", "-r", "-z", base_sha))
-    head_entries = entry_map(git(repo, "ls-tree", "-r", "-z", "HEAD"))
+    raw_head = git(repo, "ls-tree", "-r", "-z", "HEAD")
+    head_entries = entry_map(raw_head)
     raw_index = git(repo, "ls-files", "--stage", "-z")
     index_entries = entry_map(raw_index)
-    index_gitlinks = gitlink_paths(raw_index)
-    paths.update(index_gitlinks)
+    observed_gitlinks = gitlink_paths(raw_head) | gitlink_paths(raw_index)
+    paths.update(observed_gitlinks)
     result: dict[str, str] = {}
     for path in sorted(paths):
         payload = bytearray()
@@ -311,7 +312,7 @@ def live_path_states(repo: Path, base_sha: str) -> dict[str, str]:
         append_frame(payload, b"index", index_entries.get(path, b"missing"))
         worktree = (
             gitlink_worktree_entry(repo, path)
-            if path in index_gitlinks
+            if path in observed_gitlinks
             else worktree_entry(repo, path)
         )
         append_frame(payload, b"worktree", worktree)
@@ -331,6 +332,20 @@ def state_fingerprint(path_states: dict[str, str]) -> str:
 
 
 def diff_hunk_ids(repo: Path, layer: str, *args: str) -> list[str]:
+    changed = [
+        item.decode("utf-8", "surrogateescape")
+        for item in git(
+            repo,
+            "diff",
+            "--no-renames",
+            "--ignore-submodules=none",
+            "--name-only",
+            "-z",
+            *args,
+            "--",
+        ).split(b"\0")
+        if item
+    ]
     output = git(
         repo,
         "-c",
@@ -341,37 +356,22 @@ def diff_hunk_ids(repo: Path, layer: str, *args: str) -> list[str]:
         "--no-ext-diff",
         "--no-color",
         "--ignore-submodules=none",
+        "--submodule=short",
         *args,
         "--",
     ).decode("utf-8", "surrogateescape")
     current = ""
-    source = ""
+    section = 0
     hunks: dict[str, list[str]] = {}
     for line in output.splitlines():
-        if line.startswith("--- "):
-            value = line[4:]
-            source = value[2:] if value.startswith("a/") else ""
-        elif line.startswith("+++ "):
-            value = line[4:]
-            current = value[2:] if value.startswith("b/") else source
+        if line.startswith("diff --git "):
+            current = changed[section] if section < len(changed) else ""
+            section += 1
         elif line.startswith("@@ ") and current:
             coordinate = line.split("@@", 2)[1].strip()
             hunks.setdefault(current, []).append(
                 f"{current}:{layer}:@@ {coordinate} @@"
             )
-    changed = {
-        item.decode("utf-8", "surrogateescape")
-        for item in git(
-            repo,
-            "diff",
-            "--ignore-submodules=none",
-            "--name-only",
-            "-z",
-            *args,
-            "--",
-        ).split(b"\0")
-        if item
-    }
     for path in changed:
         hunks.setdefault(path, [f"{path}:{layer}:metadata"])
     return [hunk for values in hunks.values() for hunk in values]
@@ -396,13 +396,17 @@ def live_hunk_ids(repo: Path, base_sha: str) -> list[str]:
 
 def live_artifact(repo: Path, base_sha: str) -> dict[str, str]:
     repo = git_root(repo)
+    resolved_base = (
+        git(repo, "rev-parse", "--verify", f"{base_sha}^{{commit}}")
+        .decode()
+        .strip()
+    )
     head = git(repo, "rev-parse", "HEAD").decode().strip()
     branch = git(repo, "branch", "--show-current").decode().strip()
-    git(repo, "cat-file", "-e", f"{base_sha}^{{commit}}")
-    fingerprint = state_fingerprint(live_path_states(repo, base_sha))
+    fingerprint = state_fingerprint(live_path_states(repo, resolved_base))
     return {
         "repo": str(repo),
-        "base_sha": base_sha,
+        "base_sha": resolved_base,
         "branch": branch,
         "head_sha": head,
         "state_fingerprint": fingerprint,
@@ -564,9 +568,45 @@ def artifact_observer_errors(repo: Path, *, nested: bool = False) -> list[str]:
         tag, separator, _ = row.partition(b" ")
         if separator and (tag == b"S" or tag.islower()):
             errors.add("blocked-index-observer-flags")
-    gitlinks = gitlink_paths(git(repo, "ls-files", "--stage", "-z")) | gitlink_paths(
+    raw_index = git(repo, "ls-files", "--stage", "-z")
+    gitlinks = gitlink_paths(raw_index) | gitlink_paths(
         git(repo, "ls-tree", "-rz", "HEAD", "--")
     )
+    semantic_dirty = live_changed_paths(repo, "HEAD")
+    raw_candidates: list[tuple[str, bytes]] = []
+    for row in (item for item in raw_index.split(b"\0") if item):
+        metadata, separator, raw_path = row.partition(b"\t")
+        fields = metadata.split()
+        if not separator or len(fields) != 3:
+            continue
+        if fields[2] != b"0":
+            errors.add("blocked-unmerged-index")
+            continue
+        mode, object_id, _ = fields
+        path = raw_path.decode("utf-8", "surrogateescape")
+        source = repo / path
+        if path in semantic_dirty or mode not in {b"100644", b"100755"}:
+            continue
+        if not source.is_file() or source.is_symlink():
+            continue
+        actual_mode = b"100755" if source.stat().st_mode & 0o100 else b"100644"
+        if actual_mode != mode:
+            errors.add("blocked-worktree-observer-alias")
+        raw_candidates.append((path, object_id))
+    for offset in range(0, len(raw_candidates), 256):
+        batch = raw_candidates[offset : offset + 256]
+        object_ids = git(
+            repo,
+            "hash-object",
+            "--no-filters",
+            "--",
+            *(path for path, _ in batch),
+        ).splitlines()
+        if len(object_ids) != len(batch) or any(
+            actual != expected
+            for actual, (_, expected) in zip(object_ids, batch, strict=True)
+        ):
+            errors.add("blocked-worktree-observer-alias")
     for directory, child_dirs, files in os.walk(
         repo,
         onerror=lambda _: errors.add("blocked-nested-gitlink-observer"),

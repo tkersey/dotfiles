@@ -21,8 +21,10 @@ from actuating_gate import (  # noqa: E402
     cas_errors,
     canonical_digest,
     decide,
+    diff_hunk_ids,
     expected_review_admission,
     live_artifact,
+    live_changed_paths,
     live_hunk_ids,
     live_path_states,
     load_semantics,
@@ -2900,6 +2902,239 @@ class GateTests(unittest.TestCase):
                 subprocess.run(
                     ["git", "restore", "file.txt"], cwd=self.repo, check=True
                 )
+
+    def test_git_clean_raw_aliases_are_rejected(self) -> None:
+        (self.repo / ".gitattributes").write_text(
+            "file.txt filter=normalize\n", encoding="utf-8"
+        )
+        subprocess.run(
+            ["git", "config", "filter.normalize.clean", "sed 's/RAW//g'"],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "filter.normalize.smudge", "cat"],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(["git", "add", ".gitattributes"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "configure clean filter"],
+            cwd=self.repo,
+            check=True,
+        )
+        self.base = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=self.repo, text=True
+        ).strip()
+
+        artifact = self.artifact()
+        (self.repo / "file.txt").write_text("RAWbase\n", encoding="utf-8")
+        self.assertEqual(live_changed_paths(self.repo, "HEAD"), set())
+        errors, _ = binding_errors(artifact, self.repo, "blocked-run")
+        self.assertIn("blocked-worktree-observer-alias", errors)
+        (self.repo / "file.txt").write_text("base\n", encoding="utf-8")
+
+        subprocess.run(
+            ["git", "config", "core.fileMode", "true"], cwd=self.repo, check=True
+        )
+        (self.repo / "file.txt").chmod(0o755)
+        subprocess.run(["git", "add", "file.txt"], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "executable"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "config", "core.fileMode", "false"], cwd=self.repo, check=True
+        )
+        artifact = self.artifact()
+        (self.repo / "file.txt").chmod(0o655)
+        errors, _ = binding_errors(artifact, self.repo, "blocked-run")
+        self.assertIn("blocked-worktree-observer-alias", errors)
+
+        subprocess.run(
+            ["git", "config", "core.fileMode", "true"], cwd=self.repo, check=True
+        )
+        (self.repo / "file.txt").chmod(0o644)
+        subprocess.run(["git", "add", "file.txt"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "nonexecutable"], cwd=self.repo, check=True
+        )
+        subprocess.run(
+            ["git", "config", "core.fileMode", "false"], cwd=self.repo, check=True
+        )
+        artifact = self.artifact()
+        (self.repo / "file.txt").chmod(0o654)
+        errors, _ = binding_errors(artifact, self.repo, "blocked-run")
+        self.assertNotIn("blocked-worktree-observer-alias", errors)
+
+    def test_artifact_base_is_canonical_commit_identity(self) -> None:
+        original = self.base
+        subprocess.run(["git", "tag", "moving-base", original], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "commit", "--allow-empty", "-qm", "same tree"],
+            cwd=self.repo,
+            check=True,
+        )
+        artifact = live_artifact(self.repo, "moving-base")
+        self.assertEqual(artifact["base_sha"], original)
+
+        subprocess.run(
+            ["git", "tag", "-f", "moving-base", "HEAD"],
+            cwd=self.repo,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        self.assertNotEqual(
+            live_artifact(self.repo, "moving-base")["base_sha"],
+            artifact["base_sha"],
+        )
+        errors, _ = binding_errors(artifact, self.repo, "blocked-run")
+        self.assertEqual(errors, [])
+
+    def test_patch_body_cannot_impersonate_file_headers(self) -> None:
+        (self.repo / "file.txt").write_text(
+            "zero\n-- old-marker\ntwo\nthree\nfour\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "add", "file.txt"], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "hunk base"], cwd=self.repo, check=True)
+        (self.repo / "file.txt").write_text(
+            "zero\n++ new-marker\ntwo\nthree\nchanged\n", encoding="utf-8"
+        )
+        self.assertEqual(
+            diff_hunk_ids(self.repo, "worktree"),
+            [
+                "file.txt:worktree:@@ -2 +2 @@",
+                "file.txt:worktree:@@ -5 +5 @@",
+            ],
+        )
+        for key in ("diff.noprefix", "diff.mnemonicPrefix"):
+            subprocess.run(["git", "config", key, "true"], cwd=self.repo, check=True)
+            with self.subTest(config=key):
+                self.assertEqual(len(diff_hunk_ids(self.repo, "worktree")), 2)
+            subprocess.run(["git", "config", "--unset", key], cwd=self.repo, check=True)
+
+    def test_quoted_patch_path_cannot_fabricate_a_header(self) -> None:
+        raw_path = b"odd\x80\tname.txt"
+        path = os.fsdecode(raw_path)
+        original = subprocess.check_output(
+            ["git", "hash-object", "-w", "--stdin"],
+            cwd=self.repo,
+            input=b"zero\nold\ntwo\nthree\nfour\n",
+        ).strip()
+        subprocess.run(
+            ["git", "update-index", "-z", "--index-info"],
+            cwd=self.repo,
+            input=b"100644 " + original + b"\t" + raw_path + b"\0",
+            check=True,
+        )
+        subprocess.run(["git", "commit", "-qm", "quoted path"], cwd=self.repo, check=True)
+        changed = subprocess.check_output(
+            ["git", "hash-object", "-w", "--stdin"],
+            cwd=self.repo,
+            input=b"zero\n++ b/fabricated.txt\ntwo\nthree\nchanged\n",
+        ).strip()
+        subprocess.run(
+            ["git", "update-index", "-z", "--index-info"],
+            cwd=self.repo,
+            input=b"100644 " + changed + b"\t" + raw_path + b"\0",
+            check=True,
+        )
+        self.assertEqual(
+            diff_hunk_ids(self.repo, "index", "--cached", "HEAD"),
+            [
+                f"{path}:index:@@ -2 +2 @@",
+                f"{path}:index:@@ -5 +5 @@",
+            ],
+        )
+
+    def test_submodule_diff_config_cannot_multiply_root_sections(self) -> None:
+        self.add_submodule("one.txt", 1)
+        submodule = self.repo / "sm"
+        (submodule / "two.txt").write_text("two\n", encoding="utf-8")
+        subprocess.run(["git", "add", "two.txt"], cwd=submodule, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "add second file"],
+            cwd=submodule,
+            check=True,
+        )
+        (self.repo / "z.txt").write_text(
+            "zero\none\ntwo\nthree\nfour\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "add", "sm", "z.txt"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "root baseline"],
+            cwd=self.repo,
+            check=True,
+        )
+
+        (submodule / "one.txt").write_text("changed-one\n", encoding="utf-8")
+        (submodule / "two.txt").write_text("changed-two\n", encoding="utf-8")
+        (self.repo / "z.txt").write_text(
+            "changed-zero\none\ntwo\nthree\nchanged-four\n", encoding="utf-8"
+        )
+        subprocess.run(
+            ["git", "config", "diff.submodule", "diff"],
+            cwd=self.repo,
+            check=True,
+        )
+
+        self.assertEqual(
+            diff_hunk_ids(self.repo, "worktree"),
+            [
+                "sm:worktree:@@ -1 +1 @@",
+                "z.txt:worktree:@@ -1 +1 @@",
+                "z.txt:worktree:@@ -5 +5 @@",
+            ],
+        )
+
+    def test_unmerged_index_is_rejected_before_hunk_admission(self) -> None:
+        base_blob = subprocess.check_output(
+            ["git", "rev-parse", "HEAD:file.txt"], cwd=self.repo
+        ).strip()
+        ours_blob = subprocess.check_output(
+            ["git", "hash-object", "-w", "--stdin"],
+            cwd=self.repo,
+            input=b"ours\n",
+        ).strip()
+        theirs_blob = subprocess.check_output(
+            ["git", "hash-object", "-w", "--stdin"],
+            cwd=self.repo,
+            input=b"theirs\n",
+        ).strip()
+        subprocess.run(
+            ["git", "update-index", "-z", "--index-info"],
+            cwd=self.repo,
+            input=(
+                b"0 "
+                + (b"0" * 40)
+                + b"\tfile.txt\0"
+                + b"100644 "
+                + base_blob
+                + b" 1\tfile.txt\0"
+                + b"100644 "
+                + ours_blob
+                + b" 2\tfile.txt\0"
+                + b"100644 "
+                + theirs_blob
+                + b" 3\tfile.txt\0"
+            ),
+            check=True,
+        )
+
+        artifact = self.artifact()
+        errors, _ = binding_errors(artifact, self.repo, "blocked-run")
+        self.assertEqual(errors, ["blocked-unmerged-index"])
+
+    def test_retained_head_gitlink_remains_in_the_fingerprint(self) -> None:
+        self.add_submodule("tracked.txt", 1)
+        subprocess.run(
+            ["git", "rm", "--cached", "-q", "sm"], cwd=self.repo, check=True
+        )
+        before = live_artifact(self.repo, self.base)
+
+        (self.repo / "sm/tracked.txt").write_text(
+            "retained worktree edit\n", encoding="utf-8"
+        )
+
+        after = live_artifact(self.repo, self.base)
+        self.assertNotEqual(before["state_fingerprint"], after["state_fingerprint"])
 
     def test_initialized_gitlink_index_flags_are_rejected(self) -> None:
         self.add_submodule("nested.txt", 1)

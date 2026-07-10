@@ -15,15 +15,21 @@ CAS-RER-v1 records for selected review lanes
 SHIP-v1 when publication was requested and performed
 ~~~
 
-Repository input is canonicalized to the Git worktree root before any path
-authorization. Every workflow input must bind to the same repository, base,
-branch, head, and live-state fingerprint. An index carrying `assume-unchanged`
+Repository input is canonicalized to the Git worktree root and the base to its
+full commit identity before any path authorization. Every workflow input must
+bind to the same repository, base, branch, head, and live-state fingerprint. An
+index carrying `assume-unchanged`
 or `skip-worktree` flags blocks as `blocked-index-observer-flags`; closure does
-not simulate content hidden from the observer. One root gitlink layer is
+not simulate content hidden from the observer. A tracked regular path that Git
+reports clean must retain its index blob and executable mode in the raw
+worktree; filter, line-ending, or `core.fileMode` aliases block as
+`blocked-worktree-observer-alias`. One root gitlink layer is
 observed, including its live index flags. A gitlink declared inside that layer
 in either HEAD or the index blocks as `blocked-nested-gitlink-observer`; a
 retained untracked embedded-repository marker blocks likewise. Nested topology
-is outside the observer domain rather than recursively approximated. CAS
+is outside the observer domain rather than recursively approximated. Unmerged
+index stages block as `blocked-unmerged-index`; combined diffs are not admitted
+as partial evidence. CAS
 additionally carries its producer-native opaque `targetFingerprint`; do not
 relabel a local state digest as that field.
 
@@ -47,6 +53,9 @@ and verifier. Embed that receipt as the step's `review_admission` before
 mutation. Its exact payload is the full admission-time `review_resolution`, an
 `observations` block containing review source refs, changed paths, and hunk
 IDs, an optional full SHIP-v1 snapshot, and its canonical `admission_digest`.
+A NUL-delimited root-path inventory is paired with forced short submodule diff
+sections, so patch text, path quoting, and local diff configuration cannot
+impersonate or multiply observer control records.
 The step remains the sole source of run, artifact, node, owner, paths, and
 verifier facts. Completed-step validation replays the same resolution laws
 against those step facts and the receipt observations; EF-v1 cites
