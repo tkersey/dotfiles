@@ -95,11 +95,14 @@ Before a material mutation:
 
 For `review-closeout`, pass the current resolution to `validate-run`; its one
 selected node must exactly match the selected step's ID, owner, paths, and
-verifier, while the step's `review_resolution` must match the current
-resolution ID/digest. Preserve that binding on completion and cite it as
-`review-resolution:<id>:<digest>` in EF-v1 `review_refs`. When admitting a step
-after prior work, also pass every referenced EF-v1 with `--evidence`. A
-dangling reference cannot authorize continuation.
+verifier. Before mutation, copy the gate-derived `review_admission/v1` into the
+selected step's `review_admission`. That immutable receipt seals the full
+`review-resolution/v1`, admission-time source/path/hunk observations, any
+required current SHIP receipt, and its canonical digest. Preserve the receipt
+unchanged on completion and cite `review-admission:<admission_digest>` in EF-v1
+`review_refs`; a later resolution cannot relabel an admitted edit. When
+admitting a step after prior work, also pass every referenced EF-v1 with
+`--evidence`. A dangling reference cannot authorize continuation.
 
 After the action:
 
