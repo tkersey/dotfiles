@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: "Precision language and doctrine compiler: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, explanations, and agent doctrine stacks without semantic drift. Trigger for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, mode names, operator naming, human-facing text, or finding words that activate better agent behavior. Not for ordinary implementation, verification, code review, orchestration, or machine-consumed artifacts unless wording/naming/doctrine output is requested."
+description: "Precision language and doctrine compiler: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, explanations, and agent doctrine stacks without semantic drift. Trigger for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, mode names, operator naming, persona naming, human-facing text, or finding words that activate better agent behavior. Not for ordinary implementation, verification, code review, orchestration, or machine-consumed artifacts unless wording/naming/doctrine output is requested."
 ---
 
 # Logophile
@@ -29,14 +29,14 @@ For doctrine work, act as a **doctrine compiler**: choose words that activate us
 ## Use when
 
 - The user asks to rewrite, reword, rephrase, tighten, sharpen, compress, polish, or choose final wording.
-- The task asks for names, titles, labels, headings, skill names, subagent names, mode names, doctrine words, or doctrine stacks.
+- The task asks for names, titles, labels, headings, skill names, subagent names, mode names, persona names, doctrine words, or doctrine stacks.
 - The requested output includes human-facing text: PR replies, review acknowledgements, rebuttals, commit messages, PR titles/bodies, release notes, docs, README prose, CLI help, error messages, user-facing explanations, summaries, or final copy.
-- Another skill produces a human-facing action list, rebuttal, summary, agenda, route receipt, actuation receipt, ablation receipt, or closure bottom line that should be sharper before the user sees or pastes it.
-- The user asks for “rigor words,” “doctrine words,” “mode words,” “word stacks,” “operator words,” “compressed rubrics,” or words that light up better agent behavior.
+- Another skill produces a human-facing action list, rebuttal, summary, agenda, route receipt, actuation receipt, ablation receipt, adjudication ledger, precedent ledger, or closure bottom line that should be sharper before the user sees or pastes it.
+- The user asks for “rigor words,” “doctrine words,” “mode words,” “persona words,” “word stacks,” “operator words,” “compressed rubrics,” or words that light up better agent behavior.
 
 ## Not for
 
-- Ordinary implementation, verification, review, orchestration, incident analysis, or scope decisions unless wording, naming, or doctrine output is part of the requested result.
+- Ordinary implementation, verification, review, orchestration, incident analysis, simulation, grading, or scope decisions unless wording, naming, persona, or doctrine output is part of the requested result.
 - Hidden rewriting of all outputs in the workspace.
 - Changing code, identifiers, schemas, flags, paths, TOML/YAML/JSON fields, or protocol terms for style.
 - Cases where a sharper term would overstate certainty, change ownership, alter obligations, or smuggle in repo jargon the surrounding text does not support.
@@ -54,8 +54,9 @@ Precision through sophistication, brevity through vocabulary, clarity through st
 - `annotated`: revised text + `Edits:` bullets with `substitutions`, `structural`, and `meaning-safety`.
 - `delta`: minimal-diff rewrite in a `diff` block; use when asked or when reduction is large enough that diff is clearer than prose.
 - `naming`: return 3-7 candidates, best first, unless the user asks for one.
+- `persona`: return the recommended operating mode, persona noun, core command, artifact, and 2-4 near misses.
 - `doctrine-fast`: recommended stack + prompt-ready doctrine block only.
-- `doctrine`: task reading, pressure map, recommended stack, operator roles, cash-out artifacts, near misses, variants, words to avoid, and final doctrine block.
+- `doctrine`: task reading, pressure map, recommended stack, operator roles, cash-out artifacts, optional persona, near misses, variants, words to avoid, and final doctrine block.
 - `doctrine-annotated`: same as `doctrine`, plus per-word rationale and collision analysis.
 
 Accept “rigor words” as user phrasing for doctrine mode. Do not expose old `rigor-*` mode names; `doctrine` is canonical.
@@ -64,6 +65,7 @@ Accept “rigor words” as user phrasing for doctrine mode. Do not expose old `
 
 - In multi-part outputs, put the most actionable wording at the end.
 - In naming outputs, end with `Best Pick:`.
+- In persona outputs, end with `Use This Persona:`.
 - In doctrine outputs, end with `Use This:` and a copy-pasteable doctrine block, followed by `Operationalization:`.
 - For PR/comment/reply outputs, end with the final paste-ready text.
 - In `fast` mode, keep revised-text-only for the artifact itself.
@@ -88,7 +90,7 @@ Defaults:
 - `structure`: preserve.
 - `length_target`: minimum safe.
 
-Additional doctrine fields: `task`, `stakes`, `target_agent`, `failure_pressures`, `stack_size`, `mode_strength`, `words_must_include`, `words_must_avoid`, `artifact_target`, `desired_behavior_shift`.
+Additional doctrine fields: `task`, `stakes`, `target_agent`, `failure_pressures`, `stack_size`, `mode_strength`, `words_must_include`, `words_must_avoid`, `artifact_target`, `desired_behavior_shift`, `persona_requested`.
 
 Doctrine defaults:
 
@@ -99,6 +101,7 @@ Doctrine defaults:
 - `mode_strength`: balanced.
 - `artifact_target`: infer from task.
 - `desired_behavior_shift`: infer from task.
+- `persona_requested`: false unless the user asks for a person, role, archetype, or persona.
 
 ## Workflow: Distill -> Detect -> Substitute -> Shape -> Verify
 
@@ -118,6 +121,30 @@ Doctrine defaults:
 - Prefer names that encode the job, operator, artifact, or success condition, not the plumbing.
 - Check doctrine grammar before finalizing: a strong mode name should work in forms like `<word> mode`, `<word> pass`, `<word> ledger`, `<word> receipt`, `<word> gate`, or `<word> doctrine`.
 
+## Persona mode
+
+Use only when the user asks for a person, role, archetype, or persona.
+
+Return:
+
+```md
+Mode:
+Persona:
+Core Command:
+Cash-Out Artifact:
+Near Misses:
+Use This Persona:
+[copy-pasteable persona block]
+```
+
+Keep role and mode distinct:
+
+- `ADJUDICATIVE` is the mode; `Arbiter` is the persona.
+- `NOMOTHETIC` is the mode; `Nomothete` is the persona.
+- `EMULATIVE` is the mode; `Emulator` may be the persona when a role noun is actually useful.
+
+Do not invent a persona noun when the adjective/gerund alone is clearer.
+
 ## Doctrine compiler mode
 
 Doctrine mode is not word suggestion. It is operator selection.
@@ -136,7 +163,7 @@ For each recommended word, define:
 - **receipt**: what proves it fired;
 - **failure mode**: what goes wrong if omitted.
 
-A doctrine word is strong when it changes frame, route, proof obligation, owner boundary, deletion/collapse decision, review disposition, actuation path, or closure gate.
+A doctrine word is strong when it changes frame, route, proof obligation, owner boundary, deletion/collapse decision, review disposition, actuation path, precedent application, simulation boundary, judgment standard, or closure gate.
 
 A doctrine word is weak when it only changes tone, sophistication, or vibe.
 
@@ -144,7 +171,7 @@ A doctrine word is weak when it only changes tone, sophistication, or vibe.
 
 Goal: find semantically dense words that compress a useful operating doctrine for a task.
 
-Treat words as compressed rubrics, not decorative synonyms. Each chosen word must earn its place by adding a distinct procedural gain: failure detection, reasoning discipline, scope control, execution control, verification pressure, routing pressure, or reporting discipline.
+Treat words as compressed rubrics, not decorative synonyms. Each chosen word must earn its place by adding a distinct procedural gain: failure detection, reasoning discipline, scope control, execution control, verification pressure, routing pressure, reduction pressure, simulation discipline, evaluation discipline, precedent discipline, or reporting discipline.
 
 ### Doctrine constraints
 
@@ -181,6 +208,9 @@ Strong doctrine words tend to answer:
 - What state changed?
 - What route was selected?
 - What surface was removed?
+- What precedent governs or was established?
+- What simulation boundary is supported?
+- What criterion determines the ruling?
 - What remains open?
 
 Weak doctrine words merely make the prose sound smarter.
@@ -194,6 +224,9 @@ Before finalizing a doctrine stack, check for collisions:
 - Does one word imply local minimality while another implies structural rewrite?
 - Does one word preserve behavior that the task intends to retire?
 - Does one word name a proof relation while another names a reduction operator?
+- Does a precedent operator conflict with current evidence or supersession?
+- Does a simulator word imply fidelity the available validation cannot support?
+- Does an adjudicative word imply criteria that were selected after seeing the preferred outcome?
 
 Resolve collisions in the doctrine block. Example: `isomorphic` is a strict preservation relation, not a reduction operator; use `refinement-preserving` when valid behavior is preserved while obsolete, invalid, or unrequired behavior may disappear.
 
@@ -210,8 +243,9 @@ Prefer doctrine words that work naturally in these slots:
 
 Use:
 
-- adjectives for posture: `accretive`, `ablative`, `forensic`, `canonical`;
-- gerunds for active operators: `actuating`, `reifying`, `winnowing`, `quotienting`, `rebaselining`;
+- adjectives for posture: `accretive`, `ablative`, `forensic`, `canonical`, `adjudicative`, `nomothetic`, `emulative`;
+- gerunds for active operators: `actuating`, `reifying`, `winnowing`, `quotienting`, `rebaselining`, `reconciling`;
+- nouns for personas only when requested: `Arbiter`, `Nomothete`, `Emulator`;
 - nouns for artifacts: `witness`, `ledger`, `receipt`, `kernel`, `certificate`.
 
 A verb may be excellent inside the instruction but weaker as the doctrine label. Example: use `ACTUATING` as the mode and `actuate the lever` as the command.
@@ -221,7 +255,7 @@ A verb may be excellent inside the instruction but weaker as the doctrine label.
 - Read: classify the task family, audience, stakes, and likely failure surfaces.
 - Pressure Map: rank the dominant failure pressures.
 - Candidate Bank: generate semantically dense words that encode procedural behavior, not just tone.
-- Stack: choose 3-6 non-overlapping words; include different roles when useful: failure, reasoning, execution, verification, routing, reduction, reset, or knowledge extraction.
+- Stack: choose 3-6 non-overlapping words; include different roles when useful: failure, reasoning, execution, verification, routing, reduction, reset, knowledge extraction, precedent, simulation, or judgment.
 - Unpack: translate each chosen word into observable instructions.
 - Verify: remove overlap, ornament, jargon drift, and mode collisions; confirm the doctrine block would change behavior, not merely style.
 
@@ -235,6 +269,8 @@ Dominant Failure Pressures
 Recommended Stack
 Operator Roles
 Cash-Out Artifacts
+Persona (when requested)
+Core Command (when useful)
 Why These Words
 Near Misses
 Stricter Variant
@@ -265,6 +301,9 @@ Examples:
 - `actuate`: strong verb, weaker doctrine label; prefer `actuating` as mode.
 - `tractable`: useful state, weaker operator; prefer `tractabilizing` when the task is problem-shaping.
 - `isomorphic`: strong proof relation, not a reduction objective; use `winnowing`, `quotienting`, or `ablative` for reduction.
+- `precedent`: names the object; prefer `precedential` for applying prior cases and `nomothetic` for setting future precedent.
+- `judge`: names an activity/person; prefer `adjudicative` for the mode and `Arbiter` only for an explicit persona.
+- `simulated`: names a state; prefer `emulative` for the mode and `fidelity-bounded` as its safety guard.
 - `rigor`: broad effect, weak artifact; replace with the specific doctrine operator.
 
 ## Doctrine alpha vocabulary policy
@@ -287,17 +326,23 @@ Prefer words and phrases that naturally imply ledgers, gates, witnesses, maps, r
 - `quotienting` -> quotient relation, congruence witnesses, merged distinctions, and retained distinction witnesses;
 - `rebaselining` -> Baseline Receipt tying current authority, stale assumptions, valid prior work, invalidated artifacts, and next action;
 - `reifying` -> behavior algebra: constructors, payloads, total interpreter, and preservation proof;
-- `forensic` -> provenance map separating observations, claims, memories, summaries, speculation, and evidence strength.
+- `forensic` -> provenance map separating observations, claims, memories, summaries, speculation, and evidence strength;
+- `precedential` -> Precedent Ledger with provenance, analogy, distinguishing facts, freshness, supersession, and action delta;
+- `nomothetic` -> Nomothetic Receipt with rule, scope, exceptions, authority, and supersession condition;
+- `emulative` -> Emulation Receipt plus validated observation and fidelity boundaries;
+- `counterfactual` -> Counterfactual Ledger naming the intervention, held constants, projected trajectory, and validation path;
+- `adjudicative` -> Adjudication Ledger with standard, evidence, counterevidence, disposition, and overturn condition;
+- `reconciling` -> Reconciliation Ledger accounting for expected state, observed state, owner, residual, and disposition.
 
 Demote standalone `rigor`, ornamental `adversarial`, isolated `mechanistic`, and any dense word that cannot name its artifact.
 
-In doctrine output, add a final `Operationalization:` line that names the exact artifact the doctrine should produce: ledger, gate, validator, proof receipt, truth-owner graph, resolve-selection map, route receipt, actuation receipt, reduction certificate, behavior algebra, or closure criterion.
+In doctrine output, add a final `Operationalization:` line that names the exact artifact the doctrine should produce: ledger, gate, validator, proof receipt, truth-owner graph, resolve-selection map, route receipt, actuation receipt, reduction certificate, precedent ledger, emulation receipt, adjudication ledger, behavior algebra, or closure criterion.
 
 ## Precision policy
 
 - Prefer phrase upgrades over cosmetic synonym swaps.
-- Ask: what got more exact? Valid gains include scope, ownership, failure behavior, evidence, sequence, obligation, action type, proof relation, route, or artifact.
-- Allowed sharper terms in this repo include `accretive`, `ablative`, `actuating`, `rebaselining`, `winnowing`, `quotienting`, `reifying`, `forensic`, `fail-closed`, `unwitnessed`, `ill-typed`, `canonical`, `fixed-point`, and `prove` when they are more exact than the generic phrase they replace.
+- Ask: what got more exact? Valid gains include scope, ownership, failure behavior, evidence, sequence, obligation, action type, proof relation, route, artifact, precedent status, fidelity boundary, criterion, or disposition.
+- Allowed sharper terms in this repo include `accretive`, `ablative`, `actuating`, `rebaselining`, `winnowing`, `quotienting`, `reifying`, `forensic`, `precedential`, `nomothetic`, `emulative`, `counterfactual`, `adjudicative`, `criterial`, `dispositive`, `reconciling`, `fail-closed`, `unwitnessed`, `ill-typed`, `canonical`, `fixed-point`, and `prove` when they are more exact than the generic phrase they replace.
 - Do not force those terms when nearby text points to a different, more exact phrase.
 - Keep lexicons small, sharp, and revisable; prune bad mappings quickly.
 
@@ -309,16 +354,18 @@ Use `logophile` as a final language pass when another workflow produces human-fa
 - after `fixed-point-driver`, sharpen Route Receipts, Fixed-Point Bottom Lines, closure notes, and PR-facing summaries.
 - after ablation-heavy workflows, ensure `ablation: not-required`, Ablation Ledger, keep/delete/canonicalize decisions, and Ablative Isomorphism Cards are precise rather than decorative.
 - after `$actuating`, sharpen the Actuation Bottom Line so the lever, action, proof, and next bottleneck are unmistakable.
-- after `$seq`, sharpen forensic/cartographic summaries without losing provenance.
+- after `$seq` or `$learnings`, sharpen forensic and precedential summaries without losing provenance, distinguishing facts, freshness, supersession, or action delta.
+- after simulation/modeling workflows, sharpen fidelity boundaries and unsupported counterfactuals without overstating predictive power.
+- after evaluation/adjudication workflows, sharpen criteria, evidence, disposition, confidence, and what would overturn the ruling.
 - after bounded implementation workflows, sharpen PR-facing final summaries, closure notes, and handoffs.
-- before finalizing skill names, subagent names, mode names, doctrine stacks, headings, or labels.
+- before finalizing skill names, subagent names, persona names, mode names, doctrine stacks, headings, or labels.
 
-Do not use `logophile` to replace implementation, review, adjudication, or closure work.
+Do not use `logophile` to replace implementation, simulation, evaluation, review, adjudication, or closure work.
 
 ## Resources
 
 - [precision_lexicon.md](references/precision_lexicon.md): guarded phrase replacements and context rules.
-- [doctrine_word_bank.md](references/doctrine_word_bank.md): doctrine words and type-theoretic, reduction, reset, action, and knowledge-extraction vocabulary.
+- [doctrine_word_bank.md](references/doctrine_word_bank.md): doctrine words and type-theoretic, reduction, reset, action, precedent, simulation, judgment, and knowledge-extraction vocabulary.
 - [task_pressure_map.md](references/task_pressure_map.md): task-to-pressure defaults.
 - [doctrine_compiler.md](references/doctrine_compiler.md): operator/artifact/receipt model for doctrine synthesis.
 - [probe_cases.md](references/probe_cases.md): acceptance probes for rewriting, naming, and safety.
