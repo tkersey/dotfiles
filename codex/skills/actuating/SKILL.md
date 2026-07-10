@@ -1,451 +1,287 @@
 ---
 name: actuating
-description: "User-facing workflow for implementing approved work and no-code review modes. It gets an accepted spec when needed, checks whether a loop receipt is required, runs the goal runtime, requires CAS-backed review when review is in scope, and closes material implementation only through proof plus ATCG."
-metadata:
-  version: "7.1.0"
-  activation_cost: medium
-  default_depth: high
+description: "Front door for authority-bound goal execution. Bare $actuating or /goal $actuating runs implement, then $ship, then review-closeout; explicit $actuating implement stops after implementation. Explicit triage, remediation-plan, and review-closeout retain their named behavior; never infer mutation from an unqualified review request."
 ---
 
 # Actuating
 
 ## Mission
 
-Run implementation and review-routing work without making the user manage the
-lower-level skills.
-
-```text
-implementation request or draft spec
--> accepted implementation spec, when needed
--> loop shape decision, when work is not one simple action
--> goal runtime
--> proof and review evidence
--> terminal closure gate
--> final result or explicit handoff
-```
-
-Use it as:
-
-```text
-/goal $actuating implement the accepted spec
-/goal $actuating triage this PR
-/goal $actuating remediation-plan this PR
-/goal $actuating review-closeout this PR
-/goal $actuating dry-plan the accepted spec
-```
-
-`$actuating` is the front door. It does not directly edit code, claim resources,
-spawn subagents, publish PRs, or mark work complete. It chooses the right owner
-and checks that the required evidence exists.
-
-## Plain rules
-
-```text
-Do not run an untracked loop.
-Do not change code unless the next work item was selected.
-Do not keep going unless the previous action was checked.
-Do not claim completion until the terminal gate allows it.
-```
-
-## Removed controller path
-
-The old transaction-controller/APMA path is not active in this workspace. If the
-work needs durable claims, fencing, external worktrees, serialized integration,
-or multi-plan coordination, `$actuating` must block or ask for a supported
-controller. It must not pretend that local edits are a fenced actuation run.
-
-## Normal flow
-
-1. Get or refresh an accepted implementation spec through `$spec-pipeline` in
-   gate-only/no-plan mode when the request is not already approved enough.
-2. Treat the accepted spec as the source of truth.
-3. Use `$recursion-scheme-planner` when the work has branching, repeated classes,
-   review campaigns, migrations, proof fanout, or unclear stopping conditions.
-4. If the explicit mode is `triage` or `remediation-plan`, use supplied existing
-   GitHub, human, or CAS findings when present; CAS runs only when no current
-   review source exists or fresh review is explicitly requested.
-5. Use `$agent-loop-schemes` when material work needs ALSR/HYL loop receipts.
-6. Send the accepted work to `$goal-actuating`.
-7. Use `$cas` when workflow review is requested or required.
-8. Pass findings through `$review-fold` before any review-driven code change.
-9. Implement only accepted code-change liabilities.
-10. Fold current evidence after each material action.
-11. Run ATCG-v1 before any material completion claim.
-12. Emit a proof-patch result or a `$ship` handoff when PR publication/update was requested.
-
-## Source requirement
-
-Before `$goal-actuating` runs, establish one of:
-
-```text
-accepted implementation spec
-direct user goal with enough scope, constraints, and proof checks
-review findings bound to the current diff and intended change
-current review source for a no-code review mode
-plan handoff for goal-artifact execution
-```
-
-If none exists, run `$spec-pipeline` in gate-only/no-plan mode or stop with:
-
-```yaml
-actuating_status:
-  verdict: blocked-needs-accepted-spec
-  next_owner: $spec-pipeline|$grill-me|$codebase-doctrine
-  reason:
-```
-
-## When a loop receipt is required
-
-Simple, one-shot work may be direct-action fused. Anything more complex needs a
-current loop receipt before material changes.
-
-Require ALSR/HYL when the work has:
-
-```text
-repeated failure or review classes
-many-file migration
-review closeout or CAS closure
-branch choices or competing implementation strategies
-proof fanout
-parallel subagent opportunities
-mutual client/server/schema/protocol changes
-unclear stop rule
-risk of turning into a generic keep-going loop
-```
-
-For material runs, `$actuating` must establish one of:
-
-```text
-valid FUSION-v1 direct-action receipt
-current ALSR-v1 + HYL-v1 + HSR-v1 chain
-```
-
-If none exists, stop with:
-
-```text
-actuation verdict: blocked-loop-contract-missing
-```
-
-If the loop receipts do not match the current branch/head/diff, stop with:
-
-```text
-actuation verdict: blocked-loop-contract-stale
-```
-
-If the next material action has no selected work item, stop with:
-
-```text
-actuation verdict: blocked-hylo-frontier-missing
-```
-
-If the previous material action has no current evidence fold, stop with:
-
-```text
-actuation verdict: blocked-hylo-fold-missing
-```
-
-No-code review modes do not require material loop receipts, proof-patch, three
-clean CAS attempts, or ATCG. They become material only if the workflow accepts a
-code-change liability for implementation, performs a public side effect, or
-claims implementation completion.
-
-## Direct-action fusion
-
-Direct-action fusion is allowed only when all are true:
-
-```text
-one legal work item
-known verifier
-no review requirement
-no parallelism
-no public side effect
-no repeated class, migration, or branch choice
-objective, artifact scope, and stop condition are bound to the final proof
-```
-
-A fused run must carry a `FUSION-v1` receipt. A raw flag such as
-`direct_action_fused: yes` is not enough.
-
-## Material loop operation
-
-For material runs, `$goal-actuating` interprets HYL-v1:
-
-```text
-current state
--> select exactly one legal work item or safe parallel frontier
--> execute only that item/frontier
--> fold current evidence
--> continue | complete | blocked | regress | replan | refactor-kernel
-```
-
-Every material step must produce an HSR-v1 receipt that records the selected
-work, the action, the evidence fold, and the next owner.
-
-## Goal-focus frames
-
-Receipt field name: `goal_focus`.
-
-
-A long parent goal may use smaller focus frames. The parent goal stays stable;
-only the active focus changes.
-
-Before completion, ATCG must verify:
-
-```text
-primary_goal_stable = yes
-all child focus frames folded or blocked = yes
-terminal focus matches parent stop rule = yes
-no child frame claimed parent completion = yes
-latest focus fold is parent-bound = yes
-```
-
-A focus frame is not a nested `/goal`; it is a local work frame owned by the
-parent actuation run.
-
-## Review modes
-
-Review modes are explicit:
-
-- `triage`: classify findings and stop without implementation.
-- `remediation-plan`: classify findings, produce a fix plan, and stop without implementation.
-- `review-closeout`: classify findings, implement only accepted code-change liabilities, prove closure, and stop at ATCG or `$ship` handoff.
-
-`triage` and `remediation-plan` end in mode-terminal outputs, not terminal
-completion. No-code outputs must report review source/currentness and must not
-claim implementation completion. ATCG is not required for a `triage` report or
-`remediation-plan`; proof-patch, three clean CAS attempts, and material loop
-receipts are not required either.
-
-Unqualified review closure requests default to `review-closeout`.
-
-When review closeout is active, the workflow is:
-
-```text
-review source acquisition or $cas review
--> $review-fold
--> resolution fold
--> optional branch-race/refactor-kernel decision
--> implementation of accepted code-change liabilities only
--> evidence fold
--> three clean normalized standard CAS review attempts
--> proof-patch
--> ATCG-v1
--> $ship only when publication/update is requested
-```
-
-Missing tuple-bound CAS evidence is a `$cas` acquisition node for
-`review-closeout`, not an entry failure. Terminal completion still requires
-tuple-bound independent fresh standard CAS clean evidence when review closeout
-requires CAS.
-
-Raw review text never reaches implementation directly.
-
-## Review lanes
-
-The standard CAS review lane is the only lane that counts toward the three-clean
-review streak. Auxiliary review lanes may block completion, but they do not add
-to the standard clean count.
-
-Available auxiliary lanes:
-
-```text
-footgun-finder       misuse hazards, unsafe defaults, misleading affordances
-invariant-ace        illegal states, ownership gaps, transition or policy breaks
-complexity-mitigator reviewability stalls, repeated owner-boundary churn, boolean soup
-```
-
-When workflow review is required, `review_profile` must explicitly account for
-all auxiliary lanes as selected/folded or `not-required` with a reason.
-
-Auxiliary source validity matrix:
-
-```text
-valid clean             satisfies that auxiliary obligation; standard count unchanged
-valid findings-folded   may block or produce accepted liabilities; artifact changes reset standard count
-invalid clean           grants no closeout credit
-invalid findings        becomes candidate-pressure until owner-boundary validation resolves it
-selected-pending        blocks ATCG until run, waived, or resolved
-not-required            allowed only with a source-bound reason
-```
-
-Selected lanes in `clean` or `findings-folded` state must carry
-`source_validity=valid`, the expected lens contract, valid lens evidence, current
-`head_sha`, current `target_fingerprint`, and a current evidence reference.
-`base=unknown`, `target_identity_unavailable`, stale tuple binding, or missing
-target identity is `invalid-proof`: useful dirty findings may be quarantined as
-candidate pressure, but clean output cannot clear the lane.
-
-## Refactor-kernel escalation
-
-When repeated accepted liabilities share one owner boundary, missing abstraction,
-state transition, validation rule, invariant, proof surface, or misuse trap,
-`$actuating` records the decision before more mutation.
-
-```yaml
-actuation_escalation_receipt:
-  version: AER-v1
-  run_id:
-  owner_boundary:
-  repeated_finding_class:
-  accepted_liabilities:
-    - cas_finding_id:
-      finding_fingerprint:
-      review_fold_ref:
-      liability:
-  prior_resolution_mode: minimal-fix|proof-only|refactor-kernel|branch-race|none
-  next_resolution_mode: minimal-fix|refactor-kernel|branch-race|remediation-plan|blocked
-  escalation_trigger:
-  alternatives_considered: []
-  selected_route:
-  verifier: []
-  current_artifact_scope:
-    branch:
-    head_sha:
-    target_fingerprint:
-```
-
-AER-v1 is not review adjudication and not mutation authority. `$seq` may later
-audit whether this receipt existed and whether behavior contradicted it;
-`$actuating` owns the active escalation decision. AER-v1 is treated as review
-finding acceptance or mutation authority only by mistake; that is a failure.
-
-If `selected_route` or `next_resolution_mode` is `refactor-kernel`, validate the
-AER-v1 before mutation and emit RKO-v1 after proof/review.
-
-## Parallelism policy
-
-Parallel work is allowed only after the work has been shaped and a safe frontier
-has been selected.
-
-Allowed:
-
-```text
-read-only scout fanout
-review-class fanout after review folding
-branch race under one verifier
-patch fanout over disjoint accepted liabilities
-proof fanout over independent checks
-```
-
-Forbidden:
-
-```text
-raw review finding -> patch worker
-subagent chooses scope
-subagent declares completion
-subagent updates or publishes PRs
-patch fanout over shared invariants or owner boundaries
-branch race without a common verifier
-```
-
-The lead loop owns scope, review resolution, integration, clean CAS counting,
-proof closure, and `$ship` handoff.
-
-## Terminal closure
-
-Before `$actuating` may report material implementation completion or call
-`update_goal complete`, run ATCG-v1 over the current branch/head/diff, loop
-receipts or fusion receipt, latest HSR/focus evidence, evidence fold,
-proof-patch, CAS state, delivery state, and side-effect boundary.
-
-Completion is legal only when:
-
-```text
-ATCG-v1 verdict = complete
-ATCG-v1 can_mark_goal_complete = yes
-```
-
-Do not substitute local proof, a proof-complete graph, cached CAS receipts, or
-ADD-v1 `handoff_to_ship` for terminal completion.
-
-Mode-terminal no-code outputs are different: a `triage` report or
-`remediation-plan` can end successfully without terminal completion because it
-does not claim implementation closure.
+Turn accepted intent into an authority-bound run, selected work, current
+evidence, and a live closure decision.
+
+~~~text
+bare $actuating:
+accepted source -> implement -> $ship -> review-closeout -> final closure
+
+explicit mode:
+accepted source -> named mode -> its terminal output
+~~~
+
+`$actuating` routes and governs this workflow. `$goal-actuating` coordinates
+execution. `$goal-grind` executes one already-selected step. `$ship` alone owns
+public PR effects.
+
+## Modes
+
+Bare `/goal $actuating` and bare `$actuating` select the ordered default
+pipeline: `implement -> $ship -> review-closeout`. `$actuating implement`
+selects implementation only and stops at its closure decision. Explicit
+`triage`, `remediation-plan`, and `review-closeout` select only the named mode.
+
+| Intent | Mode | Mutation | End |
+|---|---|---:|---|
+| Implement accepted work only | `implement` | Authorized by the run | Implementation closure |
+| Review, audit, or classify | `triage` | No | Review report |
+| Produce a fix plan | `remediation-plan` | No | Resolution plan |
+| Fix or close review findings | `review-closeout` | Only through a selected resolution node | Closure decision |
+
+An unqualified review request means `triage`. Require explicit fix, resolve,
+address, implement, or closeout language before choosing `review-closeout`.
+Planning requests route to `$plan`; there is no planning mode inside this
+skill.
+
+## Canonical objects
+
+Only three actuation control objects are live:
+
+1. `actuation-run/v1` binds source, authority, artifact state, selected steps,
+   evidence references, immutable invocation intent, lifecycle phase,
+   implementation provenance, review requirements, and public-effect intent.
+2. `review-resolution/v1` converts classified findings into owner-boundary
+   strategies and admits at most one current work node; other owner decisions
+   remain pending.
+3. `closure-decision/v1` recomputes the result from the current repository,
+   run, resolution, evidence folds, CAS records, and optional ship record.
+
+Read [live-semantics.yaml](references/live-semantics.yaml) for the canonical
+runtime vocabulary and policy. Behavioral laws live in the gate and its direct
+counterexample tests; prose may explain them but must not create another
+authority surface.
+
+Every run records the original invocation profile in `lifecycle`:
+
+~~~yaml
+lifecycle:
+  invocation_profile: bare-pipeline | explicit-implement | explicit-triage | explicit-remediation-plan | explicit-review-closeout
+  phase: implement | review-closeout
+  generation: 0
+  implementation_checkpoint: null
+~~~
+
+The profile never changes. A bare run alone may advance from generation 0
+implementation to generation 1 review closeout, and only through the
+gate-derived implementation checkpoint. Explicit implementation always keeps
+publication false and cannot accept SHIP input or enter review closeout.
+
+## Source and authority
+
+Start a run only from:
+
+- a current accepted specification whose governance result is complete; or
+- a direct user goal with explicit execution authority.
+
+A plan handoff supplies scope and policy but does not grant mutation by itself.
+A review artifact supplies evidence but never execution authority. A
+gate-only specification result cannot authorize execution.
+
+Keep these fields separate:
+
+~~~text
+scope_source_ref
+execution_authority_ref
+mutation_allowed
+public_effects_allowed
+~~~
+
+Unsupported durable claims, fencing, independent worktrees, or serialized
+cross-plan integration block the run. Do not simulate a controller.
+
+## Step law
+
+Before a material mutation:
+
+1. Bind the run to the current repo, base, branch, head, and live-state fingerprint.
+   Preserve that first binding as `artifact_initial` and its per-path state map
+   as `artifact_initial_path_states`; every first step begins there and every
+   later step begins at the prior post-state.
+2. Select exactly one step and tag it with its lifecycle phase.
+3. Keep selection and mutation fan-in with the lead; advisory scouting,
+   classification, and proof checks may fan out.
+4. From the repository root, validate the run through `uv` so the checked-in
+   non-executable tool and its YAML dependency are handled explicitly:
+
+   ~~~bash
+   uv run --with pyyaml python \
+     codex/skills/actuating/tools/actuating_gate.py validate-run \
+     --run RUN.yaml \
+     --repo .
+   ~~~
+
+   Add `--resolution RESOLUTION.yaml` for a review-derived edit and repeat
+   `--evidence EF.json` for every completed predecessor.
+
+Before any selected action, copy the gate-derived `step-admission/v1` into the
+step. It binds the original invocation profile, phase, immutable predecessor
+prefix, state before, effect, owner, paths, verifier, and lead selection. Every
+completed `inspect`, `edit`, or `verify` action preserves that receipt
+unchanged. A terminal record without it is unreachable and blocks.
+
+For a review-derived edit, pass the current resolution to `validate-run`; its one
+selected node must exactly match the selected step's ID, owner, paths, and
+verifier. Before mutation, copy the gate-derived `review_admission/v1` into the
+selected step's `review_admission`. That immutable receipt seals the full
+`review-resolution/v1`, admission-time source/path/hunk observations, any
+required current SHIP receipt, and its canonical digest. Preserve the receipt
+unchanged on completion and cite `review-admission:<admission_digest>` in EF-v1
+`review_refs`; `step-admission/v1` binds its digest, so the two receipts form one
+admission relation rather than parallel authorities. A later resolution cannot relabel an admitted edit. When
+admitting a step after prior work, also pass every referenced EF-v1 with
+`--evidence`. A dangling reference cannot authorize continuation.
+
+After the action:
+
+1. Record changed paths and the new artifact binding.
+2. Fold current evidence through `$evidence-fold`.
+3. Attach that evidence to the completed step.
+4. Continue only after the run validates again.
+
+Each step names one executable `effect` (`inspect`, `edit`, or `verify`), exact
+paths, and a falsifiable `verifier`. CAS acquisition, review folding, and
+resolution construction are coordinator work, not executable step effects. One
+direct edit may remain uncommitted and must exactly match the initial-to-live
+path delta. Every iterative edit advances through a descendant commit whose
+exact diff equals that step's changed paths. A non-edit preserves the complete
+artifact binding. EF-v1 independently reports the same paths and shows the
+verifier in its passed-command evidence. Only a prior step whose verdict is
+`continue` may admit a following step.
+
+A step may finish or block. It cannot complete the parent goal; only
+`closure-decision/v1` owns goal completion.
+
+Direct work is one ordinary selected step. Iterative work is a chain of
+selected and completed steps. Resume state lives in the run through the current
+step, lifecycle checkpoint, and performed-side-effect identifiers.
+
+## Review law
+
+Fresh or closure-grade workflow review uses `$cas`. Review evidence passes
+through `$review-fold`, which only classifies and quotients findings.
+Declared run source references must exactly equal the RF-v2 source identities;
+triage supplies those folds directly with repeatable `--review-fold` inputs and
+cannot complete from a source name alone.
+
+`review-resolution/v1` then consumes each RF-v2 equivalence class through
+exactly one decision, groups repair work by owner boundary, and selects:
+
+- `local-repair`;
+- `replacement-kernel`; or
+- `blocked`.
+
+Read [review-resolution.md](references/review-resolution.md) before resolving
+review findings. Raw review prose, a review-fold receipt, a CAS record, or a
+suggested repair never grants mutation.
+
+CAS closure accepts only producer-observed standard review attempts. Specialized
+routing in RF-v2 remains classification metadata; caller-supplied lens labels
+never grant review credit. Standard closure requires three distinct ordered
+clean attempts after the latest artifact, review contract, or resolution change.
+
+## Semantic accounting
+
+Audit every abstraction participating in a touched owner-boundary invariant,
+including unchanged nearby abstractions.
+
+Use `retain`, `retire`, `collapse`, `delegate`, or `replace`. `retain` requires
+a named live obligation.
+
+The gate observes the live diff and binds that identity into review admission;
+the continuous admitted step chain supplies path and transition provenance.
+It validates the declared abstraction, liability, addition, and retirement
+account against that live state. Every declared added construct names a live
+obligation and a distinct displaced construct. The gate does not yet perform
+language-aware discovery of omitted constructs, so do not claim that it
+independently proves net semantic shrinkage.
+
+Closure rejects split decisions for one RF-v2 equivalence class, uncovered
+liabilities, incomplete retirements, remaining dominated constructs, and
+declared proof-surface growth without an accepted obligation.
+
+`local-repair` may not add a protocol, state, helper abstraction, or
+wound-specific test family. Use `replacement-kernel` when local patches would
+distribute one cause or preserve dominated machinery.
+
+## Closure
+
+Read [closure.md](references/closure.md) before material completion.
+
+Run:
+
+~~~bash
+uv run --with pyyaml python \
+  codex/skills/actuating/tools/actuating_gate.py decide \
+  --run RUN.yaml \
+  --resolution RESOLUTION.yaml \
+  --evidence EF.json \
+  --repo .
+~~~
+
+The gate discovers the installed list action, prefers `cas review list`, and
+acquires the complete live envelope itself with the run-bound base and Codex
+thread ID. An explicitly advertised `cas review_session list` is the only
+fallback. Saved envelopes and individual record files are non-authoritative and
+cannot close the run.
+
+The gate reads live repository state and actual evidence. It does not accept
+success flags, opaque proof references, scalar clean counts, or replayable
+completion approvals.
+
+Separate:
+
+~~~text
+goal_outcome
+implementation_outcome
+next_owner
+~~~
+
+For no-code modes, the goal may complete while implementation is
+`not-applicable`. For material work, emit the final proof-patch only after a
+current closure decision. In the bare pipeline, implementation closure returns
+`ready-to-ship`; `$ship` acts, then the same append-only run records the
+gate-derived checkpoint described in [closure.md](references/closure.md) and
+enters `review-closeout`. A fresh review run that merely reuses the ID is
+invalid. Clean review closeout selects no synthetic step. Explicit
+`implement` does not infer publication and stops at implementation closure.
+
+`complete`, `ready-to-ship`, and valid `continue` decisions exit zero. Blocked,
+malformed, or unavailable-dependency decisions exit two; the JSON verdict is
+the workflow result.
 
 ## Stop rules
 
-Stop rather than implement when:
+Stop when authority or artifact binding is stale, a selected step is missing,
+the prior action lacks current evidence, review resolution is missing, the
+standard review contract is invalid, the clean CAS suffix is short, semantic balance is
+open, verification regresses, or a public effect would bypass `$ship`.
 
-```text
-execution has not been approved
-scope, non-goals, compatibility, or proof bar are unresolved
-review findings expand product/API scope
-raw review text has not been reduced to dispositions
-review is required but CAS review is unavailable or not run
-three clean standard CAS reviews are required but cannot be completed
-parallel fanout would cross shared invariants or conflicting resources
-ALSR/HYL/HSR is required but missing or stale
-FUSION-v1 is claimed but not proven
-unfold is missing before material mutation
-fold is missing after material action
-goal-focus frames are missing, stale, or not folded to parent
-verification regresses and the next action is not isolate/revert/prove
-public tracker or PR side effects would occur without explicit intent
-ATCG-v1 does not return can_mark_goal_complete=yes
-```
+Use these stable verdicts:
 
-For no-code review modes, missing CAS evidence is a blocker only when no current
-review source exists or fresh review was explicitly requested. For
-`review-closeout`, missing tuple-bound CAS evidence routes to `$cas` until
-terminal closeout evidence exists.
+~~~text
+actuation verdict: blocked-run-missing
+actuation verdict: blocked-run-stale
+actuation verdict: blocked-step-missing
+actuation verdict: blocked-evidence-fold-missing
+actuation verdict: blocked-review-resolution-missing
+actuation verdict: blocked-closure
+~~~
 
-## Final report
+## Resources
 
-```text
-Actuating:
-- source: direct goal | accepted spec | review
-- authority source:
-- scheme plan: none|required|present
-- loop receipt:
-  - fusion receipt:
-  - ALSR-v1:
-  - HYL-v1:
-  - latest HSR-v1:
-  - goal-focus frame:
-- mode / persistence:
-- mode-terminal output:
-- parallelism:
-  - mode:
-  - subagents used:
-  - fanout frontier:
-  - fan-in reducer:
-  - accepted results:
-  - rejected results:
-  - integration order:
-  - conflicts:
-  - standard CAS clean-run counter reset: yes|no
-- review source / CAS verdict, if required:
-- normalized standard CAS clean runs: 0|1|2|3|not-required
-- auxiliary lanes:
-  - footgun-finder|invariant-ace|complexity-mitigator each not-required|selected-pending|candidate-pressure|clean|findings-folded|blocked|rerun-required
-  - selected lanes include `source_validity`, `lens_contract`, `lens_evidence_state`, `lens_evidence_ref`, `head_sha`, and `target_fingerprint`
-- goal contract / work list:
-- review-fold disposition:
-- actuation escalation receipt:
-- execution owner: goal-grind | none
-- evidence-fold verdict:
-- proof-patch / ship handoff:
-- ATCG-v1 verdict / next owner:
-- blockers / residual risk:
-```
-
-If no accepted spec or goal contract exists, say:
-
-```text
-actuation verdict: blocked-needs-accepted-spec
-```
-
-If review is required but CAS review is unavailable or not run, say:
-
-```text
-actuation verdict: cas-review-blocked
-```
-
-If ALSR/HYL/HSR is required but missing or stale, say:
-
-```text
-actuation verdict: blocked-loop-contract-missing
-actuation verdict: blocked-loop-contract-stale
-```
-
-Do not describe direct implementation as a fenced actuation run.
+- [live-semantics.yaml](references/live-semantics.yaml) — canonical vocabulary,
+  ownership, triggers, and runtime policy.
+- [review-resolution.md](references/review-resolution.md) — resolution schema,
+  strategy rules, and semantic balance.
+- [closure.md](references/closure.md) — evidence joins, CAS suffix, outcomes,
+  and ship re-entry.
+- [decision-contract.yaml](references/decision-contract.yaml) — trigger and
+  routing contract for audit tooling.

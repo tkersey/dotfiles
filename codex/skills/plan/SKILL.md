@@ -390,12 +390,17 @@ Readiness does not mean execution is safe.
 
 Execution still requires:
 
-```text
-accepted actuation source
-current direct-action exemption or ALSR/HYL loop contract
-review/proof closure evidence
-terminal ATCG-v1
-```
+~~~text
+accepted actuation source and execution authority
+current actuation-run/v1 artifact binding
+one selected step before material mutation
+current evidence before continuation
+review-resolution/v1 when review drives work
+live closure-decision/v1 before completion
+~~~
+
+The plan handoff must keep `mutation_allowed: no`. `$goal-actuating` creates
+the executable run only after current authority is established.
 
 ## Output
 

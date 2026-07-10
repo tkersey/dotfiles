@@ -1,8 +1,0 @@
-{
-  "retired_controller_receipt": {
-    "version": "APMA-v1",
-    "status": "retired",
-    "active_authority": "no",
-    "replacement": "FUSION-v1 or ALSR-v1/HYL-v1/HSR-v1 with ATCG-v1"
-  }
-}

@@ -1,0 +1,157 @@
+live_semantics:
+  schema_version: live-semantics/v1
+  safe_review_default: triage
+
+  invocation_defaults:
+    bare: [implement, ship, review-closeout, final-closure]
+    explicit-implement: [implement]
+
+  modes:
+    implement:
+      mutation: authority-bound
+      material: true
+      implementation_outcome: complete
+    triage:
+      mutation: forbidden
+      material: false
+      implementation_outcome: not-applicable
+    remediation-plan:
+      mutation: forbidden
+      material: false
+      implementation_outcome: not-applicable
+    review-closeout:
+      mutation: resolution-bound
+      material: true
+      implementation_outcome: complete
+
+  source_kinds:
+    - accepted-spec
+    - direct-goal
+
+  execution_kinds:
+    - none
+    - direct
+    - iterative
+
+  step_effects:
+    - inspect
+    - edit
+    - verify
+
+  canonical_objects:
+    actuation-run/v1:
+      owner: goal-actuating
+      purpose: Bind source, immutable invocation lifecycle, authority, continuous artifact history, admitted steps, and evidence.
+    review-resolution/v1:
+      owner: actuating
+      purpose: Turn classified findings into owner-boundary strategies and selected work.
+    closure-decision/v1:
+      owner: actuating
+      purpose: Recompute goal and implementation outcomes from live joined evidence.
+
+  owners:
+    source_semantics: spec-pipeline
+    execution_policy: plan
+    goal_contract: goal-contract
+    topology_advice: agent-loop-schemes
+    coordinator: goal-actuating
+    selected_step_executor: goal-grind
+    work_projection: goal-workgraph
+    evidence_reducer: evidence-fold
+    review_transport: cas
+    review_classifier: review-fold
+    resolution: actuating
+    final_proof_view: proof-patch
+    public_effects: ship
+
+  strategies:
+    - local-repair
+    - replacement-kernel
+    - blocked
+
+  abstraction_dispositions:
+    - retain
+    - retire
+    - collapse
+    - delegate
+    - replace
+
+  change_surfaces:
+    public-interface: {}
+    defaults-and-fallbacks: {}
+    permissions-and-persistence: {}
+    lifecycle-and-partial-success: {}
+    state-and-transitions: {}
+    ownership-and-validation: {}
+    concurrency-retry-idempotency: {}
+    cache-and-stale-handles: {}
+    abstraction-change: {}
+    replacement-kernel: {}
+    repeated-liabilities: {}
+    multi-live-path: {}
+    new-named-machinery: {}
+    semantic-surface-not-shrinking: {}
+
+  lens_contracts:
+    standard: standard-review-v1
+
+  invariants:
+    - id: authority-before-mutation
+      statement: Material mutation requires a current authority-bound run.
+    - id: selected-step-before-mutation
+      statement: Material mutation requires one lead-selected step.
+    - id: generic-admission-before-action
+      statement: Every executable action preserves a gate-derived step admission binding its profile phase predecessor state effect owner paths and verifier.
+    - id: evidence-before-continuation
+      statement: Continuation requires a completed step and current evidence fold.
+    - id: review-before-resolution
+      statement: Review-derived mutation requires classified findings and a current resolution.
+    - id: review-admission-before-mutation
+      statement: A review edit embeds the gate-derived review-admission receipt with the full resolution observer facts and optional prior SHIP snapshot before mutation and preserves it thereafter.
+    - id: review-mode-profile-alignment
+      statement: Review-required execution uses review-closeout and cannot be relabeled as implement.
+    - id: observable-index-before-mutation
+      statement: Assume-unchanged and skip-worktree flags in the root or any initialized gitlink index block every live binding.
+    - id: declared-semantic-accounting
+      statement: Declared added constructs require live obligations and distinct displaced constructs; independent construct discovery is not claimed.
+    - id: distinct-standard-suffix
+      statement: Standard closure derives from three distinct ordered current clean attempts.
+    - id: public-effects-owned-by-ship
+      statement: Only ship may perform PR or public tracker effects.
+    - id: ship-precedes-review-closeout
+      statement: Publication-bearing review-closeout validates an embedded immutable SHIP-v1 before admission and every repair publication updates that same retained PR URL.
+    - id: closure-is-live
+      statement: Completion is recomputed from current repository state and joined evidence.
+    - id: resolved-node-history
+      statement: Every node in a resolved resolution matches exactly one completed admitted edit.
+
+  quotient:
+    removed_semantic_classes:
+      - transaction-controller overlay
+      - pre-action proof of a post-action fold
+      - scalar clean-review counters
+      - replayable completion approval
+      - final resolution as mutation admission
+      - relabeled SHIP review epoch
+      - null review-field sentinels in SHIP
+      - self-attested proof and success flags
+      - duplicate recursive coordinator
+      - proof and closure dependency cycle
+      - one-patch-per-comment escalation artifacts
+      - runtime-history documentation
+
+  closure_flow:
+    bare_lifecycle: [implement, ship, review-closeout, final-closure]
+    ship_handoff:
+      when: implementation-ready-to-ship
+      action: ship
+      terminal: false
+      records: implementation-checkpoint/v1
+      then: same-run-review-closeout
+    review_closeout:
+      requires_when: publication-requested
+      receipt: pre-review-SHIP-v1
+      after_edit: [current-resolved-refold, ship, review-closeout]
+      then: final-closure
+    final_closure: closure-decision/v1
+    terminal_view: final-proof-patch

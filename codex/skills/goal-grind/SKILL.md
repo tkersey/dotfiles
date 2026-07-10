@@ -1,108 +1,73 @@
 ---
 name: goal-grind
-description: "Execute a GoalContract through recursive work/evidence loops: choose one frontier node, act minimally, verify, fold evidence, memoize repeated classes, and continue or stop. Use for /goal grindability, hard debugging, review closure, and migrations with proof surfaces."
-metadata:
-  version: "1.0.0"
-  activation_cost: medium
-  default_depth: high
+description: "Execute exactly one lead-selected actuation-run step and return action evidence to the coordinator. Use after $goal-actuating has selected a node; do not create authority, choose scope, recurse, resolve review findings, or claim goal completion."
 ---
 
 # Goal Grind
 
 ## Mission
 
-Drive a recursive coding goal without becoming a random walk.
+Execute one already-selected step with the smallest owner-correct change.
 
-```text
-unfold next work -> act -> verify -> fold evidence -> memoize -> continue|stop
-```
+~~~text
+selected step
+-> bounded action
+-> verifier output
+-> action result
+-> return to $goal-actuating
+~~~
 
-Use the smallest state artifact that can keep the loop honest.
+## Input
 
-## Loop state
+~~~yaml
+selected_step:
+  run_id:
+  step_id:
+  phase: implement | review-closeout
+  owner_boundary:
+  paths: []
+  effect: inspect | edit | verify
+  verifier: []
+  step_admission: # immutable step-admission/v1
+  review_resolution_ref:
+  review_admission: # required for review edits
+~~~
 
-For lightweight goals, state may be kept in the answer and `update_plan`.
-For material goals, use a local `.goal/` directory only when it is ignored or explicitly local-only for the repository:
-
-```text
-.goal/contract.yml
-.goal/workgraph.jsonl
-.goal/attempts.jsonl
-.goal/evidence.yml
-.goal/memo.jsonl
-.goal/proof.md
-```
-
-For durable, multi-plan, fenced, or resource-sensitive work, block unless an existing supported controller owns the coordination.
-
-## Attempt row
-
-```json
-{
-  "attempt_id": "A001",
-  "goal_id": "goal-...",
-  "node_id": "W001",
-  "mode": "minimal-fix",
-  "hypothesis": "...",
-  "changed_paths": [],
-  "commands": [],
-  "result": "passed|failed|blocked|regress",
-  "failure_signature": "",
-  "score_delta": "",
-  "kept": true,
-  "next": ""
-}
-```
+Every action requires the gate-derived generic admission. For review-derived
+edits, `review_resolution_ref`, its selected work node, and the bound
+`review-admission/v1` are also required.
 
 ## Procedure
 
-1. Read or create the GoalContract.
-2. Create or refresh the WorkGraph when decomposition matters.
-3. Select exactly one ready node unless `branch-race` mode is active.
-4. State the hypothesis in one sentence.
-5. Make the smallest owner-correct change for that node.
-6. Run the node verifier or record why it cannot run.
-7. Call `$evidence-fold` on test output, diffs, logs, and artifacts.
-8. When failure signatures, review classes, or strategies repeat, update the local attempt history or `.goal/memo.jsonl` before continuing.
-9. Continue only when the fold says `continue`.
-10. Stop when the fold says `done`, `blocked`, `regress`, or `invalid-proof`.
+1. Verify the step is the current lead-selected node in the run and both its
+   phase and immutable step admission match.
+2. Re-read the bounded paths before editing.
+3. Make the smallest change that fixes the owning cause.
+4. Prefer a replacement kernel when local repair would add semantic machinery
+   or preserve a dominated abstraction.
+5. Run the step verifier.
+6. Return changed paths, commands, observations, and failure signature.
+7. Stop. `$goal-actuating` owns evidence folding and continuation.
 
-## Modes
+## Output
 
-```yaml
-goal_grind_mode:
-  persistence: update_plan|goal-artifacts
-  implementation: proof-only|minimal-fix|refactor-kernel|branch-race
-  review_scope: none|in-scope-only|adjudicate-all|user-selected
-  frontier: verifier-first|highest-risk-first|representative-class-first|dependency-order
-  proof_bar: focused|current-artifact|release-ready
-```
-
-## Minimality rule
-
-Minimal does not mean local. Minimal means the smallest change that fixes the owning cause without making future work worse.
-
-Prefer `refactor-kernel` over local patching when many local fixes would duplicate an invariant check, adapter, state transition, proof obligation, review-only special case, or owner boundary.
-
-## External Controller Boundary
-
-Block when any of these are true and no supported controller already owns the work:
-
-```text
-multiple plans or branches need durable coordination
-resource claims or fencing tokens are required
-the task spans independent worktrees
-overlapping edits must be serialized
-branch epoch / base-head proof matters
-legacy removed-controller state would be required for continuity
-```
-
-Do not require a durable controller merely because the goal has several steps. Use `update_plan` or `goal-workgraph` first.
+~~~yaml
+step_action_result:
+  run_id:
+  step_id:
+  owner_boundary:
+  changed_paths: []
+  commands: []
+  observations: []
+  result: passed | failed | blocked | regress
+  failure_signature:
+  public_effects: []
+~~~
 
 ## Guardrails
 
-- Do not weaken tests, skip checks, or delete assertions to satisfy a goal.
-- Do not implement raw review prose without `$review-fold`.
-- Do not broaden scope after a new observation; fold it first.
-- Do not continue after regression unless the next action is isolate, revert, or prove non-regression.
-- Do not claim completion without current-artifact evidence.
+- Do not select another step.
+- Do not create or loosen the goal contract.
+- Do not implement raw review prose.
+- Do not perform public effects.
+- Do not mark the node or goal complete; return evidence to the coordinator.

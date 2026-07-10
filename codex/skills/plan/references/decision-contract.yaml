@@ -2,7 +2,7 @@ skill_decision_contract:
   contract_version: SKDC-v1
   skill:
     name: plan
-    kind: workflow
+    kind: mixed
     source_fingerprint: plan-v4.1-policy-synthesis-fixed-point
   triggers:
     - trigger_id: PLAN-COMPILE
@@ -46,52 +46,34 @@ skill_decision_contract:
       trigger_refs: [PLAN-COMPILE]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - immutable plan_id
-        - source digest
-        - target branch
-      success_signals:
-        - explicit `$actuating` handoff
-      failure_signals:
-        - plan inferred from current execution state
+      required_artifacts: [immutable plan_id, source digest, target branch]
+      success_signals: [explicit `$actuating` handoff]
+      failure_signals: [plan inferred from current execution state]
       rationale: Plan identity is the unit of namespace isolation.
     - clause_id: PLAN-CROSS-001
       trigger_refs: [PLAN-RELATION]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - proposed qualified cross-plan edge
-      success_signals:
-        - edge remains a proposal until accepted by a downstream controller
-      failure_signals:
-        - foreign work copied into current plan
+      required_artifacts: [proposed qualified cross-plan edge]
+      success_signals: [edge remains a proposal until accepted by a downstream controller]
+      failure_signals: [foreign work copied into current plan]
       rationale: Cross-plan authority belongs to the workspace.
     - clause_id: PLAN-SYNTHESIS-001
       trigger_refs: [PLAN-COMPILE, PLAN-SYNTHESIS]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - PSR-v1
-        - complete clean sweep
-        - independent press pass
-      success_signals:
-        - final policy digest differs only when material improvements were adopted
-        - no public iteration log is needed for readiness
-      failure_signals:
-        - one-shot plan emitted without synthesis receipt
+      required_artifacts: [PSR-v1, complete clean sweep, independent press pass]
+      success_signals: [final policy digest differs only when material improvements were adopted, no public iteration log is needed for readiness]
+      failure_signals: [one-shot plan emitted without synthesis receipt]
       rationale: Planning quality depends on exhaustive refinement, not just schema presence.
     - clause_id: PLAN-CREATIVITY-001
       trigger_refs: [PLAN-SYNTHESIS]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - radical candidate disposition
-      success_signals:
-        - candidate generated and adopted/rejected/deferred/routed with evidence
-      failure_signals:
-        - arbitrary addition after convergence
-        - no radical candidate attempted
+      required_artifacts: [radical candidate disposition]
+      success_signals: [candidate generated and adopted/rejected/deferred/routed with evidence]
+      failure_signals: [arbitrary addition after convergence, no radical candidate attempted]
       rationale: Creativity is mandatory; accretion is optional.
   instrumentation:
-    decision_receipt: required_for_material_routes
+    decision_receipt: required
     rationale: Plan identity, cross-plan relationships, synthesis convergence, and radical-candidate disposition shape execution.

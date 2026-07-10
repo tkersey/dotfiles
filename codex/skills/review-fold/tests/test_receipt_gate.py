@@ -1,374 +1,380 @@
-#!/usr/bin/env -S uv run python
-from __future__ import annotations
-
-import importlib.util
+import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "tools" / "review_fold_receipt_gate.py"
-SPEC = importlib.util.spec_from_file_location("review_fold_receipt_gate", SCRIPT)
-assert SPEC and SPEC.loader
-MODULE = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(MODULE)
+GATE = ROOT / "tools" / "review_fold_receipt_gate.py"
+sys.path.insert(0, str(ROOT / "tools"))
+from review_fold_receipt_gate import validate  # noqa: E402
 
 
-def valid_kernel(**overrides):
-    kernel = {
-        "status": "refactor-kernel",
-        "pressure": "low",
-        "equivalence_class": "input-validation-class",
-        "owner_boundary": "input validation",
-        "law_family": "validation-boundary",
-        "falsifier": "comment-1 shows missing owner validation",
-        "boundary_proof": "proven",
-        "evidence_refs": ["repo:file.py:10"],
-    }
-    kernel.update(overrides)
-    return kernel
-
-
-def unknown_kernel(**overrides):
-    kernel = valid_kernel(
-        status="unknown",
-        pressure="medium",
-        equivalence_class="unknown",
-        owner_boundary="unknown",
-        boundary_proof="not-proven",
-        proof_gap="missing owner-boundary evidence",
-        next_evidence_action="inspect-more",
-    )
-    kernel.update(overrides)
-    return kernel
-
-
-def valid_finding(**overrides):
-    finding = {
-        "id": "finding-1",
-        "source_ref": {
-            "backend": "github-comments",
-            "source_batch_id": "thread-batch-1",
-            "finding_id": "comment-1",
-            "finding_fingerprint": "fp-1",
-            "review_attempt_id": "",
-            "review_thread_id": "thread-1",
-            "review_turn_id": "",
-            "lane_role": "human",
-            "head_sha": "abc123",
-            "target_fingerprint": "diff:abc",
-            "backend_specific": {},
+def receipt() -> dict:
+    return {
+        "version": "RF-v2",
+        "fold_id": "rf-1",
+        "goal_id": "goal-1",
+        "source": {
+            "backend": "cas",
+            "source_batch_id": "batch-1",
+            "source_state": "findings",
+            "artifact": {
+                "repo": "/repo",
+                "base_sha": "base",
+                "branch": "main",
+                "head_sha": "abc",
+                "state_fingerprint": "sha256:state",
+            },
+            "source_ref": "cas:batch-1",
         },
-        "validity": "valid",
-        "liability": "blocks-goal",
-        "intent_relation": "core",
-        "disposition": "blocked",
-        "owner_boundary": "input validation",
-        "law_family": "validation-boundary",
-        "kernel_fold": valid_kernel(),
-        "evidence_refs": ["repo:file.py:10"],
-        "finding_mutation_authority": {"allowed": "no", "reason": "review fold is not mutation authority"},
+        "intent_anchor": {
+            "original_goal": "fix the invariant",
+            "accepted_scope": ["src"],
+            "non_goals": [],
+        },
+        "findings": [
+            {
+                "finding_id": "finding-1",
+                "source_ref": "cas:finding-1",
+                "claim": "owner validation is missing",
+                "observed_fact": "transition bypasses owner",
+                "suggested_repair": "add validation",
+                "validity": "valid",
+                "liability": "invariant-gap",
+                "intent_relation": "core",
+                "novelty": "new-class",
+                "disposition": "resolution-input",
+                "quotient_key": "owner-validation",
+                "owner_boundary": "state-owner",
+                "law_family": "transition-preservation",
+                "falsifier": "invalid transition is accepted",
+                "evidence_refs": ["test:transition"],
+                "mutation_authority": {
+                    "allowed": False,
+                    "reason": "resolution selects work",
+                },
+            }
+        ],
+        "compression": {
+            "equivalence_classes": [
+                {
+                    "quotient_key": "owner-validation",
+                    "finding_ids": ["finding-1"],
+                    "owner_boundary": "state-owner",
+                    "law_family": "transition-preservation",
+                }
+            ]
+        },
+        "routing_obligations": [
+            {
+                "trigger": "invariant-gap",
+                "finding_ids": ["finding-1"],
+                "owner_lens": "invariant-ace",
+            }
+        ],
     }
-    finding.update(overrides)
-    return finding
 
 
-class ReviewFoldReceiptGateTests(unittest.TestCase):
-    def test_valid_full_receipt_passes(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "source": {"backend": "github-comments"},
-                "findings": [valid_finding()],
-                "compression": {"kernel_pressure": "low"},
-                "recommended_resolution": {
-                    "clean_run_accounting": {
-                        "normalized_clean_this_source": "no",
-                        "count_effect": "reset",
-                    }
-                },
+class ReceiptTests(unittest.TestCase):
+    def test_gate_is_dependency_provisioned_and_directly_executable(self) -> None:
+        self.assertTrue(os.access(GATE, os.X_OK))
+        self.assertEqual(
+            GATE.read_text(encoding="utf-8").splitlines()[:4],
+            [
+                "#!/usr/bin/env -S uv run --script",
+                "# /// script",
+                '# dependencies = ["pyyaml"]',
+                "# ///",
+            ],
+        )
+        result = subprocess.run(
+            [str(GATE), "--help"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_valid_material_receipt(self) -> None:
+        self.assertEqual(validate(receipt()), [])
+
+    def test_non_string_enum_values_return_field_errors(self) -> None:
+        cases = (
+            ("backend", "source-backend"),
+            ("validity", "finding-validity"),
+            ("intent_relation", "finding-intent"),
+            ("novelty", "finding-novelty"),
+            ("disposition", "finding-disposition"),
+        )
+        for field, expected in cases:
+            for malformed in ([], {}):
+                value = receipt()
+                target = value["source"] if field == "backend" else value["findings"][0]
+                target[field] = malformed
+                with self.subTest(field=field, malformed=type(malformed).__name__):
+                    self.assertIn(expected, validate(value))
+
+    def test_cli_blocks_non_string_enum_without_traceback(self) -> None:
+        value = receipt()
+        value["findings"][0]["validity"] = []
+        result = subprocess.run(
+            [str(GATE), "validate", "--receipt", "-"],
+            cwd=ROOT,
+            input=json.dumps(value),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn(
+            "finding-validity",
+            payload["review_fold_receipt_gate"]["errors"],
+        )
+        self.assertNotIn("Traceback", result.stdout + result.stderr)
+
+    def test_zero_finding_clean_receipt(self) -> None:
+        value = receipt()
+        value["source"]["source_state"] = "clean"
+        value["findings"] = []
+        value["compression"]["equivalence_classes"] = []
+        value["routing_obligations"] = []
+        self.assertEqual(validate(value), [])
+
+    def test_resolution_input_requires_findings_source(self) -> None:
+        for source_state in ("invalid-proof", "incomplete"):
+            value = receipt()
+            value["source"]["source_state"] = source_state
+            with self.subTest(source_state=source_state):
+                self.assertIn("resolution-input-source-state", validate(value))
+
+            value["findings"][0]["disposition"] = "blocked"
+            self.assertNotIn("resolution-input-source-state", validate(value))
+
+    def test_review_fold_cannot_grant_mutation_or_select_work(self) -> None:
+        value = receipt()
+        value["findings"][0]["mutation_authority"]["allowed"] = True
+        value["findings"][0]["selected_work_node"] = {"node_id": "bad"}
+        errors = validate(value)
+        self.assertIn("finding-mutation-authority", errors)
+        self.assertIn("finding-owned-field", errors)
+
+    def test_resolution_input_requires_current_material_evidence(self) -> None:
+        value = receipt()
+        value["findings"][0]["validity"] = "unproven"
+        value["findings"][0]["evidence_refs"] = []
+        errors = validate(value)
+        self.assertIn("resolution-input-validity", errors)
+        self.assertIn("material-evidence", errors)
+
+    def test_resolution_input_rejects_blank_evidence_references(self) -> None:
+        for evidence_refs in ([""], ["   "], ["test:transition", " "]):
+            value = receipt()
+            value["findings"][0]["evidence_refs"] = evidence_refs
+            with self.subTest(evidence_refs=evidence_refs):
+                self.assertIn("material-evidence", validate(value))
+
+    def test_core_finding_cannot_be_deferred_as_follow_up(self) -> None:
+        value = receipt()
+        value["findings"][0]["disposition"] = "follow-up"
+        self.assertIn("follow-up-intent", validate(value))
+
+        value["findings"][0]["intent_relation"] = "adjacent"
+        self.assertNotIn("follow-up-intent", validate(value))
+
+    def test_core_material_disposition_tracks_validity(self) -> None:
+        cases = (
+            ("valid", "resolution-input", False),
+            ("valid", "reject", True),
+            ("valid", "proof-only", True),
+            ("unproven", "proof-only", False),
+            ("unproven", "reject", True),
+            ("needs-owner", "ask-human", False),
+            ("needs-owner", "proof-only", True),
+            ("invalid", "reject", False),
+            ("invalid", "resolution-input", True),
+        )
+        for validity, disposition, rejected in cases:
+            value = receipt()
+            finding = value["findings"][0]
+            finding["validity"] = validity
+            finding["liability"] = "blocks-goal"
+            finding["disposition"] = disposition
+            value["routing_obligations"] = []
+            errors = validate(value)
+            with self.subTest(validity=validity, disposition=disposition):
+                self.assertEqual("core-material-disposition" in errors, rejected)
+
+    def test_duplicate_reject_requires_a_routed_quotient_member(self) -> None:
+        value = receipt()
+        duplicate = value["findings"][0].copy()
+        duplicate["mutation_authority"] = value["findings"][0][
+            "mutation_authority"
+        ].copy()
+        duplicate.update(
+            {
+                "finding_id": "finding-2",
+                "source_ref": "cas:finding-2",
+                "novelty": "duplicate",
+                "disposition": "reject",
             }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "pass")
-        self.assertEqual(report["finding_count"], 1)
-
-    def test_valid_compact_unknown_quarantine_passes(self) -> None:
-        receipt = {
-            "rf_v15_compact": valid_finding(
-                kernel_fold=unknown_kernel(),
-                clean_run={"normalized_clean": "no", "count_effect": "blocked"},
-            )
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "pass")
-
-    def test_compact_receipt_missing_source_ref_fails(self) -> None:
-        finding = valid_finding(clean_run={"normalized_clean": "not-applicable", "count_effect": "none"})
-        del finding["source_ref"]
-        receipt = {"rf_v15_compact": finding}
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn("compact.source_ref:missing", report["errors"])
-
-    def test_mutation_authority_allowed_fails(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        finding_mutation_authority={"allowed": "yes", "reason": "bad"}
-                    )
-                ],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].finding_mutation_authority.allowed:must-be-no",
-            report["errors"],
         )
-
-    def test_refactor_kernel_requires_equivalence_class_or_owner_boundary(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        kernel_fold=valid_kernel(
-                            pressure="high",
-                            equivalence_class="",
-                            owner_boundary="",
-                            boundary_proof="not-applicable",
-                        )
-                    )
-                ],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].kernel_fold.refactor-kernel:missing-equivalence-class-or-owner-boundary",
-            report["errors"],
-        )
-
-    def test_refactor_kernel_requires_blocked_control_disposition(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [valid_finding(disposition="proof-only")],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].disposition:refactor-kernel-requires-blocked-control",
-            report["errors"],
-        )
-
-    def test_unknown_requires_proof_gap_and_next_evidence_action(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        kernel_fold=unknown_kernel(proof_gap="", next_evidence_action="")
-                    )
-                ],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].kernel_fold.proof_gap:required-for-unknown",
-            report["errors"],
-        )
-        self.assertIn(
-            "review_fold.findings[0].kernel_fold.next_evidence_action:missing",
-            report["errors"],
-        )
-
-    def test_unknown_requires_blocked_or_ask_human_control_disposition(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        disposition="follow-up",
-                        intent_relation="adjacent",
-                        kernel_fold=unknown_kernel(),
-                    )
-                ],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].disposition:unknown-requires-blocked-or-ask-human",
-            report["errors"],
-        )
-
-    def test_unknown_cannot_be_clean_or_increment_clean_run(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        kernel_fold=unknown_kernel(),
-                        clean_run={"normalized_clean": "yes", "count_effect": "increment"},
-                    )
-                ],
-                "recommended_resolution": {
-                    "clean_run_accounting": {
-                        "normalized_clean_this_source": "yes",
-                        "count_effect": "increment",
-                    }
-                },
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].clean_run.normalized_clean:unknown-cannot-be-clean",
-            report["errors"],
-        )
-        self.assertIn(
-            "review_fold.findings[0].clean_run.count_effect:unknown-cannot-increment-clean-run",
-            report["errors"],
-        )
-        self.assertIn(
-            "recommended_resolution.clean_run_accounting.normalized_clean_this_source:unknown-cannot-be-clean",
-            report["errors"],
-        )
-        self.assertIn(
-            "recommended_resolution.clean_run_accounting.count_effect:unknown-cannot-increment-clean-run",
-            report["errors"],
-        )
-
-    def test_ownerless_specialized_liability_cannot_be_clean_or_increment(self) -> None:
-        source_ref = valid_finding()["source_ref"]
-        source_ref["lane"] = "standard"
-        source_ref["lane_role"] = "standard"
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        source_ref=source_ref,
-                        liability="invariant-gap",
-                        clean_run={"normalized_clean": "yes", "count_effect": "increment"},
-                    )
-                ],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].clean_run.normalized_clean:specialized-owner-lens-required",
-            report["errors"],
-        )
-        self.assertIn(
-            "review_fold.findings[0].clean_run.count_effect:specialized-owner-lens-required",
-            report["errors"],
-        )
-
-    def test_auxiliary_owner_lens_specialized_liability_can_be_clean(self) -> None:
-        source_ref = valid_finding()["source_ref"]
-        source_ref["lane"] = "invariant-ace"
-        source_ref["lane_role"] = "auxiliary"
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [
-                    valid_finding(
-                        source_ref=source_ref,
-                        liability="invariant-gap",
-                        disposition="proof-only",
-                        kernel_fold=valid_kernel(status="none", boundary_proof="not-applicable"),
-                        clean_run={"normalized_clean": "yes", "count_effect": "increment"},
-                    )
-                ],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "pass")
-
-    def test_rf_v14_receipt_fails(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.4",
-                "findings": [valid_finding()],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn("review_fold.version:expected-RF-v1.5", report["errors"])
-
-    def test_rf_v14_compact_fails(self) -> None:
-        report = MODULE.validate({"rf_v14_compact": valid_finding()})["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn("receipt: expected RF-v1.5 compact object", report["errors"])
-
-    def test_repair_level_is_forbidden(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [valid_finding(repair_level="minimal-fix")],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn("review_fold.findings[0].repair_level:forbidden-in-RF-v1.5", report["errors"])
-
-    def test_code_change_candidate_is_forbidden(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [valid_finding(code_change_candidate="yes")],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn(
-            "review_fold.findings[0].code_change_candidate:forbidden-in-RF-v1.5",
-            report["errors"],
-        )
-
-    def test_retired_disposition_and_kernel_statuses_fail(self) -> None:
-        cases = [
-            ("accepted-liability", valid_finding(disposition="accepted-liability"), "review_fold.findings[0].disposition:invalid"),
-            ("point", valid_finding(kernel_fold=valid_kernel(status="point")), "review_fold.findings[0].kernel_fold.status:invalid"),
-            ("structural", valid_finding(kernel_fold=valid_kernel(status="structural")), "review_fold.findings[0].kernel_fold.status:invalid"),
+        value["findings"].append(duplicate)
+        value["compression"]["equivalence_classes"][0]["finding_ids"] = [
+            "finding-1",
+            "finding-2",
         ]
-        for _label, finding, expected in cases:
-            with self.subTest(expected=expected):
-                receipt = {"review_fold": {"version": "RF-v1.5", "findings": [finding]}}
-                report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-                self.assertEqual(report["verdict"], "fail")
-                self.assertIn(expected, report["errors"])
+        value["routing_obligations"][0]["finding_ids"] = [
+            "finding-1",
+            "finding-2",
+        ]
+        self.assertNotIn("core-material-disposition", validate(value))
 
-    def test_minimal_fix_disposition_fails(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [valid_finding(disposition="minimal-fix")],
-            }
-        }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn("review_fold.findings[0].disposition:invalid", report["errors"])
+        value["findings"][0]["disposition"] = "proof-only"
+        self.assertIn("core-material-disposition", validate(value))
 
-    def test_action_plan_is_forbidden(self) -> None:
-        receipt = {
-            "review_fold": {
-                "version": "RF-v1.5",
-                "findings": [valid_finding()],
-                "action_plan": {"mode": "refactor-kernel"},
-            }
+    def test_every_material_disposition_requires_evidence_bundle(self) -> None:
+        cases = (
+            ("unproven", "proof-only"),
+            ("needs-owner", "ask-human"),
+            ("valid", "blocked"),
+        )
+        fields = {
+            "observed_fact": "material-observed-fact",
+            "owner_boundary": "material-owner_boundary",
+            "law_family": "material-law_family",
+            "falsifier": "material-falsifier",
+            "evidence_refs": "material-evidence",
         }
-        report = MODULE.validate(receipt)["review_fold_receipt_gate"]
-        self.assertEqual(report["verdict"], "fail")
-        self.assertIn("review_fold.action_plan:forbidden-in-RF-v1.5", report["errors"])
+        for validity, disposition in cases:
+            for field, expected in fields.items():
+                value = receipt()
+                finding = value["findings"][0]
+                finding["validity"] = validity
+                finding["disposition"] = disposition
+                finding.pop(field)
+                with self.subTest(
+                    validity=validity, disposition=disposition, field=field
+                ):
+                    self.assertIn(expected, validate(value))
+
+        value = receipt()
+        finding = value["findings"][0]
+        finding["validity"] = "invalid"
+        finding["liability"] = "style"
+        finding["disposition"] = "reject"
+        for field in fields:
+            finding.pop(field)
+        value["routing_obligations"] = []
+        self.assertEqual(validate(value), [])
+
+    def test_resolution_input_requires_a_substantive_observed_fact(self) -> None:
+        for observed_fact in (None, "", "   "):
+            value = receipt()
+            if observed_fact is None:
+                value["findings"][0].pop("observed_fact")
+            else:
+                value["findings"][0]["observed_fact"] = observed_fact
+            with self.subTest(observed_fact=observed_fact):
+                self.assertIn("material-observed-fact", validate(value))
+
+        value = receipt()
+        value["findings"][0]["observed_fact"] = value["findings"][0]["claim"]
+        self.assertIn("material-observed-fact", validate(value))
+
+    def test_observed_proof_gap_remains_a_material_fact(self) -> None:
+        value = receipt()
+        finding = value["findings"][0]
+        finding["liability"] = "proof-gap"
+        finding["observed_fact"] = (
+            "The inspected transition tests contain no preservation assertion."
+        )
+        value["routing_obligations"] = []
+        self.assertEqual(validate(value), [])
+
+    def test_finding_identity_source_and_claim_are_substantive(self) -> None:
+        for field, expected in (
+            ("finding_id", "finding-id"),
+            ("source_ref", "finding-source"),
+            ("claim", "finding-claim"),
+        ):
+            value = receipt()
+            value["findings"][0][field] = "   "
+            if field == "finding_id":
+                value["compression"]["equivalence_classes"][0]["finding_ids"] = [
+                    "   "
+                ]
+                value["routing_obligations"][0]["finding_ids"] = ["   "]
+            with self.subTest(field=field):
+                self.assertIn(expected, validate(value))
+
+        value = receipt()
+        duplicate = value["findings"][0].copy()
+        duplicate["mutation_authority"] = value["findings"][0][
+            "mutation_authority"
+        ].copy()
+        duplicate.update(
+            {
+                "finding_id": " finding-1 ",
+                "source_ref": "cas:finding-duplicate",
+                "novelty": "duplicate",
+                "disposition": "reject",
+            }
+        )
+        value["findings"].append(duplicate)
+        value["compression"]["equivalence_classes"][0]["finding_ids"] = [
+            "finding-1",
+            " finding-1 ",
+        ]
+        value["routing_obligations"][0]["finding_ids"] = [
+            "finding-1",
+            " finding-1 ",
+        ]
+        self.assertIn("finding-id", validate(value))
+
+    def test_compression_metadata_matches_every_material_member(self) -> None:
+        for field in ("owner_boundary", "law_family"):
+            value = receipt()
+            value["compression"]["equivalence_classes"][0][field] = "unrelated"
+            with self.subTest(field=field):
+                self.assertIn("compression-owner-law-mismatch", validate(value))
+
+        for field in ("owner_boundary", "law_family"):
+            value = receipt()
+            second = value["findings"][0].copy()
+            second["mutation_authority"] = value["findings"][0][
+                "mutation_authority"
+            ].copy()
+            second.update(
+                {
+                    "finding_id": "finding-2",
+                    "source_ref": "cas:finding-2",
+                    field: "different-member-metadata",
+                }
+            )
+            value["findings"].append(second)
+            value["compression"]["equivalence_classes"][0]["finding_ids"] = [
+                "finding-1",
+                "finding-2",
+            ]
+            value["routing_obligations"][0]["finding_ids"] = [
+                "finding-1",
+                "finding-2",
+            ]
+            with self.subTest(conflicting_member=field):
+                self.assertIn("compression-owner-law-mismatch", validate(value))
+
+    def test_quotient_and_routing_must_cover_findings(self) -> None:
+        value = receipt()
+        value["compression"]["equivalence_classes"] = []
+        value["routing_obligations"] = []
+        errors = validate(value)
+        self.assertIn("compression-coverage", errors)
+        self.assertIn("routing-coverage", errors)
 
 
 if __name__ == "__main__":

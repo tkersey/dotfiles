@@ -1,121 +1,126 @@
 ---
 name: proof-patch
-description: "Produce a proof-carrying patch or PR handoff bound to current artifact state: goal, changes, validation, anti-gaming checks, review disposition, residual risk, and human review focus."
-metadata:
-  version: "1.0.0"
-  activation_cost: low
-  default_depth: standard
+description: "Render a concise terminal human proof from a current complete closure-decision/v1 after implementation or review closeout. Use for local or published completion summaries; bind goal, changes, validation, review disposition, anti-gaming checks, residual risk, and human review focus without acting as closure or publication authority."
 ---
 
 # Proof Patch
 
 ## Mission
 
-Close the loop with a concise proof-bearing artifact.
+Render the final human-readable proof after live closure has been derived.
 
-```text
-patch + evidence + review dispositions -> human-reviewable proof
-```
+~~~text
+current closure-decision/v1
+-> patch and evidence summary
+-> human review focus
+~~~
 
-This is not a release process. `$ship` still owns stronger publication/release gates. `proof-patch` is the ordinary final fold for goal work and PR handoff.
+This skill does not decide completion, select review repairs, count CAS
+attempts, or publish.
 
-## Output shape
+## Required input
 
-```markdown
+~~~yaml
+proof_patch_input:
+  closure_decision:
+    version: closure-decision/v1
+    decision_id:
+    run_id:
+    evaluated_artifact: {}
+    run_digest:
+    resolution_digest:
+    verdict: complete
+    outcomes: {}
+    evidence_basis: []
+    review_basis: []
+    ship_basis: []
+    implementation_checkpoint: {} | null
+  actuation_run: {}
+  review_resolution: {} | null
+  evidence_folds: []
+  cas_evidence: {} | null
+  ship_record: {} | null
+  changed_paths: []
+  diff_summary:
+  validation_results: []
+  review_dispositions: []
+  residual_risks: []
+~~~
+
+Recompute or reject the closure decision if the branch, head, live-state
+fingerprint, run digest, or resolution digest no longer matches. Render review
+strategy, lenses, dispositions, and semantic balance only from the bound
+resolution and evidence objects; basis IDs alone are not enough.
+For a bare pipeline, confirm the proof basis covers the retained implementation
+prefix and every review-phase material step; do not render a fresh review run
+as continuous provenance.
+
+## Output
+
+~~~markdown
 # Proof Patch
 
 ## Goal
 ...
 
+## Artifact
+- Run:
+- Closure decision:
+- Branch/head/live state:
+- Goal outcome:
+- Implementation outcome:
+- Next owner:
+
 ## Changed
 ...
 
-## Loop governance
-- ALSR-v1:
-- HYL-v1:
-- latest HSR-v1:
-- selected loop:
-- fused/unfused:
-- verifier:
-- stop rule:
-- terminal fold:
-- ATCG-v1:
-- residual loop risk:
-
-If ALSR/HYL exists, summarize the current receipts and cite their artifact
-binding. If no ALSR/HYL exists because the run is direct-action fused, state
-`direct-action fused exemption` and still name the objective, artifact scope,
-verifier, stop rule, terminal fold, and side-effect boundary. Do not claim
-completion unless ATCG-v1 permits it.
-
-## Review closure
-- CAS review source:
-- CAS finding IDs:
-- review-fold disposition:
-- review-fold receipt version:
-- resolution fold:
-- accepted liabilities:
-- no-code dispositions:
-- actuation escalation receipt:
-- clean normalized CAS runs:
-- cached CAS receipts counted as fresh: no
-
-## Review disposition
-| Class | Disposition | Why |
-|---|---|---|
-
-## Parallelism
-- mode:
-- safe frontier:
-- subagents used:
-- fan-in reducer:
-- accepted/rejected results:
-- integration order:
-- CAS clean-run reset:
+## Review resolution
+- Review source:
+- Resolution digest:
+- Strategies:
+- Accepted liabilities:
+- No-code dispositions:
+- Selected lenses:
+- Standard CAS record IDs:
 
 ## Evidence
-| Check | Result | Notes |
+| Check | Result | Binding |
 |---|---|---|
 
-## Anti-gaming checks
-- Tests removed:
+## Semantic balance
+- Live diff and admitted-step provenance:
+- Uncovered liabilities:
+- Added constructs and replacements:
+- Required/completed retirements:
+- Dominated constructs remaining:
+
+## Anti-gaming
+- Tests deleted:
 - Assertions weakened:
 - Checks skipped:
 - Coverage reduced:
-- Behavior outside goal changed:
+- Outside-goal behavior changed:
 
 ## Residual risk
 ...
 
 ## Human review focus
 ...
-```
+~~~
 
 ## Procedure
 
-1. Bind to current branch/head/diff or state that artifact binding is unavailable.
-2. Summarize only the changes relevant to the goal.
-3. Surface loop governance from ALSR-v1/HYL-v1/HSR-v1/ATCG-v1 receipts when
-   they exist; otherwise state the direct-action fused exemption.
-4. Include evidence commands and results.
-5. Include review closure, review-fold disposition, and resolution fold state
-   when review pressure was present.
-   Preserve joinable CAS finding IDs, RF-v1.3 receipt version, and AER-v1
-   escalation receipt state when they exist.
-6. Include parallelism state, even when the mode is `none`.
-7. Include anti-gaming checks.
-8. Name residual risks and focused human review targets.
-9. Hand off to `$ship` only when PR/release/publication gates are required.
+1. Require a current `closure-decision/v1` with `verdict: complete`.
+2. Bind every reported claim to the decision's current artifact and basis
+   records.
+3. Summarize only goal-relevant changes and review dispositions.
+4. Include semantic balance and anti-gaming checks.
+5. State unavailable checks and residual risk directly.
 
 ## Guardrails
 
-- Do not turn proof into marketing.
+- Do not emit final proof before closure.
+- Do not accept a replayed or hand-edited closure decision.
 - Do not hide failed or unavailable verification.
-- Do not claim review closure without review disposition.
-- Do not count cached CAS receipts as fresh clean CAS runs.
-- Do not claim completion unless ATCG-v1 permits it.
-- Do not claim completion unless ATCG-v1 returns a completion verdict that
-  permits completion.
-- Do not replace `$ship` for release or public-side-effect authority.
-- Do not publish, update PR state, resolve GitHub threads, or perform delivery
-  side effects; `$ship` owns that boundary.
+- Do not treat rejected or proof-only findings as code changes.
+- Do not publish, replace `$ship`, or perform public side effects.

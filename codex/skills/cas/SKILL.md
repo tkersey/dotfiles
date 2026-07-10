@@ -95,10 +95,50 @@ cached receipt is an independent CAS-RER record. Legacy receipts, raw event
 logs, lane records, and parent-session rows are import inputs or attachments,
 not peer truth objects.
 
+### Optional workflow binding
+
+CAS-RER-v1 may carry an additive caller-supplied binding:
+
+~~~json
+{
+  "workflowBinding": {
+    "actuationRunId": "run-id",
+    "artifactStateFingerprint": "sha256:...",
+    "reviewContractFingerprint": "sha256:...",
+    "resolutionDigest": "sha256:...",
+    "selectedLenses": ["invariant-ace", "standard"],
+    "reviewLane": "standard",
+    "lensContract": "standard-review-v1"
+  }
+}
+~~~
+
+`artifactStateFingerprint` binds the producer-native review tuple to the
+caller's live worktree state; it is distinct from CAS `targetFingerprint`.
+Provide `selectedLenses` already sorted and unique; the producer rejects a
+non-canonical list. `reviewLane` identifies the
+one lane exercised by this record; `lensContract` binds its exact contract.
+Pass the complete object atomically with `--workflow-binding-json JSON|@FILE`.
+When present, it participates in tuple-lock and record identity. Unfiltered
+`current`/`list` retains every same-artifact/thread binding epoch; supplying
+the flag there requests one exact epoch. Import preserves an existing binding
+but must never attach or relabel one that the source evidence did not carry.
+
+The binding is observational. CAS still does not decide whether the review
+contract is adequate, findings are resolved, a clean suffix qualifies, or
+mutation is authorized.
+
+Missing binding does not prevent review execution and does not invalidate a
+legacy CAS record. It means `workflow-unbound`. A workflow that requires
+actuation closeout must fail closed rather than re-labeling the record after
+review. Check installed dispatcher capabilities because older versions may not
+emit this object.
+
 Current production helpers:
 
 ```bash
-cas review_session run --cwd <repo> --base <base> --json --fallback none
+cas review_session run --cwd <repo> --base <base> --workflow-binding-json @binding.json --json --fallback none
+cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json
 cas review_session status --latest --json
 cas review_session status --path <record.json> --json
 cas review_session wait --latest --json
@@ -124,6 +164,15 @@ cas review validate-record --record <rer.json> --json
 ```
 
 Use `cas review inspect` and `cas review validate-record` for diagnostics and schema/invariant validation only. They have no workflow closeout authority.
+
+Actuation closeout acquires exhaustive live review history through the canonical
+ledger command `cas review list --cwd <repo> --base <base>
+--codex-thread-id <id> --json`. Discover the installed action surface once per
+gate invocation. Prefer `review list`; use `review_session list` only when that
+exact action is advertised, and otherwise fail closed. The dispatcher must
+return one complete `CAS-LIST-v1` object with matching `records` and
+`recordRefs`. Do not substitute `status --latest` or a caller-selected record
+set.
 
 Use `cas review_session` when low-level detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or migration/debug receipts.
 

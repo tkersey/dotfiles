@@ -26,32 +26,52 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 
 For material `$actuating` work, do not operate from a hidden loop.
 
-Before first material mutation, establish one of:
+Before first material mutation, establish a current `actuation-run/v1` with:
 
-```text
-direct_action fused exemption
-current ALSR-v1 + HYL-v1
-```
+~~~text
+accepted source and execution authority
+current repo/base/branch/head/live-state fingerprint
+one lead-selected step
+explicit mutation and public-effect boundaries
+~~~
 
-If none exists, stop with:
+If the run is missing, stop with:
 
-```text
-actuation verdict: blocked-loop-contract-missing
-```
+~~~text
+actuation verdict: blocked-run-missing
+~~~
 
-If the loop contract is stale against current branch/head/diff, stop with:
+If the run is stale against current repo/base/branch/head/live state, stop with:
 
-```text
-actuation verdict: blocked-loop-contract-stale
-```
+~~~text
+actuation verdict: blocked-run-stale
+~~~
 
-No material mutation is valid without an unfolded work node or frontier.
+No material mutation is valid without a selected work step.
+No selected action is valid without a gate-derived `step-admission/v1` copied
+into the step before execution and preserved after completion.
 No continuation is valid without an evidence fold.
-No completion is valid without terminal ATCG-v1.
+No completion is valid without a freshly derived `closure-decision/v1`.
 
-Workflow review must use `$cas` when fresh or exhaustive review is required. Review findings must pass through `$review-fold` and resolve before implementation. Only accepted code-change liabilities may reach mutation.
+Bare `$actuating` execution remains one append-only run across implementation,
+`$ship`, and review-closeout. The gate-derived implementation checkpoint binds
+the immutable implementation prefix and first SHIP receipt; do not reconstruct
+a fresh review run or reset its initial artifact.
 
-Subagents may work only on bounded nodes or frontiers. The lead owns scope, fan-in, integration, CAS clean-run counting, proof closure, and `$ship` handoff.
+Workflow review must use `$cas` when fresh or exhaustive review is required.
+Review findings must pass through `$review-fold`, which classifies only, then
+through `review-resolution/v1` before implementation. Only a current selected
+resolution node may grant review-derived mutation.
+
+Review resolution must account for every touched owner-boundary abstraction and
+prefer retirement, collapse, delegation, or replacement over accumulating
+comment-shaped helpers. Local repair may not add semantic machinery. Closure
+requires three distinct current standard CAS attempts when review closeout is
+active; scalar clean counts and opaque proof references are invalid.
+
+Subagents may mutate only one bounded selected node. Read-only scouting,
+classification, and proof work may fan out; the lead owns scope, fan-in,
+integration, CAS clean-run counting, proof closure, and `$ship` handoff.
 
 `$ship` owns PR creation, update, promotion, and publication.
 

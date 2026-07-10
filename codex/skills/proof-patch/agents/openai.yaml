@@ -2,15 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Proof Patch"
-  short_description: "Create current-artifact proof summaries for goal completion and PR handoff"
-  default_prompt: >-
-    Use $proof-patch before final /goal completion or PR handoff. Bind to current
-    artifact state, summarize changed paths, loop governance receipts, review
-    closure including CAS finding IDs, RF-v1.3 review-fold receipt version,
-    AER-v1 actuation escalation receipt state, and resolution fold state,
-    parallelism, validation, review dispositions, anti-gaming checks, residual
-    risk, and human review focus.
-    State direct-action fused exemption when ALSR/HYL is absent, never count
-    cached CAS receipts as fresh clean runs, and do not claim completion unless
-    ATCG-v1 permits it. Escalate to $ship only for publication, PR updates,
-    thread resolution, or stronger release gates.
+  short_description: "Render proof from a live closure decision"
+  default_prompt: "Use $proof-patch to render a concise human proof from this current closure-decision/v1 without changing closure or publication state."

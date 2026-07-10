@@ -36,7 +36,8 @@ Use for:
 Handoff instead:
 
 - broad layer/framework/tooling tax -> `reduce`;
-- repeated review distinctions / behavioral kernel -> `review-fold` or the owning review-closure workflow;
+- unclassified review distinctions -> `review-fold`;
+- classified owner-boundary pressure -> `review-resolution/v1` through the owning actuation workflow;
 - illegal states / invariant ownership -> `invariant-ace`;
 - missing essential structural shape -> `universalist`;
 - implementation -> `goal-actuating` or the owning workflow.
@@ -92,6 +93,33 @@ Use only when the slice crosses files, behavior is unclear, specification risk i
 8. State the recomposition rule: how the retained factors still explain the behavior.
 9. Name the smallest proof signal and handoff.
 
+## Review-resolution handoff
+
+When an actuation review profile selects this lens, return factorization
+evidence to `review-resolution/v1`. Do not choose the strategy or grant
+mutation.
+
+~~~yaml
+complexity_resolution_input:
+  owner_boundary:
+  participating_abstractions:
+    - abstraction:
+      live_obligation:
+      status: retain | retire | collapse | delegate | replace | validate-first
+  dominated_factors: []
+  smallest_local_repair:
+  replacement_kernel:
+  local_repair_adds_semantic_machinery: true | false
+  proof_surface_before: []
+  proof_surface_after: []
+  falsifier:
+  evidence_refs: []
+~~~
+
+If local repair adds a protocol, state, helper abstraction, repeated branch
+family, or wound-specific test family, mark it as semantically growing and
+present the replacement-kernel alternative. The resolution owner decides.
+
 ## Factorization / Winnowing Receipt
 
 ```yaml
@@ -115,6 +143,7 @@ factorization_winnowing_receipt:
 ## Guardrails
 
 - No file edits or commits.
+- Do not select a review repair or work node.
 - Do not confuse lower LOC with lower understanding cost.
 - Do not delete essential policy or unresolved external obligations.
 - Do not merge accidental rhymes.
