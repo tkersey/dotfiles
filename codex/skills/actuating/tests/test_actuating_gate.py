@@ -1127,29 +1127,36 @@ class GateTests(unittest.TestCase):
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertIn("blocked-local-repair-growth", errors)
 
-    def test_abstraction_cannot_be_retained_and_retired(self) -> None:
+    def test_abstraction_has_exactly_one_disposition(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
-        resolution = self.resolution(run)
-        self.bind_resolution_findings(run, resolution, ["finding-1"])
-        decision = self.decision(run)
-        decision["abstraction_account"].append(
-            {
-                "abstraction": "gate",
-                "disposition": "retire",
-                "obligation_id": "mutation-admission",
-            }
-        )
-        resolution["decisions"] = [decision]
-        resolution["outcome"]["status"] = "resolved"
-        balance = resolution["outcome"]["semantic_balance"]
-        balance["covered_liabilities"] = ["invariant-gap"]
-        balance["required_retirements"] = ["gate"]
-        balance["completed_retirements"] = ["gate"]
-        resolution["outcome"]["resolution_digest"] = canonical_digest(
-            resolution_digest_payload(resolution)
-        )
-        errors, _ = validate_resolution(run, resolution, self.repo)
-        self.assertIn("blocked-abstraction-disposition", errors)
+        for dispositions in (
+            ("retain", "retire"),
+            ("retire", "retire"),
+            ("retire", "collapse"),
+        ):
+            resolution = self.resolution(run)
+            self.bind_resolution_findings(run, resolution, ["finding-1"])
+            decision = self.decision(run)
+            decision["abstraction_account"] = [
+                {
+                    "abstraction": "gate",
+                    "disposition": disposition,
+                    "obligation_id": "mutation-admission",
+                }
+                for disposition in dispositions
+            ]
+            resolution["decisions"] = [decision]
+            resolution["outcome"]["status"] = "resolved"
+            balance = resolution["outcome"]["semantic_balance"]
+            balance["covered_liabilities"] = ["invariant-gap"]
+            balance["required_retirements"] = ["gate"]
+            balance["completed_retirements"] = ["gate"]
+            resolution["outcome"]["resolution_digest"] = canonical_digest(
+                resolution_digest_payload(resolution)
+            )
+            errors, _ = validate_resolution(run, resolution, self.repo)
+            with self.subTest(dispositions=dispositions):
+                self.assertIn("blocked-abstraction-disposition", errors)
 
     def test_resolved_node_must_match_completed_admitted_step(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
@@ -1274,6 +1281,26 @@ class GateTests(unittest.TestCase):
             with self.subTest(expected=expected):
                 errors, _ = validate_resolution(run, resolution, self.repo)
                 self.assertIn(expected, errors)
+
+    def test_semantic_balance_requires_exact_string_lists(self) -> None:
+        run = self.run_value(review=True)
+        for key in (
+            "accounted_hunks",
+            "unaccounted_hunks",
+            "covered_liabilities",
+            "uncovered_liabilities",
+            "required_retirements",
+            "completed_retirements",
+            "dominated_remaining",
+        ):
+            resolution = self.resolution(run)
+            resolution["outcome"]["semantic_balance"][key] = [{}]
+            resolution["outcome"]["resolution_digest"] = canonical_digest(
+                resolution_digest_payload(resolution)
+            )
+            errors, _ = validate_resolution(run, resolution, self.repo)
+            with self.subTest(key=key):
+                self.assertIn(f"blocked-semantic-balance:{key}", errors)
 
     def test_resolution_rejects_mixed_lists_and_open_review_folds(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
@@ -1694,6 +1721,7 @@ class GateTests(unittest.TestCase):
         second = self.decision(run, finding_ids=["finding-2"])
         second["decision_id"] = "decision-2"
         second["owner_boundary"] = "other-owner"
+        second["abstraction_account"][0]["abstraction"] = "other-gate"
         second["selected_work_node"] = None
         resolution["decisions"] = [first, second]
         resolution["outcome"]["status"] = "pending"

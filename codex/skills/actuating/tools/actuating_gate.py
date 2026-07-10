@@ -1424,7 +1424,7 @@ def _resolution_contract_errors(
     selected_nodes: list[str] = []
     selected_bindings: list[dict[str, Any]] = []
     retired_abstractions: set[str] = set()
-    retained_abstractions: set[str] = set()
+    seen_abstractions: set[str] = set()
     account_owners: dict[tuple[str, str], list[tuple[str, str]]] = {}
     strategies = set(semantics.get("strategies") or [])
     dispositions = set(semantics.get("abstraction_dispositions") or [])
@@ -1473,13 +1473,15 @@ def _resolution_contract_errors(
             abstraction = text(row.get("abstraction"))
             if not abstraction:
                 errors.append("blocked-abstraction-account")
+            elif abstraction in seen_abstractions:
+                errors.append("blocked-abstraction-disposition")
+            else:
+                seen_abstractions.add(abstraction)
             disposition = text(row.get("disposition"))
             if disposition not in dispositions:
                 errors.append("blocked-abstraction-disposition")
             if disposition == "retain" and not text(row.get("obligation_id")):
                 errors.append("blocked-abstraction-retain")
-            if disposition == "retain" and abstraction:
-                retained_abstractions.add(abstraction)
             obligation_id = text(row.get("obligation_id"))
             if abstraction and obligation_id:
                 account_owners.setdefault((abstraction, obligation_id), []).append(
@@ -1535,8 +1537,6 @@ def _resolution_contract_errors(
             admitted_node_binding
         ]:
             errors.append("blocked-resolution-node-unexecuted")
-    if retained_abstractions & retired_abstractions:
-        errors.append("blocked-abstraction-disposition")
     if sorted(covered) != sorted(finding_ids) or len(covered) != len(set(covered)):
         errors.append("blocked-resolution-finding-coverage")
 
@@ -1562,7 +1562,7 @@ def _resolution_contract_errors(
         "completed_retirements",
         "dominated_remaining",
     ):
-        if not isinstance(balance.get(key), list):
+        if not has_exact_string_list(balance.get(key)):
             errors.append(f"blocked-semantic-balance:{key}")
     accounted_hunks = string_list(balance.get("accounted_hunks"))
     if len(accounted_hunks) != len(set(accounted_hunks)):

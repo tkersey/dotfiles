@@ -64,6 +64,11 @@ does not retroactively relabel an earlier mutation admission, but every node it
 marks resolved must still match exactly one completed admitted edit by node,
 owner boundary, paths, and verifier.
 
+The resolution inverse assigns each non-empty abstraction exactly one
+disposition across all decisions. Its hunk, liability, and retirement balance
+fields are exact lists of non-empty strings; malformed elements never collapse
+into accepted empty evidence.
+
 Before a later iterative step is admitted, every initial-to-live path-state
 delta must already appear in prior completed steps' exact `changed_paths`.
 Untouched initial dirt remains user-owned; carried, unclaimed dirt cannot be
