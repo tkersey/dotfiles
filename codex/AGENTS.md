@@ -17,6 +17,11 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - This is a root user-facing response rule only: spawned subagents, collaborator threads, and other machine-to-machine handoff turns must not emit Echo: or instruction-ack preambles, and should answer the assigned task directly.
 - Do not include `Echo:` inside generated files, patches, code blocks, JSON/YAML/TOML intended for machine consumption, email bodies, PR bodies, commit messages, or artifacts the user asked to copy verbatim. Put Echo only in the surrounding chat response.
 
+### Language-surface pass
+
+- Treat `$logophile` as implicitly in scope for every non-trivial root user-facing response and every human-facing artifact, even when wording is not the primary task. After the governing workflow fixes the facts and decisions, run `$logophile` as the final language pass on explanations, summaries, plans, review replies, commit and PR text, docs, headings, labels, error messages, handoffs, and closure notes.
+- Keep the pass language-only: preserve facts, modality, uncertainty, scope, ownership, sequence, identifiers, code, paths, flags, schemas, protocol literals, and operational decisions. Never rewrite machine-consumed artifacts unless wording or naming on that surface is explicitly requested. Skip only terse acknowledgements or status updates and turns with no human-facing language surface.
+
 ## Actuation Governance
 
 For material `$actuating` work, do not operate from a hidden loop.
