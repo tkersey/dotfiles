@@ -108,7 +108,18 @@ Before a material mutation:
 2. Select exactly one step and tag it with its lifecycle phase.
 3. Keep selection and mutation fan-in with the lead; advisory scouting,
    classification, and proof checks may fan out.
-4. Validate the run with `tools/actuating_gate.py validate-run`.
+4. From the repository root, validate the run through `uv` so the checked-in
+   non-executable tool and its YAML dependency are handled explicitly:
+
+   ~~~bash
+   uv run --with pyyaml python \
+     codex/skills/actuating/tools/actuating_gate.py validate-run \
+     --run RUN.yaml \
+     --repo .
+   ~~~
+
+   Add `--resolution RESOLUTION.yaml` for a review-derived edit and repeat
+   `--evidence EF.json` for every completed predecessor.
 
 Before any selected action, copy the gate-derived `step-admission/v1` into the
 step. It binds the original invocation profile, phase, immutable predecessor

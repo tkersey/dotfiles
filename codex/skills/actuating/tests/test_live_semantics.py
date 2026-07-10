@@ -135,6 +135,20 @@ class LiveSemanticsTests(unittest.TestCase):
         )
         self.assertIn("$actuating implement` runs only", goal_text)
 
+    def test_documented_validate_run_uses_provisioned_wrapper(self) -> None:
+        skill_text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn(
+            "uv run --with pyyaml python \\\n"
+            "     codex/skills/actuating/tools/actuating_gate.py validate-run",
+            skill_text,
+        )
+        self.assertIn("--run RUN.yaml", skill_text)
+        self.assertIn("--repo .", skill_text)
+        self.assertNotIn(
+            "Validate the run with `tools/actuating_gate.py validate-run`",
+            skill_text,
+        )
+
     def test_standard_only_reference_shapes_are_literal(self) -> None:
         closure = (ROOT / "references" / "closure.md").read_text(encoding="utf-8")
         resolution = (ROOT / "references" / "review-resolution.md").read_text(
@@ -158,7 +172,7 @@ class LiveSemanticsTests(unittest.TestCase):
 
     def test_retired_protocol_is_absent_from_live_surfaces(self) -> None:
         paths = [
-            REPO / "AGENTS.md",
+            REPO / "codex/AGENTS.md",
             ROOT / "SKILL.md",
             ROOT / "agents",
             ROOT / "references",
@@ -195,7 +209,7 @@ class LiveSemanticsTests(unittest.TestCase):
 
     def test_mutation_contract_is_single_step(self) -> None:
         paths = [
-            REPO / "AGENTS.md",
+            REPO / "codex/AGENTS.md",
             ROOT / "SKILL.md",
             ROOT / "references/live-semantics.yaml",
             REPO / "codex/skills/goal-actuating/SKILL.md",
