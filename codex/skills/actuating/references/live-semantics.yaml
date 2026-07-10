@@ -108,6 +108,14 @@ live_semantics:
       statement: Review-derived mutation requires classified findings and a current resolution.
     - id: review-admission-before-mutation
       statement: A review edit embeds the gate-derived review-admission receipt with the full resolution observer facts and optional prior SHIP snapshot before mutation and preserves it thereafter.
+    - id: live-review-source-before-admission
+      statement: Every review repair admission follows a live source refresh and a newly folded producer batch for the current local artifact.
+    - id: same-publication-continuation-derived
+      statement: An adjacent review repair under an unchanged SHIP is admitted only by the gate-derived continuation receipt with injective stable finding semantics and source producer lineage, fresh fold and batch identities supporting every introduced finding, and predecessor evidence-content binding.
+    - id: review-history-survives-reship
+      statement: A replacement SHIP resets publication-local proof credit but every later repair admission preserves cumulative finding and source history while strictly extending the finding set.
+    - id: terminal-resolution-exact
+      statement: After a publication-bearing repair clean cannot erase history; a resolved refold matches exactly the admitted material finding set, preserves source producer lineage, and supports every finding with fresh review input while a new finding remains pending.
     - id: review-mode-profile-alignment
       statement: Review-required execution uses review-closeout and cannot be relabeled as implement.
     - id: observable-index-before-mutation
@@ -119,7 +127,11 @@ live_semantics:
     - id: public-effects-owned-by-ship
       statement: Only ship may perform PR or public tracker effects.
     - id: ship-precedes-review-closeout
-      statement: Publication-bearing review-closeout validates an embedded immutable SHIP-v1 before admission and every repair publication updates that same retained PR URL.
+      statement: Publication-bearing review-closeout validates an embedded immutable SHIP-v1 before admission; adjacent same-publication repairs remain local until resolution and the final repair publication updates that same retained PR URL.
+    - id: repair-reship-resets-cas
+      statement: Republishing the resolved repair head resets CAS credit to zero and final closure requires three fresh ordered standard attempts.
+    - id: pr-publication-watermark-before-cas
+      statement: Publication-bound CAS credit uses monotone pre-list observations and a stable post-list live PR updatedAt watermark; a regressing observation blocks closure, records at or before the greatest observation are superseded, duplicate record and producer attempt identities are invalid across epochs, and a later PR metadata update resets the clean suffix while findings remain classification obligations.
     - id: closure-is-live
       statement: Completion is recomputed from current repository state and joined evidence.
     - id: resolved-node-history
@@ -138,6 +150,8 @@ live_semantics:
       - duplicate recursive coordinator
       - proof and closure dependency cycle
       - one-patch-per-comment escalation artifacts
+      - caller-authored publication-continuation authority
+      - single-use same-publication exception
       - runtime-history documentation
 
   closure_flow:
@@ -151,7 +165,10 @@ live_semantics:
     review_closeout:
       requires_when: publication-requested
       receipt: pre-review-SHIP-v1
-      after_edit: [current-resolved-refold, ship, review-closeout]
+      before_repair_admission: [refresh-live-review-sources, review-fold, review-resolution]
+      after_edit:
+        unresolved: [evidence-fold, refresh-live-review-sources, review-fold, review-resolution, gate-derived-continuation]
+        resolved: [evidence-fold, current-resolved-refold, ship, reset-cas-credit, review-closeout]
       then: final-closure
     final_closure: closure-decision/v1
     terminal_view: final-proof-patch

@@ -252,6 +252,7 @@ class GateTests(unittest.TestCase):
                 "headRepository": {"nameWithOwner": "example/repo"},
                 "isDraft": False,
                 "state": "OPEN",
+                "updatedAt": "unix-ns:0",
             },
         }
 
@@ -366,19 +367,25 @@ class GateTests(unittest.TestCase):
         (self.repo / "file.txt").write_text("changed\n", encoding="utf-8")
         return self.finish_step(run, ["file.txt"])
 
-    def admit_step(self, run: dict) -> None:
+    def admit_step(
+        self,
+        run: dict,
+        resolution: dict | None = None,
+        evidence_values: list[dict] | None = None,
+    ) -> None:
         step = run["execution"]["steps"][-1]
-        resolution = None
         if (
-            step.get("phase") == "review-closeout"
+            resolution is None
+            and step.get("phase") == "review-closeout"
             and step.get("effect") == "edit"
         ):
             resolution = self.material_resolution(run, node_id=step["step_id"])
-        evidence_values = [
-            self.evidence_for_step(run, index)
-            for index, candidate in enumerate(run["execution"]["steps"])
-            if candidate.get("status") == "completed"
-        ]
+        if evidence_values is None:
+            evidence_values = [
+                self.evidence_for_step(run, index)
+                for index, candidate in enumerate(run["execution"]["steps"])
+                if candidate.get("status") == "completed"
+            ]
         errors, derived = validate_run(
             run,
             self.repo,
@@ -535,8 +542,8 @@ class GateTests(unittest.TestCase):
             {
                 "finding_id": finding_id,
                 "source_ref": f"local:{finding_id}",
-                "claim": "the gate misses an inverse",
-                "observed_fact": "a counterexample closes",
+                "claim": f"the gate misses inverse {finding_id}",
+                "observed_fact": f"counterexample {finding_id} closes",
                 "suggested_repair": "enforce the owner law",
                 "validity": "valid",
                 "liability": "invariant-gap",
@@ -700,6 +707,7 @@ class GateTests(unittest.TestCase):
             observations["changed_paths"],
             observations["hunk_ids"],
             admission["ship_receipt"],
+            admission.get("publication_continuation"),
         )
 
     def cas_review_fold(self, run: dict, record: dict) -> dict:
@@ -831,6 +839,113 @@ class GateTests(unittest.TestCase):
             "pr_url": prior_url,
         }
         return value
+
+    def append_review_edit(self, run: dict, step_id: str) -> None:
+        run["execution"]["kind"] = "iterative"
+        run["execution"]["selected_step_id"] = step_id
+        run["execution"]["steps"].append(
+            {
+                "step_id": step_id,
+                "run_id": run["run_id"],
+                "phase": "review-closeout",
+                "selected_by": "lead",
+                "owner_boundary": "actuating",
+                "effect": "edit",
+                "paths": ["file.txt"],
+                "verifier": ["test"],
+                "changed_paths": [],
+                "status": "selected",
+                "state_before": copy.deepcopy(run["artifact"]),
+                "parent_completion_claimed": False,
+                "performed_public_effects": [],
+            }
+        )
+
+    def cumulative_material_resolution(
+        self,
+        run: dict,
+        finding_ids: list[str],
+        node_id: str,
+        *,
+        fold_id: str,
+        source_batch_id: str,
+        source_ref: str = "local:audit-1",
+        status: str = "pending",
+    ) -> dict:
+        resolution = self.resolution(run)
+        self.bind_resolution_findings(run, resolution, finding_ids)
+        fold = resolution["review_folds"][0]
+        fold["fold_id"] = fold_id
+        fold["source"]["source_batch_id"] = source_batch_id
+        fold["source"]["source_ref"] = source_ref
+        decision = self.decision(run, finding_ids=finding_ids)
+        selected_step = next(
+            step
+            for step in run["execution"]["steps"]
+            if step["step_id"] == node_id
+        )
+        decision["owner_boundary"] = selected_step["owner_boundary"]
+        decision["selected_work_node"] = {
+            "node_id": node_id,
+            "run_id": run["run_id"],
+            "owner_boundary": selected_step["owner_boundary"],
+            "paths": selected_step["paths"],
+            "verifier": selected_step["verifier"],
+        }
+        resolution["decisions"] = [decision]
+        resolution["outcome"]["status"] = status
+        resolution["outcome"]["semantic_balance"]["covered_liabilities"] = [
+            "invariant-gap"
+        ]
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+        return resolution
+
+    def validate_with_live_pr(
+        self,
+        run: dict,
+        resolution: dict,
+        evidence: list[dict],
+        published_pr: dict,
+    ) -> tuple[list[str], dict]:
+        self.live_pr_override = published_pr
+        try:
+            return validate_run(run, self.repo, resolution, evidence)
+        finally:
+            self.live_pr_override = None
+
+    def same_publication_candidate(
+        self,
+    ) -> tuple[dict, dict, list[dict], dict]:
+        run = self.run_value(review=True, selected=True)
+        run["review"]["publication_requested"] = True
+        ship_receipt = self.ship_record(run)
+        run["review"]["ship_receipt"] = ship_receipt
+        published_pr = self.pr_metadata(
+            self.repo,
+            ship_receipt["ship_record"]["action"]["pr_url"],
+        )
+        first_resolution = self.cumulative_material_resolution(
+            run,
+            ["finding-1"],
+            "step-1",
+            fold_id="rf-1",
+            source_batch_id="audit-1",
+        )
+        self.admit_step(run, first_resolution, [])
+        (self.repo / "file.txt").write_text("first repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        evidence = [self.evidence_for_step(run, 0)]
+        self.append_review_edit(run, "step-2")
+        resolution = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-2",
+            source_batch_id="audit-2",
+        )
+        return run, resolution, evidence, published_pr
 
     def decision(
         self,
@@ -1119,6 +1234,9 @@ class GateTests(unittest.TestCase):
         run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
         initial_ship = self.ship_record(run)
         run = self.transition_bare_run_to_review(run, initial_ship)
+        published_pr = self.pr_metadata(
+            self.repo, initial_ship["ship_record"]["action"]["pr_url"]
+        )
         run["execution"]["kind"] = "iterative"
         run["execution"]["selected_step_id"] = "step-2"
         run["execution"]["steps"].append(
@@ -1142,20 +1260,27 @@ class GateTests(unittest.TestCase):
         (self.repo / "file.txt").write_text("review repair\n", encoding="utf-8")
         run = self.finish_step(run, ["file.txt"])
 
-        resolution = self.material_resolution(
+        resolution = self.cumulative_material_resolution(
             run,
-            node_id="step-2",
+            ["finding-1"],
+            "step-2",
+            fold_id="rf-terminal",
+            source_batch_id="audit-terminal",
             status="resolved",
         )
         evidence = [self.evidence_for_step(run, index) for index in (0, 1)]
-        handoff, code = decide(
-            run,
-            resolution,
-            evidence,
-            [],
-            None,
-            self.repo,
-        )
+        self.live_pr_override = published_pr
+        try:
+            handoff, code = decide(
+                run,
+                resolution,
+                evidence,
+                [],
+                None,
+                self.repo,
+            )
+        finally:
+            self.live_pr_override = None
         self.assertEqual(code, 0, handoff)
         self.assertEqual(handoff["closure_decision"]["verdict"], "ready-to-ship")
 
@@ -1218,6 +1343,43 @@ class GateTests(unittest.TestCase):
             errors, _ = validate_run(tampered, self.repo)
             with self.subTest(field=field):
                 self.assertIn("blocked-step-admission", errors)
+
+    def test_non_review_step_rejects_specialized_review_admission(self) -> None:
+        for status in ("selected", "completed"):
+            with self.subTest(status=status):
+                run = self.run_value(selected=True)
+                if status == "completed":
+                    run = self.complete_step(run)
+                step = run["execution"]["steps"][0]
+                step["review_admission"] = {
+                    "admission_digest": "sha256:" + "1" * 64,
+                    "ship_receipt": None,
+                }
+                if status == "completed":
+                    step["step_admission"] = expected_step_admission(
+                        run, step, 0, step["review_admission"]
+                    )
+
+                errors, derived = validate_run(run, self.repo)
+                self.assertIn("blocked-unexpected-input", errors)
+                self.assertIsNone(derived["review_admission"])
+                self.assertIsNone(derived["step_admission"])
+
+    def test_blocked_review_step_rejects_malformed_preserved_admission(
+        self,
+    ) -> None:
+        run = self.run_value(review=True, selected=True)
+        resolution = self.material_resolution(run)
+        self.admit_step(run, resolution)
+        step = run["execution"]["steps"][0]
+        step["status"] = "blocked"
+        step["review_admission"]["admission_digest"] = "sha256:malformed"
+        run["execution"]["selected_step_id"] = None
+
+        errors, _ = validate_run(run, self.repo, resolution)
+
+        self.assertIn("blocked-resolution-binding", errors)
+        self.assertIn("blocked-step-admission", errors)
 
     def test_review_and_resolve_are_not_executable_effects(self) -> None:
         for effect in ("review", "resolve"):
@@ -1469,8 +1631,84 @@ class GateTests(unittest.TestCase):
         run["execution"]["steps"][0]["review_admission"] = admission
         run = self.complete_step(run)
 
-        current = self.material_resolution(run, status="resolved")
         evidence = self.evidence(run)
+        reused_terminal = self.material_resolution(run, status="resolved")
+        resolution_errors, _ = validate_resolution(
+            run, reused_terminal, self.repo, [evidence]
+        )
+        self.assertIn("blocked-resolution-history", resolution_errors)
+
+        detached_run = copy.deepcopy(run)
+        detached_run["review"]["source_refs"] = [
+            "local:audit-1",
+            "local:audit-2",
+        ]
+        detached_terminal = self.cumulative_material_resolution(
+            detached_run,
+            ["finding-1"],
+            "step-1",
+            fold_id="rf-terminal-old-batch",
+            source_batch_id="audit-1",
+            status="resolved",
+        )
+        clean_refresh = self.review_fold(detached_run)
+        clean_refresh["fold_id"] = "rf-terminal-clean-refresh"
+        clean_refresh["source"]["source_batch_id"] = "audit-terminal-clean"
+        clean_refresh["source"]["source_ref"] = "local:audit-2"
+        detached_terminal["review_folds"].append(clean_refresh)
+        detached_terminal["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(detached_terminal)
+        )
+        self.live_pr_override = historical_pr
+        try:
+            resolution_errors, _ = validate_resolution(
+                detached_run, detached_terminal, self.repo, [evidence]
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertIn("blocked-resolution-history", resolution_errors)
+        self.assertNotIn("blocked-review-fold-source", resolution_errors)
+
+        current = self.cumulative_material_resolution(
+            run,
+            ["finding-1"],
+            "step-1",
+            fold_id="rf-terminal",
+            source_batch_id="audit-terminal",
+            status="resolved",
+        )
+
+        moved, code = decide(
+            run,
+            current,
+            [evidence],
+            [],
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-ship-live-pr-mismatch",
+            moved["closure_decision"]["reasons"],
+        )
+
+        closed_pr = copy.deepcopy(historical_pr)
+        closed_pr["pull_request"]["state"] = "CLOSED"
+        self.live_pr_override = closed_pr
+        closed, code = decide(
+            run,
+            current,
+            [evidence],
+            [],
+            None,
+            self.repo,
+        )
+        self.live_pr_override = None
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-ship-live-pr-mismatch",
+            closed["closure_decision"]["reasons"],
+        )
 
         forged_history = copy.deepcopy(run)
         forged_admission = copy.deepcopy(
@@ -1525,9 +1763,13 @@ class GateTests(unittest.TestCase):
         )
         self.assertEqual(handback["closure_decision"]["review_basis"], [])
 
-        resolution_errors, pre_ship_derived = validate_resolution(
-            run, current, self.repo
-        )
+        self.live_pr_override = historical_pr
+        try:
+            resolution_errors, pre_ship_derived = validate_resolution(
+                run, current, self.repo, [evidence]
+            )
+        finally:
+            self.live_pr_override = None
         self.assertEqual(resolution_errors, [])
         pre_ship_snapshot = self.review_records(run, current)[0]
         cas_problems, _ = cas_errors(
@@ -1558,6 +1800,21 @@ class GateTests(unittest.TestCase):
         fresh_ship = self.updated_ship_record(run, prior_ship)
         self.assertNotEqual(canonical_digest(fresh_ship), canonical_digest(prior_ship))
         run["review"]["ship_receipt"] = fresh_ship
+        erased_history = self.resolution(run)
+        erased, code = decide(
+            run,
+            erased_history,
+            [evidence],
+            self.review_records(run, erased_history),
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-resolution-history", erased["closure_decision"]["reasons"]
+        )
+        self.assertEqual(erased["closure_decision"]["review_basis"], [])
+
         resolution_errors, post_ship_derived = validate_resolution(
             run, current, self.repo
         )
@@ -1592,11 +1849,27 @@ class GateTests(unittest.TestCase):
                 "performed_public_effects": [],
             }
         )
-        next_pending = self.material_resolution(
+        next_pending = self.cumulative_material_resolution(
             next_run,
-            finding_id="finding-2",
-            node_id="step-2",
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-2",
+            source_batch_id="audit-2",
         )
+        dropped_history = self.cumulative_material_resolution(
+            next_run,
+            ["finding-2"],
+            "step-2",
+            fold_id="rf-dropped-history",
+            source_batch_id="audit-dropped-history",
+        )
+        errors, _ = validate_run(
+            next_run,
+            self.repo,
+            dropped_history,
+            [self.evidence(run)],
+        )
+        self.assertIn("blocked-resolution-history", errors)
         errors, derived = validate_run(
             next_run,
             self.repo,
@@ -1609,16 +1882,1271 @@ class GateTests(unittest.TestCase):
             fresh_ship,
         )
 
+        early_records = self.review_records(run, current)
+        self.live_pr_override = historical_pr
+        stale_publication, code = decide(
+            run,
+            current,
+            [evidence],
+            early_records,
+            None,
+            self.repo,
+        )
+        self.live_pr_override = None
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-ship-live-pr-mismatch",
+            stale_publication["closure_decision"]["reasons"],
+        )
+        self.assertEqual(stale_publication["closure_decision"]["review_basis"], [])
+
+        caught_up_pr = self.pr_metadata(
+            self.repo, fresh_ship["ship_record"]["action"]["pr_url"]
+        )
+        caught_up_pr["pull_request"]["updatedAt"] = "unix-ns:10"
+        self.live_pr_override = caught_up_pr
+        replayed, code = decide(
+            run,
+            current,
+            [evidence],
+            early_records,
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-cas-clean-streak",
+            replayed["closure_decision"]["reasons"],
+        )
+        self.assertEqual(replayed["closure_decision"]["review_basis"], [])
+
+        new_rows = [
+            self.cas_record(run, current, "standard", ordinal)
+            for ordinal in (11, 12, 13)
+        ]
+        fresh_records = self.cas_snapshot(
+            [*early_records[0]["records"], *new_rows]
+        )
+
+        watermark_attempt_replay = copy.deepcopy(fresh_records)
+        replay_rows = watermark_attempt_replay[0]["records"]
+        replay_rows[0]["attempt"]["attemptId"] = replay_rows[-2]["attempt"][
+            "attemptId"
+        ]
+        self.live_cas_snapshot = watermark_attempt_replay[0]
+        replayed_attempt, code = decide(
+            run,
+            current,
+            [evidence],
+            watermark_attempt_replay,
+            None,
+            self.repo,
+        )
+        self.live_cas_snapshot = fresh_records[0]
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-cas-unit-duplicate",
+            replayed_attempt["closure_decision"]["reasons"],
+        )
+
+        stable_pr = copy.deepcopy(caught_up_pr)
+        advanced_pr = copy.deepcopy(caught_up_pr)
+        advanced_pr["pull_request"]["updatedAt"] = "unix-ns:20"
+        starting_calls = self.live_pr_mock.call_count
+
+        def advance_after_cas(*_args: object) -> dict:
+            calls = self.live_pr_mock.call_count - starting_calls
+            return advanced_pr if calls >= 4 else stable_pr
+
+        self.live_pr_mock.side_effect = advance_after_cas
+        try:
+            advanced, code = decide(
+                run,
+                current,
+                [evidence],
+                fresh_records,
+                None,
+                self.repo,
+            )
+        finally:
+            self.live_pr_mock.side_effect = self.pr_metadata
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-cas-publication-watermark",
+            advanced["closure_decision"]["reasons"],
+        )
+        self.assertEqual(advanced["closure_decision"]["review_basis"], [])
+
+        regressed_pr = copy.deepcopy(caught_up_pr)
+        regressed_pr["pull_request"]["updatedAt"] = "unix-ns:20"
+        for high_observation_count in (1, 2):
+            with self.subTest(
+                high_observation_count=high_observation_count
+            ):
+                starting_calls = self.live_pr_mock.call_count
+
+                def regress_watermark(*_args: object) -> dict:
+                    calls = self.live_pr_mock.call_count - starting_calls
+                    return (
+                        regressed_pr
+                        if calls <= high_observation_count
+                        else caught_up_pr
+                    )
+
+                self.live_pr_mock.side_effect = regress_watermark
+                try:
+                    regressed, code = decide(
+                        run,
+                        current,
+                        [evidence],
+                        fresh_records,
+                        None,
+                        self.repo,
+                    )
+                finally:
+                    self.live_pr_mock.side_effect = self.pr_metadata
+                self.assertEqual(code, 2)
+                self.assertIn(
+                    "blocked-cas-publication-watermark",
+                    regressed["closure_decision"]["reasons"],
+                )
+                self.assertEqual(
+                    regressed["closure_decision"]["review_basis"], []
+                )
+
         final, code = decide(
             run,
             current,
             [evidence],
-            self.review_records(run, current),
+            fresh_records,
+            None,
+            self.repo,
+        )
+        self.live_pr_override = None
+        self.assertEqual(code, 0, final)
+        self.assertEqual(final["closure_decision"]["verdict"], "complete")
+
+    def test_same_publication_continuation_is_gate_derived(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+
+        self.assertEqual(errors, [])
+        admission = derived["review_admission"]
+        continuation = admission["publication_continuation"]
+        prior = run["execution"]["steps"][0]
+        self.assertEqual(
+            continuation["publication_epoch"],
+            canonical_digest(run["review"]["ship_receipt"]),
+        )
+        self.assertEqual(continuation["published_artifact"], prior["state_before"])
+        self.assertEqual(continuation["predecessor"]["step_id"], "step-1")
+        self.assertEqual(
+            continuation["predecessor"]["review_admission_digest"],
+            prior["review_admission"]["admission_digest"],
+        )
+        self.assertNotIn("authority_ref", json.dumps(continuation))
+        self.assertNotIn("publication_continuation", run["review"])
+
+    def test_caller_cannot_smuggle_derived_control_receipts(self) -> None:
+        review_admission = {
+            "version": "review-admission/v1",
+            "authority_ref": "caller:allow",
+        }
+        publication_continuation = {
+            "version": "same-publication-continuation/v1",
+            "authority_ref": "caller:allow",
+        }
+        cases = {
+            "run-review-admission": lambda run: run.update(
+                review_admission=copy.deepcopy(review_admission)
+            ),
+            "run-continuation": lambda run: run.update(
+                publication_continuation=copy.deepcopy(
+                    publication_continuation
+                )
+            ),
+            "execution-review-admission": lambda run: run["execution"].update(
+                review_admission=copy.deepcopy(review_admission)
+            ),
+            "execution-continuation": lambda run: run["execution"].update(
+                publication_continuation=copy.deepcopy(
+                    publication_continuation
+                )
+            ),
+            "source-continuation": lambda run: run["source"].update(
+                publication_continuation=copy.deepcopy(
+                    publication_continuation
+                )
+            ),
+            "authority-continuation": lambda run: run["authority"].update(
+                publication_continuation=copy.deepcopy(
+                    publication_continuation
+                )
+            ),
+            "review-review-admission": lambda run: run["review"].update(
+                review_admission=copy.deepcopy(review_admission)
+            ),
+            "step-continuation": lambda run: run["execution"]["steps"][0].update(
+                publication_continuation=copy.deepcopy(
+                    publication_continuation
+                )
+            ),
+        }
+        for label, inject in cases.items():
+            with self.subTest(label=label):
+                run = self.run_value(selected=True)
+                inject(run)
+
+                errors, derived = validate_run(run, self.repo)
+
+                self.assertIn("blocked-unexpected-input", errors)
+                self.assertIsNone(derived["review_admission"])
+                self.assertIsNone(derived["step_admission"])
+
+    def test_resolution_cannot_smuggle_derived_control_receipts(self) -> None:
+        cases = {
+            key: {key: {"authority_ref": "caller:allow"}}
+            for key in (
+                "review_admission",
+                "publication_continuation",
+                "unpublished_repair_chain",
+            )
+        }
+        cases["nested-run-shaped"] = {
+            "execution": {
+                "steps": [
+                    {
+                        "review_admission": {
+                            "authority_ref": "caller:allow"
+                        }
+                    }
+                ]
+            }
+        }
+        for label, injection in cases.items():
+            with self.subTest(label=label):
+                run = self.run_value(review=True, selected=True)
+                resolution = self.material_resolution(run)
+                resolution.update(copy.deepcopy(injection))
+
+                errors, derived = validate_run(
+                    run, self.repo, resolution
+                )
+
+                self.assertIn("blocked-unexpected-input", errors)
+                self.assertIsNone(derived["review_admission"])
+                self.assertIsNone(derived["step_admission"])
+
+    def test_ship_cannot_smuggle_derived_control_receipts(self) -> None:
+        run = self.commit_step(
+            self.complete_step(self.bare_run_value(selected=True))
+        )
+        ship = self.ship_record(run)
+        ship["ship_record"]["publication_continuation"] = {
+            "authority_ref": "caller:allow"
+        }
+
+        decision, code = decide(
+            run,
+            None,
+            [self.evidence(run)],
+            [],
+            ship,
+            self.repo,
+        )
+
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-unexpected-input",
+            decision["closure_decision"]["reasons"],
+        )
+        self.assertIsNone(
+            decision["closure_decision"]["implementation_checkpoint"]
+        )
+
+        nested_ship = self.ship_record(run)
+        nested_ship["ship_record"]["execution"] = {
+            "steps": [
+                {
+                    "review_admission": {
+                        "authority_ref": "caller:allow"
+                    }
+                }
+            ]
+        }
+        decision, code = decide(
+            run,
+            None,
+            [self.evidence(run)],
+            [],
+            nested_ship,
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-unexpected-input",
+            decision["closure_decision"]["reasons"],
+        )
+
+    def test_same_publication_requires_every_introduced_finding_on_fresh_batch(
+        self,
+    ) -> None:
+        run, _, evidence, published_pr = self.same_publication_candidate()
+        resolution = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-2",
+            fold_id="rf-current",
+            source_batch_id="audit-2",
+        )
+        stale_fold = self.review_fold(
+            run, ["finding-1", "finding-3"]
+        )
+        stale_fold["fold_id"] = "rf-carried-stale"
+        stale_fold["source"]["source_batch_id"] = "audit-1"
+        fresh_fold = self.review_fold(run, ["finding-2"])
+        fresh_fold["fold_id"] = "rf-current-fresh"
+        fresh_fold["source"]["source_batch_id"] = "audit-2"
+        fresh_fold["source"]["source_ref"] = "local:audit-fresh"
+        run["review"]["source_refs"] = [
+            "local:audit-1",
+            "local:audit-fresh",
+        ]
+        resolution["review_folds"] = [stale_fold, fresh_fold]
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+
+        self.assertIn("blocked-publication-continuation", errors)
+        self.assertNotIn("blocked-review-fold-source", errors)
+        self.assertIsNone(derived["review_admission"])
+
+    def test_same_publication_preserves_finding_identity(self) -> None:
+        run, candidate, evidence, published_pr = (
+            self.same_publication_candidate()
+        )
+        resolution = copy.deepcopy(candidate)
+        finding = next(
+            value
+            for value in resolution["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-1"
+        )
+        finding["claim"] = "a relabeled claim must not reuse the finding id"
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+
+        self.assertIn("blocked-publication-continuation", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        cloned = copy.deepcopy(candidate)
+        admitted = next(
+            value
+            for value in cloned["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-1"
+        )
+        introduced = next(
+            value
+            for value in cloned["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-2"
+        )
+        for field in (
+            "claim",
+            "observed_fact",
+            "validity",
+            "liability",
+            "intent_relation",
+            "quotient_key",
+            "owner_boundary",
+            "law_family",
+            "falsifier",
+        ):
+            introduced[field] = copy.deepcopy(admitted[field])
+        cloned["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(cloned)
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, cloned, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        whitespace_clone = copy.deepcopy(candidate)
+        admitted = next(
+            value
+            for value in whitespace_clone["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-1"
+        )
+        introduced = next(
+            value
+            for value in whitespace_clone["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-2"
+        )
+        for field in (
+            "claim",
+            "observed_fact",
+            "validity",
+            "liability",
+            "intent_relation",
+            "quotient_key",
+            "owner_boundary",
+            "law_family",
+            "falsifier",
+        ):
+            introduced[field] = copy.deepcopy(admitted[field])
+        introduced["claim"] = admitted["claim"].replace(
+            " ", " \t\n ", 1
+        )
+        whitespace_clone["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(whitespace_clone)
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, whitespace_clone, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+        self.assertNotIn("blocked-review-fold-invalid", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        resolution = copy.deepcopy(candidate)
+        nonmaterial = copy.deepcopy(resolution["review_folds"][0]["findings"][0])
+        nonmaterial.update(
+            {
+                "finding_id": "rejected-duplicate-observation",
+                "source_ref": "local:rejected-duplicate-observation",
+                "novelty": "duplicate",
+                "disposition": "reject",
+            }
+        )
+        resolution["review_folds"][0]["findings"].append(nonmaterial)
+        resolution["review_folds"][0]["compression"]["equivalence_classes"][0][
+            "finding_ids"
+        ] = ["finding-1", "finding-2", "rejected-duplicate-observation"]
+        resolution["review_folds"][0]["routing_obligations"][0][
+            "finding_ids"
+        ] = ["finding-1", "finding-2", "rejected-duplicate-observation"]
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        self.assertIsNotNone(derived["review_admission"])
+
+        resolution = copy.deepcopy(candidate)
+        retained = next(
+            value
+            for value in resolution["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-1"
+        )
+        retained["novelty"] = "same-class"
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        self.assertIsNotNone(derived["review_admission"])
+
+    def test_same_publication_requires_canonical_freshness_identities(self) -> None:
+        run, candidate, evidence, published_pr = (
+            self.same_publication_candidate()
+        )
+        for target in ("fold", "batch"):
+            with self.subTest(target=target):
+                resolution = copy.deepcopy(candidate)
+                if target == "fold":
+                    resolution["review_folds"][0]["fold_id"] = "   "
+                else:
+                    resolution["review_folds"][0]["source"][
+                        "source_batch_id"
+                    ] = "   "
+                resolution["outcome"]["resolution_digest"] = (
+                    canonical_digest(resolution_digest_payload(resolution))
+                )
+
+                errors, derived = self.validate_with_live_pr(
+                    run, resolution, evidence, published_pr
+                )
+
+                self.assertIn("blocked-publication-continuation", errors)
+                self.assertIsNone(derived["review_admission"])
+
+        for target in ("fold", "batch"):
+            with self.subTest(initial=target):
+                initial_run = self.run_value(review=True, selected=True)
+                initial_resolution = self.material_resolution(initial_run)
+                if target == "fold":
+                    initial_resolution["review_folds"][0]["fold_id"] = "rf-1 "
+                else:
+                    initial_resolution["review_folds"][0]["source"][
+                        "source_batch_id"
+                    ] = "audit-1 "
+                initial_resolution["outcome"]["resolution_digest"] = (
+                    canonical_digest(
+                        resolution_digest_payload(initial_resolution)
+                    )
+                )
+                errors, derived = validate_run(
+                    initial_run, self.repo, initial_resolution
+                )
+                self.assertIn("blocked-review-fold-binding", errors)
+                self.assertIsNone(derived["review_admission"])
+
+    def test_same_publication_rejects_noncanonical_predecessor_identities(
+        self,
+    ) -> None:
+        base_run, resolution, _, published_pr = (
+            self.same_publication_candidate()
+        )
+        for target in ("fold", "batch"):
+            with self.subTest(target=target):
+                run = copy.deepcopy(base_run)
+                prior = run["execution"]["steps"][0]
+                prior_resolution = prior["review_admission"][
+                    "review_resolution"
+                ]
+                if target == "fold":
+                    prior_resolution["review_folds"][0]["fold_id"] = "   "
+                else:
+                    prior_resolution["review_folds"][0]["source"][
+                        "source_batch_id"
+                    ] = "   "
+                prior_resolution["outcome"]["resolution_digest"] = (
+                    canonical_digest(
+                        resolution_digest_payload(prior_resolution)
+                    )
+                )
+                prior["review_admission"] = self.redigest_admission(
+                    prior["review_admission"]
+                )
+                prior["step_admission"] = expected_step_admission(
+                    run, prior, 0, prior["review_admission"]
+                )
+                evidence = [self.evidence_for_step(run, 0)]
+
+                errors, derived = self.validate_with_live_pr(
+                    run, resolution, evidence, published_pr
+                )
+
+                self.assertIn("blocked-publication-continuation", errors)
+                self.assertIsNone(derived["review_admission"])
+
+    def test_terminal_history_requires_every_finding_on_fresh_batch(self) -> None:
+        run, resolution, evidence, published_pr = (
+            self.same_publication_candidate()
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        step = run["execution"]["steps"][-1]
+        step["review_admission"] = derived["review_admission"]
+        step["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text(
+            "second repair\n", encoding="utf-8"
+        )
+        run = self.finish_step(run, ["file.txt"])
+        terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-terminal",
+            source_batch_id="audit-terminal",
+            status="resolved",
+        )
+        stale_fold = self.review_fold(run, ["finding-1"])
+        stale_fold["fold_id"] = "rf-terminal-carried"
+        stale_fold["source"]["source_batch_id"] = "audit-2"
+        fresh_fold = self.review_fold(run, ["finding-2"])
+        fresh_fold["fold_id"] = "rf-terminal-fresh"
+        fresh_fold["source"]["source_batch_id"] = "audit-terminal"
+        fresh_fold["source"]["source_ref"] = "local:audit-terminal"
+        run["review"]["source_refs"] = [
+            "local:audit-1",
+            "local:audit-terminal",
+        ]
+        terminal["review_folds"] = [stale_fold, fresh_fold]
+        terminal["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(terminal)
+        )
+        evidence = [
+            self.evidence_for_step(run, index)
+            for index in range(len(run["execution"]["steps"]))
+        ]
+
+        self.live_pr_override = published_pr
+        try:
+            resolution_errors, _ = validate_resolution(
+                run, terminal, self.repo, evidence
+            )
+        finally:
+            self.live_pr_override = None
+
+        self.assertIn("blocked-resolution-history", resolution_errors)
+        self.assertNotIn("blocked-review-fold-source", resolution_errors)
+
+        relabeled_backend = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-terminal-backend",
+            source_batch_id="audit-terminal-backend",
+            status="resolved",
+        )
+        relabeled_backend["review_folds"][0]["source"]["backend"] = "other"
+        relabeled_backend["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(relabeled_backend)
+        )
+        self.live_pr_override = published_pr
+        try:
+            backend_errors, _ = validate_resolution(
+                run, relabeled_backend, self.repo, evidence
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertIn("blocked-resolution-history", backend_errors)
+
+        changed_identity = copy.deepcopy(terminal)
+        changed_identity["review_folds"][0]["findings"][0]["observed_fact"] = (
+            "a different fact cannot reuse the admitted finding id"
+        )
+        changed_identity["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(changed_identity)
+        )
+        self.live_pr_override = published_pr
+        try:
+            resolution_errors, _ = validate_resolution(
+                run, changed_identity, self.repo, evidence
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertIn("blocked-resolution-history", resolution_errors)
+
+    def test_same_publication_continuation_survives_completed_replay(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        step = run["execution"]["steps"][-1]
+        step["review_admission"] = derived["review_admission"]
+        step["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text("second repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-terminal",
+            source_batch_id="audit-terminal",
+            status="resolved",
+        )
+        evidence = [
+            self.evidence_for_step(run, index)
+            for index in range(len(run["execution"]["steps"]))
+        ]
+
+        stale_terminal = copy.deepcopy(terminal)
+        stale_terminal["decisions"][0]["selected_work_node"]["node_id"] = "step-1"
+        stale_terminal["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(stale_terminal)
+        )
+        self.live_pr_override = published_pr
+        try:
+            resolution_errors, _ = validate_resolution(
+                run, stale_terminal, self.repo, evidence
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertIn("blocked-resolution-history", resolution_errors)
+
+        relabeled_terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-2",
+            fold_id="rf-terminal-relabeled",
+            source_batch_id="audit-terminal-relabeled",
+            status="resolved",
+        )
+        self.live_pr_override = published_pr
+        try:
+            resolution_errors, _ = validate_resolution(
+                run, relabeled_terminal, self.repo, evidence
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertIn("blocked-resolution-history", resolution_errors)
+
+        self.live_pr_override = published_pr
+        try:
+            handoff, code = decide(
+                run,
+                terminal,
+                evidence,
+                [],
+                None,
+                self.repo,
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertEqual(code, 0, handoff)
+        self.assertEqual(handoff["closure_decision"]["verdict"], "ready-to-ship")
+
+    def test_same_publication_continuation_requires_cumulative_fresh_review(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+        errors, _ = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+
+        dropped = self.cumulative_material_resolution(
+            run,
+            ["finding-2"],
+            "step-2",
+            fold_id="rf-3",
+            source_batch_id="audit-3",
+        )
+        errors, _ = self.validate_with_live_pr(
+            run, dropped, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        reused = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-1",
+            source_batch_id="audit-1",
+        )
+        errors, _ = self.validate_with_live_pr(
+            run, reused, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        detached_run = copy.deepcopy(run)
+        detached_run["review"]["source_refs"] = [
+            "local:audit-1",
+            "local:audit-2",
+        ]
+        detached_novelty = self.cumulative_material_resolution(
+            detached_run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-3",
+            source_batch_id="audit-1",
+        )
+        clean_refresh = self.review_fold(detached_run)
+        clean_refresh["fold_id"] = "rf-4"
+        clean_refresh["source"]["source_batch_id"] = "audit-4"
+        clean_refresh["source"]["source_ref"] = "local:audit-2"
+        detached_novelty["review_folds"].append(clean_refresh)
+        detached_novelty["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(detached_novelty)
+        )
+        errors, _ = self.validate_with_live_pr(
+            detached_run, detached_novelty, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+        self.assertNotIn("blocked-review-fold-source", errors)
+
+        switched_backend = copy.deepcopy(resolution)
+        switched_backend["review_folds"][0]["source"]["backend"] = "other"
+        switched_backend["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(switched_backend)
+        )
+        errors, _ = self.validate_with_live_pr(
+            run, switched_backend, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        alias_run = copy.deepcopy(run)
+        alias_run["review"]["source_refs"] = [
+            "local:audit-1",
+            "local:audit-alias",
+        ]
+        alias_resolution = self.cumulative_material_resolution(
+            alias_run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-alias",
+            source_batch_id="audit-1",
+            source_ref="local:audit-alias",
+        )
+        clean_original = self.review_fold(alias_run)
+        clean_original["fold_id"] = "rf-original-clean"
+        clean_original["source"]["source_batch_id"] = "audit-1"
+        alias_resolution["review_folds"].insert(0, clean_original)
+        alias_resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(alias_resolution)
+        )
+        errors, _ = self.validate_with_live_pr(
+            alias_run, alias_resolution, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        dropped_source_run = copy.deepcopy(run)
+        dropped_source_run["review"]["source_refs"] = ["local:audit-2"]
+        dropped_source = self.cumulative_material_resolution(
+            dropped_source_run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-3",
+            source_batch_id="audit-3",
+            source_ref="local:audit-2",
+        )
+        errors, _ = self.validate_with_live_pr(
+            dropped_source_run, dropped_source, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        prior_continue = copy.deepcopy(run)
+        prior_continue["execution"]["steps"][0]["verdict"] = "continue"
+        errors, _ = self.validate_with_live_pr(
+            prior_continue, resolution, evidence, published_pr
+        )
+        self.assertIn("blocked-step-continuation", errors)
+
+    def test_same_publication_continuation_binds_evidence_and_live_pr(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+
+        forged_root = copy.deepcopy(run)
+        first = forged_root["execution"]["steps"][0]
+        prior_admission = first["review_admission"]
+        prior_admission["publication_continuation"] = {
+            "version": "same-publication-continuation/v1",
+            "publication_epoch": canonical_digest(
+                forged_root["review"]["ship_receipt"]
+            ),
+            "published_artifact": copy.deepcopy(first["state_before"]),
+            "predecessor": {
+                "step_id": "caller-root",
+                "evidence_fold_ref": first["evidence_fold_ref"],
+                "evidence_fold_digest": canonical_digest(
+                    evidence[0]["evidence_fold"]
+                ),
+                "review_admission_digest": prior_admission["admission_digest"],
+            },
+        }
+        first["review_admission"] = self.redigest_admission(prior_admission)
+        first["step_admission"] = expected_step_admission(
+            forged_root, first, 0, first["review_admission"]
+        )
+        errors, _ = self.validate_with_live_pr(
+            forged_root, resolution, evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        step = run["execution"]["steps"][-1]
+        step["review_admission"] = derived["review_admission"]
+        step["step_admission"] = derived["step_admission"]
+
+        changed_evidence = copy.deepcopy(evidence)
+        changed_evidence[0]["evidence_fold"]["evidence"]["observed"] = [
+            "different valid evidence under the same ID"
+        ]
+        errors, _ = self.validate_with_live_pr(
+            run, resolution, changed_evidence, published_pr
+        )
+        self.assertIn("blocked-publication-continuation", errors)
+
+        errors, _ = validate_run(run, self.repo, resolution, evidence)
+        self.assertIn("blocked-ship-live-pr-mismatch", errors)
+
+        for key in ("unpublished_repair_chain", "publication_continuation"):
+            caller_authored = copy.deepcopy(run)
+            caller_authored["review"][key] = {"authority_ref": "caller:allow"}
+            errors, _ = self.validate_with_live_pr(
+                caller_authored, resolution, evidence, published_pr
+            )
+            self.assertIn("blocked-unexpected-input", errors)
+
+    def test_same_publication_continuation_admits_third_edge(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        second = run["execution"]["steps"][-1]
+        second["review_admission"] = derived["review_admission"]
+        second["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text("second repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        evidence = [self.evidence_for_step(run, index) for index in range(2)]
+
+        self.append_review_edit(run, "step-3")
+        third_resolution = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-3",
+            fold_id="rf-3",
+            source_batch_id="audit-3",
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, third_resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        third = run["execution"]["steps"][-1]
+        third["review_admission"] = derived["review_admission"]
+        third["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text("third repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-3",
+            fold_id="rf-terminal",
+            source_batch_id="audit-terminal",
+            status="resolved",
+        )
+        evidence = [
+            self.evidence_for_step(run, index)
+            for index in range(len(run["execution"]["steps"]))
+        ]
+        self.live_pr_override = published_pr
+        try:
+            handoff, code = decide(
+                run,
+                terminal,
+                evidence,
+                [],
+                None,
+                self.repo,
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertEqual(code, 0, handoff)
+        self.assertEqual(handoff["closure_decision"]["verdict"], "ready-to-ship")
+
+    def test_same_publication_reship_resets_cas_credit(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+        old_run = copy.deepcopy(run)
+        old_run["artifact"] = copy.deepcopy(
+            old_run["execution"]["steps"][0]["state_before"]
+        )
+        old_resolution = copy.deepcopy(
+            old_run["execution"]["steps"][0]["review_admission"][
+                "review_resolution"
+            ]
+        )
+        old_record = self.cas_record(old_run, old_resolution, "standard", 0)
+        old_record["tuple"]["targetFingerprint"] = (
+            "target=native;head=published-old;base=accepted"
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        step = run["execution"]["steps"][-1]
+        step["review_admission"] = derived["review_admission"]
+        step["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text("second repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2"],
+            "step-2",
+            fold_id="rf-terminal",
+            source_batch_id="audit-terminal",
+            status="resolved",
+        )
+        evidence = [self.evidence_for_step(run, index) for index in range(2)]
+
+        self.live_pr_override = published_pr
+        try:
+            errors, pre_ship = validate_resolution(
+                run, terminal, self.repo, evidence
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertEqual(errors, [])
+        pre_ship_snapshot = self.review_records(run, terminal)[0]
+
+        prior_ship = run["review"]["ship_receipt"]
+        run["review"]["ship_receipt"] = self.updated_ship_record(run, prior_ship)
+        errors, post_ship = validate_resolution(
+            run, terminal, self.repo, evidence
+        )
+        self.assertEqual(errors, [])
+        self.assertNotEqual(
+            pre_ship["resolution_digest"], post_ship["resolution_digest"]
+        )
+        cas_problems, basis = cas_errors(
+            pre_ship_snapshot, run, terminal, post_ship
+        )
+        self.assertIn("blocked-cas-clean-streak", cas_problems)
+        self.assertEqual(basis, [])
+
+        current_records = [
+            self.cas_record(run, terminal, "standard", ordinal)
+            for ordinal in (1, 2, 3)
+        ]
+        mixed_snapshot = self.cas_snapshot([old_record, *current_records])[0]
+        cas_problems, basis = cas_errors(
+            mixed_snapshot, run, terminal, post_ship
+        )
+        self.assertEqual(cas_problems, [])
+        self.assertEqual(
+            set(basis), {record["recordId"] for record in current_records}
+        )
+
+        old_finding = copy.deepcopy(old_record)
+        old_finding["recordId"] = "rer_standard_old_finding"
+        old_finding["attempt"]["attemptId"] = "attempt-standard-old-finding"
+        old_finding["attempt"]["reviewThreadId"] = "thread-standard-old-finding"
+        old_finding["attempt"]["reviewTurnId"] = "turn-standard-old-finding"
+        old_finding["verdict"] = {
+            "tupleVerdictExists": True,
+            "status": "findings",
+            "clean": False,
+            "findingCount": 1,
+            "findings": [{"findingId": "old-finding-1"}],
+        }
+        finding_snapshot = self.cas_snapshot(
+            [old_finding, *current_records]
+        )[0]
+        cas_problems, _ = cas_errors(
+            finding_snapshot, run, terminal, post_ship
+        )
+        self.assertIn("blocked-cas-findings-unresolved", cas_problems)
+        classified_terminal = copy.deepcopy(terminal)
+        classified_terminal["review_folds"].append(
+            self.cas_review_fold(run, old_finding)
+        )
+        cas_problems, basis = cas_errors(
+            finding_snapshot, run, classified_terminal, post_ship
+        )
+        self.assertEqual(cas_problems, [])
+        self.assertEqual(
+            set(basis), {record["recordId"] for record in current_records}
+        )
+
+        two_records = self.cas_snapshot(
+            [
+                self.cas_record(run, terminal, "standard", ordinal)
+                for ordinal in (1, 2)
+            ]
+        )
+        blocked, code = decide(
+            run, terminal, evidence, two_records, None, self.repo
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-cas-clean-streak", blocked["closure_decision"]["reasons"]
+        )
+
+        final, code = decide(
+            run,
+            terminal,
+            evidence,
+            self.review_records(run, terminal),
             None,
             self.repo,
         )
         self.assertEqual(code, 0, final)
         self.assertEqual(final["closure_decision"]["verdict"], "complete")
+        self.assertEqual(len(final["closure_decision"]["review_basis"]), 3)
+
+    def test_reship_starts_a_new_same_publication_epoch(self) -> None:
+        run, resolution, evidence, published_pr = self.same_publication_candidate()
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        second = run["execution"]["steps"][-1]
+        second["review_admission"] = derived["review_admission"]
+        second["step_admission"] = derived["step_admission"]
+        first_epoch = derived["review_admission"]["publication_continuation"][
+            "publication_epoch"
+        ]
+        (self.repo / "file.txt").write_text("second repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        evidence = [self.evidence_for_step(run, index) for index in range(2)]
+
+        prior_ship = run["review"]["ship_receipt"]
+        run["review"]["ship_receipt"] = self.updated_ship_record(run, prior_ship)
+        second_published_pr = self.pr_metadata(
+            self.repo,
+            run["review"]["ship_receipt"]["ship_record"]["action"]["pr_url"],
+        )
+        self.append_review_edit(run, "step-3")
+        third_resolution = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-3",
+            fold_id="rf-epoch-2-1",
+            source_batch_id="audit-epoch-2-1",
+        )
+        errors, derived = validate_run(
+            run, self.repo, third_resolution, evidence
+        )
+        self.assertEqual(errors, [])
+        self.assertNotIn("publication_continuation", derived["review_admission"])
+        third = run["execution"]["steps"][-1]
+        third["review_admission"] = derived["review_admission"]
+        third["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text("third repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        evidence = [self.evidence_for_step(run, index) for index in range(3)]
+
+        single_terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-3",
+            fold_id="rf-epoch-2-terminal-1",
+            source_batch_id="audit-epoch-2-terminal-1",
+            status="resolved",
+        )
+        self.live_pr_override = second_published_pr
+        try:
+            handoff, code = decide(
+                run, single_terminal, evidence, [], None, self.repo
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertEqual(code, 0, handoff)
+        self.assertEqual(handoff["closure_decision"]["verdict"], "ready-to-ship")
+
+        self.append_review_edit(run, "step-4")
+        fourth_resolution = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3", "finding-4"],
+            "step-4",
+            fold_id="rf-epoch-2-2",
+            source_batch_id="audit-epoch-2-2",
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, fourth_resolution, evidence, second_published_pr
+        )
+        self.assertEqual(errors, [])
+        continuation = derived["review_admission"]["publication_continuation"]
+        self.assertNotEqual(continuation["publication_epoch"], first_epoch)
+        self.assertEqual(
+            continuation["publication_epoch"],
+            canonical_digest(run["review"]["ship_receipt"]),
+        )
+        fourth = run["execution"]["steps"][-1]
+        fourth["review_admission"] = derived["review_admission"]
+        fourth["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text("fourth repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+        terminal = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3", "finding-4"],
+            "step-4",
+            fold_id="rf-epoch-2-terminal",
+            source_batch_id="audit-epoch-2-terminal",
+            status="resolved",
+        )
+        evidence = [self.evidence_for_step(run, index) for index in range(4)]
+        self.live_pr_override = second_published_pr
+        try:
+            handoff, code = decide(
+                run, terminal, evidence, [], None, self.repo
+            )
+        finally:
+            self.live_pr_override = None
+        self.assertEqual(code, 0, handoff)
+        self.assertEqual(handoff["closure_decision"]["verdict"], "ready-to-ship")
+
+    def test_reship_continuation_rechecks_cumulative_freshness(self) -> None:
+        run, resolution, evidence, published_pr = (
+            self.same_publication_candidate()
+        )
+        errors, derived = self.validate_with_live_pr(
+            run, resolution, evidence, published_pr
+        )
+        self.assertEqual(errors, [])
+        second = run["execution"]["steps"][-1]
+        second["review_admission"] = derived["review_admission"]
+        second["step_admission"] = derived["step_admission"]
+        (self.repo / "file.txt").write_text(
+            "second repair\n", encoding="utf-8"
+        )
+        run = self.finish_step(run, ["file.txt"])
+        evidence = [self.evidence_for_step(run, index) for index in range(2)]
+        prior_ship = run["review"]["ship_receipt"]
+        run["review"]["ship_receipt"] = self.updated_ship_record(
+            run, prior_ship
+        )
+        self.append_review_edit(run, "step-3")
+
+        split = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3", "finding-4"],
+            "step-3",
+            fold_id="rf-reship-current",
+            source_batch_id="audit-reship-current",
+        )
+        stale_fold = self.review_fold(
+            run, ["finding-1", "finding-2", "finding-4"]
+        )
+        stale_fold["fold_id"] = "rf-reship-carried"
+        stale_fold["source"]["source_batch_id"] = "audit-2"
+        fresh_fold = self.review_fold(run, ["finding-3"])
+        fresh_fold["fold_id"] = "rf-reship-fresh"
+        fresh_fold["source"]["source_batch_id"] = "audit-reship-current"
+        fresh_fold["source"]["source_ref"] = "local:audit-reship-fresh"
+        run["review"]["source_refs"] = [
+            "local:audit-1",
+            "local:audit-reship-fresh",
+        ]
+        split["review_folds"] = [stale_fold, fresh_fold]
+        split["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(split)
+        )
+        errors, derived = validate_run(run, self.repo, split, evidence)
+        self.assertIn("blocked-resolution-history", errors)
+        self.assertNotIn("blocked-review-fold-source", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        relabeled = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-3",
+            fold_id="rf-reship-relabeled",
+            source_batch_id="audit-reship-relabeled",
+        )
+        relabeled_finding = next(
+            value
+            for value in relabeled["review_folds"][0]["findings"]
+            if value["finding_id"] == "finding-1"
+        )
+        relabeled_finding["observed_fact"] = (
+            "a different fact cannot reuse a prior finding id"
+        )
+        relabeled["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(relabeled)
+        )
+        errors, derived = validate_run(run, self.repo, relabeled, evidence)
+        self.assertIn("blocked-resolution-history", errors)
+        self.assertIsNone(derived["review_admission"])
+
+        whitespace = self.cumulative_material_resolution(
+            run,
+            ["finding-1", "finding-2", "finding-3"],
+            "step-3",
+            fold_id="   ",
+            source_batch_id="audit-reship-whitespace",
+        )
+        errors, derived = validate_run(run, self.repo, whitespace, evidence)
+        self.assertIn("blocked-resolution-history", errors)
+        self.assertIsNone(derived["review_admission"])
 
     def test_resolution_rejects_local_growth(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
@@ -2736,12 +4264,66 @@ class GateTests(unittest.TestCase):
         self.assertEqual(resolution_errors, [])
         current = self.review_records(run, resolution)[0]["records"]
 
+        base_snapshot = self.cas_snapshot(current)[0]
+        cross_epoch_duplicate = copy.deepcopy(current[0])
+        cross_epoch_duplicate["workflowBinding"]["resolutionDigest"] = (
+            "sha256:superseded"
+        )
+        duplicate_snapshot = copy.deepcopy(base_snapshot)
+        duplicate_snapshot["records"] = [cross_epoch_duplicate, *current]
+        errors, basis = cas_errors(
+            duplicate_snapshot, run, resolution, derived
+        )
+        self.assertIn("blocked-cas-unit-duplicate", errors)
+        self.assertEqual(basis, [row["recordId"] for row in current])
+
         old_clean = self.cas_record(run, resolution, "standard", 0)
         old_clean["workflowBinding"]["resolutionDigest"] = "sha256:superseded"
         snapshot = self.cas_snapshot([old_clean, *current])[0]
         errors, basis = cas_errors(snapshot, run, resolution, derived)
         self.assertEqual(errors, [])
         self.assertNotIn(old_clean["recordId"], basis)
+
+        replayed_attempt = copy.deepcopy(old_clean)
+        replayed_attempt["recordId"] = "rer_superseded_replayed_attempt"
+        replayed_attempt["attempt"]["attemptId"] = current[1]["attempt"][
+            "attemptId"
+        ]
+        snapshot = self.cas_snapshot([replayed_attempt, *current])[0]
+        errors, _ = cas_errors(snapshot, run, resolution, derived)
+        self.assertIn("blocked-cas-unit-duplicate", errors)
+
+        malformed_cases = [
+            {
+                "status": "clean",
+                "clean": True,
+                "findingCount": 0,
+                "findings": ["hidden-nonobject"],
+            },
+            {
+                "status": "findings",
+                "clean": False,
+                "findingCount": 1,
+                "findings": [
+                    {"title": "visible object"},
+                    "hidden-nonobject",
+                ],
+            },
+        ]
+        for index, malformed_verdict in enumerate(malformed_cases, start=1):
+            with self.subTest(malformed_superseded=index):
+                malformed = copy.deepcopy(old_clean)
+                malformed["recordId"] = f"rer_superseded_malformed_{index}"
+                malformed["attempt"]["attemptId"] = (
+                    f"attempt-superseded-malformed-{index}"
+                )
+                malformed["verdict"] = {
+                    "tupleVerdictExists": True,
+                    **malformed_verdict,
+                }
+                snapshot = self.cas_snapshot([malformed, *current])[0]
+                errors, _ = cas_errors(snapshot, run, resolution, derived)
+                self.assertIn("blocked-cas-unit-unnormalized", errors)
 
         old_finding = copy.deepcopy(old_clean)
         old_finding["recordId"] = "rer_superseded_finding"
