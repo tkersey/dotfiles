@@ -135,9 +135,33 @@ selected step's `review_admission`. That immutable receipt seals the full
 required current SHIP receipt, and its canonical digest. Preserve the receipt
 unchanged on completion and cite `review-admission:<admission_digest>` in EF-v1
 `review_refs`; `step-admission/v1` binds its digest, so the two receipts form one
-admission relation rather than parallel authorities. A later resolution cannot relabel an admitted edit. When
-admitting a step after prior work, also pass every referenced EF-v1 with
-`--evidence`. A dangling reference cannot authorize continuation.
+admission relation rather than parallel authorities. A later resolution cannot
+relabel an admitted edit. When admitting a step after prior work, also pass
+every referenced EF-v1 with `--evidence`. A dangling reference cannot authorize
+continuation.
+
+Before every review-repair admission, refresh the live review sources against
+the current local artifact, re-fold them, and rebuild the pending resolution.
+Do not admit solely from the source batch or resolution that authorized the
+preceding edit.
+
+When the latest completed review edit is `ready-for-closure` but the retained
+PR still publishes the preceding SHIP artifact, the gate may derive an optional
+`publication_continuation` inside the next `review-admission/v1`. Its
+`same-publication-continuation/v1` receipt binds the unchanged SHIP epoch and
+published artifact, the adjacent predecessor's admission digest, and the
+canonical content digest of that predecessor's EF-v1. Eligibility requires a
+pending next node, a strict cumulative increase in material findings,
+cumulative review source references with stable producer backends, fold
+identities absent from admitted repair history, and new producer source batches
+that support every introduced finding. Material semantic identities are
+injective: cloning an admitted finding under a new ID is not growth. This
+derivation may repeat for successive adjacent repairs while the same live PR
+and SHIP remain current. It is never a caller-authored run object, authority
+token, or use counter.
+
+Reject reserved derived-receipt keys elsewhere in caller-supplied run,
+resolution, or SHIP inputs instead of copying them into a new receipt.
 
 After the action:
 
@@ -153,8 +177,10 @@ direct edit may remain uncommitted and must exactly match the initial-to-live
 path delta. Every iterative edit advances through a descendant commit whose
 exact diff equals that step's changed paths. A non-edit preserves the complete
 artifact binding. EF-v1 independently reports the same paths and shows the
-verifier in its passed-command evidence. Only a prior step whose verdict is
-`continue` may admit a following step.
+verifier in its passed-command evidence. A following step requires either the
+prior step's generic `continue` verdict or a gate-validated lifecycle or
+publication transition. Publication-bearing review edits cannot use generic
+`continue` to bypass the publication laws.
 
 A step may finish or block. It cannot complete the parent goal; only
 `closure-decision/v1` owns goal completion.
@@ -171,6 +197,20 @@ Declared run source references must exactly equal the RF-v2 source identities;
 triage supplies those folds directly with repeatable `--review-fold` inputs and
 cannot complete from a source name alone.
 
+Refresh live review input before each review-repair admission. Every successor
+resolution preserves prior finding semantics and source-to-producer lineage,
+strictly grows the cumulative finding set, and supports each introduced finding
+with fresh admitted fold and producer-batch identities. A replacement SHIP
+starts a new publication and CAS epoch, but it does not erase cumulative
+finding or source history. The final resolved re-fold preserves exactly the
+admitted findings and all admitted sources, and supports every material finding
+with another fresh fold and producer batch; it cannot rewrite the admission
+history. A newly observed material finding keeps the resolution pending and
+requires another admitted continuation. An abandoned terminal refold grants no
+state or authority; freshness is measured against admitted repair history.
+After a publication-bearing repair, `clean` cannot erase admitted liabilities;
+the terminal status must be `resolved` against that exact history.
+
 `review-resolution/v1` then consumes each RF-v2 equivalence class through
 exactly one decision, groups repair work by owner boundary, and selects:
 
@@ -185,7 +225,21 @@ suggested repair never grants mutation.
 CAS closure accepts only producer-observed standard review attempts. Specialized
 routing in RF-v2 remains classification metadata; caller-supplied lens labels
 never grant review credit. Standard closure requires three distinct ordered
-clean attempts after the latest artifact, review contract, or resolution change.
+clean attempts after the latest artifact, review contract, resolution, or
+publication change. The final repair reship therefore resets CAS credit to
+zero; only three fresh standard attempts against the republished resolved head
+count.
+
+For publication-bound CAS, validate the live PR before listing records, observe
+its `updatedAt` watermark again after the list, and recheck it before closure.
+Current-binding records at or before the latest watermark are superseded and
+grant no credit; their findings still require RF-v2 classification. A later PR
+metadata update conservatively resets the clean suffix, so closure waits for
+three attempts created strictly after the stable final observation.
+Treat every watermark observation as monotone: a regression blocks closure and
+never lowers the boundary. Require CAS record IDs and same-run producer attempt
+IDs to be unique across the whole exhaustive snapshot, including superseded
+publication epochs.
 
 ## Semantic accounting
 
@@ -260,9 +314,11 @@ the workflow result.
 ## Stop rules
 
 Stop when authority or artifact binding is stale, a selected step is missing,
-the prior action lacks current evidence, review resolution is missing, the
-standard review contract is invalid, the clean CAS suffix is short, semantic balance is
-open, verification regresses, or a public effect would bypass `$ship`.
+the prior action lacks current evidence, live review input was not refreshed,
+same-publication findings or sources regress, review resolution is missing, the
+standard review contract is invalid, the clean CAS suffix is short, semantic
+balance is open, verification regresses, or a public effect would bypass
+`$ship`.
 
 Use these stable verdicts:
 

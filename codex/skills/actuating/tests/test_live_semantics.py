@@ -105,11 +105,27 @@ class LiveSemanticsTests(unittest.TestCase):
             {
                 "requires_when": "publication-requested",
                 "receipt": "pre-review-SHIP-v1",
-                "after_edit": [
-                    "current-resolved-refold",
-                    "ship",
-                    "review-closeout",
+                "before_repair_admission": [
+                    "refresh-live-review-sources",
+                    "review-fold",
+                    "review-resolution",
                 ],
+                "after_edit": {
+                    "unresolved": [
+                        "evidence-fold",
+                        "refresh-live-review-sources",
+                        "review-fold",
+                        "review-resolution",
+                        "gate-derived-continuation",
+                    ],
+                    "resolved": [
+                        "evidence-fold",
+                        "current-resolved-refold",
+                        "ship",
+                        "reset-cas-credit",
+                        "review-closeout",
+                    ],
+                },
                 "then": "final-closure",
             },
         )
@@ -164,11 +180,46 @@ class LiveSemanticsTests(unittest.TestCase):
         self.assertIn("review_admission", closure)
         self.assertIn("review-admission:<admission_digest>", closure)
         self.assertIn("review.ship_receipt", closure)
+        self.assertIn("same-publication-continuation/v1", closure)
+        self.assertIn("evidence_fold_digest", closure)
+        self.assertIn("resets CAS credit to zero", closure)
+        self.assertNotIn("unpublished_repair_chain", closure)
         self.assertIn("blocked-index-observer-flags", closure)
         self.assertIn("actuation_binding:", ship)
         self.assertNotIn("review_contract_fingerprint", ship)
         self.assertIn("Never add or relabel", ship)
         self.assertIn("review.ship_receipt", ship)
+
+    def test_review_repair_continuation_is_derived_and_refresh_bound(self) -> None:
+        invariants = {
+            row["id"]: row["statement"] for row in SEMANTICS["invariants"]
+        }
+        self.assertIn("live-review-source-before-admission", invariants)
+        self.assertIn("same-publication-continuation-derived", invariants)
+        self.assertIn("review-history-survives-reship", invariants)
+        self.assertIn("terminal-resolution-exact", invariants)
+        self.assertIn("repair-reship-resets-cas", invariants)
+        self.assertIn("pr-publication-watermark-before-cas", invariants)
+        self.assertIn(
+            "gate-derived continuation receipt",
+            invariants["same-publication-continuation-derived"],
+        )
+        self.assertIn(
+            "three fresh ordered standard attempts",
+            invariants["repair-reship-resets-cas"],
+        )
+        self.assertIn(
+            "records at or before the greatest observation are superseded",
+            invariants["pr-publication-watermark-before-cas"],
+        )
+        self.assertIn(
+            "a regressing observation blocks closure",
+            invariants["pr-publication-watermark-before-cas"],
+        )
+        self.assertIn(
+            "strictly extending the finding set",
+            invariants["review-history-survives-reship"],
+        )
 
     def test_retired_protocol_is_absent_from_live_surfaces(self) -> None:
         paths = [

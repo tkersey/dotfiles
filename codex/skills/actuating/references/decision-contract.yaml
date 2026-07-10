@@ -39,7 +39,7 @@ skill_decision_contract:
       aliases: [remediation-plan]
       terminal: "yes"
     - route_id: ACT-REVIEW-CLOSEOUT
-      description: Resolve findings, execute the current selected node, and acquire closure-grade review evidence.
+      description: Refresh live review sources, resolve cumulative findings, execute the current selected node, and acquire closure-grade review evidence.
       aliases: [review-closeout]
       terminal: "no"
     - route_id: ACT-CLOSURE
@@ -60,16 +60,16 @@ skill_decision_contract:
       expected_routes: [ACT-RUN, ACT-SHIP-HANDOFF, ACT-REVIEW-CLOSEOUT, ACT-CLOSURE, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts: [actuation-run/v1, immutable invocation profile, current source and artifact binding, step-admission/v1 before every action, implementation-checkpoint/v1 before bare review-closeout]
-      success_signals: [scope source remains distinct from execution authority, bare invocation orders implement then ship then review-closeout then final closure in one continuous run, valid ship returns a recomputable implementation checkpoint with goal continuation and implementation complete, proved review edit returns to ship before CAS, republishing updates the same retained PR URL, explicit implement stops after implementation]
-      failure_signals: [plan grants mutation by itself, invocation profile is relabeled, bare invocation skips or reorders a phase, a fresh review run discards implementation provenance, terminal action lacks step admission, review edit enters CAS before republishing, repair shipping creates a second PR, ship handoff terminates bare invocation, SHIP receipt is relabeled with the review epoch, explicit implement publishes or enters review-closeout, unsupported controller is simulated]
+      success_signals: [scope source remains distinct from execution authority, bare invocation orders implement then ship then review-closeout then final closure in one continuous run, valid ship returns a recomputable implementation checkpoint with goal continuation and implementation complete, unresolved adjacent repairs use a gate-derived same-publication continuation, the resolved repair head returns to ship before CAS, republishing updates the same retained PR URL and resets CAS credit to zero, explicit implement stops after implementation]
+      failure_signals: [plan grants mutation by itself, invocation profile is relabeled, bare invocation skips or reorders a phase, a fresh review run discards implementation provenance, terminal action lacks step admission, caller-authored continuation authority or a use counter grants mutation, pre-reship CAS receives closure credit, repair shipping creates a second PR, ship handoff terminates bare invocation, SHIP receipt is relabeled with the review epoch, explicit implement publishes or enters review-closeout, unsupported controller is simulated]
       rationale: Execution authority belongs to the run, while invocation syntax selects the ordered lifecycle boundary.
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
       expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [current review source, review-fold classification before review resolution, prior SHIP-v1 in review.ship_receipt when publication was requested, gate-derived step-admission/v1 and review-admission/v1 before review mutation]
-      success_signals: [unqualified review selects triage, clean closeout creates no synthetic action, publication-bearing closeout validates SHIP before admission, generic admission binds the specialized review digest, admission snapshots the full resolution observer facts and optional prior SHIP, explicit closeout is required for review-derived mutation, completed review edits preserve both receipts]
-      failure_signals: [raw finding becomes a patch, publication-bearing review mutation precedes SHIP, no-code mode selects a work node, review-required run is relabeled implement, final resolution retrospectively relabels mutation admission]
+      required_artifacts: [current live review source batch before every repair admission, review-fold classification before review resolution, prior SHIP-v1 in review.ship_receipt when publication was requested, gate-derived step-admission/v1 and review-admission/v1 before review mutation, predecessor EF-v1 for same-publication continuation]
+      success_signals: [unqualified review selects triage, clean closeout creates no synthetic action, publication-bearing closeout validates SHIP before admission, generic admission binds the specialized review digest, admission snapshots the full resolution observer facts and optional prior SHIP, continuation preserves cumulative finding semantics and source producer lineage across SHIP epochs with fresh fold and batch identities supporting introduced findings, terminal resolution exactly matches admitted findings, explicit closeout is required for review-derived mutation, completed review edits preserve both receipts]
+      failure_signals: [raw finding becomes a patch, stale review source authorizes a repair, findings regress or are relabeled across a continuation or replacement SHIP, an admitted finding is cloned under a new ID to forge growth, a source changes producer backend, a fold identity is replayed within the current publication epoch or an introduced finding relies only on stale producer batches, terminal resolution adds an unadmitted material finding, clean erases admitted publication repair history, publication-bearing review mutation precedes SHIP, no-code mode selects a work node, review-required run is relabeled implement, final resolution retrospectively relabels mutation admission]
       rationale: Review evidence is not mutation authority.
     - clause_id: ACT-RESOLUTION-001
       trigger_refs: [ACT-RESOLVE]
@@ -84,8 +84,8 @@ skill_decision_contract:
       expected_routes: [ACT-CLOSURE, ACT-SHIP-HANDOFF, ACT-BLOCK]
       prohibited_routes: []
       required_artifacts: [closure-decision/v1, current evidence folds, actual CAS records when review is required]
-      success_signals: [goal and implementation outcomes are separate, three standard attempts are derived from distinct records]
-      failure_signals: [opaque proof reference, scalar clean count, replayed completion decision, proof-patch precedes closure]
+      success_signals: [goal and implementation outcomes are separate, three standard attempts are derived from distinct records created after the stable post-list PR updatedAt watermark, final repair reship or later PR metadata change resets prior CAS credit to zero]
+      failure_signals: [opaque proof reference, scalar clean count, prepublication or pre-watermark CAS attempt receives final credit, PR watermark advances without resetting credited basis, a PR watermark observation regresses, duplicate CAS record or producer attempt identity crosses publication epochs, replayed completion decision, proof-patch precedes closure]
       rationale: Completion must be a live join over current evidence.
   instrumentation:
     decision_receipt: required

@@ -13,6 +13,7 @@ from pathlib import Path
 import subprocess
 import sys
 from typing import Any
+import unicodedata
 
 import yaml
 
@@ -200,7 +201,7 @@ def live_pr_metadata(repo: Path, pr_url: str) -> dict[str, Any]:
         "view",
         pr_url,
         "--json",
-        "url,baseRefName,baseRefOid,headRefName,headRefOid,headRepository,isDraft,state",
+        "url,baseRefName,baseRefOid,headRefName,headRefOid,headRepository,isDraft,state,updatedAt",
     )
     return {"repository": repository, "pull_request": pull_request}
 
@@ -733,6 +734,7 @@ def expected_review_admission(
     changed_paths: list[str],
     hunk_ids: list[str],
     ship_receipt: dict[str, Any] | None = None,
+    publication_continuation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     payload = {
         "version": "review-admission/v1",
@@ -744,7 +746,372 @@ def expected_review_admission(
         },
         "ship_receipt": copy.deepcopy(ship_receipt),
     }
+    if publication_continuation is not None:
+        payload["publication_continuation"] = copy.deepcopy(
+            publication_continuation
+        )
     return {**payload, "admission_digest": canonical_digest(payload)}
+
+
+def resolution_fold_ids(resolution: dict[str, Any]) -> list[str]:
+    identities: list[str] = []
+    for value in object_list(resolution.get("review_folds")):
+        try:
+            fold = unwrap(value, "review_fold")
+        except ValueError:
+            identities.append("")
+            continue
+        identities.append(text(fold.get("fold_id")))
+    return identities
+
+
+def canonical_review_identity(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and value == value.strip()
+    )
+
+
+def canonical_semantic_text(value: str) -> str:
+    return " ".join(unicodedata.normalize("NFC", value).split())
+
+
+def resolution_finding_identities(
+    resolution: dict[str, Any],
+) -> dict[str, str] | None:
+    identity_fields = (
+        "claim",
+        "observed_fact",
+        "validity",
+        "liability",
+        "intent_relation",
+        "quotient_key",
+        "owner_boundary",
+        "law_family",
+        "falsifier",
+    )
+    identities: dict[str, str] = {}
+    for value in object_list(resolution.get("review_folds")):
+        try:
+            fold = unwrap(value, "review_fold")
+        except ValueError:
+            return None
+        for finding in object_list(fold.get("findings")):
+            if finding.get("disposition") != "resolution-input":
+                continue
+            finding_id = finding.get("finding_id")
+            if not canonical_review_identity(finding_id):
+                return None
+            if any(
+                not isinstance(finding.get(key), str)
+                for key in identity_fields
+            ):
+                return None
+            if finding_id in identities:
+                return None
+            projection = {
+                key: canonical_semantic_text(finding[key])
+                for key in identity_fields
+            }
+            digest = canonical_digest(projection)
+            identities[finding_id] = digest
+    finding_ids = resolution.get("finding_ids")
+    if (
+        not has_exact_string_list(finding_ids)
+        or any(not canonical_review_identity(value) for value in finding_ids)
+        or set(finding_ids) != set(identities)
+        or len(identities) != len(set(identities.values()))
+    ):
+        return None
+    return identities
+
+
+def resolution_source_batches(
+    resolution: dict[str, Any],
+) -> list[tuple[str, str]]:
+    identities: list[tuple[str, str]] = []
+    for value in object_list(resolution.get("review_folds")):
+        try:
+            fold = unwrap(value, "review_fold")
+        except ValueError:
+            identities.append(("", ""))
+            continue
+        source = fold.get("source") if isinstance(fold.get("source"), dict) else {}
+        identities.append(
+            (text(source.get("backend")), text(source.get("source_batch_id")))
+        )
+    return identities
+
+
+def resolution_source_backends(
+    resolution: dict[str, Any],
+) -> dict[str, str] | None:
+    backends: dict[str, str] = {}
+    for value in object_list(resolution.get("review_folds")):
+        try:
+            fold = unwrap(value, "review_fold")
+        except ValueError:
+            return None
+        source = fold.get("source") if isinstance(fold.get("source"), dict) else {}
+        source_ref = text(source.get("source_ref"))
+        backend = text(source.get("backend"))
+        if (
+            not canonical_review_identity(source_ref)
+            or not canonical_review_identity(backend)
+            or source_ref in backends
+        ):
+            return None
+        backends[source_ref] = backend
+    return backends
+
+
+def resolution_findings_from_new_batches(
+    resolution: dict[str, Any],
+    prior_batches: set[tuple[str, str]],
+) -> set[str]:
+    findings: set[str] = set()
+    for value in object_list(resolution.get("review_folds")):
+        try:
+            fold = unwrap(value, "review_fold")
+        except ValueError:
+            continue
+        source = fold.get("source") if isinstance(fold.get("source"), dict) else {}
+        batch = (text(source.get("backend")), text(source.get("source_batch_id")))
+        if batch not in prior_batches:
+            findings.update(
+                text(finding.get("finding_id"))
+                for finding in object_list(fold.get("findings"))
+                if text(finding.get("finding_id"))
+            )
+    return findings
+
+
+def evidence_fold_digest(
+    evidence_values: list[dict[str, Any]], evidence_ref: str
+) -> str | None:
+    matches: list[dict[str, Any]] = []
+    for value in evidence_values:
+        try:
+            evidence = normalize_evidence(value)
+        except ValueError:
+            continue
+        if text(evidence.get("evidence_id")) == evidence_ref:
+            matches.append(evidence)
+    return canonical_digest(matches[0]) if len(matches) == 1 else None
+
+
+def publication_continuation_shape_errors(value: Any) -> list[str]:
+    if not isinstance(value, dict) or set(value) != {
+        "version",
+        "publication_epoch",
+        "published_artifact",
+        "predecessor",
+    }:
+        return ["blocked-publication-continuation"]
+    published = value.get("published_artifact")
+    predecessor = value.get("predecessor")
+    digests = [value.get("publication_epoch")]
+    if isinstance(predecessor, dict):
+        digests.extend(
+            [
+                predecessor.get("evidence_fold_digest"),
+                predecessor.get("review_admission_digest"),
+            ]
+        )
+    if (
+        value.get("version") != "same-publication-continuation/v1"
+        or not isinstance(published, dict)
+        or set(published)
+        != {"repo", "base_sha", "branch", "head_sha", "state_fingerprint"}
+        or any(not text(published.get(key)) for key in published)
+        or not isinstance(predecessor, dict)
+        or set(predecessor)
+        != {
+            "step_id",
+            "evidence_fold_ref",
+            "evidence_fold_digest",
+            "review_admission_digest",
+        }
+        or not text(predecessor.get("step_id"))
+        or not text(predecessor.get("evidence_fold_ref"))
+        or any(
+            not isinstance(digest, str)
+            or len(digest) != 71
+            or not digest.startswith("sha256:")
+            for digest in digests
+        )
+    ):
+        return ["blocked-publication-continuation"]
+    return []
+
+
+def expected_publication_continuation(
+    prior_steps: list[dict[str, Any]],
+    next_step: dict[str, Any],
+    resolution: dict[str, Any],
+    review_source_refs: list[str],
+    ship_receipt: dict[str, Any] | None,
+    evidence_values: list[dict[str, Any]],
+) -> tuple[list[str], dict[str, Any] | None]:
+    if not prior_steps:
+        return [], None
+    prior = prior_steps[-1]
+    prior_admission = prior.get("review_admission")
+    prior_ship = (
+        prior_admission.get("ship_receipt")
+        if isinstance(prior_admission, dict)
+        else None
+    )
+    eligible_edge = bool(
+        prior.get("status") == "completed"
+        and prior.get("verdict") == "ready-for-closure"
+        and prior.get("phase") == "review-closeout"
+        and prior.get("effect") == "edit"
+        and next_step.get("phase") == "review-closeout"
+        and next_step.get("effect") == "edit"
+        and isinstance(prior_admission, dict)
+        and isinstance(prior_ship, dict)
+        and isinstance(ship_receipt, dict)
+        and canonical_digest(prior_ship) == canonical_digest(ship_receipt)
+    )
+    if not eligible_edge:
+        return [], None
+
+    errors: list[str] = []
+    if review_admission_errors(prior_admission, prior):
+        errors.append("blocked-publication-continuation")
+    prior_resolution = prior_admission.get("review_resolution")
+    prior_observations = prior_admission.get("observations")
+    if not isinstance(prior_resolution, dict) or not isinstance(
+        prior_observations, dict
+    ):
+        return ["blocked-publication-continuation"], None
+    outcome = resolution.get("outcome")
+    if not isinstance(outcome, dict) or outcome.get("status") != "pending":
+        errors.append("blocked-publication-continuation")
+
+    prior_findings = string_list(prior_resolution.get("finding_ids"))
+    current_findings = string_list(resolution.get("finding_ids"))
+    prior_finding_identities = resolution_finding_identities(prior_resolution)
+    current_finding_identities = resolution_finding_identities(resolution)
+    if (
+        not has_exact_string_list(prior_resolution.get("finding_ids"))
+        or not has_exact_string_list(resolution.get("finding_ids"))
+        or not set(prior_findings) < set(current_findings)
+        or prior_finding_identities is None
+        or current_finding_identities is None
+        or any(
+            current_finding_identities.get(finding_id) != digest
+            for finding_id, digest in prior_finding_identities.items()
+        )
+    ):
+        errors.append("blocked-publication-continuation")
+
+    prior_sources = string_list(prior_observations.get("review_source_refs"))
+    prior_source_backends = resolution_source_backends(prior_resolution)
+    current_source_backends = resolution_source_backends(resolution)
+    if (
+        not has_exact_string_list(prior_observations.get("review_source_refs"))
+        or not has_exact_string_list(review_source_refs)
+        or not set(prior_sources).issubset(review_source_refs)
+        or prior_source_backends is None
+        or current_source_backends is None
+        or any(
+            current_source_backends.get(source_ref) != backend
+            for source_ref, backend in (prior_source_backends or {}).items()
+        )
+    ):
+        errors.append("blocked-publication-continuation")
+
+    publication_epoch = canonical_digest(ship_receipt)
+    epoch_fold_ids: set[str] = set()
+    epoch_batches: set[tuple[str, str]] = set()
+    for candidate in prior_steps:
+        admission = candidate.get("review_admission")
+        candidate_ship = (
+            admission.get("ship_receipt") if isinstance(admission, dict) else None
+        )
+        candidate_resolution = (
+            admission.get("review_resolution")
+            if isinstance(admission, dict)
+            else None
+        )
+        if (
+            not isinstance(candidate_ship, dict)
+            or canonical_digest(candidate_ship) != publication_epoch
+            or not isinstance(candidate_resolution, dict)
+        ):
+            continue
+        epoch_fold_ids.update(resolution_fold_ids(candidate_resolution))
+        epoch_batches.update(resolution_source_batches(candidate_resolution))
+
+    current_fold_ids = resolution_fold_ids(resolution)
+    current_batches = resolution_source_batches(resolution)
+    introduced_findings = set(current_findings) - set(prior_findings)
+    findings_from_fresh_batches = resolution_findings_from_new_batches(
+        resolution, epoch_batches
+    )
+    if (
+        not current_fold_ids
+        or any(
+            not canonical_review_identity(fold_id)
+            for fold_id in current_fold_ids
+        )
+        or any(
+            not canonical_review_identity(fold_id)
+            for fold_id in epoch_fold_ids
+        )
+        or not set(current_fold_ids).isdisjoint(epoch_fold_ids)
+        or not current_batches
+        or any(
+            not canonical_review_identity(backend)
+            or not canonical_review_identity(batch)
+            for backend, batch in current_batches
+        )
+        or any(
+            not canonical_review_identity(backend)
+            or not canonical_review_identity(batch)
+            for backend, batch in epoch_batches
+        )
+        or not (set(current_batches) - epoch_batches)
+        or not introduced_findings
+        or not introduced_findings.issubset(findings_from_fresh_batches)
+    ):
+        errors.append("blocked-publication-continuation")
+
+    evidence_ref = text(prior.get("evidence_fold_ref"))
+    evidence_digest = evidence_fold_digest(evidence_values, evidence_ref)
+    if not evidence_ref or evidence_digest is None:
+        errors.append("blocked-publication-continuation")
+
+    prior_continuation = prior_admission.get("publication_continuation")
+    if prior_continuation is not None:
+        if publication_continuation_shape_errors(prior_continuation):
+            errors.append("blocked-publication-continuation")
+            published_artifact = None
+        else:
+            published_artifact = prior_continuation.get("published_artifact")
+    else:
+        published_artifact = prior.get("state_before")
+    if not isinstance(published_artifact, dict):
+        errors.append("blocked-publication-continuation")
+        return sorted(set(errors)), None
+
+    continuation = {
+        "version": "same-publication-continuation/v1",
+        "publication_epoch": publication_epoch,
+        "published_artifact": copy.deepcopy(published_artifact),
+        "predecessor": {
+            "step_id": prior.get("step_id"),
+            "evidence_fold_ref": evidence_ref,
+            "evidence_fold_digest": evidence_digest,
+            "review_admission_digest": prior_admission.get("admission_digest"),
+        },
+    }
+    if publication_continuation_shape_errors(continuation):
+        errors.append("blocked-publication-continuation")
+    return sorted(set(errors)), continuation
 
 
 def review_admission_errors(value: Any, step: dict[str, Any]) -> list[str]:
@@ -762,6 +1129,7 @@ def review_admission_errors(value: Any, step: dict[str, Any]) -> list[str]:
     )
     hunk_ids = observations.get("hunk_ids") if isinstance(observations, dict) else None
     ship_receipt = value.get("ship_receipt")
+    publication_continuation = value.get("publication_continuation")
     if (
         not isinstance(review_resolution, dict)
         or not isinstance(observations, dict)
@@ -774,16 +1142,31 @@ def review_admission_errors(value: Any, step: dict[str, Any]) -> list[str]:
         or (ship_receipt is not None and not isinstance(ship_receipt, dict))
     ):
         return ["blocked-resolution-binding"]
+    if publication_continuation is not None:
+        if publication_continuation_shape_errors(publication_continuation):
+            return ["blocked-resolution-binding"]
+        if (
+            not isinstance(ship_receipt, dict)
+            or publication_continuation.get("publication_epoch")
+            != canonical_digest(ship_receipt)
+        ):
+            return ["blocked-resolution-binding"]
     expected = expected_review_admission(
         review_resolution,
         review_source_refs,
         changed_paths,
         hunk_ids,
         ship_receipt,
+        publication_continuation,
+    )
+    historical_artifact = (
+        publication_continuation.get("published_artifact")
+        if isinstance(publication_continuation, dict)
+        else step.get("state_before")
     )
     historical_run = {
         "run_id": step.get("run_id"),
-        "artifact": step.get("state_before"),
+        "artifact": historical_artifact,
     }
     try:
         resolution_problems, _ = _resolution_contract_errors(
@@ -979,6 +1362,55 @@ def path_allowed_root(path: str, repo: Path | None = None) -> bool:
     return True
 
 
+def has_misplaced_derived_control(
+    value: Any,
+    path: tuple[str | int, ...] = (),
+    *,
+    allow_step_receipts: bool = True,
+) -> bool:
+    if isinstance(value, list):
+        return any(
+            has_misplaced_derived_control(
+                item,
+                (*path, index),
+                allow_step_receipts=allow_step_receipts,
+            )
+            for index, item in enumerate(value)
+        )
+    if not isinstance(value, dict):
+        return False
+    for key, child in value.items():
+        child_path = (*path, key)
+        step_receipt = bool(
+            allow_step_receipts
+            and key == "review_admission"
+            and len(path) == 3
+            and path[:2] == ("execution", "steps")
+            and isinstance(path[2], int)
+        )
+        nested_continuation = bool(
+            allow_step_receipts
+            and key == "publication_continuation"
+            and len(path) == 4
+            and path[:2] == ("execution", "steps")
+            and isinstance(path[2], int)
+            and path[3] == "review_admission"
+        )
+        if key == "unpublished_repair_chain" or (
+            key == "review_admission" and not step_receipt
+        ) or (
+            key == "publication_continuation" and not nested_continuation
+        ):
+            return True
+        if has_misplaced_derived_control(
+            child,
+            child_path,
+            allow_step_receipts=allow_step_receipts,
+        ):
+            return True
+    return False
+
+
 def validate_run(
     run: dict[str, Any],
     repo: Path,
@@ -989,6 +1421,8 @@ def validate_run(
 ) -> tuple[list[str], dict[str, Any]]:
     repo = git_root(repo)
     errors: list[str] = []
+    publication_watermark: int | None = None
+    evidence_values = evidence_values or []
     semantics = load_semantics()
     modes = set((semantics.get("modes") or {}).keys())
     execution_kinds = set(semantics.get("execution_kinds") or [])
@@ -996,6 +1430,13 @@ def validate_run(
 
     if run.get("version") != "actuation-run/v1":
         errors.append("blocked-run-version")
+    if has_misplaced_derived_control(run):
+        errors.append("blocked-unexpected-input")
+    if resolution is not None and has_misplaced_derived_control(
+        resolution,
+        allow_step_receipts=False,
+    ):
+        errors.append("blocked-unexpected-input")
     run_id = text(run.get("run_id"))
     if not run_id:
         errors.append("blocked-run-id-missing")
@@ -1155,15 +1596,23 @@ def validate_run(
     completed_steps: list[dict[str, Any]] = []
     review_admission_candidate: dict[str, Any] | None = None
     step_admission_candidate: dict[str, Any] | None = None
+    selected_publication_continuation: dict[str, Any] | None = None
+    active_publication_artifact: dict[str, Any] | None = None
     seen_review_phase = False
     for index, step in enumerate(steps):
         if index > 0:
             prior = steps[index - 1]
             prior_admission = prior.get("review_admission")
-            current_ship = (
-                review_value.get("ship_receipt")
-                if isinstance(review_value, dict)
-                else None
+            step_admission_value = step.get("review_admission")
+            step_ship = (
+                step_admission_value.get("ship_receipt")
+                if step.get("status") == "completed"
+                and isinstance(step_admission_value, dict)
+                else (
+                    review_value.get("ship_receipt")
+                    if isinstance(review_value, dict)
+                    else None
+                )
             )
             fresh_ship_continuation = bool(
                 prior.get("verdict") == "ready-for-closure"
@@ -1171,13 +1620,160 @@ def validate_run(
                 and review_value.get("publication_requested") is True
                 and isinstance(prior_admission, dict)
                 and isinstance(prior_admission.get("ship_receipt"), dict)
-                and isinstance(current_ship, dict)
-                and canonical_digest(current_ship)
+                and isinstance(step_ship, dict)
+                and canonical_digest(step_ship)
                 != canonical_digest(prior_admission["ship_receipt"])
                 and not ship_epoch_continuity_errors(
-                    prior_admission["ship_receipt"], current_ship
+                    prior_admission["ship_receipt"], step_ship
                 )
             )
+            edge_resolution = (
+                resolution
+                if step.get("status") == "selected"
+                else (
+                    step_admission_value.get("review_resolution")
+                    if isinstance(step_admission_value, dict)
+                    else None
+                )
+            )
+            step_observations = (
+                step_admission_value.get("observations")
+                if isinstance(step_admission_value, dict)
+                and isinstance(step_admission_value.get("observations"), dict)
+                else {}
+            )
+            edge_source_refs = (
+                string_list(review_value.get("source_refs"))
+                if step.get("status") == "selected"
+                and isinstance(review_value, dict)
+                else string_list(step_observations.get("review_source_refs"))
+            )
+            if fresh_ship_continuation and isinstance(edge_resolution, dict):
+                prior_resolution = prior_admission.get("review_resolution")
+                prior_observations = prior_admission.get("observations")
+                prior_findings = (
+                    string_list(prior_resolution.get("finding_ids"))
+                    if isinstance(prior_resolution, dict)
+                    else []
+                )
+                current_findings = string_list(edge_resolution.get("finding_ids"))
+                prior_finding_identities = (
+                    resolution_finding_identities(prior_resolution)
+                    if isinstance(prior_resolution, dict)
+                    else None
+                )
+                current_finding_identities = resolution_finding_identities(
+                    edge_resolution
+                )
+                prior_sources = (
+                    string_list(prior_observations.get("review_source_refs"))
+                    if isinstance(prior_observations, dict)
+                    else []
+                )
+                prior_source_backends = (
+                    resolution_source_backends(prior_resolution)
+                    if isinstance(prior_resolution, dict)
+                    else None
+                )
+                current_source_backends = resolution_source_backends(
+                    edge_resolution
+                )
+                prior_fold_ids = (
+                    set(resolution_fold_ids(prior_resolution))
+                    if isinstance(prior_resolution, dict)
+                    else set()
+                )
+                prior_batches = (
+                    set(resolution_source_batches(prior_resolution))
+                    if isinstance(prior_resolution, dict)
+                    else set()
+                )
+                current_fold_ids = set(resolution_fold_ids(edge_resolution))
+                current_batches = set(resolution_source_batches(edge_resolution))
+                introduced_findings = set(current_findings) - set(prior_findings)
+                fresh_batch_findings = resolution_findings_from_new_batches(
+                    edge_resolution, prior_batches
+                )
+                if (
+                    not isinstance(prior_resolution, dict)
+                    or not isinstance(prior_observations, dict)
+                    or not set(prior_findings) < set(current_findings)
+                    or prior_finding_identities is None
+                    or current_finding_identities is None
+                    or any(
+                        current_finding_identities.get(finding_id) != digest
+                        for finding_id, digest in prior_finding_identities.items()
+                    )
+                    or not set(prior_sources).issubset(edge_source_refs)
+                    or prior_source_backends is None
+                    or current_source_backends is None
+                    or any(
+                        current_source_backends.get(source_ref) != backend
+                        for source_ref, backend in (
+                            prior_source_backends or {}
+                        ).items()
+                    )
+                    or not current_fold_ids
+                    or any(
+                        not canonical_review_identity(fold_id)
+                        for fold_id in current_fold_ids
+                    )
+                    or any(
+                        not canonical_review_identity(fold_id)
+                        for fold_id in prior_fold_ids
+                    )
+                    or not current_fold_ids.isdisjoint(prior_fold_ids)
+                    or any(
+                        not canonical_review_identity(backend)
+                        or not canonical_review_identity(batch)
+                        for backend, batch in current_batches
+                    )
+                    or any(
+                        not canonical_review_identity(backend)
+                        or not canonical_review_identity(batch)
+                        for backend, batch in prior_batches
+                    )
+                    or not (current_batches - prior_batches)
+                    or not introduced_findings
+                    or not introduced_findings.issubset(fresh_batch_findings)
+                ):
+                    errors.append("blocked-resolution-history")
+                    fresh_ship_continuation = False
+            continuation_errors: list[str] = []
+            expected_continuation: dict[str, Any] | None = None
+            if isinstance(edge_resolution, dict):
+                continuation_errors, expected_continuation = (
+                    expected_publication_continuation(
+                        steps[:index],
+                        step,
+                        edge_resolution,
+                        edge_source_refs,
+                        step_ship if isinstance(step_ship, dict) else None,
+                        evidence_values,
+                    )
+                )
+                errors.extend(continuation_errors)
+            stored_continuation = (
+                step_admission_value.get("publication_continuation")
+                if isinstance(step_admission_value, dict)
+                else None
+            )
+            same_publication_continuation = bool(
+                expected_continuation is not None
+                and not continuation_errors
+                and (
+                    step.get("status") == "selected"
+                    or stored_continuation == expected_continuation
+                )
+            )
+            if stored_continuation is not None and (
+                expected_continuation is None
+                or stored_continuation != expected_continuation
+            ):
+                errors.append("blocked-publication-continuation")
+            if same_publication_continuation:
+                if step.get("status") == "selected":
+                    selected_publication_continuation = expected_continuation
             phase_transition = bool(
                 prior.get("status") == "completed"
                 and prior.get("verdict") == "ready-for-closure"
@@ -1187,9 +1783,19 @@ def validate_run(
                 and lifecycle_phase == "review-closeout"
                 and not implementation_checkpoint_errors(run)
             )
-            if prior.get("status") != "completed" or not (
+            generic_continuation = bool(
                 prior.get("verdict") == "continue"
+                and not (
+                    prior.get("phase") == "review-closeout"
+                    and prior.get("effect") == "edit"
+                    and isinstance(prior_admission, dict)
+                    and isinstance(prior_admission.get("ship_receipt"), dict)
+                )
+            )
+            if prior.get("status") != "completed" or not (
+                generic_continuation
                 or fresh_ship_continuation
+                or same_publication_continuation
                 or phase_transition
             ):
                 errors.append("blocked-step-continuation")
@@ -1224,6 +1830,16 @@ def validate_run(
             errors.append("blocked-step-effect")
         review_admission = step.get("review_admission")
         step_admission = step.get("step_admission")
+        if review_admission is not None and not (
+            step_phase == "review-closeout" and effect == "edit"
+        ):
+            errors.append("blocked-unexpected-input")
+        if (
+            index == 0
+            and isinstance(review_admission, dict)
+            and review_admission.get("publication_continuation") is not None
+        ):
+            errors.append("blocked-publication-continuation")
         step_paths_raw = step.get("paths")
         changed_paths_raw = step.get("changed_paths")
         step_paths = string_list(step_paths_raw)
@@ -1384,7 +2000,40 @@ def validate_run(
                 "invalid-proof",
             }:
                 errors.append("blocked-step-verdict")
+            if (
+                step_phase == "review-closeout"
+                and effect == "edit"
+                and isinstance(review_admission, dict)
+                and isinstance(review_admission.get("ship_receipt"), dict)
+                and text(step.get("verdict")) != "ready-for-closure"
+            ):
+                errors.append("blocked-step-verdict")
         elif status == "blocked":
+            if (
+                step_phase == "review-closeout"
+                and effect == "edit"
+                and (review_admission is None) is not (step_admission is None)
+            ):
+                errors.append("blocked-step-admission")
+            if review_admission is not None:
+                if step_phase == "review-closeout" and effect == "edit":
+                    errors.extend(
+                        review_admission_errors(review_admission, step)
+                    )
+            if step_admission is not None:
+                errors.extend(
+                    step_admission_errors(
+                        step_admission,
+                        run,
+                        step,
+                        index,
+                        (
+                            review_admission
+                            if isinstance(review_admission, dict)
+                            else None
+                        ),
+                    )
+                )
             previous_after = before
         else:
             errors.append("blocked-step-status")
@@ -1406,6 +2055,37 @@ def validate_run(
             errors.append("blocked-step-change-mismatch")
     if not steps and current and initial != current:
         errors.append("blocked-run-initial-artifact")
+
+    run_ship = (
+        review_value.get("ship_receipt")
+        if isinstance(review_value, dict)
+        else None
+    )
+    latest_published_edit = next(
+        (
+            completed
+            for completed in reversed(completed_steps)
+            if completed.get("phase") == "review-closeout"
+            and completed.get("effect") == "edit"
+            and isinstance(completed.get("review_admission"), dict)
+            and isinstance(
+                completed["review_admission"].get("ship_receipt"), dict
+            )
+        ),
+        None,
+    )
+    if isinstance(latest_published_edit, dict) and isinstance(run_ship, dict):
+        latest_admission = latest_published_edit["review_admission"]
+        if canonical_digest(latest_admission["ship_receipt"]) == canonical_digest(
+            run_ship
+        ):
+            continuation = latest_admission.get("publication_continuation")
+            active_publication_artifact = (
+                continuation.get("published_artifact")
+                if isinstance(continuation, dict)
+                and not publication_continuation_shape_errors(continuation)
+                else latest_published_edit.get("state_before")
+            )
 
     review = review_value
     if not isinstance(review, dict):
@@ -1443,9 +2123,19 @@ def validate_run(
     ):
         if not isinstance(ship_receipt, dict):
             errors.append("blocked-ship-missing")
-        elif selected:
+        else:
+            ship_run = (
+                {
+                    "run_id": run_id,
+                    "artifact": copy.deepcopy(active_publication_artifact),
+                }
+                if isinstance(active_publication_artifact, dict)
+                else run
+            )
             try:
-                ship_problems, _ = ship_errors(ship_receipt, run)
+                ship_problems, _, publication_watermark = (
+                    ship_observation_errors(ship_receipt, ship_run)
+                )
             except ValueError:
                 ship_problems = ["blocked-ship-binding"]
             errors.extend(ship_problems)
@@ -1486,7 +2176,7 @@ def validate_run(
             errors.append("blocked-review-resolution-missing")
         else:
             resolution_errors, resolution_derived = validate_resolution(
-                run, resolution, repo
+                run, resolution, repo, evidence_values
             )
             errors.extend(resolution_errors)
             selected_step = selected[0]
@@ -1498,6 +2188,7 @@ def validate_run(
                     string_list(resolution_derived.get("live_changed_paths")),
                     string_list(resolution_derived.get("live_hunk_ids")),
                     ship_receipt if isinstance(ship_receipt, dict) else None,
+                    selected_publication_continuation,
                 )
                 review_admission_candidate = expected_admission
                 if admission is not None and admission != expected_admission:
@@ -1553,6 +2244,7 @@ def validate_run(
         "step_admission": step_admission_candidate if not errors else None,
         "has_blocked_step": any(step.get("status") == "blocked" for step in steps),
         "live_changed_paths": sorted(live_paths),
+        "publication_watermark": publication_watermark,
     }
     return sorted(set(errors)), derived
 
@@ -1600,10 +2292,20 @@ def validate_review_folds(
             errors.append("blocked-review-fold-version")
         fold_id = text(fold.get("fold_id"))
         fold_ids.append(fold_id)
-        if not fold_id or text(fold.get("goal_id")) != text(run.get("run_id")):
+        if not canonical_review_identity(fold_id) or text(
+            fold.get("goal_id")
+        ) != text(run.get("run_id")):
             errors.append("blocked-review-fold-binding")
         source = fold.get("source") if isinstance(fold.get("source"), dict) else {}
-        fold_source_refs.append(text(source.get("source_ref")))
+        source_ref = text(source.get("source_ref"))
+        backend = text(source.get("backend"))
+        source_batch_id = text(source.get("source_batch_id"))
+        fold_source_refs.append(source_ref)
+        if any(
+            not canonical_review_identity(value)
+            for value in (source_ref, backend, source_batch_id)
+        ):
+            errors.append("blocked-review-fold-binding")
         source_artifact = (
             source.get("artifact") if isinstance(source.get("artifact"), dict) else {}
         )
@@ -1626,7 +2328,7 @@ def validate_review_folds(
         for finding in findings:
             finding_id = text(finding.get("finding_id"))
             finding_ids.append(finding_id)
-            if not finding_id:
+            if not canonical_review_identity(finding_id):
                 errors.append("blocked-review-fold-finding")
             authority = finding.get("mutation_authority")
             if not isinstance(authority, dict) or authority.get("allowed") is not False:
@@ -2083,12 +2785,14 @@ def validate_resolution(
     run: dict[str, Any],
     resolution: dict[str, Any],
     repo: Path,
+    evidence_values: list[dict[str, Any]] | None = None,
 ) -> tuple[list[str], dict[str, Any]]:
     repo = git_root(repo)
     errors, run_derived = validate_run(
         run,
         repo,
         resolution,
+        evidence_values,
         admission_check=False,
     )
     contract_errors, contract_derived = _resolution_contract_errors(
@@ -2097,8 +2801,24 @@ def validate_resolution(
     )
     errors.extend(contract_errors)
     outcome = resolution.get("outcome")
+    completed_steps = run_derived.get("completed_steps", [])
+    publication_admission_steps = [
+        step
+        for step in completed_steps
+        if step.get("phase") == "review-closeout"
+        and step.get("effect") == "edit"
+        and isinstance(step.get("review_admission"), dict)
+        and isinstance(step["review_admission"].get("ship_receipt"), dict)
+    ]
+    if (
+        publication_admission_steps
+        and not run_derived.get("selected_step_id")
+        and (
+        not isinstance(outcome, dict) or outcome.get("status") != "resolved"
+        )
+    ):
+        errors.append("blocked-resolution-history")
     if isinstance(outcome, dict) and outcome.get("status") == "resolved":
-        completed_steps = run_derived.get("completed_steps", [])
         for binding in contract_derived.get("selected_work_bindings", []):
             matches = [
                 step
@@ -2114,6 +2834,146 @@ def validate_resolution(
             ]
             if len(matches) != 1:
                 errors.append("blocked-resolution-node-unexecuted")
+        latest_review_step = next(
+            (
+                step
+                for step in reversed(completed_steps)
+                if step.get("phase") == "review-closeout"
+                and step.get("effect") == "edit"
+                and isinstance(step.get("review_admission"), dict)
+                and isinstance(step["review_admission"].get("ship_receipt"), dict)
+            ),
+            None,
+        )
+        latest_review_admission = (
+            latest_review_step.get("review_admission")
+            if isinstance(latest_review_step, dict)
+            else None
+        )
+        publication_epoch = (
+            canonical_digest(latest_review_admission["ship_receipt"])
+            if isinstance(latest_review_admission, dict)
+            else ""
+        )
+        epoch_admission_steps = [
+            step
+            for step in completed_steps
+            if step.get("phase") == "review-closeout"
+            and step.get("effect") == "edit"
+            and isinstance(step.get("review_admission"), dict)
+            and isinstance(step["review_admission"].get("ship_receipt"), dict)
+            and canonical_digest(step["review_admission"]["ship_receipt"])
+            == publication_epoch
+        ]
+        if epoch_admission_steps:
+            admitted_findings: set[str] = set()
+            admitted_sources: set[str] = set()
+            admitted_fold_ids: set[str] = set()
+            admitted_batches: set[tuple[str, str]] = set()
+            admitted_finding_identities: dict[str, str] = {}
+            admitted_identity_conflict = False
+            admitted_source_backends: dict[str, str] = {}
+            admitted_backend_conflict = False
+            for step in epoch_admission_steps:
+                admission = step.get("review_admission")
+                admitted_resolution = (
+                    admission.get("review_resolution")
+                    if isinstance(admission, dict)
+                    else None
+                )
+                observations = (
+                    admission.get("observations")
+                    if isinstance(admission, dict)
+                    and isinstance(admission.get("observations"), dict)
+                    else {}
+                )
+                if (
+                    not isinstance(admitted_resolution, dict)
+                ):
+                    continue
+                admitted_findings.update(
+                    string_list(admitted_resolution.get("finding_ids"))
+                )
+                admitted_sources.update(
+                    string_list(observations.get("review_source_refs"))
+                )
+                admitted_fold_ids.update(resolution_fold_ids(admitted_resolution))
+                admitted_batches.update(
+                    resolution_source_batches(admitted_resolution)
+                )
+                identities = resolution_finding_identities(admitted_resolution)
+                if identities is None:
+                    admitted_identity_conflict = True
+                else:
+                    for finding_id, digest in identities.items():
+                        previous = admitted_finding_identities.get(finding_id)
+                        if previous is not None and previous != digest:
+                            admitted_identity_conflict = True
+                        admitted_finding_identities[finding_id] = digest
+                source_backends = resolution_source_backends(admitted_resolution)
+                if source_backends is None:
+                    admitted_backend_conflict = True
+                else:
+                    for source_ref, backend in source_backends.items():
+                        previous = admitted_source_backends.get(source_ref)
+                        if previous is not None and previous != backend:
+                            admitted_backend_conflict = True
+                        admitted_source_backends[source_ref] = backend
+            final_findings = set(string_list(resolution.get("finding_ids")))
+            final_finding_identities = resolution_finding_identities(resolution)
+            final_source_backends = resolution_source_backends(resolution)
+            review = run.get("review") if isinstance(run.get("review"), dict) else {}
+            final_sources = set(string_list(review.get("source_refs")))
+            final_fold_ids = set(resolution_fold_ids(resolution))
+            final_batches = set(resolution_source_batches(resolution))
+            final_findings_from_fresh_batches = (
+                resolution_findings_from_new_batches(
+                    resolution, admitted_batches
+                )
+            )
+            final_selected_nodes = {
+                text(binding.get("node_id"))
+                for binding in contract_derived.get("selected_work_bindings", [])
+            }
+            if (
+                admitted_findings != final_findings
+                or admitted_identity_conflict
+                or final_finding_identities is None
+                or final_finding_identities != admitted_finding_identities
+                or admitted_backend_conflict
+                or final_source_backends is None
+                or any(
+                    final_source_backends.get(source_ref) != backend
+                    for source_ref, backend in admitted_source_backends.items()
+                )
+                or not admitted_sources.issubset(final_sources)
+                or not final_fold_ids
+                or any(
+                    not canonical_review_identity(fold_id)
+                    for fold_id in final_fold_ids
+                )
+                or any(
+                    not canonical_review_identity(fold_id)
+                    for fold_id in admitted_fold_ids
+                )
+                or not final_fold_ids.isdisjoint(admitted_fold_ids)
+                or any(
+                    not canonical_review_identity(backend)
+                    or not canonical_review_identity(batch)
+                    for backend, batch in final_batches
+                )
+                or any(
+                    not canonical_review_identity(backend)
+                    or not canonical_review_identity(batch)
+                    for backend, batch in admitted_batches
+                )
+                or not (final_batches - admitted_batches)
+                or not final_findings
+                or not final_findings.issubset(final_findings_from_fresh_batches)
+                or text(latest_review_step.get("step_id"))
+                not in final_selected_nodes
+            ):
+                errors.append("blocked-resolution-history")
     return sorted(set(errors)), {**run_derived, **contract_derived}
 
 
@@ -2159,7 +3019,8 @@ def cas_errors(
         text(row.get("recordId")): row.get("proofCreditEligible")
         for row in ref_rows
     }
-    snapshot_ids = {text(row.get("recordId")) for row in normalized}
+    normalized_ids = [text(row.get("recordId")) for row in normalized]
+    snapshot_ids = set(normalized_ids)
     if (
         referenced_ids != snapshot_ids
         or "" in referenced_ids
@@ -2167,12 +3028,47 @@ def cas_errors(
         or any(type(value) is not bool for value in ref_credit.values())
     ):
         errors.append("blocked-cas-evidence-set-incomplete")
-    expected_artifact = (
-        run.get("artifact") if isinstance(run.get("artifact"), dict) else {}
-    )
+    if len(normalized_ids) != len(snapshot_ids):
+        errors.append("blocked-cas-unit-duplicate")
+    same_run_attempt_ids: list[str] = []
+    for record in normalized:
+        binding = (
+            record.get("workflowBinding")
+            if isinstance(record.get("workflowBinding"), dict)
+            else {}
+        )
+        if binding.get("actuationRunId") != run.get("run_id"):
+            continue
+        attempt = (
+            record.get("attempt")
+            if isinstance(record.get("attempt"), dict)
+            else {}
+        )
+        attempt_id = text(attempt.get("attemptId"))
+        if not attempt_id:
+            errors.append("blocked-cas-attempt-identity")
+        else:
+            same_run_attempt_ids.append(attempt_id)
+    if len(same_run_attempt_ids) != len(set(same_run_attempt_ids)):
+        errors.append("blocked-cas-unit-duplicate")
+    artifact_value = run.get("artifact")
+    if not isinstance(artifact_value, dict) or any(
+        not text(artifact_value.get(key))
+        for key in ("repo", "base_sha", "branch", "head_sha", "state_fingerprint")
+    ):
+        return sorted(set([*errors, "blocked-cas-unit-stale"])), []
+    expected_artifact = artifact_value
     expected_lenses = derived["selected_lenses"]
     expected_contract = derived["review_contract_fingerprint"]
     expected_resolution = derived["resolution_digest"]
+    review = run.get("review") if isinstance(run.get("review"), dict) else {}
+    publication_bound = bool(
+        review.get("publication_requested") is True
+        and isinstance(review.get("ship_receipt"), dict)
+    )
+    publication_watermark = derived.get("publication_watermark")
+    if publication_bound and type(publication_watermark) is not int:
+        errors.append("blocked-cas-publication-watermark")
     contracts = load_semantics().get("lens_contracts") or {}
     allowed_lanes = set(expected_lenses)
     folds_by_batch: dict[str, list[dict[str, Any]]] = {}
@@ -2232,28 +3128,13 @@ def cas_errors(
             reject("blocked-cas-unit-id")
         if created_at is None:
             reject("blocked-cas-attempt-identity")
-        if tuple_value.get("repoRealpath") != expected_artifact.get("repo"):
-            reject("blocked-cas-unit-stale")
-        for field, artifact_key in (
-            ("baseSha", "base_sha"),
-            ("headSha", "head_sha"),
-        ):
-            if tuple_value.get(field) != expected_artifact.get(artifact_key):
-                reject("blocked-cas-unit-stale")
-        native_target_fingerprint = text(tuple_value.get("targetFingerprint"))
-        if not native_target_fingerprint:
-            reject("blocked-cas-unit-stale")
-        else:
-            native_target_fingerprints.add(native_target_fingerprint)
-        if tuple_value.get("tupleCurrentAtRecordTime") is not True:
-            reject("blocked-cas-unit-stale")
         if not isinstance(binding, dict):
             reject("blocked-cas-workflow-unbound")
             continue
         if binding.get("actuationRunId") != run.get("run_id"):
             reject("blocked-cas-workflow-unbound")
             continue
-        current_epoch = all(
+        workflow_epoch = all(
             (
                 binding.get("reviewContractFingerprint") == expected_contract,
                 binding.get("resolutionDigest") == expected_resolution,
@@ -2261,9 +3142,33 @@ def cas_errors(
                 == expected_artifact.get("state_fingerprint"),
             )
         )
+        after_publication_watermark = bool(
+            not publication_bound
+            or (
+                type(publication_watermark) is int
+                and created_at is not None
+                and created_at > publication_watermark
+            )
+        )
+        current_epoch = workflow_epoch and after_publication_watermark
         if not current_epoch:
-            if verdict.get("status") == "findings":
-                producer_findings = object_list(verdict.get("findings"))
+            superseded_status = text(verdict.get("status"))
+            producer_findings_raw = verdict.get("findings")
+            producer_findings = object_list(producer_findings_raw)
+            finding_count = verdict.get("findingCount")
+            if (
+                verdict.get("tupleVerdictExists") is not True
+                or superseded_status not in {"clean", "findings"}
+                or not has_exact_object_list(producer_findings_raw)
+                or type(finding_count) is not int
+                or finding_count != len(producer_findings)
+                or verdict.get("clean") is not (superseded_status == "clean")
+                or (superseded_status == "clean" and finding_count != 0)
+                or (superseded_status == "findings" and finding_count <= 0)
+            ):
+                reject("blocked-cas-unit-unnormalized")
+                continue
+            if superseded_status == "findings":
                 expected_source_refs = [
                     text(finding.get("findingId")) or f"{record_id}#{index}"
                     for index, finding in enumerate(producer_findings, start=1)
@@ -2295,6 +3200,21 @@ def cas_errors(
                 if not classified:
                     reject("blocked-cas-findings-unresolved")
             continue
+        if tuple_value.get("repoRealpath") != expected_artifact.get("repo"):
+            reject("blocked-cas-unit-stale")
+        for field, artifact_key in (
+            ("baseSha", "base_sha"),
+            ("headSha", "head_sha"),
+        ):
+            if tuple_value.get(field) != expected_artifact.get(artifact_key):
+                reject("blocked-cas-unit-stale")
+        native_target_fingerprint = text(tuple_value.get("targetFingerprint"))
+        if not native_target_fingerprint:
+            reject("blocked-cas-unit-stale")
+        else:
+            native_target_fingerprints.add(native_target_fingerprint)
+        if tuple_value.get("tupleCurrentAtRecordTime") is not True:
+            reject("blocked-cas-unit-stale")
         lenses = binding.get("selectedLenses")
         if (
             not isinstance(lenses, list)
@@ -2324,7 +3244,7 @@ def cas_errors(
         if (
             verdict.get("tupleVerdictExists") is not True
             or status not in {"clean", "findings"}
-            or not isinstance(findings, list)
+            or not has_exact_object_list(findings)
             or type(finding_count) is not int
             or finding_count != len(findings)
             or verdict.get("clean") is not (status == "clean")
@@ -2487,6 +3407,23 @@ def evidence_errors(
             admission_ref = f"review-admission:{text(admission.get('admission_digest'))}"
             if admission_ref not in string_list(evidence.get("review_refs")):
                 errors.append("blocked-evidence-fold-mismatch")
+            continuation = admission.get("publication_continuation")
+            predecessor = (
+                continuation.get("predecessor")
+                if isinstance(continuation, dict)
+                and isinstance(continuation.get("predecessor"), dict)
+                else None
+            )
+            if isinstance(predecessor, dict):
+                predecessor_item = by_id.get(
+                    text(predecessor.get("evidence_fold_ref"))
+                )
+                if (
+                    predecessor_item is None
+                    or canonical_digest(predecessor_item)
+                    != predecessor.get("evidence_fold_digest")
+                ):
+                    errors.append("blocked-evidence-fold-mismatch")
         if (
             not string_list(commands.get("passed"))
             or commands.get("failed") != []
@@ -2535,6 +3472,11 @@ def static_ship_errors(
     run: dict[str, Any],
 ) -> tuple[list[str], list[str]]:
     errors: list[str] = []
+    if has_misplaced_derived_control(
+        ship_value,
+        allow_step_receipts=False,
+    ):
+        errors.append("blocked-unexpected-input")
     record = unwrap(ship_value, "ship_record")
     if record.get("record_version") != "SHIP-v1":
         errors.append("blocked-ship-version")
@@ -2649,12 +3591,21 @@ def ship_errors(
     ship_value: dict[str, Any],
     run: dict[str, Any],
 ) -> tuple[list[str], list[str]]:
+    errors, basis, _ = ship_observation_errors(ship_value, run)
+    return errors, basis
+
+
+def ship_observation_errors(
+    ship_value: dict[str, Any],
+    run: dict[str, Any],
+) -> tuple[list[str], list[str], int | None]:
     errors, static_basis = static_ship_errors(ship_value, run)
     record = unwrap(ship_value, "ship_record")
     artifact = run.get("artifact") if isinstance(run.get("artifact"), dict) else {}
     base_branch = text(record.get("base_branch"))
     pr_url = static_basis[0] if static_basis else ""
     live_pr_valid = False
+    publication_watermark: int | None = None
     if pr_url:
         try:
             metadata = live_pr_metadata(Path(text(artifact.get("repo"))), pr_url)
@@ -2685,13 +3636,17 @@ def ship_errors(
                     pull_request.get("headRefOid") != artifact.get("head_sha"),
                     pull_request.get("state") != "OPEN",
                     pull_request.get("isDraft") is not False,
+                    cas_time_key(pull_request.get("updatedAt")) is None,
                 )
             ):
                 errors.append("blocked-ship-live-pr-mismatch")
             else:
                 live_pr_valid = True
+                publication_watermark = cas_time_key(
+                    pull_request.get("updatedAt")
+                )
     basis = [pr_url] if live_pr_valid else []
-    return sorted(set(errors)), basis
+    return sorted(set(errors)), basis, publication_watermark
 
 
 def decide(
@@ -2704,8 +3659,14 @@ def decide(
     review_fold_values: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], int]:
     repo = git_root(repo)
-    run_errors, run_derived = validate_run(run, repo, resolution)
+    run_errors, run_derived = validate_run(
+        run, repo, resolution, evidence_values
+    )
     errors = list(run_errors)
+    publication_watermarks: list[int] = []
+    initial_publication_watermark = run_derived.get("publication_watermark")
+    if type(initial_publication_watermark) is int:
+        publication_watermarks.append(initial_publication_watermark)
     mode = text(run.get("mode"))
     lifecycle = run.get("lifecycle") if isinstance(run.get("lifecycle"), dict) else {}
     invocation_profile = text(lifecycle.get("invocation_profile"))
@@ -2721,7 +3682,8 @@ def decide(
         (
             step
             for step in reversed(completed_steps)
-            if step.get("effect") == "edit"
+            if step.get("phase") == "review-closeout"
+            and step.get("effect") == "edit"
             and isinstance(step.get("review_admission"), dict)
             and isinstance(step["review_admission"].get("ship_receipt"), dict)
         ),
@@ -2768,12 +3730,26 @@ def decide(
             errors.append("blocked-review-resolution-missing")
         else:
             resolution_errors, resolution_derived = validate_resolution(
-                run, resolution, repo
+                run, resolution, repo, evidence_values
             )
             errors.extend(resolution_errors)
             resolution_digest = resolution_derived.get("resolution_digest")
+            if type(resolution_derived.get("publication_watermark")) is int:
+                publication_watermarks.append(
+                    resolution_derived["publication_watermark"]
+                )
     elif resolution is not None:
         errors.append("blocked-unexpected-input")
+
+    if any(
+        current < previous
+        for previous, current in zip(
+            publication_watermarks,
+            publication_watermarks[1:],
+            strict=False,
+        )
+    ):
+        errors.append("blocked-cas-publication-watermark")
 
     if run_derived.get("selected_step_id"):
         errors.append("blocked-step-open")
@@ -2809,7 +3785,13 @@ def decide(
                 errors.append("blocked-artifact-uncommitted")
 
     cas_ids: list[str] = []
-    if review_required and not needs_reship and resolution is not None:
+    cas_publication_watermark: int | None = None
+    if (
+        review_required
+        and not needs_reship
+        and resolution is not None
+        and not errors
+    ):
         artifact = run.get("artifact") if isinstance(run.get("artifact"), dict) else {}
         try:
             live_snapshot = live_cas_list(
@@ -2829,10 +3811,36 @@ def decide(
                 and canonical_digest(cas_values[0]) != canonical_digest(live_snapshot)
             ):
                 errors.append("blocked-cas-evidence-set-incomplete")
-            cas_problems, cas_ids = cas_errors(
-                live_snapshot, run, resolution, resolution_derived
-            )
-            errors.extend(cas_problems)
+            if publication_requested and isinstance(embedded_ship, dict):
+                ship_problems, _, observed_watermark = ship_observation_errors(
+                    embedded_ship, run
+                )
+                errors.extend(ship_problems)
+                if not ship_problems and type(observed_watermark) is int:
+                    prior_watermark = (
+                        max(publication_watermarks)
+                        if publication_watermarks
+                        else None
+                    )
+                    if (
+                        type(prior_watermark) is int
+                        and observed_watermark < prior_watermark
+                    ):
+                        errors.append("blocked-cas-publication-watermark")
+                    else:
+                        publication_watermarks.append(observed_watermark)
+                        cas_publication_watermark = max(
+                            publication_watermarks
+                        )
+                        resolution_derived = {
+                            **resolution_derived,
+                            "publication_watermark": cas_publication_watermark,
+                        }
+            if not errors:
+                cas_problems, cas_ids = cas_errors(
+                    live_snapshot, run, resolution, resolution_derived
+                )
+                errors.extend(cas_problems)
     elif cas_values:
         errors.append("blocked-unexpected-input")
     outcome = (
@@ -2910,7 +3918,17 @@ def decide(
                 goal_outcome = "continue"
                 next_owner = "ship"
         else:
-            ship_problems, ship_basis = ship_errors(effective_ship, run)
+            ship_problems, ship_basis, final_publication_watermark = (
+                ship_observation_errors(effective_ship, run)
+            )
+            if (
+                cas_ids
+                and type(cas_publication_watermark) is int
+                and final_publication_watermark != cas_publication_watermark
+            ):
+                ship_problems.append("blocked-cas-publication-watermark")
+            if ship_problems:
+                cas_ids = []
             errors.extend(ship_problems)
             if ship_problems:
                 verdict = "blocked"
@@ -2987,6 +4005,7 @@ def parser() -> argparse.ArgumentParser:
     resolution = sub.add_parser("validate-resolution")
     resolution.add_argument("--run", required=True)
     resolution.add_argument("--resolution", required=True)
+    resolution.add_argument("--evidence", action="append", default=[])
     resolution.add_argument("--repo", required=True)
     close = sub.add_parser("decide")
     close.add_argument("--run", required=True)
@@ -3020,7 +4039,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "validate-resolution":
             if resolution is None:
                 raise ValueError("resolution is required")
-            errors, derived = validate_resolution(run, resolution, repo)
+            resolution_evidence = [load_data(path) for path in args.evidence]
+            errors, derived = validate_resolution(
+                run, resolution, repo, resolution_evidence
+            )
             return emit(args.command, errors, derived)
         evidence = [load_data(path) for path in args.evidence]
         review_folds = [load_data(path) for path in args.review_fold]

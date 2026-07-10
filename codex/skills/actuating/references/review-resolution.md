@@ -100,6 +100,37 @@ the quotient is wrong, correct the RF-v2 classification first.
 Record rejected alternatives and a falsifier for every material decision.
 Judgment owns the strategy; comment count does not.
 
+## Live refresh and publication continuation
+
+Refresh the live review source before every repair admission and construct new
+RF-v2 folds for the current local artifact. A source name alone or only the
+batch that authorized the preceding edit is stale input, even while the PR
+intentionally continues to publish the preceding SHIP artifact.
+
+For an adjacent same-publication repair, the pending resolution must preserve
+all prior same-epoch finding IDs and source references, add at least one new
+material finding, use fold IDs disjoint from every fold already admitted in the
+epoch, include at least one new producer source-batch identity, and select the
+current node. Every introduced finding must come from a new producer batch. The
+gate derives `same-publication-continuation/v1` inside
+`review-admission/v1`; callers do not supply a top-level continuation object,
+authority reference, or use count. The derivation may repeat for successive
+adjacent edits while the same SHIP and live PR remain valid.
+
+Finding semantics and source-to-producer lineage remain cumulative across a
+replacement SHIP. The new receipt resets publication-local fold/batch and CAS
+credit, not admitted liabilities; the next repair resolution must strictly
+extend the retained finding set and preserve every retained source backend.
+
+The resolved re-fold after the last repair preserves exactly the admitted
+finding set and every admitted source reference, and uses another fresh fold
+plus a producer batch that carries material evidence. A newly observed material
+finding keeps the resolution pending and requires another admitted
+continuation. Only after the retained PR is revalidated against the
+admission-bound published artifact may `$ship` update that PR to the resolved
+local head. All earlier CAS credit belongs to the preceding publication epoch
+and resets to zero.
+
 ## Abstraction audit
 
 Audit every abstraction participating in the touched invariant or transition,

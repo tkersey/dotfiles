@@ -137,6 +137,20 @@ new binding and resets prior credit. When `review.ship_receipt` exists, the
 binding's `resolutionDigest` is derived from the resolution's verified
 self-digest and the canonical digest of that complete SHIP-v1 snapshot.
 
+Publication-bound closure also observes the live PR's `updatedAt` as a
+conservative watermark before and after the exhaustive CAS list and once more
+before closure. A current-binding record whose `createdAt` is not strictly later
+than the latest observation is treated as superseded: it grants no clean credit,
+while any findings still require current RF-v2 classification. If the watermark
+advances during closure, the credited basis is discarded. This deliberately
+means a later PR metadata update resets the clean suffix and requires three
+newer attempts.
+
+Watermark observations must be monotone; a regression blocks closure instead
+of lowering the boundary. CAS record identities and same-run producer attempt
+identities are unique across the full exhaustive snapshot, including superseded
+and current publication epochs.
+
 ## Outcomes
 
 ~~~yaml
@@ -178,18 +192,80 @@ binding before deriving any review admission. The admission records publication
 intent by snapshotting that complete SHIP receipt. After an edit and EF-v1, a current
 resolved refold must observe that exact admitted node; closure then returns
 `ready-to-ship` before CAS. `$ship` updates the PR and replaces
-`review.ship_receipt` before another edit or final CAS. Final review-closeout
-consumes only the current embedded receipt; a duplicate external SHIP input is
-invalid. CAS produced before that replacement belongs to the prior publication
-epoch and grants no credit afterward. The replacement must report `updated` /
-`update-existing`, retain an
+`review.ship_receipt` before final CAS. An unresolved review may instead admit
+another adjacent edit against the same publication only through the derived
+continuation receipt described below.
+
+Final review-closeout consumes only the current embedded receipt; a duplicate
+external SHIP input is invalid. CAS produced before that replacement belongs to
+the prior publication epoch and grants no credit afterward. The replacement
+must report `updated` / `update-existing`, retain an
 existing PR, and use the exact PR URL captured by the prior admission; creating
 a second PR cannot continue the review epoch.
 
-A prior review edit ending `ready-for-closure` admits a following selected step
-only when the canonical digest of its SHIP snapshot differs from the newly
-embedded receipt;
-prior EF-v1 and live validation of that fresh receipt remain mandatory.
+Before every repair admission, refresh the live review sources against the
+current local artifact and construct fresh RF-v2 folds that include a new
+producer batch and a pending resolution.
+If the retained PR and SHIP still publish the original artifact, the gate may
+derive this optional field inside the next `review-admission/v1`:
+
+~~~yaml
+publication_continuation:
+  version: same-publication-continuation/v1
+  publication_epoch: <canonical digest of the unchanged SHIP-v1>
+  published_artifact: <artifact still published by that SHIP-v1>
+  predecessor:
+    step_id: <adjacent completed review edit>
+    evidence_fold_ref: <that edit's EF-v1>
+    evidence_fold_digest: <canonical digest of that exact EF-v1 content>
+    review_admission_digest: <that edit's admission digest>
+~~~
+
+The field is gate output, not caller input or a fourth control object. The
+adjacent predecessor must be a completed `ready-for-closure` review edit under
+the same SHIP. The pending resolution must strictly extend the prior material
+finding set, preserve every prior review source reference, use
+fold IDs disjoint from every admitted fold in that publication epoch, include
+new producer source-batch identities that support every introduced finding,
+preserve each retained source's producer backend, and select the next edit. The
+live PR must still match the bound published artifact. Each succeeding edge is
+derived anew and may repeat under those same laws; no authority reference or
+use counter can grant or limit it.
+
+Reserved derived-receipt keys are invalid anywhere in a caller-supplied run,
+resolution, or SHIP input except at the gate-emitted nested receipt locations.
+
+Material finding semantics are injective across IDs. A clone of an admitted
+`claim`, `observed_fact`, `validity`, `liability`, `intent_relation`,
+`quotient_key`, `owner_boundary`, `law_family`, and `falsifier` under a new ID
+is a duplicate, not strict growth, and cannot derive continuation. Boundary
+whitespace, whitespace-run changes, and canonically equivalent Unicode do not
+create a distinct semantic identity.
+
+After the final repair, the resolved re-fold must preserve exactly the findings
+and all source references admitted during the epoch while using fold IDs
+disjoint from the admission history and another new producer batch that carries
+material evidence. A newly observed material finding keeps the resolution
+pending and requires another admitted continuation. Before `ready-to-ship`, the
+retained PR must still match the admission-bound published artifact. Then
+`$ship` republishes the exact resolved local head to that PR once. That
+publication change resets CAS credit to zero, so final closure requires three
+fresh ordered standard attempts against the new receipt; no pre-reship attempt
+counts.
+
+Once a publication-bearing repair has been admitted, a later `clean` resolution
+cannot erase that history. Terminal review must remain `resolved` and account
+for the exact admitted material finding set.
+
+Replacing SHIP starts a new publication and CAS epoch but does not erase the
+cumulative admitted finding set, source references, or source-to-producer
+lineage. The first repair admission after reship must strictly extend that
+history with current evidence.
+
+A prior review edit ending `ready-for-closure` otherwise admits a following
+selected step only when the canonical digest of its SHIP snapshot differs from
+the newly embedded receipt. Prior EF-v1 and live validation of that fresh
+receipt remain mandatory.
 
 SHIP-v1 is an immutable pre-review publication handoff. Its exact
 `actuation_binding` contains only `actuation_run_id` and `state_fingerprint`;
