@@ -8,6 +8,7 @@ import copy
 from datetime import datetime
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -420,7 +421,7 @@ def binding_errors(
         current = live_artifact(repo, base)
     except ValueError:
         return [f"{prefix}-base-invalid"], {}
-    errors = ["blocked-index-observer-flags"] if has_index_observer_flags(repo) else []
+    errors = artifact_observer_errors(repo)
     errors.extend(
         [
         f"{prefix}-stale:{key}"
@@ -556,21 +557,37 @@ def review_admission_errors(value: Any, step: dict[str, Any]) -> list[str]:
     return []
 
 
-def has_index_observer_flags(repo: Path) -> bool:
+def artifact_observer_errors(repo: Path, *, nested: bool = False) -> list[str]:
     repo = git_root(repo)
+    errors: set[str] = set()
     for row in git(repo, "ls-files", "-v", "-z").split(b"\0"):
         tag, separator, _ = row.partition(b" ")
         if separator and (tag == b"S" or tag.islower()):
-            return True
-    for path in gitlink_paths(git(repo, "ls-files", "--stage", "-z")):
+            errors.add("blocked-index-observer-flags")
+    gitlinks = gitlink_paths(git(repo, "ls-files", "--stage", "-z")) | gitlink_paths(
+        git(repo, "ls-tree", "-rz", "HEAD", "--")
+    )
+    for directory, child_dirs, files in os.walk(
+        repo,
+        onerror=lambda _: errors.add("blocked-nested-gitlink-observer"),
+    ):
+        current = Path(directory)
+        marker_present = ".git" in child_dirs or ".git" in files
+        if ".git" in child_dirs:
+            child_dirs.remove(".git")
+        if current == repo or not marker_present:
+            continue
+        path = current.relative_to(repo).as_posix()
+        if path not in gitlinks:
+            errors.add("blocked-nested-gitlink-observer")
+    if nested and gitlinks:
+        errors.add("blocked-nested-gitlink-observer")
+        return sorted(errors)
+    for path in gitlinks:
         source = repo / path
-        if (
-            source.is_dir()
-            and (source / ".git").exists()
-            and has_index_observer_flags(source)
-        ):
-            return True
-    return False
+        if source.is_dir() and (source / ".git").exists():
+            errors.update(artifact_observer_errors(source, nested=True))
+    return sorted(errors)
 
 
 def path_allowed(path: str, allowed: list[str], repo: Path) -> bool:

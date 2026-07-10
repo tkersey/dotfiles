@@ -19,10 +19,13 @@ Repository input is canonicalized to the Git worktree root before any path
 authorization. Every workflow input must bind to the same repository, base,
 branch, head, and live-state fingerprint. An index carrying `assume-unchanged`
 or `skip-worktree` flags blocks as `blocked-index-observer-flags`; closure does
-not simulate content hidden from the observer. The same rejection recurses
-through initialized gitlinks; genuinely uninitialized gitlinks have no live
-nested index to inspect. CAS additionally carries its producer-native opaque
-`targetFingerprint`; do not relabel a local state digest as that field.
+not simulate content hidden from the observer. One root gitlink layer is
+observed, including its live index flags. A gitlink declared inside that layer
+in either HEAD or the index blocks as `blocked-nested-gitlink-observer`; a
+retained untracked embedded-repository marker blocks likewise. Nested topology
+is outside the observer domain rather than recursively approximated. CAS
+additionally carries its producer-native opaque `targetFingerprint`; do not
+relabel a local state digest as that field.
 
 ## Evidence-fold requirements
 

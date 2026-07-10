@@ -2860,6 +2860,71 @@ class GateTests(unittest.TestCase):
         errors, _ = validate_run(self.run_value(selected=True), self.repo)
         self.assertNotIn("blocked-index-observer-flags", errors)
 
+    def test_unreadable_observer_subtree_fails_closed(self) -> None:
+        with patch("actuating_gate.os.scandir", side_effect=PermissionError):
+            errors, _ = validate_run(self.run_value(selected=True), self.repo)
+        self.assertIn("blocked-nested-gitlink-observer", errors)
+
+    def test_nested_gitlink_declaration_is_outside_the_observer_domain(self) -> None:
+        nested_temp = tempfile.TemporaryDirectory()
+        self.addCleanup(nested_temp.cleanup)
+        nested = Path(nested_temp.name)
+        subprocess.run(["git", "init", "-q"], cwd=nested, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"], cwd=nested, check=True
+        )
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=nested, check=True)
+        (nested / "nested.txt").write_text("nested\n", encoding="utf-8")
+        subprocess.run(["git", "add", "nested.txt"], cwd=nested, check=True)
+        subprocess.run(["git", "commit", "-qm", "nested"], cwd=nested, check=True)
+
+        self.add_submodule("direct.txt", 1)
+        direct = self.repo / "sm"
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "protocol.file.allow=always",
+                "submodule",
+                "add",
+                "-q",
+                str(nested),
+                "vendor/nested",
+            ],
+            cwd=direct,
+            check=True,
+        )
+        subprocess.run(["git", "commit", "-qam", "add nested"], cwd=direct, check=True)
+
+        errors, _ = validate_run(self.run_value(selected=True), self.repo)
+        self.assertIn("blocked-nested-gitlink-observer", errors)
+
+        subprocess.run(
+            ["git", "rm", "--cached", "-q", "vendor/nested"],
+            cwd=direct,
+            check=True,
+        )
+        errors, _ = validate_run(self.run_value(selected=True), self.repo)
+        self.assertIn("blocked-nested-gitlink-observer", errors)
+
+        subprocess.run(
+            ["git", "commit", "-qm", "remove nested declaration"],
+            cwd=direct,
+            check=True,
+        )
+        errors, _ = validate_run(self.run_value(selected=True), self.repo)
+        self.assertIn("blocked-nested-gitlink-observer", errors)
+
+        (direct / ".gitignore").write_text("vendor/\n", encoding="utf-8")
+        subprocess.run(["git", "add", ".gitignore"], cwd=direct, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "ignore retained repository"],
+            cwd=direct,
+            check=True,
+        )
+        errors, _ = validate_run(self.run_value(selected=True), self.repo)
+        self.assertIn("blocked-nested-gitlink-observer", errors)
+
     def test_final_rebind_rejects_late_index_observer_flag(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
         resolution = self.resolution(run)
