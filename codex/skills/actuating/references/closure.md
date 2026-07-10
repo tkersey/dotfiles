@@ -64,6 +64,11 @@ does not retroactively relabel an earlier mutation admission, but every node it
 marks resolved must still match exactly one completed admitted edit by node,
 owner boundary, paths, and verifier.
 
+Before a later iterative step is admitted, every initial-to-live path-state
+delta must already appear in prior completed steps' exact `changed_paths`.
+Untouched initial dirt remains user-owned; carried, unclaimed dirt cannot be
+assigned to a newly selected step.
+
 Node completion remains distinct from goal completion.
 
 ## CAS requirements
@@ -91,7 +96,9 @@ base and Codex thread ID; a saved or caller-selected set is not closure
 evidence. Standard credit requires a normalized, source-valid strong-principal
 record whose matching `recordRefs` row has `proofCreditEligible: true`, with a
 distinct record and attempt ID. Ineligible clean records remain visible but
-grant no credit; ineligible findings still require classification. Every
+grant no credit; ineligible findings still require classification. Attempt
+identity, chronology, and freshness are validated over the complete visible
+current-epoch sequence before proof eligibility filters clean credit. Every
 record after the first must originate from an explicit fresh attempt.
 
 Partition tuple history by the producer-owned workflow binding before granting
@@ -105,8 +112,10 @@ resolution epoch.
 Sort the complete current binding sequence by `createdAt`. Closure requires the
 maximal clean suffix to contain at least three consecutive standard attempts.
 Caller-authored auxiliary labels are observational and grant no credit. Any
-artifact, review-contract, or resolution change creates a new binding and
-resets prior credit.
+artifact, review-contract, resolution, or publication epoch change creates a
+new binding and resets prior credit. When `review.ship_receipt` exists, the
+binding's `resolutionDigest` is derived from the resolution's verified
+self-digest and the canonical digest of that complete SHIP-v1 snapshot.
 
 ## Outcomes
 
@@ -146,7 +155,9 @@ resolved refold must observe that exact admitted node; closure then returns
 `ready-to-ship` before CAS. `$ship` updates the PR and replaces
 `review.ship_receipt` before another edit or final CAS. Final review-closeout
 consumes only the current embedded receipt; a duplicate external SHIP input is
-invalid. The replacement must report `updated` / `update-existing`, retain an
+invalid. CAS produced before that replacement belongs to the prior publication
+epoch and grants no credit afterward. The replacement must report `updated` /
+`update-existing`, retain an
 existing PR, and use the exact PR URL captured by the prior admission; creating
 a second PR cannot continue the review epoch.
 

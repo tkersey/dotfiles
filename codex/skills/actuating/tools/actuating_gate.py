@@ -547,6 +547,7 @@ def review_admission_errors(value: Any, step: dict[str, Any]) -> list[str]:
                 review_source_refs,
                 changed_paths,
                 hunk_ids,
+                ship_receipt,
             ),
         )
         ship_problems = (
@@ -975,6 +976,20 @@ def validate_run(
                 errors.append("blocked-step-order")
             if current and any(before.get(key) != current[key] for key in current):
                 errors.append("blocked-step-stale")
+            prior_claimed_paths = {
+                path
+                for completed in completed_steps
+                for path in completed["changed_paths"]
+            }
+            selection_delta = {
+                path
+                for path in set(initial_path_states) | set(current_path_states)
+                if initial_path_states.get(path) != current_path_states.get(path)
+            }
+            if kind == "iterative" and not selection_delta.issubset(
+                prior_claimed_paths
+            ):
+                errors.append("blocked-step-change-mismatch")
             if changed_paths:
                 errors.append("blocked-step-incomplete")
         elif status == "completed":
@@ -1612,10 +1627,21 @@ def _resolution_contract_errors(
     expected_digest = canonical_digest(resolution_digest_payload(resolution))
     if text(outcome.get("resolution_digest")) != expected_digest:
         errors.append("blocked-review-resolution-digest")
+    ship_receipt = facts.get("ship_receipt")
+    workflow_digest = (
+        canonical_digest(
+            {
+                "resolution_digest": expected_digest,
+                "publication_epoch": canonical_digest(ship_receipt),
+            }
+        )
+        if isinstance(ship_receipt, dict)
+        else expected_digest
+    )
     return sorted(set(errors)), {
         "resolution_id": text(resolution.get("resolution_id")),
         "review_contract_fingerprint": expected_contract,
-        "resolution_digest": expected_digest,
+        "resolution_digest": workflow_digest,
         "change_surfaces": expected_surfaces,
         "selected_lenses": selected_lenses,
         "selected_work_nodes": selected_nodes,
@@ -1647,6 +1673,7 @@ def _admission_resolution_facts(
     review_source_refs: list[str],
     changed_paths: list[str],
     hunk_ids: list[str],
+    ship_receipt: dict[str, Any] | None,
 ) -> dict[str, Any]:
     binding = _node_binding(step)
     return {
@@ -1657,6 +1684,7 @@ def _admission_resolution_facts(
         "review_source_refs": review_source_refs,
         "changed_paths": changed_paths,
         "hunk_ids": hunk_ids,
+        "ship_receipt": ship_receipt,
         "allowed_node_bindings": [binding],
         "admitted_node_binding": binding,
     }
@@ -1698,6 +1726,7 @@ def _live_resolution_facts(
         "review_source_refs": string_list(review.get("source_refs")),
         "changed_paths": run_derived.get("live_changed_paths", []),
         "hunk_ids": hunk_ids,
+        "ship_receipt": review.get("ship_receipt"),
         "allowed_node_bindings": allowed_node_bindings,
         "admitted_node_binding": (
             _node_binding(selected[0])
@@ -1805,7 +1834,7 @@ def cas_errors(
         source_batch_id = text(source.get("source_batch_id"))
         if source_batch_id:
             folds_by_batch.setdefault(source_batch_id, []).append(fold)
-    valid: list[dict[str, Any]] = []
+    visible: list[dict[str, Any]] = []
     record_ids: list[str] = []
     native_target_fingerprints: set[str] = set()
     for record in normalized:
@@ -1956,9 +1985,7 @@ def cas_errors(
         ):
             reject("blocked-cas-unit-unnormalized")
         elif status == "findings":
-            reject("blocked-cas-findings-unresolved")
-        if status == "clean" and ref_credit.get(record_id) is not True:
-            eligible = False
+            errors.append("blocked-cas-findings-unresolved")
         if any(
             failure.get(key) is not None
             for key in (
@@ -1982,7 +2009,7 @@ def cas_errors(
         if not isinstance(fresh, bool):
             reject("blocked-cas-unit-replayed")
         if eligible:
-            valid.append(
+            visible.append(
                 {
                     "record_id": record_id,
                     "attempt_id": attempt_id,
@@ -1990,6 +2017,9 @@ def cas_errors(
                     "lane": lane,
                     "status": text(verdict.get("status")),
                     "fresh": fresh,
+                    "proof_credit": (
+                        status == "clean" and ref_credit.get(record_id) is True
+                    ),
                 }
             )
         record_ids.append(record_id)
@@ -1998,17 +2028,21 @@ def cas_errors(
         errors.append("blocked-cas-unit-duplicate")
     if len(native_target_fingerprints) != 1:
         errors.append("blocked-cas-evidence-set-incomplete")
-    attempt_ids = [row["attempt_id"] for row in valid]
+    attempt_ids = [row["attempt_id"] for row in visible]
     if len(attempt_ids) != len(set(attempt_ids)):
         errors.append("blocked-cas-unit-duplicate")
-    created = [row["created_at"] for row in valid]
+    created = [row["created_at"] for row in visible]
     if len(created) != len(set(created)):
         errors.append("blocked-cas-attempt-identity")
 
-    ordered = sorted(valid, key=lambda row: (row["created_at"], row["record_id"]))
+    ordered = sorted(visible, key=lambda row: (row["created_at"], row["record_id"]))
     if any(row["fresh"] is not True for row in ordered[1:]):
         errors.append("blocked-cas-unit-replayed")
-    standard = [row for row in ordered if row["lane"] == "standard"]
+    standard = [
+        row
+        for row in ordered
+        if row["lane"] == "standard" and row["proof_credit"]
+    ]
     clean_suffix: list[dict[str, Any]] = []
     for row in reversed(standard):
         if row["status"] == "clean":

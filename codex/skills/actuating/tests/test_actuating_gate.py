@@ -665,6 +665,15 @@ class GateTests(unittest.TestCase):
         ordinal: int,
     ) -> dict:
         lens_contracts = load_semantics()["lens_contracts"]
+        resolution_digest = resolution["outcome"]["resolution_digest"]
+        ship_receipt = run.get("review", {}).get("ship_receipt")
+        if isinstance(ship_receipt, dict):
+            resolution_digest = canonical_digest(
+                {
+                    "resolution_digest": resolution_digest,
+                    "publication_epoch": canonical_digest(ship_receipt),
+                }
+            )
         return {
             "schema": "CAS-RER-v1",
             "recordId": f"rer_{lane}_{ordinal}",
@@ -692,7 +701,7 @@ class GateTests(unittest.TestCase):
                 "reviewContractFingerprint": resolution["review_profile"][
                     "review_contract_fingerprint"
                 ],
-                "resolutionDigest": resolution["outcome"]["resolution_digest"],
+                "resolutionDigest": resolution_digest,
                 "selectedLenses": resolution["review_profile"]["selected_lenses"],
                 "reviewLane": lane,
                 "lensContract": lens_contracts[lane],
@@ -993,6 +1002,16 @@ class GateTests(unittest.TestCase):
         )
         self.assertEqual(handback["closure_decision"]["review_basis"], [])
 
+        resolution_errors, pre_ship_derived = validate_resolution(
+            run, current, self.repo
+        )
+        self.assertEqual(resolution_errors, [])
+        pre_ship_snapshot = self.review_records(run, current)[0]
+        cas_problems, _ = cas_errors(
+            pre_ship_snapshot, run, current, pre_ship_derived
+        )
+        self.assertEqual(cas_problems, [])
+
         duplicate_ship = self.ship_record(run)
         duplicate_ship["ship_record"]["action"]["pr_url"] = (
             "https://github.com/example/repo/pull/2"
@@ -1016,6 +1035,19 @@ class GateTests(unittest.TestCase):
         fresh_ship = self.updated_ship_record(run, prior_ship)
         self.assertNotEqual(canonical_digest(fresh_ship), canonical_digest(prior_ship))
         run["review"]["ship_receipt"] = fresh_ship
+        resolution_errors, post_ship_derived = validate_resolution(
+            run, current, self.repo
+        )
+        self.assertEqual(resolution_errors, [])
+        self.assertNotEqual(
+            pre_ship_derived["resolution_digest"],
+            post_ship_derived["resolution_digest"],
+        )
+        cas_problems, basis = cas_errors(
+            pre_ship_snapshot, run, current, post_ship_derived
+        )
+        self.assertIn("blocked-cas-clean-streak", cas_problems)
+        self.assertEqual(basis, [])
 
         next_run = copy.deepcopy(run)
         next_run["execution"]["kind"] = "iterative"
@@ -2208,6 +2240,41 @@ class GateTests(unittest.TestCase):
         errors, _ = cas_errors(snapshot, run, resolution, derived)
         self.assertIn("blocked-cas-findings-unresolved", errors)
 
+    def test_freshness_precedes_proof_credit_filter(self) -> None:
+        run = self.complete_step(self.run_value(review=True, selected=True))
+        resolution = self.resolution(run)
+        resolution_errors, derived = validate_resolution(run, resolution, self.repo)
+        self.assertEqual(resolution_errors, [])
+        snapshot = self.cas_snapshot(
+            [
+                self.cas_record(run, resolution, "standard", ordinal)
+                for ordinal in range(1, 5)
+            ]
+        )[0]
+        snapshot["records"][1]["command"]["brokerDecision"][
+            "freshAttemptRequired"
+        ] = False
+        snapshot["recordRefs"][0]["proofCreditEligible"] = False
+
+        errors, basis = cas_errors(snapshot, run, resolution, derived)
+        self.assertIn("blocked-cas-unit-replayed", errors)
+        self.assertNotIn("blocked-cas-clean-streak", errors)
+        self.assertEqual(
+            basis,
+            [row["recordId"] for row in snapshot["records"][1:]],
+        )
+
+        snapshot["records"][0]["verdict"] = {
+            "tupleVerdictExists": True,
+            "status": "findings",
+            "clean": False,
+            "findingCount": 1,
+            "findings": [{"title": "visible finding"}],
+        }
+        errors, _ = cas_errors(snapshot, run, resolution, derived)
+        self.assertIn("blocked-cas-findings-unresolved", errors)
+        self.assertIn("blocked-cas-unit-replayed", errors)
+
     def test_saved_cas_snapshot_must_equal_live_list(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
         resolution = self.resolution(run)
@@ -2586,6 +2653,36 @@ class GateTests(unittest.TestCase):
 
         errors, _ = validate_run(run, self.repo)
         self.assertIn("blocked-step-change-mismatch", errors)
+
+    def test_iterative_selection_rejects_unclaimed_carried_delta(self) -> None:
+        run = self.run_value(selected=True)
+        run["execution"]["kind"] = "iterative"
+        run["authority"]["allowed_paths"] = ["file.txt", "other.txt"]
+
+        (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
+        (self.repo / "other.txt").write_text("carried\n", encoding="utf-8")
+        run = self.commit_step(self.finish_step(run, ["file.txt"]))
+        run["execution"]["steps"][0]["verdict"] = "continue"
+        run["execution"]["selected_step_id"] = "step-2"
+        run["execution"]["steps"].append(
+            {
+                "step_id": "step-2",
+                "run_id": run["run_id"],
+                "selected_by": "lead",
+                "owner_boundary": "actuating",
+                "effect": "edit",
+                "paths": ["other.txt"],
+                "verifier": ["test"],
+                "changed_paths": [],
+                "status": "selected",
+                "state_before": run["artifact"],
+                "parent_completion_claimed": False,
+                "performed_public_effects": [],
+            }
+        )
+
+        errors, _ = validate_run(run, self.repo, evidence_values=[self.evidence(run)])
+        self.assertEqual(errors, ["blocked-step-change-mismatch"])
 
     def test_iterative_committed_revert_preserves_exact_step_evidence(self) -> None:
         run = self.run_value(selected=True)
@@ -3529,11 +3626,12 @@ class GateTests(unittest.TestCase):
         self.assertIn("blocked-ship-binding", errors)
         relabeled_run = copy.deepcopy(review_run)
         relabeled_run["review"]["ship_receipt"] = relabeled
+        relabeled_records = self.review_records(relabeled_run, resolution)
         mismatched_final, code = decide(
             relabeled_run,
             resolution,
             [evidence],
-            records,
+            relabeled_records,
             None,
             self.repo,
         )
