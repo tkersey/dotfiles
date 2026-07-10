@@ -2,323 +2,323 @@
 
 ## Definition
 
-In this repo, **doctrine** is a compact, reusable linguistic control surface that changes an agent's operating policy.
+In this repo, **doctrine** is compact language selected to induce a useful and repeatable change in an agent's operating policy.
 
-A doctrine unit may be a:
+Doctrine can work through two distinct mechanisms:
 
-- **word** — a semantically dense operator such as `ablative`, `actuating`, or `forensic`;
-- **phrase** — a memorable imperative, metaphor, slogan, or challenge such as `use fresh eyes`;
-- **persona** — a role prior such as `Arbiter` or `Nomothete`;
-- **stack** — a composition of non-overlapping doctrine units.
+- **operator doctrine** specifies a bounded procedure: `ablative`, `actuating`, `adjudicative`, `forensic`;
+- **activation doctrine** evokes a capability state: `Be bolder.`, `Use fresh eyes.`, `Be Optimal.`, `Be like Mike.`
 
-Doctrine is not tone, praise, or motivational decoration. It is valid only when it can be compiled into:
+Operator doctrine compresses a rubric. Activation doctrine compresses permission, ambition, identity, attention, or search posture.
+
+The governing rule is:
+
+> **Design expansively; invoke tersely.**
+
+The reference may explain why a phrase works, where it fails, and what it tends to activate. The runtime invocation should normally remain in its shortest effective form.
+
+## Optimization target
+
+Choose activation phrases for **behavioral leverage per token**:
 
 ```text
-trigger -> operator -> artifact -> receipt -> proof
+activation value =
+  behavioral shift
+  × task fit
+  × memorability
+  ÷ token cost
 ```
 
-A doctrine phrase is therefore:
+A phrase is strong when it causes a useful behavioral shift that a longer ordinary instruction often fails to induce.
 
-> A short, memorable activation cue that uses imperative force, rhythm, metaphor, paradox, or exemplar imitation to evoke a useful operating posture, then cashes that posture out into explicit behavior and evidence.
+## Artifact discipline
 
-Doctrine phrases can activate broader associative priors than technical doctrine words, but they are also more ambiguous. Every phrase must be decoded before it is trusted.
+Do not require a ledger merely to justify an activation phrase.
 
-## Phrase compiler
+Require an artifact, receipt, or proof only when:
 
-Compile each phrase with this shape:
+- correctness depends on it;
+- the result crosses an operational handoff;
+- another agent must consume the decision;
+- closure, mutation, publication, or authority depends on the claim;
+- the user asks for the phrase's operational unpacking.
 
-```yaml
-doctrine_phrase:
-  phrase: "..."
-  class: perspective-reset | ambition-amplifier | exemplar-invocation | adversarial-challenge | action-forcing | proof-pressure | anti-locality | completion-pressure | axiom
-  intended_behavior_shift: "..."
-  decoded_operators: []
-  trigger: "..."
-  core_command: "..."
-  cash_out_artifact: "..."
-  proof: "..."
-  guardrails: []
-  common_misreadings: []
-  evidence_status: observed-useful | promising | experimental | retired
+An activation phrase may remain terse while the receiving workflow supplies its own proof discipline.
+
+## Invocation rules
+
+- Return the shortest effective phrase by default.
+- Use one phrase by default; use at most two unless the user asks for a stack.
+- Do not append an explanation to the runtime phrase unless ambiguity would materially change behavior.
+- Preserve unusual cadence when it appears to be part of the activation effect.
+- Do not weaken a phrase by immediately restating it as a long checklist.
+- Analyze mechanism, shadow risk, and task fit in this reference or in annotated mode—not in every invocation.
+- Audit phrases empirically and retire those that add confidence or verbosity without improving outcomes.
+
+## Output modes
+
+### `activation-fast`
+
+Return 1-5 phrases, strongest first. No explanation.
+
+Example:
+
+```text
+Be bolder.
+Be Optimal.
 ```
 
-### Evidence status
+### `activation-annotated`
 
-- `observed-useful`: repeated use produced route-changing artifacts or validated outcomes.
-- `promising`: mechanism is clear and some use is encouraging, but evidence is limited.
-- `experimental`: memorable but unvalidated, ambiguous, or likely to need tuning.
-- `retired`: creates noise, overreach, imitation theater, or no procedural gain.
+For each phrase return only:
 
-## Quality gates
+- intended shift;
+- best use;
+- shadow risk.
 
-Keep a doctrine phrase only when it passes all applicable gates:
+### `activation-stack`
 
-1. **Behavioral delta** — it changes what the agent does, not merely how the answer sounds.
-2. **Decodability** — the intended operators can be named precisely.
-3. **Cash-out** — it creates a ledger, receipt, map, card, gate, decision row, or proof obligation.
-4. **Bounded ambiguity** — plausible misreadings are named and controlled.
-5. **Task fit** — the phrase activates the right pressure for the current task.
-6. **Non-collision** — it does not silently conflict with scope, preservation, safety, or proof doctrine.
-7. **Empirical revisability** — usage can be audited and the phrase can be promoted, narrowed, or retired.
+Return the smallest non-overlapping sequence of phrases and one line describing the progression.
 
-## Usage rules
+Example:
 
-- Use one high-amplitude phrase by default; use at most two unless the user explicitly asks for a phrase stack.
-- Follow the phrase with its decoded operator or concrete command when ambiguity is material.
-- Do not let a phrase replace the task contract, evidence, constraints, or proof bar.
-- Preserve unusual wording when its cadence or paradox appears to be part of the activation effect, but define it locally.
-- Treat famous-person phrases as trait selectors, not complete specifications.
-- A phrase with no artifact is an activation hypothesis, not operational doctrine.
+```text
+Use fresh eyes. Be bolder. Be Optimal.
+```
+
+```text
+reset the frame -> widen the search -> select the best admissible move
+```
 
 ## Core phrase registry
 
-| Phrase | Class | Default decode | Cash-out artifact | Primary guardrail |
-|---|---|---|---|---|
-| `Use fresh eyes.` | perspective-reset | `DE NOVO` + `FORENSIC` + `REBASELINING` | Fresh-Eyes Receipt | Preserve verified facts; discard anchoring, not evidence. |
-| `Be bolder.` | ambition-amplifier | `LEVER-SEEKING` + `DOMINANCE-TESTED` + `ACTUATING` | Bold Move Row | Bold means higher leverage, not larger unbounded scope. |
-| `Perform no smallness.` | ambition-amplifier / paradoxical prohibition | full-strength framing + dominant-move search | No-Smallness Challenge | Reject timidity without rewarding grandiosity or overengineering. |
-| `Be like Mike.` | exemplar-invocation | selected exemplar traits translated into task behavior | Exemplar Translation | Define `Mike` and selected traits; do not import mythology wholesale. |
-| `Try to prove yourself wrong.` | adversarial-challenge | `ADVERSARIAL` + `FALSIFIABLE` | Strongest Countercase | Do not invent objections unsupported by the artifact. |
-| `Solve the class, not the instance.` | anti-locality | `INVARIANT-SEEKING` + `CANONICALIZING` | Governing Invariant Row | Do not generalize beyond the witnessed counterexample family. |
-| `Show me the witness.` | proof-pressure | `WITNESS-BEARING` + `TRACEABLE` | Witness Receipt | A test name or confident explanation is not automatically a witness. |
-| `Actuate the lever.` | action-forcing | `ACTUATING` + `LEVER-SEEKING` | Actuation Receipt | Movement must be proved; activity is not movement. |
-| `One truth, one owner.` | axiom | `CANONICALIZING` + owner-boundary discipline | Canonical Owner Map | Multiple projections may exist; only truth ownership must be singular. |
-| `Delete before you add.` | anti-addition | `ABLATIVE` + `DOMINANCE-TESTED` | Ablation Receipt | Do not delete live obligations or promised compatibility. |
-| `Finish the thought.` | completion-pressure | `TOTALIZING` + `CONSTRUCTIVE` | Completion / Totality Check | Do not force false certainty when the task is genuinely blocked. |
-| `Rebaseline before proceeding.` | perspective-reset | `REBASELINING` + `STALE-PROOF` | Baseline Receipt | Preserve prior work that still matches current authority. |
-| `What would this look like if it were easy?` | problem-shaping | `TRACTABILIZING` + representation search | Tractability Receipt | Easy must mean better-shaped, not hand-waved. |
-| `Make the hidden state explicit.` | architecture | `REIFYING` + `TOTALIZING` | Behavior Algebra / State Model | Do not close a genuinely open extension surface without cause. |
-| `No artifact, no doctrine.` | axiom | doctrine-compiler enforcement | named artifact or doctrine demotion | Tiny tasks may need no doctrine at all. |
+| Phrase | Intended shift | Best for | Shadow risk |
+|---|---|---|---|
+| `Use fresh eyes.` | loosen anchoring to inherited framing | re-review, stale diagnosis, repeated failed routes | needless rediscovery or novelty bias |
+| `Be bolder.` | admit higher-upside, more structural moves | timid option sets, merely adequate answers | scope inflation or theatrical ambition |
+| `Be Optimal.` | reject merely sufficient and locally optimal answers; select the best available move under the real objective and constraints | competing routes, designs, plans, interventions | fake omniscience, hidden objective choice, overoptimization |
+| `Perform no smallness.` | raise the ambition floor and search for the compounding move | local polish when a governing move may dominate | grandeur mistaken for leverage |
+| `Be like Mike.` | activate elite standards, fundamentals, finishing, competitiveness, and ownership | execution quality, pressure, completion | persona theater or importing irrelevant traits |
+| `Dig deeper.` | move below the first plausible explanation | shallow diagnosis, symptom patches | analysis without route change |
+| `Ruminate harder.` | sustain competing frames long enough to find the stronger one | ambiguous high-judgment decisions | indecision or token burn |
+| `Reject the obvious answer.` | treat the first fluent answer as a candidate | anchoring, consensus, rubber-stamping | novelty bias against a correct simple answer |
+| `Be reckless.` | expand the speculative search beyond convention and feasibility | read-only divergent exploration | operational recklessness or unsupported claims |
+| `Find the lever.` | identify the control point that changes system state | analysis that has not become action | activity mistaken for movement |
+| `Make it inevitable.` | seek a structure where correct behavior follows naturally | invariants, canonical ownership, illegal-state prevention | rigidity or over-abstraction |
+| `Finish the thought.` | close partial reasoning, handling, or execution | incomplete analysis, partial eliminators, unfinished work | false certainty when genuinely blocked |
+| `Show me the witness.` | demand concrete evidence for a material claim | soundness, review, verification | proof theater or irrelevant tests |
+| `Solve the class, not the instance.` | look for the governing invariant or counterexample family | recurring local failures and review comments | unjustified generalization |
+| `Delete before you add.` | counter addition bias | helpers, fallbacks, wrappers, adapters, flags | deleting live obligations |
+| `Rebaseline before proceeding.` | bind to current authority and invalidate stale state | changed head, stale receipts, resumed workflows | discarding still-valid prior work |
+| `Actuate the lever.` | convert insight into a state-changing move | plan-to-action transitions | premature action before understanding |
+| `Do not deliver the scaffolding.` | retire temporary proof, migration, review, or exploration surface | closure and cleanup | removing still-live migration or safety support |
 
-## Detailed phrase cards
+## Phrase cards
 
-### Use fresh eyes
+### Be Optimal
 
-**Meaning**
-
-Suspend prior proposed solutions, summaries, review conclusions, and inherited frames as authority. Reconstruct the narrowest current model from present artifacts.
-
-**Decode**
-
-```text
-DE NOVO + FORENSIC + REBASELINING + ADVERSARIAL
-```
-
-**Cash-out**
-
-```md
-Fresh-Eyes Receipt:
-- current authoritative state:
-- prior frame suspended:
-- verified facts preserved:
-- new candidate frames:
-- strongest countercase:
-- conclusion changed: yes | no
-- proof / next check:
-```
-
-**Guardrails**
-
-- Do not erase verified facts, explicit requirements, or current proof.
-- Do not restart bounded work merely to perform novelty.
-- A fresh-eyes pass is valuable only when anchoring could change the route.
-
-### Be bolder
-
-**Meaning**
-
-Raise the ambition of the candidate set. Search for the higher-leverage, more constitutive, or more system-improving move instead of settling for the first competent local answer.
-
-**Decode**
+**Runtime form:**
 
 ```text
-LEVER-SEEKING + DOMINANCE-TESTED + ACTUATING + CONSTITUTIVE
+Be Optimal.
 ```
 
-**Cash-out**
+**Intended shift:**
 
-```md
-Bold Move Row:
-- competent local move:
-- bolder candidate:
-- leverage gained:
-- future-state improvement:
-- risk / scope bound:
-- strongest countercase:
-- proof signal:
-```
+Search beyond the first acceptable answer and select the best available move under the actual objective, constraints, evidence, uncertainty, and future-state effects.
 
-**Guardrails**
-
-- Boldness is not verbosity, certainty inflation, architecture theater, or scope expansion for its own sake.
-- Prefer a larger conceptual move only when it dominates the local move and remains evidence-backed.
-
-### Perform no smallness
-
-**Local definition**
-
-Treat this as a deliberately unusual, locally defined phrase:
-
-> Do not shrink the objective, frame, explanation, or intervention beneath the governing stakes merely to remain comfortable, conventional, or easy to approve.
-
-Its strangeness may be part of its activation effect. Preserve the wording, but never leave the meaning implicit.
-
-**Decode**
+**Internal decode:**
 
 ```text
-FULL-STRENGTH FRAMING + DOMINANCE-TESTED + LEVER-SEEKING + ACTUATING
+CRITERIAL + DOMINANCE-TESTED + CYBERNETIC + CALIBRATED + ACTUATING
 ```
 
-**Cash-out**
+**Important distinction:**
 
-```md
-No-Smallness Challenge:
-- governing stakes:
-- artificially small framing:
-- full-strength objective:
-- largest credible move:
-- bounds / non-goals:
-- why this is not grandiosity:
-- proof path:
+`Be Optimal.` does not mean maximize one visible metric. It means identify the real objective, account for constraints and second-order effects, compare serious alternatives, and choose the move that dominates on the governing criteria.
+
+**Shadow risks:**
+
+- pretending the objective is known when it is not;
+- claiming global optimality from incomplete search;
+- optimizing a proxy instead of the real outcome;
+- analysis paralysis from searching indefinitely;
+- sacrificing robustness for a brittle theoretical maximum.
+
+**When unpacking is required:**
+
+Only when the objective or criteria are contested. Then ask:
+
+```text
+Optimal for what, under which constraints, over what horizon, and with what proof?
 ```
-
-**Guardrails**
-
-- No smallness does not mean no bounds.
-- Reject timid underreach and theatrical overreach equally.
-- The selected move must remain tractable, owned, and proof-bearing.
 
 ### Be like Mike
 
-**Meaning**
+**Runtime form:**
 
-Invoke an exemplar to activate selected traits. The phrase is incomplete until `Mike` and the intended traits are resolved.
+```text
+Be like Mike.
+```
 
-When the local intent is Michael Jordan, a reasonable default trait selection is:
+**Repo convention:**
+
+Unless local context clearly identifies another Mike, `Mike` means **Michael Jordan** as a compact exemplar of:
 
 - relentless fundamentals;
+- an elite performance standard;
 - competitive intensity;
 - decisive finishing under pressure;
 - ownership of the outcome.
 
-Do not assume that decode when the context points to another Mike.
+The phrase selects those traits only. It does not import biography, celebrity mythology, interpersonal style, or unrelated behavior.
 
-**Cash-out**
+**Intended shift:**
 
-```md
-Exemplar Translation:
-- exemplar:
-- selected traits:
-- rejected / irrelevant traits:
-- task translation:
-- concrete behavior:
-- artifact / proof:
-```
+Raise execution quality and competitive standard while keeping attention on fundamentals and completion.
 
-**Guardrails**
+**Shadow risks:**
 
-- Imitate selected traits, not biography, mythology, celebrity, or irrelevant behavior.
-- Do not use a famous name as a substitute for criteria.
-- Prefer a direct doctrine phrase when the exemplar adds ambiguity without behavioral value.
+- persona cosplay instead of better work;
+- aggression replacing judgment;
+- confidence replacing proof;
+- competition against the wrong objective.
 
-## Phrase families
+### Be bolder
 
-### Perspective reset
-
-- `Use fresh eyes.`
-- `Rebaseline before proceeding.`
-- `Forget the patch; reconstruct the problem.`
-- `Read the artifacts, not the story.`
-
-### Ambition and amplitude
-
-- `Be bolder.`
-- `Perform no smallness.`
-- `Reject the merely competent answer.`
-- `Find the move that changes the future state.`
-
-### Adversarial and proof pressure
-
-- `Try to prove yourself wrong.`
-- `Show me the witness.`
-- `What would falsify this?`
-- `Make the claim earn its confidence.`
-
-### Anti-locality and canonicalization
-
-- `Solve the class, not the instance.`
-- `One truth, one owner.`
-- `Fix the producer, not the tolerance path.`
-- `Name the governing invariant.`
-
-### Action and completion
-
-- `Actuate the lever.`
-- `Finish the thought.`
-- `Do not stop at diagnosis.`
-- `Prove the system moved.`
-
-### Reduction and surface discipline
-
-- `Delete before you add.`
-- `Make every abstraction earn its keep.`
-- `Collapse the shadow owner.`
-- `Retain only live obligations.`
-
-## Phrase stacking
-
-A phrase stack should have distinct roles. Good:
+**Runtime form:**
 
 ```text
-Use fresh eyes. Be bolder. Show me the witness.
+Be bolder.
 ```
 
-Decode:
+**Intended shift:**
+
+Permit higher-upside, more structural, less deferential possibilities to enter consideration.
+
+**Shadow risk:**
+
+Do not interpret boldness as a larger patch. The boldest move may be deletion, rejection, simplification, or a single governing correction.
+
+### Use fresh eyes
+
+**Runtime form:**
 
 ```text
-reset the frame -> widen the candidate set -> demand proof
-```
-
-Bad:
-
-```text
-Be bold. Be fearless. Think big. Be ambitious.
-```
-
-The phrases overlap, provide no cash-out, and amplify confidence more than intelligence.
-
-Recommended pattern:
-
-```md
-[one activation phrase]
-Operate in [decoded doctrine mode(s)].
-[exact task contract]
-Produce [artifact / receipt / proof].
-```
-
-Example:
-
-```md
 Use fresh eyes.
-Operate in DE NOVO, FORENSIC, and ADVERSARIAL mode.
-Reconstruct the current changeset from current artifacts rather than prior review prose.
-Produce a candidate inventory, strongest countercase, and current-state proof receipt.
 ```
+
+**Intended shift:**
+
+Suspend inherited conclusions as authority and reconstruct the problem from current evidence.
+
+**Shadow risk:**
+
+Discard anchoring, not verified facts.
+
+### Perform no smallness
+
+**Runtime form:**
+
+```text
+Perform no smallness.
+```
+
+**Local meaning:**
+
+Do not shrink the objective, frame, explanation, or intervention beneath the governing stakes merely to remain comfortable, conventional, or easy to approve.
+
+**Shadow risk:**
+
+No smallness in ambition does not authorize excess semantic surface.
+
+### Be reckless
+
+**Runtime form:**
+
+```text
+Be reckless.
+```
+
+**Intended shift:**
+
+During a read-only speculative pass, admit possibilities that ordinary feasibility, convention, and politeness filters would suppress.
+
+**Boundary:**
+
+Recklessness applies to search, not to facts, mutation, authority, publication, or proof.
+
+## Recommended stacks
+
+### Escape a local optimum
+
+```text
+Use fresh eyes. Be bolder.
+```
+
+### Find and select the strongest move
+
+```text
+Be bolder. Be Optimal.
+```
+
+### Raise execution quality
+
+```text
+Be like Mike. Finish the thought.
+```
+
+### High-temperature search followed by selection
+
+```text
+Be reckless. Be Optimal.
+```
+
+The first phrase expands the candidate space. The second selects under the real objective and constraints.
+
+### Full ambition without sloppy execution
+
+```text
+Perform no smallness. Be Optimal.
+```
+
+## Selection heuristics
+
+Use **Be bolder** when the candidate set is timid.
+
+Use **Be Optimal** when the candidate set exists but the model may settle for a merely sufficient or locally attractive answer.
+
+Use **Be like Mike** when the gap is execution standard, fundamentals, competitive intensity, or finishing.
+
+Use **Use fresh eyes** when prior framing may be suppressing the correct route.
+
+Use **Perform no smallness** when the problem has been framed below its true stakes.
+
+Use **Be reckless** only for speculative search that remains separated from action.
+
+## Anti-patterns
+
+Reject or repair:
+
+- `Be smart.` — generic praise with weak activation specificity;
+- `Be Optimal.` used without a knowable objective when the ambiguity is material;
+- `Be like Mike.` when local context clearly points to a different Mike and no convention resolves it;
+- phrase stacks made entirely of synonyms;
+- a long explanation appended to a phrase whose value is brevity;
+- runtime ledgers produced only to prove that an activation phrase was used;
+- treating a phrase as evidence, authority, permission, or proof.
 
 ## Audit discipline
 
-Doctrine phrases are hypotheses about model activation. Audit them.
+Activation phrases are empirical hypotheses. Track, when useful:
 
-For each phrase, track:
-
-- session/task;
 - phrase used;
-- decoded operator;
-- artifact emitted;
-- whether the route changed;
-- evidence of better outcome;
-- verbosity or overreach cost;
-- user corrections;
-- status promotion, narrowing, or retirement.
+- task family;
+- behavioral or route delta;
+- outcome evidence;
+- token and verbosity cost;
+- shadow failure;
+- user correction;
+- status: `observed-useful`, `promising`, `experimental`, or `retired`.
 
-Promote phrases because they produce better decisions and artifacts, not because they sound memorable.
+Promote phrases because they improve decisions or execution per token—not because they sound memorable.
