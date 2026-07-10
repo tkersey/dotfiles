@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -100,6 +101,41 @@ class ReceiptTests(unittest.TestCase):
 
     def test_valid_material_receipt(self) -> None:
         self.assertEqual(validate(receipt()), [])
+
+    def test_non_string_enum_values_return_field_errors(self) -> None:
+        cases = (
+            ("backend", "source-backend"),
+            ("validity", "finding-validity"),
+            ("intent_relation", "finding-intent"),
+            ("novelty", "finding-novelty"),
+            ("disposition", "finding-disposition"),
+        )
+        for field, expected in cases:
+            for malformed in ([], {}):
+                value = receipt()
+                target = value["source"] if field == "backend" else value["findings"][0]
+                target[field] = malformed
+                with self.subTest(field=field, malformed=type(malformed).__name__):
+                    self.assertIn(expected, validate(value))
+
+    def test_cli_blocks_non_string_enum_without_traceback(self) -> None:
+        value = receipt()
+        value["findings"][0]["validity"] = []
+        result = subprocess.run(
+            [str(GATE), "validate", "--receipt", "-"],
+            cwd=ROOT,
+            input=json.dumps(value),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertIn(
+            "finding-validity",
+            payload["review_fold_receipt_gate"]["errors"],
+        )
+        self.assertNotIn("Traceback", result.stdout + result.stderr)
 
     def test_zero_finding_clean_receipt(self) -> None:
         value = receipt()

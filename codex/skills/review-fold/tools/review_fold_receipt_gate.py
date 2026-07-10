@@ -92,7 +92,7 @@ def validate(receipt: dict[str, Any]) -> list[str]:
     if not isinstance(source, dict):
         errors.append("source-missing")
         source = {}
-    if source.get("backend") not in BACKENDS:
+    if text(source.get("backend")) not in BACKENDS:
         errors.append("source-backend")
     if not text(source.get("source_batch_id")) or not text(source.get("source_ref")):
         errors.append("source-identity")
@@ -130,8 +130,12 @@ def validate(receipt: dict[str, Any]) -> list[str]:
     routed_quotients = {
         text(finding.get("quotient_key")).strip()
         for finding in findings
-        if finding.get("disposition")
-        in {"resolution-input", "ask-human", "blocked"}
+        if text(finding.get("disposition"))
+        in {
+            "resolution-input",
+            "ask-human",
+            "blocked",
+        }
     }
     material_liabilities = LIABILITIES - {"style", "new-requirement", "out-of-scope"}
     dispositions_by_validity = {
@@ -149,30 +153,32 @@ def validate(receipt: dict[str, Any]) -> list[str]:
             errors.append("finding-source")
         if not text(finding.get("claim")).strip():
             errors.append("finding-claim")
-        if finding.get("validity") not in VALIDITY:
+        validity = text(finding.get("validity"))
+        if validity not in VALIDITY:
             errors.append("finding-validity")
         liability = text(finding.get("liability"))
         if liability not in LIABILITIES:
             errors.append("finding-liability")
-        if finding.get("intent_relation") not in INTENT:
+        intent_relation = text(finding.get("intent_relation"))
+        if intent_relation not in INTENT:
             errors.append("finding-intent")
-        if finding.get("novelty") not in NOVELTY:
+        novelty = text(finding.get("novelty"))
+        if novelty not in NOVELTY:
             errors.append("finding-novelty")
         disposition = text(finding.get("disposition"))
         if disposition not in DISPOSITIONS:
             errors.append("finding-disposition")
-        if disposition == "follow-up" and finding.get("intent_relation") == "core":
+        if disposition == "follow-up" and intent_relation == "core":
             errors.append("follow-up-intent")
         duplicate_is_covered = (
-            finding.get("novelty") == "duplicate"
+            novelty == "duplicate"
             and disposition == "reject"
             and text(finding.get("quotient_key")).strip() in routed_quotients
         )
         if (
-            finding.get("intent_relation") == "core"
+            intent_relation == "core"
             and liability in material_liabilities
-            and disposition
-            not in dispositions_by_validity.get(finding.get("validity"), set())
+            and disposition not in dispositions_by_validity.get(validity, set())
             and not duplicate_is_covered
         ):
             errors.append("core-material-disposition")
@@ -204,9 +210,9 @@ def validate(receipt: dict[str, Any]) -> list[str]:
         if disposition == "resolution-input":
             if source_state != "findings":
                 errors.append("resolution-input-source-state")
-            if finding.get("validity") != "valid":
+            if validity != "valid":
                 errors.append("resolution-input-validity")
-            if finding.get("intent_relation") not in {"core", "adjacent"}:
+            if intent_relation not in {"core", "adjacent"}:
                 errors.append("resolution-input-intent")
             if liability in {"style", "new-requirement", "out-of-scope"}:
                 errors.append("resolution-input-liability")
