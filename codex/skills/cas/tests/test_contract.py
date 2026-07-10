@@ -108,6 +108,19 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED_CONTRACT)
 
+    def test_exhaustive_list_surface_is_canonical_and_complete(self) -> None:
+        required = [
+            "cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json",
+            "complete `CAS-LIST-v1`",
+            "`records` and `recordRefs`",
+            "`status --latest`",
+            "exact action is advertised",
+            "never falls back",
+        ]
+        for token in required:
+            with self.subTest(token=token):
+                self.assertIn(token, NORMALIZED_CONTRACT)
+
 
 if __name__ == "__main__":
     unittest.main()

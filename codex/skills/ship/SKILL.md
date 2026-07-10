@@ -173,8 +173,11 @@ Do not pass `--draft` unless the readiness record says `mode: draft`.
 7. Build PR body with proof, scope, risks, and remaining follow-ups.
 8. Open/update/promote PR according to `pr_readiness.mode`.
 9. Emit SHIP-v1 for closure recomputation and report PR state. For the ordered
-   actuation lifecycle, hand the complete immutable receipt back as
-   `review.ship_receipt` before review-closeout admission. A proved review edit
+   actuation lifecycle, hand the complete immutable receipt back as both the
+   implementation checkpoint's first publication receipt and
+   `review.ship_receipt` before the same run enters review-closeout. The
+   checkpoint copy never changes; `review.ship_receipt` tracks the current
+   publication epoch. A proved review edit
    returns here before CAS; update the existing PR at the exact URL retained in
    the prior admission, replace the stale receipt with that fresh SHIP-v1, then
    resume the next admitted edit or final CAS closeout. Creating another PR is
@@ -246,8 +249,9 @@ omitted for direct records. Its exact two-field pre-review shape must match the
 input ready-to-ship closure decision. Missing, extra, relabeled, or mismatched
 binding blocks actuation shipping. The record is never rewritten with later
 resolution or CAS values. Publication-bearing review-closeout embeds this
-complete receipt unchanged as `review.ship_receipt`; a later repair handback
-updates that same PR URL, creates a new SHIP-v1, and replaces that run field.
+complete first receipt unchanged in the implementation checkpoint and copies it
+to `review.ship_receipt`; a later repair handback updates that same PR URL,
+creates a new SHIP-v1, and replaces only the current review field.
 After publication, closure must query live PR metadata and match the repository,
 base ref and SHA, head ref and SHA, URL, open state, and ready status; copied
 SHIP fields are not authoritative for those facts.

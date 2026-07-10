@@ -46,7 +46,8 @@ skill.
 Only three actuation control objects are live:
 
 1. `actuation-run/v1` binds source, authority, artifact state, selected steps,
-   evidence references, review requirements, and public-effect intent.
+   evidence references, immutable invocation intent, lifecycle phase,
+   implementation provenance, review requirements, and public-effect intent.
 2. `review-resolution/v1` converts classified findings into owner-boundary
    strategies and admits at most one current work node; other owner decisions
    remain pending.
@@ -54,8 +55,24 @@ Only three actuation control objects are live:
    run, resolution, evidence folds, CAS records, and optional ship record.
 
 Read [live-semantics.yaml](references/live-semantics.yaml) for the canonical
-machine vocabulary and inverse laws. Prose may explain that file but must not
-create another authority surface.
+runtime vocabulary and policy. Behavioral laws live in the gate and its direct
+counterexample tests; prose may explain them but must not create another
+authority surface.
+
+Every run records the original invocation profile in `lifecycle`:
+
+~~~yaml
+lifecycle:
+  invocation_profile: bare-pipeline | explicit-implement | explicit-triage | explicit-remediation-plan | explicit-review-closeout
+  phase: implement | review-closeout
+  generation: 0
+  implementation_checkpoint: null
+~~~
+
+The profile never changes. A bare run alone may advance from generation 0
+implementation to generation 1 review closeout, and only through the
+gate-derived implementation checkpoint. Explicit implementation always keeps
+publication false and cannot accept SHIP input or enter review closeout.
 
 ## Source and authority
 
@@ -88,19 +105,26 @@ Before a material mutation:
    Preserve that first binding as `artifact_initial` and its per-path state map
    as `artifact_initial_path_states`; every first step begins there and every
    later step begins at the prior post-state.
-2. Select exactly one step.
+2. Select exactly one step and tag it with its lifecycle phase.
 3. Keep selection and mutation fan-in with the lead; advisory scouting,
    classification, and proof checks may fan out.
 4. Validate the run with `tools/actuating_gate.py validate-run`.
 
-For `review-closeout`, pass the current resolution to `validate-run`; its one
+Before any selected action, copy the gate-derived `step-admission/v1` into the
+step. It binds the original invocation profile, phase, immutable predecessor
+prefix, state before, effect, owner, paths, verifier, and lead selection. Every
+completed `inspect`, `edit`, or `verify` action preserves that receipt
+unchanged. A terminal record without it is unreachable and blocks.
+
+For a review-derived edit, pass the current resolution to `validate-run`; its one
 selected node must exactly match the selected step's ID, owner, paths, and
 verifier. Before mutation, copy the gate-derived `review_admission/v1` into the
 selected step's `review_admission`. That immutable receipt seals the full
 `review-resolution/v1`, admission-time source/path/hunk observations, any
 required current SHIP receipt, and its canonical digest. Preserve the receipt
 unchanged on completion and cite `review-admission:<admission_digest>` in EF-v1
-`review_refs`; a later resolution cannot relabel an admitted edit. When
+`review_refs`; `step-admission/v1` binds its digest, so the two receipts form one
+admission relation rather than parallel authorities. A later resolution cannot relabel an admitted edit. When
 admitting a step after prior work, also pass every referenced EF-v1 with
 `--evidence`. A dangling reference cannot authorize continuation.
 
@@ -111,7 +135,9 @@ After the action:
 3. Attach that evidence to the completed step.
 4. Continue only after the run validates again.
 
-Each step names its `effect`, exact paths, and falsifiable `verifier`. One
+Each step names one executable `effect` (`inspect`, `edit`, or `verify`), exact
+paths, and a falsifiable `verifier`. CAS acquisition, review folding, and
+resolution construction are coordinator work, not executable step effects. One
 direct edit may remain uncommitted and must exactly match the initial-to-live
 path delta. Every iterative edit advances through a descendant commit whose
 exact diff equals that step's changed paths. A non-edit preserves the complete
@@ -124,7 +150,7 @@ A step may finish or block. It cannot complete the parent goal; only
 
 Direct work is one ordinary selected step. Iterative work is a chain of
 selected and completed steps. Resume state lives in the run through the current
-step, generation, invalidators, and performed-side-effect identifiers.
+step, lifecycle checkpoint, and performed-side-effect identifiers.
 
 ## Review law
 
@@ -134,8 +160,8 @@ Declared run source references must exactly equal the RF-v2 source identities;
 triage supplies those folds directly with repeatable `--review-fold` inputs and
 cannot complete from a source name alone.
 
-`review-resolution/v1` then groups `resolution-input` findings by owner
-boundary and selects:
+`review-resolution/v1` then consumes each RF-v2 equivalence class through
+exactly one decision, groups repair work by owner boundary, and selects:
 
 - `local-repair`;
 - `replacement-kernel`; or
@@ -150,7 +176,7 @@ routing in RF-v2 remains classification metadata; caller-supplied lens labels
 never grant review credit. Standard closure requires three distinct ordered
 clean attempts after the latest artifact, review contract, or resolution change.
 
-## Semantic non-growth
+## Semantic accounting
 
 Audit every abstraction participating in a touched owner-boundary invariant,
 including unchanged nearby abstractions.
@@ -158,10 +184,17 @@ including unchanged nearby abstractions.
 Use `retain`, `retire`, `collapse`, `delegate`, or `replace`. `retain` requires
 a named live obligation.
 
-Every diff hunk is accounted once. Every added semantic construct names its
-live obligation and displaced construct. Closure rejects unaccounted hunks,
-uncovered liabilities, incomplete retirements, remaining dominated constructs,
-and proof-surface growth without an accepted obligation.
+The gate observes the live diff and binds that identity into review admission;
+the continuous admitted step chain supplies path and transition provenance.
+It validates the declared abstraction, liability, addition, and retirement
+account against that live state. Every declared added construct names a live
+obligation and a distinct displaced construct. The gate does not yet perform
+language-aware discovery of omitted constructs, so do not claim that it
+independently proves net semantic shrinkage.
+
+Closure rejects split decisions for one RF-v2 equivalence class, uncovered
+liabilities, incomplete retirements, remaining dominated constructs, and
+declared proof-surface growth without an accepted obligation.
 
 `local-repair` may not add a protocol, state, helper abstraction, or
 wound-specific test family. Use `replacement-kernel` when local patches would
@@ -182,9 +215,11 @@ uv run --with pyyaml python \
   --repo .
 ~~~
 
-The gate acquires the complete live `cas review_session list` envelope itself,
-using the run-bound base and Codex thread ID. Saved envelopes and individual
-record files are non-authoritative and cannot close the run.
+The gate discovers the installed list action, prefers `cas review list`, and
+acquires the complete live envelope itself with the run-bound base and Codex
+thread ID. An explicitly advertised `cas review_session list` is the only
+fallback. Saved envelopes and individual record files are non-authoritative and
+cannot close the run.
 
 The gate reads live repository state and actual evidence. It does not accept
 success flags, opaque proof references, scalar clean counts, or replayable
@@ -201,8 +236,15 @@ next_owner
 For no-code modes, the goal may complete while implementation is
 `not-applicable`. For material work, emit the final proof-patch only after a
 current closure decision. In the bare pipeline, implementation closure returns
-`ready-to-ship`; `$ship` acts, then control enters `review-closeout`. Explicit
+`ready-to-ship`; `$ship` acts, then the same append-only run records the
+gate-derived checkpoint described in [closure.md](references/closure.md) and
+enters `review-closeout`. A fresh review run that merely reuses the ID is
+invalid. Clean review closeout selects no synthetic step. Explicit
 `implement` does not infer publication and stops at implementation closure.
+
+`complete`, `ready-to-ship`, and valid `continue` decisions exit zero. Blocked,
+malformed, or unavailable-dependency decisions exit two; the JSON verdict is
+the workflow result.
 
 ## Stop rules
 
@@ -225,7 +267,7 @@ actuation verdict: blocked-closure
 ## Resources
 
 - [live-semantics.yaml](references/live-semantics.yaml) — canonical vocabulary,
-  ownership, triggers, and inverse laws.
+  ownership, triggers, and runtime policy.
 - [review-resolution.md](references/review-resolution.md) — resolution schema,
   strategy rules, and semantic balance.
 - [closure.md](references/closure.md) — evidence joins, CAS suffix, outcomes,

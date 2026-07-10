@@ -138,6 +138,7 @@ Current production helpers:
 
 ```bash
 cas review_session run --cwd <repo> --base <base> --workflow-binding-json @binding.json --json --fallback none
+cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json
 cas review_session status --latest --json
 cas review_session status --path <record.json> --json
 cas review_session wait --latest --json
@@ -163,6 +164,15 @@ cas review validate-record --record <rer.json> --json
 ```
 
 Use `cas review inspect` and `cas review validate-record` for diagnostics and schema/invariant validation only. They have no workflow closeout authority.
+
+Actuation closeout acquires exhaustive live review history through the canonical
+ledger command `cas review list --cwd <repo> --base <base>
+--codex-thread-id <id> --json`. Discover the installed action surface once per
+gate invocation. Prefer `review list`; use `review_session list` only when that
+exact action is advertised, and otherwise fail closed. The dispatcher must
+return one complete `CAS-LIST-v1` object with matching `records` and
+`recordRefs`. Do not substitute `status --latest` or a caller-selected record
+set.
 
 Use `cas review_session` when low-level detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or migration/debug receipts.
 

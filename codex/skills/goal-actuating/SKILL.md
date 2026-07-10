@@ -54,13 +54,17 @@ implement, or closeout intent selects `review-closeout`.
 Bare `$actuating` and `/goal $actuating` run the ordered lifecycle `implement ->
 $ship -> review-closeout -> final closure`. `$actuating implement` runs only the
 implementation phase. Ship handoff is therefore a continuation point, not a
-terminal result, for a bare invocation.
+terminal result, for a bare invocation. The original invocation profile is an
+immutable run field; publication intent cannot relabel an explicit implement
+run into the bare pipeline.
 
 ## Run ownership
 
 Create or refresh `actuation-run/v1` with:
 
 - source and execution authority references;
+- immutable invocation profile, current phase, generation, and implementation
+  checkpoint;
 - current repo, base, branch, head, live-state fingerprint, and initial
   per-path state map;
 - allowed paths and effect boundaries;
@@ -79,7 +83,8 @@ one-step run; it is not an exceptional control path.
    topology from `$agent-loop-schemes`.
 3. Project a WorkGraph only when decomposition matters.
 4. Select exactly one ready node as lead.
-5. Record the selection in the run before action.
+5. Record the phase-tagged selection in the run, validate it, and embed the
+   gate-derived `step-admission/v1` before action.
 6. Invoke `$goal-grind` once for each selected leaf.
 7. Integrate accepted action results in deterministic order.
 8. Run `$evidence-fold` over tests, diffs, logs, and artifact state.
@@ -96,8 +101,9 @@ Review law: CAS evidence, RF-v2 classification, current resolution, admitted
 selected node, embedded `review-admission/v1`, action evidence, and
 closure-grade review. For publication-bearing closeout, first preserve the
 complete SHIP-v1 as `review.ship_receipt`. Let the gate validate that receipt
-and derive the admission from the live resolution, embed it in the selected step
-before mutation, and require EF-v1 to cite its canonical admission digest.
+and derive the specialized review admission plus the generic step admission;
+embed both in the selected edit before mutation, bind the review digest through
+the generic receipt, and require EF-v1 to cite the review digest.
 Preserve `review-closeout` while review is required; changing the mode cannot
 retire admission history. A terminal resolution may name only nodes observed in
 completed admitted edits. `$actuating` alone
@@ -122,9 +128,14 @@ publish or complete the goal.
 ## Closure
 
 For a bare invocation, hand implementation to `$ship`, resume with
-`review-closeout`, and only then ask `$actuating` for the final
+`review-closeout` in the same append-only run, and only then ask `$actuating` for the final
 `closure-decision/v1`; a valid SHIP-v1 returns control here with goal
-`continue`, implementation `complete`, and this coordinator as next owner. Do
+`continue`, implementation `complete`, this coordinator as next owner, and a
+gate-derived implementation checkpoint. Copy that checkpoint into the run,
+advance its phase and generation, and retain `artifact_initial`, every
+implementation step, and every evidence reference. Never construct a fresh
+review run that merely shares the ID. A clean review epoch adds no synthetic
+step. Do
 not duplicate or precompute final closure conditions. If an admitted
 publication-bearing review edit completes, obtain its current resolved refold,
 accept `ready-to-ship`, replace `review.ship_receipt` through `$ship`, and only

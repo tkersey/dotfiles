@@ -18,6 +18,18 @@ CAS-RER-v1 may additionally preserve an optional `workflowBinding` containing
 Unfiltered `current`/`list` preserves all same-artifact/thread epochs so prior
 findings remain visible; an explicitly supplied binding is an exact filter.
 
+The canonical exhaustive workflow acquisition surface is:
+
+```bash
+cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json
+```
+
+It returns one complete `CAS-LIST-v1` envelope whose `records` and `recordRefs`
+cover the visible ledger set. Capability discovery prefers this surface and may
+use `cas review_session list` only when the dispatcher explicitly advertises
+that action. If neither list action is advertised, closeout fails; it never
+falls back to `status --latest` or individually selected records.
+
 `CAS-LIST-v1.recordRefs[].proofCreditEligible` is current-context metadata.
 Runtime or account drift may make a record ineligible for clean credit without
 changing the immutable record-time `principal.proofUsable` fact or hiding the

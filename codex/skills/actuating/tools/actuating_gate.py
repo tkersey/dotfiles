@@ -19,7 +19,6 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 SEMANTICS_PATH = ROOT / "references" / "live-semantics.yaml"
-OBLIGATION_HANDLERS: dict[str, Any] = {}
 REVIEW_FOLD_TOOLS = ROOT.parent / "review-fold" / "tools"
 sys.path.insert(0, str(REVIEW_FOLD_TOOLS))
 
@@ -130,11 +129,44 @@ def json_command(repo: Path, *argv: str) -> dict[str, Any]:
     return value
 
 
-def live_cas_list(repo: Path, base_sha: str, codex_thread_id: str) -> dict[str, Any]:
-    return json_command(
-        repo,
+def cas_list_capabilities(repo: Path) -> dict[str, bool]:
+    capabilities: dict[str, bool] = {}
+    for surface in ("review", "review_session"):
+        result = subprocess.run(
+            ["cas", surface, "--help"],
+            cwd=git_root(repo),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            text=True,
+        )
+        actions = {
+            fields[0]
+            for line in result.stdout.splitlines()
+            if line.startswith("  ")
+            and len(fields := line.split(None, 1)) == 2
+        }
+        capabilities[f"{surface}_list"] = result.returncode == 0 and "list" in actions
+        if capabilities[f"{surface}_list"]:
+            break
+    return capabilities
+
+
+def select_cas_list_command(
+    repo: Path,
+    base_sha: str,
+    codex_thread_id: str,
+    capabilities: dict[str, bool],
+) -> list[str]:
+    if capabilities.get("review_list") is True:
+        surface = "review"
+    elif capabilities.get("review_session_list") is True:
+        surface = "review_session"
+    else:
+        raise ValueError("cas list capability missing")
+    return [
         "cas",
-        "review_session",
+        surface,
         "list",
         "--cwd",
         str(git_root(repo)),
@@ -143,6 +175,19 @@ def live_cas_list(repo: Path, base_sha: str, codex_thread_id: str) -> dict[str, 
         "--codex-thread-id",
         codex_thread_id,
         "--json",
+    ]
+
+
+def live_cas_list(repo: Path, base_sha: str, codex_thread_id: str) -> dict[str, Any]:
+    capabilities = cas_list_capabilities(repo)
+    return json_command(
+        repo,
+        *select_cas_list_command(
+            repo,
+            base_sha,
+            codex_thread_id,
+            capabilities,
+        ),
     )
 
 
@@ -440,28 +485,6 @@ def load_semantics() -> dict[str, Any]:
     return unwrap(load_data(str(SEMANTICS_PATH)), "live_semantics")
 
 
-def semantic_contract_errors(semantics: dict[str, Any]) -> list[str]:
-    isomorphism = semantics.get("isomorphism")
-    rows = (
-        object_list(isomorphism.get("live_obligations"))
-        if isinstance(isomorphism, dict)
-        else []
-    )
-    declared = {
-        text(row.get("obligation_id")): text(row.get("handler"))
-        for row in rows
-        if text(row.get("obligation_id"))
-    }
-    if set(declared) != set(OBLIGATION_HANDLERS):
-        return ["blocked-semantic-contract"]
-    if any(
-        declared[obligation_id] != handler.__name__
-        for obligation_id, handler in OBLIGATION_HANDLERS.items()
-    ):
-        return ["blocked-semantic-contract"]
-    return []
-
-
 def review_contract_payload(
     change_surfaces: list[str],
     selected_lenses: list[str],
@@ -477,8 +500,231 @@ def review_contract_payload(
             for lens in sorted(set(selected_lenses))
             if isinstance(contracts, dict)
         },
-        "semantic_non_growth": True,
+        "semantic_accounting": "declared-against-live-diff",
     }
+
+
+INVOCATION_PROFILES = {
+    "bare-pipeline",
+    "explicit-implement",
+    "explicit-triage",
+    "explicit-remediation-plan",
+    "explicit-review-closeout",
+}
+
+
+def lifecycle_errors(run: dict[str, Any]) -> tuple[list[str], dict[str, Any]]:
+    errors: list[str] = []
+    lifecycle = run.get("lifecycle")
+    if not isinstance(lifecycle, dict):
+        return ["blocked-lifecycle-profile"], {}
+    if set(lifecycle) != {
+        "invocation_profile",
+        "phase",
+        "generation",
+        "implementation_checkpoint",
+    }:
+        errors.append("blocked-lifecycle-profile")
+    profile = text(lifecycle.get("invocation_profile"))
+    phase = text(lifecycle.get("phase"))
+    generation = lifecycle.get("generation")
+    if type(generation) is not int:
+        errors.append("blocked-lifecycle-transition")
+    mode = text(run.get("mode"))
+    review = run.get("review") if isinstance(run.get("review"), dict) else {}
+    publication_requested = review.get("publication_requested")
+    expected: dict[str, tuple[str, str, int]] = {
+        "explicit-implement": ("implement", "implement", 0),
+        "explicit-triage": ("triage", "implement", 0),
+        "explicit-remediation-plan": (
+            "remediation-plan",
+            "review-closeout",
+            0,
+        ),
+        "explicit-review-closeout": (
+            "review-closeout",
+            "review-closeout",
+            0,
+        ),
+    }
+    if profile not in INVOCATION_PROFILES:
+        errors.append("blocked-lifecycle-profile")
+    elif profile == "bare-pipeline":
+        if (mode, phase, generation) not in {
+            ("implement", "implement", 0),
+            ("review-closeout", "review-closeout", 1),
+        }:
+            errors.append("blocked-lifecycle-transition")
+        if publication_requested is not True:
+            errors.append("blocked-lifecycle-profile")
+    elif (mode, phase, generation) != expected[profile]:
+        errors.append("blocked-lifecycle-transition")
+    if profile in {
+        "explicit-implement",
+        "explicit-triage",
+        "explicit-remediation-plan",
+    } and publication_requested is not False:
+        if profile == "explicit-implement":
+            errors.append("blocked-explicit-implement-publication")
+        else:
+            errors.append("blocked-lifecycle-profile")
+    if not (
+        profile == "bare-pipeline" and phase == "review-closeout"
+    ) and lifecycle.get("implementation_checkpoint") is not None:
+        errors.append("blocked-lifecycle-transition")
+    return sorted(set(errors)), lifecycle
+
+
+def step_prefix_digest(run: dict[str, Any], step_index: int) -> str:
+    execution = run.get("execution") if isinstance(run.get("execution"), dict) else {}
+    steps = object_list(execution.get("steps"))
+    lifecycle = run.get("lifecycle") if isinstance(run.get("lifecycle"), dict) else {}
+    return canonical_digest(
+        {
+            "version": "step-prefix/v1",
+            "run_id": run.get("run_id"),
+            "invocation_profile": lifecycle.get("invocation_profile"),
+            "source": run.get("source"),
+            "authority": run.get("authority"),
+            "artifact_initial": run.get("artifact_initial"),
+            "artifact_initial_path_states": run.get("artifact_initial_path_states"),
+            "steps": steps[:step_index],
+        }
+    )
+
+
+def expected_step_admission(
+    run: dict[str, Any],
+    step: dict[str, Any],
+    step_index: int,
+    review_admission: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    lifecycle = run.get("lifecycle") if isinstance(run.get("lifecycle"), dict) else {}
+    review_digest = (
+        text(review_admission.get("admission_digest"))
+        if isinstance(review_admission, dict)
+        else None
+    )
+    payload = {
+        "version": "step-admission/v1",
+        "run_id": run.get("run_id"),
+        "step_id": step.get("step_id"),
+        "phase": step.get("phase"),
+        "invocation_profile": lifecycle.get("invocation_profile"),
+        "artifact": step.get("state_before"),
+        "predecessor_digest": step_prefix_digest(run, step_index),
+        "owner_boundary": step.get("owner_boundary"),
+        "effect": step.get("effect"),
+        "paths": copy.deepcopy(step.get("paths")),
+        "verifier": copy.deepcopy(step.get("verifier")),
+        "selected_by": step.get("selected_by"),
+        "review_admission_digest": review_digest,
+    }
+    return {**payload, "admission_digest": canonical_digest(payload)}
+
+
+def step_admission_errors(
+    value: Any,
+    run: dict[str, Any],
+    step: dict[str, Any],
+    step_index: int,
+    review_admission: dict[str, Any] | None = None,
+) -> list[str]:
+    if not isinstance(value, dict):
+        return ["blocked-step-admission"]
+    expected = expected_step_admission(
+        run,
+        step,
+        step_index,
+        review_admission,
+    )
+    return [] if value == expected else ["blocked-step-admission"]
+
+
+def implementation_prefix(run: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    execution = run.get("execution") if isinstance(run.get("execution"), dict) else {}
+    steps = [
+        step
+        for step in object_list(execution.get("steps"))
+        if step.get("phase") == "implement"
+    ]
+    end = (
+        steps[-1].get("state_after")
+        if steps and isinstance(steps[-1].get("state_after"), dict)
+        else run.get("artifact_initial")
+    )
+    evidence_basis = [text(step.get("evidence_fold_ref")) for step in steps]
+    lifecycle = run.get("lifecycle") if isinstance(run.get("lifecycle"), dict) else {}
+    payload = {
+        "version": "implementation-prefix/v1",
+        "run_id": run.get("run_id"),
+        "invocation_profile": lifecycle.get("invocation_profile"),
+        "source": run.get("source"),
+        "authority": run.get("authority"),
+        "artifact_initial": run.get("artifact_initial"),
+        "artifact_initial_path_states": run.get("artifact_initial_path_states"),
+        "steps": steps,
+        "implementation_end": end,
+    }
+    return payload, evidence_basis
+
+
+def expected_implementation_checkpoint(
+    run: dict[str, Any],
+    ship_receipt: dict[str, Any],
+) -> dict[str, Any]:
+    prefix, evidence_basis = implementation_prefix(run)
+    phase_digest = canonical_digest(prefix)
+    evaluated_artifact = prefix["implementation_end"]
+    decision_projection = {
+        "version": "implementation-closure-projection/v1",
+        "run_id": run.get("run_id"),
+        "phase_digest": phase_digest,
+        "evaluated_artifact": evaluated_artifact,
+        "evidence_basis": evidence_basis,
+        "verdict": "ready-to-ship",
+    }
+    return {
+        "version": "implementation-checkpoint/v1",
+        "phase_digest": phase_digest,
+        "closure_decision_id": canonical_digest(decision_projection),
+        "evaluated_artifact": copy.deepcopy(evaluated_artifact),
+        "evidence_basis": evidence_basis,
+        "ship_receipt": copy.deepcopy(ship_receipt),
+        "ship_record_digest": canonical_digest(ship_receipt),
+    }
+
+
+def implementation_checkpoint_errors(run: dict[str, Any]) -> list[str]:
+    lifecycle = run.get("lifecycle")
+    if not isinstance(lifecycle, dict):
+        return ["blocked-lifecycle-transition"]
+    checkpoint = lifecycle.get("implementation_checkpoint")
+    if not isinstance(checkpoint, dict):
+        return ["blocked-lifecycle-transition"]
+    ship_receipt = checkpoint.get("ship_receipt")
+    if not isinstance(ship_receipt, dict):
+        return ["blocked-lifecycle-transition"]
+    prefix, evidence_basis = implementation_prefix(run)
+    steps = prefix["steps"]
+    if (
+        not steps
+        or any(step.get("status") != "completed" for step in steps)
+        or any(not evidence_id for evidence_id in evidence_basis)
+    ):
+        return ["blocked-lifecycle-transition"]
+    expected = expected_implementation_checkpoint(run, ship_receipt)
+    historical_run = {
+        "run_id": run.get("run_id"),
+        "artifact": prefix["implementation_end"],
+    }
+    try:
+        ship_problems, _ = static_ship_errors(ship_receipt, historical_run)
+    except ValueError:
+        ship_problems = ["blocked-ship-binding"]
+    if checkpoint != expected or ship_problems:
+        return ["blocked-lifecycle-transition"]
+    return []
 
 
 def expected_review_admission(
@@ -744,7 +990,6 @@ def validate_run(
     repo = git_root(repo)
     errors: list[str] = []
     semantics = load_semantics()
-    errors.extend(semantic_contract_errors(semantics))
     modes = set((semantics.get("modes") or {}).keys())
     execution_kinds = set(semantics.get("execution_kinds") or [])
     step_effects = set(semantics.get("step_effects") or [])
@@ -757,10 +1002,16 @@ def validate_run(
     mode = text(run.get("mode"))
     if mode not in modes:
         errors.append("blocked-run-mode")
+    lifecycle_problems, lifecycle = lifecycle_errors(run)
+    errors.extend(lifecycle_problems)
+    invocation_profile = text(lifecycle.get("invocation_profile"))
+    lifecycle_phase = text(lifecycle.get("phase"))
+    checkpoint = lifecycle.get("implementation_checkpoint")
+    if invocation_profile == "bare-pipeline" and lifecycle_phase == "review-closeout":
+        errors.extend(implementation_checkpoint_errors(run))
+    elif checkpoint is not None:
+        errors.append("blocked-lifecycle-transition")
     review_value = run.get("review")
-    review_required = (
-        isinstance(review_value, dict) and review_value.get("required") is True
-    )
 
     source = run.get("source")
     if not isinstance(source, dict):
@@ -864,7 +1115,16 @@ def validate_run(
         errors.append("blocked-execution-kind")
     if mode in {"triage", "remediation-plan"} and kind != "none":
         errors.append("blocked-no-code-mutation")
-    if expected_mutation and kind == "none":
+    resolution_outcome = (
+        resolution.get("outcome") if isinstance(resolution, dict) else None
+    )
+    clean_no_action_profile = bool(
+        invocation_profile == "explicit-review-closeout"
+        and mode == "review-closeout"
+        and isinstance(resolution_outcome, dict)
+        and resolution_outcome.get("status") == "clean"
+    )
+    if expected_mutation and kind == "none" and not clean_no_action_profile:
         errors.append("blocked-step-missing")
 
     steps_raw = execution.get("steps")
@@ -877,7 +1137,7 @@ def validate_run(
         errors.append("blocked-no-code-mutation")
     if kind == "direct" and len(steps) > 1:
         errors.append("blocked-direct-step-count")
-    if expected_mutation and not steps:
+    if expected_mutation and not steps and not clean_no_action_profile:
         errors.append("blocked-step-missing")
 
     selected_id = execution.get("selected_step_id")
@@ -894,6 +1154,8 @@ def validate_run(
     previous_after: dict[str, Any] | None = None
     completed_steps: list[dict[str, Any]] = []
     review_admission_candidate: dict[str, Any] | None = None
+    step_admission_candidate: dict[str, Any] | None = None
+    seen_review_phase = False
     for index, step in enumerate(steps):
         if index > 0:
             prior = steps[index - 1]
@@ -916,8 +1178,19 @@ def validate_run(
                     prior_admission["ship_receipt"], current_ship
                 )
             )
+            phase_transition = bool(
+                prior.get("status") == "completed"
+                and prior.get("verdict") == "ready-for-closure"
+                and prior.get("phase") == "implement"
+                and step.get("phase") == "review-closeout"
+                and invocation_profile == "bare-pipeline"
+                and lifecycle_phase == "review-closeout"
+                and not implementation_checkpoint_errors(run)
+            )
             if prior.get("status") != "completed" or not (
-                prior.get("verdict") == "continue" or fresh_ship_continuation
+                prior.get("verdict") == "continue"
+                or fresh_ship_continuation
+                or phase_transition
             ):
                 errors.append("blocked-step-continuation")
         step_id = text(step.get("step_id"))
@@ -926,6 +1199,17 @@ def validate_run(
         seen_ids.add(step_id)
         if text(step.get("run_id")) != run_id:
             errors.append("blocked-step-run-mismatch")
+        step_phase = text(step.get("phase"))
+        if step_phase not in {"implement", "review-closeout"}:
+            errors.append("blocked-lifecycle-phase")
+        if step_phase == "review-closeout":
+            seen_review_phase = True
+        elif seen_review_phase:
+            errors.append("blocked-lifecycle-transition")
+        if step.get("status") == "selected" and step_phase != lifecycle_phase:
+            errors.append("blocked-lifecycle-phase")
+        if invocation_profile != "bare-pipeline" and step_phase != lifecycle_phase:
+            errors.append("blocked-lifecycle-phase")
         if step.get("selected_by") != "lead":
             errors.append("blocked-step-owner")
         if not text(step.get("owner_boundary")):
@@ -936,7 +1220,10 @@ def validate_run(
         effect = text(step.get("effect"))
         if effect not in step_effects:
             errors.append("blocked-step-effect")
+        if step_phase == "review-closeout" and effect != "edit":
+            errors.append("blocked-step-effect")
         review_admission = step.get("review_admission")
+        step_admission = step.get("step_admission")
         step_paths_raw = step.get("paths")
         changed_paths_raw = step.get("changed_paths")
         step_paths = string_list(step_paths_raw)
@@ -993,8 +1280,17 @@ def validate_run(
             if changed_paths:
                 errors.append("blocked-step-incomplete")
         elif status == "completed":
-            if review_required and effect == "edit":
+            if step_phase == "review-closeout" and effect == "edit":
                 errors.extend(review_admission_errors(review_admission, step))
+            errors.extend(
+                step_admission_errors(
+                    step_admission,
+                    run,
+                    step,
+                    index,
+                    review_admission if isinstance(review_admission, dict) else None,
+                )
+            )
             after = step.get("state_after")
             if not isinstance(after, dict):
                 errors.append("blocked-step-incomplete")
@@ -1066,6 +1362,7 @@ def validate_run(
                     {
                         "step_id": step_id,
                         "run_id": text(step.get("run_id")),
+                        "phase": step_phase,
                         "evidence_ref": evidence_ref,
                         "artifact": after,
                         "verdict": text(step.get("verdict")),
@@ -1076,6 +1373,7 @@ def validate_run(
                         "verifier": verifier,
                         "state_before": before,
                         "review_admission": review_admission,
+                        "step_admission": step_admission,
                     }
                 )
             if text(step.get("verdict")) not in {
@@ -1156,7 +1454,8 @@ def validate_run(
     for completed in completed_steps:
         admission = completed.get("review_admission")
         if (
-            completed.get("effect") == "edit"
+            completed.get("phase") == "review-closeout"
+            and completed.get("effect") == "edit"
             and isinstance(admission, dict)
             and (admission.get("ship_receipt") is not None)
             is not (review.get("publication_requested") is True)
@@ -1166,7 +1465,8 @@ def validate_run(
         (
             completed["review_admission"]["ship_receipt"]
             for completed in reversed(completed_steps)
-            if completed.get("effect") == "edit"
+            if completed.get("phase") == "review-closeout"
+            and completed.get("effect") == "edit"
             and isinstance(completed.get("review_admission"), dict)
             and isinstance(
                 completed["review_admission"].get("ship_receipt"), dict
@@ -1202,8 +1502,36 @@ def validate_run(
                 review_admission_candidate = expected_admission
                 if admission is not None and admission != expected_admission:
                     errors.append("blocked-resolution-binding")
-    elif admission_check and resolution is not None and mode != "review-closeout":
+    elif admission_check and resolution is not None and mode not in {
+        "review-closeout",
+        "remediation-plan",
+    }:
         errors.append("blocked-unexpected-input")
+
+    if admission_check and selected:
+        selected_step = selected[0]
+        selected_index = steps.index(selected_step)
+        selected_review_admission = (
+            review_admission_candidate
+            if selected_step.get("phase") == "review-closeout"
+            and selected_step.get("effect") == "edit"
+            else None
+        )
+        if (
+            selected_step.get("phase") != "review-closeout"
+            or selected_step.get("effect") != "edit"
+            or selected_review_admission is not None
+        ):
+            expected_admission = expected_step_admission(
+                run,
+                selected_step,
+                selected_index,
+                selected_review_admission,
+            )
+            step_admission_candidate = expected_admission
+            admission = selected_step.get("step_admission")
+            if admission is not None and admission != expected_admission:
+                errors.append("blocked-step-admission")
 
     if admission_check and selected and completed_steps:
         if not evidence_values:
@@ -1222,6 +1550,7 @@ def validate_run(
         "completed_steps": completed_steps,
         "selected_step_id": selected_id,
         "review_admission": review_admission_candidate if not errors else None,
+        "step_admission": step_admission_candidate if not errors else None,
         "has_blocked_step": any(step.get("status") == "blocked" for step in steps),
         "live_changed_paths": sorted(live_paths),
     }
@@ -1309,17 +1638,23 @@ def validate_review_folds(
                 owner = text(finding.get("owner_boundary"))
                 liability = text(finding.get("liability"))
                 intent_relation = text(finding.get("intent_relation"))
+                quotient_key = text(finding.get("quotient_key"))
+                law_family = text(finding.get("law_family"))
                 if (
                     finding.get("validity") != "valid"
                     or intent_relation not in {"core", "adjacent"}
                     or liability in {"style", "new-requirement", "out-of-scope"}
                     or not owner
                     or not liability
+                    or not quotient_key
+                    or not law_family
                 ):
                     errors.append("blocked-review-fold-finding")
                 material[finding_id] = {
                     "owner_boundary": owner,
                     "liability": liability,
+                    "quotient_key": quotient_key,
+                    "law_family": law_family,
                 }
     if len(fold_ids) != len(set(fold_ids)) or len(finding_ids) != len(set(finding_ids)):
         errors.append("blocked-review-fold-duplicate")
@@ -1428,6 +1763,7 @@ def _resolution_contract_errors(
     account_owners: dict[tuple[str, str], list[tuple[str, str]]] = {}
     strategies = set(semantics.get("strategies") or [])
     dispositions = set(semantics.get("abstraction_dispositions") or [])
+    quotient_decisions: dict[tuple[str, str, str], set[str]] = {}
     for decision in decisions:
         decision_id = text(decision.get("decision_id"))
         decision_ids.append(decision_id)
@@ -1440,6 +1776,16 @@ def _resolution_contract_errors(
         if not ids:
             errors.append("blocked-resolution-finding-coverage")
         covered.extend(ids)
+        for finding_id in ids:
+            source = resolution_inputs.get(finding_id)
+            if source is None:
+                continue
+            quotient = (
+                source["owner_boundary"],
+                source["law_family"],
+                source["quotient_key"],
+            )
+            quotient_decisions.setdefault(quotient, set()).add(decision_id)
         liability_classes = string_list(decision.get("liability_classes"))
         if not liability_classes:
             errors.append("blocked-resolution-liability-class")
@@ -1539,6 +1885,8 @@ def _resolution_contract_errors(
             errors.append("blocked-resolution-node-unexecuted")
     if sorted(covered) != sorted(finding_ids) or len(covered) != len(set(covered)):
         errors.append("blocked-resolution-finding-coverage")
+    if any(len(decision_set) != 1 for decision_set in quotient_decisions.values()):
+        errors.append("blocked-resolution-quotient-split")
 
     has_blocked_decision = any(
         decision.get("strategy") == "blocked" for decision in decisions
@@ -1554,8 +1902,6 @@ def _resolution_contract_errors(
         errors.append("blocked-semantic-balance")
         balance = {}
     for key in (
-        "accounted_hunks",
-        "unaccounted_hunks",
         "covered_liabilities",
         "uncovered_liabilities",
         "required_retirements",
@@ -1564,13 +1910,6 @@ def _resolution_contract_errors(
     ):
         if not has_exact_string_list(balance.get(key)):
             errors.append(f"blocked-semantic-balance:{key}")
-    accounted_hunks = string_list(balance.get("accounted_hunks"))
-    if len(accounted_hunks) != len(set(accounted_hunks)):
-        errors.append("blocked-semantic-hunks")
-    if sorted(accounted_hunks) != expected_hunks:
-        errors.append("blocked-semantic-hunks")
-    if balance.get("unaccounted_hunks"):
-        errors.append("blocked-semantic-hunks")
     if balance.get("uncovered_liabilities"):
         errors.append("blocked-semantic-liabilities")
     required_retirements = set(string_list(balance.get("required_retirements")))
@@ -1591,6 +1930,7 @@ def _resolution_contract_errors(
     if not has_exact_object_list(additions_raw):
         errors.append("blocked-semantic-addition")
     addition_names: list[str] = []
+    replacement_targets: list[str] = []
     replaced_constructs: set[str] = set()
     for row in additions:
         if not all(
@@ -1600,6 +1940,7 @@ def _resolution_contract_errors(
             errors.append("blocked-semantic-addition")
         addition_names.append(text(row.get("name")))
         replaces = text(row.get("replaces"))
+        replacement_targets.append(replaces)
         obligation_id = text(row.get("obligation_id"))
         replaced_constructs.add(replaces)
         owners = account_owners.get((replaces, obligation_id), [])
@@ -1608,6 +1949,8 @@ def _resolution_contract_errors(
         elif owners[0][0] == "local-repair":
             errors.append("blocked-local-repair-growth")
     if len(addition_names) != len(set(addition_names)):
+        errors.append("blocked-semantic-addition")
+    if len(replacement_targets) != len(set(replacement_targets)):
         errors.append("blocked-semantic-addition")
     if not replaced_constructs.issubset(required_retirements):
         errors.append("blocked-semantic-retirements")
@@ -1742,7 +2085,12 @@ def validate_resolution(
     repo: Path,
 ) -> tuple[list[str], dict[str, Any]]:
     repo = git_root(repo)
-    errors, run_derived = validate_run(run, repo, admission_check=False)
+    errors, run_derived = validate_run(
+        run,
+        repo,
+        resolution,
+        admission_check=False,
+    )
     contract_errors, contract_derived = _resolution_contract_errors(
         resolution,
         _live_resolution_facts(run, resolution, repo, run_derived),
@@ -2356,9 +2704,11 @@ def decide(
     review_fold_values: list[dict[str, Any]] | None = None,
 ) -> tuple[dict[str, Any], int]:
     repo = git_root(repo)
-    run_errors, run_derived = validate_run(run, repo)
+    run_errors, run_derived = validate_run(run, repo, resolution)
     errors = list(run_errors)
     mode = text(run.get("mode"))
+    lifecycle = run.get("lifecycle") if isinstance(run.get("lifecycle"), dict) else {}
+    invocation_profile = text(lifecycle.get("invocation_profile"))
     review = run.get("review") if isinstance(run.get("review"), dict) else {}
     review_required = bool(review.get("required"))
     completed_steps = run_derived.get("completed_steps", [])
@@ -2441,6 +2791,11 @@ def decide(
             for step in completed_steps
             for path in string_list(step.get("paths"))
         }
+        if review_required:
+            authority = (
+                run.get("authority") if isinstance(run.get("authority"), dict) else {}
+            )
+            completed_scope.update(string_list(authority.get("allowed_paths")))
         try:
             uncommitted_paths = live_changed_paths(repo, "HEAD")
         except ValueError:
@@ -2462,8 +2817,12 @@ def decide(
                 text(artifact.get("base_sha")),
                 text(review.get("codex_thread_id")),
             )
-        except ValueError:
-            errors.append("blocked-cas-live-list-unavailable")
+        except ValueError as error:
+            errors.append(
+                "blocked-cas-list-capability-missing"
+                if str(error) == "cas list capability missing"
+                else "blocked-cas-live-list-unavailable"
+            )
         else:
             if len(cas_values) > 1 or (
                 cas_values
@@ -2491,7 +2850,16 @@ def decide(
         errors.append("blocked-review-resolution-open")
     if needs_reship and resolution_status != "resolved":
         errors.append("blocked-review-resolution-open")
-    if mode in {"implement", "review-closeout"} and not completed_steps:
+    clean_no_action = bool(
+        mode == "review-closeout"
+        and resolution_status == "clean"
+        and not completed_steps
+    )
+    if (
+        mode in {"implement", "review-closeout"}
+        and not completed_steps
+        and not clean_no_action
+    ):
         errors.append("blocked-step-not-ready-for-closure")
     if (
         mode in {"implement", "review-closeout"}
@@ -2501,10 +2869,13 @@ def decide(
         errors.append("blocked-step-not-ready-for-closure")
     if ship_value is not None and not publication_requested:
         errors.append("blocked-unexpected-input")
+        if invocation_profile == "explicit-implement":
+            errors.append("blocked-explicit-implement-publication")
     if mode == "review-closeout" and ship_value is not None:
         errors.append("blocked-unexpected-input")
     effective_ship = embedded_ship if mode == "review-closeout" else ship_value
     ship_basis: list[str] = []
+    implementation_checkpoint: dict[str, Any] | None = None
     verdict = "complete"
     goal_outcome = "complete"
     implementation_outcome = (
@@ -2549,6 +2920,11 @@ def decide(
                 verdict = "continue"
                 goal_outcome = "continue"
                 next_owner = "goal-actuating"
+                if invocation_profile == "bare-pipeline":
+                    implementation_checkpoint = expected_implementation_checkpoint(
+                        run,
+                        effective_ship,
+                    )
 
     final_binding_errors, final_artifact = binding_errors(
         run.get("artifact"), repo, "blocked-run"
@@ -2579,30 +2955,12 @@ def decide(
         "evidence_basis": evidence_basis,
         "review_basis": triage_review_basis or cas_ids,
         "ship_basis": ship_basis,
+        "implementation_checkpoint": implementation_checkpoint,
         "reasons": sorted(set(errors)),
     }
     decision_core["decision_id"] = canonical_digest(decision_core)
-    code = 0 if verdict in {"complete", "ready-to-ship"} else 2
+    code = 0 if verdict in {"complete", "ready-to-ship", "continue"} else 2
     return {"closure_decision": decision_core}, code
-
-
-OBLIGATION_HANDLERS.update(
-    {
-        "source-authority": validate_run,
-        "artifact-currentness": binding_errors,
-        "mutation-admission": validate_run,
-        "continuation-proof": evidence_errors,
-        "no-code-separation": validate_run,
-        "review-classification": validate_resolution,
-        "owner-boundary-repair": validate_resolution,
-        "abstraction-account": validate_resolution,
-        "semantic-balance": validate_resolution,
-        "independent-review-proof": cas_errors,
-        "outcome-separation": decide,
-        "delivery-boundary": ship_errors,
-        "fail-closed-coordination": validate_run,
-    }
-)
 
 
 def emit(operation: str, errors: list[str], derived: dict[str, Any]) -> int:

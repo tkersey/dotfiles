@@ -22,8 +22,10 @@ from actuating_gate import (  # noqa: E402
     canonical_digest,
     decide,
     diff_hunk_ids,
+    expected_step_admission,
     expected_review_admission,
     live_artifact,
+    live_cas_list,
     live_changed_paths,
     live_hunk_ids,
     live_path_states,
@@ -38,6 +40,145 @@ from actuating_gate import (  # noqa: E402
     validate_resolution,
     validate_run,
 )
+
+
+class CasListSubprocessTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.repo = Path(self.temp.name) / "repo"
+        self.bin_dir = Path(self.temp.name) / "bin"
+        self.repo.mkdir()
+        self.bin_dir.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=self.repo, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"],
+            cwd=self.repo,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "Test"],
+            cwd=self.repo,
+            check=True,
+        )
+        (self.repo / "file.txt").write_text("base\n", encoding="utf-8")
+        subprocess.run(["git", "add", "file.txt"], cwd=self.repo, check=True)
+        subprocess.run(["git", "commit", "-qm", "base"], cwd=self.repo, check=True)
+        self.base = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=self.repo,
+            text=True,
+        ).strip()
+        self.argv_log = Path(self.temp.name) / "argv.log"
+        fake_cas = self.bin_dir / "cas"
+        fake_cas.write_text(
+            """#!/bin/sh
+if [ "${2:-}" = "--help" ]; then
+  case "${CAS_FAKE_CAPABILITIES:-ledger}:$1" in
+    session:review) printf '%s\\n' 'Actions:' '  current Read current evidence.' ;;
+    session:review_session) printf '%s\\n' 'Actions:' '  list List evidence.' ;;
+    none:*) printf '%s\\n' 'Actions:' '  current Read current evidence.' ;;
+    *) printf '%s\\n' 'Actions:' '  list List evidence.' ;;
+  esac
+  exit 0
+fi
+printf '%s\\n' "$@" > "$CAS_ARGV_LOG"
+case "$CAS_FAKE_MODE" in
+  malformed) printf '%s\\n' 'not-json' ;;
+  failure) printf '%s\\n' 'dispatcher failed' >&2; exit 9 ;;
+  mutate)
+    printf '%s\\n' 'late mutation' > "$CAS_MUTATE_PATH"
+    printf '%s\\n' '{"schema":"CAS-LIST-v1","records":[],"recordRefs":[]}'
+    ;;
+  *) printf '%s\\n' '{"schema":"CAS-LIST-v1","records":[],"recordRefs":[]}' ;;
+esac
+""",
+            encoding="utf-8",
+        )
+        fake_cas.chmod(0o755)
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def environment(
+        self,
+        mode: str = "valid",
+        capabilities: str = "ledger",
+    ) -> dict[str, str]:
+        return {
+            "PATH": f"{self.bin_dir}{os.pathsep}{os.environ['PATH']}",
+            "CAS_ARGV_LOG": str(self.argv_log),
+            "CAS_FAKE_MODE": mode,
+            "CAS_FAKE_CAPABILITIES": capabilities,
+        }
+
+    def test_live_list_uses_canonical_ledger_command_and_exact_selectors(self) -> None:
+        with patch.dict(os.environ, self.environment(), clear=False):
+            snapshot = live_cas_list(self.repo, self.base, "thread-123")
+
+        self.assertEqual(
+            snapshot,
+            {"schema": "CAS-LIST-v1", "records": [], "recordRefs": []},
+        )
+        self.assertEqual(
+            self.argv_log.read_text(encoding="utf-8").splitlines(),
+            [
+                "review",
+                "list",
+                "--cwd",
+                str(self.repo.resolve()),
+                "--base",
+                self.base,
+                "--codex-thread-id",
+                "thread-123",
+                "--json",
+            ],
+        )
+
+    def test_live_list_rejects_malformed_json(self) -> None:
+        with patch.dict(os.environ, self.environment("malformed"), clear=False):
+            with self.assertRaisesRegex(ValueError, "cas returned invalid JSON"):
+                live_cas_list(self.repo, self.base, "thread-123")
+
+    def test_live_list_rejects_dispatcher_failure(self) -> None:
+        with patch.dict(os.environ, self.environment("failure"), clear=False):
+            with self.assertRaisesRegex(ValueError, "dispatcher failed"):
+                live_cas_list(self.repo, self.base, "thread-123")
+
+    def test_review_session_list_requires_explicit_advertisement(self) -> None:
+        with patch.dict(
+            os.environ,
+            self.environment(capabilities="session"),
+            clear=False,
+        ):
+            live_cas_list(self.repo, self.base, "thread-123")
+
+        self.assertEqual(
+            self.argv_log.read_text(encoding="utf-8").splitlines()[:2],
+            ["review_session", "list"],
+        )
+
+    def test_missing_list_capability_fails_without_weaker_query(self) -> None:
+        with patch.dict(
+            os.environ,
+            self.environment(capabilities="none"),
+            clear=False,
+        ):
+            with self.assertRaisesRegex(ValueError, "cas list capability missing"):
+                live_cas_list(self.repo, self.base, "thread-123")
+
+        self.assertFalse(self.argv_log.exists())
+
+    def test_fake_dispatcher_mutation_is_visible_to_final_rebind(self) -> None:
+        artifact = live_artifact(self.repo, self.base)
+        environment = {
+            **self.environment("mutate"),
+            "CAS_MUTATE_PATH": str(self.repo / "file.txt"),
+        }
+        with patch.dict(os.environ, environment, clear=False):
+            live_cas_list(self.repo, self.base, "thread-123")
+
+        errors, _ = binding_errors(artifact, self.repo, "blocked-run")
+        self.assertIn("blocked-run-stale:state_fingerprint", errors)
 
 
 class GateTests(unittest.TestCase):
@@ -124,6 +265,7 @@ class GateTests(unittest.TestCase):
                 {
                     "step_id": "step-1",
                     "run_id": "run-1",
+                    "phase": "review-closeout" if review else "implement",
                     "selected_by": "lead",
                     "owner_boundary": "actuating",
                     "effect": "edit",
@@ -140,6 +282,14 @@ class GateTests(unittest.TestCase):
             "version": "actuation-run/v1",
             "run_id": "run-1",
             "mode": "review-closeout" if review else "implement",
+            "lifecycle": {
+                "invocation_profile": (
+                    "explicit-review-closeout" if review else "explicit-implement"
+                ),
+                "phase": "review-closeout" if review else "implement",
+                "generation": 0,
+                "implementation_checkpoint": None,
+            },
             "source": {
                 "kind": "direct-goal",
                 "scope_source_ref": "user:goal",
@@ -170,29 +320,88 @@ class GateTests(unittest.TestCase):
                 "publication_requested": False,
             },
         }
+
+    def bare_run_value(self, *, selected: bool = False) -> dict:
+        run = self.run_value(selected=selected)
+        run["lifecycle"]["invocation_profile"] = "bare-pipeline"
+        run["review"]["publication_requested"] = True
+        return run
+
+    def transition_bare_run_to_review(
+        self,
+        run: dict,
+        ship: dict,
+    ) -> dict:
+        decision, _ = decide(
+            run,
+            None,
+            [self.evidence(run)],
+            [],
+            ship,
+            self.repo,
+        )
+        checkpoint = decision["closure_decision"]["implementation_checkpoint"]
+        if not isinstance(checkpoint, dict):
+            raise AssertionError(decision)
+        run["mode"] = "review-closeout"
+        run["lifecycle"].update(
+            {
+                "phase": "review-closeout",
+                "generation": 1,
+                "implementation_checkpoint": checkpoint,
+            }
+        )
+        run["review"].update(
+            {
+                "required": True,
+                "source_refs": ["local:audit-1"],
+                "codex_thread_id": "thread-test",
+                "ship_receipt": ship,
+            }
+        )
+        return run
+
     def complete_step(self, run: dict) -> dict:
-        self.admit_review_step(run)
+        self.admit_step(run)
         (self.repo / "file.txt").write_text("changed\n", encoding="utf-8")
         return self.finish_step(run, ["file.txt"])
 
-    def admit_review_step(self, run: dict) -> None:
-        step = run["execution"]["steps"][0]
+    def admit_step(self, run: dict) -> None:
+        step = run["execution"]["steps"][-1]
+        resolution = None
         if (
-            run["review"]["required"]
+            step.get("phase") == "review-closeout"
             and step.get("effect") == "edit"
-            and "review_admission" not in step
         ):
-            errors, derived = validate_run(
-                run,
-                self.repo,
-                self.material_resolution(run),
-            )
-            if errors:
-                raise AssertionError(errors)
-            step["review_admission"] = derived["review_admission"]
+            resolution = self.material_resolution(run, node_id=step["step_id"])
+        evidence_values = [
+            self.evidence_for_step(run, index)
+            for index, candidate in enumerate(run["execution"]["steps"])
+            if candidate.get("status") == "completed"
+        ]
+        errors, derived = validate_run(
+            run,
+            self.repo,
+            resolution,
+            evidence_values,
+        )
+        if errors:
+            raise AssertionError(errors)
+        review_admission = derived.get("review_admission")
+        if isinstance(review_admission, dict):
+            step["review_admission"] = review_admission
+        step_admission = derived.get("step_admission")
+        if not isinstance(step_admission, dict):
+            raise AssertionError("gate did not derive step admission")
+        step["step_admission"] = step_admission
+
+    def admit_review_step(self, run: dict) -> None:
+        self.admit_step(run)
 
     def finish_step(self, run: dict, changed_paths: list[str]) -> dict:
-        step = run["execution"]["steps"][0]
+        step = run["execution"]["steps"][-1]
+        if "step_admission" not in step:
+            raise AssertionError("step completed without prior admission")
         if run["review"]["required"] and step.get("effect") == "edit":
             if "review_admission" not in step:
                 raise AssertionError("review edit mutated without admission")
@@ -202,7 +411,7 @@ class GateTests(unittest.TestCase):
                 "status": "completed",
                 "changed_paths": changed_paths,
                 "state_after": after,
-                "evidence_fold_ref": "ef-1",
+                "evidence_fold_ref": f"ef-{len(run['execution']['steps'])}",
                 "verdict": "ready-for-closure",
             }
         )
@@ -213,14 +422,16 @@ class GateTests(unittest.TestCase):
         return run
 
     def finish_verify_step(self, run: dict) -> dict:
-        step = run["execution"]["steps"][0]
+        step = run["execution"]["steps"][-1]
+        step["effect"] = "verify"
+        if "step_admission" not in step:
+            self.admit_step(run)
         step.update(
             {
-                "effect": "verify",
                 "changed_paths": [],
                 "status": "completed",
                 "state_after": run["artifact"],
-                "evidence_fold_ref": "ef-1",
+                "evidence_fold_ref": f"ef-{len(run['execution']['steps'])}",
                 "verdict": "ready-for-closure",
             }
         )
@@ -228,7 +439,7 @@ class GateTests(unittest.TestCase):
         return run
 
     def commit_step(self, run: dict) -> dict:
-        step = run["execution"]["steps"][0]
+        step = run["execution"]["steps"][-1]
         subprocess.run(
             ["git", "add", "--", *step["changed_paths"]],
             cwd=self.repo,
@@ -247,6 +458,7 @@ class GateTests(unittest.TestCase):
     def triage_run(self) -> dict:
         run = self.run_value()
         run["mode"] = "triage"
+        run["lifecycle"]["invocation_profile"] = "explicit-triage"
         run["authority"]["mutation_allowed"] = False
         run["execution"] = {
             "kind": "none",
@@ -261,6 +473,7 @@ class GateTests(unittest.TestCase):
         run = self.run_value(selected=True)
         run["authority"]["allowed_paths"] = ["file.txt", "decoy.txt"]
         run["execution"]["steps"][0]["paths"] = ["decoy.txt"]
+        self.admit_step(run)
         return run
 
     def add_submodule(self, filename: str, revisions: int) -> list[str]:
@@ -363,7 +576,7 @@ class GateTests(unittest.TestCase):
                 "source_ref": "local:audit-1",
             },
             "intent_anchor": {
-                "original_goal": "exercise inverse laws",
+                "original_goal": "exercise closure laws",
                 "accepted_scope": ["actuating"],
                 "non_goals": [],
             },
@@ -422,10 +635,6 @@ class GateTests(unittest.TestCase):
             "outcome": {
                 "status": "clean",
                 "semantic_balance": {
-                    "accounted_hunks": live_hunk_ids(
-                        self.repo, run["artifact"]["base_sha"]
-                    ),
-                    "unaccounted_hunks": [],
                     "covered_liabilities": [],
                     "uncovered_liabilities": [],
                     "added_constructs": [],
@@ -516,8 +725,9 @@ class GateTests(unittest.TestCase):
             )
         return fold
 
-    def evidence(self, run: dict) -> dict:
-        admission = run["execution"]["steps"][0].get("review_admission")
+    def evidence_for_step(self, run: dict, index: int) -> dict:
+        step = run["execution"]["steps"][index]
+        admission = step.get("review_admission")
         review_refs = (
             [f"review-admission:{admission['admission_digest']}"]
             if isinstance(admission, dict)
@@ -526,12 +736,12 @@ class GateTests(unittest.TestCase):
         return {
             "evidence_fold": {
                 "version": "EF-v1",
-                "evidence_id": "ef-1",
+                "evidence_id": step["evidence_fold_ref"],
                 "run_id": run["run_id"],
-                "step_id": "step-1",
+                "step_id": step["step_id"],
                 "artifact_state": {
-                    **run["artifact"],
-                    "changed_paths": ["file.txt"],
+                    **step["state_after"],
+                    "changed_paths": step["changed_paths"],
                 },
                 "evidence": {
                     "observed": ["current diff and test result"],
@@ -568,6 +778,9 @@ class GateTests(unittest.TestCase):
                 },
             }
         }
+
+    def evidence(self, run: dict) -> dict:
+        return self.evidence_for_step(run, 0)
 
     def ship_record(self, run: dict) -> dict:
         return {
@@ -743,6 +956,314 @@ class GateTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(derived["selected_step_id"], "step-1")
 
+    def test_explicit_implement_cannot_request_publication(self) -> None:
+        run = self.run_value(selected=True)
+        run["review"]["publication_requested"] = True
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-explicit-implement-publication", errors)
+
+    def test_explicit_implement_cannot_accept_ship_input(self) -> None:
+        run = self.commit_step(self.complete_step(self.run_value(selected=True)))
+        decision, code = decide(
+            run,
+            None,
+            [self.evidence(run)],
+            [],
+            self.ship_record(run),
+            self.repo,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-explicit-implement-publication",
+            decision["closure_decision"]["reasons"],
+        )
+
+    def test_bare_implement_is_ready_to_ship(self) -> None:
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
+        decision, code = decide(
+            run,
+            None,
+            [self.evidence(run)],
+            [],
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, decision)
+        self.assertEqual(decision["closure_decision"]["verdict"], "ready-to-ship")
+
+    def test_explicit_implement_completes_without_ship_or_review(self) -> None:
+        run = self.complete_step(self.run_value(selected=True))
+        decision, code = decide(
+            run,
+            None,
+            [self.evidence(run)],
+            [],
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, decision)
+        self.assertEqual(decision["closure_decision"]["verdict"], "complete")
+        self.assertEqual(
+            decision["closure_decision"]["outcomes"]["next_owner"],
+            "none",
+        )
+
+    def test_invocation_profile_is_bound_by_step_admission(self) -> None:
+        run = self.bare_run_value(selected=True)
+        self.admit_step(run)
+        run["lifecycle"]["invocation_profile"] = "explicit-implement"
+        run["review"]["publication_requested"] = False
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-admission", errors)
+
+    def test_lifecycle_fields_participate_in_run_digest(self) -> None:
+        run = self.run_value(selected=True)
+        _, original = validate_run(run, self.repo)
+        changed = copy.deepcopy(run)
+        changed["lifecycle"]["generation"] = 1
+        _, relabeled = validate_run(changed, self.repo)
+        self.assertNotEqual(original["run_digest"], relabeled["run_digest"])
+
+    def test_bare_review_phase_requires_implementation_checkpoint(self) -> None:
+        run = self.bare_run_value()
+        run["mode"] = "review-closeout"
+        run["lifecycle"].update(
+            {"phase": "review-closeout", "generation": 1}
+        )
+        run["review"].update(
+            {
+                "required": True,
+                "source_refs": ["local:audit-1"],
+                "codex_thread_id": "thread-test",
+            }
+        )
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-lifecycle-transition", errors)
+
+    def test_bare_pipeline_is_one_continuous_run_through_clean_closeout(self) -> None:
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
+        ship = self.ship_record(run)
+        run = self.transition_bare_run_to_review(run, ship)
+        resolution = self.resolution(run)
+        evidence = self.evidence(run)
+        records = self.review_records(run, resolution)
+
+        decision, code = decide(
+            run,
+            resolution,
+            [evidence],
+            records,
+            None,
+            self.repo,
+        )
+
+        self.assertEqual(code, 0, decision)
+        self.assertEqual(decision["closure_decision"]["verdict"], "complete")
+        self.assertEqual(decision["closure_decision"]["evidence_basis"], ["ef-1"])
+        self.assertEqual(run["artifact_initial"], run["execution"]["steps"][0]["state_before"])
+
+    def test_fresh_review_run_cannot_reuse_continuous_checkpoint(self) -> None:
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
+        ship = self.ship_record(run)
+        continuous = self.transition_bare_run_to_review(run, ship)
+
+        fresh = self.run_value(review=True)
+        fresh["run_id"] = continuous["run_id"]
+        fresh["source"] = copy.deepcopy(continuous["source"])
+        fresh["authority"] = copy.deepcopy(continuous["authority"])
+        fresh["lifecycle"] = copy.deepcopy(continuous["lifecycle"])
+        fresh["review"]["publication_requested"] = True
+        fresh["review"]["ship_receipt"] = ship
+        fresh["execution"] = {
+            "kind": "none",
+            "selected_step_id": None,
+            "steps": [],
+        }
+
+        errors, _ = validate_run(fresh, self.repo)
+        self.assertIn("blocked-lifecycle-transition", errors)
+
+    def test_reset_initial_artifact_breaks_implementation_checkpoint(self) -> None:
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
+        ship = self.ship_record(run)
+        run = self.transition_bare_run_to_review(run, ship)
+        run["artifact_initial"] = copy.deepcopy(run["artifact"])
+        run["artifact_initial_path_states"] = live_path_states(self.repo, self.base)
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-lifecycle-transition", errors)
+
+    def test_checkpoint_tampering_is_rejected(self) -> None:
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
+        ship = self.ship_record(run)
+        run = self.transition_bare_run_to_review(run, ship)
+        for field in (
+            "phase_digest",
+            "closure_decision_id",
+            "evidence_basis",
+            "ship_record_digest",
+        ):
+            tampered = copy.deepcopy(run)
+            checkpoint = tampered["lifecycle"]["implementation_checkpoint"]
+            checkpoint[field] = [] if field == "evidence_basis" else "tampered"
+            errors, _ = validate_run(tampered, self.repo)
+            with self.subTest(field=field):
+                self.assertIn("blocked-lifecycle-transition", errors)
+
+        missing_evidence = copy.deepcopy(run)
+        missing_evidence["execution"]["steps"][0].pop("evidence_fold_ref")
+        errors, _ = validate_run(missing_evidence, self.repo)
+        self.assertIn("blocked-lifecycle-transition", errors)
+
+    def test_continuous_run_retains_all_evidence_through_review_repair(self) -> None:
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
+        initial_ship = self.ship_record(run)
+        run = self.transition_bare_run_to_review(run, initial_ship)
+        run["execution"]["kind"] = "iterative"
+        run["execution"]["selected_step_id"] = "step-2"
+        run["execution"]["steps"].append(
+            {
+                "step_id": "step-2",
+                "run_id": run["run_id"],
+                "phase": "review-closeout",
+                "selected_by": "lead",
+                "owner_boundary": "actuating",
+                "effect": "edit",
+                "paths": ["file.txt"],
+                "verifier": ["test"],
+                "changed_paths": [],
+                "status": "selected",
+                "state_before": copy.deepcopy(run["artifact"]),
+                "parent_completion_claimed": False,
+                "performed_public_effects": [],
+            }
+        )
+        self.admit_step(run)
+        (self.repo / "file.txt").write_text("review repair\n", encoding="utf-8")
+        run = self.finish_step(run, ["file.txt"])
+
+        resolution = self.material_resolution(
+            run,
+            node_id="step-2",
+            status="resolved",
+        )
+        evidence = [self.evidence_for_step(run, index) for index in (0, 1)]
+        handoff, code = decide(
+            run,
+            resolution,
+            evidence,
+            [],
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, handoff)
+        self.assertEqual(handoff["closure_decision"]["verdict"], "ready-to-ship")
+
+        updated_ship = self.updated_ship_record(run, initial_ship)
+        run["review"]["ship_receipt"] = updated_ship
+        records = self.review_records(run, resolution)
+        final, code = decide(
+            run,
+            resolution,
+            evidence,
+            records,
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, final)
+        self.assertEqual(final["closure_decision"]["verdict"], "complete")
+        self.assertEqual(final["closure_decision"]["evidence_basis"], ["ef-1", "ef-2"])
+        self.assertEqual(
+            run["lifecycle"]["implementation_checkpoint"]["ship_receipt"],
+            initial_ship,
+        )
+
+    def test_completed_action_without_step_admission_is_unreachable(self) -> None:
+        run = self.run_value(selected=True)
+        step = run["execution"]["steps"][0]
+        step.update(
+            {
+                "effect": "verify",
+                "changed_paths": [],
+                "status": "completed",
+                "state_after": run["artifact"],
+                "evidence_fold_ref": "ef-1",
+                "verdict": "ready-for-closure",
+            }
+        )
+        run["execution"]["selected_step_id"] = None
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-admission", errors)
+
+    def test_step_cannot_change_after_admission(self) -> None:
+        run = self.run_value(selected=True)
+        self.admit_step(run)
+        run["execution"]["steps"][0]["paths"] = ["other.txt"]
+        run["authority"]["allowed_paths"].append("other.txt")
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-admission", errors)
+
+    def test_completed_step_admission_binds_action_fields(self) -> None:
+        run = self.complete_step(self.run_value(selected=True))
+        mutations = {
+            "owner_boundary": "other-owner",
+            "effect": "verify",
+            "paths": ["other.txt"],
+            "verifier": ["other-test"],
+            "phase": "review-closeout",
+        }
+        for field, value in mutations.items():
+            tampered = copy.deepcopy(run)
+            tampered["execution"]["steps"][0][field] = value
+            errors, _ = validate_run(tampered, self.repo)
+            with self.subTest(field=field):
+                self.assertIn("blocked-step-admission", errors)
+
+    def test_review_and_resolve_are_not_executable_effects(self) -> None:
+        for effect in ("review", "resolve"):
+            run = self.run_value(selected=True)
+            run["execution"]["steps"][0]["effect"] = effect
+            errors, _ = validate_run(run, self.repo)
+            with self.subTest(effect=effect):
+                self.assertIn("blocked-step-effect", errors)
+
+    def test_review_closeout_cannot_fabricate_a_verify_action(self) -> None:
+        run = self.run_value(review=True, selected=True)
+        step = run["execution"]["steps"][0]
+        step["effect"] = "verify"
+        step["step_admission"] = expected_step_admission(run, step, 0)
+        step.update(
+            {
+                "status": "completed",
+                "state_after": copy.deepcopy(run["artifact"]),
+                "evidence_fold_ref": "ef-1",
+                "verdict": "ready-for-closure",
+            }
+        )
+        run["execution"]["selected_step_id"] = None
+
+        errors, _ = validate_run(run, self.repo)
+        self.assertIn("blocked-step-effect", errors)
+
+    def test_clean_explicit_review_closeout_requires_no_synthetic_step(self) -> None:
+        run = self.run_value(review=True)
+        run["execution"] = {
+            "kind": "none",
+            "selected_step_id": None,
+            "steps": [],
+        }
+        resolution = self.resolution(run)
+        decision, code = decide(
+            run,
+            resolution,
+            [],
+            self.review_records(run, resolution),
+            None,
+            self.repo,
+        )
+        self.assertEqual(code, 0, decision)
+        self.assertEqual(decision["closure_decision"]["verdict"], "complete")
+
     def test_verifier_commands_must_be_substantive(self) -> None:
         for verifier in ("", "   "):
             run = self.run_value(selected=True)
@@ -767,6 +1288,7 @@ class GateTests(unittest.TestCase):
             {
                 "step_id": "step-2",
                 "run_id": run["run_id"],
+                "phase": "implement",
                 "selected_by": "lead",
                 "owner_boundary": "actuating",
                 "effect": "edit",
@@ -791,6 +1313,7 @@ class GateTests(unittest.TestCase):
             {
                 "step_id": "step-2",
                 "run_id": run["run_id"],
+                "phase": "implement",
                 "selected_by": "lead",
                 "owner_boundary": "actuating",
                 "effect": "edit",
@@ -1056,6 +1579,7 @@ class GateTests(unittest.TestCase):
             {
                 "step_id": "step-2",
                 "run_id": run["run_id"],
+                "phase": "review-closeout",
                 "selected_by": "lead",
                 "owner_boundary": "actuating",
                 "effect": "edit",
@@ -1219,6 +1743,20 @@ class GateTests(unittest.TestCase):
         errors, _ = validate_resolution(run, resolution, self.repo)
         self.assertEqual(errors, [])
 
+        balance["added_constructs"].append(
+            {
+                "name": "second-gate",
+                "obligation_id": "domain:valid-transition",
+                "obligation_ref": "spec:valid-transition",
+                "replaces": "old-gate",
+            }
+        )
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+        errors, _ = validate_resolution(run, resolution, self.repo)
+        self.assertIn("blocked-semantic-addition", errors)
+
     def test_replacement_kernel_changes_review_contract_surface(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
         resolution = self.resolution(run)
@@ -1269,11 +1807,6 @@ class GateTests(unittest.TestCase):
         ]
         cases.append((resolution, "blocked-abstraction-account"))
 
-        resolution = self.resolution(run)
-        hunks = resolution["outcome"]["semantic_balance"]["accounted_hunks"]
-        resolution["outcome"]["semantic_balance"]["accounted_hunks"] = hunks + hunks
-        cases.append((resolution, "blocked-semantic-hunks"))
-
         for resolution, expected in cases:
             resolution["outcome"]["resolution_digest"] = canonical_digest(
                 resolution_digest_payload(resolution)
@@ -1285,8 +1818,6 @@ class GateTests(unittest.TestCase):
     def test_semantic_balance_requires_exact_string_lists(self) -> None:
         run = self.run_value(review=True)
         for key in (
-            "accounted_hunks",
-            "unaccounted_hunks",
             "covered_liabilities",
             "uncovered_liabilities",
             "required_retirements",
@@ -1301,6 +1832,26 @@ class GateTests(unittest.TestCase):
             errors, _ = validate_resolution(run, resolution, self.repo)
             with self.subTest(key=key):
                 self.assertIn(f"blocked-semantic-balance:{key}", errors)
+
+    def test_one_review_quotient_cannot_split_across_decisions(self) -> None:
+        run = self.run_value(review=True)
+        resolution = self.resolution(run)
+        self.bind_resolution_findings(run, resolution, ["finding-1", "finding-2"])
+        first = self.decision(run, finding_ids=["finding-1"])
+        second = self.decision(run, finding_ids=["finding-2"])
+        first["decision_id"] = "decision-1"
+        second["decision_id"] = "decision-2"
+        resolution["decisions"] = [first, second]
+        resolution["outcome"]["status"] = "pending"
+        resolution["outcome"]["semantic_balance"]["covered_liabilities"] = [
+            "invariant-gap"
+        ]
+        resolution["outcome"]["resolution_digest"] = canonical_digest(
+            resolution_digest_payload(resolution)
+        )
+
+        errors, _ = validate_resolution(run, resolution, self.repo)
+        self.assertIn("blocked-resolution-quotient-split", errors)
 
     def test_resolution_rejects_mixed_lists_and_open_review_folds(self) -> None:
         run = self.complete_step(self.run_value(review=True, selected=True))
@@ -1484,7 +2035,7 @@ class GateTests(unittest.TestCase):
         fold = self.review_fold(run, ["finding-1"])
         fold["findings"][0]["disposition"] = "ask-human"
         decision, code = decide(run, None, [], [], None, self.repo, [fold])
-        self.assertEqual(code, 2)
+        self.assertEqual(code, 0)
         closure = decision["closure_decision"]
         self.assertEqual(closure["verdict"], "continue")
         self.assertEqual(closure["outcomes"]["goal_outcome"], "continue")
@@ -1646,7 +2197,7 @@ class GateTests(unittest.TestCase):
             with self.subTest(label=label):
                 self.assertEqual(code, 2)
                 self.assertIn(
-                    "blocked-resolution-binding",
+                    "blocked-step-admission",
                     decision["closure_decision"]["reasons"],
                 )
 
@@ -1884,6 +2435,12 @@ class GateTests(unittest.TestCase):
     def test_remediation_plan_cannot_select_executable_node(self) -> None:
         run = self.run_value()
         run["mode"] = "remediation-plan"
+        run["lifecycle"].update(
+            {
+                "invocation_profile": "explicit-remediation-plan",
+                "phase": "review-closeout",
+            }
+        )
         run["authority"]["mutation_allowed"] = False
         run["execution"] = {
             "kind": "none",
@@ -1907,6 +2464,12 @@ class GateTests(unittest.TestCase):
     def test_pending_remediation_plan_is_a_terminal_no_code_outcome(self) -> None:
         run = self.run_value()
         run["mode"] = "remediation-plan"
+        run["lifecycle"].update(
+            {
+                "invocation_profile": "explicit-remediation-plan",
+                "phase": "review-closeout",
+            }
+        )
         run["authority"]["mutation_allowed"] = False
         run["execution"] = {
             "kind": "none",
@@ -2041,6 +2604,21 @@ class GateTests(unittest.TestCase):
         self.assertEqual(code, 2)
         self.assertIn(
             "blocked-run-stale:state_fingerprint",
+            decision["closure_decision"]["reasons"],
+        )
+
+    def test_missing_cas_list_capability_has_stable_failure(self) -> None:
+        run = self.complete_step(self.run_value(review=True, selected=True))
+        resolution = self.resolution(run)
+        self.live_cas_mock.side_effect = ValueError("cas list capability missing")
+        try:
+            decision, code = self.review_decision(run, resolution, [])
+        finally:
+            self.live_cas_mock.side_effect = lambda *_: self.live_cas_snapshot
+
+        self.assertEqual(code, 2)
+        self.assertIn(
+            "blocked-cas-list-capability-missing",
             decision["closure_decision"]["reasons"],
         )
 
@@ -2625,18 +3203,19 @@ class GateTests(unittest.TestCase):
         scope = self.repo / "scope"
         scope.mkdir()
         os.symlink("../file.txt", scope / "link")
-        run = self.run_value(review=True, selected=True)
+        run = self.run_value(review=True)
         run["authority"]["allowed_paths"] = ["scope"]
-        run["execution"]["steps"][0]["paths"] = ["scope"]
-        run = self.finish_verify_step(run)
+        run["execution"] = {
+            "kind": "none",
+            "selected_step_id": None,
+            "steps": [],
+        }
         resolution = self.resolution(run)
-        evidence = self.evidence(run)
-        evidence["evidence_fold"]["artifact_state"]["changed_paths"] = []
 
         decision, code = decide(
             run,
             resolution,
-            [evidence],
+            [],
             self.review_records(run, resolution),
             None,
             self.repo,
@@ -2657,13 +3236,16 @@ class GateTests(unittest.TestCase):
         self.assertIn("blocked-step-change-mismatch", errors)
 
     def test_claimed_noop_edit_is_rejected(self) -> None:
-        run = self.finish_step(self.run_value(selected=True), ["file.txt"])
+        run = self.run_value(selected=True)
+        self.admit_step(run)
+        run = self.finish_step(run, ["file.txt"])
         errors, _ = validate_run(run, self.repo)
         self.assertIn("blocked-step-change-mismatch", errors)
 
     def test_iterative_step_cannot_borrow_an_earlier_path_delta(self) -> None:
         run = self.run_value(selected=True)
         run["execution"]["kind"] = "iterative"
+        self.admit_step(run)
         (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
         run = self.commit_step(self.finish_step(run, ["file.txt"]))
         run["execution"]["steps"][0]["verdict"] = "continue"
@@ -2686,6 +3268,7 @@ class GateTests(unittest.TestCase):
         run = self.run_value(selected=True)
         run["execution"]["kind"] = "iterative"
         run["authority"]["allowed_paths"] = ["file.txt", "other.txt"]
+        self.admit_step(run)
 
         (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
         (self.repo / "other.txt").write_text("carried\n", encoding="utf-8")
@@ -2696,6 +3279,7 @@ class GateTests(unittest.TestCase):
             {
                 "step_id": "step-2",
                 "run_id": run["run_id"],
+                "phase": "implement",
                 "selected_by": "lead",
                 "owner_boundary": "actuating",
                 "effect": "edit",
@@ -2715,6 +3299,7 @@ class GateTests(unittest.TestCase):
     def test_iterative_committed_revert_preserves_exact_step_evidence(self) -> None:
         run = self.run_value(selected=True)
         run["execution"]["kind"] = "iterative"
+        self.admit_step(run)
         (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
         run = self.commit_step(self.finish_step(run, ["file.txt"]))
         run["execution"]["steps"][0]["verdict"] = "continue"
@@ -2737,6 +3322,7 @@ class GateTests(unittest.TestCase):
             verdict="ready-for-closure",
         )
         run["execution"]["steps"].append(second)
+        second["step_admission"] = expected_step_admission(run, second, 1)
         run["artifact"] = after
 
         errors, _ = validate_run(run, self.repo)
@@ -2744,6 +3330,8 @@ class GateTests(unittest.TestCase):
 
     def test_non_edit_step_preserves_the_complete_artifact(self) -> None:
         run = self.run_value(selected=True)
+        run["execution"]["steps"][0]["effect"] = "verify"
+        self.admit_step(run)
         subprocess.run(
             ["git", "commit", "--allow-empty", "-qm", "history mutation"],
             cwd=self.repo,
@@ -2759,6 +3347,7 @@ class GateTests(unittest.TestCase):
         (self.repo / "file.txt").write_text("first\n", encoding="utf-8")
         subprocess.run(["git", "commit", "-qam", "first branch"], cwd=self.repo, check=True)
         run = self.run_value(selected=True)
+        self.admit_step(run)
 
         subprocess.run(["git", "reset", "--hard", "HEAD^"], cwd=self.repo, check=True)
         (self.repo / "file.txt").write_text("sibling\n", encoding="utf-8")
@@ -2921,14 +3510,15 @@ class GateTests(unittest.TestCase):
         run = self.run_value(selected=True)
         destination = self.repo / "allowed" / "destination.txt"
         destination.parent.mkdir()
+        run["authority"]["allowed_paths"] = ["allowed/destination.txt"]
+        step = run["execution"]["steps"][0]
+        step["paths"] = ["allowed/destination.txt"]
+        self.admit_step(run)
         subprocess.run(
             ["git", "mv", "outside/source.txt", "allowed/destination.txt"],
             cwd=self.repo,
             check=True,
         )
-        run["authority"]["allowed_paths"] = ["allowed/destination.txt"]
-        step = run["execution"]["steps"][0]
-        step["paths"] = ["allowed/destination.txt"]
         run = self.finish_step(run, ["allowed/destination.txt"])
 
         states = live_path_states(self.repo, self.base)
@@ -2958,6 +3548,7 @@ class GateTests(unittest.TestCase):
         outside.write_text("user staged\n", encoding="utf-8")
         subprocess.run(["git", "add", "outside.txt"], cwd=self.repo, check=True)
         run = self.run_value(selected=True)
+        self.admit_step(run)
         initial_outside = run["artifact_initial_path_states"]["outside.txt"]
         (self.repo / "file.txt").write_text("claimed\n", encoding="utf-8")
         subprocess.run(["git", "add", "file.txt"], cwd=self.repo, check=True)
@@ -3403,8 +3994,7 @@ class GateTests(unittest.TestCase):
                 self.assertIn("blocked-run-stale", errors)
 
     def test_publication_hands_off_to_ship(self) -> None:
-        run = self.complete_step(self.run_value(selected=True))
-        run["review"]["publication_requested"] = True
+        run = self.complete_step(self.bare_run_value(selected=True))
         decision, code = decide(
             run,
             None,
@@ -3477,6 +4067,7 @@ class GateTests(unittest.TestCase):
 
         subprocess.run(["git", "restore", "file.txt"], cwd=self.repo, check=True)
         ship_run = self.run_value(selected=True)
+        self.admit_step(ship_run)
         (self.repo / "file.txt").write_text("ship dirty\n", encoding="utf-8")
         ship_run = self.finish_step(ship_run, ["file.txt"])
         ship_run["review"]["publication_requested"] = True
@@ -3494,21 +4085,23 @@ class GateTests(unittest.TestCase):
             decision["closure_decision"]["reasons"],
         )
 
-    def test_verify_only_review_rejects_dirty_target_not_unrelated_dirt(self) -> None:
-        def completed_verify_run() -> dict:
-            return self.finish_verify_step(
-                self.run_value(review=True, selected=True)
-            )
+    def test_clean_review_rejects_dirty_target_not_unrelated_dirt(self) -> None:
+        def clean_review_run() -> dict:
+            run = self.run_value(review=True)
+            run["execution"] = {
+                "kind": "none",
+                "selected_step_id": None,
+                "steps": [],
+            }
+            return run
 
         (self.repo / "file.txt").write_text("initial target dirt\n", encoding="utf-8")
-        run = completed_verify_run()
+        run = clean_review_run()
         resolution = self.resolution(run)
-        evidence = self.evidence(run)
-        evidence["evidence_fold"]["artifact_state"]["changed_paths"] = []
         decision, code = decide(
             run,
             resolution,
-            [evidence],
+            [],
             self.review_records(run, resolution),
             None,
             self.repo,
@@ -3521,14 +4114,12 @@ class GateTests(unittest.TestCase):
 
         subprocess.run(["git", "restore", "file.txt"], cwd=self.repo, check=True)
         (self.repo / "outside.txt").write_text("user-owned\n", encoding="utf-8")
-        run = completed_verify_run()
+        run = clean_review_run()
         resolution = self.resolution(run)
-        evidence = self.evidence(run)
-        evidence["evidence_fold"]["artifact_state"]["changed_paths"] = []
         decision, code = decide(
             run,
             resolution,
-            [evidence],
+            [],
             self.review_records(run, resolution),
             None,
             self.repo,
@@ -3584,8 +4175,7 @@ class GateTests(unittest.TestCase):
         self.assertEqual(basis, [])
 
     def test_complete_actuation_ship_record_is_accepted(self) -> None:
-        run = self.commit_step(self.complete_step(self.run_value(selected=True)))
-        run["review"]["publication_requested"] = True
+        run = self.commit_step(self.complete_step(self.bare_run_value(selected=True)))
         ship = self.ship_record(run)
         errors, basis = ship_errors(ship, run)
         self.assertEqual(errors, [])
@@ -3598,7 +4188,7 @@ class GateTests(unittest.TestCase):
             ship,
             self.repo,
         )
-        self.assertEqual(code, 2, decision)
+        self.assertEqual(code, 0, decision)
         self.assertEqual(decision["closure_decision"]["verdict"], "continue")
         self.assertEqual(
             decision["closure_decision"]["outcomes"],
@@ -3609,15 +4199,14 @@ class GateTests(unittest.TestCase):
             },
         )
         self.assertIsNone(decision["closure_decision"]["resolution_digest"])
-
-        review_run = self.finish_verify_step(
-            self.run_value(review=True, selected=True)
+        self.assertIsInstance(
+            decision["closure_decision"]["implementation_checkpoint"],
+            dict,
         )
-        review_run["review"]["publication_requested"] = True
-        review_run["review"]["ship_receipt"] = ship
+
+        review_run = self.transition_bare_run_to_review(copy.deepcopy(run), ship)
         resolution = self.resolution(review_run)
         evidence = self.evidence(review_run)
-        evidence["evidence_fold"]["artifact_state"]["changed_paths"] = []
         records = self.review_records(review_run, resolution)
 
         embedded_final, code = decide(
@@ -3807,6 +4396,37 @@ class GateTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("input contains non-JSON values", result.stdout)
         self.assertNotIn("Traceback", result.stderr)
+
+    def test_valid_continue_survives_set_e_wrapper(self) -> None:
+        run = self.triage_run()
+        fold = self.review_fold(run, ["finding-1"])
+        fold["findings"][0]["disposition"] = "ask-human"
+        with tempfile.TemporaryDirectory() as input_temp:
+            run_path = Path(input_temp) / "continue-run.json"
+            fold_path = Path(input_temp) / "continue-fold.json"
+            run_path.write_text(json.dumps(run), encoding="utf-8")
+            fold_path.write_text(json.dumps(fold), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    "sh",
+                    "-eu",
+                    "-c",
+                    '"$1" "$2" decide --run "$3" --review-fold "$4" '
+                    '--repo "$5"\nprintf survived',
+                    "sh",
+                    sys.executable,
+                    str(TOOLS / "actuating_gate.py"),
+                    str(run_path),
+                    str(fold_path),
+                    str(self.repo),
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(result.stdout.endswith("survived"))
 
 
 if __name__ == "__main__":

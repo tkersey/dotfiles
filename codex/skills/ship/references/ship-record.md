@@ -37,8 +37,9 @@ review-repair `closure-decision/v1`: run ID and state fingerprint are preserved.
 It must not be reconstructed from PR text, extended with review fields, or
 relabeled with later review-closeout evidence. SHIP-v1 is immutable evidence for
 one publication epoch. The ordered actuation lifecycle embeds the complete
-receipt unchanged as `review.ship_receipt` before publication-bearing
-review-closeout admission, then replaces that field with a fresh SHIP-v1 after
-any proved review edit returns `ready-to-ship`.
+first receipt unchanged in `implementation-checkpoint/v1`, copies it to
+`review.ship_receipt` before the same run enters publication-bearing
+review-closeout, then replaces only the current review field with a fresh
+SHIP-v1 after any proved review edit returns `ready-to-ship`.
 That replacement reports `updated` / `update-existing`, retains
 `existing_pr.exists: true`, and uses the exact prior receipt's PR URL.

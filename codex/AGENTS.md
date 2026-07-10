@@ -48,8 +48,15 @@ actuation verdict: blocked-run-stale
 ~~~
 
 No material mutation is valid without a selected work step.
+No selected action is valid without a gate-derived `step-admission/v1` copied
+into the step before execution and preserved after completion.
 No continuation is valid without an evidence fold.
 No completion is valid without a freshly derived `closure-decision/v1`.
+
+Bare `$actuating` execution remains one append-only run across implementation,
+`$ship`, and review-closeout. The gate-derived implementation checkpoint binds
+the immutable implementation prefix and first SHIP receipt; do not reconstruct
+a fresh review run or reset its initial artifact.
 
 Workflow review must use `$cas` when fresh or exhaustive review is required.
 Review findings must pass through `$review-fold`, which classifies only, then

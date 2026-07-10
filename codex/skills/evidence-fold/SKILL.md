@@ -8,6 +8,10 @@ description: "Fold tests, diffs, logs, benchmarks, screenshots, review results, 
 ## Mission
 
 Consume implementation and proof evidence into a node-level decision.
+The completed action must preserve its pre-action `step-admission/v1`; EF-v1
+binds to that admitted action through the same run ID, step ID, artifact
+transition, and exact changed paths. Evidence cannot make an unadmitted
+terminal step reachable.
 
 ```text
 EvidenceTree -> Verdict

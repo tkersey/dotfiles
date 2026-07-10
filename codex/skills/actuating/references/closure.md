@@ -8,6 +8,8 @@ booleans or a previously issued decision.
 ~~~text
 current repository state
 actuation-run/v1
+embedded step-admission/v1 for every completed action
+implementation-checkpoint/v1 for bare review-closeout
 review-resolution/v1 when review is required
 embedded review-admission/v1 for every completed review edit
 EF-v1 evidence for every completed material step
@@ -47,6 +49,13 @@ Each completed step resolves its exact `evidence_fold_ref`. Evidence must:
 Malformed evidence, including a null evidence body, produces a structured
 blocking reason and never escapes the closure gate.
 
+Every completed action preserves the exact `step-admission/v1` derived while
+that action was selected against its state-before artifact. The receipt binds
+run and step identity, original invocation profile, phase, predecessor prefix,
+effect, owner, paths, verifier, and any specialized review-admission digest.
+Changing any of those fields after admission or constructing a terminal step
+directly blocks as `blocked-step-admission`.
+
 For a selected review edit, the gate derives `review-admission/v1` only after
 the live resolution exactly selects that step's node, owner boundary, paths,
 and verifier. Embed that receipt as the step's `review_admission` before
@@ -65,9 +74,13 @@ marks resolved must still match exactly one completed admitted edit by node,
 owner boundary, paths, and verifier.
 
 The resolution inverse assigns each non-empty abstraction exactly one
-disposition across all decisions. Its hunk, liability, and retirement balance
-fields are exact lists of non-empty strings; malformed elements never collapse
-into accepted empty evidence.
+disposition across all decisions and consumes each RF-v2 equivalence class in
+exactly one decision. Liability and retirement balance fields are exact lists
+of non-empty strings; malformed elements never collapse into accepted empty
+evidence. Live hunk identity remains in the admission observation, while
+admitted step transitions supply path provenance. Added-construct accounting is
+a validated declaration; the gate does not independently discover omitted
+language constructs.
 
 Before a later iterative step is admitted, every initial-to-live path-state
 delta must already appear in prior completed steps' exact `changed_paths`.
@@ -96,9 +109,11 @@ workflowBinding:
 The record tuple must match the live repository, base, and head; its non-empty
 native `targetFingerprint` must be identical across the records. The workflow
 binding joins that tuple to the live-state fingerprint. The closure gate must
-query the complete current `CAS-LIST-v1` envelope itself with the run-bound
-base and Codex thread ID; a saved or caller-selected set is not closure
-evidence. Standard credit requires a normalized, source-valid strong-principal
+query the complete current `CAS-LIST-v1` envelope itself through `cas review
+list --cwd <repo> --base <base> --codex-thread-id <id> --json`. It may use
+`review_session list` only when that exact action is advertised; a saved or
+caller-selected set is not closure evidence. Standard credit requires a
+normalized, source-valid strong-principal
 record whose matching `recordRefs` row has `proofCreditEligible: true`, with a
 distinct record and attempt ID. Ineligible clean records remain visible but
 grant no credit; ineligible findings still require classification. Attempt
@@ -140,6 +155,7 @@ closure_decision:
   evidence_basis: []
   review_basis: []
   ship_basis: []
+  implementation_checkpoint: {} | null
   reasons: []
 ~~~
 
@@ -148,9 +164,13 @@ No-code modes may return goal `complete` with implementation
 
 Material work with no publication request completes locally. In the bare
 lifecycle, implementation hands off to `$ship`, then continues through
-`review-closeout` before final closure is recomputed; ship handoff is not a
-terminal goal state. A valid implement-phase SHIP-v1 returns verdict and goal
-`continue`, implementation `complete`, and next owner `goal-actuating`.
+`review-closeout` in the same run before final closure is recomputed; ship
+handoff is not a terminal goal state. A valid implement-phase SHIP-v1 returns
+verdict and goal `continue`, implementation `complete`, next owner
+`goal-actuating`, and the gate-derived implementation checkpoint. The
+checkpoint binds the immutable implementation prefix and first SHIP receipt;
+resetting `artifact_initial`, dropping an implementation step or EF-v1, or
+reconstructing a fresh review run invalidates it.
 Publication-bearing review-closeout requires that prior valid SHIP-v1 and may
 then complete after current review proof closes. Preserve the complete receipt
 as `review.ship_receipt`; the run gate validates its live PR and artifact
@@ -178,6 +198,11 @@ Never extend or relabel it with the later review epoch; final closure validates
 current resolution and CAS evidence separately. Closure queries live PR
 metadata and requires its repository, base ref and SHA, head ref and SHA, URL,
 open state, and ready status to match the current run and SHIP result.
+
+A clean review epoch closes with no current-phase action step. CAS transport,
+review folding, and clean resolution construction are coordinator observations,
+not synthetic `verify` actions. A valid `continue` decision, like `complete`
+and `ready-to-ship`, exits zero; blocked and malformed decisions exit two.
 
 The final proof-patch is a derived human view emitted after the current closure
 decision. It is never an input to that decision.

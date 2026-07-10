@@ -37,13 +37,11 @@ live_semantics:
     - inspect
     - edit
     - verify
-    - review
-    - resolve
 
   canonical_objects:
     actuation-run/v1:
       owner: goal-actuating
-      purpose: Bind source, authority, artifact state, selected steps, and evidence.
+      purpose: Bind source, immutable invocation lifecycle, authority, continuous artifact history, admitted steps, and evidence.
     review-resolution/v1:
       owner: actuating
       purpose: Turn classified findings into owner-boundary strategies and selected work.
@@ -102,6 +100,8 @@ live_semantics:
       statement: Material mutation requires a current authority-bound run.
     - id: selected-step-before-mutation
       statement: Material mutation requires one lead-selected step.
+    - id: generic-admission-before-action
+      statement: Every executable action preserves a gate-derived step admission binding its profile phase predecessor state effect owner paths and verifier.
     - id: evidence-before-continuation
       statement: Continuation requires a completed step and current evidence fold.
     - id: review-before-resolution
@@ -112,8 +112,8 @@ live_semantics:
       statement: Review-required execution uses review-closeout and cannot be relabeled as implement.
     - id: observable-index-before-mutation
       statement: Assume-unchanged and skip-worktree flags in the root or any initialized gitlink index block every live binding.
-    - id: semantic-non-growth
-      statement: Added semantic constructs require live obligations and displaced constructs.
+    - id: declared-semantic-accounting
+      statement: Declared added constructs require live obligations and distinct displaced constructs; independent construct discovery is not claimed.
     - id: distinct-standard-suffix
       statement: Standard closure derives from three distinct ordered current clean attempts.
     - id: public-effects-owned-by-ship
@@ -140,68 +140,14 @@ live_semantics:
       - one-patch-per-comment escalation artifacts
       - runtime-history documentation
 
-  isomorphism:
-    live_obligations:
-      - obligation_id: source-authority
-        handler: validate_run
-        representation: actuation-run.source
-        inverse_observation: recover the accepted semantic source and execution authority
-      - obligation_id: artifact-currentness
-        handler: binding_errors
-        representation: actuation-run.artifact
-        inverse_observation: recover canonical Git root base branch head observable index and live-state fingerprint
-      - obligation_id: mutation-admission
-        handler: validate_run
-        representation: actuation-run.execution.selected_step_id+steps.review_admission
-        inverse_observation: recover the selected work item and its gate-derived review admission before mutation
-      - obligation_id: continuation-proof
-        handler: evidence_errors
-        representation: actuation-run.execution.steps.evidence_fold_ref
-        inverse_observation: recover the evidence that permits the next step
-      - obligation_id: no-code-separation
-        handler: validate_run
-        representation: actuation-run.mode
-        inverse_observation: recover whether implementation is applicable
-      - obligation_id: review-classification
-        handler: validate_resolution
-        representation: review-resolution.review_folds
-        inverse_observation: recover the classified source batch
-      - obligation_id: owner-boundary-repair
-        handler: validate_resolution
-        representation: review-resolution.decisions
-        inverse_observation: recover strategy alternatives falsifier and selected node
-      - obligation_id: abstraction-account
-        handler: validate_resolution
-        representation: review-resolution.decisions.abstraction_account
-        inverse_observation: recover why each participating abstraction remains or retires
-      - obligation_id: semantic-balance
-        handler: validate_resolution
-        representation: review-resolution.outcome.semantic_balance
-        inverse_observation: recover hunk liability construct and retirement coverage
-      - obligation_id: independent-review-proof
-        handler: cas_errors
-        representation: closure-decision.review_basis
-        inverse_observation: recover distinct producer-observed standard attempts
-      - obligation_id: outcome-separation
-        handler: decide
-        representation: closure-decision.outcomes
-        inverse_observation: recover goal implementation and next-owner outcomes
-      - obligation_id: delivery-boundary
-        handler: ship_errors
-        representation: actuation-run.review.ship_receipt+closure-decision.ship_basis
-        inverse_observation: recover whether immutable pre-review SHIP evidence acted on the current target before admission and at closure
-      - obligation_id: fail-closed-coordination
-        handler: validate_run
-        representation: actuation-run.authority.unsupported_coordination_required
-        inverse_observation: recover whether local actuation must block
-
   closure_flow:
     bare_lifecycle: [implement, ship, review-closeout, final-closure]
     ship_handoff:
       when: implementation-ready-to-ship
       action: ship
       terminal: false
-      then: review-closeout
+      records: implementation-checkpoint/v1
+      then: same-run-review-closeout
     review_closeout:
       requires_when: publication-requested
       receipt: pre-review-SHIP-v1

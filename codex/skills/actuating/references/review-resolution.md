@@ -52,8 +52,6 @@ review_resolution:
     status: pending | clean | resolved | blocked
     resolution_digest:
     semantic_balance:
-      accounted_hunks: []
-      unaccounted_hunks: []
       covered_liabilities: []
       uncovered_liabilities: []
       added_constructs:
@@ -95,6 +93,10 @@ authority. In review closeout, a pending multi-owner resolution may omit nodes
 for non-current decisions. Re-fold the changed artifact before admitting the
 next owner node; closure rejects `pending`.
 
+Every RF-v2 equivalence class is consumed by exactly one resolution decision.
+Do not split one quotiented cause into multiple comment-shaped decisions; if
+the quotient is wrong, correct the RF-v2 classification first.
+
 Record rejected alternatives and a falsifier for every material decision.
 Judgment owns the strategy; comment count does not.
 
@@ -114,17 +116,22 @@ not only edited symbols.
 Closure requires:
 
 ~~~text
-unaccounted_hunks = []
 uncovered_liabilities = []
 required_retirements - completed_retirements = []
 dominated_remaining = []
 ~~~
 
+The gate observes live hunk identity for review admission and derives path
+provenance from the admitted step chain. The resolution does not repeat a
+caller-authored hunk inventory.
+
 While `status=pending`, `dominated_remaining` must equal the exact outstanding
 retirement debt. `clean` and `resolved` require that debt to be empty.
 
-Every added construct names a live goal or domain obligation, its source
-`obligation_ref`, and a displaced construct.
+Every declared added construct names a live goal or domain obligation, its
+source `obligation_ref`, and a distinct displaced construct. This is a
+declaration consistency check, not independent language-aware discovery of
+omitted constructs.
 `local-repair` requires `added_constructs=[]`.
 
 The resolution digest is the canonical digest of the artifact binding, source

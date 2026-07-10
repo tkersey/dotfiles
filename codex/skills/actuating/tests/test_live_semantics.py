@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
-import sys
 import unittest
 
 import yaml
@@ -12,13 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[2]
 DECISION_CONTRACT = ROOT / "references" / "decision-contract.yaml"
 GOAL_ACTUATING = REPO / "codex/skills/goal-actuating/SKILL.md"
-sys.path.insert(0, str(ROOT / "tools"))
-
-from actuating_gate import (  # noqa: E402
-    OBLIGATION_HANDLERS,
-    semantic_contract_errors,
-)
-
 SEMANTICS = yaml.safe_load(
     (ROOT / "references/live-semantics.yaml").read_text(encoding="utf-8")
 )["live_semantics"]
@@ -44,21 +36,9 @@ class LiveSemanticsTests(unittest.TestCase):
         }
         self.assertEqual(actual, expected)
 
-    def test_live_obligations_are_bijective(self) -> None:
-        obligations = SEMANTICS["isomorphism"]["live_obligations"]
-        ids = [row["obligation_id"] for row in obligations]
-        representations = [row["representation"] for row in obligations]
-        self.assertEqual(len(ids), len(set(ids)))
-        self.assertEqual(len(representations), len(set(representations)))
-        self.assertTrue(all(row["inverse_observation"] for row in obligations))
-        self.assertEqual(set(ids), set(OBLIGATION_HANDLERS))
-        self.assertEqual(semantic_contract_errors(SEMANTICS), [])
-        self.assertTrue(
-            all(
-                row["handler"] == OBLIGATION_HANDLERS[row["obligation_id"]].__name__
-                for row in obligations
-            )
-        )
+    def test_runtime_vocabulary_contains_only_executable_step_effects(self) -> None:
+        self.assertEqual(SEMANTICS["step_effects"], ["inspect", "edit", "verify"])
+        self.assertNotIn("isomorphism", SEMANTICS)
 
     def test_mode_table_and_invocation_defaults(self) -> None:
         self.assertEqual(
@@ -116,7 +96,8 @@ class LiveSemanticsTests(unittest.TestCase):
                 "when": "implementation-ready-to-ship",
                 "action": "ship",
                 "terminal": False,
-                "then": "review-closeout",
+                "records": "implementation-checkpoint/v1",
+                "then": "same-run-review-closeout",
             },
         )
         self.assertEqual(
