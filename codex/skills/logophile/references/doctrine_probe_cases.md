@@ -92,6 +92,53 @@ Expected:
 - companion: `conservation-aware`.
 - artifact: Reconciliation Ledger or Conservation Ledger.
 
+## Should trigger activation-phrase mode
+
+```text
+Give me the shortest phrases that make the model search more ambitiously and then select the best move.
+```
+
+Expected runtime output:
+
+```text
+Be bolder.
+Be Optimal.
+```
+
+Do not automatically append a rubric, receipt, or explanation. The reference may record that `Be bolder.` widens the candidate set and `Be Optimal.` selects against the real objective and constraints.
+
+```text
+Give me an exemplar phrase for elite fundamentals, competitive intensity, and finishing under pressure.
+```
+
+Expected runtime output:
+
+```text
+Be like Mike.
+```
+
+Repo convention: unqualified `Mike` means Michael Jordan unless local context clearly identifies another Mike. Do not append the trait explanation unless requested.
+
+```text
+Give me one compact phrase to de-anchor the next review pass.
+```
+
+Expected runtime output:
+
+```text
+Use fresh eyes.
+```
+
+```text
+Give me one phrase that raises the ambition floor.
+```
+
+Expected runtime output:
+
+```text
+Perform no smallness.
+```
+
 ## Should not trigger doctrine mode
 
 ```text
@@ -126,20 +173,26 @@ This is an evaluation workflow, not a doctrine naming request. Do not use logoph
 
 ## Quality checks
 
-A doctrine answer must:
-
+A doctrine-word answer must:
 - name the pressure;
 - choose words with distinct jobs;
 - separate mode, persona, command, and artifact when relevant;
 - explain near misses when useful;
-- include artifacts;
-- end with `Use This:` and `Operationalization:`.
+- include artifacts when correctness, handoff, or closure depends on them;
+- end with `Use This:` and `Operationalization:` in full doctrine mode.
+
+An activation-phrase answer must:
+- maximize behavioral leverage per token;
+- preserve the shortest effective form;
+- avoid redundant explanation unless requested;
+- distinguish overlapping phrases;
+- keep shadow-risk analysis in the reference or annotated mode.
 
 Reject answers that:
-
 - list fancy synonyms;
 - include generic praise words;
-- fail to say what the receiving agent should do differently;
-- omit the artifact/receipt;
+- fail to say what a doctrine word should make the receiving agent do differently;
 - confuse a persona noun with an operating mode;
-- use a proof relation such as `isomorphic` as though it were a reduction operator.
+- use a proof relation such as `isomorphic` as though it were a reduction operator;
+- turn `Be bolder.`, `Be Optimal.`, or `Be like Mike.` into a long runtime checklist by default;
+- require a receipt merely to prove that an activation phrase was used.
