@@ -32,6 +32,7 @@ from actuating_gate import (  # noqa: E402
     resolution_digest_payload,
     review_contract_payload,
     ship_errors,
+    validate_review_folds,
     validate_resolution,
     validate_run,
 )
@@ -1275,6 +1276,68 @@ class GateTests(unittest.TestCase):
             with self.subTest(expected=expected):
                 errors, _ = validate_resolution(run, resolution, self.repo)
                 self.assertIn(expected, errors)
+
+    def test_receipt_enum_containers_fail_closed(self) -> None:
+        containers = ([], {})
+        run = self.complete_step(self.run_value(review=True, selected=True))
+
+        for container in containers:
+            fold = self.review_fold(run, ["finding-1"])
+            fold["findings"][0]["intent_relation"] = container
+            errors, _ = validate_review_folds(run, [fold])
+            with self.subTest(field="intent_relation", container=type(container)):
+                self.assertIn("blocked-review-fold-finding", errors)
+
+        resolution = self.resolution(run)
+        resolution_errors, derived = validate_resolution(run, resolution, self.repo)
+        self.assertEqual(resolution_errors, [])
+        for field, expected in (
+            ("phase", "blocked-cas-attempt-identity"),
+            ("status", "blocked-cas-unit-unnormalized"),
+        ):
+            for container in containers:
+                snapshot = self.review_records(run, resolution)[0]
+                record = snapshot["records"][0]
+                target = record["attempt"] if field == "phase" else record["verdict"]
+                target[field] = container
+                errors, _ = cas_errors(snapshot, run, resolution, derived)
+                with self.subTest(field=field, container=type(container)):
+                    self.assertIn(expected, errors)
+
+        ship_run = copy.deepcopy(run)
+        ship_run["review"]["publication_requested"] = True
+        for field, expected in (
+            ("mode", "blocked-ship-readiness"),
+            ("result", "blocked-ship-result"),
+        ):
+            for container in containers:
+                ship = self.ship_record(ship_run)
+                record = ship["ship_record"]
+                target = (
+                    record["pr_readiness"] if field == "mode" else record["action"]
+                )
+                target[field] = container
+                errors, _ = ship_errors(ship, ship_run)
+                with self.subTest(field=field, container=type(container)):
+                    self.assertIn(expected, errors)
+
+        plan_run = self.triage_run()
+        plan_run["mode"] = "remediation-plan"
+        for container in containers:
+            closure, code = decide(
+                plan_run,
+                {"outcome": {"status": container}},
+                [],
+                [],
+                None,
+                self.repo,
+            )
+            with self.subTest(field="outcome.status", container=type(container)):
+                self.assertEqual(code, 2)
+                self.assertIn(
+                    "blocked-review-resolution-open",
+                    closure["closure_decision"]["reasons"],
+                )
 
     def test_live_multi_path_change_updates_review_contract(self) -> None:
         run = self.run_value(review=True, selected=True)

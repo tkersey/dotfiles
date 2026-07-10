@@ -1253,9 +1253,10 @@ def validate_review_folds(
             if disposition == "resolution-input":
                 owner = text(finding.get("owner_boundary"))
                 liability = text(finding.get("liability"))
+                intent_relation = text(finding.get("intent_relation"))
                 if (
                     finding.get("validity") != "valid"
-                    or finding.get("intent_relation") not in {"core", "adjacent"}
+                    or intent_relation not in {"core", "adjacent"}
                     or liability in {"style", "new-requirement", "out-of-scope"}
                     or not owner
                     or not liability
@@ -1887,12 +1888,13 @@ def cas_errors(
         lane = text(binding.get("reviewLane"))
         lens_contract = text(binding.get("lensContract"))
         attempt_id = text(attempt.get("attemptId"))
+        attempt_phase = text(attempt.get("phase"))
         if (
             not attempt_id
             or attempt.get("exists") is not True
             or text(attempt.get("reviewThreadId")) == ""
             or text(attempt.get("reviewTurnId")) == ""
-            or attempt.get("phase") not in {"review_terminal", "normalized_verdict"}
+            or attempt_phase not in {"review_terminal", "normalized_verdict"}
         ):
             reject("blocked-cas-attempt-identity")
         if lane not in allowed_lanes:
@@ -1901,7 +1903,7 @@ def cas_errors(
             reject("blocked-cas-contract-mismatch")
         findings = verdict.get("findings")
         finding_count = verdict.get("findingCount")
-        status = verdict.get("status")
+        status = text(verdict.get("status"))
         if (
             verdict.get("tupleVerdictExists") is not True
             or status not in {"clean", "findings"}
@@ -2137,7 +2139,8 @@ def static_ship_errors(
         if isinstance(record.get("pr_readiness"), dict)
         else {}
     )
-    if readiness.get("mode") not in {
+    readiness_mode = text(readiness.get("mode"))
+    if readiness_mode not in {
         "ready",
         "update-existing",
         "promote-draft",
@@ -2158,18 +2161,19 @@ def static_ship_errors(
     if binding != expected:
         errors.append("blocked-ship-binding")
     action = record.get("action") if isinstance(record.get("action"), dict) else {}
-    if action.get("result") not in {"created", "updated", "promoted"}:
+    action_result = text(action.get("result"))
+    if action_result not in {"created", "updated", "promoted"}:
         errors.append("blocked-ship-result")
     expected_readiness = {
         "created": "ready",
         "updated": "update-existing",
         "promoted": "promote-draft",
-    }.get(action.get("result"))
-    if expected_readiness != readiness.get("mode") or not text(action.get("command")):
+    }.get(action_result)
+    if expected_readiness != readiness_mode or not text(action.get("command")):
         errors.append("blocked-ship-result")
-    if action.get("result") == "created" and existing.get("exists") is not False:
+    if action_result == "created" and existing.get("exists") is not False:
         errors.append("blocked-ship-result")
-    if action.get("result") in {"updated", "promoted"} and (
+    if action_result in {"updated", "promoted"} and (
         existing.get("exists") is not True
         or not text(existing.get("url"))
         or existing.get("url") != action.get("pr_url")
@@ -2408,9 +2412,10 @@ def decide(
         if mode == "remediation-plan"
         else {"clean", "resolved"}
     )
-    if needs_resolution and outcome.get("status") not in terminal_resolution_statuses:
+    resolution_status = text(outcome.get("status"))
+    if needs_resolution and resolution_status not in terminal_resolution_statuses:
         errors.append("blocked-review-resolution-open")
-    if needs_reship and outcome.get("status") != "resolved":
+    if needs_reship and resolution_status != "resolved":
         errors.append("blocked-review-resolution-open")
     if mode in {"implement", "review-closeout"} and not completed_steps:
         errors.append("blocked-step-not-ready-for-closure")
