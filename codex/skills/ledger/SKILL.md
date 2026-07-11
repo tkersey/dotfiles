@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Coordinate repo-local source-memory stores under `.ledger/` and invoke pure Zig validation for PSC-v1, PSR-v1, or RF-v2 artifacts without bypassing source-specific authority. Use for ledger status, migration, doctor, harvest planning, memory admission handoff, or `ledger validate`."
+description: "Coordinate repo-local source-memory stores, Universalist plan addresses, and pure Zig governance-artifact validation under `.ledger/` without bypassing source-specific authority. Use for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan create/latest/path lookup, or `ledger validate`."
 ---
 
 # Ledger
@@ -23,6 +23,11 @@ Operational, non-memory store:
 - `.ledger/actuation/events.jsonl`, owned exclusively by
   `ledger --source actuation`; do not harvest it into memory or route its writes
   through source-memory coordination.
+
+Operational, non-memory artifacts:
+
+- `.ledger/universalist-plan-{plan-id}.md`, addressed exclusively by
+  `ledger --source universalist`; do not harvest these plans into memory.
 
 Stateless, non-authorizing observations:
 
@@ -62,6 +67,8 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 - cross-store memory digest.
 - validate PSC-v1, PSR-v1, or RF-v2;
 - `ledger validate`.
+- create or resolve a Universalist plan;
+- find the newest Universalist plan without overwriting an earlier run.
 
 ## Authority
 
@@ -73,12 +80,42 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
 - `$actuating` / `ledger --source actuation` for the operational actuation
   event chain; this is not a memory-admission source.
+- `$universalist` owns plan contents and updates;
+  `ledger --source universalist` owns plan identity, atomic creation, and
+  address resolution.
 
 Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
 
 `ledger validate` checks structure and invariants only. A pass verdict never
 grants execution or mutation authority; the artifact's domain owner retains
 that authority boundary.
+
+## Universalist Plan Workflow
+
+Create a fresh plan from the Universalist-owned template:
+
+```bash
+ledger create --source universalist \
+  --repo PROJECT_ROOT \
+  --template /path/to/universalist/templates/universalist-plan.md
+```
+
+Retain the returned `plan_id`; resolve the exact run address with:
+
+```bash
+ledger path --source universalist --repo PROJECT_ROOT --id PLAN_ID
+```
+
+Recover the newest valid address only when the run id was lost:
+
+```bash
+ledger latest --source universalist --repo PROJECT_ROOT
+```
+
+Plan ids use `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`. Timestamp order makes the
+newest address visible, while atomic ordinal retries prevent overwrite. Treat
+`latest` as recovery, not identity: verify the plan's task fields before
+resuming because another run may be newer.
 
 ## Read-Only Workflow
 
@@ -128,5 +165,7 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - Do not turn Synesthesia decorative language into memory.
 - Do not migrate, compact, hand-edit, or harvest actuation events as source
   memory; use the actuation source's `doctor`, `state`, and transition commands.
+- Do not invent Universalist plan ids, write a replacement latest pointer, or
+  reuse an existing plan path; use the Universalist source commands.
 - Do not route stateless validation through `--source`; sources own state, while
   `validate` is a pure observation.

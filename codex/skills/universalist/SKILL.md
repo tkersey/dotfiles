@@ -690,7 +690,7 @@ Deliver:
 - parity or differential tests;
 - migration notes;
 - clear cut line between legacy shape and internal shape;
-- `.universalist-plan.md` update.
+- current ledger-addressed Universalist plan update.
 
 ### Track D — Universal architecture boundary
 
@@ -1067,11 +1067,48 @@ In explicit team mode, synthesize specialist packets before choosing the witness
 - If proposing an operad, name colors/ports, primitive operations, substitution rules, symmetry/order, semantic algebra, forbidden wiring, and the substitution law.
 - If proposing coalgebra/protocol structure, include transition, observation, trace law, and invalid-transition witness.
 
-## Step 0 — Create or update `.universalist-plan.md`
+## Step 0 — Allocate a ledger-addressed plan
 
-This file is the progress record for the current run.
+For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one fresh progress record through the `skills-zig` ledger CLI before mutation:
 
-Create it in the project root for Track B, Track C, or Track D. Use `scripts/init_universalist_plan.sh` if helpful.
+This workflow requires `ledger` 0.5.0 or newer.
+
+```bash
+scripts/init_universalist_plan.sh [PROJECT_ROOT]
+```
+
+Equivalent direct form:
+
+```bash
+ledger create --source universalist \
+  --repo PROJECT_ROOT \
+  --template /path/to/universalist/templates/universalist-plan.md
+```
+
+Ledger owns plan identity, collision-safe creation, and address resolution. Universalist owns the Markdown fields and subsequent updates. The returned `universalist-plan-address/v1` receipt contains the exact `plan_id`, `created_at`, and absolute `path` for the run.
+
+Plans live at:
+
+```text
+.ledger/universalist-plan-{plan-id}.md
+```
+
+The plan id is `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`: a lexicographically sortable UTC nanosecond timestamp plus an atomic collision ordinal. Every create invocation must allocate a new file and must never reuse, truncate, or overwrite an earlier plan. Do not create or update the legacy project-root `.universalist-plan.md`.
+
+Retain the returned plan id for the entire run. Resolve that exact address with:
+
+```bash
+ledger path --source universalist --repo PROJECT_ROOT --id PLAN_ID
+```
+
+Use `latest` only when no run-specific address survives:
+
+```bash
+ledger latest --source universalist --repo PROJECT_ROOT
+ledger latest --source universalist --repo PROJECT_ROOT --format path
+```
+
+`latest` scans valid plan ids and does not maintain a mutable pointer. Before resuming a recovered latest plan, verify that its Track, Signal, and Seam / files identify the current task; concurrent runs may have newer plans. If the required ledger source is unavailable, stop with the exact missing command/version rather than inventing an id or writing the file directly.
 
 Minimum fields:
 
@@ -1100,7 +1137,7 @@ Minimum fields:
 ## Next seam:
 ```
 
-If context compacts, read this file first and resume from its status line.
+If context compacts, resolve the retained plan id and read that file first. If the id was lost, resolve `latest`, verify its task identity, then resume from its status line.
 
 ## Operator loop
 
@@ -1269,7 +1306,7 @@ If context compacts, read this file first and resume from its status line.
 
    Do not turn one structural insight into a repo-wide rewrite. Verify one seam, record it, and stop unless the user asked for a broader sweep.
 
-11. **Update `.universalist-plan.md`**
+11. **Update the current ledger-addressed plan**
 
    Record:
 
@@ -1384,7 +1421,7 @@ For Track I, also include:
 - **One witness seam and stop point**
 - **Obstruction ledger**
 
-For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, also update `.universalist-plan.md`.
+For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, also update the exact ledger-addressed plan allocated for the current run.
 
 ## Guardrails
 

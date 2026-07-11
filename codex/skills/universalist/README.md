@@ -32,6 +32,22 @@ The skill decides whether the problem needs:
 
 Use `$universalist` for the full workflow. Detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, categorical-data, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`.
 
+## Ledger-addressed plans
+
+Implementation tracks allocate a fresh progress artifact through the
+`skills-zig` ledger CLI 0.5.0 or newer:
+
+```bash
+./scripts/init_universalist_plan.sh
+```
+
+Plans live at
+`.ledger/universalist-plan-YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN.md`. The UTC
+timestamp makes recency visible; the collision ordinal and atomic create
+prevent one run from overwriting another. Retain the returned plan id during
+the run. Use `ledger latest --source universalist` only as a recovery lookup,
+then verify the plan's task metadata before resuming it.
+
 
 ## Track A0 — Domain Algebra Discovery
 

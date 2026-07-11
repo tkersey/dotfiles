@@ -82,6 +82,35 @@ required = [
 for r in required:
     if r not in text:
         raise SystemExit(f'SKILL.md missing {r}')
+for plan_contract in (
+    'ledger create --source universalist',
+    'ledger path --source universalist',
+    'ledger latest --source universalist',
+    '.ledger/universalist-plan-{plan-id}.md',
+    'YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN',
+    'must never reuse, truncate, or overwrite an earlier plan',
+):
+    if plan_contract not in text:
+        raise SystemExit(f'SKILL.md missing ledger plan contract: {plan_contract}')
+template = Path('templates/universalist-plan.md').read_text()
+for field in (
+    '## Worlds / boundaries inventory:',
+    '## Boundary kind:',
+    '## Composition geometry:',
+    '## Boundary law:',
+    '## Composition Certificate:',
+    '## Boundary Normal Form status:',
+    '## Category pivot / Syntax-Semantics certificate:',
+):
+    if field not in template:
+        raise SystemExit(f'Universalist plan template missing field: {field}')
+initializer = Path('scripts/init_universalist_plan.sh').read_text()
+for token in ('ledger create', '--source universalist', '--template "$template"'):
+    if token not in initializer:
+        raise SystemExit(f'plan initializer missing ledger token: {token}')
+if 'cat >' in initializer or '.universalist-plan.md' in initializer:
+    raise SystemExit('plan initializer must delegate allocation to ledger')
+print('ledger-addressed plan contract ok')
 activation = Path('tests/golden/activation.yml').read_text()
 cases = {
     prompt: should_use == 'true'
@@ -130,6 +159,7 @@ for required_guidance in (
 print('global boundary mandate ok')
 print('metadata ok')
 PY
+bash -n scripts/init_universalist_plan.sh
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null
 ./scripts/emit_add_pass.sh payment-lifecycle typescript >/dev/null
 ./scripts/emit_domain_algebra_card.sh shopping-cart typescript >/dev/null
