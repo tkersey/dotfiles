@@ -94,6 +94,22 @@ live review source
 -> current closure-grade review
 ~~~
 
+For every fresh or closure-grade CAS review, and for same-handle timeout
+recovery, pass `--timeout-ms 1800000` explicitly:
+
+~~~bash
+cas review run --cwd <repo> --base <base> \
+  --workflow-binding-json @binding.json \
+  --timeout-ms 1800000 --json --fallback none
+cas review_session wait --cwd <repo> --review-thread-id <reviewThreadId> \
+  --timeout-ms 1800000 --json
+~~~
+
+Do not admit a smaller review wait budget unless the user explicitly overrides
+it. Project the exact command into the review obligation so older installed CAS
+binaries cannot silently restore a shorter default. A timeout preserves the
+same review attempt; recover its handle instead of starting a duplicate tuple.
+
 The current resolution may select at most one owner node. Project that node's
 ID, owner, paths, and proof requirements into the operation and obligations.
 Refresh sources and open a new generation after any repair or publication
