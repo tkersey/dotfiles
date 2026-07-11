@@ -21,12 +21,6 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 
 - Run `$logophile` as a final language-only pass on every non-trivial root response and human-facing artifact. Preserve facts, modality, uncertainty, scope, ownership, sequence, identifiers, code, paths, flags, schemas, protocol literals, and operational decisions; skip terse acknowledgements or status updates and machine-consumed surfaces.
 
-## Actuation boundary
-
-For `$actuating` work, the skill, its canonical live semantics, and its executable gate are authoritative. Do not restate versioned run, admission, review-resolution, or closure protocols here.
-
-Fresh or closure-grade workflow review uses `$cas`. `$ship` alone owns PR creation, update, promotion, and publication.
-
 ## Tooling standards
 
 ### Git
