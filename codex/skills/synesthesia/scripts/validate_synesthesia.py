@@ -291,20 +291,6 @@ def main() -> int:
     if template.count("source_note_ids") < 5:
         errors.append("resource-template:source-note-provenance")
 
-    agents_path = repo_root / "codex/AGENTS.md"
-    if not agents_path.is_file():
-        errors.append("missing:codex/AGENTS.md")
-    else:
-        agents = agents_path.read_text(encoding="utf-8")
-        for phrase in (
-            "literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations",
-            "translate it back into engineering terms with uncertainty and a falsifier",
-            "hand off to `$memory-source-notes` in the same turn",
-            "digest refreshes automatically after a successful append",
-        ):
-            if phrase not in agents:
-                errors.append(f"AGENTS.md:missing-synesthesia-routing:{phrase}")
-
     lint = repo_root / "codex/skills/tune/tools/decision_contract_lint.py"
     if lint.is_file():
         proc = subprocess.run(

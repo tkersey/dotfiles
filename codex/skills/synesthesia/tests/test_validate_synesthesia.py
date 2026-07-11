@@ -5,6 +5,7 @@ import importlib.util
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,28 @@ class SynesthesiaValidationTests(unittest.TestCase):
             check=False,
         )
         self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+
+    def test_validator_does_not_require_root_agents_doctrine(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo_root = Path(directory)
+            codex_root = repo_root / "codex"
+            codex_root.mkdir()
+            (codex_root / "skills").symlink_to(
+                REPO_ROOT / "codex/skills", target_is_directory=True
+            )
+            (codex_root / "memories").symlink_to(
+                REPO_ROOT / "codex/memories", target_is_directory=True
+            )
+
+            proc = subprocess.run(
+                [sys.executable, str(VALIDATOR), "--repo-root", str(repo_root)],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertFalse((codex_root / "AGENTS.md").exists())
+            self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
 
     def test_memory_adapter_exposes_digest_surface(self) -> None:
         spec = importlib.util.spec_from_file_location("synesthesia_memory_note", ADAPTER)
