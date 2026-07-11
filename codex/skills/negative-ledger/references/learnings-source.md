@@ -8,8 +8,8 @@
 
 ## Read Path
 
-```bash
-ledger recall --source learnings \
+```text
+$ledger run -- recall --source learnings \
   --query "<artifact> <objective> failed attempt regression revert no-effect avoid" \
   --limit 10 \
   --drop-superseded
@@ -17,7 +17,7 @@ ledger recall --source learnings \
 
 ## Candidate Test
 
-A learning may seed a ledger capture only when it has:
+A learning may seed a negative-evidence capture only when it has:
 
 - condition/action statement relevant to the current task;
 - inspectable command, test, benchmark, commit, revert, trace, path, or review witness;
@@ -31,8 +31,8 @@ A learning may seed a ledger capture only when it has:
 ```text
 learning row
   -> verify evidence and applicability
-  -> ledger capture
-  -> ledger export
+  -> $ledger run -- capture
+  -> $ledger run -- export
   -> memory-note append (only when memory admission qualifies)
 ```
 

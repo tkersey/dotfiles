@@ -1069,18 +1069,13 @@ In explicit team mode, synthesize specialist packets before choosing the witness
 
 ## Step 0 — Allocate a ledger-addressed plan
 
-For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one fresh progress record through the `skills-zig` ledger CLI before mutation:
+For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one fresh progress record through `$ledger` before mutation:
 
-This workflow requires `ledger` 0.5.0 or newer.
+This workflow requires the native `ledger` 0.5.0 or newer; `$ledger` owns that
+runtime preflight and invocation.
 
-```bash
-scripts/init_universalist_plan.sh [PROJECT_ROOT]
-```
-
-Equivalent direct form:
-
-```bash
-ledger create --source universalist \
+```text
+$ledger run -- create --source universalist \
   --repo PROJECT_ROOT \
   --template /path/to/universalist/templates/universalist-plan.md
 ```
@@ -1097,18 +1092,18 @@ The plan id is `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`: a lexicographically sortable UT
 
 Retain the returned plan id for the entire run. Resolve that exact address with:
 
-```bash
-ledger path --source universalist --repo PROJECT_ROOT --id PLAN_ID
+```text
+$ledger run -- path --source universalist --repo PROJECT_ROOT --id PLAN_ID
 ```
 
 Use `latest` only when no run-specific address survives:
 
-```bash
-ledger latest --source universalist --repo PROJECT_ROOT
-ledger latest --source universalist --repo PROJECT_ROOT --format path
+```text
+$ledger run -- latest --source universalist --repo PROJECT_ROOT
+$ledger run -- latest --source universalist --repo PROJECT_ROOT --format path
 ```
 
-`latest` scans valid plan ids and does not maintain a mutable pointer. Before resuming a recovered latest plan, verify that its Track, Signal, and Seam / files identify the current task; concurrent runs may have newer plans. If the required ledger source is unavailable, stop with the exact missing command/version rather than inventing an id or writing the file directly.
+`latest` scans valid plan ids and does not maintain a mutable pointer. Before resuming a recovered latest plan, verify that its Track, Signal, and Seam / files identify the current task; concurrent runs may have newer plans. If `$ledger` reports the required native source unavailable, stop with its exact missing command/version rather than inventing an id or writing the file directly.
 
 Minimum fields:
 

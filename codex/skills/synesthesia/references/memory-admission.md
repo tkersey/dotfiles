@@ -123,16 +123,16 @@ For boundary retraction:
 
 After the gate passes, write the repo-local canonical event first:
 
-```bash
-ledger capture --source synesthesia \
+```text
+$ledger run -- capture --source synesthesia \
   --kind mapping-endorsement \
   --json -
 ```
 
 For confirmation:
 
-```bash
-ledger capture --source synesthesia \
+```text
+$ledger run -- capture --source synesthesia \
   --kind mapping-confirmation \
   --json -
 ```
@@ -149,8 +149,8 @@ scope, authority, payload, and source references before appending to:
 After the canonical append succeeds, load `$memory-source-notes` only when
 global memory admission is warranted. Export the memory-note adapter envelope:
 
-```bash
-ledger export --source synesthesia \
+```text
+$ledger run -- export --source synesthesia \
   --format memory-note \
   --id SYN-...
 ```

@@ -1,0 +1,210 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly DEFAULT_MIN_VERSION="0.5.0"
+readonly DEFAULT_FORMULA="tkersey/tap/ledger"
+
+mode="${1:-}"
+if [[ -z "$mode" ]]; then
+  mode="help"
+else
+  shift
+fi
+
+min_version="${LEDGER_RUNTIME_MIN_VERSION:-$DEFAULT_MIN_VERSION}"
+formula="${LEDGER_RUNTIME_FORMULA:-$DEFAULT_FORMULA}"
+install_allowed=false
+declare -a native_args=()
+
+usage() {
+  cat <<'EOF'
+ledger-runtime
+
+usage:
+  ledger-runtime ensure [--min-version VERSION] [--install]
+  ledger-runtime run [--min-version VERSION] [--install] -- ARGS...
+
+Verifies the native Zig ledger CLI. With --install, installs or upgrades the
+Homebrew formula when the current runtime is missing or incompatible.
+EOF
+}
+
+json_escape() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  value="${value//$'\r'/\\r}"
+  value="${value//$'\t'/\\t}"
+  printf '%s' "$value"
+}
+
+emit_error() {
+  local reason="$1"
+  local remediation="$2"
+  printf '{"schema":"ledger-runtime-error/v1","status":"blocked","reason":"%s","minimum_version":"%s","remediation":"%s"}\n' \
+    "$(json_escape "$reason")" \
+    "$(json_escape "$min_version")" \
+    "$(json_escape "$remediation")" >&2
+}
+
+version_triplet() {
+  local raw="${1#v}"
+  raw="${raw%%-*}"
+  if [[ ! "$raw" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+    return 1
+  fi
+
+  local major=0 minor=0 patch=0
+  IFS='.' read -r major minor patch <<<"$raw"
+  printf '%d %d %d\n' "${major:-0}" "${minor:-0}" "${patch:-0}"
+}
+
+version_at_least() {
+  local have_major have_minor have_patch need_major need_minor need_patch
+  read -r have_major have_minor have_patch < <(version_triplet "$1") || return 1
+  read -r need_major need_minor need_patch < <(version_triplet "$2") || return 1
+
+  if (( have_major != need_major )); then
+    (( have_major > need_major ))
+    return
+  fi
+  if (( have_minor != need_minor )); then
+    (( have_minor > need_minor ))
+    return
+  fi
+  (( have_patch >= need_patch ))
+}
+
+ledger_path=""
+ledger_version=""
+runtime_reason="missing"
+
+inspect_runtime() {
+  ledger_path="$(command -v ledger 2>/dev/null || true)"
+  if [[ -z "$ledger_path" ]]; then
+    runtime_reason="missing"
+    return 1
+  fi
+
+  local help_text version_text
+  help_text="$("$ledger_path" --help 2>&1 || true)"
+  if [[ "$help_text" != *"Durable source-memory"* || "$help_text" != *"--source SOURCE"* ]]; then
+    runtime_reason="unexpected-ledger-binary"
+    return 1
+  fi
+
+  version_text="$("$ledger_path" --version 2>/dev/null | head -n 1 || true)"
+  if [[ "$version_text" =~ ([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+    ledger_version="${BASH_REMATCH[1]}"
+  else
+    runtime_reason="invalid-version"
+    return 1
+  fi
+
+  if ! version_at_least "$ledger_version" "$min_version"; then
+    runtime_reason="version-too-old"
+    return 1
+  fi
+
+  runtime_reason="ready"
+  return 0
+}
+
+install_runtime() {
+  local os="${LEDGER_RUNTIME_OS:-$(uname -s)}"
+  if [[ "$os" != "Darwin" && "$os" != "Linux" ]]; then
+    emit_error "unsupported-platform" "Install $formula manually, then retry."
+    return 2
+  fi
+  if ! command -v brew >/dev/null 2>&1; then
+    emit_error "homebrew-unavailable" "Install Homebrew, then run: brew install $formula"
+    return 2
+  fi
+
+  if brew list --versions "$formula" >/dev/null 2>&1; then
+    brew update >&2
+    if ! brew upgrade "$formula" >&2; then
+      brew reinstall "$formula" >&2
+    fi
+    printf '%s' "upgraded"
+  else
+    brew install "$formula" >&2
+    printf '%s' "installed"
+  fi
+}
+
+case "$mode" in
+  ensure|run) ;;
+  help|-h|--help)
+    usage
+    exit 0
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
+
+while (($#)); do
+  case "$1" in
+    --min-version)
+      if (($# < 2)); then
+        emit_error "missing-minimum-version" "Pass --min-version VERSION."
+        exit 2
+      fi
+      min_version="$2"
+      shift 2
+      ;;
+    --install)
+      install_allowed=true
+      shift
+      ;;
+    --)
+      shift
+      native_args=("$@")
+      break
+      ;;
+    *)
+      emit_error "unknown-option" "Use ledger-runtime --help."
+      exit 2
+      ;;
+  esac
+done
+
+if ! version_triplet "$min_version" >/dev/null; then
+  emit_error "invalid-minimum-version" "Use a numeric semantic version such as 0.5.0."
+  exit 2
+fi
+
+if [[ "$mode" == "run" && ${#native_args[@]} -eq 0 ]]; then
+  emit_error "missing-native-arguments" "Pass native Ledger arguments after --."
+  exit 2
+fi
+
+action="none"
+if ! inspect_runtime; then
+  if [[ "$install_allowed" != true ]]; then
+    emit_error "$runtime_reason" "Authorize installation, then run: brew install $formula"
+    exit 3
+  fi
+
+  action="$(install_runtime)" || exit $?
+  hash -r
+  if ! inspect_runtime; then
+    emit_error "post-install-$runtime_reason" "Verify PATH and the installed $formula formula."
+    exit 2
+  fi
+fi
+
+if [[ "$mode" == "ensure" ]]; then
+  printf '{"schema":"ledger-runtime-ready/v1","status":"ready","path":"%s","version":"%s","minimum_version":"%s","action":"%s"}\n' \
+    "$(json_escape "$ledger_path")" \
+    "$(json_escape "$ledger_version")" \
+    "$(json_escape "$min_version")" \
+    "$(json_escape "$action")"
+  exit 0
+fi
+
+exec "$ledger_path" "${native_args[@]}"

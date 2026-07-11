@@ -44,6 +44,10 @@ Planning requests route to `$plan`; there is no planning mode here.
 `ledger --source actuation` is the only executable actuation gate. Do not invoke
 or recreate a second validator in another language.
 
+Use `$ledger run -- ...` for every interaction with that gate. `$ledger` owns
+runtime availability, compatibility, and native invocation; `$actuating`
+retains all actuation authority and supplies the exact native arguments.
+
 The live objects are:
 
 1. `GC-v2`, the accepted source-bound GoalContract.
@@ -131,14 +135,14 @@ From the repository root:
 
 1. Open the generation once:
 
-   ~~~bash
-   ledger open --source actuation --json ACTUATION_OPEN.json
+   ~~~text
+   $ledger run -- open --source actuation --json ACTUATION_OPEN.json
    ~~~
 
    The store lock sidecar must already be Git-ignored. A repo-level
    `.ledger/` ignore covers the default store.
 
-2. Inspect `ledger state --source actuation --run RUN_ID`. Select exactly the
+2. Inspect `$ledger run -- state --source actuation --run RUN_ID`. Select exactly the
    operation named by `next_transition`; `/goal`, not the CLI, decides whether
    to continue.
 3. Build one `actuation-operation/v1` from the selected owner boundary:
@@ -157,8 +161,8 @@ From the repository root:
 
 4. Prepare before any executable effect:
 
-   ~~~bash
-   ledger prepare --source actuation \
+   ~~~text
+   $ledger run -- prepare --source actuation \
      --run RUN_ID \
      --json ACTUATION_OPERATION.json
    ~~~
@@ -170,15 +174,15 @@ From the repository root:
 5. For `edit`, perform only the admitted path mutation, then consume and
    observe it:
 
-   ~~~bash
-   ledger record --source actuation --run RUN_ID --capability "$CAPABILITY"
-   ledger observe --source actuation --run RUN_ID --step STEP_ID
+   ~~~text
+   $ledger run -- record --source actuation --run RUN_ID --capability "$CAPABILITY"
+   $ledger run -- observe --source actuation --run RUN_ID --step STEP_ID
    ~~~
 
    For `inspect` or `verify`, use one kernel-owned execution:
 
-   ~~~bash
-   ledger execute --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ~~~text
+   $ledger run -- execute --source actuation --run RUN_ID --capability "$CAPABILITY"
    ~~~
 
 6. Fold tests, diffs, logs, and returned event digests through
@@ -197,7 +201,7 @@ outstanding obligations.
 
 Fresh or closure-grade review uses `$cas`. Review evidence passes through
 `$review-fold`, which classifies and quotients findings, then through
-`ledger validate review-fold` as a pure Zig invariant check. `review-resolution/v1`
+`$ledger run -- validate review-fold` as a pure Zig invariant check. `review-resolution/v1`
 then selects at most one current owner-boundary repair. Read
 [review-resolution.md](references/review-resolution.md) before review-driven
 mutation.
@@ -248,11 +252,11 @@ not mutable lifecycle labels.
 
 Read [closure.md](references/closure.md), then run:
 
-~~~bash
-ledger doctor --source actuation
-ledger state --source actuation --run RUN_ID
-ledger close --source actuation --run RUN_ID
-ledger decide --source actuation --run RUN_ID
+~~~text
+$ledger run -- doctor --source actuation
+$ledger run -- state --source actuation --run RUN_ID
+$ledger run -- close --source actuation --run RUN_ID
+$ledger run -- decide --source actuation --run RUN_ID
 ~~~
 
 `close` is legal only from `ready` with no pending step, no outstanding

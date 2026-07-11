@@ -18,7 +18,7 @@ skill_decision_contract:
       exclusions: []
     - trigger_id: ACT-CLOSE
       description: Completion requires a live closed Zig kernel generation and closure-decision/v1.
-      cue_literals: [ledger --source actuation, closure-decision/v1, complete, ready-to-ship]
+      cue_literals: [$ledger run --, ledger --source actuation, closure-decision/v1, complete, ready-to-ship]
       cue_regexes: []
       exclusions: []
 

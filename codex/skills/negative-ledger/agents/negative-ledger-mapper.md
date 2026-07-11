@@ -13,7 +13,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 
 ## Allowed Reads
 
-- `ledger doctor`, `query`, `map`, `handoff`, `show`, and `export`;
+- `$ledger run -- doctor`, `query`, `map`, `handoff`, `show`, and `export`;
 - `.ledger/negative-ledger/events.jsonl` through the CLI;
 - selected `.ledger/learnings/events.jsonl` hits as historical candidate evidence;
 - relevant commits, reverts, reviews, benchmarks, tests, traces, and diffs;
@@ -24,15 +24,15 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 1. Establish `artifact_state_id`, route, cluster, target signal, and scope.
 2. Run:
 
-   ```bash
-   ledger map --route "<route>" --cluster "<cluster>" --artifact "<artifact-state>"
-   ledger handoff
+   ```text
+   $ledger run -- map --route "<route>" --cluster "<cluster>" --artifact "<artifact-state>"
+   $ledger run -- handoff
    ```
 
 3. For material `NEG-*` records, prefer:
 
-   ```bash
-   ledger export --id NEG-... --format full
+   ```text
+   $ledger run -- export --id NEG-... --format full
    ```
 
    over lossy prose or count-only projections.

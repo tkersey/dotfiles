@@ -45,7 +45,7 @@ Plans live at
 `.ledger/universalist-plan-YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN.md`. The UTC
 timestamp makes recency visible; the collision ordinal and atomic create
 prevent one run from overwriting another. Retain the returned plan id during
-the run. Use `ledger latest --source universalist` only as a recovery lookup,
+the run. Use `$ledger run -- latest --source universalist` only as a recovery lookup,
 then verify the plan's task metadata before resuming it.
 
 

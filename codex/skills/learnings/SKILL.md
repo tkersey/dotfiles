@@ -1,6 +1,6 @@
 ---
 name: learnings
-description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings from repo-local `.ledger/learnings/events.jsonl` through `ledger --source learnings`. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
+description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings from repo-local `.ledger/learnings/events.jsonl` through `$ledger` and the native learnings source. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
   version: "6.0.0"
 ---
@@ -43,21 +43,21 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 .ledger/learnings/events.jsonl
 ```
 
-Use `ledger capture --source learnings` for writes. Do not hand-edit events in
+Use `$ledger run -- capture --source learnings` for writes. Do not hand-edit events in
 normal operation. Legacy `.ledger/learnings/learnings.jsonl` and
 `.learnings.jsonl` are read only during migration. Use
-`ledger migrate --source learnings --mode copy` to copy old rows into the
+`$ledger run -- migrate --source learnings --mode copy` to copy old rows into the
 canonical event store.
 Treat `legacy-only` as a required migration state, not a normal operating
-state. If `ledger doctor --source learnings` reports `legacy-only`, run
-`ledger migrate --source learnings --mode copy` before any append, commit
+state. If `$ledger run -- doctor --source learnings` reports `legacy-only`, run
+`$ledger run -- migrate --source learnings --mode copy` before any append, commit
 closeout, or handoff that depends on learning capture.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
 When this skill is triggered for recall, capture, commit closeout, PR handoff,
-or wrap-up, evaluate `$synesthesia` in the same lifecycle point with
-`ledger --source synesthesia`. Append only if a durable sensory mapping or
+or wrap-up, evaluate `$synesthesia` in the same lifecycle point through
+`$ledger` against the native Synesthesia source. Append only if a durable sensory mapping or
 activation-boundary event exists. If no durable authority exists but the turn
 exposes a reusable sensory phrase, activation boundary, or representational
 ambiguity with a concrete engineering translation, treat it as a non-durable
@@ -88,16 +88,16 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
 
 2. Run the migration preflight:
 
-   ```bash
-   ledger doctor --source learnings
+   ```text
+   $ledger run -- doctor --source learnings
    ```
 
    If status is `legacy-only`, run:
 
-   ```bash
-   ledger migrate --source learnings --dry-run --mode copy
-   ledger migrate --source learnings --mode copy
-   ledger doctor --source learnings
+   ```text
+   $ledger run -- migrate --source learnings --dry-run --mode copy
+   $ledger run -- migrate --source learnings --mode copy
+   $ledger run -- doctor --source learnings
    ```
 
    Append only after the doctor status is `migrated`, `current`, or `missing`.
@@ -106,8 +106,8 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
 4. Distill objective, inflection, proof, and transferable rule.
 5. Append from the verified repo root:
 
-   ```bash
-   ledger capture --source learnings \
+   ```text
+   $ledger run -- capture --source learnings \
      --status do_more \
      --learning "When X, prefer Y because Z." \
      --evidence "exact command/result/path" \
@@ -132,8 +132,8 @@ duplicate-skip: <reason>
 
 ## Recall Workflow
 
-```bash
-ledger recall --source learnings \
+```text
+$ledger run -- recall --source learnings \
   --query "<focused component failure objective terms>" \
   --limit 5 \
   --drop-superseded
@@ -234,7 +234,7 @@ Never edit or delete prior admission notes.
 
 ## Memory Digest Compatibility
 
-`ledger memory-digest --source learnings` remains useful for disposable batch imports, but it is not the primary durable admission path. Prefer timestamped resources under:
+`$ledger run -- memory-digest --source learnings` remains useful for disposable batch imports, but it is not the primary durable admission path. Prefer timestamped resources under:
 
 ```text
 ~/.codex/memories/extensions/learnings/resources/YYYY-MM-DDTHH-MM-SS-learnings-digest.md
@@ -242,7 +242,7 @@ Never edit or delete prior admission notes.
 
 ## Relationship to Negative Ledger
 
-A learning can seed negative evidence, but `.ledger/learnings/events.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
+A learning can seed negative evidence, but `.ledger/learnings/events.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `$ledger run -- capture`, then use `$ledger run -- export` plus `memory-note` for memory admission.
 
 ## Guardrails
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ledger"
+  short_description: "Provision and mediate the native Ledger CLI"
+  default_prompt: "Use $ledger to ensure a compatible native CLI and execute this owner-authorized Ledger operation."
+policy:
+  allow_implicit_invocation: true

@@ -23,7 +23,10 @@ The memory-admission channel is:
 ~/.codex/memories/extensions/negative-ledger/notes/*.md
 ```
 
-`ledger` decides current negative-evidence state. `memory-note` transports an immutable exported projection to Phase 2. Phase 2 decides whether to compile a route constraint, routing trigger, or reusable memory skill.
+The native `ledger` kernel decides current negative-evidence state; `$ledger`
+owns runtime mediation. `memory-note` transports an immutable exported
+projection to Phase 2. Phase 2 decides whether to compile a route constraint,
+routing trigger, or reusable memory skill.
 
 Never use memory notes as the operational route gate. For accepted admission, load `$memory-source-notes` before invoking `run_memory_note_tool`.
 
@@ -42,25 +45,26 @@ Never use memory notes as the operational route gate. For accepted admission, lo
 
 ```text
 .ledger/negative-ledger/events.jsonl
-ledger
+$ledger run -- <negative-ledger command>
 ```
 
 Expected commands:
 
 ```text
-ledger init
-ledger capture --json FILE|-
-ledger query
-ledger map --route ID --cluster ID --artifact ID
-ledger show --id NEG-ID
-ledger handoff
-ledger compact
-ledger doctor
-ledger export --id NEG-ID [--format full|memory-note]
-ledger status --id NEG-ID --to STATUS --reason TEXT [--source-ref ...]
+$ledger run -- init
+$ledger run -- capture --json FILE|-
+$ledger run -- query
+$ledger run -- map --route ID --cluster ID --artifact ID
+$ledger run -- show --id NEG-ID
+$ledger run -- handoff
+$ledger run -- compact
+$ledger run -- doctor
+$ledger run -- export --id NEG-ID [--format full|memory-note]
+$ledger run -- status --id NEG-ID --to STATUS --reason TEXT [--source-ref ...]
 ```
 
-Until `export` ships, do not create authoritative memory admission from a lossy `ledger show` projection.
+Until `export` ships, do not create authoritative memory admission from a lossy
+`$ledger run -- show` projection.
 
 ## Valid Statuses
 
@@ -84,8 +88,8 @@ Fuzzy or lexical overlap is suggest-only.
 1. Identify `artifact_state_id`, route, cluster, scope, target signal, and changed surface.
 2. Run:
 
-   ```bash
-   ledger map \
+   ```text
+   $ledger run -- map \
      --route "<selected-route>" \
      --cluster "<cluster-id>" \
      --artifact "<artifact-state-id>"
@@ -101,8 +105,8 @@ Capture only when a failure changes future routing: witnessed no-effect attempt,
 
 Append only through:
 
-```bash
-ledger capture --json capture.json
+```text
+$ledger run -- capture --json capture.json
 ```
 
 Captures without adequate witness evidence must become `need-evidence` or `capture_candidate`, never active exclusions.
@@ -111,8 +115,8 @@ Captures without adequate witness evidence must become `need-evidence` or `captu
 
 Use append-only status events:
 
-```bash
-ledger status \
+```text
+$ledger run -- status \
   --id NEG-000001 \
   --to stale \
   --reason "The prior bookkeeping path was replaced." \
@@ -126,38 +130,36 @@ Never rewrite old JSONL events.
 A negative-ledger source note is allowed only when:
 
 1. a canonical `NEG-*` record exists;
-2. `ledger doctor` passes;
-3. `ledger export --id` returns a complete current projection;
+2. `$ledger run -- doctor` passes;
+3. `$ledger run -- export --id` returns a complete current projection;
 4. projection includes witness, applicability, narrow exclusion, and reopening criteria when status is active;
 5. the record is likely to matter in future related work;
 6. the note embeds the full bounded projection and projection fingerprint.
 
-Do not admit prose-only negative-evidence claims, unpromoted `learnings` hits, partial `ledger show` output, every `need-evidence` candidate, or stale history with no future routing value.
+Do not admit prose-only negative-evidence claims, unpromoted `learnings` hits,
+partial `$ledger run -- show` output, every `need-evidence` candidate, or stale
+history with no future routing value.
 
 ## Admission Workflow
 
 After capture or lifecycle transition:
 
-```bash
-ledger doctor
-ledger export --id NEG-000001 --format memory-note |
-  run_memory_note_tool append \
-    --extension negative-ledger \
-    --kind ledger-projection \
-    --json -
+```text
+$ledger run -- doctor
+$ledger run -- export --id NEG-000001 --format memory-note
+run_memory_note_tool append --extension negative-ledger \
+  --kind ledger-projection --json <export-output>
 ```
 
 For a status transition:
 
-```bash
-ledger export --id NEG-000001 --format memory-note |
-  run_memory_note_tool append \
-    --extension negative-ledger \
-    --kind ledger-status-transition \
-    --json -
+```text
+$ledger run -- export --id NEG-000001 --format memory-note
+run_memory_note_tool append --extension negative-ledger \
+  --kind ledger-status-transition --json <export-output>
 ```
 
-If `ledger export` is unavailable, preserve the canonical ledger write and report:
+If `$ledger run -- export` is unavailable, preserve the canonical Ledger write and report:
 
 ```text
 memory-note: not-attempted: ledger export unavailable
@@ -188,7 +190,7 @@ Report both layers separately.
 
 ## Learnings Relationship
 
-`.ledger/learnings/events.jsonl` is historical candidate evidence, not the route-exclusion store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are read only during migration. Verify current applicability and promote qualifying evidence through `ledger capture`.
+`.ledger/learnings/events.jsonl` is historical candidate evidence, not the route-exclusion store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are read only during migration. Verify current applicability and promote qualifying evidence through `$ledger run -- capture`.
 
 ## Guardrails
 

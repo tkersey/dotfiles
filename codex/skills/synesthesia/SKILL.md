@@ -253,9 +253,9 @@ When a durable memory event exists:
 2. identify the narrowest reusable scope;
 3. require an engineering translation and verification rule;
 4. identify the prior `SYN-*` ledger ID or `MSN-*` source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
-5. run `ledger doctor --source synesthesia`;
-6. append the canonical row with `ledger capture --source synesthesia --kind <kind> --json -`;
-7. when global memory admission is warranted, load `$memory-source-notes`, export with `ledger export --source synesthesia --format memory-note --id <SYN-ID>`, and use the Synesthesia source-note adapter in the same turn;
+5. run `$ledger run -- doctor --source synesthesia`;
+6. append the canonical row with `$ledger run -- capture --source synesthesia --kind <kind> --json -`;
+7. when global memory admission is warranted, load `$memory-source-notes`, export with `$ledger run -- export --source synesthesia --format memory-note --id <SYN-ID>`, and use the Synesthesia source-note adapter in the same turn;
 8. emit separate canonical and admission proof lines.
 
 Do not merely describe a qualifying memory event without attempting the handoff.
@@ -265,12 +265,12 @@ Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use.
 ## Lifecycle candidate pass
 
 When Synesthesia is evaluated because `$learnings` lifecycle capture fired, do
-not stop at `ledger doctor --source synesthesia` or at the absence of explicit
+not stop at `$ledger run -- doctor --source synesthesia` or at the absence of explicit
 durable authority. Run a candidate pass over the learning, evidence, route
 delta, and final handoff:
 
 1. If a durable memory event exists, append it through
-   `ledger capture --source synesthesia` and emit the append proof.
+   `$ledger run -- capture --source synesthesia` and emit the append proof.
 2. If no durable authority exists but the turn exposes a reusable sensory
    phrase, activation boundary, or representational ambiguity with a concrete
    engineering translation, emit a non-durable candidate.
@@ -329,10 +329,10 @@ See [memory-admission.md](references/memory-admission.md) for the operation matr
 .ledger/synesthesia/events.jsonl
 ```
 
-Use `ledger capture --source synesthesia` for canonical repo-local writes. Do
+Use `$ledger run -- capture --source synesthesia` for canonical repo-local writes. Do
 not hand-edit events in normal operation. Existing immutable Synesthesia
 memory-source notes remain valid transition evidence; import them with
-`ledger migrate --source synesthesia --mode copy` only when an explicit copy
+`$ledger run -- migrate --source synesthesia --mode copy` only when an explicit copy
 migration is intended.
 
 ## Generated current-state digest
@@ -349,14 +349,14 @@ The digest is disposable and non-canonical. Every promotable entry must retain r
 
 Manual refresh:
 
-```bash
-ledger memory-digest --source synesthesia
+```text
+$ledger run -- memory-digest --source synesthesia
 ```
 
 Run the doctor after copy-deploying the Phase 2 adapter or when promotion appears stale:
 
-```bash
-ledger doctor --source synesthesia
+```text
+$ledger run -- doctor --source synesthesia
 ```
 
 ## Cross-extension ownership

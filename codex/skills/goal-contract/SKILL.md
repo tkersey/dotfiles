@@ -89,9 +89,9 @@ goal_contract:
 9. Assign every success predicate to at least one exact verifier command and
    `implementation`, `review`, `ship`, or `acceptance` proof kind before
    opening a material kernel generation; an unobservable obligation blocks.
-10. Inspect the complete source-to-open projection before `ledger open --source
-    actuation`; the kernel conserves accepted obligations but cannot recover an
-    omitted predicate.
+10. Inspect the complete source-to-open projection before `$ledger run -- open
+    --source actuation`; `$ledger` mediates the native runtime while the kernel
+    conserves accepted obligations but cannot recover an omitted predicate.
 
 ## Guardrails
 

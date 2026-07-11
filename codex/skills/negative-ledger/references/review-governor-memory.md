@@ -11,7 +11,7 @@ negative_route_gate:
     query_or_map: yes
     ledger_cli: ledger
     store: .ledger/negative-ledger/events.jsonl
-    command: "ledger map --route ... --cluster ... --artifact ..."
+    command: "$ledger run -- map --route ... --cluster ... --artifact ..."
     exit_code: 0 | 2 | 3
     ledger_available: yes | no
   active_exclusion_match: yes | no | null
@@ -40,4 +40,4 @@ negative_memory_admission:
   outcome: created | duplicate_skip | not_qualified | cli_unavailable | export_unavailable | failed
 ```
 
-A failed or skipped memory admission does not invalidate a valid canonical ledger capture. It only means future global memory has not yet received the projection.
+A failed or skipped memory admission does not invalidate a valid canonical negative-evidence capture. It only means future global memory has not yet received the projection.

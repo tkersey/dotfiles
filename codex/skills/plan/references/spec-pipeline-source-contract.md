@@ -51,7 +51,7 @@ fields are missing or contradictory, `$plan` returns to `$spec-pipeline` or
 ```text
 SGR-v2 complete
 -> PSC-v1
--> ledger validate plan-source-contract
+-> $ledger run -- validate plan-source-contract
 -> plan identity
 -> policy synthesis fixed point
 -> PSR-v1

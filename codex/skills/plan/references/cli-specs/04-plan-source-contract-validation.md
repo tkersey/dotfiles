@@ -1,12 +1,12 @@
 # 04 — Plan Source Contract Validation
 
-`ledger validate plan-source-contract` is the pure Zig receiver validation for
+`$ledger run -- validate plan-source-contract` is the pure Zig receiver validation for
 `$plan`.
 
 ## Command
 
-```bash
-ledger validate plan-source-contract --input <psc-json-file>
+```text
+$ledger run -- validate plan-source-contract --input <psc-json-file>
 ```
 
 The input is canonical JSON and may contain either a wrapped

@@ -1,16 +1,71 @@
 ---
 name: ledger
-description: "Coordinate repo-local source-memory stores, Universalist plan addresses, and pure Zig governance-artifact validation under `.ledger/` without bypassing source-specific authority. Use for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan create/latest/path lookup, or `ledger validate`."
+description: "Provision, verify, and mediate the native Zig `ledger` CLI for every skill, then coordinate repo-local source-memory stores, Universalist plan addresses, and pure governance-artifact validation without bypassing source-specific authority. Use whenever any skill needs a Ledger command, the CLI is missing or incompatible, or the user asks for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan addressing, or artifact validation."
 ---
 
 # Ledger
 
 ## Mission
 
-Coordinate repo-local source-memory stores under `.ledger/` and route pure
-governance-artifact validation.
+Own the shared Ledger runtime boundary, coordinate repo-local source-memory
+stores under `.ledger/`, and route pure governance-artifact validation.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
+
+## Runtime boundary
+
+Every other skill must use this skill for Ledger CLI interactions. The stable
+skill-level surface is:
+
+```text
+$ledger ensure
+$ledger run -- <native-ledger-arguments...>
+```
+
+`$ledger` is skill syntax, not a shell command. For `run`, preserve the exact
+native argument vector supplied after `--`; do not reinterpret the source,
+command, paths, input, or authority.
+
+Use [scripts/ledger-runtime](scripts/ledger-runtime) as the deterministic
+runtime handler:
+
+```bash
+codex/skills/ledger/scripts/ledger-runtime ensure --min-version 0.5.0
+codex/skills/ledger/scripts/ledger-runtime run --min-version 0.5.0 -- <native-ledger-arguments...>
+```
+
+The handler verifies that `ledger` resolves to the expected native CLI, checks
+the minimum version, and preserves native stdout, stderr, and exit status. It
+returns `ledger-runtime-ready/v1` for `ensure`.
+
+If the CLI is missing or incompatible:
+
+1. install or upgrade only when the current user request or standing
+   environment policy authorizes user-level CLI provisioning;
+2. pass `--install` to the runtime handler when that authority exists;
+3. otherwise stop with the handler's exact remediation instead of invoking a
+   fallback implementation;
+4. never use `curl | sh`, an unpinned download, or a second-language Ledger
+   implementation.
+
+On supported Homebrew environments the canonical formula is
+`tkersey/tap/ledger`. Never install or upgrade the CLI after an actuation
+generation has opened; finish with the compatible runtime that opened the
+generation or block.
+
+~~~yaml
+ledger_runtime_ready:
+  schema: ledger-runtime-ready/v1
+  status: ready
+  path:
+  version:
+  minimum_version:
+  action: none | installed | upgraded
+~~~
+
+Runtime readiness grants no source authority. The calling skill still owns the
+semantic operation and must already have authority for every requested write or
+effect.
 
 Canonical stores:
 
@@ -57,6 +112,9 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 ## Trigger Cues
 
 - `$ledger`;
+- any skill requiring a Ledger CLI command;
+- ensure, install, upgrade, or verify the native Ledger CLI;
+- `$ledger run -- ...`;
 - ledger status;
 - source memory stores;
 - migrate learnings;
@@ -72,7 +130,9 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 
 ## Authority
 
-`$ledger` may coordinate, inspect, and recommend. Writes are delegated to source-specific tools:
+`$ledger` may provision the native runtime, execute an owner-supplied argument
+vector, coordinate, inspect, and recommend. Runtime mediation never grants
+source authority. Writes remain delegated to source-specific skills:
 
 - `$learnings` / `ledger --source learnings` for `.ledger/learnings/events.jsonl`;
 - `$negative-ledger` / `ledger` for `.ledger/negative-ledger/events.jsonl`;
@@ -158,6 +218,12 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 
 ## Guardrails
 
+- Do not let another skill invoke the native `ledger` command directly; route
+  it through `$ledger run -- ...`.
+- Do not change, add, or remove native arguments supplied by the source owner.
+- Do not install or upgrade without current installation authority.
+- Do not install or upgrade during an open actuation generation.
+- Do not accept a different executable that merely shares the name `ledger`.
 - Do not mutate a source store except through its owning CLI.
 - Do not treat memory-source notes as the canonical store.
 - Do not admit every source-store event to memory.

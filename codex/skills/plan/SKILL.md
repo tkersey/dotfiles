@@ -66,8 +66,8 @@ plan_source_contract:
 Materialize the executable projection as canonical JSON and validate PSC-v1
 before planning:
 
-```bash
-ledger validate plan-source-contract --input <psc-json-file>
+```text
+$ledger run -- validate plan-source-contract --input <psc-json-file>
 ```
 
 Fail closed when:
@@ -325,8 +325,8 @@ section or a reference to the persisted receipt.
 
 Validate:
 
-```bash
-ledger validate policy-synthesis-receipt \
+```text
+$ledger run -- validate policy-synthesis-receipt \
   --input .ledger/plan/<plan-id>/synthesis-receipt.json
 ```
 

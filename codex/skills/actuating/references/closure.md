@@ -8,11 +8,11 @@ issued completion decision.
 
 The only executable closure path is:
 
-~~~bash
-ledger doctor --source actuation
-ledger state --source actuation --run RUN_ID
-ledger close --source actuation --run RUN_ID
-ledger decide --source actuation --run RUN_ID
+~~~text
+$ledger run -- doctor --source actuation
+$ledger run -- state --source actuation --run RUN_ID
+$ledger run -- close --source actuation --run RUN_ID
+$ledger run -- decide --source actuation --run RUN_ID
 ~~~
 
 The append-only `.ledger/actuation/events.jsonl` chain is authoritative.
