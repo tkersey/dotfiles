@@ -1,8 +1,10 @@
 # Cost model and false positives
 
-A universalist refactor is worth it when it reduces semantic drift, invalid states, duplicated validation, branch complexity, projection sprawl, or integration ambiguity.
+Run the Universalist boundary pass whenever implementation or resolution considers a code boundary. Activation does not require a refactor.
 
-Avoid it when:
+A stronger construction is worth it when it reduces semantic drift, invalid states, duplicated validation, branch complexity, projection sprawl, or integration ambiguity.
+
+Avoid escalation when:
 
 - a local helper would solve the issue;
 - the domain rules are not stable;
@@ -10,4 +12,4 @@ Avoid it when:
 - the chosen construction cannot be tested;
 - public API or persistence changes are not acceptable.
 
-Always compare to the nearby boring alternative.
+Always compare to the nearby boring alternative. Preserving an already exact boundary is a valid Universalist result.

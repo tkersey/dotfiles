@@ -1,7 +1,7 @@
 interface:
   display_name: "Universalist"
-  short_description: "Design executable categorical architectures, effect geometry, and typed composition grammars."
+  short_description: "Apply Universalist at every code boundary."
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to select the smallest honest categorical architecture, effective substrate, concrete primitives, composition geometry, observations, laws, and one witness seam. Spawn the bundled custom agents only when the user explicitly requests team/subagent mode."
+  default_prompt: "Use $universalist to inspect the code boundary this implementation or resolution creates, changes, preserves, repairs, or removes; choose the smallest honest artifact and law witness."
 policy:
   allow_implicit_invocation: true

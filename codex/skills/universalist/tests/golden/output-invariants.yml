@@ -1,6 +1,9 @@
 invariants:
   - name: one_signal_one_seam
     required: ["Signal", "Construction", "Seam / files", "Verification"]
+  - name: boundary_trigger_requires_disposition
+    when: "implementation or resolution considers a code boundary"
+    required: ["Boundary and compatibility plan", "Boundary", "Disposition", "Owner", "Source / target", "Law", "Falsifier"]
   - name: track_d_requires_artifact
     when: "Track D"
     required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]

@@ -6,6 +6,24 @@ cases:
     should_use_skill: true
     expected: ["canonical boundary artifact", "generation path", "coherent observations"]
   - prompt: "Implement an unrelated endpoint with no structural smell."
+    should_use_skill: true
+    expected: ["Boundary-trigger mandate", "public API", "boundary disposition", "compatibility"]
+  - prompt: "Implement the DTO-to-domain adapter for this endpoint while keeping its JSON wire shape stable."
+    should_use_skill: true
+    expected: ["implementation", "serializer/codec boundary", "preserved", "law", "falsifier"]
+  - prompt: "Resolve this PR finding: the serializer drops provenance when internal records cross into the wire format."
+    should_use_skill: true
+    expected: ["resolution", "boundary liability", "owner boundary", "projection law", "boundary disposition"]
+  - prompt: "Resolve the failing CLI test where parsed flags no longer reach the execution configuration."
+    should_use_skill: true
+    expected: ["resolution", "parser boundary", "source / target", "law", "falsifier"]
+  - prompt: "Run $resolve on this PR; the accepted review repair changes the serializer boundary."
+    should_use_skill: true
+    expected: ["resolution", "owner boundary", "boundary disposition", "law", "falsifier"]
+  - prompt: "Add caching behind the repository interface without changing its observable contract."
+    should_use_skill: true
+    expected: ["preserved boundary", "owner", "observations", "compatibility"]
+  - prompt: "Rename a local variable inside a private helper without changing its inputs, outputs, effects, or ownership."
     should_use_skill: false
   - prompt: "Design and implement this whole system on a computationally universal categorical substrate."
     should_use_skill: true

@@ -1,15 +1,32 @@
 ---
 name: universalist
-description: "Use when software needs structural/categorical architecture rather than ordinary feature work: domain algebra/law discovery, impossible-state models, repeated boundary validation, opaque callbacks/effects, typed component wiring, effect-order ambiguity, syntax mixed with execution, duplicated projections, public contracts shaping internals, certified context, exact abstractions, or effective universal substrate design. Start with one signal/seam; identify carriers, operations, observations, laws/non-laws, then choose smallest honest construction. Require effective presentation, concrete primitives, interpreter, laws, falsifier, resource model. Team mode only on explicit request. Includes internal ADD, Kan/Yoneda/Coyoneda/Freyd-AFT/Freyd-category/operad/codensity/CQL/sheafification mechanics"
+description: "Use whenever implementing, reviewing, or resolving code that considers a boundary: creating, changing, preserving, validating, migrating, bypassing, or removing how values, effects, state, evidence, authority, or behavior cross modules, APIs, schemas/DTOs, serializers, storage/wire formats, parsers/validators, handlers, runtimes, protocols, plugins/tools/CLIs, processes, repositories, or public/internal contracts. Trigger even for ordinary feature work or PR/review resolution when boundary behavior is in scope; boundary consideration itself is the signal. Start with one boundary/seam; identify source/target worlds, carriers, operations, observations, laws/non-laws, interpreter/projection/handler, compatibility, falsifier, and resource impact, then choose the smallest honest construction. Keep implicit invocation enabled. Team mode only on explicit request. Includes ADD, Kan/Yoneda/Coyoneda/Freyd-AFT/Freyd-category/operad/codensity/CQL/sheafification mechanics."
 ---
 
 # Universalist
 
-Use this skill when the highest leverage comes from changing the **shape of truth** in a codebase, not from adding another ordinary feature branch.
+Use this skill whenever a code boundary is considered. Its highest leverage comes from changing the **shape of truth** in a codebase, but it may conclude that an existing boundary is already exact and should be preserved.
 
 Default operating discipline: one signal, one seam, one smallest honest construction.
 
-This is an **inner lens** for choosing the right structural move. It is not a generic implementation skill. Use it to decide and stage the structure, then let the repo's normal implementation flow carry the change.
+## Boundary-trigger mandate
+
+Use this skill whenever implementation, refactoring, review, migration, or resolution work considers a code boundary. Do not wait for category-theory language or a broad architecture request. Boundary consideration itself is the activation signal.
+
+A code boundary is any seam where values, effects, state, evidence, authority, or observable behavior cross between owners or representations. This includes module/package APIs, public/internal contracts, DTOs/schemas/codecs, parsers/validators, storage/wire formats, syntax/interpreters/compilers, pure/effect handlers, state machines/protocols, plugins/tools/CLIs, processes, repositories, and deployment surfaces.
+
+A boundary is considered whenever the task chooses, creates, changes, preserves, validates, migrates, bypasses, removes, or resolves that seam.
+
+Apply the lens in both directions:
+
+- **Implementation** — name the boundary and owner; state preserved, forgotten, generated, and observed information; name compatibility, law, and falsifier before mutation; then let the repo's normal implementation flow carry the change.
+- **Resolution** — classify whether the finding or failure is a boundary liability; repair it at the owner boundary; reject symptom-only patches that leave boundary drift; verify the boundary disposition and law after repair.
+
+Resolution includes PR/review findings, failing tests, regressions, migration defects, compatibility defects, and closeout decisions whose repair changes or relies on boundary behavior.
+
+Activation is broad; escalation is narrow. If the existing boundary is already exact, record it as preserved and continue ordinary implementation or resolution. Do not invent categorical structure merely because the lens activated.
+
+This is an **inner lens** for choosing the right structural move. It may trigger during ordinary implementation or resolution when a boundary is considered, but it does not replace the repo's implementation, review, or closeout workflow.
 
 This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/`, `templates/mechanics/`, and `scripts/emit_mechanics_report.sh`.
 
@@ -454,15 +471,27 @@ Do not introduce these structures when ordinary composition is already exact, th
 
 ## Do not trigger for
 
-- Routine feature work with no structural smell.
-- Pure performance tuning, infra, UI polish, or docs work.
-- Broad rewrites with no stable seam.
-- Cases where the domain rules are still too unstable to freeze into a stronger model.
-- Category-theory exposition that does not change a concrete seam, construction, boundary, or proof signal.
+- Work wholly internal to one established boundary that does not choose, change, preserve, validate, migrate, bypass, remove, or resolve boundary behavior.
+- Pure performance tuning, UI polish, formatting, or prose-only documentation that neither changes nor depends on a code boundary.
+- Category-theory exposition that does not change or adjudicate a concrete code seam, construction, boundary, or proof signal.
+
+Broad rewrites without a stable seam and domains with unstable rules still trigger the lens when boundaries are under consideration. Use Track A or Track A0 to name the obstruction and avoid freezing premature structure.
 
 ## Step -1 — World and Boundary Inventory
 
-Before choosing Track A/B/C/D/E/F/G/H/I for any non-trivial structural request, inventory the worlds and boundaries. This prevents fake category labels and keeps the response anchored in repo reality.
+For every boundary-triggered implementation or resolution, record at least this compact boundary receipt:
+
+```text
+Boundary:
+Disposition: preserved / introduced / changed / repaired / removed / bypass-justified
+Owner:
+Source / target:
+Preserved / forgotten / generated / observed:
+Law:
+Falsifier:
+```
+
+For any non-trivial structural request, expand that receipt into the full world and boundary inventory below. This prevents fake category labels and keeps the response anchored in repo reality.
 
 A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
 
@@ -633,6 +662,7 @@ Deliver:
 - first seam to attack;
 - proof signal;
 - compatibility notes;
+- boundary disposition;
 - whether this is ordinary universalist structure or universal-architecture territory.
 
 ### Track B — One-seam refactor
@@ -645,6 +675,7 @@ Deliver:
 - smallest honest construction;
 - canonical boundary artifact if needed;
 - adapter-first staging when a public boundary exists;
+- boundary disposition and owner;
 - fastest credible proof signal;
 - explicit stop point after the first verified seam.
 
@@ -1282,6 +1313,8 @@ For any non-trivial response, produce these headings in order:
 8. **Verification**
 9. **Runtime-only leftovers**
 10. **Next seam** (optional)
+
+For every boundary-triggered implementation or resolution, use **Boundary and compatibility plan** to record the compact boundary receipt: boundary, disposition, owner, source/target, preserved/forgotten/generated/observed information, law, and falsifier. Activation may conclude that the existing boundary is preserved and no new abstraction is required.
 
 For Track D, also include:
 

@@ -21,6 +21,14 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 
 - Run `$logophile` as a final language-only pass on every non-trivial root response and human-facing artifact. Preserve facts, modality, uncertainty, scope, ownership, sequence, identifiers, code, paths, flags, schemas, protocol literals, and operational decisions; skip terse acknowledgements or status updates and machine-consumed surfaces.
 
+## Universalist boundary mandate
+
+- Invoke `$universalist` whenever implementation, refactoring, review, migration, or resolution considers a code boundary.
+- A boundary is considered when work creates, changes, preserves, validates, migrates, bypasses, removes, or resolves how values, effects, state, evidence, authority, or observable behavior cross modules/packages/APIs, public/internal contracts, DTOs/schemas/codecs, parsers/validators, storage/wire formats, syntax/interpreters/compilers, pure/effect handlers, state machines/protocols, plugins/tools/CLIs, processes, repositories, or deployment surfaces.
+- This mandate applies during ordinary feature implementation and PR/review resolution, including `$resolve`.
+- Activation is mandatory; escalation is proportional. If the existing boundary is already exact, record the preserved boundary, law, and falsifier, then continue the normal workflow without inventing a new abstraction.
+- Universalist team/subagent mode remains explicit-request only.
+
 ## Tooling standards
 
 ### Git

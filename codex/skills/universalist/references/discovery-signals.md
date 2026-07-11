@@ -1,5 +1,7 @@
 # Discovery signals
 
+Boundary consideration is itself a discovery signal during implementation and resolution. Trigger when a task creates, changes, preserves, validates, migrates, bypasses, removes, or repairs how values, effects, state, evidence, authority, or behavior cross an owner or representation seam.
+
 Look for these repo smells:
 
 - several booleans/nullable fields encode one lifecycle;
@@ -12,4 +14,4 @@ Look for these repo smells:
 - public contract tests implying hidden internal obligations;
 - callbacks, closures, or handlers crossing architecture boundaries.
 
-Classify each signal by the smallest construction that would make the invariant obvious.
+Classify each signal by the smallest construction that would make the invariant obvious. If the existing boundary is already exact, record it as preserved and continue without adding abstraction.

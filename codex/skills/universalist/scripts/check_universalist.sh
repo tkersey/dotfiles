@@ -49,9 +49,19 @@ if not m:
 desc = m.group(1)
 if len(desc) >= 1024:
     raise SystemExit(f'SKILL.md description too long: {len(desc)} chars')
+for trigger in (
+    'implementing, reviewing, or resolving code that considers a boundary',
+    'creating, changing, preserving, validating, migrating, bypassing, or removing',
+    'ordinary feature work or PR/review resolution',
+    'boundary consideration itself is the signal',
+    'Keep implicit invocation enabled',
+):
+    if trigger not in desc:
+        raise SystemExit(f'SKILL.md description missing boundary trigger: {trigger}')
 if 'allow_implicit_invocation: true' not in Path('agents/openai.yaml').read_text():
     raise SystemExit('agents/openai.yaml must allow implicit invocation')
 print(f'description length ok: {len(desc)} chars')
+print('boundary discovery metadata ok')
 required = [
     'name: universalist', 'Track A0', 'Domain Algebra Discovery', 'Algebra before architecture', 'carriers', 'operations', 'observations', 'laws', 'non-laws', 'Track D', 'Track E', 'Track F', 'Universal architecture',
     'canonical boundary artifact', 'one signal, one seam', 'Freyd/AFT', 'free builder',
@@ -64,11 +74,60 @@ required = [
     'Allow arbitrary sources', 'Forbid uncertified semantic consumption', 'Verified Context Plane',
     'Operational stores own mutation', 'Verified context planes own semantic publication',
     'Possibility Sheafification', 'Track G', 'Sheafification Certificate',
-    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve', 'Track I', 'Effective Universal Architecture Thesis', 'Substrate Reality Law', 'Effective Categorical Normal Form', 'Categorical Substrate Team Mode', 'Concrete Primitive Register', 'Composition Geometry Selector', 'Freyd Category Diagnostic', 'Colored operad', 'Operadic substitution law'
+    'Abstraction Normal Form', 'Do not merely abstract. Sheafify possibility', 'internal mechanics layer', 'emit_mechanics_report.sh', 'Track H', 'Category Pivot', 'Syntax/Semantics', 'Easy-World Transfer', 'Easy worlds solve', 'Track I', 'Effective Universal Architecture Thesis', 'Substrate Reality Law', 'Effective Categorical Normal Form', 'Categorical Substrate Team Mode', 'Concrete Primitive Register', 'Composition Geometry Selector', 'Freyd Category Diagnostic', 'Colored operad', 'Operadic substitution law',
+    'Boundary-trigger mandate', 'Boundary consideration itself is the activation signal',
+    'Activation is broad; escalation is narrow', 'Implementation', 'Resolution',
+    'Disposition: preserved / introduced / changed / repaired / removed / bypass-justified'
 ]
 for r in required:
     if r not in text:
         raise SystemExit(f'SKILL.md missing {r}')
+activation = Path('tests/golden/activation.yml').read_text()
+cases = {
+    prompt: should_use == 'true'
+    for prompt, should_use in re.findall(
+        r'^  - prompt: "([^"]+)"\n    should_use_skill: (true|false)$',
+        activation,
+        flags=re.M,
+    )
+}
+required_cases = {
+    'Implement an unrelated endpoint with no structural smell.': True,
+    'Implement the DTO-to-domain adapter for this endpoint while keeping its JSON wire shape stable.': True,
+    'Resolve this PR finding: the serializer drops provenance when internal records cross into the wire format.': True,
+    'Resolve the failing CLI test where parsed flags no longer reach the execution configuration.': True,
+    'Run $resolve on this PR; the accepted review repair changes the serializer boundary.': True,
+    'Rename a local variable inside a private helper without changing its inputs, outputs, effects, or ownership.': False,
+}
+for prompt, expected in required_cases.items():
+    if cases.get(prompt) is not expected:
+        raise SystemExit(f'activation contract mismatch for: {prompt}')
+print(f'boundary activation contract ok: {len(required_cases)} cases')
+output_invariants = Path('tests/golden/output-invariants.yml').read_text()
+for required_output in (
+    'boundary_trigger_requires_disposition',
+    'implementation or resolution considers a code boundary',
+    'Boundary and compatibility plan',
+    'Disposition',
+    'Owner',
+    'Source / target',
+    'Law',
+    'Falsifier',
+):
+    if required_output not in output_invariants:
+        raise SystemExit(f'boundary output invariant missing: {required_output}')
+print('boundary output invariant ok')
+guidance = Path('../../AGENTS.md').read_text()
+for required_guidance in (
+    'Universalist boundary mandate',
+    'Invoke `$universalist` whenever implementation, refactoring, review, migration, or resolution considers a code boundary',
+    'ordinary feature implementation and PR/review resolution, including `$resolve`',
+    'Activation is mandatory; escalation is proportional',
+    'Universalist team/subagent mode remains explicit-request only',
+):
+    if required_guidance not in guidance:
+        raise SystemExit(f'global Universalist guidance missing: {required_guidance}')
+print('global boundary mandate ok')
 print('metadata ok')
 PY
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null

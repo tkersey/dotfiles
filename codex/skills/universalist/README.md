@@ -207,4 +207,6 @@ The root agent synthesizes specialist packets into one Effective Universal Archi
 
 ## Invocation metadata
 
-The `SKILL.md` description is intentionally kept below 1024 characters and front-loads trigger words because Codex initially sees the skill name, description, and file path before loading full instructions.
+The `SKILL.md` description is intentionally kept below 1024 characters and front-loads the boundary trigger because Codex initially sees the skill name, description, and file path before loading full instructions.
+
+Implicit routing applies whenever implementation, review, or resolution considers how values, effects, state, evidence, authority, or behavior cross a code boundary. Activation is deliberately broader than architectural escalation: preserving an already exact boundary is a valid result.
