@@ -1,0 +1,44 @@
+{
+  "plan_source_contract": {
+    "contract_version": "PSC-v1",
+    "source_owner": "spec-pipeline",
+    "spec_id": "cas-review-proof",
+    "implementation_spec": "Normalize review proof surfaces and guard duplicate review attempts.",
+    "decision_packet": {
+      "goal": "Tuple-bound review proof",
+      "proof_bar": "validators and fixture-backed gates"
+    },
+    "sgr_v2": {
+      "spec_governance_receipt": {
+        "receipt_version": "SGR-v2",
+        "spec_id": "cas-review-proof",
+        "mode": "full",
+        "lane": "spec_to_plan",
+        "status": "complete",
+        "gate": {
+          "plan_allowed": "yes",
+          "material_open_questions_remaining": "no"
+        },
+        "lint": {
+          "verdict": "pass",
+          "blocked_handoff": "no"
+        },
+        "execution_handoff": {
+          "ready_for_plan": "yes",
+          "next_owner": "$plan",
+          "do_not_execute_before": []
+        },
+        "auto_plan_handoff": {
+          "eligible": "yes",
+          "invocation": "same_turn_tail_call"
+        }
+      }
+    },
+    "proof_bar": "All review receipt variants have deterministic classifier fixtures.",
+    "non_goals": [
+      "No mutation authority from $plan"
+    ],
+    "target_branch": "main",
+    "do_not_execute_before": []
+  }
+}

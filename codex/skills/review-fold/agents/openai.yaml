@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Review Fold"
   short_description: "Classify and quotient review findings"
-  default_prompt: "Use $review-fold to classify this current review source, quotient duplicate findings, and emit no-code dispositions or resolution inputs without selecting repairs."
+  default_prompt: "Use $review-fold to classify this current review source, quotient duplicate findings, validate RF-v2 through the pure Zig `ledger validate` command, and emit no-code dispositions or resolution inputs without selecting repairs or granting authority."

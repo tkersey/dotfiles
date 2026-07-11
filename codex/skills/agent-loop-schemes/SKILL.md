@@ -1,6 +1,6 @@
 ---
 name: agent-loop-schemes
-description: "Translate an accepted GoalContract into normalized actuation-run step topology. Use when work has repeated classes, migrations, debugging history, review campaigns, proof fanout, branch comparison, or nontrivial stopping conditions; remain advisory and never grant mutation or completion."
+description: "Translate an accepted GoalContract into normalized Zig actuation-operation topology. Use when work has repeated classes, migrations, debugging history, review campaigns, proof fanout, branch comparison, or nontrivial stopping conditions; remain advisory and never grant mutation or completion."
 ---
 
 # Agent Loop Schemes
@@ -8,12 +8,12 @@ description: "Translate an accepted GoalContract into normalized actuation-run s
 ## Mission
 
 Describe the smallest step topology that `$goal-actuating` can place inside
-`actuation-run/v1`.
+`actuation-open/v1` obligations and operations.
 
 ~~~text
 GoalContract
 -> run-topology-advice/v1
--> $goal-actuating selects and records steps
+-> $goal-actuating selects operations and obligation groups
 ~~~
 
 This skill owns topology advice only. It does not create execution authority,

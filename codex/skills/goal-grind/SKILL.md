@@ -1,63 +1,78 @@
 ---
 name: goal-grind
-description: "Execute exactly one lead-selected actuation-run step and return action evidence to the coordinator. Use after $goal-actuating has selected a node; do not create authority, choose scope, recurse, resolve review findings, or claim goal completion."
+description: "Execute exactly one lead-selected Zig actuation operation and return event-bound evidence to the coordinator. Use after $goal-actuating has prepared a capability; do not create authority, choose scope, recurse, resolve review findings, or claim goal completion."
 ---
 
 # Goal Grind
 
 ## Mission
 
-Execute one already-selected step with the smallest owner-correct change.
+Consume one already-prepared capability with the smallest owner-correct action.
 
 ~~~text
-selected step
--> bounded action
--> verifier output
+prepared actuation-operation/v1
+-> bounded effect
+-> Zig kernel observation
 -> action result
 -> return to $goal-actuating
 ~~~
 
-## Input
+## Ephemeral input
 
 ~~~yaml
-selected_step:
+selected_operation:
   run_id:
   step_id:
-  phase: implement | review-closeout
+  idempotency_key:
   owner_boundary:
   paths: []
   effect: inspect | edit | verify
-  verifier: []
-  step_admission: # immutable step-admission/v1
-  review_resolution_ref:
-  review_admission: # required for review edits
+  obligation_refs: []
+  capability: AKC1-...
+  review_resolution_ref: # review edits only
 ~~~
 
-Every action requires the gate-derived generic admission. For review-derived
-edits, `review_resolution_ref`, its selected work node, and the bound
-`review-admission/v1` are also required.
+The raw capability exists only in the active executor. Never persist, quote,
+log, or return it. Its digest and the complete admitted operation already live
+in the append-only event chain.
 
 ## Procedure
 
-1. Verify the step is the current lead-selected node in the run and both its
-   phase and immutable step admission match.
-2. Re-read the bounded paths before editing.
-3. Make the smallest change that fixes the owning cause.
-4. Prefer a replacement kernel when local repair would add semantic machinery
-   or preserve a dominated abstraction.
-5. Run the step verifier.
-6. Return changed paths, commands, observations, and failure signature.
-7. Stop. `$goal-actuating` owns evidence folding and continuation.
+1. Confirm `ledger state --source actuation --run RUN_ID` is `prepared` and its
+   pending step exactly matches the selected operation.
+2. Re-read the bounded paths.
+3. For `edit`, make only the owner-correct change on the admitted paths, then
+   consume and observe it:
+
+   ~~~bash
+   ledger record --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ledger observe --source actuation --run RUN_ID --step STEP_ID
+   ~~~
+
+4. For `inspect` or `verify`, let the kernel execute the obligation-owned
+   verifier:
+
+   ~~~bash
+   ledger execute --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ~~~
+
+5. Return changed paths, commands, transition event digests, observations, and
+   any failure signature. Stop after this one operation.
+
+Prefer `replacement-kernel` when local repair would add semantic machinery,
+distribute one invariant, or preserve a dominated abstraction.
 
 ## Output
 
 ~~~yaml
-step_action_result:
+operation_result:
   run_id:
   step_id:
+  idempotency_key:
   owner_boundary:
   changed_paths: []
   commands: []
+  kernel_event_refs: []
   observations: []
   result: passed | failed | blocked | regress
   failure_signature:
@@ -66,8 +81,8 @@ step_action_result:
 
 ## Guardrails
 
-- Do not select another step.
-- Do not create or loosen the goal contract.
+- Do not prepare or select another operation.
+- Do not create or loosen the GoalContract.
 - Do not implement raw review prose.
 - Do not perform public effects.
-- Do not mark the node or goal complete; return evidence to the coordinator.
+- Do not claim node or goal completion; return evidence to the coordinator.

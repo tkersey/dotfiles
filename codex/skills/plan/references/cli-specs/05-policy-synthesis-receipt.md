@@ -47,6 +47,8 @@ plan_id present
 source_digest present
 source_contract.kind present
 passes non-empty
+every pass disposition is a declared PSR-v1 disposition
+the final nine passes are the required lenses in order, all clean, with no material changes
 radical_candidate.disposition present
 convergence.complete_clean_sweep = true
 convergence.independent_press_pass_clean = true
@@ -59,3 +61,13 @@ If the plan comes from PSC-v1, `source_contract.source_owner=spec-pipeline` and
 `source_contract.spec_id` must be present.
 
 PSR-v1 does not expose private reasoning or draft iteration logs.
+
+Validate the canonical JSON projection with:
+
+```bash
+ledger validate policy-synthesis-receipt \
+  --input .ledger/plan/<plan-id>/synthesis-receipt.json
+```
+
+The command emits `ledger-validate-decision/v1`, performs no storage mutation,
+and grants no execution authority.

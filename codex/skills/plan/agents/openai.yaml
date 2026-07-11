@@ -7,7 +7,8 @@ interface:
     Use $plan to compile accepted intent or a PSC-v1 source contract from
     $spec-pipeline into a source-bound execution policy with an immutable plan_id,
     explicit resource predictions, proof, rollback, and a handoff to the
-    $actuating handoff. Validate PSC-v1 before planning, preserve
+    $actuating handoff. Validate PSC-v1 and PSR-v1 through the pure Zig
+    `ledger validate` command before handoff, preserve
     $spec-pipeline's semantic authority, internally iterate the policy to a fixed
     point, run the mandatory radical creativity candidate, emit a compact PSR-v1
     synthesis receipt, and never infer an existing plan or grant mutation

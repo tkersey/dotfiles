@@ -1,287 +1,151 @@
 # Closure
 
-`closure-decision/v1` is a pure live recomputation. It does not trust summary
-booleans or a previously issued decision.
+`closure-decision/v1` is a live Zig projection of one folded actuation kernel
+generation. It never accepts caller-authored success flags or a previously
+issued completion decision.
 
-## Inputs
+## Authority source
+
+The only executable closure path is:
+
+~~~bash
+ledger doctor --source actuation
+ledger state --source actuation --run RUN_ID
+ledger close --source actuation --run RUN_ID
+ledger decide --source actuation --run RUN_ID
+~~~
+
+The append-only `.ledger/actuation/events.jsonl` chain is authoritative.
+YAML/prose summaries, saved command output, and hand-authored receipts are not.
+
+## Fold conditions
+
+`doctor` validates:
+
+- `actuation-event/v1` schema;
+- global monotonic sequence;
+- predecessor digest continuity;
+- body and event digests;
+- legal per-run state transitions;
+- unique run, step, obligation, and idempotency identities;
+- exact verifier inheritance from cited obligations;
+- single capability consumption;
+- terminal obligation conservation.
+
+`close` additionally observes the current Git repository. It succeeds only
+when:
 
 ~~~text
-current repository state
-actuation-run/v1
-embedded step-admission/v1 for every completed action
-implementation-checkpoint/v1 for bare review-closeout
-review-resolution/v1 when review is required
-embedded review-admission/v1 for every completed review edit
-EF-v1 evidence for every completed material step
-CAS-RER-v1 records for selected review lanes
-SHIP-v1 when publication was requested and performed
+phase == ready
+pending_step == null
+outstanding_obligations == []
+live_artifact_digest == folded_artifact_digest
 ~~~
 
-Repository input is canonicalized to the Git worktree root and the base to its
-full commit identity before any path authorization. Every workflow input must
-bind to the same repository, base, branch, head, and live-state fingerprint. An
-index carrying `assume-unchanged`
-or `skip-worktree` flags blocks as `blocked-index-observer-flags`; closure does
-not simulate content hidden from the observer. A tracked regular path that Git
-reports clean must retain its index blob and executable mode in the raw
-worktree; filter, line-ending, or `core.fileMode` aliases block as
-`blocked-worktree-observer-alias`. One root gitlink layer is
-observed, including its live index flags. A gitlink declared inside that layer
-in either HEAD or the index blocks as `blocked-nested-gitlink-observer`; a
-retained untracked embedded-repository marker blocks likewise. Nested topology
-is outside the observer domain rather than recursively approximated. Unmerged
-index stages block as `blocked-unmerged-index`; combined diffs are not admitted
-as partial evidence. CAS
-additionally carries its producer-native opaque `targetFingerprint`; do not
-relabel a local state digest as that field.
+An invalid chain, stale artifact, open operation, failed verifier, or uncovered
+obligation blocks closure.
 
-## Evidence-fold requirements
+## Decision projection
 
-Each completed step resolves its exact `evidence_fold_ref`. Evidence must:
+Before close, `decide` returns `continue` and names the fold's
+`next_transition`. After close, it returns the immutable completion route bound
+at `open`: `ready-to-ship` or `complete`.
 
-- identify the same run and step;
-- bind to the current step artifact;
-- support the step's done claim;
-- contain no proof gap or stale binding;
-- report no deleted tests, weakened assertions, skipped checks, reduced
-  coverage, or out-of-goal behavior.
-
-Malformed evidence, including a null evidence body, produces a structured
-blocking reason and never escapes the closure gate.
-
-Every completed action preserves the exact `step-admission/v1` derived while
-that action was selected against its state-before artifact. The receipt binds
-run and step identity, original invocation profile, phase, predecessor prefix,
-effect, owner, paths, verifier, and any specialized review-admission digest.
-Changing any of those fields after admission or constructing a terminal step
-directly blocks as `blocked-step-admission`.
-
-For a selected review edit, the gate derives `review-admission/v1` only after
-the live resolution exactly selects that step's node, owner boundary, paths,
-and verifier. Embed that receipt as the step's `review_admission` before
-mutation. Its exact payload is the full admission-time `review_resolution`, an
-`observations` block containing review source refs, changed paths, and hunk
-IDs, an optional full SHIP-v1 snapshot, and its canonical `admission_digest`.
-A NUL-delimited root-path inventory is paired with forced short submodule diff
-sections, so patch text, path quoting, and local diff configuration cannot
-impersonate or multiply observer control records.
-The step remains the sole source of run, artifact, node, owner, paths, and
-verifier facts. Completed-step validation replays the same resolution laws
-against those step facts and the receipt observations; EF-v1 cites
-`review-admission:<admission_digest>` in `review_refs`. The final resolution
-does not retroactively relabel an earlier mutation admission, but every node it
-marks resolved must still match exactly one completed admitted edit by node,
-owner boundary, paths, and verifier.
-
-The resolution inverse assigns each non-empty abstraction exactly one
-disposition across all decisions and consumes each RF-v2 equivalence class in
-exactly one decision. Liability and retirement balance fields are exact lists
-of non-empty strings; malformed elements never collapse into accepted empty
-evidence. Live hunk identity remains in the admission observation, while
-admitted step transitions supply path provenance. Added-construct accounting is
-a validated declaration; the gate does not independently discover omitted
-language constructs.
-
-Before a later iterative step is admitted, every initial-to-live path-state
-delta must already appear in prior completed steps' exact `changed_paths`.
-Untouched initial dirt remains user-owned; carried, unclaimed dirt cannot be
-assigned to a newly selected step.
-
-Node completion remains distinct from goal completion.
-
-## CAS requirements
-
-CAS transports review evidence. Closure derives workflow meaning.
-
-Each closeout record carries:
-
-~~~yaml
-workflowBinding:
-  actuationRunId:
-  artifactStateFingerprint:
-  reviewContractFingerprint:
-  resolutionDigest:
-  selectedLenses: [standard]
-  reviewLane: standard
-  lensContract: standard-review-v1
+~~~json
+{
+  "closure_decision": {
+    "version": "closure-decision/v1",
+    "decision_id": "sha256:...",
+    "run_id": "goal-17:g0",
+    "evaluated_artifact": {
+      "repo": "/absolute/repo",
+      "state_fingerprint": "sha256:..."
+    },
+    "run_digest": "sha256:...",
+    "resolution_digest": null,
+    "verdict": "continue | ready-to-ship | complete",
+    "outcomes": {
+      "goal_outcome": "continue | complete",
+      "implementation_outcome": "incomplete | complete",
+      "next_owner": "goal-actuating | ship | none"
+    },
+    "evidence_basis": [
+      {"obligation_id": "tests", "step_id": "step-1"}
+    ],
+    "review_basis": [],
+    "ship_basis": [],
+    "implementation_checkpoint": null,
+    "reasons": ["next-transition:prepare"]
+  }
+}
 ~~~
 
-The record tuple must match the live repository, base, and head; its non-empty
-native `targetFingerprint` must be identical across the records. The workflow
-binding joins that tuple to the live-state fingerprint. The closure gate must
-query the complete current `CAS-LIST-v1` envelope itself through `cas review
-list --cwd <repo> --base <base> --codex-thread-id <id> --json`. It may use
-`review_session list` only when that exact action is advertised; a saved or
-caller-selected set is not closure evidence. Standard credit requires a
-normalized, source-valid strong-principal
-record whose matching `recordRefs` row has `proofCreditEligible: true`, with a
-distinct record and attempt ID. Ineligible clean records remain visible but
-grant no credit; ineligible findings still require classification. Attempt
-identity, chronology, and freshness are validated over the complete visible
-current-epoch sequence before proof eligibility filters clean credit. Every
-record after the first must originate from an explicit fresh attempt.
+The decision digest covers the folded run state, verdict, outcomes, next owner,
+and next transition. The run digest covers authority, source, terminal route,
+repository, artifact, paths, obligations, verifier commands, discharge
+bindings, step identities, idempotency identities, and any pending operation.
+Each obligation is classified as `implementation`, `review`, `ship`, or
+`acceptance`; `decide` routes its discharge binding into `evidence_basis`,
+`review_basis`, or `ship_basis` without accepting caller-authored basis lists.
 
-Partition tuple history by the producer-owned workflow binding before granting
-credit. Discard records bound to a foreign `actuationRunId` before tuple or
-native target-fingerprint accounting. Superseded epochs grant no credit, but a
-findings record remains blocking until a current RF-v2 source cites that record.
-Any findings verdict in the exact current epoch poisons that epoch permanently;
-later clean attempts cannot clear it. Remediation requires a newly bound
-resolution epoch.
+## Goal and implementation outcomes
 
-Sort the complete current binding sequence by `createdAt`. Closure requires the
-maximal clean suffix to contain at least three consecutive standard attempts.
-Caller-authored auxiliary labels are observational and grant no credit. Any
-artifact, review-contract, resolution, or publication epoch change creates a
-new binding and resets prior credit. When `review.ship_receipt` exists, the
-binding's `resolutionDigest` is derived from the resolution's verified
-self-digest and the canonical digest of that complete SHIP-v1 snapshot.
+Keep these separate:
 
-Publication-bound closure also observes the live PR's `updatedAt` as a
-conservative watermark before and after the exhaustive CAS list and once more
-before closure. A current-binding record whose `createdAt` is not strictly later
-than the latest observation is treated as superseded: it grants no clean credit,
-while any findings still require current RF-v2 classification. If the watermark
-advances during closure, the credited basis is discarded. This deliberately
-means a later PR metadata update resets the clean suffix and requires three
-newer attempts.
+| Fold | Verdict | Goal | Implementation | Next owner |
+|---|---|---|---|---|
+| Open generation | `continue` | `continue` | `incomplete` | `goal-actuating` |
+| Closed `ready-to-ship` generation | `ready-to-ship` | `continue` | `complete` | `ship` |
+| Closed `complete` generation | `complete` | `complete` | `complete` | `none` |
 
-Watermark observations must be monotone; a regression blocks closure instead
-of lowering the boundary. CAS record identities and same-run producer attempt
-identities are unique across the full exhaustive snapshot, including superseded
-and current publication epochs.
+One completed operation never completes the parent goal. Only a closed terminal
+generation can project `goal_outcome: complete`.
 
-## Outcomes
+## Bare lifecycle
 
-~~~yaml
-closure_decision:
-  version: closure-decision/v1
-  decision_id:
-  run_id:
-  evaluated_artifact: {}
-  run_digest:
-  resolution_digest: # null when review is not required
-  verdict: complete | ready-to-ship | continue | blocked
-  outcomes:
-    goal_outcome: complete | continue | blocked
-    implementation_outcome: complete | incomplete | not-applicable
-    next_owner: none | goal-actuating | ship | human
-  evidence_basis: []
-  review_basis: []
-  ship_basis: []
-  implementation_checkpoint: {} | null
-  reasons: []
+The ordered bare pipeline uses distinct immutable generations under one
+`goal_id`:
+
+~~~text
+g0 implementation, completion=ready-to-ship
+  -> close
+  -> Zig decision ready-to-ship
+  -> $ship
+g1 review-closeout, completion=complete
+  -> closure-grade review obligations
+  -> close
+  -> Zig decision complete
 ~~~
 
-No-code modes may return goal `complete` with implementation
-`not-applicable`.
+The second generation's GoalContract digest must bind the accepted SHIP-v1 and
+current review source/resolution identities. It cannot relabel or reopen `g0`.
+A review repair that changes the published artifact uses another
+`ready-to-ship` generation; its final post-publication proof uses a new
+`complete` generation.
 
-Material work with no publication request completes locally. In the bare
-lifecycle, implementation hands off to `$ship`, then continues through
-`review-closeout` in the same run before final closure is recomputed; ship
-handoff is not a terminal goal state. A valid implement-phase SHIP-v1 returns
-verdict and goal `continue`, implementation `complete`, next owner
-`goal-actuating`, and the gate-derived implementation checkpoint. The
-checkpoint binds the immutable implementation prefix and first SHIP receipt;
-resetting `artifact_initial`, dropping an implementation step or EF-v1, or
-reconstructing a fresh review run invalidates it.
-Publication-bearing review-closeout requires that prior valid SHIP-v1 and may
-then complete after current review proof closes. Preserve the complete receipt
-as `review.ship_receipt`; the run gate validates its live PR and artifact
-binding before deriving any review admission. The admission records publication
-intent by snapshotting that complete SHIP receipt. After an edit and EF-v1, a current
-resolved refold must observe that exact admitted node; closure then returns
-`ready-to-ship` before CAS. `$ship` updates the PR and replaces
-`review.ship_receipt` before final CAS. An unresolved review may instead admit
-another adjacent edit against the same publication only through the derived
-continuation receipt described below.
+## Review and publication evidence
 
-Final review-closeout consumes only the current embedded receipt; a duplicate
-external SHIP input is invalid. CAS produced before that replacement belongs to
-the prior publication epoch and grants no credit afterward. The replacement
-must report `updated` / `update-existing`, retain an
-existing PR, and use the exact PR URL captured by the prior admission; creating
-a second PR cannot continue the review epoch.
+Review, SHIP, and CAS remain owned by their respective skills and CLIs. The
+kernel does not reproduce those policy engines. Instead, the accepted
+GoalContract projects every required current proof into verifier-backed
+obligations before the generation opens.
 
-Before every repair admission, refresh the live review sources against the
-current local artifact and construct fresh RF-v2 folds that include a new
-producer batch and a pending resolution.
-If the retained PR and SHIP still publish the original artifact, the gate may
-derive this optional field inside the next `review-admission/v1`:
+Publication-bound closure must therefore include obligations for the current
+SHIP binding, current resolution, exact changed artifact, fresh CAS evidence,
+and any repository-specific review-thread sweep. If a required proof has no
+executable verifier, the generation is not openable.
 
-~~~yaml
-publication_continuation:
-  version: same-publication-continuation/v1
-  publication_epoch: <canonical digest of the unchanged SHIP-v1>
-  published_artifact: <artifact still published by that SHIP-v1>
-  predecessor:
-    step_id: <adjacent completed review edit>
-    evidence_fold_ref: <that edit's EF-v1>
-    evidence_fold_digest: <canonical digest of that exact EF-v1 content>
-    review_admission_digest: <that edit's admission digest>
-~~~
+After any published head change, prior tuple-bound review observations are
+stale; open a new generation with new obligation identities and current
+verifiers. `$ship` remains the only public-effect owner.
 
-The field is gate output, not caller input or a fourth control object. The
-adjacent predecessor must be a completed `ready-for-closure` review edit under
-the same SHIP. The pending resolution must strictly extend the prior material
-finding set, preserve every prior review source reference, use
-fold IDs disjoint from every admitted fold in that publication epoch, include
-new producer source-batch identities that support every introduced finding,
-preserve each retained source's producer backend, and select the next edit. The
-live PR must still match the bound published artifact. Each succeeding edge is
-derived anew and may repeat under those same laws; no authority reference or
-use counter can grant or limit it.
+## Failure behavior
 
-Reserved derived-receipt keys are invalid anywhere in a caller-supplied run,
-resolution, or SHIP input except at the gate-emitted nested receipt locations.
-
-Material finding semantics are injective across IDs. A clone of an admitted
-`claim`, `observed_fact`, `validity`, `liability`, `intent_relation`,
-`quotient_key`, `owner_boundary`, `law_family`, and `falsifier` under a new ID
-is a duplicate, not strict growth, and cannot derive continuation. Boundary
-whitespace, whitespace-run changes, and canonically equivalent Unicode do not
-create a distinct semantic identity.
-
-After the final repair, the resolved re-fold must preserve exactly the findings
-and all source references admitted during the epoch while using fold IDs
-disjoint from the admission history and another new producer batch that carries
-material evidence. A newly observed material finding keeps the resolution
-pending and requires another admitted continuation. Before `ready-to-ship`, the
-retained PR must still match the admission-bound published artifact. Then
-`$ship` republishes the exact resolved local head to that PR once. That
-publication change resets CAS credit to zero, so final closure requires three
-fresh ordered standard attempts against the new receipt; no pre-reship attempt
-counts.
-
-Once a publication-bearing repair has been admitted, a later `clean` resolution
-cannot erase that history. Terminal review must remain `resolved` and account
-for the exact admitted material finding set.
-
-Replacing SHIP starts a new publication and CAS epoch but does not erase the
-cumulative admitted finding set, source references, or source-to-producer
-lineage. The first repair admission after reship must strictly extend that
-history with current evidence.
-
-A prior review edit ending `ready-for-closure` otherwise admits a following
-selected step only when the canonical digest of its SHIP snapshot differs from
-the newly embedded receipt. Prior EF-v1 and live validation of that fresh
-receipt remain mandatory.
-
-SHIP-v1 is an immutable pre-review publication handoff. Its exact
-`actuation_binding` contains only `actuation_run_id` and `state_fingerprint`;
-review-contract, resolution, lens, and CAS fields are not part of this object.
-Never extend or relabel it with the later review epoch; final closure validates
-current resolution and CAS evidence separately. Closure queries live PR
-metadata and requires its repository, base ref and SHA, head ref and SHA, URL,
-open state, and ready status to match the current run and SHIP result.
-
-A clean review epoch closes with no current-phase action step. CAS transport,
-review folding, and clean resolution construction are coordinator observations,
-not synthetic `verify` actions. A valid `continue` decision, like `complete`
-and `ready-to-ship`, exits zero; blocked and malformed decisions exit two.
-
-The final proof-patch is a derived human view emitted after the current closure
-decision. It is never an input to that decision.
-
-An `implement` run cannot declare `review.required: true`; review-required work
-uses `review-closeout`. A mode relabel cannot erase admission history.
+- A valid `continue`, `ready-to-ship`, or `complete` decision exits zero.
+- A failed executed verifier emits a transition result with `passed: false` and
+  exits two.
+- Malformed input, invalid state, stale artifact, replay, and unavailable
+  dependencies emit `actuation-error/v1` and exit two.
+- Invalid command syntax uses the standard `ledger` usage failure.
+- `proof-patch` may render only a current `complete` decision whose repository
+  fingerprint still matches.

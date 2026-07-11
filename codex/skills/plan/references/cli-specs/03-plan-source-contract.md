@@ -51,7 +51,7 @@ fields are missing or contradictory, `$plan` returns to `$spec-pipeline` or
 ```text
 SGR-v2 complete
 -> PSC-v1
--> plan_source_contract_gate.py
+-> ledger validate plan-source-contract
 -> plan identity
 -> policy synthesis fixed point
 -> PSR-v1
@@ -68,3 +68,6 @@ planning from PSC-v1 when next_owner != $plan
 planning from PSC-v1 when do_not_execute_before is non-empty
 silently repairing missing spec decisions inside $plan
 ```
+
+The executable projection is canonical JSON even when prose documents display
+the schema in YAML for readability.

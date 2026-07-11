@@ -4,6 +4,10 @@
     "plan_id": "PLAN-example-rejected-radical",
     "revision": 1,
     "source_digest": "sha256:41cf6794ba4200b839c53531555f0f3998df4cbb01a4d5cb0b94e3ca5e23947d",
+    "source_contract": {
+      "kind": "direct",
+      "source_owner": "user"
+    },
     "initial_policy_digest": "sha256:04830f896399d045744d5c9c2de2153359e2cd60fe8d1648d0a6ac4aae6de21b",
     "final_policy_digest": "sha256:04830f896399d045744d5c9c2de2153359e2cd60fe8d1648d0a6ac4aae6de21b",
     "passes": [

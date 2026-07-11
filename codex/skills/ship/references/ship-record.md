@@ -32,14 +32,13 @@ ship_record:
 
 `actuation_binding` is required when `source=actuation` and the readiness mode
 is ready, update-existing, or promote-draft. It is omitted for direct shipping.
-The exact two-field binding is copied from the current implementation or
-review-repair `closure-decision/v1`: run ID and state fingerprint are preserved.
+The exact two-field binding is copied from the current Zig implementation or
+review-repair `closure-decision/v1`: kernel run ID and state fingerprint are preserved.
 It must not be reconstructed from PR text, extended with review fields, or
 relabeled with later review-closeout evidence. SHIP-v1 is immutable evidence for
-one publication epoch. The ordered actuation lifecycle embeds the complete
-first receipt unchanged in `implementation-checkpoint/v1`, copies it to
-`review.ship_receipt` before the same run enters publication-bearing
-review-closeout, then replaces only the current review field with a fresh
-SHIP-v1 after any proved review edit returns `ready-to-ship`.
-That replacement reports `updated` / `update-existing`, retains
+one publication epoch. The ordered actuation lifecycle binds that receipt into
+the GoalContract digest of a new review generation under the same goal ID. A
+proved review edit closes another `ready-to-ship` generation and produces a
+fresh SHIP-v1 for the retained PR. That replacement reports `updated` /
+`update-existing`, retains
 `existing_pr.exists: true`, and uses the exact prior receipt's PR URL.

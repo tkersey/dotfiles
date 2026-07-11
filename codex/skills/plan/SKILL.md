@@ -1,10 +1,6 @@
 ---
 name: plan
 description: "Compile accepted intent or a `$spec-pipeline` PSC-v1 source contract into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to `$actuating`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an execution plan."
-metadata:
-  version: "4.2.0"
-  activation_cost: medium
-  default_depth: balanced
 ---
 
 # Plan
@@ -67,10 +63,11 @@ plan_source_contract:
   do_not_execute_before: []
 ```
 
-Validate PSC-v1 before planning:
+Materialize the executable projection as canonical JSON and validate PSC-v1
+before planning:
 
 ```bash
-uv run python codex/skills/plan/tools/plan_source_contract_gate.py <psc-file>
+ledger validate plan-source-contract --input <psc-json-file>
 ```
 
 Fail closed when:
@@ -97,7 +94,7 @@ repair missing semantics by inventing scope, non-goals, compatibility, or proof
 bar.
 
 See [03-plan-source-contract.md](references/cli-specs/03-plan-source-contract.md)
-and [04-plan-source-contract-gate.md](references/cli-specs/04-plan-source-contract-gate.md).
+and [04-plan-source-contract-validation.md](references/cli-specs/04-plan-source-contract-validation.md).
 
 ## Artifact root
 
@@ -320,6 +317,8 @@ policy_synthesis_receipt:
 ```
 
 The receipt proves synthesis happened; it does not expose private reasoning.
+Its final nine passes must be one ordered, zero-material-delta sweep across the
+required lenses. Earlier changed passes may precede that clean suffix.
 
 The final `<proposed_plan>` should include a concise `Policy Synthesis Receipt`
 section or a reference to the persisted receipt.
@@ -327,7 +326,8 @@ section or a reference to the persisted receipt.
 Validate:
 
 ```bash
-uv run python codex/skills/plan/tools/policy_synthesis_receipt_gate.py   .ledger/plan/<plan-id>/synthesis-receipt.json
+ledger validate policy-synthesis-receipt \
+  --input .ledger/plan/<plan-id>/synthesis-receipt.json
 ```
 
 See [05-policy-synthesis-receipt.md](references/cli-specs/05-policy-synthesis-receipt.md).
@@ -392,15 +392,20 @@ Execution still requires:
 
 ~~~text
 accepted actuation source and execution authority
-current actuation-run/v1 artifact binding
-one selected step before material mutation
+current actuation-kernel-state/v1 artifact binding
+one prepared actuation-operation/v1 before material mutation
 current evidence before continuation
 review-resolution/v1 when review drives work
-live closure-decision/v1 before completion
+live Zig closure-decision/v1 before completion
 ~~~
 
 The plan handoff must keep `mutation_allowed: no`. `$goal-actuating` creates
 the executable run only after current authority is established.
+
+Legacy policy selectors, checkpoints, transition receivers, and human-plan
+linters are not execution owners. Do not recreate or invoke their retired
+second-language tools. `$plan` produces policy; the Zig actuation kernel alone
+controls material execution.
 
 ## Output
 

@@ -7,11 +7,12 @@ description: "Fold tests, diffs, logs, benchmarks, screenshots, review results, 
 
 ## Mission
 
-Consume implementation and proof evidence into a node-level decision.
-The completed action must preserve its pre-action `step-admission/v1`; EF-v1
-binds to that admitted action through the same run ID, step ID, artifact
-transition, and exact changed paths. Evidence cannot make an unadmitted
-terminal step reachable.
+Consume implementation and proof evidence into a node-level decision. For Zig
+actuation, the completed action must cite its pre-effect
+`actuation-operation-prepared/v1` event and terminal
+`actuation-operation-observed/v1` event. EF-v1 binds through the same run ID,
+step ID, artifact transition, and exact changed paths. Evidence cannot make an
+unadmitted terminal operation reachable.
 
 ```text
 EvidenceTree -> Verdict
@@ -66,11 +67,11 @@ evidence_fold:
     reason:
 ```
 
-For actuation, `run_id` and `step_id` are the exact `actuation-run/v1`
-identities. `artifact_state` is the post-step binding; `changed_paths` is the
-observed path set and must equal the completed step claim. A closure-eligible
-completed step requires `progress.status=done`, `supports_done_claim=yes`, no
-proof gaps, and `recommendation.action=stop`.
+For actuation, `run_id` and `step_id` are the exact Zig kernel generation and
+operation identities. `artifact_state` is the post-operation binding;
+`changed_paths` must equal the kernel-observed path set. A closure-eligible
+operation requires `progress.status=done`, `supports_done_claim=yes`, no proof
+gaps, `recommendation.action=stop`, and a passing kernel observation.
 
 ## Procedure
 

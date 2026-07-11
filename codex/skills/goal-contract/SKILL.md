@@ -8,8 +8,9 @@ description: "Compile an accepted goal, implementation spec, review campaign, mi
 ## Mission
 
 Compile intent into the smallest source-bound contract that can be projected
-into `actuation-run/v1`. This skill records authority; it does not grant,
-select, or execute mutation.
+into the Zig kernel's `actuation-open/v1` authority, path scope, terminal route,
+and verifier-backed obligations. This skill records authority; it does not
+grant, select, or execute mutation.
 
 ## GC-v2
 
@@ -85,6 +86,12 @@ goal_contract:
    simulate claims or fencing.
 8. Hand the contract to `$goal-actuating`. Use `$goal-workgraph` only when
    decomposition changes execution.
+9. Assign every success predicate to at least one exact verifier command and
+   `implementation`, `review`, `ship`, or `acceptance` proof kind before
+   opening a material kernel generation; an unobservable obligation blocks.
+10. Inspect the complete source-to-open projection before `ledger open --source
+    actuation`; the kernel conserves accepted obligations but cannot recover an
+    omitted predicate.
 
 ## Guardrails
 

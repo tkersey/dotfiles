@@ -3,35 +3,36 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: mixed
-    source_fingerprint: actuating-live-semantics-v1
+    source_fingerprint: actuating-zig-kernel-v1
+
   triggers:
     - trigger_id: ACT-IMPLEMENT
-      description: Bare invocation runs implement, ship, review-closeout, then final closure; explicit implement stops after implementation.
+      description: Bare invocation runs implementation generation, ship, review generation, and final closure; explicit implement stops after a complete local generation.
       cue_literals: [$actuating, /goal $actuating, $actuating implement, implement accepted work, execute accepted plan]
       cue_regexes: []
       exclusions: []
     - trigger_id: ACT-REVIEW
-      description: Review should default to no-code triage unless mutation is explicit.
+      description: Review defaults to no-code triage unless mutation is explicit.
       cue_literals: [review, triage, remediation-plan, review-closeout]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-RESOLVE
-      description: Classified findings require an owner-boundary resolution before mutation.
-      cue_literals: [review-resolution/v1, replacement-kernel, local-repair]
-      cue_regexes: []
-      exclusions: []
     - trigger_id: ACT-CLOSE
-      description: A goal or implementation completion claim requires live closure recomputation.
-      cue_literals: [closure-decision/v1, complete, ready-to-ship]
+      description: Completion requires a live closed Zig kernel generation and closure-decision/v1.
+      cue_literals: [ledger --source actuation, closure-decision/v1, complete, ready-to-ship]
       cue_regexes: []
       exclusions: []
+
   routes:
-    - route_id: ACT-RUN
-      description: Create or continue an actuation-run/v1 under current authority.
-      aliases: [actuation-run, execute]
+    - route_id: ACT-OPEN
+      description: Project a current GoalContract into actuation-open/v1 and open one immutable generation.
+      aliases: [open, execute]
+      terminal: "no"
+    - route_id: ACT-STEP
+      description: Prepare and consume one capability-bound operation selected from the current kernel projection.
+      aliases: [prepare, record, execute, observe]
       terminal: "no"
     - route_id: ACT-TRIAGE
-      description: Classify review evidence without mutation.
+      description: Classify review evidence without mutation or a material kernel generation.
       aliases: [triage, review-only]
       terminal: "yes"
     - route_id: ACT-REMEDIATION
@@ -39,54 +40,52 @@ skill_decision_contract:
       aliases: [remediation-plan]
       terminal: "yes"
     - route_id: ACT-REVIEW-CLOSEOUT
-      description: Refresh live review sources, resolve cumulative findings, execute the current selected node, and acquire closure-grade review evidence.
+      description: Refresh review evidence, select one resolution node, and execute it through a review-bound kernel generation.
       aliases: [review-closeout]
       terminal: "no"
     - route_id: ACT-CLOSURE
-      description: Recompute closure-decision/v1 from current joined evidence.
-      aliases: [closure, complete]
+      description: Close the generation and project closure-decision/v1 in Zig.
+      aliases: [close, decide, complete]
       terminal: "yes"
     - route_id: ACT-SHIP-HANDOFF
-      description: Publish immutable pre-review SHIP evidence, then continue bare invocation into review-closeout.
+      description: Hand a ready-to-ship Zig decision to ship, then continue the bare goal in a new review generation.
       aliases: [ship-handoff]
       terminal: "no"
     - route_id: ACT-BLOCK
-      description: Stop on missing authority, stale binding, unresolved review, invalid proof, or unsupported coordination.
+      description: Stop on missing authority, stale state, invalid capability, uncovered obligation, unresolved review, failed verifier, or unsupported coordination.
       aliases: [blocked]
       terminal: "yes"
+
   clauses:
-    - clause_id: ACT-AUTHORITY-001
+    - clause_id: ACT-KERNEL-001
       trigger_refs: [ACT-IMPLEMENT]
-      expected_routes: [ACT-RUN, ACT-SHIP-HANDOFF, ACT-REVIEW-CLOSEOUT, ACT-CLOSURE, ACT-BLOCK]
+      expected_routes: [ACT-OPEN, ACT-STEP, ACT-CLOSURE, ACT-SHIP-HANDOFF, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [actuation-run/v1, immutable invocation profile, current source and artifact binding, step-admission/v1 before every action, implementation-checkpoint/v1 before bare review-closeout]
-      success_signals: [scope source remains distinct from execution authority, bare invocation orders implement then ship then review-closeout then final closure in one continuous run, valid ship returns a recomputable implementation checkpoint with goal continuation and implementation complete, unresolved adjacent repairs use a gate-derived same-publication continuation, the resolved repair head returns to ship before CAS, republishing updates the same retained PR URL and resets CAS credit to zero, explicit implement stops after implementation]
-      failure_signals: [plan grants mutation by itself, invocation profile is relabeled, bare invocation skips or reorders a phase, a fresh review run discards implementation provenance, terminal action lacks step admission, caller-authored continuation authority or a use counter grants mutation, pre-reship CAS receives closure credit, repair shipping creates a second PR, ship handoff terminates bare invocation, SHIP receipt is relabeled with the review epoch, explicit implement publishes or enters review-closeout, unsupported controller is simulated]
-      rationale: Execution authority belongs to the run, while invocation syntax selects the ordered lifecycle boundary.
+      required_artifacts: [GC-v2, actuation-open/v1, actuation-event/v1, actuation-kernel-state/v1, closure-decision/v1]
+      success_signals: [source and execution authority remain distinct, every terminal predicate has an executable obligation, every effect is prepared before execution, the event fold conserves obligations, /goal alone repeats, a closed generation projects its immutable terminal route]
+      failure_signals: [plan grants mutation, post-hoc preparation, caller success flag, duplicate idempotency key, path escape, verifier substitution, operation claims parent completion, CLI owns a recursive loop, another language participates in actuation decisions]
+      rationale: The Zig kernel owns causal execution and live closure while /goal owns fixed-point iteration.
+
     - clause_id: ACT-REVIEW-001
       trigger_refs: [ACT-REVIEW]
       expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [current live review source batch before every repair admission, review-fold classification before review resolution, prior SHIP-v1 in review.ship_receipt when publication was requested, gate-derived step-admission/v1 and review-admission/v1 before review mutation, predecessor EF-v1 for same-publication continuation]
-      success_signals: [unqualified review selects triage, clean closeout creates no synthetic action, publication-bearing closeout validates SHIP before admission, generic admission binds the specialized review digest, admission snapshots the full resolution observer facts and optional prior SHIP, continuation preserves cumulative finding semantics and source producer lineage across SHIP epochs with fresh fold and batch identities supporting introduced findings, terminal resolution exactly matches admitted findings, explicit closeout is required for review-derived mutation, completed review edits preserve both receipts]
-      failure_signals: [raw finding becomes a patch, stale review source authorizes a repair, findings regress or are relabeled across a continuation or replacement SHIP, an admitted finding is cloned under a new ID to forge growth, a source changes producer backend, a fold identity is replayed within the current publication epoch or an introduced finding relies only on stale producer batches, terminal resolution adds an unadmitted material finding, clean erases admitted publication repair history, publication-bearing review mutation precedes SHIP, no-code mode selects a work node, review-required run is relabeled implement, final resolution retrospectively relabels mutation admission]
-      rationale: Review evidence is not mutation authority.
-    - clause_id: ACT-RESOLUTION-001
-      trigger_refs: [ACT-RESOLVE]
-      expected_routes: [ACT-RUN, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
-      prohibited_routes: []
-      required_artifacts: [review-resolution/v1, owner-boundary strategy, abstraction account, semantic balance]
-      success_signals: [one selected owner node, one decision consumes each RF-v2 equivalence class, every resolved node matches one completed admitted edit, one compatible disposition per abstraction, every declared added construct replaces a distinct named construct]
-      failure_signals: [one node per comment, one quotient class splits across decisions, resolved resolution names an unexecuted node, retain combines with retire collapse or replace for one abstraction, local repair adds machinery, dominated abstraction remains]
-      rationale: Resolution should remove the owning cause instead of accumulating review patches.
+      required_artifacts: [current review source, RF-v2 before resolution, review-resolution/v1 before mutation, GoalContract obligations for current review and publication evidence]
+      success_signals: [unqualified review selects triage, current resolution selects at most one owner node, review mutation uses a prepared Zig capability, final published artifact receives fresh closure-grade evidence]
+      failure_signals: [raw finding becomes a patch, stale review source authorizes mutation, findings regress across reship, review mutation bypasses the kernel, public effects bypass ship]
+      rationale: Review evidence names liabilities; it never grants execution authority.
+
     - clause_id: ACT-CLOSURE-001
       trigger_refs: [ACT-CLOSE]
       expected_routes: [ACT-CLOSURE, ACT-SHIP-HANDOFF, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [closure-decision/v1, current evidence folds, actual CAS records when review is required]
-      success_signals: [goal and implementation outcomes are separate, three standard attempts are derived from distinct records created after the stable post-list PR updatedAt watermark, final repair reship or later PR metadata change resets prior CAS credit to zero]
-      failure_signals: [opaque proof reference, scalar clean count, prepublication or pre-watermark CAS attempt receives final credit, PR watermark advances without resetting credited basis, a PR watermark observation regresses, duplicate CAS record or producer attempt identity crosses publication epochs, replayed completion decision, proof-patch precedes closure]
-      rationale: Completion must be a live join over current evidence.
+      required_artifacts: [closed actuation-kernel-state/v1, current repository digest, closure-decision/v1]
+      success_signals: [outstanding obligations are empty, no operation is pending, live and folded artifacts match, ready-to-ship continues to ship, complete terminates the goal]
+      failure_signals: [open obligations, stale artifact, replayed decision, scalar proof count, proof-patch precedes a current complete decision]
+      rationale: Completion is a live Zig projection of the append-only fold.
+
   instrumentation:
     decision_receipt: required
-    rationale: Run admission, review resolution, and closure determine mutation and completion legality.
+    executable_authority: ledger --source actuation
+    implementation_language: Zig
+    rationale: Event digests and closure-decision/v1 make each transition and terminal claim auditable.

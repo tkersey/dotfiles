@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Govern accepted work through live evidence"
-  default_prompt: "Use bare $actuating to implement, hand off to $ship, then run review-closeout; honor explicit modes, including implementation-only $actuating implement."
+  short_description: "Govern work through the Zig actuation kernel"
+  default_prompt: "Use bare $actuating to drive Zig kernel generations through implementation, $ship, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."

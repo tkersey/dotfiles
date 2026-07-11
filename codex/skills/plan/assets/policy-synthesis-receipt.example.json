@@ -4,6 +4,10 @@
     "plan_id": "PLAN-example-fixed-point",
     "revision": 1,
     "source_digest": "sha256:41cf6794ba4200b839c53531555f0f3998df4cbb01a4d5cb0b94e3ca5e23947d",
+    "source_contract": {
+      "kind": "direct",
+      "source_owner": "user"
+    },
     "initial_policy_digest": "sha256:7ff8bc1b737d2606d020be06429e72509dee640280e9f05ab3e374b078d406b5",
     "final_policy_digest": "sha256:d80520759e4fc8e3f61c693d04bf20e4704a38adf01eaa25e2b8d30ed0122c00",
     "passes": [

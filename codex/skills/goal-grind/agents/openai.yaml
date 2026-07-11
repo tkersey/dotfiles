@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Goal Grind"
-  short_description: "Execute one selected goal step"
-  default_prompt: "Use $goal-grind to execute this one lead-selected actuation step, run its verifier, and return evidence without continuing the loop."
+  short_description: "Consume one prepared actuation capability"
+  default_prompt: "Use $goal-grind to consume this one prepared Zig actuation capability, return event-bound evidence, and stop without continuing the loop."

@@ -1,174 +1,141 @@
 live_semantics:
   schema_version: live-semantics/v1
+  executable_authority: ledger --source actuation
+  implementation_language: Zig
   safe_review_default: triage
 
   invocation_defaults:
-    bare: [implement, ship, review-closeout, final-closure]
-    explicit-implement: [implement]
+    bare: [implement-generation, ship, review-generation, final-closure]
+    explicit-implement: [implement-generation]
 
   modes:
     implement:
       mutation: authority-bound
       material: true
-      implementation_outcome: complete
     triage:
       mutation: forbidden
       material: false
-      implementation_outcome: not-applicable
     remediation-plan:
       mutation: forbidden
       material: false
-      implementation_outcome: not-applicable
     review-closeout:
       mutation: resolution-bound
       material: true
-      implementation_outcome: complete
 
-  source_kinds:
-    - accepted-spec
-    - direct-goal
-
-  execution_kinds:
-    - none
-    - direct
-    - iterative
-
-  step_effects:
-    - inspect
-    - edit
-    - verify
+  source_kinds: [accepted-spec, direct-goal]
+  step_effects: [inspect, edit, verify]
+  completion_routes: [complete, ready-to-ship]
+  kernel_phases: [ready, prepared, effect_recorded, closed]
 
   canonical_objects:
-    actuation-run/v1:
+    GC-v2:
+      owner: goal-contract
+      purpose: Bind accepted intent, authority, scope, terminal predicates, and verifiers.
+    actuation-open/v1:
       owner: goal-actuating
-      purpose: Bind source, immutable invocation lifecycle, authority, continuous artifact history, admitted steps, and evidence.
+      purpose: Project one GoalContract generation into immutable kernel authority and obligations.
+    actuation-operation/v1:
+      owner: goal-actuating
+      purpose: Select one idempotent owner-boundary operation against outstanding obligations.
+    actuation-event/v1:
+      owner: ledger-actuation
+      purpose: Record the append-only causal transition history.
+    actuation-kernel-state/v1:
+      owner: ledger-actuation
+      purpose: Fold events into the current phase, artifact, pending operation, and obligation state.
+    closure-decision/v1:
+      owner: ledger-actuation
+      purpose: Project continuation or terminal outcomes from the live folded state.
     review-resolution/v1:
       owner: actuating
-      purpose: Turn classified findings into owner-boundary strategies and selected work.
-    closure-decision/v1:
-      owner: actuating
-      purpose: Recompute goal and implementation outcomes from live joined evidence.
+      purpose: Turn classified findings into owner-boundary strategies before review mutation.
+
+  recursion_scheme:
+    driver: /goal
+    coalgebra: actuation-kernel-state/v1 -> next_transition | terminal
+    algebra: actuation-kernel-state/v1 x actuation-event/v1 -> actuation-kernel-state/v1
+    handlers:
+      edit: external admitted mutation followed by exact reconciliation
+      inspect: kernel-executed admitted verifier
+      verify: kernel-executed admitted verifier
+    fixed_point_owner: /goal
+    cli_transition_limit: one
 
   owners:
     source_semantics: spec-pipeline
     execution_policy: plan
     goal_contract: goal-contract
-    topology_advice: agent-loop-schemes
     coordinator: goal-actuating
     selected_step_executor: goal-grind
-    work_projection: goal-workgraph
     evidence_reducer: evidence-fold
     review_transport: cas
     review_classifier: review-fold
+    governance_validator: ledger-validate
     resolution: actuating
+    kernel: ledger-actuation
     final_proof_view: proof-patch
     public_effects: ship
 
-  strategies:
-    - local-repair
-    - replacement-kernel
-    - blocked
-
-  abstraction_dispositions:
-    - retain
-    - retire
-    - collapse
-    - delegate
-    - replace
-
-  change_surfaces:
-    public-interface: {}
-    defaults-and-fallbacks: {}
-    permissions-and-persistence: {}
-    lifecycle-and-partial-success: {}
-    state-and-transitions: {}
-    ownership-and-validation: {}
-    concurrency-retry-idempotency: {}
-    cache-and-stale-handles: {}
-    abstraction-change: {}
-    replacement-kernel: {}
-    repeated-liabilities: {}
-    multi-live-path: {}
-    new-named-machinery: {}
-    semantic-surface-not-shrinking: {}
-
-  lens_contracts:
-    standard: standard-review-v1
+  strategies: [local-repair, replacement-kernel, blocked]
+  abstraction_dispositions: [retain, retire, collapse, delegate, replace]
 
   invariants:
-    - id: authority-before-mutation
-      statement: Material mutation requires a current authority-bound run.
-    - id: selected-step-before-mutation
-      statement: Material mutation requires one lead-selected step.
-    - id: generic-admission-before-action
-      statement: Every executable action preserves a gate-derived step admission binding its profile phase predecessor state effect owner paths and verifier.
-    - id: evidence-before-continuation
-      statement: Continuation requires a completed step and current evidence fold.
-    - id: review-before-resolution
-      statement: Review-derived mutation requires classified findings and a current resolution.
-    - id: review-admission-before-mutation
-      statement: A review edit embeds the gate-derived review-admission receipt with the full resolution observer facts and optional prior SHIP snapshot before mutation and preserves it thereafter.
-    - id: live-review-source-before-admission
-      statement: Every review repair admission follows a live source refresh and a newly folded producer batch for the current local artifact.
-    - id: same-publication-continuation-derived
-      statement: An adjacent review repair under an unchanged SHIP is admitted only by the gate-derived continuation receipt with injective stable finding semantics and source producer lineage, fresh fold and batch identities supporting every introduced finding, and predecessor evidence-content binding.
-    - id: review-history-survives-reship
-      statement: A replacement SHIP resets publication-local proof credit but every later repair admission preserves cumulative finding and source history while strictly extending the finding set.
-    - id: terminal-resolution-exact
-      statement: After a publication-bearing repair clean cannot erase history; a resolved refold matches exactly the admitted material finding set, preserves source producer lineage, and supports every finding with fresh review input while a new finding remains pending.
-    - id: review-mode-profile-alignment
-      statement: Review-required execution uses review-closeout and cannot be relabeled as implement.
-    - id: observable-index-before-mutation
-      statement: Assume-unchanged and skip-worktree flags in the root or any initialized gitlink index block every live binding.
-    - id: declared-semantic-accounting
-      statement: Declared added constructs require live obligations and distinct displaced constructs; independent construct discovery is not claimed.
-    - id: distinct-standard-suffix
-      statement: Standard closure derives from three distinct ordered current clean attempts.
+    - id: zig-only-executable-authority
+      statement: Every actuation transition and closure decision is produced by ledger --source actuation; no second-language gate participates.
+    - id: authority-before-open
+      statement: A material generation opens only from a current source and explicit execution authority.
+    - id: obligation-conservation
+      statement: Close is unreachable until every obligation accepted at open has one passing kernel observation.
+    - id: proof-basis-derivation
+      statement: Every obligation declares an implementation review ship or acceptance kind and decide derives the corresponding basis from discharged state.
+    - id: causal-admission
+      statement: Every effect consumes a random capability issued against the exact pre-effect repository state.
+    - id: idempotency
+      statement: Step and idempotency identities are unique within a generation and cannot authorize another transition.
+    - id: exact-path-reconciliation
+      statement: An edit changes every declared path and no undeclared path while the capability is outstanding.
+    - id: verifier-ownership
+      statement: The kernel executes the verifier inherited from cited obligations and rejects caller success flags, substituted commands, and verifier-side repository mutation.
+    - id: hash-chain-replay-integrity
+      statement: Every event extends one monotonic predecessor-hashed chain and replays through the same total fold.
+    - id: one-transition-per-invocation
+      statement: The CLI performs at most one state transition; /goal alone owns repetition and stopping.
+    - id: node-not-goal
+      statement: A completed operation discharges obligations but never completes its parent goal.
+    - id: immutable-terminal-route
+      statement: complete or ready-to-ship is bound at open and projected only after close.
     - id: public-effects-owned-by-ship
-      statement: Only ship may perform PR or public tracker effects.
-    - id: ship-precedes-review-closeout
-      statement: Publication-bearing review-closeout validates an embedded immutable SHIP-v1 before admission; adjacent same-publication repairs remain local until resolution and the final repair publication updates that same retained PR URL.
-    - id: repair-reship-resets-cas
-      statement: Republishing the resolved repair head resets CAS credit to zero and final closure requires three fresh ordered standard attempts.
-    - id: pr-publication-watermark-before-cas
-      statement: Publication-bound CAS credit uses monotone pre-list observations and a stable post-list live PR updatedAt watermark; a regressing observation blocks closure, records at or before the greatest observation are superseded, duplicate record and producer attempt identities are invalid across epochs, and a later PR metadata update resets the clean suffix while findings remain classification obligations.
+      statement: Only ship may create update or promote a PR or perform another public tracker effect.
+    - id: review-before-resolution
+      statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, and a current owner-boundary review-resolution/v1; validation grants no authority.
     - id: closure-is-live
-      statement: Completion is recomputed from current repository state and joined evidence.
-    - id: resolved-node-history
-      statement: Every node in a resolved resolution matches exactly one completed admitted edit.
+      statement: Close and decide recompute the current repository artifact and reject stale folded state.
+
+  obstruction:
+    primitive: in-app edit
+    statement: A repo-local process cannot intercept Codex mutation primitives; it proves pre-effect admission and post-effect reconciliation rather than OS-level confinement.
+    lost_capability: blocks
 
   quotient:
     removed_semantic_classes:
-      - transaction-controller overlay
-      - pre-action proof of a post-action fold
+      - mutable actuation-run yaml as a second truth source
+      - deterministic post-hoc admission
+      - caller-authored success flags
       - scalar clean-review counters
       - replayable completion approval
-      - final resolution as mutation admission
-      - relabeled SHIP review epoch
-      - null review-field sentinels in SHIP
-      - self-attested proof and success flags
       - duplicate recursive coordinator
-      - proof and closure dependency cycle
-      - one-patch-per-comment escalation artifacts
-      - caller-authored publication-continuation authority
-      - single-use same-publication exception
-      - runtime-history documentation
+      - retired second-language actuation gate
 
   closure_flow:
-    bare_lifecycle: [implement, ship, review-closeout, final-closure]
+    open: actuation-open/v1
+    iterate: [/goal-observe, one-kernel-transition]
+    close: ledger close --source actuation
+    decision: ledger decide --source actuation
     ship_handoff:
-      when: implementation-ready-to-ship
-      action: ship
+      when: closed-ready-to-ship-generation
+      owner: ship
       terminal: false
-      records: implementation-checkpoint/v1
-      then: same-run-review-closeout
-    review_closeout:
-      requires_when: publication-requested
-      receipt: pre-review-SHIP-v1
-      before_repair_admission: [refresh-live-review-sources, review-fold, review-resolution]
-      after_edit:
-        unresolved: [evidence-fold, refresh-live-review-sources, review-fold, review-resolution, gate-derived-continuation]
-        resolved: [evidence-fold, current-resolved-refold, ship, reset-cas-credit, review-closeout]
-      then: final-closure
-    final_closure: closure-decision/v1
-    terminal_view: final-proof-patch
+    final_closure:
+      when: closed-complete-generation
+      artifact: closure-decision/v1
+    terminal_view: proof-patch

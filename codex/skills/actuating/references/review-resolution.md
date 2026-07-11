@@ -64,9 +64,10 @@ review_resolution:
       dominated_remaining: []
 ~~~
 
-`change_surfaces` records judgment-derived surfaces. The gate also derives
-`multi-live-path` whenever the accepted-base diff contains more than one path,
-so callers cannot suppress that change surface by omission.
+`change_surfaces` records judgment-derived surfaces. Resolution construction
+must also include `multi-live-path` whenever the accepted-base diff contains
+more than one path. Bind the resulting resolution digest into the next
+GoalContract so it cannot be relabeled after kernel `open`.
 
 ## Strategy selection
 
@@ -85,8 +86,8 @@ falsifiable verifier is absent.
 
 Embed the validated RF-v2 evidence used by the resolution. Rejected,
 proof-only, ask-human, and follow-up findings remain terminal RF-v2
-dispositions and do not enter this object. Dangling fold IDs
-are insufficient: the gate joins the current artifact and exact
+dispositions and do not enter this object. Dangling fold IDs are insufficient:
+resolution construction joins the current artifact and exact
 `resolution-input` finding set to each decision. In `remediation-plan`, record
 the strategy but omit `selected_work_node`; the plan grants no execution
 authority. In review closeout, a pending multi-owner resolution may omit nodes
@@ -111,11 +112,10 @@ For an adjacent same-publication repair, the pending resolution must preserve
 all prior same-epoch finding IDs and source references, add at least one new
 material finding, use fold IDs disjoint from every fold already admitted in the
 epoch, include at least one new producer source-batch identity, and select the
-current node. Every introduced finding must come from a new producer batch. The
-gate derives `same-publication-continuation/v1` inside
-`review-admission/v1`; callers do not supply a top-level continuation object,
-authority reference, or use count. The derivation may repeat for successive
-adjacent edits while the same SHIP and live PR remain valid.
+current node. Every introduced finding must come from a new producer batch.
+Open a new Zig kernel generation whose GoalContract digest binds that cumulative
+resolution and publication epoch; a caller-authored continuation token or use
+count grants no authority.
 
 Finding semantics and source-to-producer lineage remain cumulative across a
 replacement SHIP. The new receipt resets publication-local fold/batch and CAS
@@ -152,9 +152,9 @@ required_retirements - completed_retirements = []
 dominated_remaining = []
 ~~~
 
-The gate observes live hunk identity for review admission and derives path
-provenance from the admitted step chain. The resolution does not repeat a
-caller-authored hunk inventory.
+`$review-fold` owns hunk and source identity. The Zig kernel independently
+observes the exact prepared path state and derives path provenance from its
+event chain. The resolution does not repeat a caller-authored hunk inventory.
 
 While `status=pending`, `dominated_remaining` must equal the exact outstanding
 retirement debt. `clean` and `resolved` require that debt to be empty.

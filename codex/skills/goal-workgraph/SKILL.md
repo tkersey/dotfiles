@@ -7,9 +7,9 @@ description: "Project a source-bound GoalContract, actuation run, or review reso
 
 ## Mission
 
-Project accepted work into a verifier-first graph. The graph is advisory
-structure under `actuation-run/v1`; it is not an authority source or recursive
-executor.
+Project accepted work into a verifier-first graph. The graph is advisory input
+to `actuation-open/v1` obligations and operations; it is not an authority
+source, event store, or recursive executor.
 
 ## Node
 

@@ -75,10 +75,10 @@ ship_input:
 
 If key state is unknown, inspect the repository and PR state before creating or updating a PR.
 
-For `source: actuation`, require a current `closure-decision/v1` with
+For `source: actuation`, require a current Zig-derived `closure-decision/v1` with
 `verdict: ready-to-ship`. That verdict may come from initial implementation or
 from a proved review-closeout repair that must be republished before more
-review. Each SHIP-v1 is immutable for its publication epoch: preserve the run ID
+review. Each SHIP-v1 is immutable for its publication epoch: preserve the kernel run ID
 and state fingerprint in the exact two-field `actuation_binding`.
 Never add or relabel it with review-closeout state. Actuation input cannot use the early
 draft path because draft publication has no valid closure re-entry. A direct

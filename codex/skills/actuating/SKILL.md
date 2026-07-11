@@ -1,343 +1,303 @@
 ---
 name: actuating
-description: "Front door for authority-bound goal execution. Bare $actuating or /goal $actuating runs implement, then $ship, then review-closeout; explicit $actuating implement stops after implementation. Explicit triage, remediation-plan, and review-closeout retain their named behavior; never infer mutation from an unqualified review request."
+description: "Front door for authority-bound goal execution through the Zig actuation kernel. Bare $actuating or /goal $actuating runs implement, then $ship, then review-closeout; explicit $actuating implement stops after implementation. Explicit triage, remediation-plan, and review-closeout retain their named behavior; never infer mutation from an unqualified review request."
 ---
 
 # Actuating
 
 ## Mission
 
-Turn accepted intent into an authority-bound run, selected work, current
-evidence, and a live closure decision.
+Turn accepted intent into conserved obligations, capability-admitted effects,
+independent observations, and a live Zig-derived closure decision.
 
 ~~~text
 bare $actuating:
-accepted source -> implement -> $ship -> review-closeout -> final closure
+accepted source -> implementation generation -> $ship -> review generation -> final closure
 
 explicit mode:
 accepted source -> named mode -> its terminal output
 ~~~
 
 `$actuating` routes and governs this workflow. `$goal-actuating` coordinates
-execution. `$goal-grind` executes one already-selected step. `$ship` alone owns
-public PR effects.
+execution. `$goal-grind` executes one already-selected operation. `$ship` alone
+owns public PR effects.
 
 ## Modes
 
-Bare `/goal $actuating` and bare `$actuating` select the ordered default
-pipeline: `implement -> $ship -> review-closeout`. `$actuating implement`
-selects implementation only and stops at its closure decision. Explicit
+Bare `/goal $actuating` and bare `$actuating` select `implement -> $ship ->
+review-closeout`. `$actuating implement` selects implementation only. Explicit
 `triage`, `remediation-plan`, and `review-closeout` select only the named mode.
 
 | Intent | Mode | Mutation | End |
 |---|---|---:|---|
-| Implement accepted work only | `implement` | Authorized by the run | Implementation closure |
+| Implement accepted work only | `implement` | Authority-bound | Local completion |
 | Review, audit, or classify | `triage` | No | Review report |
 | Produce a fix plan | `remediation-plan` | No | Resolution plan |
-| Fix or close review findings | `review-closeout` | Only through a selected resolution node | Closure decision |
+| Fix or close review findings | `review-closeout` | Resolution-bound | Ship handoff or completion |
 
 An unqualified review request means `triage`. Require explicit fix, resolve,
 address, implement, or closeout language before choosing `review-closeout`.
-Planning requests route to `$plan`; there is no planning mode inside this
-skill.
+Planning requests route to `$plan`; there is no planning mode here.
 
-## Canonical objects
+## Executable authority
 
-Only three actuation control objects are live:
+`ledger --source actuation` is the only executable actuation gate. Do not invoke
+or recreate a second validator in another language.
 
-1. `actuation-run/v1` binds source, authority, artifact state, selected steps,
-   evidence references, immutable invocation intent, lifecycle phase,
-   implementation provenance, review requirements, and public-effect intent.
-2. `review-resolution/v1` converts classified findings into owner-boundary
-   strategies and admits at most one current work node; other owner decisions
-   remain pending.
-3. `closure-decision/v1` recomputes the result from the current repository,
-   run, resolution, evidence folds, CAS records, and optional ship record.
+The live objects are:
 
-Read [live-semantics.yaml](references/live-semantics.yaml) for the canonical
-runtime vocabulary and policy. Behavioral laws live in the gate and its direct
-counterexample tests; prose may explain them but must not create another
-authority surface.
+1. `GC-v2`, the accepted source-bound GoalContract.
+2. `actuation-open/v1`, its executable projection into authority, path scope,
+   terminal route, and verifier-backed obligations.
+3. `actuation-operation/v1`, one selected effect with an idempotency key, owner,
+   exact paths, and cited obligations.
+4. The append-only `actuation-event/v1` chain, whose fold yields
+   `actuation-kernel-state/v1`.
+5. `closure-decision/v1`, projected by Zig from that live fold.
 
-Every run records the original invocation profile in `lifecycle`:
+`review-resolution/v1`, RF-v2, EF-v1, CAS receipts, and SHIP-v1 remain
+owner-specific evidence. Bind their current identities into the GoalContract
+and discharge their predicates through exact verifier commands; do not copy
+their policy logic into the kernel.
 
-~~~yaml
-lifecycle:
-  invocation_profile: bare-pipeline | explicit-implement | explicit-triage | explicit-remediation-plan | explicit-review-closeout
-  phase: implement | review-closeout
-  generation: 0
-  implementation_checkpoint: null
+Read [live-semantics.yaml](references/live-semantics.yaml) for canonical
+vocabulary and [closure.md](references/closure.md) for the terminal projection.
+The executable laws live in the Zig fold and its direct counterexample tests.
+
+## Recursion-scheme architecture
+
+`/goal` owns fixed-point iteration. The kernel performs at most one state
+transition per invocation:
+
+~~~text
+coalgebra: actuation-kernel-state -> next legal transition or terminal
+handler:   admitted capability -> process effect or external-edit reconciliation
+algebra:   prior state + actuation-event/v1 -> next state
+driver:    /goal observes and repeats, stops, or blocks
 ~~~
 
-The profile never changes. A bare run alone may advance from generation 0
-implementation to generation 1 review closeout, and only through the
-gate-derived implementation checkpoint. Explicit implementation always keeps
-publication false and cannot accept SHIP input or enter review closeout.
+The event fold is the catamorphism. `state` and `decide` are coalgebraic
+observations. The workflow is hylomorphic only because `/goal` repeatedly
+unfolds and folds; `ledger --source actuation` never owns that recursion or
+claims parent completion from one operation.
 
 ## Source and authority
 
-Start a run only from:
+Open a material generation only from:
 
 - a current accepted specification whose governance result is complete; or
 - a direct user goal with explicit execution authority.
 
-A plan handoff supplies scope and policy but does not grant mutation by itself.
-A review artifact supplies evidence but never execution authority. A
-gate-only specification result cannot authorize execution.
+A plan supplies scope and policy but not mutation authority. Review evidence
+supplies liabilities but not mutation authority. Preserve separate
+`source_ref`, `execution_authority_ref`, and `mutation_allowed` fields.
 
-Keep these fields separate:
+Project every terminal GoalContract predicate into at least one obligation with
+an exact verifier command. The kernel conserves exactly the accepted
+`actuation-open/v1` obligation set; the source-to-open projection remains a
+human/GoalContract responsibility and must be inspected before `open`.
 
-~~~text
-scope_source_ref
-execution_authority_ref
-mutation_allowed
-public_effects_allowed
+~~~json
+{
+  "schema": "actuation-open/v1",
+  "run_id": "goal-17:g0",
+  "goal_id": "goal-17",
+  "goal_contract_digest": "sha256:...",
+  "resolution_digest": null,
+  "source_ref": "user:turn-42",
+  "execution_authority_ref": "user:turn-42",
+  "mutation_allowed": true,
+  "completion": "ready-to-ship",
+  "allowed_paths": ["src/kernel.zig"],
+  "obligations": [
+    {
+      "id": "tests",
+      "kind": "implementation",
+      "statement": "The accepted Zig proof lane passes.",
+      "verifier": ["zig", "build", "test"]
+    }
+  ]
+}
 ~~~
 
-Unsupported durable claims, fencing, independent worktrees, or serialized
-cross-plan integration block the run. Do not simulate a controller.
+Use `completion: ready-to-ship` for a generation whose next owner is `$ship`.
+Use `completion: complete` for explicit local implementation or the final
+review generation. Supply the current `resolution_digest` for review-bound
+work. These values are immutable after `open`.
 
-## Step law
+## One-operation law
 
-Before a material mutation:
+From the repository root:
 
-1. Bind the run to the current repo, base, branch, head, and live-state fingerprint.
-   Preserve that first binding as `artifact_initial` and its per-path state map
-   as `artifact_initial_path_states`; every first step begins there and every
-   later step begins at the prior post-state.
-2. Select exactly one step and tag it with its lifecycle phase.
-3. Keep selection and mutation fan-in with the lead; advisory scouting,
-   classification, and proof checks may fan out.
-4. From the repository root, validate the run through `uv` so the checked-in
-   non-executable tool and its YAML dependency are handled explicitly:
+1. Open the generation once:
 
    ~~~bash
-   uv run --with pyyaml python \
-     codex/skills/actuating/tools/actuating_gate.py validate-run \
-     --run RUN.yaml \
-     --repo .
+   ledger open --source actuation --json ACTUATION_OPEN.json
    ~~~
 
-   Add `--resolution RESOLUTION.yaml` for a review-derived edit and repeat
-   `--evidence EF.json` for every completed predecessor.
+   The store lock sidecar must already be Git-ignored. A repo-level
+   `.ledger/` ignore covers the default store.
 
-Before any selected action, copy the gate-derived `step-admission/v1` into the
-step. It binds the original invocation profile, phase, immutable predecessor
-prefix, state before, effect, owner, paths, verifier, and lead selection. Every
-completed `inspect`, `edit`, or `verify` action preserves that receipt
-unchanged. A terminal record without it is unreachable and blocks.
+2. Inspect `ledger state --source actuation --run RUN_ID`. Select exactly the
+   operation named by `next_transition`; `/goal`, not the CLI, decides whether
+   to continue.
+3. Build one `actuation-operation/v1` from the selected owner boundary:
 
-For a review-derived edit, pass the current resolution to `validate-run`; its one
-selected node must exactly match the selected step's ID, owner, paths, and
-verifier. Before mutation, copy the gate-derived `review_admission/v1` into the
-selected step's `review_admission`. That immutable receipt seals the full
-`review-resolution/v1`, admission-time source/path/hunk observations, any
-required current SHIP receipt, and its canonical digest. Preserve the receipt
-unchanged on completion and cite `review-admission:<admission_digest>` in EF-v1
-`review_refs`; `step-admission/v1` binds its digest, so the two receipts form one
-admission relation rather than parallel authorities. A later resolution cannot
-relabel an admitted edit. When admitting a step after prior work, also pass
-every referenced EF-v1 with `--evidence`. A dangling reference cannot authorize
-continuation.
+   ~~~json
+   {
+     "schema": "actuation-operation/v1",
+     "step_id": "step-1",
+     "effect": "edit",
+     "idempotency_key": "goal-17:g0:step-1",
+     "owner_boundary": "actuation-kernel",
+     "paths": ["src/kernel.zig"],
+     "obligation_refs": ["tests"]
+   }
+   ~~~
 
-Before every review-repair admission, refresh the live review sources against
-the current local artifact, re-fold them, and rebuild the pending resolution.
-Do not admit solely from the source batch or resolution that authorized the
-preceding edit.
+4. Prepare before any executable effect:
 
-When the latest completed review edit is `ready-for-closure` but the retained
-PR still publishes the preceding SHIP artifact, the gate may derive an optional
-`publication_continuation` inside the next `review-admission/v1`. Its
-`same-publication-continuation/v1` receipt binds the unchanged SHIP epoch and
-published artifact, the adjacent predecessor's admission digest, and the
-canonical content digest of that predecessor's EF-v1. Eligibility requires a
-pending next node, a strict cumulative increase in material findings,
-cumulative review source references with stable producer backends, fold
-identities absent from admitted repair history, and new producer source batches
-that support every introduced finding. Material semantic identities are
-injective: cloning an admitted finding under a new ID is not growth. This
-derivation may repeat for successive adjacent repairs while the same live PR
-and SHIP remain current. It is never a caller-authored run object, authority
-token, or use counter.
+   ~~~bash
+   ledger prepare --source actuation \
+     --run RUN_ID \
+     --json ACTUATION_OPERATION.json
+   ~~~
 
-Reject reserved derived-receipt keys elsewhere in caller-supplied run,
-resolution, or SHIP inputs instead of copying them into a new receipt.
+   Hold the returned `AKC1-*` capability only in the active executor. Capture
+   the result without deliberately echoing or copying the raw value into a
+   durable run, evidence, or handoff artifact. The ledger persists only its
+   digest; transport confidentiality remains the caller/runtime boundary.
+5. For `edit`, perform only the admitted path mutation, then consume and
+   observe it:
 
-After the action:
+   ~~~bash
+   ledger record --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ledger observe --source actuation --run RUN_ID --step STEP_ID
+   ~~~
 
-1. Record changed paths and the new artifact binding.
-2. Fold current evidence through `$evidence-fold`.
-3. Attach that evidence to the completed step.
-4. Continue only after the run validates again.
+   For `inspect` or `verify`, use one kernel-owned execution:
 
-Each step names one executable `effect` (`inspect`, `edit`, or `verify`), exact
-paths, and a falsifiable `verifier`. CAS acquisition, review folding, and
-resolution construction are coordinator work, not executable step effects. One
-direct edit may remain uncommitted and must exactly match the initial-to-live
-path delta. Every iterative edit advances through a descendant commit whose
-exact diff equals that step's changed paths. A non-edit preserves the complete
-artifact binding. EF-v1 independently reports the same paths and shows the
-verifier in its passed-command evidence. A following step requires either the
-prior step's generic `continue` verdict or a gate-validated lifecycle or
-publication transition. Publication-bearing review edits cannot use generic
-`continue` to bypass the publication laws.
+   ~~~bash
+   ledger execute --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ~~~
 
-A step may finish or block. It cannot complete the parent goal; only
-`closure-decision/v1` owns goal completion.
+6. Fold tests, diffs, logs, and returned event digests through
+   `$evidence-fold`. A node may be done; it may not complete the parent goal.
+7. Re-read kernel state. A failed observation consumes the capability but
+   leaves its obligations outstanding; select a new step with a new
+   idempotency key or block.
 
-Direct work is one ordinary selected step. Iterative work is a chain of
-selected and completed steps. Resume state lives in the run through the current
-step, lifecycle checkpoint, and performed-side-effect identifiers.
+The kernel rejects post-hoc preparation, stale pre-state, capability replay,
+duplicate step or idempotency identities, verifier substitution, path escape,
+simultaneous out-of-scope mutation, unchanged declared edit paths, malformed or
+reordered events, verifier-side repository mutation, and closure with
+outstanding obligations.
 
 ## Review law
 
-Fresh or closure-grade workflow review uses `$cas`. Review evidence passes
-through `$review-fold`, which only classifies and quotients findings.
-Declared run source references must exactly equal the RF-v2 source identities;
-triage supplies those folds directly with repeatable `--review-fold` inputs and
-cannot complete from a source name alone.
+Fresh or closure-grade review uses `$cas`. Review evidence passes through
+`$review-fold`, which classifies and quotients findings, then through
+`ledger validate review-fold` as a pure Zig invariant check. `review-resolution/v1`
+then selects at most one current owner-boundary repair. Read
+[review-resolution.md](references/review-resolution.md) before review-driven
+mutation.
 
-Refresh live review input before each review-repair admission. Every successor
-resolution preserves prior finding semantics and source-to-producer lineage,
-strictly grows the cumulative finding set, and supports each introduced finding
-with fresh admitted fold and producer-batch identities. A replacement SHIP
-starts a new publication and CAS epoch, but it does not erase cumulative
-finding or source history. The final resolved re-fold preserves exactly the
-admitted findings and all admitted sources, and supports every material finding
-with another fresh fold and producer batch; it cannot rewrite the admission
-history. A newly observed material finding keeps the resolution pending and
-requires another admitted continuation. An abandoned terminal refold grants no
-state or authority; freshness is measured against admitted repair history.
-After a publication-bearing repair, `clean` cannot erase admitted liabilities;
-the terminal status must be `resolved` against that exact history.
+For a review edit:
 
-`review-resolution/v1` then consumes each RF-v2 equivalence class through
-exactly one decision, groups repair work by owner boundary, and selects:
+- refresh live review sources before selection;
+- bind the current resolution, publication epoch, and evidence identities into
+  the GoalContract digest;
+- project the selected resolution node into the operation's owner, exact paths,
+  and verifier-backed obligations;
+- prepare the Zig capability before mutation;
+- preserve cumulative finding semantics across adjacent repairs and reships;
+- require fresh closure-grade CAS evidence after the final published change.
 
-- `local-repair`;
-- `replacement-kernel`; or
-- `blocked`.
+The validation verdict grants no authority. Raw review prose, a fold receipt, a CAS record, or a suggested patch never
+grants mutation. `$ship` remains the only public-effect owner. The kernel may
+execute a verifier that observes those owner artifacts, but it never publishes,
+classifies review prose, or invents a repair strategy.
 
-Read [review-resolution.md](references/review-resolution.md) before resolving
-review findings. Raw review prose, a review-fold receipt, a CAS record, or a
-suggested repair never grants mutation.
+## Lifecycle
 
-CAS closure accepts only producer-observed standard review attempts. Specialized
-routing in RF-v2 remains classification metadata; caller-supplied lens labels
-never grant review credit. Standard closure requires three distinct ordered
-clean attempts after the latest artifact, review contract, resolution, or
-publication change. The final repair reship therefore resets CAS credit to
-zero; only three fresh standard attempts against the republished resolved head
-count.
+A material generation is immutable and closes once:
 
-For publication-bound CAS, validate the live PR before listing records, observe
-its `updatedAt` watermark again after the list, and recheck it before closure.
-Current-binding records at or before the latest watermark are superseded and
-grant no credit; their findings still require RF-v2 classification. A later PR
-metadata update conservatively resets the clean suffix, so closure waits for
-three attempts created strictly after the stable final observation.
-Treat every watermark observation as monotone: a regression blocks closure and
-never lowers the boundary. Require CAS record IDs and same-run producer attempt
-IDs to be unique across the whole exhaustive snapshot, including superseded
-publication epochs.
+~~~text
+ready -> prepared -> effect_recorded -> ready -> ... -> closed
+          |                  |
+          +---- execute -----+
+~~~
 
-## Semantic accounting
+For a bare invocation:
 
-Audit every abstraction participating in a touched owner-boundary invariant,
-including unchanged nearby abstractions.
+1. open generation `g0` with `completion: ready-to-ship`;
+2. discharge implementation obligations, close, and run `decide`;
+3. hand the Zig decision to `$ship`;
+4. open generation `g1` under the same `goal_id`, with a new GoalContract digest
+   that binds SHIP and review-closeout authority;
+5. discharge review/closure obligations, close, and run `decide` with
+   `completion: complete`.
 
-Use `retain`, `retire`, `collapse`, `delegate`, or `replace`. `retain` requires
-a named live obligation.
-
-The gate observes the live diff and binds that identity into review admission;
-the continuous admitted step chain supplies path and transition provenance.
-It validates the declared abstraction, liability, addition, and retirement
-account against that live state. Every declared added construct names a live
-obligation and a distinct displaced construct. The gate does not yet perform
-language-aware discovery of omitted constructs, so do not claim that it
-independently proves net semantic shrinkage.
-
-Closure rejects split decisions for one RF-v2 equivalence class, uncovered
-liabilities, incomplete retirements, remaining dominated constructs, and
-declared proof-surface growth without an accepted obligation.
-
-`local-repair` may not add a protocol, state, helper abstraction, or
-wound-specific test family. Use `replacement-kernel` when local patches would
-distribute one cause or preserve dominated machinery.
+An explicit implementation run uses `completion: complete` and never enters
+the ship branch. A review repair that must be republished closes a
+`ready-to-ship` generation; final post-publication review uses a fresh
+`complete` generation. Generations are append-only siblings under one goal,
+not mutable lifecycle labels.
 
 ## Closure
 
-Read [closure.md](references/closure.md) before material completion.
-
-Run:
+Read [closure.md](references/closure.md), then run:
 
 ~~~bash
-uv run --with pyyaml python \
-  codex/skills/actuating/tools/actuating_gate.py decide \
-  --run RUN.yaml \
-  --resolution RESOLUTION.yaml \
-  --evidence EF.json \
-  --repo .
+ledger doctor --source actuation
+ledger state --source actuation --run RUN_ID
+ledger close --source actuation --run RUN_ID
+ledger decide --source actuation --run RUN_ID
 ~~~
 
-The gate discovers the installed list action, prefers `cas review list`, and
-acquires the complete live envelope itself with the run-bound base and Codex
-thread ID. An explicitly advertised `cas review_session list` is the only
-fallback. Saved envelopes and individual record files are non-authoritative and
-cannot close the run.
+`close` is legal only from `ready` with no pending step, no outstanding
+obligation, and an unchanged live artifact. `decide` recomputes the current
+artifact digest and returns:
 
-The gate reads live repository state and actual evidence. It does not accept
-success flags, opaque proof references, scalar clean counts, or replayable
-completion approvals.
+- `continue` plus `next-transition:*` before close;
+- `ready-to-ship` after a closed ship-bound generation; or
+- `complete` after a closed terminal generation.
 
-Separate:
+Only the latter two set implementation outcome to complete. Only terminal
+`complete` sets goal outcome to complete. The generated `closure-decision/v1`
+binds the repository fingerprint, folded run digest, obligation discharge
+basis, terminal route, and next owner.
 
-~~~text
-goal_outcome
-implementation_outcome
-next_owner
-~~~
+Use the JSON verdict, not prose or exit-code folklore, as the workflow result.
+Malformed input, invalid transitions, unavailable state, stale artifacts, and
+failed observations exit nonzero with `actuation-error/v1` or a failed
+transition result. Invalid CLI syntax uses the standard `ledger` usage failure.
 
-For no-code modes, the goal may complete while implementation is
-`not-applicable`. For material work, emit the final proof-patch only after a
-current closure decision. In the bare pipeline, implementation closure returns
-`ready-to-ship`; `$ship` acts, then the same append-only run records the
-gate-derived checkpoint described in [closure.md](references/closure.md) and
-enters `review-closeout`. A fresh review run that merely reuses the ID is
-invalid. Clean review closeout selects no synthetic step. Explicit
-`implement` does not infer publication and stops at implementation closure.
+## Obstruction boundary
 
-`complete`, `ready-to-ship`, and valid `continue` decisions exit zero. Blocked,
-malformed, or unavailable-dependency decisions exit two; the JSON verdict is
-the workflow result.
+A repo-local process cannot physically intercept Codex's in-app mutation
+primitive. For `edit`, the kernel therefore proves causal admission before the
+effect and independently reconciles exact path movement afterward. It is not an
+OS sandbox and cannot prove that an unrecorded external effect never happened.
+Loss of the raw capability blocks the prepared operation; the kernel does not
+reconstruct it from deterministic state. The capability is a causal replay
+guard, not a claim that process arguments or session transcripts are secret.
 
 ## Stop rules
 
-Stop when authority or artifact binding is stale, a selected step is missing,
-the prior action lacks current evidence, live review input was not refreshed,
-same-publication findings or sources regress, review resolution is missing, the
-standard review contract is invalid, the clean CAS suffix is short, semantic
-balance is open, verification regresses, or a public effect would bypass
-`$ship`.
-
-Use these stable verdicts:
-
-~~~text
-actuation verdict: blocked-run-missing
-actuation verdict: blocked-run-stale
-actuation verdict: blocked-step-missing
-actuation verdict: blocked-evidence-fold-missing
-actuation verdict: blocked-review-resolution-missing
-actuation verdict: blocked-closure
-~~~
+Stop when authority is missing, the GoalContract projection is incomplete, the
+live artifact is stale, the selected effect does not match `next_transition`, a
+capability is unavailable, an obligation lacks an executable verifier, review
+resolution is open, evidence regresses, closure-grade review is stale, or a
+public effect would bypass `$ship`.
 
 ## Resources
 
-- [live-semantics.yaml](references/live-semantics.yaml) — canonical vocabulary,
-  ownership, triggers, and runtime policy.
+- [live-semantics.yaml](references/live-semantics.yaml) — canonical worlds,
+  transitions, ownership, and laws.
 - [review-resolution.md](references/review-resolution.md) — resolution schema,
   strategy rules, and semantic balance.
-- [closure.md](references/closure.md) — evidence joins, CAS suffix, outcomes,
-  and ship re-entry.
+- [closure.md](references/closure.md) — Zig terminal projection and lifecycle
+  handoff.
 - [decision-contract.yaml](references/decision-contract.yaml) — trigger and
   routing contract for audit tooling.

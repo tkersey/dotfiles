@@ -35,7 +35,7 @@ proof_patch_input:
     review_basis: []
     ship_basis: []
     implementation_checkpoint: {} | null
-  actuation_run: {}
+  actuation_kernel_state: {}
   review_resolution: {} | null
   evidence_folds: []
   cas_evidence: {} | null
@@ -51,9 +51,9 @@ Recompute or reject the closure decision if the branch, head, live-state
 fingerprint, run digest, or resolution digest no longer matches. Render review
 strategy, lenses, dispositions, and semantic balance only from the bound
 resolution and evidence objects; basis IDs alone are not enough.
-For a bare pipeline, confirm the proof basis covers the retained implementation
-prefix and every review-phase material step; do not render a fresh review run
-as continuous provenance.
+For a bare pipeline, confirm the proof basis covers every closed implementation,
+ship, repair, and final-review generation under the same goal ID; do not render
+distinct generations as one mutable run.
 
 ## Output
 

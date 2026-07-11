@@ -1,28 +1,25 @@
-# 04 — Plan Source Contract Gate
+# 04 — Plan Source Contract Validation
 
-`plan_source_contract_gate.py` is the fail-closed receiver gate for `$plan`.
+`ledger validate plan-source-contract` is the pure Zig receiver validation for
+`$plan`.
 
 ## Command
 
 ```bash
-uv run python codex/skills/plan/tools/plan_source_contract_gate.py <psc-file>
+ledger validate plan-source-contract --input <psc-json-file>
 ```
 
-The input may be YAML or JSON and may contain either:
-
-```yaml
-plan_source_contract: ...
-```
-
-or a raw PSC-v1 object.
+The input is canonical JSON and may contain either a wrapped
+`plan_source_contract` field or a raw PSC-v1 object.
 
 ## Required checks
 
-The gate passes only when:
+Validation passes only when:
 
 ```text
 contract_version = PSC-v1
 source_owner = spec-pipeline
+spec_id present
 implementation_spec present
 decision_packet present
 proof_bar present
@@ -46,8 +43,10 @@ SGR-v2.auto_plan_handoff.invocation in {same_turn_tail_call, manual}
 `manual` is allowed only for a later explicit `$plan` invocation after
 `AUTO_PLAN_HANDOFF_REQUIRED`.
 
-## Failure
+## Decision
 
-On failure, print a concise missing/invalid field list and exit non-zero.
+The command emits `ledger-validate-decision/v1`, exits `0` for `pass`, and
+exits `2` for malformed or blocked input. It never writes `.ledger` and never
+grants execution authority.
 
-Do not continue planning from a failed PSC-v1.
+Do not continue planning from a blocked PSC-v1.

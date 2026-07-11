@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Goal Actuating"
   short_description: "Coordinate authority-bound goal execution"
-  default_prompt: "Use $goal-actuating to coordinate this accepted goal through one selected step at a time, fold current evidence, and request live closure without publishing."
+  default_prompt: "Use $goal-actuating to coordinate this accepted goal through one Zig kernel operation at a time, fold current evidence, and request live closure without publishing."
