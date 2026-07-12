@@ -140,15 +140,16 @@ A review repair that changes the published artifact uses another
 
 ## Review and publication evidence
 
-Review, SHIP, and CAS remain owned by their respective skills and CLIs. The
-kernel does not reproduce those policy engines. Instead, the accepted
-GoalContract projects every required current proof into verifier-backed
-obligations before the generation opens.
+`$actuating` owns review policy and resolution, `$cas` owns review transport,
+and `$ship` owns publication. The kernel does not reproduce those owner
+contracts. Instead, the accepted GoalContract projects every required current
+proof into verifier-backed obligations before the generation opens.
 
 Publication-bound closure must therefore include obligations for the current
-SHIP binding, current resolution, exact changed artifact, fresh CAS evidence,
-and any repository-specific review-thread sweep. If a required proof has no
-executable verifier, the generation is not openable.
+SHIP binding, actuation review policy, current resolution, exact changed
+artifact, fresh CAS evidence, and any repository-specific review-thread sweep.
+If a required proof has no executable verifier, the generation is not
+openable.
 
 After any published head change, prior tuple-bound review observations are
 stale; open a new generation with new obligation identities and current

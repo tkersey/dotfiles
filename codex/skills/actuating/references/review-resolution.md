@@ -27,8 +27,16 @@ review_resolution:
   finding_ids: []
   change_surfaces: []
   review_profile:
+    policy_ref:
+    policy_digest:
     review_contract_fingerprint:
     selected_lenses: [standard]
+    standard_required_clean_runs: 3
+    standard_clean_attempt_ids: []
+    auxiliary_requests:
+      footgun-finder: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
+      invariant-ace: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
+      complexity-mitigator: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
   decisions:
     - decision_id:
       owner_boundary:
@@ -128,8 +136,8 @@ plus a producer batch that carries material evidence. A newly observed material
 finding keeps the resolution pending and requires another admitted
 continuation. Only after the retained PR is revalidated against the
 admission-bound published artifact may `$ship` update that PR to the resolved
-local head. All earlier CAS credit belongs to the preceding publication epoch
-and resets to zero.
+local head. All earlier policy credit attached to CAS attempts belongs to the
+preceding publication epoch and resets to zero.
 
 ## Abstraction audit
 
@@ -167,11 +175,18 @@ omitted constructs.
 
 The resolution digest is the canonical digest of the artifact binding, source
 finding set, change surfaces, review profile, decisions, and semantic balance.
-CAS evidence used for closeout must carry that digest.
+The owning `actuation-review-policy/v1` request binds that digest before CAS
+execution.
 
 ## Review contract
 
-Select only `standard` for CAS evidence. Change surfaces remain part of the
-review-contract fingerprint, but RF-v2 routing metadata cannot be relabeled as
-producer-observed auxiliary execution. A new finding or code change updates the
-resolution, changes its digest, and resets standard review credit.
+Build the review profile from [review-policy.md](review-policy.md). RF-v2
+routing obligations and changed surfaces select auxiliary lenses; the policy
+artifact binds each selection to exact instruction bytes before CAS execution.
+CAS returns only the opaque request binding and transport facts.
+
+A post-run label cannot create auxiliary evidence. Credit requires an exact
+join among the pre-bound policy request, its actuation event, the returned CAS
+binding and tuple, and any RF-v2 fold. A new finding or code change updates the
+resolution, changes its digest, invalidates affected requests, and resets the
+current standard clean suffix.

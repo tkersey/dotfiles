@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "cas"
   short_description: "Zig CAS CLI for app-server checks, detached review control, fanout, and swarm conformance"
-  default_prompt: "Use $cas to acquire tuple-bound review evidence, preserving finding identity and any supported workflowBinding while leaving resolution, clean-suffix meaning, and mutation authority to the caller."
+  default_prompt: "Use $cas to drive tuple-bound review attempts, preserve opaque request identity and finding provenance, and report normalized transport outcomes."

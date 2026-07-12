@@ -70,8 +70,8 @@ skill_decision_contract:
       trigger_refs: [ACT-REVIEW]
       expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [current review source, RF-v2 before resolution, review-resolution/v1 before mutation, GoalContract obligations for current review and publication evidence]
-      success_signals: [unqualified review selects triage, current resolution selects at most one owner node, review mutation uses a prepared Zig capability, final published artifact receives fresh closure-grade evidence]
+      required_artifacts: [actuation-review-policy/v1 before fresh review execution, current review source, RF-v2 before resolution, review-resolution/v1 before mutation, GoalContract obligations for current review and publication evidence]
+      success_signals: [unqualified review selects triage, actuating projects only opaque request identity into CAS, current resolution selects at most one owner node, review mutation uses a prepared Zig capability, final published artifact receives fresh closure-grade evidence]
       failure_signals: [raw finding becomes a patch, stale review source authorizes mutation, findings regress across reship, review mutation bypasses the kernel, public effects bypass ship]
       rationale: Review evidence names liabilities; it never grants execution authority.
 

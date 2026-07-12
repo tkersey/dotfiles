@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Actuating"
   short_description: "Govern work through the Zig actuation kernel"
-  default_prompt: "Use bare $actuating to drive Zig kernel generations through implementation, $ship, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."
+  default_prompt: "Use bare $actuating to own review policy and exact lens requests while driving Zig kernel generations through implementation, $ship, CAS transport, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."

@@ -89,25 +89,60 @@ operation.
 For review work, preserve this ownership order:
 
 ~~~text
-live review source
+actuation-review-policy/v1
+-> pre-bound exact lens request, contract digest, and instruction digest
+-> passing Actuating Zig preflight decision
+-> GoalContract digest and review verifier obligations
+-> prepared Zig review operation
+-> exact CAS command
+-> live review source
 -> $review-fold
 -> review-resolution/v1
--> GoalContract digest and verifier obligations
--> prepared Zig operation
+-> updated GoalContract and verifier obligations for any selected repair
+-> prepared Zig repair operation
 -> action evidence
 -> current closure-grade review
+-> passing Actuating Zig closeout decision
 ~~~
 
 For every fresh or closure-grade CAS review, and for same-handle timeout
 recovery, pass `--timeout-ms 1800000` explicitly:
 
+First require `cas_rer_opaque_request_binding_v1=true`,
+`cas_review_history_v2=true`, and
+`cas_review_scoped_instructions_v1=true` from `cas capabilities` for
+closure-grade work.
+
 ~~~bash
-cas review run --cwd <repo> --base <base> \
+cas review run --cwd <repo> --base <base-ref> \
+  --custom-instructions @<instructions-ref> \
   --workflow-binding-json @binding.json \
   --timeout-ms 1800000 --json --fallback none
+cas review list --cwd <repo> --base <base-ref> \
+  --custom-instructions @<instructions-ref> \
+  --workflow-binding-json @binding.json \
+  --codex-thread-id <id> --json
 cas review_session wait --cwd <repo> --review-thread-id <reviewThreadId> \
   --timeout-ms 1800000 --json
 ~~~
+
+The binding contains only the policy request's opaque `requestId` and
+`requestFingerprint`. `$goal-actuating` verifies the pinned contract manifest,
+its resource digests, and the exact instruction bytes; binds the complete
+policy artifact into the GoalContract digest; and joins the returned binding
+and tuple to that pre-bound request. CAS output never selects or labels a lens.
+
+Before the first CAS command, execute the exact preflight obligation:
+
+~~~bash
+zig run codex/skills/actuating/scripts/review_policy.zig -- \
+  --phase preflight --input <policy.json>
+~~~
+
+After exhaustive current CAS history has been joined into the policy snapshot,
+execute the same checker with `--phase closeout`. The Zig decision checks the
+stable policy algebra; `$goal-actuating` still inspects source-bound trigger
+applicability and proves that the supplied history is exhaustive.
 
 Do not admit a smaller review wait budget unless the user explicitly overrides
 it. Project the exact command into the review obligation so older installed CAS
@@ -120,9 +155,9 @@ Refresh sources and open a new generation after any repair or publication
 change; do not relabel a closed generation.
 
 For publication-bearing closeout, bind the accepted SHIP-v1, resolution digest,
-publication tuple, and CAS requirements into the next GoalContract. `$ship`
-alone updates the retained PR. A final published change invalidates earlier
-tuple-bound CAS credit.
+publication tuple, actuation review policy, and selected request identities into
+the next GoalContract. `$ship` alone updates the retained PR. A final published
+change invalidates earlier request and tuple bindings.
 
 ## Lifecycle handoff
 

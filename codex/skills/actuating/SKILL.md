@@ -59,10 +59,10 @@ The live objects are:
    `actuation-kernel-state/v1`.
 5. `closure-decision/v1`, projected by Zig from that live fold.
 
-`review-resolution/v1`, RF-v2, EF-v1, CAS receipts, and SHIP-v1 remain
-owner-specific evidence. Bind their current identities into the GoalContract
-and discharge their predicates through exact verifier commands; do not copy
-their policy logic into the kernel.
+`actuation-review-policy/v1`, `review-resolution/v1`, RF-v2, EF-v1, CAS
+receipts, and SHIP-v1 remain owner-specific evidence. Bind their current
+identities into the GoalContract and discharge their predicates through exact
+verifier commands; do not copy their policy logic into the kernel.
 
 Read [live-semantics.yaml](references/live-semantics.yaml) for canonical
 vocabulary and [closure.md](references/closure.md) for the terminal projection.
@@ -199,23 +199,53 @@ outstanding obligations.
 
 ## Review law
 
-Fresh or closure-grade review uses `$cas`. Review evidence passes through
-`$review-fold`, which classifies and quotients findings, then through
-`ledger validate review-fold` as a pure Zig invariant check. `review-resolution/v1`
-then selects at most one current owner-boundary repair. Read
-[review-resolution.md](references/review-resolution.md) before review-driven
-mutation.
+`$actuating` owns review selection, exact lens contract and instruction
+digests, standard and auxiliary roles, invalidation, repeated-review
+accounting, and closeout credit. Compile those decisions into
+`actuation-review-policy/v1` before the first run; read
+[review-policy.md](references/review-policy.md).
+
+Treat the policy as executable syntax owned by `$actuating`. Before CAS
+execution, require a passing Zig preflight decision:
+
+~~~bash
+zig run codex/skills/actuating/scripts/review_policy.zig -- \
+  --phase preflight --input <policy.json>
+~~~
+
+Before closeout, run the same checker with `--phase closeout` against the
+current snapshot. Bind both exact commands as GoalContract review obligations.
+The checker enforces stable request, binding, attempt, and lane-accounting
+laws; it does not decide whether a source trigger makes a lens applicable or
+replace exhaustive CAS history acquisition.
+
+Fresh or closure-grade review uses `$cas` only to execute the opaque request
+and return tuple-bound attempt, verdict, failure, and finding facts. Project
+only the policy request's `request_id` and `request_fingerprint` into CAS
+`workflowBinding`. Join the returned binding and target tuple back to the
+pre-bound policy request; never derive lens meaning from CAS output.
+
+Review evidence passes through `$review-fold`, which classifies and quotients
+findings, then through `ledger validate review-fold` as a pure Zig invariant
+check. `review-resolution/v1` then selects at most one current owner-boundary
+repair. Read [review-resolution.md](references/review-resolution.md) before
+review-driven mutation.
 
 For a review edit:
 
 - refresh live review sources before selection;
+- bind the complete review policy and every selected request into the
+  GoalContract digest before CAS execution;
+- pass the Zig policy preflight, verify the exact instruction bytes, and
+  project the exact CAS command into a review obligation;
 - bind the current resolution, publication epoch, and evidence identities into
   the GoalContract digest;
 - project the selected resolution node into the operation's owner, exact paths,
   and verifier-backed obligations;
 - prepare the Zig capability before mutation;
 - preserve cumulative finding semantics across adjacent repairs and reships;
-- require fresh closure-grade CAS evidence after the final published change.
+- require fresh closure-grade CAS evidence after the final published change;
+- pass the Zig policy closeout check before granting review credit.
 
 The validation verdict grants no authority. Raw review prose, a fold receipt, a CAS record, or a suggested patch never
 grants mutation. `$ship` remains the only public-effect owner. The kernel may
@@ -308,6 +338,8 @@ public effect would bypass `$ship`.
 
 - [live-semantics.yaml](references/live-semantics.yaml) — canonical worlds,
   transitions, ownership, and laws.
+- [review-policy.md](references/review-policy.md) — lens selection, exact
+  request binding, lane accounting, and invalidation.
 - [review-resolution.md](references/review-resolution.md) — resolution schema,
   strategy rules, and semantic balance.
 - [closure.md](references/closure.md) — Zig terminal projection and lifecycle

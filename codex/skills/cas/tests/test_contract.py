@@ -14,6 +14,18 @@ BOUNDARY = (ROOT / "references" / "review-proof-boundary.md").read_text(
 AGENT = (ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
 NORMALIZED_CONTRACT = " ".join((SKILL + "\n" + BOUNDARY).split())
 NORMALIZED_AGENT = " ".join(AGENT.split())
+NORMALIZED_DOCUMENTATION = " ".join(
+    (
+        SKILL
+        + "\n"
+        + AGENT
+        + "\n"
+        + "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in sorted((ROOT / "references").rglob("*.md"))
+        )
+    ).split()
+)
 FINDING_IDENTITY = json.loads(
     (ROOT / "assets" / "finding-identity.example.json").read_text(encoding="utf-8")
 )
@@ -26,8 +38,6 @@ class CasContractTests(unittest.TestCase):
             "findingId",
             "findingFingerprint",
             "reviewAttemptId",
-            "laneRole",
-            "contributesToStandardStreak",
             "reviewThreadId",
             "reviewTurnId",
             "baseSha",
@@ -42,13 +52,13 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, SKILL)
 
-    def test_cas_does_not_claim_workflow_authority(self) -> None:
+    def test_cas_states_its_positive_transport_contract(self) -> None:
         required = [
-            "CAS records evidence.",
-            "Workflows certify meaning.",
-            "It does not decide whether a finding is accepted",
-            "Do not treat per-finding identity as acceptance",
-            "Per-finding identity is not acceptance",
+            "starts, waits for, recovers, normalizes, and reports review attempts",
+            "attempt lifecycle",
+            "tuple identity",
+            "normalized verdict facts",
+            "stable finding provenance",
         ]
         for token in required:
             with self.subTest(token=token):
@@ -56,12 +66,10 @@ class CasContractTests(unittest.TestCase):
 
     def test_agent_prompt_mentions_finding_identity_boundary(self) -> None:
         required = [
-            "tuple-bound review evidence",
-            "finding identity",
-            "workflowBinding",
-            "resolution",
-            "clean-suffix meaning",
-            "mutation authority",
+            "drive tuple-bound review attempts",
+            "opaque request identity",
+            "finding provenance",
+            "normalized transport outcomes",
         ]
         for token in required:
             with self.subTest(token=token):
@@ -71,8 +79,6 @@ class CasContractTests(unittest.TestCase):
         verdict = FINDING_IDENTITY["reviewVerdict"]
         finding = verdict["findings"][0]
         self.assertEqual(verdict["status"], "findings")
-        self.assertEqual(finding["laneRole"], "standard")
-        self.assertFalse(finding["contributesToStandardStreak"])
         for key in [
             "findingId",
             "findingFingerprint",
@@ -89,29 +95,53 @@ class CasContractTests(unittest.TestCase):
         ]:
             with self.subTest(key=key):
                 self.assertIn(key, finding)
+        for key in ["lane", "laneRole", "contributesToStandardStreak"]:
+            with self.subTest(key=key):
+                self.assertNotIn(key, finding)
 
-    def test_optional_workflow_binding_is_observational(self) -> None:
+    def test_optional_workflow_binding_is_opaque_request_identity(self) -> None:
         required = [
             "workflowBinding",
-            "actuationRunId",
-            "artifactStateFingerprint",
-            "reviewContractFingerprint",
-            "resolutionDigest",
-            "selectedLenses",
-            "reviewLane",
-            "lensContract",
-            "workflow-unbound",
-            "Missing binding does not prevent review execution",
-            "must never attach or relabel",
+            "requestId",
+            "requestFingerprint",
+            "non-empty strings",
+            "returns it unchanged",
+            "import-only historical evidence",
+            "cas_rer_opaque_request_binding_v1=true",
+            "cas_review_history_v2=true",
+            "cas_review_scoped_instructions_v1=true",
         ]
         for token in required:
             with self.subTest(token=token):
                 self.assertIn(token, NORMALIZED_CONTRACT)
 
+    def test_active_cas_contract_contains_no_review_policy_vocabulary(self) -> None:
+        forbidden = [
+            "selectedLenses",
+            "reviewLane",
+            "lensContract",
+            "laneRole",
+            "contributesToStandardStreak",
+            "three-clean",
+            "clean-streak",
+            "footgun-finder",
+            "invariant-ace",
+            "complexity-mitigator",
+            "Repeated-review eligibility",
+            "closeout accounting",
+            "policy threshold",
+            "review-batch authority",
+            "Kernel review",
+            "Terminal holdout",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, NORMALIZED_DOCUMENTATION)
+
     def test_exhaustive_list_surface_is_canonical_and_complete(self) -> None:
         required = [
             "cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json",
-            "complete `CAS-LIST-v1`",
+            "complete `CAS-LIST-v2`",
             "`records` and `recordRefs`",
             "`status --latest`",
             "exact action is advertised",

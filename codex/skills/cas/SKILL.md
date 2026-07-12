@@ -9,15 +9,6 @@ description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_
 
 `$cas` is the Zig-backed app-server control skill. It owns protocol preflight, account/status probes, goal lifecycle control, direct method execution, detached review lifecycle, review evidence normalization into CAS-RER records, and safe session-inquiry replay.
 
-For review evidence, the doctrine is:
-
-```text
-CAS records evidence.
-Workflows certify meaning.
-```
-
-CAS does not own closeout policy, clean-streak eligibility, architecture hardening mode, PR closure, or semantic reviewer adjudication. Those are workflow-owned projections over CAS review evidence. CAS may maintain coordination hygiene for review reuse, including recording a three-clean reset marker and clearing reusable lock state.
-
 For review work, the governing invariant is:
 
 ```text
@@ -79,7 +70,6 @@ Repo-local subtrees include:
 .ledger/cas/review_sessions/locks/
 .ledger/cas/review_ledger/records/
 .ledger/cas/session_inquiries/
-.ledger/cas/state/clean_streak_resets/
 ```
 
 Review session records include `store_root`, `store_scope="repo-local"`,
@@ -95,44 +85,38 @@ cached receipt is an independent CAS-RER record. Legacy receipts, raw event
 logs, lane records, and parent-session rows are import inputs or attachments,
 not peer truth objects.
 
-### Optional workflow binding
+### Optional opaque request binding
 
 CAS-RER-v1 may carry an additive caller-supplied binding:
 
 ~~~json
 {
   "workflowBinding": {
-    "actuationRunId": "run-id",
-    "artifactStateFingerprint": "sha256:...",
-    "reviewContractFingerprint": "sha256:...",
-    "resolutionDigest": "sha256:...",
-    "selectedLenses": ["invariant-ace", "standard"],
-    "reviewLane": "standard",
-    "lensContract": "standard-review-v1"
+    "requestId": "opaque-caller-id",
+    "requestFingerprint": "sha256:..."
   }
 }
 ~~~
 
-`artifactStateFingerprint` binds the producer-native review tuple to the
-caller's live worktree state; it is distinct from CAS `targetFingerprint`.
-Provide `selectedLenses` already sorted and unique; the producer rejects a
-non-canonical list. `reviewLane` identifies the
-one lane exercised by this record; `lensContract` binds its exact contract.
-Pass the complete object atomically with `--workflow-binding-json JSON|@FILE`.
-When present, it participates in tuple-lock and record identity. Unfiltered
-`current`/`list` retains every same-artifact/thread binding epoch; supplying
-the flag there requests one exact epoch. Import preserves an existing binding
-but must never attach or relabel one that the source evidence did not carry.
+CAS validates only that both strings are non-empty. It treats their contents as
+opaque, includes the complete binding in tuple-lock and record identity, and
+returns it unchanged. Unfiltered `current`/`list` retains every
+same-artifact/thread binding epoch; supplying the flag requests one exact
+binding. Import preserves an existing binding but never attaches or relabels
+one that the source evidence did not carry.
 
-The binding is observational. CAS still does not decide whether the review
-contract is adequate, findings are resolved, a clean suffix qualifies, or
-mutation is authorized.
+Missing binding does not prevent review execution. Pre-0.2.75 binding objects
+remain import-only historical evidence and are rejected for new review
+commands. Check `cas capabilities` for
+`cas_rer_opaque_request_binding_v1=true` and `cas_review_history_v2=true`
+before depending on the new shape and history envelope.
 
-Missing binding does not prevent review execution and does not invalidate a
-legacy CAS record. It means `workflow-unbound`. A workflow that requires
-actuation closeout must fail closed rather than re-labeling the record after
-review. Check installed dispatcher capabilities because older versions may not
-emit this object.
+CAS 0.2.75 can pair one artifact selector (`--base`, `--commit`, or
+`--uncommitted`) with `--custom-instructions`. It transmits the exact supplied
+prompt as the custom review target and retains the selector only to compute the
+base/head/fingerprint identity used by the lock, record, and recovery paths.
+Require `cas_review_scoped_instructions_v1=true` before depending on this
+combined surface.
 
 Current production helpers:
 
@@ -153,8 +137,8 @@ Pass `--timeout-ms 1800000` for every real review wait: `review run`,
 and newer select the same 30-minute default when the flag is absent, but
 production workflow commands must remain explicit so older installed binaries
 cannot shorten the wait. Keep lane smoke and smoke-suite waits at `300000`.
-Do not use a smaller actuation-driven review budget unless the user explicitly
-overrides it. A timed-out attempt still requires same-handle recovery; never
+Do not use a smaller real-review budget unless the user explicitly overrides
+it. A timed-out attempt still requires same-handle recovery; never
 start a duplicate review for the tuple.
 
 When available, newer ledger helpers have this shape:
@@ -174,20 +158,27 @@ cas review validate-record --record <rer.json> --json
 .ledger/cas/review_ledger/records/<record_id>.json
 ```
 
-Use `cas review inspect` and `cas review validate-record` for diagnostics and schema/invariant validation only. They have no workflow closeout authority.
+Use `cas review inspect` and `cas review validate-record` for diagnostics and schema/invariant validation only.
 
-Actuation closeout acquires exhaustive live review history through the canonical
-ledger command `cas review list --cwd <repo> --base <base>
---codex-thread-id <id> --json`. Discover the installed action surface once per
-gate invocation. Prefer `review list`; use `review_session list` only when that
-exact action is advertised, and otherwise fail closed. The dispatcher must
-return one complete `CAS-LIST-v1` object with matching `records` and
-`recordRefs`. Do not substitute `status --latest` or a caller-selected record
-set.
+Acquire exhaustive live review history through the canonical ledger command:
+
+```bash
+cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json
+```
+
+Discover the installed action surface once per gate invocation. Prefer
+`review list`; use `review_session list` only when that exact action is
+advertised, and otherwise fail closed. The dispatcher must return one complete
+`CAS-LIST-v2` object with matching `records` and `recordRefs`. Do not substitute
+`status --latest` or a caller-selected record set.
+
+History lookup reconstructs target identity from the selector and exact prompt.
+When the attempt used scoped custom instructions, pass the same
+`--custom-instructions` bytes to `current` or `list`.
 
 Use `cas review_session` when low-level detached review lifecycle control matters: persisted `reviewThreadId`, wait/status/interrupt, compatibility diagnostics, approval/runtime overrides, or migration/debug receipts.
 
-For ordinary one-review closure on the current dispatcher, prefer the shipped broker:
+For ordinary one-review execution on the current dispatcher, prefer the shipped broker:
 
 ```bash
 cas review_session run --cwd <repo> --base <base> --timeout-ms 1800000 --json --fallback none
@@ -223,7 +214,7 @@ pass `--cwd <repo>`, `--store-root <dir>`, or the emitted `recordPath` through
 `--path`; the review thread id alone is not a global locator in the repo-local
 store model.
 
-Use `cas review_session lane` only for debugging, migration, or broker backend diagnostics. A persistent lane owns transport reuse only. It is not canonical proof and not a workflow policy backend.
+Use `cas review_session lane` only for debugging, migration, or broker backend diagnostics. A persistent lane owns transport reuse only.
 
 If a caller only needs low-level start/wait control, use:
 
@@ -237,7 +228,7 @@ complete tuple identity. Use `receipt normalize` for saved outputs, fixture
 summaries, or an explicit requested-tuple recheck, not as the normal review
 happy path.
 
-Do not branch production workflow logic on `receipt gate`, `lane status`, raw `start/wait` output, diagnostic proof/inspect output, or raw receipts. Normalize them to tuple-bound `reviewVerdict`, or import them into CAS-RER when the ledger surface exists, then let the owning workflow apply its policy.
+Normalize raw receipts and lifecycle output to tuple-bound `reviewVerdict`, or import them into CAS-RER when the ledger surface exists, before consumption.
 
 ## CLI spec order
 
@@ -285,12 +276,11 @@ A lane with `reviewCount=0`, no `lastReviewThreadId`, no `lastHeadSha`, and no v
 
 ### Completed review verdicts
 
-`reviewVerdict.status="findings"` is a completed review, not a CAS failure. The caller should reset clean streak and adjudicate the findings.
+`reviewVerdict.status="findings"` is a completed review, not a CAS failure.
 
 `reviewVerdict.status="clean"` is a clean completed review fact only when all hold:
 
 ```text
-backendClass is allowed for this workflow
 reviewThreadId exists
 baseSha/headSha/targetFingerprint match the requested tuple
 findingCount = 0
@@ -386,14 +376,9 @@ All review backends should produce one caller-facing surface:
 
 ## Per-finding identity projection
 
-When a completed review emits findings, CAS should expose a stable
-per-finding evidence projection so workflow receipts can join later decisions,
-patch epochs, proof epochs, and clean-review attempts back to the exact review
-row.
-
-CAS owns the identity fields as evidence. It does not decide whether a finding
-is accepted, rejected, proof-only, follow-up, blocked, which kernel status it
-has, or whether it grants mutation authority.
+When a completed review emits findings, CAS should expose a stable per-finding
+evidence projection so consumers can join later observations to the exact
+review row.
 
 Each normalized finding row should carry:
 
@@ -402,9 +387,6 @@ Each normalized finding row should carry:
   "findingId": "cas-finding:<reviewAttemptId>:<ordinal-or-source-id>",
   "findingFingerprint": "best-effort-cross-attempt-hash",
   "reviewAttemptId": "cas-review-attempt-id",
-  "lane": "standard|footgun-finder|invariant-ace|complexity-mitigator|other",
-  "laneRole": "standard|auxiliary|unknown",
-  "contributesToStandardStreak": false,
   "reviewThreadId": "thread-id",
   "reviewTurnId": "turn-id",
   "baseSha": "base",
@@ -428,27 +410,16 @@ Identity semantics:
 findingId = exact emitted finding row in one CAS review attempt
 findingFingerprint = best-effort same issue across attempts
 reviewAttemptId = stable attempt row or compatibility projection ID
-laneRole = standard only when the attempt is the ordinary standard lane
-contributesToStandardStreak = true only for normalized clean standard attempts, not finding rows
-source_validity = valid only when the attempt is tuple-bound to the intended current artifact
 ```
 
 If native CAS output cannot provide a source finding ID, compatibility
 normalization may synthesize `findingId` from review attempt identity, tuple,
-lane, normalized location, title/body hashes, and ordinal. It must still mark
+normalized location, title/body hashes, and ordinal. It must still mark
 cross-attempt matching as best-effort through `findingFingerprint`.
 
-CAS transports identity; caller workflows own closure accounting. A custom lens
-with `base=unknown`, `target_identity_unavailable`, missing head, missing target
-fingerprint, or stale tuple binding must be projected as `invalid-proof` for
-auxiliary closeout. Dirty invalid-proof findings may still be useful review
-pressure after owner-boundary validation, but clean invalid-proof output must not
-clear an auxiliary lane or standard clean-review requirement.
-
 Downstream aliases may convert these fields to snake_case (`finding_id`,
-`finding_fingerprint`, `review_attempt_id`, and so on), but CAS should preserve
-the tuple and thread fields needed by `$review-fold`, `$actuating`, and `$seq`
-to cite evidence without re-parsing review prose.
+`finding_fingerprint`, `review_attempt_id`, and so on), but CAS preserves the
+tuple and thread fields needed to cite evidence without re-parsing review prose.
 
 ## Codex thread scoping
 
@@ -484,7 +455,7 @@ the wrapper/workflow layer.
 base/head/fingerprint. Otherwise normalize the receipt or recover/wait on the
 same review attempt.
 
-## Persistent lane policy
+## Persistent lane readiness
 
 Persistent lane is canonical only when:
 
@@ -495,7 +466,7 @@ lane review emits normalized reviewVerdict
 lane failure surfaces include reviewAttemptPhase and reviewAttemptExists
 ```
 
-If smoke is missing or recently failed with `pre_review_lane_transport_lost`, do not rely on persistent lane continuity for repeated-review policy. Use `start --wait`, normalized receipts, or explicit native fallback as caller-owned review facts.
+If smoke is missing or recently failed with `pre_review_lane_transport_lost`, do not rely on persistent lane continuity for repeated independent attempts. Use `start --wait`, normalized receipts, or explicit native fallback.
 
 ## Tuple concurrency guard
 
@@ -544,25 +515,8 @@ account_resource_exhausted => block same-account retry until reset/override
 stale => require explicit takeover
 ```
 
-Default repeated review commands consume cached terminal evidence; they are not
-new independent review runs. For workflows that require multiple independent CAS
-reviews on the same tuple, callers must request each additional post-terminal
-attempt with `--fresh-attempt REASON` and evaluate the resulting CAS-RER records
-or tuple-bound compatibility projections outside CAS. CAS does not own final
-eligibility or closeout strength.
-
-When the same Codex thread records three consecutive reusable clean terminal
-reviews for the same tuple lock, CAS writes:
-
-```text
-.ledger/cas/state/clean_streak_resets/<tuple_hash>-<timestamp>.json
-```
-
-Then CAS removes only the reusable tuple lock. The three clean review records
-remain in `.ledger/cas/review_sessions/` and/or `.ledger/cas/review_ledger/`.
-This preserves evidence of the clean streak while allowing a later Codex session
-or next run to review again instead of being permanently satisfied by a prior
-three-clean state. A findings verdict resets the clean counter.
+A terminal or normalized tuple lock returns its existing verdict. Supply
+`--fresh-attempt REASON` to start another independent attempt on the same tuple.
 
 ## Hooks, approvals, and fallback
 
@@ -617,16 +571,16 @@ CAS Review:
 
 - A lane is not a review.
 - A review starts at `reviewThreadId`.
-- CAS records tuple-bound review evidence; caller workflows decide what that means.
+- CAS records tuple-bound review evidence and opaque request identity.
 - Use a 30-minute real-review wait budget; keep smoke/control waits at 5 minutes.
 - Use `cas review_session run` as the current normal one-review path unless the installed dispatcher exposes `cas review run`.
 - Do not treat `pre_review_lane_transport_lost` as a failed review.
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.
 - Do not manually list and `jq` review-session records when latest-session status is enough; use `cas review_session status --latest --json`, then verify tuple fields before acting.
 - Do not treat completed findings as transport failure.
-- Do not treat per-finding identity as acceptance, rejection, kernel status, clean-streak authority, or mutation authority.
+- Per-finding identity is transport provenance.
 - Do not treat `usageLimitExceeded` as reviewer output or transport failure.
-- Do not rely on persistent lane continuity for repeated-review policy until first-review creation smoke is current.
+- Treat persistent-lane continuity as current only after first-review creation smoke passes.
 - `start --wait` evidence is workflow input only after it is represented as tuple-bound review evidence; otherwise import, normalize, or recover first.
 - `cas smoke_check` is protocol validation, not review output.
 - Native fallback is degraded verdict preservation, not detached CAS review transport.
