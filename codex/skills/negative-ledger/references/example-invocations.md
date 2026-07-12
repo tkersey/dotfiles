@@ -1,5 +1,42 @@
 # Example Invocations
 
+## Implicit Route Check Before Retry
+
+```md
+The same parser-tolerance repair failed review again. Check what we already tried before choosing another route.
+```
+
+Expected disposition:
+
+```text
+mapped
+```
+
+Expected flow:
+
+```bash
+ledger map \
+  --route "parser-tolerance" \
+  --cluster "parser-compatibility" \
+  --artifact "<immutable-artifact-state-id>"
+```
+
+Do not capture merely because the cue activated the skill. Capture only after the current failure has an inspectable witness and a future-routing delta.
+
+## Transient Failure Is No-Op
+
+```md
+A unit test is red while the first implementation is still incomplete.
+```
+
+Expected disposition:
+
+```text
+no-op
+```
+
+A transient implementation failure is not durable negative evidence unless it falsifies a named route under representative conditions.
+
 ## Capture and Admit a Failed Route
 
 ```md
