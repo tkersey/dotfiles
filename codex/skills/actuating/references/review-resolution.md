@@ -30,13 +30,13 @@ review_resolution:
     policy_ref:
     policy_digest:
     review_contract_fingerprint:
-    selected_lenses: [standard]
-    standard_required_clean_runs: 3
+    selected_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator]
+    standard_required_clean_runs: 5
     standard_clean_attempt_ids: []
     auxiliary_requests:
-      footgun-finder: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
-      invariant-ace: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
-      complexity-mitigator: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
+      footgun-finder: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
+      invariant-ace: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
+      complexity-mitigator: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
   decisions:
     - decision_id:
       owner_boundary:
@@ -180,10 +180,11 @@ execution.
 
 ## Review contract
 
-Build the review profile from [review-policy.md](review-policy.md). RF-v2
-routing obligations and changed surfaces select auxiliary lenses; the policy
-artifact binds each selection to exact instruction bytes before CAS execution.
-CAS returns only the opaque request binding and transport facts.
+Build the review profile from [review-policy.md](review-policy.md). Select every
+registered auxiliary lens. RF-v2 routing obligations and changed surfaces
+refine each lens's scope; they do not authorize omission. The policy artifact
+binds every request to exact instruction bytes before CAS execution. CAS
+returns only the opaque request binding and transport facts.
 
 A post-run label cannot create auxiliary evidence. Credit requires an exact
 join among the pre-bound policy request, its actuation event, the returned CAS

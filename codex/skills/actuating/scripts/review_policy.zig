@@ -2,6 +2,7 @@ const std = @import("std");
 
 const MaxInputBytes = 4 * 1024 * 1024;
 const MaxReferenceBytes = 4 * 1024 * 1024;
+const MinimumStandardCleanRuns = 5;
 
 const Phase = enum {
     preflight,
@@ -66,7 +67,7 @@ const Request = struct {
     instructions_ref: ?[]const u8 = null,
     instruction_digest: ?[]const u8 = null,
     state: []const u8,
-    not_required_reason: ?[]const u8 = null,
+    not_required_reason: ?[]const u8 = null, // Legacy input retained only for explicit fail-closed rejection.
     attempts: []const Attempt,
     review_fold_refs: []const []const u8,
 };
@@ -221,7 +222,7 @@ fn validatePolicy(
     if (!isDigest(policy.goal_contract_digest)) try issues.add(allocator, "goal-contract-digest");
     if (policy.resolution_digest) |digest| if (!isDigest(digest)) try issues.add(allocator, "resolution-digest");
     if (!isDigest(policy.artifact.state_fingerprint)) try issues.add(allocator, "artifact-state-fingerprint");
-    if (policy.standard_required_clean_runs == 0) try issues.add(allocator, "standard-clean-runs-zero");
+    if (policy.standard_required_clean_runs < MinimumStandardCleanRuns) try issues.add(allocator, "standard-clean-runs-below-policy-minimum");
     if (policy.required_lenses.len == 0 or policy.requests.len == 0) try issues.add(allocator, "requests-required");
     if (policy.required_lenses.len != policy.requests.len) try issues.add(allocator, "registry-request-cardinality");
 
@@ -239,7 +240,7 @@ fn validatePolicy(
         if (containsRequestIdentity(policy.requests[0..request_index], request)) try issues.add(allocator, "request-identity-duplicate");
         if (!containsString(policy.required_lenses, request.lens)) try issues.add(allocator, "request-lens-not-registered");
         if (!stringIn(request.role, &.{ "standard", "auxiliary" })) try issues.add(allocator, "request-role");
-        if (!stringIn(request.state, &.{ "not-required", "selected-pending", "clean", "findings-folded", "candidate-pressure", "blocked", "rerun-required" })) {
+        if (!stringIn(request.state, &.{ "selected-pending", "clean", "findings-folded", "candidate-pressure", "blocked", "rerun-required" })) {
             try issues.add(allocator, "request-state");
         }
 
@@ -249,12 +250,16 @@ fn validatePolicy(
         }
 
         if (std.mem.eql(u8, request.state, "not-required")) {
-            if (!std.mem.eql(u8, request.role, "auxiliary")) try issues.add(allocator, "not-required-role");
-            if (!optionalNonblank(request.not_required_reason)) try issues.add(allocator, "not-required-reason");
+            if (std.mem.eql(u8, request.role, "auxiliary")) {
+                try issues.add(allocator, "auxiliary-request-required");
+            } else {
+                try issues.add(allocator, "not-required-role");
+            }
             if (hasBoundRequest(request) or request.attempts.len != 0 or request.review_fold_refs.len != 0) {
                 try issues.add(allocator, "not-required-has-execution-evidence");
             }
         } else {
+            if (optionalNonblank(request.not_required_reason)) try issues.add(allocator, "selected-request-has-not-required-reason");
             try validateBoundRequest(allocator, io, request, verify_references, issues);
         }
 
@@ -345,7 +350,7 @@ fn validatePreflight(allocator: std.mem.Allocator, policy: Policy, issues: *Issu
         if (std.mem.eql(u8, request.role, "standard") and !std.mem.eql(u8, request.state, "selected-pending")) {
             try issues.add(allocator, "preflight-standard-state");
         }
-        if (std.mem.eql(u8, request.role, "auxiliary") and !stringIn(request.state, &.{ "selected-pending", "not-required" })) {
+        if (std.mem.eql(u8, request.role, "auxiliary") and !std.mem.eql(u8, request.state, "selected-pending")) {
             try issues.add(allocator, "preflight-auxiliary-state");
         }
     }
@@ -371,7 +376,7 @@ fn validateCloseout(allocator: std.mem.Allocator, policy: Policy, standard_index
     }
 
     for (policy.requests) |request| {
-        if (!std.mem.eql(u8, request.role, "auxiliary") or std.mem.eql(u8, request.state, "not-required")) continue;
+        if (!std.mem.eql(u8, request.role, "auxiliary")) continue;
         if (request.attempts.len == 0) {
             try issues.add(allocator, "auxiliary-evidence-required");
             continue;
@@ -475,10 +480,11 @@ const digest_a = "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 const digest_b = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const digest_c = "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
 const digest_d = "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
+const digest_e = "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 
 fn makeAttempt(id: []const u8, fingerprint: []const u8, verdict: []const u8, findings: usize) Attempt {
     return .{
-        .workflow_binding = .{ .requestId = if (std.mem.eql(u8, fingerprint, digest_a)) "standard-request" else if (std.mem.eql(u8, fingerprint, digest_c)) "invariant-request" else "complexity-request", .requestFingerprint = fingerprint },
+        .workflow_binding = .{ .requestId = if (std.mem.eql(u8, fingerprint, digest_a)) "standard-request" else if (std.mem.eql(u8, fingerprint, digest_e)) "footgun-request" else if (std.mem.eql(u8, fingerprint, digest_c)) "invariant-request" else "complexity-request", .requestFingerprint = fingerprint },
         .review_attempt_id = id,
         .review_thread_id = id,
         .review_turn_id = id,
@@ -500,15 +506,18 @@ const standard_attempts = [_]Attempt{
     makeAttempt("standard-1", digest_a, "clean", 0),
     makeAttempt("standard-2", digest_a, "clean", 0),
     makeAttempt("standard-3", digest_a, "clean", 0),
+    makeAttempt("standard-4", digest_a, "clean", 0),
+    makeAttempt("standard-5", digest_a, "clean", 0),
 };
+const footgun_attempts = [_]Attempt{makeAttempt("footgun-1", digest_e, "clean", 0)};
 const invariant_attempts = [_]Attempt{makeAttempt("invariant-1", digest_c, "clean", 0)};
 const complexity_attempts = [_]Attempt{makeAttempt("complexity-1", digest_d, "findings", 1)};
 const required_lenses = [_][]const u8{ "standard", "footgun-finder", "invariant-ace", "complexity-mitigator" };
-const standard_ids = [_][]const u8{ "standard-1", "standard-2", "standard-3" };
+const standard_ids = [_][]const u8{ "standard-1", "standard-2", "standard-3", "standard-4", "standard-5" };
 const fold_refs = [_][]const u8{"rf:complexity-1"};
 const closeout_requests = [_]Request{
     .{ .request_id = "standard-request", .request_fingerprint = digest_a, .lens = "standard", .role = "standard", .selection_reason = "closure-grade", .contract_id = "standard-review-v1", .contract_ref = "/dev/null", .contract_digest = digest_a, .instructions_ref = "/dev/null", .instruction_digest = digest_a, .state = "clean", .attempts = &standard_attempts, .review_fold_refs = &.{} },
-    .{ .request_id = "footgun-request", .lens = "footgun-finder", .role = "auxiliary", .selection_reason = "no applicable trigger", .state = "not-required", .not_required_reason = "source-bound non-applicability", .attempts = &.{}, .review_fold_refs = &.{} },
+    .{ .request_id = "footgun-request", .request_fingerprint = digest_e, .lens = "footgun-finder", .role = "auxiliary", .selection_reason = "required auxiliary lane", .contract_id = "footgun-lens-v1", .contract_ref = "/dev/null", .contract_digest = digest_e, .instructions_ref = "/dev/null", .instruction_digest = digest_e, .state = "clean", .attempts = &footgun_attempts, .review_fold_refs = &.{} },
     .{ .request_id = "invariant-request", .request_fingerprint = digest_c, .lens = "invariant-ace", .role = "auxiliary", .selection_reason = "authority boundary changed", .contract_id = "invariant-gate-v1", .contract_ref = "/dev/null", .contract_digest = digest_c, .instructions_ref = "/dev/null", .instruction_digest = digest_c, .state = "clean", .attempts = &invariant_attempts, .review_fold_refs = &.{} },
     .{ .request_id = "complexity-request", .request_fingerprint = digest_d, .lens = "complexity-mitigator", .role = "auxiliary", .selection_reason = "cross-file state", .contract_id = "complexity-preflight-v1", .contract_ref = "/dev/null", .contract_digest = digest_d, .instructions_ref = "/dev/null", .instruction_digest = digest_d, .state = "findings-folded", .attempts = &complexity_attempts, .review_fold_refs = &fold_refs },
 };
@@ -521,7 +530,7 @@ fn validCloseoutPolicy(requests: []const Request) Policy {
         .goal_contract_digest = digest_a,
         .resolution_digest = digest_c,
         .artifact = .{ .repo = "/repo", .base_ref = "main", .base_sha = "base", .head_sha = "head", .state_fingerprint = digest_b },
-        .standard_required_clean_runs = 3,
+        .standard_required_clean_runs = MinimumStandardCleanRuns,
         .required_lenses = &required_lenses,
         .requests = requests,
         .standard_clean_attempt_ids = &standard_ids,
@@ -549,7 +558,7 @@ test "closeout accepts generic registry coverage and disjoint lane accounting" {
 test "preflight accepts selected rows without review evidence" {
     var requests = closeout_requests;
     for (&requests) |*request| {
-        if (!std.mem.eql(u8, request.state, "not-required")) request.state = "selected-pending";
+        request.state = "selected-pending";
         request.attempts = &.{};
         request.review_fold_refs = &.{};
     }
@@ -558,6 +567,23 @@ test "preflight accepts selected rows without review evidence" {
     var issues = try validateForTest(policy, .preflight);
     defer issues.deinit(std.testing.allocator);
     try std.testing.expectEqual(@as(usize, 0), issues.values.items.len);
+}
+
+test "policy requires at least five standard clean runs" {
+    var policy = validCloseoutPolicy(&closeout_requests);
+    policy.standard_required_clean_runs = MinimumStandardCleanRuns - 1;
+    var issues = try validateForTest(policy, .closeout);
+    defer issues.deinit(std.testing.allocator);
+    try std.testing.expect(hasIssue(issues, "standard-clean-runs-below-policy-minimum"));
+}
+
+test "every auxiliary lens is mandatory" {
+    var requests = closeout_requests;
+    requests[1].state = "not-required";
+    var issues = try validateForTest(validCloseoutPolicy(&requests), .closeout);
+    defer issues.deinit(std.testing.allocator);
+    try std.testing.expect(hasIssue(issues, "request-state"));
+    try std.testing.expect(hasIssue(issues, "auxiliary-request-required"));
 }
 
 test "duplicate attempts cannot manufacture a clean suffix" {
@@ -631,7 +657,7 @@ test "skill doctrine preserves the policy and transport owner split" {
     for ([_][]const u8{ "actuation-review-policy/v1", "review_policy.zig", "--phase preflight", "--phase closeout" }) |token| {
         try std.testing.expect(std.mem.indexOf(u8, actuating, token) != null or std.mem.indexOf(u8, policy, token) != null or std.mem.indexOf(u8, goal_actuating, token) != null);
     }
-    for ([_][]const u8{ "footgun-finder", "invariant-ace", "complexity-mitigator", "required_lenses", "standard_clean_attempt_ids", "Auxiliary attempts never contribute" }) |token| {
+    for ([_][]const u8{ "footgun-finder", "invariant-ace", "complexity-mitigator", "required_lenses", "standard_clean_attempt_ids", "at least five", "concurrently with the first standard attempt", "Auxiliary attempts never contribute" }) |token| {
         try std.testing.expect(std.mem.indexOf(u8, policy, token) != null);
     }
     for ([_][]const u8{ "selectedLenses", "reviewLane", "lensContract", "footgun-finder", "invariant-ace", "complexity-mitigator", "clean-streak" }) |token| {

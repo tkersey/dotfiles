@@ -23,7 +23,7 @@ actuation_review_policy:
     base_sha:
     head_sha:
     state_fingerprint:
-  standard_required_clean_runs: 3
+  standard_required_clean_runs: 5
   required_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator]
   requests:
     - request_id:
@@ -36,8 +36,7 @@ actuation_review_policy:
       contract_digest: null | sha256:...
       instructions_ref: null | path
       instruction_digest: null | sha256:...
-      state: not-required | selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
-      not_required_reason:
+      state: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
       attempts:
         - workflow_binding:
             requestId:
@@ -71,8 +70,8 @@ zig run codex/skills/actuating/scripts/review_policy.zig -- \
 ~~~
 
 It emits `actuation-review-policy-decision/v1`, grants no authority, and
-mutates no storage. `preflight` rejects review evidence and requires selected
-requests to be pending. `closeout` checks registry/request bijection, exact
+mutates no storage. `preflight` rejects review evidence and requires every
+request to be pending. `closeout` checks registry/request bijection, exact
 referenced contract and instruction bytes, opaque binding and artifact
 identity, source quality, distinct attempts, disjoint lane accounting, and
 terminal request states.
@@ -90,18 +89,17 @@ CAS. Project the exact CAS command and the instruction-digest verifier into the
 review obligation. Post-run labels, reconstructed prompts, and legacy semantic
 bindings cannot satisfy that obligation.
 
-A `not-required` row has no request fingerprint, pinned contract,
-instructions, attempts, or fold refs. Its source-bound reason is the evidence
-for non-selection.
+Every registry row is selected and fully bound. Closure-grade review has no
+auxiliary non-selection state.
 
 ## Lens registry and selection
 
-| Lens | Role | Contract | Select when |
+| Lens | Role | Contract | Required focus |
 | --- | --- | --- | --- |
-| `standard` | standard | `standard-review-v1` | Every closure-grade review campaign |
-| `footgun-finder` | auxiliary | `footgun-lens-v1` | RF-v2 routes to it, or the change alters an API, CLI, config, default, fallback, cleanup, permission, example, or workflow affordance |
-| `invariant-ace` | auxiliary | `invariant-gate-v1` | RF-v2 routes to it, or the change alters state ownership, validation, transitions, identity, authority, replay, idempotency, or an impossible-state claim |
-| `complexity-mitigator` | auxiliary | `complexity-preflight-v1` | RF-v2 routes to it, or reviewability stalls through boolean soup, mixed responsibilities, repeated owner-boundary churn, or comprehension-heavy cross-file state |
+| `standard` | standard | `standard-review-v1` | General correctness in every closure-grade campaign |
+| `footgun-finder` | auxiliary | `footgun-lens-v1` | API, CLI, config, default, fallback, cleanup, permission, example, and workflow affordances |
+| `invariant-ace` | auxiliary | `invariant-gate-v1` | State ownership, validation, transitions, identity, authority, replay, idempotency, and impossible-state claims |
+| `complexity-mitigator` | auxiliary | `complexity-preflight-v1` | Boolean soup, mixed responsibilities, repeated owner-boundary churn, and comprehension-heavy cross-file state |
 
 The selected lens skill is the instruction authority. Resolve its operative
 contract and every referenced resource it requires into a manifest, persist
@@ -109,10 +107,10 @@ that manifest at `contract_ref`, and set `contract_digest` to the SHA-256 of
 its exact bytes. Render the review-only request from that pinned contract,
 persist the instruction bytes, and hash them before CAS execution. Before the
 run and after exhaustive history acquisition, verify the manifest digest,
-every resource digest named by the manifest, and the instruction digest. A
-lens may be `not-required` only with a source-bound reason that addresses every
-applicable trigger. Increment `contract_id` whenever the operative lens
-contract changes.
+every resource digest named by the manifest, and the instruction digest.
+RF-v2 routing obligations and changed surfaces refine request-specific scope;
+they never suppress a registered auxiliary lens. Increment `contract_id`
+whenever the operative lens contract changes.
 
 Use this wrapper when materializing each selected request:
 
@@ -133,11 +131,9 @@ verifying its operative contract does not satisfy a selected request.
 Copy the current registry names into `required_lenses` during source-to-open
 inspection. The Zig checker is deliberately registry-generic: it proves a
 bijection between that bound list and the request rows without hard-coding
-today's lens names or selection triggers. Every policy snapshot accounts for
-all four current registry entries exactly once.
-`request_id` values are unique within the policy. `standard` is selected for a
-closure-grade campaign; each auxiliary entry is either selected or
-`not-required` with its reason.
+today's lens names. Every policy snapshot binds all four current registry
+entries exactly once. `request_id` values are unique within the policy, and
+every request begins `selected-pending`.
 
 ## Application law
 
@@ -147,9 +143,12 @@ Before execution, require `cas_rer_opaque_request_binding_v1=true`,
 dispatcher may still drive exploratory reviews, but it cannot satisfy this
 policy's bound closeout requests.
 
-Run each selected auxiliary request through an independent CAS attempt. Run the
-standard request through distinct attempts until its current clean suffix
-reaches `standard_required_clean_runs`. Each command carries:
+Launch every auxiliary request concurrently with the first standard attempt as
+one dispatch wave against the same bound artifact. Do not wait for a standard
+result before starting an auxiliary lane. Run later standard attempts as fresh,
+distinct, ordered attempts until the current clean suffix reaches
+`standard_required_clean_runs`, which must be at least five. Each command
+carries:
 
 ~~~bash
 cas review run --cwd <repo> --base <base-ref> \
@@ -197,15 +196,16 @@ valid auxiliary findings        -> require RF-v2 fold; accepted artifact changes
 invalid clean                    -> no credit; rerun the exact current request
 invalid findings                 -> candidate-pressure until owner-boundary validation and a valid rerun
 selected-pending                 -> blocks closeout
-not-required                     -> allowed only with a source-bound reason
 valid standard clean             -> append one distinct ordered attempt ID
 standard findings or code change -> reset the current standard clean suffix
 ~~~
 
 Only distinct, current, ordered standard attempts contribute to
-`standard_clean_attempt_ids`. Auxiliary attempts never contribute. The policy
-artifact, not CAS history or lock state, determines whether the required clean
-suffix and every selected auxiliary request are satisfied.
+`standard_clean_attempt_ids`. Auxiliary attempts never contribute: auxiliary
+clean results only discharge their execution obligation, while auxiliary
+findings enter RF-v2. The policy artifact, not CAS history or lock state,
+determines whether the required clean suffix and every auxiliary request are
+satisfied.
 
 The closeout checker requires `standard_clean_attempt_ids` to equal the exact
 trailing required clean suffix; it rejects duplicate attempt identity,
@@ -218,6 +218,10 @@ Invalidate affected review requests when any bound artifact identity,
 contract byte, instruction byte, contract ID, policy selection, resolution
 digest, or publication epoch changes. Recover timeouts through the same CAS
 handle; do not turn recovery into another independent attempt.
+
+Any accepted artifact change invalidates the standard suffix and every
+auxiliary request. Relaunch the full concurrent wave against the new artifact;
+no auxiliary result from the preceding artifact survives as closeout evidence.
 
 Adding a lens, renaming a lens, changing a contract, or changing the required
 clean count must require zero CAS schema or implementation changes.

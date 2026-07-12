@@ -139,10 +139,19 @@ zig run codex/skills/actuating/scripts/review_policy.zig -- \
   --phase preflight --input <policy.json>
 ~~~
 
+Interpret the passing policy as one concurrent initial wave: dispatch the
+first standard request and every auxiliary request in parallel against the
+same tuple. Then continue the standard lane with fresh, ordered attempts until
+it has at least five consecutive clean results. Do not serialize auxiliary
+lanes behind the standard streak. Auxiliary results may introduce findings or
+discharge their own request, but their attempt identities never enter
+`standard_clean_attempt_ids`.
+
 After exhaustive current CAS history has been joined into the policy snapshot,
 execute the same checker with `--phase closeout`. The Zig decision checks the
-stable policy algebra; `$goal-actuating` still inspects source-bound trigger
-applicability and proves that the supplied history is exhaustive.
+stable policy algebra; `$goal-actuating` still proves that the concurrent wave
+was dispatched from the pre-bound requests and that the supplied history is
+exhaustive.
 
 Do not admit a smaller review wait budget unless the user explicitly overrides
 it. Project the exact command into the review obligation so older installed CAS
@@ -152,7 +161,8 @@ same review attempt; recover its handle instead of starting a duplicate tuple.
 The current resolution may select at most one owner node. Project that node's
 ID, owner, paths, and proof requirements into the operation and obligations.
 Refresh sources and open a new generation after any repair or publication
-change; do not relabel a closed generation.
+change; do not relabel a closed generation. Relaunch the first standard attempt
+and every auxiliary request concurrently for the new artifact.
 
 For publication-bearing closeout, bind the accepted SHIP-v1, resolution digest,
 publication tuple, actuation review policy, and selected request identities into

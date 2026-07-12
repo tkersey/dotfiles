@@ -205,6 +205,12 @@ accounting, and closeout credit. Compile those decisions into
 `actuation-review-policy/v1` before the first run; read
 [review-policy.md](references/review-policy.md).
 
+Require at least five consecutive, distinct, current standard clean attempts.
+Bind every registered auxiliary lens and have `$goal-actuating` launch all
+auxiliary requests concurrently with the first standard attempt. Auxiliary
+clean results discharge only their own request; auxiliary findings enter
+RF-v2; no auxiliary attempt contributes to the standard clean suffix.
+
 Treat the policy as executable syntax owned by `$actuating`. Before CAS
 execution, require a passing Zig preflight decision:
 
@@ -238,6 +244,8 @@ For a review edit:
   GoalContract digest before CAS execution;
 - pass the Zig policy preflight, verify the exact instruction bytes, and
   project the exact CAS command into a review obligation;
+- launch the first standard request and all auxiliary requests as one
+  concurrent wave against the same artifact;
 - bind the current resolution, publication epoch, and evidence identities into
   the GoalContract digest;
 - project the selected resolution node into the operation's owner, exact paths,
