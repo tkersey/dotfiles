@@ -237,6 +237,22 @@ check. `review-resolution/v1` then selects at most one current owner-boundary
 repair. Read [review-resolution.md](references/review-resolution.md) before
 review-driven mutation.
 
+For every accepted RF-v2 equivalence class, invoke `$universalist` at the
+classified owner boundary and compile one `correctness_refinement`. Bind the
+class, discrepancy, law delta, smallest owner construction, preservation
+witness, and strict progress witness. Before mutation, require a passing
+source-local Zig decision:
+
+~~~bash
+zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+  --phase preflight --input <resolution.json>
+~~~
+
+The checker enforces the structural class-to-refinement join. It does not
+validate the entire resolution, execute witness commands, select a strategy,
+grant authority, or move review semantics into CAS. `$goal-actuating` must bind
+the complete current resolution and observe both witness obligations.
+
 For a review edit:
 
 - refresh live review sources before selection;
@@ -248,15 +264,19 @@ For a review edit:
   concurrent wave against the same artifact;
 - bind the current resolution, publication epoch, and evidence identities into
   the GoalContract digest;
+- pass the Zig correctness-refinement preflight and project both preservation
+  and progress witness commands into verifier-backed obligations;
 - project the selected resolution node into the operation's owner, exact paths,
   and verifier-backed obligations;
 - prepare the Zig capability before mutation;
 - preserve cumulative finding semantics across adjacent repairs and reships;
 - require fresh closure-grade CAS evidence after the final published change;
-- pass the Zig policy closeout check before granting review credit.
+- pass the Zig policy and correctness-refinement closeout checks, with both
+  witness obligations observed, before granting review credit.
 
-The validation verdict grants no authority. Raw review prose, a fold receipt, a CAS record, or a suggested patch never
-grants mutation. `$ship` remains the only public-effect owner. The kernel may
+The validation verdict grants no authority. Raw review prose, a fold receipt,
+a CAS record, or a suggested patch never grants mutation. `$ship` remains the
+only public-effect owner. The kernel may
 execute a verifier that observes those owner artifacts, but it never publishes,
 classifies review prose, or invents a repair strategy.
 

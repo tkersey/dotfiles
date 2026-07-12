@@ -55,7 +55,7 @@ goal_contract:
     active: true | false
     relation_to_goal: in-scope-only | include-nearby-risk | adjudicate-all
     default_disposition: classify-before-resolution
-    repair_policy: semantic-non-growth
+    repair_policy: correctness-refinement
     strategy_owner: review-resolution/v1
     reabstraction_trigger:
       - repeated-class
@@ -85,7 +85,12 @@ invoke `ledger` directly.
 4. Preserve the accepted plan/spec without reinterpretation.
 5. Set review policy to classification before resolution; raw findings never
    become work.
-6. Use semantic non-growth for review-driven code changes.
+6. For review-driven code changes, preserve already-valid observations and
+   require strict progress against the accepted counterexample class. Admit new
+   semantic machinery only when an accepted law requires it. Bind the full
+   resolution digest in `artifacts_to_inspect`; put the exact witness commands
+   in `primary_checks` as `correctness:<decision_id>:preservation` and
+   `correctness:<decision_id>:progress`.
 7. Mark unsupported durable coordination explicitly; local workflows may not
    simulate claims or fencing.
 8. Hand the contract to `$goal-actuating`. Use `$goal-workgraph` only when

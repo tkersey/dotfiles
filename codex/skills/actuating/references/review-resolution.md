@@ -42,8 +42,22 @@ review_resolution:
     - decision_id:
       owner_boundary:
       finding_ids: []
-      liability_classes: []
+      liability_classes: [] # exactly one RF-v2 quotient_key
       strategy: local-repair | replacement-kernel | blocked
+      correctness_refinement: # required unless strategy=blocked
+        class_ref:
+        discrepancy: excess | deficit | incoherence | partiality | misbinding
+        law_delta:
+        owner_refinement:
+          kind: restore-existing-law | strengthen-representation | replace-owner
+          construction:
+        preservation_witness:
+          statement:
+          verifier: []
+        progress_witness:
+          kind: exclude | restore | reconcile | totalize | rebind
+          statement:
+          verifier: []
       alternatives_considered: []
       falsifier:
       abstraction_account:
@@ -103,12 +117,82 @@ authority. In review closeout, a pending multi-owner resolution may omit nodes
 for non-current decisions. Re-fold the changed artifact before admitting the
 next owner node; closure rejects `pending`.
 
-Every RF-v2 equivalence class is consumed by exactly one resolution decision.
-Do not split one quotiented cause into multiple comment-shaped decisions; if
-the quotient is wrong, correct the RF-v2 classification first.
+Every accepted RF-v2 equivalence class containing a `resolution-input` finding
+is consumed by exactly one resolution decision. Do not split one quotiented
+cause into multiple comment-shaped decisions; if the quotient is wrong,
+correct the RF-v2 classification first. Each decision binds exactly one
+liability class; `correctness_refinement.class_ref` must be that same class.
+Across fresh folds, the same quotient key remains one class and extends that
+decision's finding set. A new quotient key requires a new decision.
 
 Record rejected alternatives and a falsifier for every material decision.
 Judgment owns the strategy; comment count does not.
+
+## Correctness refinement
+
+Treat each accepted RF-v2 equivalence class as a counterexample to an intended
+law, not as a patch instruction. Invoke `$universalist` on that owner boundary
+and materialize exactly one `correctness_refinement` before selecting mutation.
+The refinement names:
+
+- the quotiented counterexample class;
+- the discrepancy between intended and observed behavior;
+- the law restored or strengthened;
+- the smallest owner construction that makes the law structural;
+- a preservation witness with exact verifier argv for behavior that was already
+  valid; and
+- a progress witness with exact verifier argv that excludes or repairs the
+  whole class.
+
+The discrepancy fixes the progress operation:
+
+~~~text
+excess -> exclude
+deficit -> restore
+incoherence -> reconcile
+partiality -> totalize
+misbinding -> rebind
+~~~
+
+`local-repair` may only use `restore-existing-law`. Use
+`replacement-kernel` for `strengthen-representation` or `replace-owner` when
+the existing owner cannot make the law structural. This distinction limits
+the incision: correctness must strictly improve, but the artifact need not
+grow a new abstraction when its current owner already expresses the law.
+
+Run the source-local checker before review mutation and again at closeout:
+
+~~~bash
+zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+  --phase preflight --input <resolution.json>
+zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+  --phase closeout --input <resolution.json>
+~~~
+
+This is a correctness-refinement sub-contract checker, not a complete validator
+for every `review-resolution/v1` field. It checks the embedded RF-v2 class,
+decision, witness argv, strategy, status, and semantic-balance joins. The
+GoalContract and `$goal-actuating` still bind the current artifact, review
+profile, resolution digest, selected node, abstraction account, and publication
+evidence. They must execute and observe both witness commands against the
+current artifact; the checker does not execute them or compare prior snapshots.
+
+Bind both witness commands into the next GoalContract before mutation as
+`correctness:<decision_id>:preservation` and
+`correctness:<decision_id>:progress`. Their statements and argv must exactly
+match the refinement. A passing decision proves structural consistency only;
+it grants no authority or semantic truth. A `blocked` decision retains its
+exact class and finding set, omits `correctness_refinement`, and necessarily
+produces a blocked preflight.
+Across adjacent repairs and reships, retain prior class bindings and witnesses.
+A new finding extends the refinement set; it never erases prior progress.
+`$goal-actuating` proves that cumulative relation from the bound resolution
+history; the single-snapshot checker cannot.
+
+At closeout, `clean` means the retained resolution-input and decision sets are
+both empty. `resolved` means at least one retained resolution-input was
+consumed. Preflight admits only `pending`; clean and resolved snapshots use
+closeout. These statuses are not interchangeable labels.
 
 ## Live refresh and publication continuation
 
