@@ -1,0 +1,6 @@
+interface:
+  display_name: "Hylo"
+  short_description: "Replay real sessions into measured improvement"
+  default_prompt: "Use $hylo to compile my real Codex sessions into a portable replay campaign, grade repeated attempts, and track comparable improvement in the repo-local Hylo Ledger."
+policy:
+  allow_implicit_invocation: false

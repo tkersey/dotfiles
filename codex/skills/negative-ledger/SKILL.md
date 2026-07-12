@@ -1,8 +1,8 @@
 ---
 name: negative-ledger
-description: "Durably capture, query, map, transition, compact, export, and hand off witnessed negative evidence in repo-local `.ledger/negative-ledger/events.jsonl`; selectively admit full ledger projections to Codex memory through memory-source-notes. Use for failed semantic routes, benchmark regressions, no-effect attempts, reverts, route exclusions, reopening, or search-space pruning."
+description: "Durably capture, query, map, transition, compact, export, and hand off witnessed negative evidence through the repo-local `ledger` source API; selectively admit full ledger projections to Codex memory through memory-source-notes. Use for failed semantic routes, benchmark regressions, no-effect attempts, reverts, route exclusions, reopening, or search-space pruning."
 metadata:
-  version: "6.0.0"
+  version: "6.1.0"
 ---
 
 # Negative Ledger
@@ -11,11 +11,14 @@ metadata:
 
 Prune semantic search space without turning stale failures into permanent dogma.
 
-The operational truth is:
+The operational authority is:
 
 ```text
-<repo>/.ledger/negative-ledger/events.jsonl
+ledger
 ```
+
+`.ledger/negative-ledger/events.jsonl` is the current persistent-adapter
+location, retained for path compatibility and legacy migration.
 
 The memory-admission channel is:
 
@@ -44,9 +47,11 @@ Before the first native Ledger command in this workflow, load `$ledger` and
 complete `$ledger ensure`. After readiness, invoke `ledger` directly.
 
 ```text
-.ledger/negative-ledger/events.jsonl
 ledger
 ```
+
+Use native Ledger commands for ordinary reads, writes, and diagnostics. Do not
+open the persistent adapter directly.
 
 Expected commands:
 
@@ -122,7 +127,7 @@ ledger status \
   --source-ref "commit:abc123"
 ```
 
-Never rewrite old JSONL events.
+Never rewrite old events.
 
 ## Memory Admission Gate
 
@@ -191,7 +196,10 @@ Report both layers separately.
 
 ## Learnings Relationship
 
-`.ledger/learnings/events.jsonl` is historical candidate evidence, not the route-exclusion store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are read only during migration. Verify current applicability and promote qualifying evidence through `ledger capture`.
+The learning source is historical candidate evidence, not the route-exclusion
+store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are
+read only during migration. Verify current applicability and promote
+qualifying evidence through `ledger capture`.
 
 ## Guardrails
 
@@ -200,7 +208,7 @@ Report both layers separately.
 - Do not block from fuzzy matches.
 - Do not use stale benchmarks without current applicability reasoning.
 - Do not treat absence of a ledger entry as novelty proof.
-- Do not hand-edit `.ledger/negative-ledger/events.jsonl`.
+- Do not bypass Ledger or hand-edit persistent-adapter records.
 - Do not let memory notes outrank the repo-local ledger.
 - Do not write compiled memory directly.
 - Do not publish incomplete projections to Phase 2.

@@ -1,8 +1,8 @@
 ---
 name: learnings
-description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings from repo-local `.ledger/learnings/events.jsonl` through `ledger --source learnings`. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
+description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings through the repo-local `ledger --source learnings` API. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
-  version: "6.1.0"
+  version: "6.2.0"
 ---
 
 # Learnings
@@ -14,8 +14,11 @@ Maintain a repo-local, evidence-backed execution-learning store and selectively 
 Authority split:
 
 ```text
+ledger --source learnings
+  canonical learning event API; learning records live under event.record
+
 <repo>/.ledger/learnings/events.jsonl
-  canonical learning event store; learning records live under event.record
+  current persistent-adapter location; compatibility and migration surface only
 
 ~/.codex/memories/extensions/learnings/notes/*.md
   immutable admission snapshots for Phase 2
@@ -45,12 +48,11 @@ complete `$ledger ensure`. Learnings doctor/migration recovery requires Ledger
 authorized Homebrew upgrade when the version is older. Only then invoke the
 learnings commands directly.
 
-```text
-.ledger/learnings/events.jsonl
-```
-
-Use `ledger capture --source learnings` for writes. Do not hand-edit events in
-normal operation. Legacy `.ledger/learnings/learnings.jsonl` and
+Use `ledger capture --source learnings` for writes and native query, recall,
+recent, doctor, and path commands for reads and diagnostics. Treat the source
+API and returned learning ID as canonical identity. Do not open or hand-edit
+the current persistent adapter during normal operation. Legacy
+`.ledger/learnings/learnings.jsonl` and
 `.learnings.jsonl` are read only during migration. Use
 `ledger migrate --source learnings --mode copy` to copy old rows into the
 canonical event store.
@@ -153,8 +155,11 @@ unless the user asks, while `blocked` is user-visible when it affects delivery.
      --tag example
    ```
 
-6. Verify the reported target path is exactly `<repo>/.ledger/learnings/events.jsonl`.
-7. Before any Codex-made commit, inspect `.ledger/learnings/events.jsonl` explicitly.
+6. Retain the appended learning ID from the capture receipt, then run
+   `ledger doctor --source learnings` and a focused native recall or query to
+   verify the source remains readable through its API.
+7. Before any Codex-made commit, inspect the current learning through native
+   Ledger commands. Do not read the persistent adapter directly.
 8. Retain exactly one canonical learning proof line in working evidence. Include
    source-memory proof in the final user-facing reply only when it changed
    repo-visible state, needs user action, explains a blocker/error, or the user
@@ -274,7 +279,7 @@ Never edit or delete prior admission notes.
 
 ## Relationship to Negative Ledger
 
-A learning can seed negative evidence, but `.ledger/learnings/events.jsonl` is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
+A learning can seed negative evidence, but the learning source is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
 
 ## Guardrails
 
@@ -283,7 +288,7 @@ A learning can seed negative evidence, but `.ledger/learnings/events.jsonl` is n
 - Do not append from an unverified non-repo cwd.
 - Do not write legacy `.learnings.jsonl` after migration.
 - Do not force-add local-only source stores.
-- Do not manually edit JSONL rows.
+- Do not bypass the Ledger API or edit persistent-adapter records directly.
 - Do not admit every learning to memory.
 - Do not write compiled memory directly.
 - Do not use source notes to bypass the canonical store.

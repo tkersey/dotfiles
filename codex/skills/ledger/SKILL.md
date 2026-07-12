@@ -8,8 +8,8 @@ description: "Ensure a `ledger` command is available on PATH for consumer skills
 ## Mission
 
 Own the shared Ledger bootstrap boundary, coordinate repo-local source-memory
-stores under `.ledger/`, and route pure validation of governance and review
-artifacts.
+stores through native source APIs, and route pure validation of governance and
+review artifacts.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
 
@@ -67,7 +67,14 @@ ledger_bootstrap_ready:
 Bootstrap readiness grants no source authority. The calling skill still owns
 the semantic operation and every requested write or effect.
 
-Canonical stores:
+Canonical source APIs:
+
+- `ledger --source learnings`
+- `ledger` for negative evidence
+- `ledger --source synesthesia` when present
+
+Current persistent-adapter locations, retained for path compatibility and
+explicit migration:
 
 - `.ledger/learnings/events.jsonl`
 - `.ledger/negative-ledger/events.jsonl`
@@ -145,11 +152,11 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 
 `$ledger` may provision and verify the native CLI, then coordinate, inspect, and
 recommend. It does not proxy ordinary native commands. Writes remain delegated
-to source-specific skills:
+to source-specific skills and native source APIs:
 
-- `$learnings` / `ledger --source learnings` for `.ledger/learnings/events.jsonl`;
-- `$negative-ledger` / `ledger` for `.ledger/negative-ledger/events.jsonl`;
-- `$synesthesia` / `ledger --source synesthesia` for `.ledger/synesthesia/events.jsonl`; current Synesthesia notes remain transition evidence;
+- `$learnings` / `ledger --source learnings`; the current compatibility adapter is `.ledger/learnings/events.jsonl`;
+- `$negative-ledger` / `ledger`; the current compatibility adapter is `.ledger/negative-ledger/events.jsonl`;
+- `$synesthesia` / `ledger --source synesthesia`; the current compatibility adapter is `.ledger/synesthesia/events.jsonl`, and current Synesthesia notes remain transition evidence;
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
 - `$actuating` / `ledger --source actuation` for the operational actuation
   event chain; this is not a memory-admission source.
@@ -198,9 +205,11 @@ layouts contain the same id.
 ## Read-Only Workflow
 
 1. Resolve the git root.
-2. Inspect `.ledger/`, previous `.ledger/learnings/learnings.jsonl`, legacy `.learnings.jsonl`, and current Synesthesia notes when present.
-3. Classify each store as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
-4. Run source doctors when available and retain their record counts, repair
+2. Run each native source doctor and path command. Inspect only explicit legacy
+   import locations and current Synesthesia notes when migration evidence is
+   needed; do not open a current persistent adapter for ordinary reads.
+3. Classify each source as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
+4. Retain source-doctor record counts, repair
    receipts, invalid line spans, and exit status.
 5. If any required source is `legacy-only` or `invalid`, or Synesthesia is
    `notes-only` and import is requested, report the exact owning migration or

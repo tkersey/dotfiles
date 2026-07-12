@@ -1,19 +1,21 @@
 # Source Store Layout
 
-Canonical repo-local source stores live under:
+Canonical repo-local sources are addressed through their native APIs:
 
 ```text
-.ledger/<source>/<store>
+ledger --source learnings
+ledger
+ledger --source synesthesia
 ```
 
-Current stores:
+The current persistent adapter resolves those sources under:
 
 ```text
 .ledger/learnings/events.jsonl
 .ledger/negative-ledger/events.jsonl
 ```
 
-Future or optional stores:
+Optional adapter location:
 
 ```text
 .ledger/synesthesia/events.jsonl
@@ -27,7 +29,9 @@ Legacy stores:
 .ledger/negative-ledger.jsonl
 ```
 
-Legacy stores are read only for migration or compatibility. Normal writes go to the namespaced `.ledger/<source>/` store.
+Legacy stores are read only for migration or compatibility. Normal reads and
+writes go through the native source API; use `ledger path` only when a physical
+adapter location is required for migration diagnostics.
 
 `legacy-only` means the legacy store exists and the canonical namespaced store
 is missing. Treat this as a preflight failure for writes: run the owning

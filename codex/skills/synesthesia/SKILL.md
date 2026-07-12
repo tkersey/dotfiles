@@ -329,12 +329,14 @@ See [memory-admission.md](references/memory-admission.md) for the operation matr
 ## Canonical Store
 
 ```text
-.ledger/synesthesia/events.jsonl
+ledger --source synesthesia
 ```
 
-Use `ledger capture --source synesthesia` for canonical repo-local writes. Do
-not hand-edit events in normal operation. Existing immutable Synesthesia
-memory-source notes remain valid transition evidence; import them with
+Use native Synesthesia source commands for canonical repo-local reads, writes,
+and diagnostics. `.ledger/synesthesia/events.jsonl` is the current persistent
+adapter location, not a caller contract; do not open or hand-edit it in normal
+operation. Existing immutable Synesthesia memory-source notes remain valid
+transition evidence; import them with
 `ledger migrate --source synesthesia --mode copy` only when an explicit copy
 migration is intended.
 

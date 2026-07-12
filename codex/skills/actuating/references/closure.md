@@ -15,8 +15,10 @@ ledger close --source actuation --run RUN_ID
 ledger decide --source actuation --run RUN_ID
 ~~~
 
-The append-only `.ledger/actuation/events.jsonl` chain is authoritative.
-YAML/prose summaries, saved command output, and hand-authored receipts are not.
+The append-only event chain exposed by `ledger --source actuation` is
+authoritative. `.ledger/actuation/events.jsonl` is only the current persistent
+adapter location. YAML/prose summaries, saved command output, and hand-authored
+receipts are not.
 
 ## Fold conditions
 
