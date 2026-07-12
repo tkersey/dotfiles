@@ -154,8 +154,12 @@ If a required proof has no executable verifier, the generation is not
 openable.
 
 After any published head change, prior tuple-bound review observations are
-stale; open a new generation with new obligation identities and current
-verifiers. `$ship` remains the only public-effect owner.
+stale as proof of the new artifact; open a new generation with new obligation
+identities and current verifiers. A v2 auxiliary-remediation carry may retain
+earlier standard-clean facts only as historical convergence credit. Those facts
+keep their original tuples, cannot discharge a current review obligation, and
+closeout still requires fresh standard and auxiliary evidence on the current
+tuple. `$ship` remains the only public-effect owner.
 
 ## Failure behavior
 

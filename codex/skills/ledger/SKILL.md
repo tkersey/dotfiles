@@ -106,7 +106,9 @@ Stateless, non-authorizing observations:
 
 These commands accept canonical JSON and never read or write `.ledger`. General
 governance contracts emit `ledger-validate-decision/v1`; Actuating contracts
-emit their domain validation-decision schemas.
+emit their domain validation-decision schemas. Ledger 0.7.0 and newer preserve
+v1 same-tuple review-policy validation and enforce the v2 certified
+cross-tuple standard-clean chain.
 
 Source-store state model:
 
