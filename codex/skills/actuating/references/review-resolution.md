@@ -29,7 +29,7 @@ review_resolution:
   review_profile:
     policy_ref:
     policy_digest:
-    review_contract_fingerprint:
+    review_contract_fingerprint: # equals the v2 aggregate review-contract manifest digest
     selected_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator, fresh-eyes]
     standard_required_clean_runs: 5
     standard_clean_attempt_ids: []
@@ -212,8 +212,11 @@ count grants no authority.
 
 Finding semantics and source-to-producer lineage remain cumulative across a
 replacement SHIP. The new receipt resets publication-local fold/batch and CAS
-credit, not admitted liabilities; the next repair resolution must strictly
-extend the retained finding set and preserve every retained source backend.
+current-request credit, not admitted liabilities. Standard clean credit may
+cross that publication boundary only through the owning policy's certified
+`auxiliary-remediation` carry; no auxiliary result survives. The next repair
+resolution must strictly extend the retained finding set and preserve every
+retained source backend.
 
 The resolved re-fold after the last repair preserves exactly the admitted
 finding set and every admitted source reference, and uses another fresh fold
@@ -221,8 +224,11 @@ plus a producer batch that carries material evidence. A newly observed material
 finding keeps the resolution pending and requires another admitted
 continuation. Only after the retained PR is revalidated against the
 admission-bound published artifact may `$ship` update that PR to the resolved
-local head. All earlier policy credit attached to CAS attempts belongs to the
-preceding publication epoch and resets to zero.
+local head. Earlier current-request and auxiliary credit belongs to the
+preceding publication epoch and resets to zero. Earlier standard attempts keep
+their original epoch and tuple; they contribute to the new trailing suffix only
+when the v2 policy binds the intervening auxiliary-remediation carry and later
+ends clean on the current tuple.
 
 ## Abstraction audit
 
@@ -260,7 +266,7 @@ constructs.
 
 The resolution digest is the canonical digest of the artifact binding, source
 finding set, change surfaces, review profile, decisions, and semantic balance.
-The owning `actuation-review-policy/v1` request binds that digest before CAS
+The owning `actuation-review-policy/v2` request binds that digest before CAS
 execution.
 
 ## Review contract
@@ -274,5 +280,8 @@ returns only the opaque request binding and transport facts.
 A post-run label cannot create auxiliary evidence. Credit requires an exact
 join among the pre-bound policy request, its actuation event, the returned CAS
 binding and tuple, and any RF-v2 fold. A new finding or code change updates the
-resolution, changes its digest, invalidates affected requests, and resets the
-current standard clean suffix.
+resolution, changes its digest, and invalidates affected current requests. A
+standard finding or unrelated change resets the standard chain. An
+auxiliary-only repair may preserve its existing clean projection solely through
+the v2 carry that binds this resolution's class, witnesses, actuation evidence,
+and publication receipt.

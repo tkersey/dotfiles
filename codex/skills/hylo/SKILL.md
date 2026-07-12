@@ -1,6 +1,6 @@
 ---
 name: hylo
-description: "Compile real Codex sessions and repo-local Ledger evidence into portable replay campaigns, run blind repeated attempts in reconstructed or generated environments, grade outcomes with evidence-bound rubrics, append attempts and grades to `.ledger/hylo/events.jsonl`, and derive comparable progress/frontier views. Use for `$hylo`, self-replay, experience-driven evaluation, session-derived training environments, replay-and-grade loops, repeated agent or skill improvement on real historical requests, or tracking whether responses improve across controlled reruns."
+description: "Compile real Codex sessions and repo-local Ledger evidence into portable replay campaigns, run blind repeated attempts in reconstructed or generated environments, grade outcomes with evidence-bound rubrics, append attempts and grades through the native Hylo Ledger source, and derive comparable progress/frontier views. Use for `$hylo`, self-replay, experience-driven evaluation, session-derived training environments, replay-and-grade loops, repeated agent or skill improvement on real historical requests, or tracking whether responses improve across controlled reruns."
 ---
 
 # Hylo
@@ -79,7 +79,9 @@ report that the native source must be upgraded. Never route Hylo grades through
 `learnings`, `negative-ledger`, `actuation`, `synesthesia`, or `universalist`
 merely to obtain append semantics.
 
-The native Hylo source is the exclusive mutation owner for:
+The native Hylo source is the exclusive mutation owner for operational replay
+evidence. Hylo semantics depend on Ledger's event-store contract, not a storage
+format. The current persistent adapter retains this path for compatibility:
 
 ```text
 <repo>/.ledger/hylo/events.jsonl
@@ -383,6 +385,6 @@ Hylo:
 - No publication unless committed target bytes equal the promoted target snapshot.
 - No staging unrelated paths; do not force-add locally excluded Hylo Ledger artifacts.
 - No raw capabilities, secrets, private reasoning, or unredacted sensitive data in campaign artifacts or events.
-- No hand-editing `.ledger/hylo/events.jsonl`.
+- No hand-editing the current `.ledger/hylo/events.jsonl` adapter.
 - No fallback store writer when the native Hylo source is unavailable.
 - No infinite self-improvement claim: report the observed campaign boundary and stop rule.

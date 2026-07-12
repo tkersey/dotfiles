@@ -59,7 +59,7 @@ The live objects are:
    `actuation-kernel-state/v1`.
 5. `closure-decision/v1`, projected by the kernel from that live fold.
 
-`actuation-review-policy/v1`, `review-resolution/v1`, RF-v2, EF-v1, CAS
+`actuation-review-policy/v2`, `review-resolution/v1`, RF-v2, EF-v1, CAS
 receipts, and SHIP-v1 remain owner-specific evidence. Bind their current
 identities into the GoalContract and discharge their predicates through exact
 verifier commands; do not copy their policy logic into the kernel.
@@ -202,14 +202,24 @@ outstanding obligations.
 `$actuating` owns review selection, exact lens contract and instruction
 digests, standard and auxiliary roles, invalidation, repeated-review
 accounting, and closeout credit. Compile those decisions into
-`actuation-review-policy/v1` before the first run; read
+`actuation-review-policy/v2` before the first run; read
 [review-policy.md](references/review-policy.md).
 
-Require at least five consecutive, distinct, current standard clean attempts.
-Bind every registered auxiliary lens and have `$goal-actuating` launch all
-auxiliary requests concurrently with the first standard attempt. Auxiliary
-clean results discharge only their own request; auxiliary findings enter
-RF-v2; no auxiliary attempt contributes to the standard clean suffix.
+Require a chain ending in at least five consecutive, distinct standard clean
+attempts and a clean standard attempt on the current tuple. Bind every
+registered auxiliary lens and have `$goal-actuating` launch all auxiliary
+requests concurrently with the first standard attempt. Auxiliary clean results
+discharge only their own current request; auxiliary findings enter RF-v2; no
+auxiliary attempt or tuple transition contributes to the standard clean suffix.
+Preserve prior standard credit across a changed CAS tuple only through a
+policy-bound `auxiliary-remediation` carry that cites the accepted finding,
+resolution, correctness observations, actuation events, and SHIP receipt while
+keeping each attempt bound to its original request and tuple. Any standard
+finding, contract drift, base change, or unrelated mutation resets the chain.
+
+Require Ledger 0.7.0 or newer before executing a v2 preflight. Ledger retains
+v1 validation for historical same-tuple snapshots, but new campaigns never
+downgrade to v1 to avoid the chain law.
 
 Treat the policy as executable syntax owned by `$actuating`. Before CAS
 execution, require a passing policy validation decision:
@@ -262,6 +272,8 @@ For a review edit:
   project the exact CAS command into a review obligation;
 - launch the first standard request and all auxiliary requests as one
   concurrent wave against the same artifact;
+- after an auxiliary-driven repair, invalidate every current request and
+  preserve the standard suffix only by appending a certified non-credit carry;
 - bind the current resolution, publication epoch, and evidence identities into
   the GoalContract digest;
 - pass the correctness-refinement preflight and project both preservation

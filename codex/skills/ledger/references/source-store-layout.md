@@ -6,19 +6,28 @@ Canonical repo-local sources are addressed through their native APIs:
 ledger --source learnings
 ledger
 ledger --source synesthesia
+ledger --source actuation
+ledger --source hylo
 ```
 
-The current persistent adapter resolves those sources under:
+Current source-memory persistent-adapter locations:
 
 ```text
 .ledger/learnings/events.jsonl
 .ledger/negative-ledger/events.jsonl
 ```
 
-Optional adapter location:
+Optional source-memory adapter location:
 
 ```text
 .ledger/synesthesia/events.jsonl
+```
+
+Operational, non-memory adapter locations:
+
+```text
+.ledger/actuation/events.jsonl
+.ledger/hylo/events.jsonl
 ```
 
 Legacy stores:
