@@ -167,7 +167,7 @@ Use append-only status events. Every transition requires a JSON proof packet wit
 ```bash
 ledger status \
   --id NEG-000001 \
-  --to stale \
+  --to accepted_risk \
   --json transition.json
 ```
 

@@ -83,7 +83,7 @@ negative_evidence_ledger:
     next_search_hint: "..."
     event_chain_fingerprint: "..."
     projection_fingerprint: "..."
-    prior_projection_fingerprint: "... | null"
+    previous_projection_fingerprint: "... | null"
 ```
 
 Footer:

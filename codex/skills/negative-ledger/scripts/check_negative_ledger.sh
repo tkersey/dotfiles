@@ -31,7 +31,7 @@ match = re.search(r'^description:\s*["\']?(.*?)["\']?\s*$', front_matter, flags=
 if not match:
     raise SystemExit("SKILL.md missing description")
 description = match.group(1)
-if len(description) >= 1024:
+if len(description) > 1024:
     raise SystemExit(f"SKILL.md description too long: {len(description)} chars")
 for trigger in (
     "Implicitly invoke",
@@ -99,7 +99,7 @@ for token in (
     "distinction_pattern_id",
     "proof_pattern_id",
     "event_chain_fingerprint",
-    "prior_projection_fingerprint",
+    "previous_projection_fingerprint",
     "capture_candidate | need-evidence | unknown | active | accepted_risk | stale | reopened | superseded",
     "projection_fingerprint",
     "active_exclusions | no_applicable_negative_evidence | reopen_required | blocked",
