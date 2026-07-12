@@ -37,7 +37,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 
    over lossy prose or count-only projections.
 4. Query learnings only when additional historical evidence is needed.
-5. Classify each candidate as capture-candidate, need-evidence, unknown, active, accepted-risk, stale, reopened, or superseded.
+5. Classify each candidate as capture_candidate, need-evidence, unknown, active, accepted_risk, stale, reopened, or superseded.
 6. Explain current-state applicability.
 7. Give the safest adjacent search frontier.
 

@@ -108,6 +108,9 @@ for token in (
         raise SystemExit(f"runtime mapper missing aligned field: {token}")
 if "current_status:" in runtime_mapper:
     raise SystemExit("runtime mapper still uses current_status instead of status")
+for noncanonical_status in ("capture-candidate", "accepted-risk"):
+    if noncanonical_status in mapper or noncanonical_status in runtime_mapper:
+        raise SystemExit(f"mapper uses noncanonical status literal: {noncanonical_status}")
 
 activation = Path("tests/golden/activation.yml").read_text()
 cases = {
