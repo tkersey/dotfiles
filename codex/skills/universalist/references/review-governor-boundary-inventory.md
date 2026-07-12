@@ -1,8 +1,10 @@
 # Review Governor Boundary Inventory
 
-Use `$universalist` when the same coarse owner keeps absorbing semantic branches.
+`$universalist` is already active whenever review or resolution considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional.
 
-Trigger when:
+Expand the compact boundary receipt into this inventory when the same coarse owner keeps absorbing semantic branches.
+
+Escalation signs:
 
 - same cluster recurs;
 - validation/replay/evidence branches accumulate;
@@ -21,4 +23,4 @@ boundary_inventory:
   decision: universalist | reduce | normal-form | distill | blocked
 ```
 
-If missing boundary artifact is yes or unknown after recurrence, ordinary owner mutation is blocked and any mutation permit must be denied.
+If no escalation sign is present, preserve the compact disposition and continue normal review resolution. If `missing_boundary_artifact` is `yes` or remains `unknown` after recurrence, ordinary owner mutation is blocked and any mutation permit must be denied.

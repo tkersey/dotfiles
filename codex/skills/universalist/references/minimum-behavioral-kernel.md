@@ -1,8 +1,10 @@
 # Minimum Behavioral Kernel
 
-Use `$universalist` when realization design requires a representation, boundary, protocol, context, or syntax/semantics pivot.
+`$universalist` is already active whenever realization design considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional.
 
-The output must be a kernel-faithful design record:
+Escalate to a kernel-faithful design record when realization requires a representation, protocol, context, or syntax/semantics pivot rather than preservation or an ordinary boundary repair.
+
+The escalated output must record:
 
 ```text
 canonical boundary
@@ -14,4 +16,4 @@ law witness
 falsifier
 ```
 
-Do not produce another local guard candidate.
+When this escalation condition holds, do not produce another local guard candidate. When it does not hold, keep the compact boundary receipt and continue the ordinary implementation or resolution workflow.

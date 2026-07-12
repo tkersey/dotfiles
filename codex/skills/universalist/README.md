@@ -18,9 +18,11 @@ chmod +x scripts/*.sh scripts/*.py
 
 ## Use
 
-Ask for `$universalist` when code smells indicate a structural refactor rather than an ordinary fix.
+`$universalist` is implicitly invoked whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal, including ordinary feature work and PR/review resolution.
 
-The skill decides whether the problem needs:
+Activation is broad; escalation is proportional. The boundary pass may preserve an already exact seam and return to ordinary delivery. Stronger constructions are justified only when the pass finds drift, invalid states, hidden composition, lossy projection, uncertified context, or another structural liability.
+
+The skill decides whether the boundary should remain ordinary or needs:
 
 - product/coproduct/refined type/pullback/exponential/free construction;
 - canonical boundary artifact;
@@ -30,7 +32,7 @@ The skill decides whether the problem needs:
 - observation/generation vocabulary;
 - explicit first-order IR.
 
-Use `$universalist` for the full workflow. Detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, categorical-data, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`.
+Use `$universalist` for the full boundary workflow. Detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, categorical-data, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`; load them only after the boundary pass justifies escalation.
 
 ## Ledger-addressed plans
 

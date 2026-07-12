@@ -62,6 +62,64 @@ if 'allow_implicit_invocation: true' not in Path('agents/openai.yaml').read_text
     raise SystemExit('agents/openai.yaml must allow implicit invocation')
 print(f'description length ok: {len(desc)} chars')
 print('boundary discovery metadata ok')
+activation_surfaces = {
+    'README.md': (
+        'Boundary consideration itself is the activation signal',
+        'Activation is broad; escalation is proportional',
+        'The boundary pass may preserve an already exact seam',
+    ),
+    'references/universalist-overview.md': (
+        'Boundary consideration itself is the activation signal',
+        'Activation is broad; escalation is proportional',
+        'The boundary pass may preserve an already exact seam',
+    ),
+    'references/boundary-redesign-trigger.md': (
+        'already active whenever delivery work considers a code boundary',
+        'Boundary consideration itself is the activation signal',
+        'Activation is broad; escalation is proportional',
+    ),
+    'references/minimum-behavioral-kernel.md': (
+        'already active whenever realization design considers a code boundary',
+        'Boundary consideration itself is the activation signal',
+        'Activation is broad; escalation is proportional',
+    ),
+    'references/cybernetic-boundary-trigger.md': (
+        'remains active whenever `$cybernetic` work considers a code boundary',
+        'Boundary consideration itself is the activation signal',
+        'it does not decide whether Universalist runs',
+    ),
+    'references/review-governor-boundary-inventory.md': (
+        'already active whenever review or resolution considers a code boundary',
+        'Boundary consideration itself is the activation signal',
+        'Activation is broad; escalation is proportional',
+    ),
+    'references/cost-model-and-false-positives.md': (
+        'Run the Universalist boundary pass whenever implementation or resolution considers a code boundary',
+        'Activation does not require a refactor',
+        'Preserving an already exact boundary is a valid Universalist result',
+    ),
+    'references/discovery-signals.md': (
+        'Boundary consideration is itself a discovery signal',
+        'record it as preserved and continue without adding abstraction',
+    ),
+}
+for path, required_phrases in activation_surfaces.items():
+    surface = Path(path).read_text()
+    for phrase in required_phrases:
+        if phrase not in surface:
+            raise SystemExit(f'{path} activation doctrine missing: {phrase}')
+forbidden_activation_phrases = {
+    'README.md': 'structural refactor rather than an ordinary fix',
+    'references/universalist-overview.md': 'refactors where the shape of truth should change',
+    'references/boundary-redesign-trigger.md': 'Use `$universalist` when the delivery recipe',
+    'references/minimum-behavioral-kernel.md': 'Use `$universalist` when realization design',
+    'references/cybernetic-boundary-trigger.md': '## Do not use universalist for',
+    'references/review-governor-boundary-inventory.md': 'Use `$universalist` when the same coarse owner',
+}
+for path, phrase in forbidden_activation_phrases.items():
+    if phrase in Path(path).read_text():
+        raise SystemExit(f'{path} retains selective activation doctrine: {phrase}')
+print(f'boundary activation doctrine aligned: {len(activation_surfaces)} surfaces')
 required = [
     'name: universalist', 'Track A0', 'Domain Algebra Discovery', 'Algebra before architecture', 'carriers', 'operations', 'observations', 'laws', 'non-laws', 'Track D', 'Track E', 'Track F', 'Universal architecture',
     'canonical boundary artifact', 'one signal, one seam', 'Freyd/AFT', 'free builder',
