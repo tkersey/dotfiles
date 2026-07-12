@@ -1,6 +1,8 @@
 # Universalist overview
 
-Universalist is an inner lens for codebase refactors where the shape of truth should change.
+Universalist is an inner lens invoked whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional.
+
+The boundary pass may preserve an already exact seam and return to ordinary delivery. It escalates only when changing the shape of truth would reduce drift, invalid states, hidden composition, lossy projection, uncertified context, or another structural liability.
 
 Default discipline:
 
