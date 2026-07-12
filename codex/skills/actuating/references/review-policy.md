@@ -24,11 +24,11 @@ actuation_review_policy:
     head_sha:
     state_fingerprint:
   standard_required_clean_runs: 5
-  required_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator]
+  required_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator, fresh-eyes]
   requests:
     - request_id:
       request_fingerprint: null | sha256:...
-      lens: standard | footgun-finder | invariant-ace | complexity-mitigator
+      lens: standard | footgun-finder | invariant-ace | complexity-mitigator | fresh-eyes
       role: standard | auxiliary
       selection_reason:
       contract_id: null | string
@@ -100,6 +100,7 @@ auxiliary non-selection state.
 | `footgun-finder` | auxiliary | `footgun-lens-v1` | API, CLI, config, default, fallback, cleanup, permission, example, and workflow affordances |
 | `invariant-ace` | auxiliary | `invariant-gate-v1` | State ownership, validation, transitions, identity, authority, replay, idempotency, and impossible-state claims |
 | `complexity-mitigator` | auxiliary | `complexity-preflight-v1` | Boolean soup, mixed responsibilities, repeated owner-boundary churn, and comprehension-heavy cross-file state |
+| `fresh-eyes` | auxiliary | `fresh-eyes-lens-v1` | Whole-target reinspection for blunders, mistakes, errors, oversights, omissions, problems, misconceptions, bugs, and related defects |
 
 The selected lens skill is the instruction authority. Resolve its operative
 contract and every referenced resource it requires into a manifest, persist
@@ -131,7 +132,7 @@ verifying its operative contract does not satisfy a selected request.
 Copy the current registry names into `required_lenses` during source-to-open
 inspection. The Zig checker is deliberately registry-generic: it proves a
 bijection between that bound list and the request rows without hard-coding
-today's lens names. Every policy snapshot binds all four current registry
+today's lens names. Every policy snapshot binds all five current registry
 entries exactly once. `request_id` values are unique within the policy, and
 every request begins `selected-pending`.
 
