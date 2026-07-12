@@ -161,6 +161,13 @@ observed preservation and progress obligations, actuation events, and SHIP-v1
 receipt that produced the next artifact. The edge preserves the suffix length;
 it never adds an attempt ID.
 
+The policy checker validates this chain algebra and the presence, identity, and
+joins of its cited fields; it does not open RF-v2, resolution, actuation, or
+SHIP artifacts and rediscover their semantics. `$goal-actuating` must verify
+those exact referenced artifacts, prove that the repair contains no unrelated
+mutation, and bind those verifier commands into the GoalContract before the
+carry receives credit.
+
 For a selected request, `request_fingerprint` equals `instruction_digest`: the SHA-256 of the exact
 persisted UTF-8 bytes at `instructions_ref`. The pre-bound policy row and
 GoalContract digest bind those bytes to policy version, artifact identity,
