@@ -127,6 +127,7 @@ class CasContractTests(unittest.TestCase):
             "footgun-finder",
             "invariant-ace",
             "complexity-mitigator",
+            "fresh-eyes",
             "Repeated-review eligibility",
             "closeout accounting",
             "policy threshold",
