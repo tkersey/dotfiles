@@ -1,6 +1,6 @@
 ---
 name: negative-ledger
-description: "Durably capture, query, map, transition, compact, export, and hand off witnessed negative evidence through the repo-local `ledger` source API; selectively admit full ledger projections to Codex memory through memory-source-notes. Use for failed semantic routes, benchmark regressions, no-effect attempts, reverts, route exclusions, reopening, or search-space pruning."
+description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Query/map before repeating a route; capture only inspectable decision-shaping negative evidence through the repo-local `ledger` source API; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
   version: "6.1.0"
 ---
@@ -33,18 +33,38 @@ Never use memory notes as the operational route gate. For accepted admission, lo
 ## Trigger Cues
 
 - `$negative-ledger`;
-- failed attempts, no-effect attempts, reverts, benchmark regressions;
+- failed attempts, no-effect attempts, reverts, benchmark or test regressions;
 - repeated semantic routes or same-cluster retries;
+- strategy pivots that abandon a concrete route future work might repeat;
 - "what have we already tried?";
 - "do not retry this route";
 - route reopening after artifact-state changes;
 - fixed-point or review-governor negative evidence;
 - memory admission of an active/stale/reopened/superseded `NEG-*` projection.
 
+## Activation Policy
+
+Activation is broad; capture is narrow.
+
+Invoke this skill implicitly when current work may change route selection because a concrete route failed, had no effect, regressed a signal, was reverted, was rejected by current proof/review evidence, or is about to be retried under the same cluster. Do not wait for the user to literally name `$negative-ledger`.
+
+Before selecting a route that resembles a prior failure, query or map the canonical ledger. A recalled `$learnings` row may trigger this check, but it cannot block directly.
+
+After a material strategy pivot, regression-confirmed revert, or closeout that leaves a failed route likely to recur, evaluate capture. A transient red test, syntax error, first incomplete implementation, or discarded local typo is `no-op` unless it exposes a durable failed hypothesis that changes future routing.
+
+Retain exactly one internal disposition for each material activation:
+
+```text
+mapped       current ledger checked; no write required
+captured     witnessed negative evidence appended
+transitioned existing NEG record changed lifecycle state
+no-op        activation evaluated; evidence was not durable or route-shaping
+blocked      ledger unavailable/invalid or active exact/applicable exclusion matched
+```
+
 ## Canonical Store and CLI
 
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. After readiness, invoke `ledger` directly.
+Before the first native Ledger command in this workflow, load `$ledger` and complete `$ledger ensure`. After readiness, invoke `ledger` directly.
 
 ```text
 ledger
@@ -65,10 +85,10 @@ ledger handoff
 ledger compact
 ledger doctor
 ledger export --id NEG-ID [--format full|memory-note]
-ledger status --id NEG-ID --to STATUS --reason TEXT [--source-ref ...]
+ledger status --id NEG-ID --to STATUS --reason TEXT
 ```
 
-Until `export` ships, do not create authoritative memory admission from a lossy `ledger show` projection.
+`ledger export` is the only authoritative projection surface for memory admission. Never reconstruct a projection from the concise `ledger show` output.
 
 ## Valid Statuses
 
@@ -89,7 +109,7 @@ Fuzzy or lexical overlap is suggest-only.
 
 ## Query/Map Workflow
 
-1. Identify `artifact_state_id`, route, cluster, scope, target signal, and changed surface.
+1. Identify immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, scope, target signal, and changed surface.
 2. Run:
 
    ```bash
@@ -102,6 +122,7 @@ Fuzzy or lexical overlap is suggest-only.
 3. Interpret exit codes: `0` no active exact exclusion, `2` active exact/applicable exclusion, `3` ledger unavailable or invalid.
 4. Treat fuzzy candidates as search hints only.
 5. Re-check current applicability before route suppression.
+6. Do not use a moving symbolic label such as `HEAD` as proof of immutable artifact identity; resolve the current state before relying on it.
 
 ## Capture Workflow
 
@@ -123,9 +144,10 @@ Use append-only status events:
 ledger status \
   --id NEG-000001 \
   --to stale \
-  --reason "The prior bookkeeping path was replaced." \
-  --source-ref "commit:abc123"
+  --reason "The prior bookkeeping path was replaced by commit abc123."
 ```
+
+The current CLI persists the transition reason but does not yet accept a structured transition source reference; do not claim stronger transition provenance than the event preserves. Reopening still requires positive evidence that a recorded reopening criterion changed.
 
 Never rewrite old events.
 
@@ -201,6 +223,16 @@ store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are
 read only during migration. Verify current applicability and promote
 qualifying evidence through `ledger capture`.
 
+## Activation Evaluation
+
+Use [activation-contract.md](references/activation-contract.md) and [activation.yml](tests/golden/activation.yml) to distinguish a routing check from a capture-worthy event. Run:
+
+```bash
+bash scripts/check_negative_ledger.sh
+```
+
+Raw activation count is not the success metric. Grade whether the skill appeared for decision-shaping failed-route episodes, avoided transient false positives, and changed route selection or durable evidence only when warranted.
+
 ## Guardrails
 
 - Do not record vibes as negative evidence.
@@ -212,3 +244,4 @@ qualifying evidence through `ledger capture`.
 - Do not let memory notes outrank the repo-local ledger.
 - Do not write compiled memory directly.
 - Do not publish incomplete projections to Phase 2.
+- Do not capture every transient test failure merely because implicit activation occurred.
