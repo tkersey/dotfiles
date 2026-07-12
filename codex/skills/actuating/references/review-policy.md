@@ -238,10 +238,19 @@ policy's bound closeout requests.
 
 Launch every auxiliary request concurrently with the first standard attempt as
 one dispatch wave against the same bound artifact. Do not wait for a standard
-result before starting an auxiliary lane. Run later standard attempts as fresh,
-distinct, ordered attempts until the v2 chain's trailing clean suffix reaches
-`standard_required_clean_runs`, which must be at least five, and ends with a
-clean standard attempt on the current tuple. Each command carries:
+result before starting an auxiliary lane. A semantic verdict or verdictless
+transport failure never cancels a sibling request: clean and findings are
+terminal policy facts, while `review_failed` without a structured tuple verdict
+is terminal only for its dispatch handle. Finish the entire launched wave before
+retrying a failed request, and finish exact-request recovery before any
+review-driven mutation. Keep the resolution digest bound at preflight unchanged
+while collecting that wave; append review fold references to terminal semantic
+request rows, then construct or update the resolution after exhaustive history
+is available and no request remains `rerun-required`. Run later standard
+attempts as fresh, distinct, ordered attempts until the v2 chain's trailing
+clean suffix reaches `standard_required_clean_runs`, which must be at least
+five, and ends with a clean standard attempt on the current tuple. Each command
+carries:
 
 ~~~bash
 cas review run --cwd <repo> --base <base-ref> \
@@ -281,11 +290,33 @@ those source facts; `contextIdentityMatches` is identity evidence, not a credit
 decision. An unbound, mismatched, stale, incomplete, reduced, fallback, or
 pre-0.2.75 binding is `invalid-proof` for closeout.
 
+### Verdictless transport failure
+
+Treat a terminal CAS `review_failed` fact with
+`tupleVerdictExists=false` as request-local transport evidence, never as a
+semantic `clean` or `findings` attempt. Keep it in exhaustive CAS history but do
+not append it to `requests[].attempts` or `standard_clean_chain`. Set only its
+bound request to `rerun-required`; leave every sibling request, retained valid
+attempt, and `standard_clean_attempt_ids` unchanged.
+
+Let every other dispatch from the initial wave reach terminal transport
+evidence. Then rerun only the failed request with the same request binding and
+unchanged tuple, using `--fresh-attempt <source-bound-reason>` so CAS creates a
+new independent attempt instead of returning the existing terminal fact. A valid
+replacement verdict follows the ordinary lane rule. If that recovery dispatch
+also terminates verdictless, leave the request `rerun-required` and block rather
+than retrying indefinitely. It never authorizes sibling cancellation, whole-wave
+zeroing, or a sequential replacement campaign. A full replacement wave is legal
+only after a named invalidation changes the policy epoch, and that wave remains
+concurrent.
+
 ## Lane accounting
 
 ~~~text
 valid auxiliary clean                -> satisfy that current auxiliary request; standard count unchanged
-valid auxiliary findings             -> require RF-v2 fold and resolution; current requests become stale after repair
+valid auxiliary findings             -> fold and terminalize that request; keep siblings running; standard count unchanged
+verdictless review_failed             -> failed request only is rerun-required; no attempt or credit; siblings and standard suffix unchanged
+same-tuple failed-request recovery    -> after the initial dispatch barrier, rerun that exact request only
 certified auxiliary-remediation carry -> preserve the standard suffix; add no credit; rerun the full current wave
 invalid clean                         -> no credit; rerun the exact current request
 invalid findings                      -> candidate-pressure until owner-boundary validation and a valid rerun
@@ -300,6 +331,9 @@ Only distinct, ordered standard `clean` facts contribute to
 only when every intervening tuple transition is a valid carry. Auxiliary
 attempts and carry transitions never contribute: auxiliary clean results only
 discharge their execution obligation, while auxiliary findings enter RF-v2.
+An auxiliary findings result is terminal discovery evidence, not a zero-credit
+standard result. It neither breaks the standard suffix nor changes another
+request's state.
 The policy artifact, not CAS history or lock state, determines whether the
 required clean suffix and every current auxiliary request are satisfied.
 
@@ -311,6 +345,17 @@ not end clean on the current tuple, open current auxiliary states, and any
 invalidation reason.
 
 ## Invalidation
+
+The accepted repair, not the finding, creates the tuple transition. A terminal
+finding does not change the bound artifact or resolution identity, invalidate
+the current policy snapshot, or cancel any sibling request. Keep the
+preflight-bound `resolution_digest` through the collection barrier; after every
+launched request is terminal, fold and adjudicate the complete wave and bind
+any resulting resolution to the repair generation and next review epoch.
+
+A verdictless transport failure likewise creates no invalidation. It changes
+only its request to `rerun-required`, preserves the current tuple and standard
+projection, and must be recovered before the resolution barrier can open.
 
 Invalidate every current request when any bound artifact identity, instruction
 byte, resolution digest, or publication epoch changes. No auxiliary result from

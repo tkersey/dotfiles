@@ -143,11 +143,36 @@ ledger validate actuation-review-policy \
 
 Interpret the passing policy as one concurrent initial wave: dispatch the
 first standard request and every auxiliary request in parallel against the
-same tuple. Then continue the standard lane with fresh, ordered attempts until
-it has at least five consecutive clean results. Do not serialize auxiliary
-lanes behind the standard streak. Auxiliary results may introduce findings or
-discharge their own request, but their attempt identities never enter
-`standard_clean_attempt_ids`.
+same tuple. Never cancel, interrupt, terminate, or stop a sibling request
+because another lens returned clean, findings, or a transport failure. Keep the
+preflight-bound resolution digest unchanged and collect terminal transport
+evidence from every launched dispatch before retrying a failed request. Keep the
+resolution barrier closed until every policy request has a valid terminal
+`clean` or `findings` fact and every finding has entered RF-v2. Only then build
+a new resolution or prepare review-driven mutation.
+
+Apply this request-local transition table exactly:
+
+| CAS fact | Request transition | Standard projection | Next action |
+| --- | --- | --- | --- |
+| valid `clean` | that request becomes `clean` | append only when the request is standard | keep siblings running |
+| valid `findings` | that request becomes `findings-folded` after RF-v2 | reset only when the request is standard | keep siblings running |
+| terminal `review_failed` with no structured tuple verdict | only that request becomes `rerun-required`; retain the fact only in exhaustive CAS history | unchanged; the failed dispatch earns no credit | keep siblings running, then rerun only that request on the unchanged tuple with `--fresh-attempt <source-bound-reason>` after the initial dispatch barrier |
+| timeout with a live attempt | request state remains pending | unchanged | recover the same handle |
+| named artifact, contract, registry, base, resolution, or publication invalidation | all current requests become stale | carry or reset under the existing v2 law | launch one new full concurrent wave |
+
+A verdictless failure terminates one dispatch handle, not the policy request.
+Do not describe the whole wave as zero-credit, decrement or clear prior standard
+credit, redispatch valid siblings on the same tuple, or serialize a replacement
+campaign. Capacity pressure changes neither the concurrency law nor request
+accounting. If the exact-request recovery dispatch also terminates without a
+structured verdict, leave the request `rerun-required` and block rather than
+retrying indefinitely or restarting the campaign.
+
+After the resolution barrier and any required adjudication, continue the
+standard lane with fresh, ordered attempts until it has at least five
+consecutive clean results. Do not serialize auxiliary lanes behind the standard
+streak. Auxiliary attempt identities never enter `standard_clean_attempt_ids`.
 
 For an initial v2 preflight, require an empty `standard_clean_chain`. After an
 auxiliary-only repair and SHIP update, allow the next preflight to retain the
@@ -196,10 +221,11 @@ same review attempt; recover its handle instead of starting a duplicate tuple.
 The current resolution may select at most one owner node. Project that node's
 ID, owner, paths, and proof requirements into the operation and obligations.
 Refresh sources and open a new generation after any repair or publication
-change; do not relabel a closed generation. Relaunch the first standard attempt
-and every auxiliary request concurrently for the new artifact. Reset the chain
-unless the entire change is the certified auxiliary remediation represented by
-the carry; standard findings, contract or registry drift, base movement, and
+change; a finding by itself does not create that transition, and a closed
+generation is never relabeled. Relaunch the first standard attempt and every
+auxiliary request concurrently for the new artifact. Reset the chain unless
+the entire change is the certified auxiliary remediation represented by the
+carry; standard findings, contract or registry drift, base movement, and
 unrelated edits always reset it.
 
 For publication-bearing closeout, bind the accepted SHIP-v1, resolution digest,

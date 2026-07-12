@@ -114,6 +114,10 @@ live_semantics:
       statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, one owner-boundary correctness refinement per accepted equivalence class, passing Actuating correctness-refinement preflight, and observed preservation and progress obligations; validation grants no authority.
     - id: review-policy-owner
       statement: Actuating binds review semantics before execution and projects only opaque request identity into CAS transport; CAS tuple and verdict facts never select a lens or grant closeout credit.
+    - id: non-cancelling-review-wave
+      statement: Every request launched in the concurrent review wave runs to terminal evidence despite sibling findings or transport failures; auxiliary results enter adjudication, while only standard clean attempts earn review-completion credit and only standard findings reset that suffix.
+    - id: request-local-review-transport-failure
+      statement: A terminal review_failed fact without a structured tuple verdict changes only its bound request to rerun-required, contributes no attempt or credit, preserves every sibling and the standard suffix, and recovers through one exact-request rerun on the unchanged tuple after the dispatch barrier; a second verdictless terminal fact blocks with the request unresolved and never authorizes whole-wave zeroing, sibling cancellation, or sequential relaunch.
     - id: auxiliary-remediation-carry
       statement: A changed CAS tuple preserves prior standard clean credit only through an Actuating-owned auxiliary-remediation carry; the edge adds no credit, every retained attempt keeps its original tuple, current auxiliary evidence is rerun, and closeout ends standard-clean on the current tuple.
     - id: closure-is-live

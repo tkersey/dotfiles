@@ -279,9 +279,16 @@ returns only the opaque request binding and transport facts.
 
 A post-run label cannot create auxiliary evidence. Credit requires an exact
 join among the pre-bound policy request, its actuation event, the returned CAS
-binding and tuple, and any RF-v2 fold. A new finding or code change updates the
-resolution, changes its digest, and invalidates affected current requests. A
-standard finding or unrelated change resets the standard chain. An
+binding and tuple, and any RF-v2 fold. Accumulate every terminal result from
+the launched wave and resolve every request-local `rerun-required` transport
+failure before constructing or updating the resolution. A new finding
+terminalizes its source request after RF-v2 classification; a verdictless
+`review_failed` fact terminalizes only its dispatch and requires exact-request
+same-tuple recovery. Neither fact cancels sibling requests or changes the
+preflight-bound resolution digest. After the wave and resolution barriers,
+bind the complete resolution to any selected repair.
+The resulting code change invalidates the preceding tuple's current requests.
+A standard finding or unrelated change resets the standard chain. An
 auxiliary-only repair may preserve its existing clean projection solely through
 the v2 carry that binds this resolution's class, witnesses, actuation evidence,
 and publication receipt.

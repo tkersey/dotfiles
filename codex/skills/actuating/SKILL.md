@@ -208,9 +208,23 @@ accounting, and closeout credit. Compile those decisions into
 Require a chain ending in at least five consecutive, distinct standard clean
 attempts and a clean standard attempt on the current tuple. Bind every
 registered auxiliary lens and have `$goal-actuating` launch all auxiliary
-requests concurrently with the first standard attempt. Auxiliary clean results
-discharge only their own current request; auxiliary findings enter RF-v2; no
-auxiliary attempt or tuple transition contributes to the standard clean suffix.
+requests concurrently with the first standard attempt. Treat those launched
+requests as a non-cancelling wave: every sibling continues to terminal evidence
+after any lens reports findings or a verdictless transport failure. Auxiliary
+clean results discharge only their own current request, and folded auxiliary
+findings complete their discovery request while entering RF-v2. A terminal
+`review_failed` fact with no structured tuple verdict terminates its dispatch
+handle, not its policy request: keep the fact in exhaustive CAS history, move
+only that request to `rerun-required`, grant the failed attempt no credit, and
+leave every sibling state and the standard clean suffix unchanged. Finish the
+initial dispatch wave, then rerun that exact request on the unchanged tuple with
+`--fresh-attempt <source-bound-reason>` before constructing a resolution. Do
+not call the whole wave zero-credit, cancel siblings, or replace it with a
+sequential campaign. Keep the wave's
+preflight-bound resolution identity stable until every policy request has a
+valid terminal review fact; only then update the resolution or admit mutation.
+No auxiliary attempt or tuple transition contributes to the standard clean
+suffix.
 Preserve prior standard credit across a changed CAS tuple only through a
 policy-bound `auxiliary-remediation` carry that cites the accepted finding,
 resolution, correctness observations, actuation events, and SHIP receipt while
@@ -272,6 +286,16 @@ For a review edit:
   project the exact CAS command into a review obligation;
 - launch the first standard request and all auxiliary requests as one
   concurrent wave against the same artifact;
+- let every launched request reach terminal evidence; never treat one finding
+  or transport failure as a reason to cancel siblings, reset standard credit,
+  serialize a replacement wave, or mutate early;
+- on verdictless `review_failed`, keep the failure out of the credit projection,
+  set only its request to `rerun-required`, preserve sibling facts and the
+  standard suffix, and after the dispatch barrier rerun only that request on the
+  unchanged tuple with `--fresh-attempt <source-bound-reason>`; if that recovery
+  dispatch also ends verdictless, leave the request unresolved and block;
+- keep the preflight-bound resolution digest stable through the wave, then
+  fold and adjudicate all collected findings before selecting a repair;
 - after an auxiliary-driven repair, invalidate every current request and
   preserve the standard suffix only by appending a certified non-credit carry;
 - bind the current resolution, publication epoch, and evidence identities into
