@@ -60,12 +60,12 @@ actuation_review_policy:
   invalidation_reasons: []
 ~~~
 
-Run the Actuating-owned Zig checker at both proof boundaries:
+Run the Actuating-owned validator at both proof boundaries:
 
 ~~~bash
-zig run codex/skills/actuating/scripts/review_policy.zig -- \
+ledger validate actuation-review-policy \
   --phase preflight --input <policy.json>
-zig run codex/skills/actuating/scripts/review_policy.zig -- \
+ledger validate actuation-review-policy \
   --phase closeout --input <policy.json>
 ~~~
 
@@ -130,7 +130,7 @@ instructions after the digest is bound. Naming a lens without pinning and
 verifying its operative contract does not satisfy a selected request.
 
 Copy the current registry names into `required_lenses` during source-to-open
-inspection. The Zig checker is deliberately registry-generic: it proves a
+inspection. The validator is deliberately registry-generic: it proves a
 bijection between that bound list and the request rows without hard-coding
 today's lens names. Every policy snapshot binds all five current registry
 entries exactly once. `request_id` values are unique within the policy, and

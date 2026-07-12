@@ -1,6 +1,6 @@
 # Closure
 
-`closure-decision/v1` is a live Zig projection of one folded actuation kernel
+`closure-decision/v1` is a live projection of one folded actuation kernel
 generation. It never accepts caller-authored success flags or a previously
 issued completion decision.
 
@@ -124,12 +124,12 @@ The ordered bare pipeline uses distinct immutable generations under one
 ~~~text
 g0 implementation, completion=ready-to-ship
   -> close
-  -> Zig decision ready-to-ship
+  -> kernel decision ready-to-ship
   -> $ship
 g1 review-closeout, completion=complete
   -> closure-grade review obligations
   -> close
-  -> Zig decision complete
+  -> kernel decision complete
 ~~~
 
 The second generation's GoalContract digest must bind the accepted SHIP-v1 and

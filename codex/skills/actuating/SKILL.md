@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Front door for authority-bound goal execution through the Zig actuation kernel. Bare $actuating or /goal $actuating runs implement, then $ship, then review-closeout; explicit $actuating implement stops after implementation. Explicit triage, remediation-plan, and review-closeout retain their named behavior; never infer mutation from an unqualified review request."
+description: "Front door for authority-bound goal execution through the actuation kernel. Bare $actuating or /goal $actuating runs implement, then $ship, then review-closeout; explicit $actuating implement stops after implementation. Explicit triage, remediation-plan, and review-closeout retain their named behavior; never infer mutation from an unqualified review request."
 ---
 
 # Actuating
@@ -8,7 +8,7 @@ description: "Front door for authority-bound goal execution through the Zig actu
 ## Mission
 
 Turn accepted intent into conserved obligations, capability-admitted effects,
-independent observations, and a live Zig-derived closure decision.
+independent observations, and a live kernel-derived closure decision.
 
 ~~~text
 bare $actuating:
@@ -42,7 +42,7 @@ Planning requests route to `$plan`; there is no planning mode here.
 ## Executable authority
 
 `ledger --source actuation` is the only executable actuation gate. Do not invoke
-or recreate a second validator in another language.
+or recreate a second actuation gate.
 
 Before the first native Ledger command in this workflow, load `$ledger` and
 complete `$ledger ensure`. After readiness, invoke `ledger` directly; the CLI
@@ -57,7 +57,7 @@ The live objects are:
    exact paths, and cited obligations.
 4. The append-only `actuation-event/v1` chain, whose fold yields
    `actuation-kernel-state/v1`.
-5. `closure-decision/v1`, projected by Zig from that live fold.
+5. `closure-decision/v1`, projected by the kernel from that live fold.
 
 `actuation-review-policy/v1`, `review-resolution/v1`, RF-v2, EF-v1, CAS
 receipts, and SHIP-v1 remain owner-specific evidence. Bind their current
@@ -66,7 +66,7 @@ verifier commands; do not copy their policy logic into the kernel.
 
 Read [live-semantics.yaml](references/live-semantics.yaml) for canonical
 vocabulary and [closure.md](references/closure.md) for the terminal projection.
-The executable laws live in the Zig fold and its direct counterexample tests.
+The executable laws live in the event fold and its direct counterexample tests.
 
 ## Recursion-scheme architecture
 
@@ -117,7 +117,7 @@ human/GoalContract responsibility and must be inspected before `open`.
     {
       "id": "tests",
       "kind": "implementation",
-      "statement": "The accepted Zig proof lane passes.",
+      "statement": "The accepted implementation proof lane passes.",
       "verifier": ["zig", "build", "test"]
     }
   ]
@@ -212,10 +212,10 @@ clean results discharge only their own request; auxiliary findings enter
 RF-v2; no auxiliary attempt contributes to the standard clean suffix.
 
 Treat the policy as executable syntax owned by `$actuating`. Before CAS
-execution, require a passing Zig preflight decision:
+execution, require a passing policy validation decision:
 
 ~~~bash
-zig run codex/skills/actuating/scripts/review_policy.zig -- \
+ledger validate actuation-review-policy \
   --phase preflight --input <policy.json>
 ~~~
 
@@ -232,7 +232,7 @@ only the policy request's `request_id` and `request_fingerprint` into CAS
 pre-bound policy request; never derive lens meaning from CAS output.
 
 Review evidence passes through `$review-fold`, which classifies and quotients
-findings, then through `ledger validate review-fold` as a pure Zig invariant
+findings, then through `ledger validate review-fold` as a pure invariant
 check. `review-resolution/v1` then selects at most one current owner-boundary
 repair. Read [review-resolution.md](references/review-resolution.md) before
 review-driven mutation.
@@ -241,10 +241,10 @@ For every accepted RF-v2 equivalence class, invoke `$universalist` at the
 classified owner boundary and compile one `correctness_refinement`. Bind the
 class, discrepancy, law delta, smallest owner construction, preservation
 witness, and strict progress witness. Before mutation, require a passing
-source-local Zig decision:
+correctness-refinement validation decision:
 
 ~~~bash
-zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+ledger validate review-resolution \
   --phase preflight --input <resolution.json>
 ~~~
 
@@ -258,20 +258,20 @@ For a review edit:
 - refresh live review sources before selection;
 - bind the complete review policy and every selected request into the
   GoalContract digest before CAS execution;
-- pass the Zig policy preflight, verify the exact instruction bytes, and
+- pass the policy preflight, verify the exact instruction bytes, and
   project the exact CAS command into a review obligation;
 - launch the first standard request and all auxiliary requests as one
   concurrent wave against the same artifact;
 - bind the current resolution, publication epoch, and evidence identities into
   the GoalContract digest;
-- pass the Zig correctness-refinement preflight and project both preservation
+- pass the correctness-refinement preflight and project both preservation
   and progress witness commands into verifier-backed obligations;
 - project the selected resolution node into the operation's owner, exact paths,
   and verifier-backed obligations;
-- prepare the Zig capability before mutation;
+- prepare the capability before mutation;
 - preserve cumulative finding semantics across adjacent repairs and reships;
 - require fresh closure-grade CAS evidence after the final published change;
-- pass the Zig policy and correctness-refinement closeout checks, with both
+- pass the policy and correctness-refinement closeout checks, with both
   witness obligations observed, before granting review credit.
 
 The validation verdict grants no authority. Raw review prose, a fold receipt,
@@ -294,7 +294,7 @@ For a bare invocation:
 
 1. open generation `g0` with `completion: ready-to-ship`;
 2. discharge implementation obligations, close, and run `decide`;
-3. hand the Zig decision to `$ship`;
+3. hand the kernel decision to `$ship`;
 4. open generation `g1` under the same `goal_id`, with a new GoalContract digest
    that binds SHIP and review-closeout authority;
 5. discharge review/closure obligations, close, and run `decide` with
@@ -370,7 +370,7 @@ public effect would bypass `$ship`.
   request binding, lane accounting, and invalidation.
 - [review-resolution.md](references/review-resolution.md) — resolution schema,
   strategy rules, and semantic balance.
-- [closure.md](references/closure.md) — Zig terminal projection and lifecycle
+- [closure.md](references/closure.md) — kernel terminal projection and lifecycle
   handoff.
 - [decision-contract.yaml](references/decision-contract.yaml) — trigger and
   routing contract for audit tooling.

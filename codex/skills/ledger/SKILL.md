@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Ensure a `ledger` command is available on PATH for consumer skills, optionally installing the native Zig CLI when it is missing, then coordinate repo-local source-memory stores, Universalist plan addresses, and pure governance-artifact validation without bypassing source-specific authority. Use before a workflow's first Ledger command, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan addressing, or artifact validation."
+description: "Ensure a `ledger` command is available on PATH for consumer skills, optionally installing the native Ledger CLI when it is missing, then coordinate repo-local source-memory stores, Universalist plan addresses, and pure validation of governance and review artifacts without bypassing source-specific authority. Use before a workflow's first Ledger command, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan addressing, or artifact validation."
 ---
 
 # Ledger
@@ -8,7 +8,8 @@ description: "Ensure a `ledger` command is available on PATH for consumer skills
 ## Mission
 
 Own the shared Ledger bootstrap boundary, coordinate repo-local source-memory
-stores under `.ledger/`, and route pure governance-artifact validation.
+stores under `.ledger/`, and route pure validation of governance and review
+artifacts.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
 
@@ -48,7 +49,7 @@ If `ledger` does not resolve on `PATH`:
    environment policy authorizes user-level CLI provisioning;
 2. pass `--install` to the bootstrap handler when that authority exists;
 3. otherwise stop with the handler's exact remediation;
-4. never use `curl | sh`, an unpinned download, or a second-language Ledger
+4. never use `curl | sh`, an unpinned download, or an alternate Ledger
    implementation.
 
 On supported Homebrew environments the canonical formula is
@@ -88,9 +89,12 @@ Stateless, non-authorizing observations:
 - `ledger validate plan-source-contract --input FILE`
 - `ledger validate policy-synthesis-receipt --input FILE`
 - `ledger validate review-fold --input FILE`
+- `ledger validate actuation-review-policy --phase PHASE --input FILE`
+- `ledger validate review-resolution --phase PHASE --input FILE`
 
-These commands accept canonical JSON, emit `ledger-validate-decision/v1`, and
-never read or write `.ledger`.
+These commands accept canonical JSON and never read or write `.ledger`. General
+governance contracts emit `ledger-validate-decision/v1`; Actuating contracts
+emit their domain validation-decision schemas.
 
 Source-store state model:
 

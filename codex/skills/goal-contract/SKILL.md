@@ -8,7 +8,7 @@ description: "Compile an accepted goal, implementation spec, review campaign, mi
 ## Mission
 
 Compile intent into the smallest source-bound contract that can be projected
-into the Zig kernel's `actuation-open/v1` authority, path scope, terminal route,
+into the actuation kernel's `actuation-open/v1` authority, path scope, terminal route,
 and verifier-backed obligations. This skill records authority; it does not
 grant, select, or execute mutation.
 

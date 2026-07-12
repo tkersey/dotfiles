@@ -15,7 +15,7 @@ usage:
   ensure-ledger [--install]
 
 Ensures a ledger command resolves on PATH. With --install, installs the native
-Zig CLI's Homebrew formula when ledger is missing. It does not inspect command
+Ledger CLI's Homebrew formula when ledger is missing. It does not inspect command
 identity or version, or proxy native commands. After readiness, invoke ledger
 directly.
 EOF

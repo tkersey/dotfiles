@@ -66,7 +66,7 @@ DECLARATIVE_NATIVE_LINES = {
     ),
     (
         "codex/skills/actuating/references/live-semantics.yaml",
-        "statement: Every actuation transition and closure decision is produced by ledger --source actuation; no second-language gate participates.",
+        "statement: Every actuation transition and closure decision is produced by ledger --source actuation; no second gate participates.",
     ),
     (
         "codex/skills/goal-actuating/SKILL.md",

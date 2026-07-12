@@ -160,12 +160,12 @@ the existing owner cannot make the law structural. This distinction limits
 the incision: correctness must strictly improve, but the artifact need not
 grow a new abstraction when its current owner already expresses the law.
 
-Run the source-local checker before review mutation and again at closeout:
+Run the validator before review mutation and again at closeout:
 
 ~~~bash
-zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+ledger validate review-resolution \
   --phase preflight --input <resolution.json>
-zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+ledger validate review-resolution \
   --phase closeout --input <resolution.json>
 ~~~
 
@@ -206,7 +206,7 @@ all prior same-epoch finding IDs and source references, add at least one new
 material finding, use fold IDs disjoint from every fold already admitted in the
 epoch, include at least one new producer source-batch identity, and select the
 current node. Every introduced finding must come from a new producer batch.
-Open a new Zig kernel generation whose GoalContract digest binds that cumulative
+Open a new actuation-kernel generation whose GoalContract digest binds that cumulative
 resolution and publication epoch; a caller-authored continuation token or use
 count grants no authority.
 
@@ -245,7 +245,7 @@ required_retirements - completed_retirements = []
 dominated_remaining = []
 ~~~
 
-`$review-fold` owns hunk and source identity. The Zig kernel independently
+`$review-fold` owns hunk and source identity. The actuation kernel independently
 observes the exact prepared path state and derives path provenance from its
 event chain. The resolution does not repeat a caller-authored hunk inventory.
 
@@ -254,8 +254,8 @@ retirement debt. `clean` and `resolved` require that debt to be empty.
 
 Every declared added construct names a live goal or domain obligation, its
 source `obligation_ref`, and a distinct displaced construct. This is a
-declaration consistency check, not independent language-aware discovery of
-omitted constructs.
+declaration consistency check, not independent discovery of omitted
+constructs.
 `local-repair` requires `added_constructs=[]`.
 
 The resolution digest is the canonical digest of the artifact binding, source

@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Govern work through the Zig actuation kernel"
-  default_prompt: "Use bare $actuating to own review policy and exact lens requests while driving Zig kernel generations through implementation, $ship, CAS transport, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."
+  short_description: "Govern work through the actuation kernel"
+  default_prompt: "Use bare $actuating to own review policy and exact lens requests while driving actuation-kernel generations through implementation, $ship, CAS transport, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."

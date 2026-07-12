@@ -1,13 +1,13 @@
 ---
 name: goal-actuating
-description: "Coordinate an accepted implementation goal or explicit review workflow through Zig actuation-kernel generations. Select one bounded operation, delegate execution to $goal-grind, fold evidence, consume review-resolution/v1, acquire CAS review evidence when required, and request a Zig closure-decision/v1 without owning publication."
+description: "Coordinate an accepted implementation goal or explicit review workflow through actuation-kernel generations. Select one bounded operation, delegate execution to $goal-grind, fold evidence, consume review-resolution/v1, acquire CAS review evidence when required, and request a kernel-derived closure-decision/v1 without owning publication."
 ---
 
 # Goal Actuating
 
 ## Mission
 
-Be the sole coordinator around the one-transition Zig kernel.
+Be the sole coordinator around the one-transition actuation kernel.
 
 ~~~text
 accepted source + GoalContract
@@ -91,20 +91,20 @@ For review work, preserve this ownership order:
 ~~~text
 actuation-review-policy/v1
 -> pre-bound exact lens request, contract digest, and instruction digest
--> passing Actuating Zig preflight decision
+-> passing policy preflight decision
 -> GoalContract digest and review verifier obligations
--> prepared Zig review operation
+-> prepared review operation
 -> exact CAS command
 -> live review source
 -> $review-fold
 -> review-resolution/v1
 -> correctness_refinement for each accepted RF-v2 class
--> passing Actuating Zig correctness-refinement preflight decision
+-> passing correctness-refinement preflight decision
 -> updated GoalContract and verifier obligations for any selected repair
--> prepared Zig repair operation
+-> prepared repair operation
 -> action evidence
 -> current closure-grade review
--> passing Actuating Zig policy and correctness-refinement closeout decisions
+-> passing policy and correctness-refinement closeout decisions
 ~~~
 
 For every fresh or closure-grade CAS review, and for same-handle timeout
@@ -137,7 +137,7 @@ and tuple to that pre-bound request. CAS output never selects or labels a lens.
 Before the first CAS command, execute the exact preflight obligation:
 
 ~~~bash
-zig run codex/skills/actuating/scripts/review_policy.zig -- \
+ledger validate actuation-review-policy \
   --phase preflight --input <policy.json>
 ~~~
 
@@ -150,7 +150,7 @@ discharge their own request, but their attempt identities never enter
 `standard_clean_attempt_ids`.
 
 After exhaustive current CAS history has been joined into the policy snapshot,
-execute the same checker with `--phase closeout`. The Zig decision checks the
+execute the same checker with `--phase closeout`. The validation decision checks the
 stable policy algebra; `$goal-actuating` still proves that the concurrent wave
 was dispatched from the pre-bound requests and that the supplied history is
 exhaustive.
@@ -160,7 +160,7 @@ one `correctness_refinement` at the classified owner boundary. Before preparing
 a repair, execute:
 
 ~~~bash
-zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+ledger validate review-resolution \
   --phase preflight --input <resolution.json>
 ~~~
 
@@ -214,5 +214,5 @@ Stop when the GoalContract projection is incomplete, an obligation has no
 executable verifier, authority is stale, the live artifact diverges from the
 fold, the next transition cannot be performed, the raw capability is lost, a
 review resolution remains open, evidence regresses, or a public effect would
-bypass `$ship`. Report the Zig error or projected transition without
+bypass `$ship`. Report the kernel error or projected transition without
 reinterpreting it locally.

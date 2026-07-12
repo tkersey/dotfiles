@@ -84,8 +84,8 @@ live_semantics:
   abstraction_dispositions: [retain, retire, collapse, delegate, replace]
 
   invariants:
-    - id: zig-only-executable-authority
-      statement: Every actuation transition and closure decision is produced by ledger --source actuation; no second-language gate participates.
+    - id: single-executable-authority
+      statement: Every actuation transition and closure decision is produced by ledger --source actuation; no second gate participates.
     - id: authority-before-open
       statement: A material generation opens only from a current source and explicit execution authority.
     - id: obligation-conservation
@@ -130,7 +130,7 @@ live_semantics:
       - scalar clean-review counters
       - replayable completion approval
       - duplicate recursive coordinator
-      - retired second-language actuation gate
+      - retired alternate actuation gate
 
   closure_flow:
     open: actuation-open/v1
