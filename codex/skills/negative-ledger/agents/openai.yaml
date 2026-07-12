@@ -1,6 +1,6 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Negative Ledger"
-  short_description: "Prune failed kernel and realization routes"
-  default_prompt: "Use $negative-ledger to record and query failed semantic routes, authority models, kernel distinctions, and proof patterns."
+  short_description: "Recall and prune witnessed failed routes and regressions"
+  default_prompt: "Use $negative-ledger implicitly when implementation, debugging, review, or validation encounters a witnessed failed or no-effect route, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or a question about what has already been tried. Query or map before repeating a route. Capture only inspectable, decision-shaping negative evidence; treat transient failures and first incomplete attempts as no-op. Reopen only after a proved applicability change."

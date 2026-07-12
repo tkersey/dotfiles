@@ -1,5 +1,5 @@
 name = "negative_ledger_mapper"
-description = "Read-only specialist for mapping prior failed attempts, learnings hits, reverted approaches, review route falsifications, and benchmark regressions into current negative-evidence routing constraints."
+description = "Read-only specialist for mapping canonical negative-ledger records, historical candidate evidence, reverts, regressions, and current artifact state into narrow routing constraints."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
@@ -7,22 +7,38 @@ Return exactly one packet and no prose.
 
 negative_evidence_ledger:
   - neg_id: "NEG-..."
+    ledger_path: ".ledger/negative-ledger/events.jsonl"
+    record_version: "NER-v2"
+    status: "capture_candidate | need-evidence | unknown | active | accepted_risk | stale | reopened | superseded"
+    repository_id: "..."
+    route_or_model_id: "..."
+    route_id: "..."
+    route_family_id: "..."
+    cluster_id: "..."
+    authority_model_id: "..."
+    distinction_pattern_id: "..."
+    proof_pattern_id: "..."
+    artifact_state_id: "..."
     hypothesis: "..."
     attempted_change: "..."
     source_refs:
       - kind: "benchmark | test | revert | review | trace | diff | learning | user-context | ledger | rcp | rdp | route-wave | lab"
         ref: "..."
         summary: "..."
-    learning_source_ids: []
-    evidence: []
+    falsifying_evidence: []
     observed_outcome: "..."
     failure_class: "no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown"
-    applicability_conditions: []
-    current_status: "active | stale | superseded | reopened | unknown"
+    exclusion_scope: "exact | route | route_family | cluster | authority_model | distinction_pattern | proof_pattern"
     exclusion_rule: "..."
-    reopening_criteria: []
+    applicability_conditions: []
+    reopening_criteria:
+      - id: "..."
+        condition: "..."
     confidence: "high | medium | low | unknown"
     next_search_hint: "..."
+    event_chain_fingerprint: "..."
+    projection_fingerprint: "..."
+    previous_projection_fingerprint: "... | null"
 artifact_state_id: "..."
 artifact_state_label: "..."
 scope: "..."
@@ -32,5 +48,5 @@ agreement_pressure: "aligned | mixed | conflicting | unknown"
 stale: "yes | no | unknown"
 final_call: "active_exclusions | no_applicable_negative_evidence | reopen_required | blocked"
 
-Do not edit files. Do not append to learnings. Root owns durable writeback.
+Do not edit files, capture ledger events, change statuses, append learnings, or write memory-source notes. Root owns durable writeback.
 """

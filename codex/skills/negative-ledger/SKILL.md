@@ -1,8 +1,8 @@
 ---
 name: negative-ledger
-description: "Durably capture, query, map, transition, compact, export, and hand off witnessed negative evidence through the repo-local `ledger` source API; selectively admit full ledger projections to Codex memory through memory-source-notes. Use for failed semantic routes, benchmark regressions, no-effect attempts, reverts, route exclusions, reopening, or search-space pruning."
+description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Query/map before repeating a route; capture only inspectable decision-shaping negative evidence through the repo-local `ledger` source API; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
-  version: "6.1.0"
+  version: "6.2.0"
 ---
 
 # Negative Ledger
@@ -33,18 +33,48 @@ Never use memory notes as the operational route gate. For accepted admission, lo
 ## Trigger Cues
 
 - `$negative-ledger`;
-- failed attempts, no-effect attempts, reverts, benchmark regressions;
+- failed attempts, no-effect attempts, reverts, benchmark or test regressions;
 - repeated semantic routes or same-cluster retries;
+- strategy pivots that abandon a concrete route future work might repeat;
 - "what have we already tried?";
 - "do not retry this route";
 - route reopening after artifact-state changes;
 - fixed-point or review-governor negative evidence;
 - memory admission of an active/stale/reopened/superseded `NEG-*` projection.
 
+## Activation Policy
+
+Activation is broad; capture is narrow.
+
+Invoke this skill implicitly when current work may change route selection because a concrete route failed, had no effect, regressed a signal, was reverted, was rejected by current proof/review evidence, or is about to be retried under the same cluster. Do not wait for the user to literally name `$negative-ledger`.
+
+Before selecting a route that resembles a prior failure, query or map the canonical ledger. A recalled `$learnings` row may trigger this check, but it cannot block directly.
+
+After a material strategy pivot, regression-confirmed revert, or closeout that leaves a failed route likely to recur, evaluate capture. A transient red test, syntax error, first incomplete implementation, or discarded local typo is `no-op` unless it exposes a durable failed hypothesis that changes future routing.
+
+Retain exactly one internal disposition for each material activation:
+
+```text
+mapped       current ledger checked; no write required
+captured     witnessed negative evidence appended
+transitioned existing NEG record changed lifecycle state
+no-op        activation evaluated; evidence was not durable or route-shaping
+blocked      ledger unavailable/invalid or active exact/applicable exclusion matched
+```
+
 ## Canonical Store and CLI
 
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. After readiness, invoke `ledger` directly.
+Before the first native Ledger command in this workflow, load `$ledger` and complete `$ledger ensure`. After readiness, invoke `ledger` directly.
+
+This hardened contract requires Ledger 0.7.0 or newer.
+
+Immediately observe the native compatibility boundary:
+
+```bash
+ledger --version
+```
+
+If the reported version is older than 0.7.0, unparseable, or unavailable, retain `blocked` and do not invoke `map`, `capture`, `status`, `reopen`, `export`, or `handoff`. The `$ledger ensure` receipt proves command availability only; it does not prove version compatibility.
 
 ```text
 ledger
@@ -57,18 +87,20 @@ Expected commands:
 
 ```text
 ledger init
+ledger --version
 ledger capture --json FILE|-
 ledger query
-ledger map --route ID --cluster ID --artifact ID
+ledger map --route ID --cluster ID --artifact ID [scope selectors]
 ledger show --id NEG-ID
 ledger handoff
 ledger compact
 ledger doctor
 ledger export --id NEG-ID [--format full|memory-note]
-ledger status --id NEG-ID --to STATUS --reason TEXT [--source-ref ...]
+ledger status --id NEG-ID --to STATUS --json transition.json
+ledger reopen --id NEG-ID --json reopen-proof.json
 ```
 
-Until `export` ships, do not create authoritative memory admission from a lossy `ledger show` projection.
+`ledger export` is the only authoritative projection surface for memory admission. Never reconstruct a projection from the concise `ledger show` output.
 
 ## Valid Statuses
 
@@ -89,7 +121,7 @@ Fuzzy or lexical overlap is suggest-only.
 
 ## Query/Map Workflow
 
-1. Identify `artifact_state_id`, route, cluster, scope, target signal, and changed surface.
+1. Identify `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, declared scope, target signal, and changed surface.
 2. Run:
 
    ```bash
@@ -100,8 +132,10 @@ Fuzzy or lexical overlap is suggest-only.
    ```
 
 3. Interpret exit codes: `0` no active exact exclusion, `2` active exact/applicable exclusion, `3` ledger unavailable or invalid.
-4. Treat fuzzy candidates as search hints only.
-5. Re-check current applicability before route suppression.
+4. Use the selector for the declared scope: `--route`, `--route-family`, `--cluster`, `--authority-model`, `--distinction-pattern`, or `--proof-pattern`. Ledger supports the exact, route, route-family, cluster, authority-model, distinction-pattern, and proof-pattern scopes.
+5. Treat fuzzy candidates as search hints only.
+6. Re-check current applicability before route suppression.
+7. Ledger resolves symbolic Git refs such as `HEAD` to a full commit and retains the input only as `artifact_state_label`; reject empty or unresolved identities.
 
 ## Capture Workflow
 
@@ -115,17 +149,52 @@ ledger capture --json capture.json
 
 Captures without adequate witness evidence must become `need-evidence` or `capture_candidate`, never active exclusions.
 
+An active capture requires an explicit supported scope and its identity, an immutable artifact identity, structured source references, applicability conditions, a narrow exclusion rule, and identified reopening criteria. Let Ledger downgrade an incomplete active request to `need-evidence`; do not repair or reinterpret the projection in prose.
+
 ## Lifecycle Transitions
 
-Use append-only status events:
+Use append-only status events. Every transition requires a JSON proof packet with a reason and structured source references:
+
+```json
+{
+  "reason": "The prior evidence was accepted as a bounded risk.",
+  "source_refs": [
+    {"kind": "review", "ref": "PR 123 acceptance"}
+  ]
+}
+```
 
 ```bash
 ledger status \
   --id NEG-000001 \
-  --to stale \
-  --reason "The prior bookkeeping path was replaced." \
-  --source-ref "commit:abc123"
+  --to accepted_risk \
+  --json transition.json
 ```
+
+Reopening requires a proved before/after change for an identified criterion already present on the record:
+
+```json
+{
+  "reason": "The implementation and representative fixture changed.",
+  "criterion_changes": [
+    {
+      "criterion_id": "artifact-or-fixture-changed",
+      "before": "commit abc123 with fixture v1",
+      "after": "commit def456 with fixture v2"
+    }
+  ],
+  "source_refs": [
+    {"kind": "git", "ref": "commit:def456"},
+    {"kind": "test", "ref": "zig build test-ledger --summary all"}
+  ]
+}
+```
+
+```bash
+ledger reopen --id NEG-000001 --json reopen-proof.json
+```
+
+Ledger rejects illegal edges, proofless promotion, unknown criteria, and unchanged before/after claims before append.
 
 Never rewrite old events.
 
@@ -138,7 +207,7 @@ A negative-ledger source note is allowed only when:
 3. `ledger export --id` returns a complete current projection;
 4. projection includes witness, applicability, narrow exclusion, and reopening criteria when status is active;
 5. the record is likely to matter in future related work;
-6. the note embeds the full bounded projection and projection fingerprint.
+6. the note embeds the full bounded projection, stable repository identity, event-chain fingerprint, projection fingerprint, and any prior projection link.
 
 Do not admit prose-only negative-evidence claims, unpromoted `learnings` hits, partial `ledger show` output, every `need-evidence` candidate, or stale history with no future routing value.
 
@@ -201,6 +270,16 @@ store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are
 read only during migration. Verify current applicability and promote
 qualifying evidence through `ledger capture`.
 
+## Activation Evaluation
+
+Use [activation-contract.md](references/activation-contract.md) and [activation.yml](tests/golden/activation.yml) to distinguish a routing check from a capture-worthy event. Run:
+
+```bash
+bash scripts/check_negative_ledger.sh
+```
+
+Raw activation count is not the success metric. Grade whether the skill appeared for decision-shaping failed-route episodes, avoided transient false positives, and changed route selection or durable evidence only when warranted.
+
 ## Guardrails
 
 - Do not record vibes as negative evidence.
@@ -212,3 +291,5 @@ qualifying evidence through `ledger capture`.
 - Do not let memory notes outrank the repo-local ledger.
 - Do not write compiled memory directly.
 - Do not publish incomplete projections to Phase 2.
+- Do not capture every transient test failure merely because implicit activation occurred.
+- Do not bypass failed validation in `map`, `export`, or `handoff`; those boundaries must fail closed.
