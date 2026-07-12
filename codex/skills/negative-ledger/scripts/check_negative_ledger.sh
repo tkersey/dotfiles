@@ -18,7 +18,7 @@ for file in "${required[@]}"; do
   test -f "$file" || { echo "missing $file" >&2; exit 1; }
 done
 
-python3 - <<'PY'
+uv run python - <<'PY'
 from pathlib import Path
 import re
 
