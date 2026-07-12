@@ -25,9 +25,18 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 2. Run:
 
    ```bash
-   ledger map --route "<route>" --cluster "<cluster>" --artifact "<artifact-state>"
+   ledger map \
+     --artifact "<artifact-state>" \
+     --route "<route>" \
+     --route-family "<route-family>" \
+     --cluster "<cluster>" \
+     --authority-model "<authority-model>" \
+     --distinction-pattern "<distinction-pattern>" \
+     --proof-pattern "<proof-pattern>"
    ledger handoff
    ```
+
+   Pass every selector whose current identity is known, and always include the selector for the declared scope. Omit only selectors whose identity was not established.
 
 3. For material `NEG-*` records, prefer:
 

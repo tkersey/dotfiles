@@ -68,6 +68,14 @@ Before the first native Ledger command in this workflow, load `$ledger` and comp
 
 This hardened contract requires Ledger 0.7.0 or newer.
 
+Immediately observe the native compatibility boundary:
+
+```bash
+ledger --version
+```
+
+If the reported version is older than 0.7.0, unparseable, or unavailable, retain `blocked` and do not invoke `map`, `capture`, `status`, `reopen`, `export`, or `handoff`. The `$ledger ensure` receipt proves command availability only; it does not prove version compatibility.
+
 ```text
 ledger
 ```
@@ -79,6 +87,7 @@ Expected commands:
 
 ```text
 ledger init
+ledger --version
 ledger capture --json FILE|-
 ledger query
 ledger map --route ID --cluster ID --artifact ID [scope selectors]

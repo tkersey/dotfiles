@@ -61,6 +61,8 @@ for token in (
     "mapped       current ledger checked; no write required",
     "no-op        activation evaluated; evidence was not durable or route-shaping",
     "This hardened contract requires Ledger 0.7.0 or newer.",
+    "ledger --version",
+    "The `$ledger ensure` receipt proves command availability only; it does not prove version compatibility.",
     "Ledger resolves symbolic Git refs such as `HEAD` to a full commit",
     "Every transition requires a JSON proof packet",
     '"criterion_changes"',
@@ -111,6 +113,16 @@ if "current_status:" in runtime_mapper:
 for noncanonical_status in ("capture-candidate", "accepted-risk"):
     if noncanonical_status in mapper or noncanonical_status in runtime_mapper:
         raise SystemExit(f"mapper uses noncanonical status literal: {noncanonical_status}")
+for selector in (
+    "--route",
+    "--route-family",
+    "--cluster",
+    "--authority-model",
+    "--distinction-pattern",
+    "--proof-pattern",
+):
+    if selector not in mapper:
+        raise SystemExit(f"skill-local mapper omits native scope selector: {selector}")
 
 activation = Path("tests/golden/activation.yml").read_text()
 cases = {
