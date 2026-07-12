@@ -98,11 +98,13 @@ actuation-review-policy/v1
 -> live review source
 -> $review-fold
 -> review-resolution/v1
+-> correctness_refinement for each accepted RF-v2 class
+-> passing Actuating Zig correctness-refinement preflight decision
 -> updated GoalContract and verifier obligations for any selected repair
 -> prepared Zig repair operation
 -> action evidence
 -> current closure-grade review
--> passing Actuating Zig closeout decision
+-> passing Actuating Zig policy and correctness-refinement closeout decisions
 ~~~
 
 For every fresh or closure-grade CAS review, and for same-handle timeout
@@ -152,6 +154,26 @@ execute the same checker with `--phase closeout`. The Zig decision checks the
 stable policy algebra; `$goal-actuating` still proves that the concurrent wave
 was dispatched from the pre-bound requests and that the supplied history is
 exhaustive.
+
+After `$review-fold`, require each accepted equivalence class to have exactly
+one `correctness_refinement` at the classified owner boundary. Before preparing
+a repair, execute:
+
+~~~bash
+zig run codex/skills/actuating/scripts/review_resolution.zig -- \
+  --phase preflight --input <resolution.json>
+~~~
+
+Project the refinement's preservation and progress verifier commands into the
+updated GoalContract as `correctness:<decision_id>:preservation` and
+`correctness:<decision_id>:progress`, with statements and argv copied exactly.
+Bind the passing RF-v2 validation decision and full resolution digest into that
+contract. At closeout, rerun the same checker with `--phase closeout` against
+the cumulative resolution and require passing kernel observations for both
+named obligations on the current artifact and GoalContract digest. The checker
+validates the refinement sub-contract, not the full resolution or witness
+execution. Neither decision grants authority; the prepared actuation operation
+remains the only mutation gate.
 
 Do not admit a smaller review wait budget unless the user explicitly overrides
 it. Project the exact command into the review obligation so older installed CAS

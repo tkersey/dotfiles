@@ -51,7 +51,7 @@ live_semantics:
       purpose: Bind lens selection, exact instructions, request identity, lane accounting, invalidation, and closeout credit before review execution.
     review-resolution/v1:
       owner: actuating
-      purpose: Turn classified findings into owner-boundary strategies before review mutation.
+      purpose: Turn classified equivalence classes into owner-boundary correctness refinements and strategies before review mutation.
 
   recursion_scheme:
     driver: /goal
@@ -111,7 +111,7 @@ live_semantics:
     - id: public-effects-owned-by-ship
       statement: Only ship may create update or promote a PR or perform another public tracker effect.
     - id: review-before-resolution
-      statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, and a current owner-boundary review-resolution/v1; validation grants no authority.
+      statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, one owner-boundary correctness refinement per accepted equivalence class, passing Actuating correctness-refinement preflight, and observed preservation and progress obligations; validation grants no authority.
     - id: review-policy-owner
       statement: Actuating binds review semantics before execution and projects only opaque request identity into CAS transport; CAS tuple and verdict facts never select a lens or grant closeout credit.
     - id: closure-is-live
