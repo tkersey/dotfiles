@@ -21,7 +21,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 
 ## Method
 
-1. Establish `artifact_state_id`, route, cluster, target signal, and scope.
+1. Establish immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, target signal, and scope.
 2. Run:
 
    ```bash
@@ -37,7 +37,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 
    over lossy prose or count-only projections.
 4. Query learnings only when additional historical evidence is needed.
-5. Classify each candidate as active, accepted-risk, stale, reopened, superseded, unknown, or need-evidence.
+5. Classify each candidate as capture-candidate, need-evidence, unknown, active, accepted-risk, stale, reopened, or superseded.
 6. Explain current-state applicability.
 7. Give the safest adjacent search frontier.
 
@@ -48,8 +48,9 @@ negative_evidence_ledger:
   - neg_id: NEG-000001
     ledger_path: .ledger/negative-ledger/events.jsonl
     record_version: NER-v2
-    status: active | accepted_risk | stale | reopened | superseded | unknown | need-evidence
+    status: capture_candidate | need-evidence | unknown | active | accepted_risk | stale | reopened | superseded
     route_or_model_id: "..."
+    route_id: "..."
     cluster_id: "..."
     artifact_state_id: "..."
     hypothesis: "..."
@@ -71,6 +72,7 @@ Footer:
 
 ```md
 artifact_state_id: ...
+artifact_state_label: ...
 scope: ...
 top_material_signals:
   - ...
@@ -78,7 +80,7 @@ unresolved_signals:
   - ...
 agreement_pressure: aligned | mixed | conflicting | unknown
 stale: yes | no | unknown
-final_call: ...
+final_call: active_exclusions | no_applicable_negative_evidence | reopen_required | blocked
 ```
 
 ## Guardrails
