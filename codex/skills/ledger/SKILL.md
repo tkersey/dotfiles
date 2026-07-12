@@ -72,19 +72,24 @@ Canonical source APIs:
 - `ledger --source learnings`
 - `ledger` for negative evidence
 - `ledger --source synesthesia` when present
+- `ledger --source actuation`
+- `ledger --source hylo`
 
-Current persistent-adapter locations, retained for path compatibility and
-explicit migration:
+Current source-memory persistent-adapter locations, retained for path
+compatibility and explicit migration:
 
 - `.ledger/learnings/events.jsonl`
 - `.ledger/negative-ledger/events.jsonl`
 - `.ledger/synesthesia/events.jsonl` when present
 
-Operational, non-memory store:
+Operational, non-memory stores:
 
-- `.ledger/actuation/events.jsonl`, owned exclusively by
-  `ledger --source actuation`; do not harvest it into memory or route its writes
-  through source-memory coordination.
+- `.ledger/actuation/events.jsonl` is the current actuation persistent adapter,
+  owned exclusively by `ledger --source actuation`; do not harvest it into
+  memory or route its writes through source-memory coordination.
+- `.ledger/hylo/events.jsonl` is the current Hylo persistent adapter, owned
+  exclusively by `ledger --source hylo`; do not harvest it into memory or
+  route its writes through source-memory coordination.
 
 Operational, non-memory artifacts:
 
@@ -160,6 +165,9 @@ to source-specific skills and native source APIs:
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
 - `$actuating` / `ledger --source actuation` for the operational actuation
   event chain; this is not a memory-admission source.
+- `$hylo` / `ledger --source hylo` for operational replay-campaign evidence;
+  the current compatibility adapter is `.ledger/hylo/events.jsonl`, and this is
+  not a memory-admission source.
 - `$universalist` owns plan contents and updates;
   `ledger --source universalist` owns plan identity, atomic creation, and
   address resolution.

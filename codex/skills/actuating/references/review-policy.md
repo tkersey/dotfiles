@@ -12,11 +12,13 @@ JSON snapshots of its current state for preflight and closeout checks:
 
 ~~~yaml
 actuation_review_policy:
-  version: actuation-review-policy/v1
+  version: actuation-review-policy/v2
   policy_id:
   run_id:
   goal_contract_digest:
   resolution_digest:
+  review_contract_ref:
+  review_contract_digest:
   artifact:
     repo:
     base_ref:
@@ -56,6 +58,59 @@ actuation_review_policy:
           finding_count:
           record_ref:
       review_fold_refs: []
+  standard_clean_chain:
+    standard_attempts:
+      - artifact:
+          repo:
+          base_ref:
+          base_sha:
+          head_sha:
+          state_fingerprint:
+        goal_contract_digest:
+        resolution_digest:
+        review_contract_digest:
+        request_id:
+        request_fingerprint:
+        contract_id:
+        contract_digest:
+        instruction_digest:
+        attempt:
+          workflow_binding:
+            requestId:
+            requestFingerprint:
+          review_attempt_id:
+          review_thread_id:
+          review_turn_id:
+          base_sha:
+          head_sha:
+          target_fingerprint:
+          context_identity_matches: true | false
+          principal_kind:
+          principal_reduced: true | false
+          fallback_used: true | false
+          principal_source:
+          verdict_status: clean | findings
+          finding_count:
+          record_ref:
+    carry_transitions:
+      - kind: auxiliary-remediation
+        from_attempt_id:
+        to_artifact:
+          repo:
+          base_ref:
+          base_sha:
+          head_sha:
+          state_fingerprint:
+        from_goal_contract_digest:
+        to_goal_contract_digest:
+        resolution_digest:
+        source_auxiliary_request_ids: []
+        review_fold_refs: []
+        correctness_decision_refs: []
+        preservation_observation_refs: []
+        progress_observation_refs: []
+        actuation_event_refs: []
+        ship_ref:
   standard_clean_attempt_ids: []
   invalidation_reasons: []
 ~~~
@@ -70,11 +125,41 @@ ledger validate actuation-review-policy \
 ~~~
 
 It emits `actuation-review-policy-decision/v1`, grants no authority, and
-mutates no storage. `preflight` rejects review evidence and requires every
-request to be pending. `closeout` checks registry/request bijection, exact
-referenced contract and instruction bytes, opaque binding and artifact
-identity, source quality, distinct attempts, disjoint lane accounting, and
-terminal request states.
+mutates no storage. New campaigns require Ledger 0.7.0 or newer and emit
+`actuation-review-policy/v2`. The validator retains v1 compatibility with its
+original same-tuple suffix law; a v1 snapshot cannot carry credit across a
+tuple change. `preflight` requires every current request to be pending but may
+accept a v2 chain carried from the immediately preceding artifact. `closeout`
+checks registry/request bijection, exact referenced contract and instruction
+bytes, opaque binding and artifact identity, source quality, distinct attempts,
+chain topology, disjoint lane accounting, and terminal request states.
+
+`review_contract_ref` is the exact persisted aggregate manifest for the policy
+semantics that must remain stable across a carry: policy version, required
+standard-clean count, ordered lens registry, every lens role, contract ID, and
+contract digest. Exclude artifact identity, resolution identity, request IDs,
+instruction bytes, and request fingerprints because those are epoch-specific.
+Set `review_contract_digest` to the SHA-256 of the manifest's exact bytes and
+bind its digest verifier into the GoalContract. Every historical standard row
+must carry that same digest; contract or registry drift therefore resets the
+chain instead of masquerading as auxiliary remediation.
+
+`standard_clean_chain.standard_attempts` is the exhaustive ordered projection
+of valid standard terminal facts retained for streak accounting. Preserve each
+fact's original request identity, contract identity, GoalContract and
+resolution digests, and CAS tuple. Include `findings` attempts because they
+break the trailing clean suffix. The rows for the current artifact must equal
+the current standard request's `attempts` exactly; historical rows never move
+into or impersonate the current request.
+
+`carry_transitions` contains only non-credit edges between adjacent standard
+attempt epochs whose tuples differ. A carry must start from a clean standard
+attempt, keep repo/base identity stable, change head and state fingerprint,
+preserve the aggregate review contract and standard contract, and bind the
+auxiliary request IDs, RF-v2 folds, resolution digest, correctness decisions,
+observed preservation and progress obligations, actuation events, and SHIP-v1
+receipt that produced the next artifact. The edge preserves the suffix length;
+it never adds an attempt ID.
 
 For a selected request, `request_fingerprint` equals `instruction_digest`: the SHA-256 of the exact
 persisted UTF-8 bytes at `instructions_ref`. The pre-bound policy row and
@@ -147,9 +232,9 @@ policy's bound closeout requests.
 Launch every auxiliary request concurrently with the first standard attempt as
 one dispatch wave against the same bound artifact. Do not wait for a standard
 result before starting an auxiliary lane. Run later standard attempts as fresh,
-distinct, ordered attempts until the current clean suffix reaches
-`standard_required_clean_runs`, which must be at least five. Each command
-carries:
+distinct, ordered attempts until the v2 chain's trailing clean suffix reaches
+`standard_required_clean_runs`, which must be at least five, and ends with a
+clean standard attempt on the current tuple. Each command carries:
 
 ~~~bash
 cas review run --cwd <repo> --base <base-ref> \
@@ -192,37 +277,55 @@ pre-0.2.75 binding is `invalid-proof` for closeout.
 ## Lane accounting
 
 ~~~text
-valid auxiliary clean           -> satisfy that auxiliary request; standard count unchanged
-valid auxiliary findings        -> require RF-v2 fold; accepted artifact changes invalidate current requests
-invalid clean                    -> no credit; rerun the exact current request
-invalid findings                 -> candidate-pressure until owner-boundary validation and a valid rerun
-selected-pending                 -> blocks closeout
-valid standard clean             -> append one distinct ordered attempt ID
-standard findings or code change -> reset the current standard clean suffix
+valid auxiliary clean                -> satisfy that current auxiliary request; standard count unchanged
+valid auxiliary findings             -> require RF-v2 fold and resolution; current requests become stale after repair
+certified auxiliary-remediation carry -> preserve the standard suffix; add no credit; rerun the full current wave
+invalid clean                         -> no credit; rerun the exact current request
+invalid findings                      -> candidate-pressure until owner-boundary validation and a valid rerun
+selected-pending                      -> blocks closeout
+valid standard clean                  -> append one distinct ordered standard attempt ID
+valid standard findings               -> append the finding fact and reset the trailing standard clean suffix
+unrelated or uncertified tuple change -> reset the chain
 ~~~
 
-Only distinct, current, ordered standard attempts contribute to
-`standard_clean_attempt_ids`. Auxiliary attempts never contribute: auxiliary
-clean results only discharge their execution obligation, while auxiliary
-findings enter RF-v2. The policy artifact, not CAS history or lock state,
-determines whether the required clean suffix and every auxiliary request are
-satisfied.
+Only distinct, ordered standard `clean` facts contribute to
+`standard_clean_attempt_ids`. They may retain their original earlier tuples
+only when every intervening tuple transition is a valid carry. Auxiliary
+attempts and carry transitions never contribute: auxiliary clean results only
+discharge their execution obligation, while auxiliary findings enter RF-v2.
+The policy artifact, not CAS history or lock state, determines whether the
+required clean suffix and every current auxiliary request are satisfied.
 
 The closeout checker requires `standard_clean_attempt_ids` to equal the exact
-trailing required clean suffix; it rejects duplicate attempt identity,
-cross-lane credit, stale artifact bindings, open auxiliary states, and any
+trailing required suffix derived from `standard_clean_chain`. It rejects
+duplicate attempt identity, cross-lane credit, missing or extraneous carry
+edges, standard findings inside that suffix, contract drift, a chain that does
+not end clean on the current tuple, open current auxiliary states, and any
 invalidation reason.
 
 ## Invalidation
 
-Invalidate affected review requests when any bound artifact identity,
-contract byte, instruction byte, contract ID, policy selection, resolution
-digest, or publication epoch changes. Recover timeouts through the same CAS
-handle; do not turn recovery into another independent attempt.
+Invalidate every current request when any bound artifact identity, instruction
+byte, resolution digest, or publication epoch changes. No auxiliary result from
+the preceding artifact survives as closeout evidence; relaunch the full
+concurrent wave against the new artifact. Recover timeouts through the same CAS
+handle and do not turn recovery into another independent attempt.
 
-Any accepted artifact change invalidates the standard suffix and every
-auxiliary request. Relaunch the full concurrent wave against the new artifact;
-no auxiliary result from the preceding artifact survives as closeout evidence.
+Reset `standard_clean_chain` when the review-contract manifest changes, a
+standard attempt reports findings, the base identity changes, the artifact
+change contains any unclassified or unrelated mutation, or the transition
+lacks any required auxiliary-resolution, correctness, actuation, or SHIP
+evidence. A caller-authored reason or boolean exemption cannot preserve credit.
+
+The sole artifact-change exception is a v2 `auxiliary-remediation` carry. At the
+next artifact's preflight, retain the prior exhaustive standard history and its
+exact clean projection, append one dangling carry from the last clean standard
+attempt to the new current artifact, and keep every new current request pending.
+At closeout, append the new tuple's exhaustive standard attempts, require the
+carry to connect to the first new row, recompute the trailing clean projection,
+and require at least one clean standard attempt plus all auxiliary evidence on
+the current tuple. Multiple auxiliary repairs may compose only as a chain of
+individually certified carries separated by standard attempts.
 
 Adding a lens, renaming a lens, changing a contract, or changing the required
 clean count must require zero CAS schema or implementation changes.

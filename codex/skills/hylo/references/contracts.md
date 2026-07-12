@@ -13,16 +13,17 @@ An adapter in any language may interpret those files if it preserves request
 visibility, hidden references, environment and effect boundaries, split
 membership, oracles, and fingerprints.
 
-The native Ledger source owns operational evidence:
+The native Ledger source owns operational evidence through Ledger's event-store
+contract. The current persistent adapter resolves the logical store to:
 
 ```text
 <repo>/.ledger/hylo/events.jsonl
 <repo>/.ledger/hylo/events.jsonl.lock
 ```
 
-Only `ledger --source hylo append` may mutate the event store. The lock sidecar
-is coordination state and must be Git-ignored. A custom `--path` must remain
-inside the addressed repository.
+Only `ledger --source hylo append` may mutate the logical event store. Under the
+current JSONL adapter, the lock sidecar is coordination state and must be
+Git-ignored. A custom `--path` must remain inside the addressed repository.
 
 ## Identifiers and fingerprints
 

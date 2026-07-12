@@ -46,9 +46,9 @@ live_semantics:
     closure-decision/v1:
       owner: ledger-actuation
       purpose: Project continuation or terminal outcomes from the live folded state.
-    actuation-review-policy/v1:
+    actuation-review-policy/v2:
       owner: actuating
-      purpose: Bind lens selection, exact instructions, request identity, lane accounting, invalidation, and closeout credit before review execution.
+      purpose: Bind lens selection, exact instructions, request identity, tuple-honest standard attempt history, certified auxiliary-remediation carries, lane accounting, invalidation, and closeout credit before review execution.
     review-resolution/v1:
       owner: actuating
       purpose: Turn classified equivalence classes into owner-boundary correctness refinements and strategies before review mutation.
@@ -114,6 +114,8 @@ live_semantics:
       statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, one owner-boundary correctness refinement per accepted equivalence class, passing Actuating correctness-refinement preflight, and observed preservation and progress obligations; validation grants no authority.
     - id: review-policy-owner
       statement: Actuating binds review semantics before execution and projects only opaque request identity into CAS transport; CAS tuple and verdict facts never select a lens or grant closeout credit.
+    - id: auxiliary-remediation-carry
+      statement: A changed CAS tuple preserves prior standard clean credit only through an Actuating-owned auxiliary-remediation carry; the edge adds no credit, every retained attempt keeps its original tuple, current auxiliary evidence is rerun, and closeout ends standard-clean on the current tuple.
     - id: closure-is-live
       statement: Close and decide recompute the current repository artifact and reject stale folded state.
 

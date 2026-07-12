@@ -89,7 +89,7 @@ operation.
 For review work, preserve this ownership order:
 
 ~~~text
-actuation-review-policy/v1
+actuation-review-policy/v2
 -> pre-bound exact lens request, contract digest, and instruction digest
 -> passing policy preflight decision
 -> GoalContract digest and review verifier obligations
@@ -113,7 +113,7 @@ recovery, pass `--timeout-ms 1800000` explicitly:
 First require `cas_rer_opaque_request_binding_v1=true`,
 `cas_review_history_v2=true`, and
 `cas_review_scoped_instructions_v1=true` from `cas capabilities` for
-closure-grade work.
+closure-grade work. Require Ledger 0.7.0 or newer before validating a v2 policy.
 
 ~~~bash
 cas review run --cwd <repo> --base <base-ref> \
@@ -149,11 +149,24 @@ lanes behind the standard streak. Auxiliary results may introduce findings or
 discharge their own request, but their attempt identities never enter
 `standard_clean_attempt_ids`.
 
+For an initial v2 preflight, require an empty `standard_clean_chain`. After an
+auxiliary-only repair and SHIP update, allow the next preflight to retain the
+prior ordered standard history and clean projection only when it appends one
+`auxiliary-remediation` carry from the last clean standard attempt to the new
+artifact. Bind the prior auxiliary request IDs and folds, current resolution
+digest, correctness decisions, observed preservation and progress obligations,
+actuation event refs, and SHIP-v1 receipt. Keep every new current request
+`selected-pending`. The carry is a transition, not a review attempt, and never
+increments the clean count.
+
 After exhaustive current CAS history has been joined into the policy snapshot,
 execute the same checker with `--phase closeout`. The validation decision checks the
 stable policy algebra; `$goal-actuating` still proves that the concurrent wave
 was dispatched from the pre-bound requests and that the supplied history is
-exhaustive.
+exhaustive across every standard request epoch retained in the chain. Append
+current standard terminal facts in their actual order, including findings;
+require the current request attempts to equal the chain's current-tuple rows,
+and require the chain to end with a clean standard attempt on the current tuple.
 
 After `$review-fold`, require each accepted equivalence class to have exactly
 one `correctness_refinement` at the classified owner boundary. Before preparing
@@ -184,12 +197,17 @@ The current resolution may select at most one owner node. Project that node's
 ID, owner, paths, and proof requirements into the operation and obligations.
 Refresh sources and open a new generation after any repair or publication
 change; do not relabel a closed generation. Relaunch the first standard attempt
-and every auxiliary request concurrently for the new artifact.
+and every auxiliary request concurrently for the new artifact. Reset the chain
+unless the entire change is the certified auxiliary remediation represented by
+the carry; standard findings, contract or registry drift, base movement, and
+unrelated edits always reset it.
 
 For publication-bearing closeout, bind the accepted SHIP-v1, resolution digest,
 publication tuple, actuation review policy, and selected request identities into
 the next GoalContract. `$ship` alone updates the retained PR. A final published
-change invalidates earlier request and tuple bindings.
+change always invalidates earlier current-request and auxiliary evidence. It
+preserves earlier standard convergence credit only through the v2 carry while
+leaving every retained attempt bound to its original request and tuple.
 
 ## Lifecycle handoff
 
