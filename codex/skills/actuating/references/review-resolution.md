@@ -30,13 +30,14 @@ review_resolution:
     policy_ref:
     policy_digest:
     review_contract_fingerprint:
-    selected_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator]
+    selected_lenses: [standard, footgun-finder, invariant-ace, complexity-mitigator, fresh-eyes]
     standard_required_clean_runs: 5
     standard_clean_attempt_ids: []
     auxiliary_requests:
       footgun-finder: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
       invariant-ace: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
       complexity-mitigator: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
+      fresh-eyes: selected-pending | clean | findings-folded | candidate-pressure | blocked | rerun-required
   decisions:
     - decision_id:
       owner_boundary:
