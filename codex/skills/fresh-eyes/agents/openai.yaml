@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "fresh-eyes"
+  short_description: "Run a meticulous fresh-eyes review pass"
+  default_prompt: "Use $fresh-eyes and preserve the original verbatim review text."
