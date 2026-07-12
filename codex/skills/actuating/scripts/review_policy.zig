@@ -481,10 +481,11 @@ const digest_b = "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 const digest_c = "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
 const digest_d = "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd";
 const digest_e = "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+const digest_f = "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
 
 fn makeAttempt(id: []const u8, fingerprint: []const u8, verdict: []const u8, findings: usize) Attempt {
     return .{
-        .workflow_binding = .{ .requestId = if (std.mem.eql(u8, fingerprint, digest_a)) "standard-request" else if (std.mem.eql(u8, fingerprint, digest_e)) "footgun-request" else if (std.mem.eql(u8, fingerprint, digest_c)) "invariant-request" else "complexity-request", .requestFingerprint = fingerprint },
+        .workflow_binding = .{ .requestId = if (std.mem.eql(u8, fingerprint, digest_a)) "standard-request" else if (std.mem.eql(u8, fingerprint, digest_e)) "footgun-request" else if (std.mem.eql(u8, fingerprint, digest_c)) "invariant-request" else if (std.mem.eql(u8, fingerprint, digest_f)) "fresh-eyes-request" else "complexity-request", .requestFingerprint = fingerprint },
         .review_attempt_id = id,
         .review_thread_id = id,
         .review_turn_id = id,
@@ -512,7 +513,8 @@ const standard_attempts = [_]Attempt{
 const footgun_attempts = [_]Attempt{makeAttempt("footgun-1", digest_e, "clean", 0)};
 const invariant_attempts = [_]Attempt{makeAttempt("invariant-1", digest_c, "clean", 0)};
 const complexity_attempts = [_]Attempt{makeAttempt("complexity-1", digest_d, "findings", 1)};
-const required_lenses = [_][]const u8{ "standard", "footgun-finder", "invariant-ace", "complexity-mitigator" };
+const fresh_eyes_attempts = [_]Attempt{makeAttempt("fresh-eyes-1", digest_f, "clean", 0)};
+const required_lenses = [_][]const u8{ "standard", "footgun-finder", "invariant-ace", "complexity-mitigator", "fresh-eyes" };
 const standard_ids = [_][]const u8{ "standard-1", "standard-2", "standard-3", "standard-4", "standard-5" };
 const fold_refs = [_][]const u8{"rf:complexity-1"};
 const closeout_requests = [_]Request{
@@ -520,6 +522,7 @@ const closeout_requests = [_]Request{
     .{ .request_id = "footgun-request", .request_fingerprint = digest_e, .lens = "footgun-finder", .role = "auxiliary", .selection_reason = "required auxiliary lane", .contract_id = "footgun-lens-v1", .contract_ref = "/dev/null", .contract_digest = digest_e, .instructions_ref = "/dev/null", .instruction_digest = digest_e, .state = "clean", .attempts = &footgun_attempts, .review_fold_refs = &.{} },
     .{ .request_id = "invariant-request", .request_fingerprint = digest_c, .lens = "invariant-ace", .role = "auxiliary", .selection_reason = "authority boundary changed", .contract_id = "invariant-gate-v1", .contract_ref = "/dev/null", .contract_digest = digest_c, .instructions_ref = "/dev/null", .instruction_digest = digest_c, .state = "clean", .attempts = &invariant_attempts, .review_fold_refs = &.{} },
     .{ .request_id = "complexity-request", .request_fingerprint = digest_d, .lens = "complexity-mitigator", .role = "auxiliary", .selection_reason = "cross-file state", .contract_id = "complexity-preflight-v1", .contract_ref = "/dev/null", .contract_digest = digest_d, .instructions_ref = "/dev/null", .instruction_digest = digest_d, .state = "findings-folded", .attempts = &complexity_attempts, .review_fold_refs = &fold_refs },
+    .{ .request_id = "fresh-eyes-request", .request_fingerprint = digest_f, .lens = "fresh-eyes", .role = "auxiliary", .selection_reason = "required whole-target reinspection", .contract_id = "fresh-eyes-lens-v1", .contract_ref = "/dev/null", .contract_digest = digest_f, .instructions_ref = "/dev/null", .instruction_digest = digest_f, .state = "clean", .attempts = &fresh_eyes_attempts, .review_fold_refs = &.{} },
 };
 
 fn validCloseoutPolicy(requests: []const Request) Policy {
@@ -579,7 +582,7 @@ test "policy requires at least five standard clean runs" {
 
 test "every auxiliary lens is mandatory" {
     var requests = closeout_requests;
-    requests[1].state = "not-required";
+    requests[4].state = "not-required";
     var issues = try validateForTest(validCloseoutPolicy(&requests), .closeout);
     defer issues.deinit(std.testing.allocator);
     try std.testing.expect(hasIssue(issues, "request-state"));
@@ -618,7 +621,7 @@ test "auxiliary attempt identity cannot count as standard credit" {
 
 test "the declared registry and request rows must be bijective" {
     var requests = closeout_requests;
-    requests[3].lens = "invariant-ace";
+    requests[4].lens = "invariant-ace";
     var issues = try validateForTest(validCloseoutPolicy(&requests), .closeout);
     defer issues.deinit(std.testing.allocator);
     try std.testing.expect(hasIssue(issues, "registry-request-coverage"));
@@ -643,6 +646,14 @@ test "sha256 comparison binds exact referenced bytes" {
     try std.testing.expect(hasIssue(issues, "mismatch"));
 }
 
+test "fresh-eyes preserves its exact one-output instruction" {
+    const allocator = std.testing.allocator;
+    const fresh_eyes = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, "codex/skills/fresh-eyes/SKILL.md", allocator, .limited(MaxInputBytes));
+    defer allocator.free(fresh_eyes);
+    const expected = "Once again, check over everything again with fresh eyes looking for any blunders, mistakes, errors, oversights, omissions, problems, misconceptions, bugs, etc. Be SUPER thorough and meticulous!\n";
+    try std.testing.expect(std.mem.endsWith(u8, fresh_eyes, expected));
+}
+
 test "skill doctrine preserves the policy and transport owner split" {
     const allocator = std.testing.allocator;
     const actuating = try std.Io.Dir.cwd().readFileAlloc(std.testing.io, "codex/skills/actuating/SKILL.md", allocator, .limited(MaxInputBytes));
@@ -657,10 +668,10 @@ test "skill doctrine preserves the policy and transport owner split" {
     for ([_][]const u8{ "actuation-review-policy/v1", "review_policy.zig", "--phase preflight", "--phase closeout" }) |token| {
         try std.testing.expect(std.mem.indexOf(u8, actuating, token) != null or std.mem.indexOf(u8, policy, token) != null or std.mem.indexOf(u8, goal_actuating, token) != null);
     }
-    for ([_][]const u8{ "footgun-finder", "invariant-ace", "complexity-mitigator", "required_lenses", "standard_clean_attempt_ids", "at least five", "concurrently with the first standard attempt", "Auxiliary attempts never contribute" }) |token| {
+    for ([_][]const u8{ "footgun-finder", "invariant-ace", "complexity-mitigator", "fresh-eyes", "required_lenses", "standard_clean_attempt_ids", "at least five", "concurrently with the first standard attempt", "Auxiliary attempts never contribute" }) |token| {
         try std.testing.expect(std.mem.indexOf(u8, policy, token) != null);
     }
-    for ([_][]const u8{ "selectedLenses", "reviewLane", "lensContract", "footgun-finder", "invariant-ace", "complexity-mitigator", "clean-streak" }) |token| {
+    for ([_][]const u8{ "selectedLenses", "reviewLane", "lensContract", "footgun-finder", "invariant-ace", "complexity-mitigator", "fresh-eyes", "clean-streak" }) |token| {
         try std.testing.expect(std.mem.indexOf(u8, cas, token) == null);
     }
 }
