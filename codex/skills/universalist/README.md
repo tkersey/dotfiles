@@ -35,18 +35,20 @@ Use `$universalist` for the full workflow. Detailed Kan extension/lift, Freyd/AF
 ## Ledger-addressed plans
 
 Implementation tracks allocate a fresh progress artifact through the
-`skills-zig` ledger CLI 0.5.0 or newer:
+`skills-zig` ledger CLI 0.5.3 or newer:
 
 ```bash
 ./scripts/init_universalist_plan.sh
 ```
 
 Plans live at
-`.ledger/universalist-plan-YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN.md`. The UTC
+`.ledger/universalist/plan-YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN.md`. The UTC
 timestamp makes recency visible; the collision ordinal and atomic create
 prevent one run from overwriting another. Retain the returned plan id during
 the run. Use `ledger latest --source universalist` only as a recovery lookup,
-then verify the plan's task metadata before resuming it.
+then verify the plan's task metadata before resuming it. Existing flat
+`.ledger/universalist-plan-*.md` files remain readable legacy addresses and
+are not rewritten.
 
 
 ## Track A0 — Domain Algebra Discovery

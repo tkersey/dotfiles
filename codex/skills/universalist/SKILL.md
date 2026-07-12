@@ -1073,7 +1073,7 @@ For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one
 
 Before allocation, load `$ledger` and complete `$ledger ensure` once. After
 readiness, invoke native `ledger` directly. This workflow requires `ledger`
-0.5.0 or newer.
+0.5.3 or newer.
 
 ```bash
 scripts/init_universalist_plan.sh [PROJECT_ROOT]
@@ -1092,10 +1092,10 @@ Ledger owns plan identity, collision-safe creation, and address resolution. Univ
 Plans live at:
 
 ```text
-.ledger/universalist-plan-{plan-id}.md
+.ledger/universalist/plan-{plan-id}.md
 ```
 
-The plan id is `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`: a lexicographically sortable UTC nanosecond timestamp plus an atomic collision ordinal. Every create invocation must allocate a new file and must never reuse, truncate, or overwrite an earlier plan. Do not create or update the legacy project-root `.universalist-plan.md`.
+The plan id is `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`: a lexicographically sortable UTC nanosecond timestamp plus an atomic collision ordinal. Every create invocation must allocate a new file and must never reuse, truncate, or overwrite an earlier plan. Existing `.ledger/universalist-plan-{plan-id}.md` files remain read-only legacy addresses; `path` and `latest` may resolve them, but new plans must use the namespaced path. Do not create or update the legacy project-root `.universalist-plan.md`.
 
 Retain the returned plan id for the entire run. Resolve that exact address with:
 

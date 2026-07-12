@@ -80,7 +80,7 @@ Operational, non-memory store:
 
 Operational, non-memory artifacts:
 
-- `.ledger/universalist-plan-{plan-id}.md`, addressed exclusively by
+- `.ledger/universalist/plan-{plan-id}.md`, addressed exclusively by
   `ledger --source universalist`; do not harvest these plans into memory.
 
 Stateless, non-authorizing observations:
@@ -185,6 +185,11 @@ Plan ids use `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`. Timestamp order makes the
 newest address visible, while atomic ordinal retries prevent overwrite. Treat
 `latest` as recovery, not identity: verify the plan's task fields before
 resuming because another run may be newer.
+
+New plans use `.ledger/universalist/plan-{plan-id}.md`. Exact-id and `latest`
+lookup preserve read access to legacy `.ledger/universalist-plan-{plan-id}.md`
+files without rewriting them; the namespaced path is canonical when both
+layouts contain the same id.
 
 ## Read-Only Workflow
 

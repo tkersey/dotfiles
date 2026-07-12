@@ -87,7 +87,7 @@ for plan_contract in (
     'ledger create --source universalist',
     'ledger path --source universalist',
     'ledger latest --source universalist',
-    '.ledger/universalist-plan-{plan-id}.md',
+    '.ledger/universalist/plan-{plan-id}.md',
     'YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN',
     'must never reuse, truncate, or overwrite an earlier plan',
 ):
@@ -106,7 +106,7 @@ for field in (
     if field not in template:
         raise SystemExit(f'Universalist plan template missing field: {field}')
 initializer = Path('scripts/init_universalist_plan.sh').read_text()
-for token in ('ensure-ledger', 'ledger create', '--source universalist', '--template "$template"'):
+for token in ('ensure-ledger', 'ledger --version', '0.5.3', 'ledger create', '--source universalist', '--template "$template"'):
     if token not in initializer:
         raise SystemExit(f'plan initializer missing ledger token: {token}')
 if 'cat >' in initializer or '.universalist-plan.md' in initializer:
