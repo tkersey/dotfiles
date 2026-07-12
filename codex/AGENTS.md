@@ -53,3 +53,10 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Treat memory-source notes as immutable derived admission snapshots, not canonical stores. Phase 2 owns `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit those outputs directly during ordinary work.
 - Treat legacy `.learnings.jsonl` as migration input only; never append new rows after migration.
 - Failure to create or update a memory-source admission note must not invalidate or roll back a successful canonical source-store write.
+
+### Learning disposition mandate
+
+- Invoke `$learnings` after a decision-shaping validation transition and before every Codex-made commit, PR handoff, or terminal implementation/review closeout. This is an execution obligation even when the user did not explicitly name the skill.
+- Evaluate the capture gate; do not force a low-value row. Retain exactly one internal disposition: `appended`, `duplicate-skip`, `no-op`, or `blocked`.
+- A canonical append must be inspected and, when publishable, included with the work it explains. A `blocked` disposition must identify the failed doctor/migration/capture boundary and cannot be reported as successful learning closeout.
+- If the learnings doctor reports `legacy-only` or `invalid`, follow `$learnings` migration policy. Never silently discard invalid legacy records; an explicit skip must preserve the legacy source and report skipped line spans.

@@ -1,6 +1,6 @@
 interface:
   display_name: "Ledger"
-  short_description: "Provision and mediate the native Ledger CLI"
-  default_prompt: "Use $ledger to ensure a compatible native CLI and execute this owner-authorized Ledger operation."
+  short_description: "Bootstrap and coordinate Ledger CLI access"
+  default_prompt: "Use $ledger to ensure ledger is available on PATH, then inspect the repo-local Ledger stores."
 policy:
   allow_implicit_invocation: true

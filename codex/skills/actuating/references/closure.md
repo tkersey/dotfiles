@@ -8,11 +8,11 @@ issued completion decision.
 
 The only executable closure path is:
 
-~~~text
-$ledger run -- doctor --source actuation
-$ledger run -- state --source actuation --run RUN_ID
-$ledger run -- close --source actuation --run RUN_ID
-$ledger run -- decide --source actuation --run RUN_ID
+~~~bash
+ledger doctor --source actuation
+ledger state --source actuation --run RUN_ID
+ledger close --source actuation --run RUN_ID
+ledger decide --source actuation --run RUN_ID
 ~~~
 
 The append-only `.ledger/actuation/events.jsonl` chain is authoritative.
@@ -87,6 +87,21 @@ bindings, step identities, idempotency identities, and any pending operation.
 Each obligation is classified as `implementation`, `review`, `ship`, or
 `acceptance`; `decide` routes its discharge binding into `evidence_basis`,
 `review_basis`, or `ship_basis` without accepting caller-authored basis lists.
+
+## Learning disposition after decision
+
+Before a `ready-to-ship` handoff or terminal `complete` report, invoke
+`$learnings` and retain exactly one disposition: `appended`, `duplicate-skip`,
+`no-op`, or `blocked`. This checkpoint does not satisfy a kernel obligation and
+does not alter the meaning of `closure-decision/v1`.
+
+Recompute artifact currency after an append. If the canonical learning write
+changes the Git artifact named by the decision, the decision becomes stale; open a
+new generation with the learning path admitted and obtain a new terminal
+decision. If the source store is ignored/local and the evaluated artifact is
+unchanged, preserve the existing decision. A blocked learning disposition must
+be reported as a source-memory closeout blocker even when the actuation fold is
+otherwise terminal.
 
 ## Goal and implementation outcomes
 

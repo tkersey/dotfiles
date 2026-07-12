@@ -12,7 +12,7 @@ Be the sole coordinator around the one-transition Zig kernel.
 ~~~text
 accepted source + GoalContract
 -> actuation-open/v1
--> $ledger run -- <actuation command>
+-> ledger --source actuation
 -> one selected operation
 -> $goal-grind
 -> $evidence-fold
@@ -23,6 +23,10 @@ accepted source + GoalContract
 This skill coordinates. It does not redefine accepted semantics, execute a
 second validator, duplicate the selected-operation executor, claim node success
 as goal completion, or publish.
+
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure`. After readiness, invoke `ledger` directly; do not
+proxy individual kernel transitions through a skill helper.
 
 ## Modes
 
@@ -53,24 +57,20 @@ Project the accepted GoalContract into `actuation-open/v1` with:
 - every terminal predicate represented by an obligation with an exact verifier
   and `implementation`, `review`, `ship`, or `acceptance` proof kind.
 
-Inspect the projection before opening it. The native `ledger --source
-actuation` kernel conserves the supplied obligation set but cannot infer an
-omitted user predicate.
-
-Use `$ledger run -- ...` for every kernel interaction. `$ledger` mediates the
-native runtime; this skill retains coordination and actuation authority.
+Inspect the projection before opening it. `ledger --source actuation` conserves
+the supplied obligation set but cannot infer an omitted user predicate.
 
 ## Coordination loop
 
 1. If source authority or artifact state is stale, block.
 2. Use `$goal-workgraph` only when decomposition changes execution. Advice never
    grants mutation.
-3. Open the generation once with `$ledger run -- open --source actuation`.
-4. Read `$ledger run -- state --source actuation --run RUN_ID`.
+3. Open the generation once with `ledger open --source actuation`.
+4. Read `ledger state --source actuation --run RUN_ID`.
 5. If `next_transition=prepare`, select exactly one ready owner node and create
    one `actuation-operation/v1` with a fresh idempotency key, exact paths, and
    outstanding obligation references.
-6. Run `$ledger run -- prepare --source actuation`; keep the returned raw capability
+6. Run `ledger prepare --source actuation`; keep the returned raw capability
    only in the active executor.
 7. Invoke `$goal-grind` once. It must consume the capability through `record`
    plus `observe`, or through `execute`.
@@ -78,7 +78,7 @@ native runtime; this skill retains coordination and actuation authority.
    `$evidence-fold`.
 9. Read kernel state again and follow only its projected `next_transition`.
 10. When the projection is `close`, close the generation and run
-    `$ledger run -- decide --source actuation --run RUN_ID`.
+    `ledger decide --source actuation --run RUN_ID`.
 
 `/goal` owns repetition and the stop decision. The CLI performs at most one
 transition per invocation, and `$goal-grind` performs exactly one selected

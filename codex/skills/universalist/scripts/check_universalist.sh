@@ -83,9 +83,10 @@ for r in required:
     if r not in text:
         raise SystemExit(f'SKILL.md missing {r}')
 for plan_contract in (
-    '$ledger run -- create --source universalist',
-    '$ledger run -- path --source universalist',
-    '$ledger run -- latest --source universalist',
+    '$ledger ensure',
+    'ledger create --source universalist',
+    'ledger path --source universalist',
+    'ledger latest --source universalist',
     '.ledger/universalist-plan-{plan-id}.md',
     'YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN',
     'must never reuse, truncate, or overwrite an earlier plan',
@@ -105,7 +106,7 @@ for field in (
     if field not in template:
         raise SystemExit(f'Universalist plan template missing field: {field}')
 initializer = Path('scripts/init_universalist_plan.sh').read_text()
-for token in ('ledger-runtime', 'run --min-version 0.5.0 -- create', '--source universalist', '--template "$template"'):
+for token in ('ensure-ledger', 'ledger create', '--source universalist', '--template "$template"'):
     if token not in initializer:
         raise SystemExit(f'plan initializer missing ledger token: {token}')
 if 'cat >' in initializer or '.universalist-plan.md' in initializer:

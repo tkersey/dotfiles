@@ -1,71 +1,70 @@
 ---
 name: ledger
-description: "Provision, verify, and mediate the native Zig `ledger` CLI for every skill, then coordinate repo-local source-memory stores, Universalist plan addresses, and pure governance-artifact validation without bypassing source-specific authority. Use whenever any skill needs a Ledger command, the CLI is missing or incompatible, or the user asks for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan addressing, or artifact validation."
+description: "Ensure a `ledger` command is available on PATH for consumer skills, optionally installing the native Zig CLI when it is missing, then coordinate repo-local source-memory stores, Universalist plan addresses, and pure governance-artifact validation without bypassing source-specific authority. Use before a workflow's first Ledger command, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan addressing, or artifact validation."
 ---
 
 # Ledger
 
 ## Mission
 
-Own the shared Ledger runtime boundary, coordinate repo-local source-memory
+Own the shared Ledger bootstrap boundary, coordinate repo-local source-memory
 stores under `.ledger/`, and route pure governance-artifact validation.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
 
-## Runtime boundary
+## Bootstrap boundary
 
-Every other skill must use this skill for Ledger CLI interactions. The stable
-skill-level surface is:
+Every procedural Ledger consumer must declare this prerequisite: before the
+first native Ledger command in a workflow, load this skill and complete
+`$ledger ensure` once. That readiness applies to every consumer in the workflow;
+do not repeat the bootstrap per skill or per command. `$ledger` is skill syntax,
+not a shell command.
 
-```text
-$ledger ensure
-$ledger run -- <native-ledger-arguments...>
-```
-
-`$ledger` is skill syntax, not a shell command. For `run`, preserve the exact
-native argument vector supplied after `--`; do not reinterpret the source,
-command, paths, input, or authority.
-
-Use [scripts/ledger-runtime](scripts/ledger-runtime) as the deterministic
-runtime handler:
+Use [scripts/ensure-ledger](scripts/ensure-ledger) as the deterministic bootstrap
+handler:
 
 ```bash
-codex/skills/ledger/scripts/ledger-runtime ensure --min-version 0.5.0
-codex/skills/ledger/scripts/ledger-runtime run --min-version 0.5.0 -- <native-ledger-arguments...>
+codex/skills/ledger/scripts/ensure-ledger
 ```
 
-The handler verifies that `ledger` resolves to the expected native CLI, checks
-the minimum version, and preserves native stdout, stderr, and exit status. It
-returns `ledger-runtime-ready/v1` for `ensure`.
+After the handler emits `ledger-bootstrap-ready/v1`, invoke the native CLI
+directly:
 
-If the CLI is missing or incompatible:
+```bash
+ledger <native-ledger-arguments...>
+```
 
-1. install or upgrade only when the current user request or standing
+The bootstrap handler checks only that `ledger` resolves on `PATH` and,
+when installation authority exists, can install the canonical Homebrew formula.
+It does not inspect the CLI version, duplicate CLI integrity checks, or proxy
+native commands. A source owner that depends on a minimum version must probe
+`ledger --version` after readiness and before mutation; the bootstrap receipt
+does not satisfy that compatibility check. Afterward, the native CLI owns
+integrity, stdout, stderr, exit status, and failure reporting.
+
+If `ledger` does not resolve on `PATH`:
+
+1. install only when the current user request or standing
    environment policy authorizes user-level CLI provisioning;
-2. pass `--install` to the runtime handler when that authority exists;
-3. otherwise stop with the handler's exact remediation instead of invoking a
-   fallback implementation;
+2. pass `--install` to the bootstrap handler when that authority exists;
+3. otherwise stop with the handler's exact remediation;
 4. never use `curl | sh`, an unpinned download, or a second-language Ledger
    implementation.
 
 On supported Homebrew environments the canonical formula is
-`tkersey/tap/ledger`. Never install or upgrade the CLI after an actuation
-generation has opened; finish with the compatible runtime that opened the
-generation or block.
+`tkersey/tap/ledger`. Bootstrap before opening an actuation generation; do not
+install during an open generation.
 
 ~~~yaml
-ledger_runtime_ready:
-  schema: ledger-runtime-ready/v1
+ledger_bootstrap_ready:
+  schema: ledger-bootstrap-ready/v1
   status: ready
   path:
-  version:
-  minimum_version:
-  action: none | installed | upgraded
+  action: none | installed
 ~~~
 
-Runtime readiness grants no source authority. The calling skill still owns the
-semantic operation and must already have authority for every requested write or
-effect.
+Bootstrap readiness grants no source authority. The calling skill still owns
+the semantic operation and every requested write or effect.
 
 Canonical stores:
 
@@ -96,7 +95,9 @@ never read or write `.ledger`.
 Source-store state model:
 
 ```text
-missing -> legacy-only -> migrated/current -> invalid
+missing -> legacy-only -> migrated/current
+             \                 /
+              +---- invalid ---+
 ```
 
 `legacy-only` is an actionable preflight state. It means reads may use
@@ -107,14 +108,22 @@ owner is `ledger migrate --mode copy`. Synesthesia can report `notes-only`
 during transition; copy import is explicit through
 `ledger migrate --source synesthesia --mode copy`.
 
+For learnings, Ledger `>= 0.5.2` validates the selected canonical or legacy
+store and reports `records`, bounded repairs, and invalid physical line spans.
+An `invalid` doctor result exits nonzero. Default migration rejects every
+remaining invalid record. `--invalid-policy skip` is an explicit partial
+projection: it is copy-only, preserves the immutable legacy source, and lists
+every skipped span. The learnings skill, not `$ledger`, decides whether the
+task authorizes that omission.
+
 Compiled Codex memory is still owned by Phase 2. Memory-source notes are admission snapshots, not canonical stores.
 
 ## Trigger Cues
 
 - `$ledger`;
-- any skill requiring a Ledger CLI command;
-- ensure, install, upgrade, or verify the native Ledger CLI;
-- `$ledger run -- ...`;
+- `$ledger ensure`;
+- a skill's first native Ledger command;
+- ensure, install, or verify the native Ledger CLI is available;
 - ledger status;
 - source memory stores;
 - migrate learnings;
@@ -130,9 +139,9 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 
 ## Authority
 
-`$ledger` may provision the native runtime, execute an owner-supplied argument
-vector, coordinate, inspect, and recommend. Runtime mediation never grants
-source authority. Writes remain delegated to source-specific skills:
+`$ledger` may provision and verify the native CLI, then coordinate, inspect, and
+recommend. It does not proxy ordinary native commands. Writes remain delegated
+to source-specific skills:
 
 - `$learnings` / `ledger --source learnings` for `.ledger/learnings/events.jsonl`;
 - `$negative-ledger` / `ledger` for `.ledger/negative-ledger/events.jsonl`;
@@ -182,9 +191,13 @@ resuming because another run may be newer.
 1. Resolve the git root.
 2. Inspect `.ledger/`, previous `.ledger/learnings/learnings.jsonl`, legacy `.learnings.jsonl`, and current Synesthesia notes when present.
 3. Classify each store as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
-4. Run source doctors when available.
-5. If any required source is `legacy-only` or Synesthesia is `notes-only` and import is requested, report the exact owning migration
-   command before any harvest or append recommendation.
+4. Run source doctors when available and retain their record counts, repair
+   receipts, invalid line spans, and exit status.
+5. If any required source is `legacy-only` or `invalid`, or Synesthesia is
+   `notes-only` and import is requested, report the exact owning migration or
+   blocking command before any harvest or append recommendation. Never convert
+   an invalid learnings store with skip unless `$learnings` has established
+   that authority.
 6. Report harvest candidates and recommended source-specific commands.
 
 See [source-store-layout.md](references/source-store-layout.md), [migration-workflow.md](references/migration-workflow.md), and [harvest-workflow.md](references/harvest-workflow.md).
@@ -218,12 +231,12 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 
 ## Guardrails
 
-- Do not let another skill invoke the native `ledger` command directly; route
-  it through `$ledger run -- ...`.
-- Do not change, add, or remove native arguments supplied by the source owner.
-- Do not install or upgrade without current installation authority.
-- Do not install or upgrade during an open actuation generation.
-- Do not accept a different executable that merely shares the name `ledger`.
+- Bootstrap once before the first Ledger command in a workflow; do not repeat
+  it per skill or per command.
+- After readiness, invoke `ledger` directly and let the CLI own compatibility,
+  integrity, and failures.
+- Do not install without current installation authority.
+- Do not install during an open actuation generation.
 - Do not mutate a source store except through its owning CLI.
 - Do not treat memory-source notes as the canonical store.
 - Do not admit every source-store event to memory.

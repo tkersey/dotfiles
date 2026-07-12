@@ -107,7 +107,7 @@ live_semantics:
     - id: public-effects-owned-by-ship
       statement: Only ship may create update or promote a PR or perform another public tracker effect.
     - id: review-before-resolution
-      statement: Review-derived mutation requires fresh classified evidence, a passing pure $ledger run -- validate review-fold decision, and a current owner-boundary review-resolution/v1; validation grants no authority.
+      statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, and a current owner-boundary review-resolution/v1; validation grants no authority.
     - id: closure-is-live
       statement: Close and decide recompute the current repository artifact and reject stale folded state.
 
@@ -129,8 +129,8 @@ live_semantics:
   closure_flow:
     open: actuation-open/v1
     iterate: [/goal-observe, one-kernel-transition]
-    close: $ledger run -- close --source actuation
-    decision: $ledger run -- decide --source actuation
+    close: ledger close --source actuation
+    decision: ledger decide --source actuation
     ship_handoff:
       when: closed-ready-to-ship-generation
       owner: ship

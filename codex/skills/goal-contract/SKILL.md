@@ -75,6 +75,10 @@ goal_contract:
 
 ## Procedure
 
+Before inspecting or invoking the first native Ledger command for a material
+generation, load `$ledger` and complete `$ledger ensure`. After readiness,
+invoke `ledger` directly.
+
 1. Bind the contract to an accepted source and current artifact.
 2. Separate the scope source from the execution authority reference.
 3. Name terminal predicates and proof surfaces before work decomposition.
@@ -89,9 +93,9 @@ goal_contract:
 9. Assign every success predicate to at least one exact verifier command and
    `implementation`, `review`, `ship`, or `acceptance` proof kind before
    opening a material kernel generation; an unobservable obligation blocks.
-10. Inspect the complete source-to-open projection before `$ledger run -- open
-    --source actuation`; `$ledger` mediates the native runtime while the kernel
-    conserves accepted obligations but cannot recover an omitted predicate.
+10. Inspect the complete source-to-open projection before `ledger open --source
+    actuation`; the kernel conserves accepted obligations but cannot recover an
+    omitted predicate.
 
 ## Guardrails
 

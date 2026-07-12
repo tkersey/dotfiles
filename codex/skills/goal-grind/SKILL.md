@@ -38,25 +38,26 @@ in the append-only event chain.
 
 ## Procedure
 
-Use `$ledger run -- ...` for every kernel interaction; `$goal-grind` retains
-ownership of the already-selected operation.
+Before the first native Ledger command in this operation, load `$ledger` and
+complete `$ledger ensure`. After readiness, invoke `ledger` directly; the
+prepared capability and native CLI remain the executable authority.
 
-1. Confirm `$ledger run -- state --source actuation --run RUN_ID` is `prepared` and its
+1. Confirm `ledger state --source actuation --run RUN_ID` is `prepared` and its
    pending step exactly matches the selected operation.
 2. Re-read the bounded paths.
 3. For `edit`, make only the owner-correct change on the admitted paths, then
    consume and observe it:
 
-   ~~~text
-   $ledger run -- record --source actuation --run RUN_ID --capability "$CAPABILITY"
-   $ledger run -- observe --source actuation --run RUN_ID --step STEP_ID
+   ~~~bash
+   ledger record --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ledger observe --source actuation --run RUN_ID --step STEP_ID
    ~~~
 
 4. For `inspect` or `verify`, let the kernel execute the obligation-owned
    verifier:
 
-   ~~~text
-   $ledger run -- execute --source actuation --run RUN_ID --capability "$CAPABILITY"
+   ~~~bash
+   ledger execute --source actuation --run RUN_ID --capability "$CAPABILITY"
    ~~~
 
 5. Return changed paths, commands, transition event digests, observations, and

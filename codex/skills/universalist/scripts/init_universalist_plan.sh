@@ -3,9 +3,10 @@ set -euo pipefail
 repo="${1:-.}"
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 template="$script_dir/../templates/universalist-plan.md"
-ledger_runtime="$script_dir/../../ledger/scripts/ledger-runtime"
+bootstrap="$script_dir/../../ledger/scripts/ensure-ledger"
 
-exec "$ledger_runtime" run --min-version 0.5.0 -- create \
+"$bootstrap" >/dev/null
+exec ledger create \
   --source universalist \
   --repo "$repo" \
   --template "$template"

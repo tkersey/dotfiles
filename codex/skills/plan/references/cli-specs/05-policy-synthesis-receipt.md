@@ -64,8 +64,8 @@ PSR-v1 does not expose private reasoning or draft iteration logs.
 
 Validate the canonical JSON projection with:
 
-```text
-$ledger run -- validate policy-synthesis-receipt \
+```bash
+ledger validate policy-synthesis-receipt \
   --input .ledger/plan/<plan-id>/synthesis-receipt.json
 ```
 

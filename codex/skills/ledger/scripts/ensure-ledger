@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly DEFAULT_FORMULA="tkersey/tap/ledger"
+
+formula="${LEDGER_BOOTSTRAP_FORMULA:-$DEFAULT_FORMULA}"
+install_allowed=false
+
+usage() {
+  cat <<'EOF'
+ensure-ledger
+
+usage:
+  ensure-ledger [--install]
+
+Ensures a ledger command resolves on PATH. With --install, installs the native
+Zig CLI's Homebrew formula when ledger is missing. It does not inspect command
+identity or version, or proxy native commands. After readiness, invoke ledger
+directly.
+EOF
+}
+
+json_escape() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  value="${value//$'\r'/\\r}"
+  value="${value//$'\t'/\\t}"
+  printf '%s' "$value"
+}
+
+emit_error() {
+  local reason="$1"
+  local remediation="$2"
+  printf '{"schema":"ledger-bootstrap-error/v1","status":"blocked","reason":"%s","remediation":"%s"}\n' \
+    "$(json_escape "$reason")" \
+    "$(json_escape "$remediation")" >&2
+}
+
+ledger_path=""
+
+inspect_availability() {
+  ledger_path="$(command -v ledger 2>/dev/null || true)"
+  [[ -n "$ledger_path" ]]
+}
+
+install_cli() {
+  local os="${LEDGER_BOOTSTRAP_OS:-$(uname -s)}"
+  if [[ "$os" != "Darwin" && "$os" != "Linux" ]]; then
+    emit_error "unsupported-platform" "Install $formula manually, then retry."
+    return 2
+  fi
+  if ! command -v brew >/dev/null 2>&1; then
+    emit_error "homebrew-unavailable" "Install Homebrew, then rerun: ensure-ledger --install"
+    return 2
+  fi
+
+  if brew list --versions "$formula" >/dev/null 2>&1; then
+    emit_error "installed-but-unavailable" "Add the Homebrew ledger executable to PATH, then retry."
+    return 2
+  fi
+
+  local install_status
+  if brew install "$formula" >&2; then
+    :
+  else
+    install_status=$?
+    emit_error "homebrew-install-failed" "Fix the Homebrew failure, then rerun: ensure-ledger --install"
+    return "$install_status"
+  fi
+  printf '%s' "installed"
+}
+
+while (($#)); do
+  case "$1" in
+    --install)
+      install_allowed=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      emit_error "unknown-option" "Use ensure-ledger --help."
+      exit 2
+      ;;
+  esac
+done
+
+action="none"
+if ! inspect_availability; then
+  if [[ "$install_allowed" != true ]]; then
+    emit_error "missing" "Authorize installation, then rerun: ensure-ledger --install"
+    exit 3
+  fi
+
+  action="$(install_cli)" || exit $?
+  hash -r
+  if ! inspect_availability; then
+    emit_error "post-install-unavailable" "Verify PATH and the installed $formula formula."
+    exit 2
+  fi
+fi
+
+printf '{"schema":"ledger-bootstrap-ready/v1","status":"ready","path":"%s","action":"%s"}\n' \
+  "$(json_escape "$ledger_path")" \
+  "$(json_escape "$action")"

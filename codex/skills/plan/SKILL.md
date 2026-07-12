@@ -37,6 +37,10 @@ no self-reported rewrite ratios
 no synthetic round logs as readiness proof
 ```
 
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure`. After readiness, invoke `ledger` directly; native
+validation owns its result and failure reporting.
+
 ## Accepted source contracts
 
 `$plan` may start from one of:
@@ -66,8 +70,8 @@ plan_source_contract:
 Materialize the executable projection as canonical JSON and validate PSC-v1
 before planning:
 
-```text
-$ledger run -- validate plan-source-contract --input <psc-json-file>
+```bash
+ledger validate plan-source-contract --input <psc-json-file>
 ```
 
 Fail closed when:
@@ -325,8 +329,8 @@ section or a reference to the persisted receipt.
 
 Validate:
 
-```text
-$ledger run -- validate policy-synthesis-receipt \
+```bash
+ledger validate policy-synthesis-receipt \
   --input .ledger/plan/<plan-id>/synthesis-receipt.json
 ```
 

@@ -6,22 +6,22 @@
 <repo>/.ledger/negative-ledger/events.jsonl
 ```
 
-Use the native CLI through `$ledger`. Do not hand-edit the store and do not treat `.ledger/learnings/events.jsonl` as the operational negative-ledger authority.
+Use the `ledger` CLI. Do not hand-edit the store and do not treat `.ledger/learnings/events.jsonl` as the operational negative-ledger authority.
 
 ## Commands
 
-```text
-$ledger run -- init
-$ledger run -- capture --json capture.json
-$ledger run -- query
-$ledger run -- map --route "<route>" --cluster "<cluster>" --artifact "<artifact-state>"
-$ledger run -- show --id NEG-000001
-$ledger run -- handoff
-$ledger run -- compact
-$ledger run -- doctor
-$ledger run -- export --id NEG-000001 --format full
-$ledger run -- export --id NEG-000001 --format memory-note
-$ledger run -- status --id NEG-000001 --to stale --reason "..."
+```bash
+ledger init
+ledger capture --json capture.json
+ledger query
+ledger map --route "<route>" --cluster "<cluster>" --artifact "<artifact-state>"
+ledger show --id NEG-000001
+ledger handoff
+ledger compact
+ledger doctor
+ledger export --id NEG-000001 --format full
+ledger export --id NEG-000001 --format memory-note
+ledger status --id NEG-000001 --to stale --reason "..."
 ```
 
 `export` and generic `status` are required by the companion skills-zig specification.

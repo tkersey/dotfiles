@@ -106,6 +106,10 @@ names the inspected proof surface and the missing obligation.
 
 ## Procedure
 
+Before validating the first RF-v2 artifact in this workflow, load `$ledger` and
+complete `$ledger ensure`. After readiness, invoke native `ledger validate`
+directly.
+
 1. Bind the source to accepted intent and current artifact state.
 2. Separate claim, observation, and suggested repair.
 3. Classify validity, liability, intent relation, and novelty.
@@ -114,8 +118,8 @@ names the inspected proof surface and the missing obligation.
    falsifier, and evidence references.
 6. Collapse duplicates and same-class findings into equivalence classes.
 7. Emit routing obligations for specialized liability classes.
-8. Materialize RF-v2 as canonical JSON and validate it through `$ledger` with
-   `$ledger run -- validate review-fold --input <rf-v2-json-file>`.
+8. Materialize RF-v2 as canonical JSON and validate it with
+   `ledger validate review-fold --input <rf-v2-json-file>`.
 9. Hand only resolution inputs to the caller; never choose the patch.
 
 Use [review-fold.valid.example.json](assets/review-fold.valid.example.json) as a
@@ -129,5 +133,5 @@ shape example, not as reusable evidence or authority.
 - Do not turn style or speculation into code.
 - Do not accept scope expansion without user authority.
 - Preserve source identity and current artifact binding.
-- Treat `$ledger run -- validate` as pure receipt validation. Its pass verdict grants no
+- Treat `ledger validate` as pure receipt validation. Its pass verdict grants no
   mutation, repair selection, clean-run credit, or closure authority.
