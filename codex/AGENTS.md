@@ -60,3 +60,10 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Evaluate the capture gate; do not force a low-value row. Retain exactly one internal disposition: `appended`, `duplicate-skip`, `no-op`, or `blocked`.
 - A canonical append must be inspected and, when publishable, included with the work it explains. A `blocked` disposition must identify the failed doctor/migration/capture boundary and cannot be reported as successful learning closeout.
 - If the learnings doctor reports `legacy-only` or `invalid`, follow `$learnings` migration policy. Never silently discard invalid legacy records; an explicit skip must preserve the legacy source and report skipped line spans.
+
+### Negative-evidence routing mandate
+
+- Invoke `$negative-ledger` implicitly when implementation, debugging, review, or validation encounters a witnessed failed/no-effect route, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy likely to recur, or a request about what has already been tried. Do not wait for the user to literally name the skill.
+- Before selecting a route that resembles a prior failure, query or map the current repo-local ledger. A recalled learning may trigger this check but cannot suppress a route until promoted through Negative Ledger with current applicability.
+- At a material strategy pivot, regression-confirmed revert, or implementation/review closeout that leaves a failed route likely to recur, evaluate capture. A transient red test, syntax error, first incomplete attempt, or discarded typo is `no-op` unless it exposes a durable failed hypothesis that changes future routing.
+- Retain exactly one internal disposition for each material activation: `mapped`, `captured`, `transitioned`, `no-op`, or `blocked`. Only active, witnessed, exact-enough, artifact-applicable exclusions may block route selection.
