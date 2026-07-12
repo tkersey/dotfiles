@@ -34,9 +34,12 @@ Capture only when the event has all of the following:
 - a named attempted change or decision;
 - an inspectable witness;
 - a stated observed outcome and failure class;
+- structured source references to inspectable evidence;
+- a repository-bound, immutable artifact identity;
 - current artifact-state applicability;
-- a narrow future-routing delta;
-- reopening criteria.
+- an explicit supported scope and its identity;
+- a narrow exclusion rule and future-routing delta;
+- identified reopening criteria with explicit conditions.
 
 Otherwise retain `no-op`, `capture_candidate`, `need-evidence`, or `unknown` as appropriate. Do not create an active exclusion.
 
@@ -69,4 +72,5 @@ For each candidate episode, ask:
 2. Did it query/map rather than immediately capture?
 3. Did transient failures remain `no-op`?
 4. Did a qualified event produce durable, narrow evidence?
-5. Did blocking require active, witnessed, exact-enough, current-state applicability?
+5. Did blocking require an active, fully validated, witnessed, exact native-scope match with current-state applicability?
+6. Did map, export, and handoff fail closed rather than project malformed authority?

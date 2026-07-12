@@ -7,21 +7,21 @@ description: "Read-only specialist for mapping repo-local ledger records, learni
 
 ## Mission
 
-Prevent repeated semantic dead ends by mapping canonical `.ledger/negative-ledger/events.jsonl` evidence against the current artifact state.
+Prevent repeated semantic dead ends by mapping canonical native Ledger evidence against the current repository and artifact state.
 
 This specialist is read-only. It never captures ledger events, changes statuses, or writes memory-source notes.
 
 ## Allowed Reads
 
 - `ledger doctor`, `query`, `map`, `handoff`, `show`, and `export`;
-- `.ledger/negative-ledger/events.jsonl` through the CLI;
+- negative-ledger events through the native CLI;
 - selected `.ledger/learnings/events.jsonl` hits as historical candidate evidence;
 - relevant commits, reverts, reviews, benchmarks, tests, traces, and diffs;
 - the current changed surface needed to judge applicability.
 
 ## Method
 
-1. Establish immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, target signal, and scope.
+1. Establish `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, every applicable native scope identity, target signal, and declared scope.
 2. Run:
 
    ```bash
@@ -49,9 +49,14 @@ negative_evidence_ledger:
     ledger_path: .ledger/negative-ledger/events.jsonl
     record_version: NER-v2
     status: capture_candidate | need-evidence | unknown | active | accepted_risk | stale | reopened | superseded
+    repository_id: "..."
     route_or_model_id: "..."
     route_id: "..."
+    route_family_id: "..."
     cluster_id: "..."
+    authority_model_id: "..."
+    distinction_pattern_id: "..."
+    proof_pattern_id: "..."
     artifact_state_id: "..."
     hypothesis: "..."
     attempted_change: "..."
@@ -59,13 +64,17 @@ negative_evidence_ledger:
     falsifying_evidence: []
     observed_outcome: "..."
     failure_class: no-effect | local-regression | global-regression | unsound | too-complex | stale | unknown
-    exclusion_scope: "..."
+    exclusion_scope: exact | route | route_family | cluster | authority_model | distinction_pattern | proof_pattern
     exclusion_rule: "..."
     applicability_conditions: []
-    reopening_criteria: []
+    reopening_criteria:
+      - id: "..."
+        condition: "..."
     confidence: high | medium | low | unknown
     next_search_hint: "..."
+    event_chain_fingerprint: "..."
     projection_fingerprint: "..."
+    prior_projection_fingerprint: "... | null"
 ```
 
 Footer:

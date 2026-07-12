@@ -60,7 +60,11 @@ for token in (
     "Activation is broad; capture is narrow.",
     "mapped       current ledger checked; no write required",
     "no-op        activation evaluated; evidence was not durable or route-shaping",
-    "Do not use a moving symbolic label such as `HEAD`",
+    "This hardened contract requires Ledger 0.7.0 or newer.",
+    "Ledger resolves symbolic Git refs such as `HEAD` to a full commit",
+    "Every transition requires a JSON proof packet",
+    '"criterion_changes"',
+    "exact, route, route-family, cluster, authority-model, distinction-pattern, and proof-pattern",
     "`ledger export` is the only authoritative projection surface",
 ):
     if token not in skill:
@@ -69,6 +73,8 @@ if "Until `export` ships" in skill:
     raise SystemExit("SKILL.md still claims export is unavailable")
 if "--source-ref" in skill:
     raise SystemExit("SKILL.md documents unsupported --source-ref")
+if "does not yet accept a structured transition source reference" in skill:
+    raise SystemExit("SKILL.md still documents the pre-0.7 lifecycle limitation")
 
 agents = Path("../../AGENTS.md").read_text()
 for token in (
@@ -85,6 +91,13 @@ mapper = Path("agents/negative-ledger-mapper.md").read_text()
 runtime_mapper = Path("../../agents/negative-ledger-mapper.toml").read_text()
 for token in (
     "artifact_state_label",
+    "repository_id",
+    "route_family_id",
+    "authority_model_id",
+    "distinction_pattern_id",
+    "proof_pattern_id",
+    "event_chain_fingerprint",
+    "prior_projection_fingerprint",
     "capture_candidate | need-evidence | unknown | active | accepted_risk | stale | reopened | superseded",
     "projection_fingerprint",
     "active_exclusions | no_applicable_negative_evidence | reopen_required | blocked",

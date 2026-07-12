@@ -18,7 +18,7 @@ Expected flow:
 ledger map \
   --route "parser-tolerance" \
   --cluster "parser-compatibility" \
-  --artifact "<immutable-artifact-state-id>"
+  --artifact "<full-commit-id>"
 ```
 
 Do not capture merely because the cue activated the skill. Capture only after the current failure has an inspectable witness and a future-routing delta.
@@ -69,6 +69,28 @@ Old record: NEG-000004.
 Changed condition: the MVCC bookkeeping path was replaced.
 Need:
 - append-only ledger status transition
-- proof obligations before retrying
+- criterion-bound before/after proof and structured source references
 - memory-source ledger-status-transition note if the old exclusion is already durable memory
+```
+
+Expected proof packet and flow:
+
+```json
+{
+  "reason": "The MVCC bookkeeping path changed.",
+  "criterion_changes": [
+    {
+      "criterion_id": "bookkeeping-path-changed",
+      "before": "commit abc123 used the old bookkeeping path",
+      "after": "commit def456 uses the replacement path"
+    }
+  ],
+  "source_refs": [
+    {"kind": "git", "ref": "commit:def456"}
+  ]
+}
+```
+
+```bash
+ledger reopen --id NEG-000004 --json reopen-proof.json
 ```
