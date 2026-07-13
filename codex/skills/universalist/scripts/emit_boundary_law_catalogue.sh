@@ -5,6 +5,9 @@ case "$kind" in
   embedding) echo 'Embedding law: new(embed(old)) == old(old)' ;;
   projection) echo 'Projection law: observe(project(internal)) == expectedPublicBehavior' ;;
   forgetful) echo 'Forgetful law: forget(combineRich(a,b)) == combineRaw(forget(a),forget(b))' ;;
+  pullback) echo 'Pullback law: f(projectA(p)) == g(projectB(p)); every compatible pair factors uniquely through the canonical witness' ;;
+  pushout) echo 'Pushout law: injectA(includeA(o)) == injectB(includeB(o)); every compatible pair of consumers factors uniquely through the integrated artifact' ;;
+  double-pushout|dpo) echo 'Double-pushout law: preserved interface survives; delete/add squares commute; rewrite is rejected when the pushout complement does not exist' ;;
   interpreter) echo 'Interpreter law: interpret(translate(syntax)) == oldBehavior(syntax)' ;;
   serializer) echo 'Serializer law: decode(encode(internal)) preserves public invariants' ;;
   migration) echo 'Migration law: oldReport(old) == oldReport(restrict(migrate(old)))' ;;
@@ -19,6 +22,9 @@ case "$kind" in
 Embedding: new(embed(old)) == old(old)
 Projection: observe(project(internal)) == expectedPublicBehavior
 Forgetful: forget(combineRich(a,b)) == combineRaw(forget(a),forget(b))
+Pullback: shared projections agree; every compatible pair factors through the canonical witness
+Pushout: source injections agree on overlap; every compatible consumer pair factors through the integrated artifact
+Double pushout: preserved interface survives and missing pushout complement blocks the rewrite
 Interpreter: interpret(translate(syntax)) == oldBehavior(syntax)
 Serializer: decode(encode(internal)) preserves public invariants
 Migration: oldReport(old) == oldReport(restrict(migrate(old)))
