@@ -6,6 +6,7 @@
 ## Canonical boundary artifact:
 ## Worlds / boundaries inventory:
 ## Boundary kind:
+## Pullback / pushout square:
 ## Composition geometry:
 ## Boundary law:
 ## Freyd/AFT boundary diagnostic:
