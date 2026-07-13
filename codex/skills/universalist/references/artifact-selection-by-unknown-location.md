@@ -7,7 +7,9 @@ Choose the artifact by asking where the unknown lives.
 | Independent data | Product | record/object | construct and project consistently |
 | Exclusive state | Coproduct | ADT/sealed union | exhaustive handling, invalid shapes rejected |
 | Stable predicate | Refined type / equalizer | checked constructor/wrapper | valid accepted, invalid rejected |
-| Shared projection agreement | Pullback | witness pair/join object | mismatches rejected, projections preserved |
+| Shared projection agreement | Pullback | witness pair/join object | mismatches rejected, projections preserved, compatible alternatives factor through it |
+| Integrated output from explicit overlap | Pushout | canonical merged schema/model/module | source injections agree on overlap; compatible consumers factor through it |
+| Delete-preserve-add graph/model rewrite | Pushout complement + double pushout | rewrite rule and trace | dangling/identification failures rejected; preserved interface unchanged |
 | Supplied behavior | Exponential | strategy/function seam | parity with old branch fixtures |
 | Syntax from generators | Free construction / initial algebra | AST/IR plus interpreters | interpreter agrees with old evaluator |
 | Ongoing behavior over time | Behavioral coalgebra | state transition + observation | traces satisfy observations |
@@ -23,5 +25,7 @@ Choose the artifact by asking where the unknown lives.
 | Generated payloads lose provenance | Coyoneda-style path vocabulary | payload + path + lowering | lowering equals direct interpretation |
 | Query/projection sprawl | Yoneda-style observation vocabulary | `Observation` + `runObservation` | representation change preserves observations |
 | Callbacks cross boundary | Defunctionalized IR | constructors + `apply` | encoded case equals old callback behavior |
+
+Use pullback only when there is a real shared target/observation and an agreement equation. Use pushout only when there is a real overlap object and explicit maps into both sources. A plain pair is not automatically a pullback; a plain merge is not automatically a pushout.
 
 If the unknown location is unclear, do not escalate. First pick a smaller seam and a concrete witness.
