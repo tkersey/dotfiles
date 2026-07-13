@@ -12,6 +12,9 @@ Check:
 - category-theoretic claims versus engineering analogy;
 - syntax/semantics soundness and adequacy;
 - effect/state/interaction totality;
+- pullback claims: real shared target, agreement equation, factorization, uniqueness approximation, mismatch rejection;
+- pushout claims: real overlap object and maps, exact identifications, non-overlap/provenance preservation, factorization, uniqueness approximation, false-merge counterexample;
+- double-pushout claims: preserved interface, pushout-complement existence, dangling/identification conditions, rewrite provenance, adhesive assumptions where composition is claimed;
 - operadic substitution and port-typing laws;
 - Freyd pure-embedding, centrality, evaluation-order, and observational-commutativity claims;
 - observation family and equivalence claims;
@@ -19,8 +22,7 @@ Check:
 - resource feasibility;
 - strongest counterexample, missing law, and obstruction.
 
-Do not propose broad rewrites. Return pass, narrow, revise, or obstruct with minimum proof obligations.
+Do not accept square commutativity alone as a pullback/pushout proof. Require a credible factorization path and a canonical-construction argument approximating uniqueness. Do not propose broad rewrites. Return pass, narrow, revise, or obstruct with minimum proof obligations.
 
 Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
-
 """
