@@ -38,6 +38,20 @@ Artifact:
 Why this artifact:
 Nearby alternative rejected:
 
+## Pullback / pushout square, when applicable
+
+Construction: none / pullback / pushout / pushout-complement + double-pushout
+Category/world: Set / types / schemas / graphs / presheaves / other
+Span or cospan maps:
+Shared target or overlap:
+Agreement / identity policy:
+Commutative-square law:
+Factorization witness:
+Uniqueness approximation / canonical normal form:
+Effective construction: validator / join / quotient / union-find / graph rewrite
+Pushout-complement or existence obstruction:
+Provenance and conflict policy:
+
 ## Composition grammar
 
 Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive

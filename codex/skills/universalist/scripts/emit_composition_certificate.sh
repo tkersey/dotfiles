@@ -26,7 +26,7 @@ Target world:
 ## Boundary
 
 - name:
-- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / adapter
+- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / adapter
 - function or module:
 - preserved:
 - forgotten:
@@ -35,13 +35,27 @@ Target world:
 
 ## Unknown
 
-- location: after boundary / behind boundary / inside syntax / behavior / effects / observation / generation / callback
+- location: after boundary / behind boundary / compatible witness / integrated output / inside syntax / behavior / effects / observation / generation / callback
 
 ## Canonical artifact
 
 - artifact:
 - why this artifact:
 - nearby alternative rejected:
+
+## Pullback / pushout square, when applicable
+
+- construction: none / pullback / pushout / pushout-complement + double-pushout
+- category/world: Set / types / schemas / graphs / presheaves / other
+- span or cospan maps:
+- shared target or overlap:
+- agreement / identity policy:
+- commutative-square law:
+- factorization witness:
+- uniqueness approximation / canonical normal form:
+- effective construction: validator / join / quotient / union-find / graph rewrite
+- pushout-complement or existence obstruction:
+- provenance and conflict policy:
 
 ## Composition grammar
 
@@ -80,6 +94,7 @@ Target world:
 ## Law witness
 
 - positive law test:
+- factorization / uniqueness approximation:
 - falsifier / negative witness:
 
 ## Status

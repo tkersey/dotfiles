@@ -36,10 +36,18 @@ cases:
     should_use_skill: true
     should_spawn_subagents: false
     expected: ["one seam", "smallest honest construction"]
-
   - prompt: "Our typed service components are wired through arbitrary call graphs; make the legal hierarchical assembly explicit."
     should_use_skill: true
     expected: ["Track D", "colored operad", "ports", "substitution law", "forbidden wiring"]
   - prompt: "Pure planning code and effectful tool calls are mixed, and someone wants to parallelize them."
     should_use_skill: true
     expected: ["Freyd category", "premonoidal", "evaluation order", "central operations", "noncommuting witness"]
+  - prompt: "Construct an authorization context only when the request tenant and principal tenant agree."
+    should_use_skill: true
+    expected: ["pullback", "shared projection", "mismatch rejected", "factorization"]
+  - prompt: "Merge these two schemas along their explicit shared core while preserving provenance and surfacing conflicts."
+    should_use_skill: true
+    expected: ["pushout", "overlap", "provenance", "conflict policy", "factorization"]
+  - prompt: "Rewrite this typed architecture graph by deleting one pattern, preserving its interface, and adding a replacement."
+    should_use_skill: true
+    expected: ["double pushout", "pushout complement", "preserved interface", "obstruction"]

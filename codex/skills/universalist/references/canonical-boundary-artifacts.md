@@ -1,5 +1,107 @@
 # Canonical Boundary Artifacts
 
+Use this catalogue after naming the worlds, boundary kind, unknown location, witness slice, law, and falsifier. Select the smallest artifact that makes the seam exact. A category-theory label is justified only when it changes code shape or proof obligations.
+
+## Pullback witness / compatibility object
+
+Use when two source values, models, requests, configurations, or evidence objects must agree through a shared projection.
+
+Code shape:
+
+```text
+data CompatiblePair A B C = ...
+makeCompatible : A -> B -> Result (CompatiblePair A B C)
+projectA : CompatiblePair A B C -> A
+projectB : CompatiblePair A B C -> B
+```
+
+Required data:
+
+```text
+f : A -> C
+g : B -> C
+```
+
+Proof signals:
+
+- `f(projectA(p)) == g(projectB(p))`;
+- mismatches are rejected at construction;
+- both original values remain recoverable;
+- every alternate compatible representation factors through the canonical constructor/API;
+- no public bypass can create an unchecked pair.
+
+Typical uses:
+
+- typed relational joins;
+- request/principal tenant agreement;
+- wire/domain compatibility witnesses;
+- evidence attached to the exact required claim;
+- synchronized model/view or configuration/deployment pairs.
+
+## Pushout integration artifact
+
+Use when two source worlds must be glued along an explicit common overlap.
+
+Code shape:
+
+```text
+data Overlap = ...
+data Integrated = ...
+integrate : SourceA -> SourceB -> OverlapEvidence -> Result Integrated
+```
+
+Required data:
+
+```text
+i : Overlap -> SourceA
+j : Overlap -> SourceB
+injectA : SourceA -> Integrated
+injectB : SourceB -> Integrated
+```
+
+Proof signals:
+
+- `injectA(i(o)) == injectB(j(o))`;
+- only the declared overlap is identified;
+- non-overlap structure survives;
+- conflict is surfaced or resolved by named policy;
+- provenance survives from both sources;
+- every compatible downstream consumer factors through the integrated artifact;
+- canonical IDs/normal forms approximate uniqueness.
+
+Typical uses:
+
+- schema and data integration;
+- modular API/language extension over a common core;
+- canonical enterprise/context models;
+- version/model reconciliation;
+- graph and architecture integration.
+
+Do not call an arbitrary merge a pushout. Without an overlap object and maps into both sources, the semantics are not specified.
+
+## Double-pushout rewrite
+
+Use when a graph/model transformation has explicit delete-preserve-add structure.
+
+```text
+Rule: L <- K -> R
+Match: L -> G
+Result: G <- D -> H
+```
+
+`K` is the preserved interface. First compute a pushout complement `D` to remove `L-K`; then push out `K -> R` and `K -> D` to add `R-K`.
+
+Proof signals:
+
+- preserved interface remains unchanged;
+- deleted structure is absent;
+- added structure is present;
+- dangling and forbidden-identification conditions are rejected;
+- failed pushout complement becomes an obstruction report;
+- rewrite traces retain provenance.
+
+Use for typed graph rewriting, AST/IR graph transformations, model-driven engineering, dependency-graph refactors, and architecture evolution. Prefer adhesive or adhesive-like categories when local rewrites must compose predictably.
+
 ## Free syntax
 
 Use when syntax, execution, logging, explanation, or validation are tangled together.
@@ -97,7 +199,6 @@ Use when public behavior determines internals but no exact/free lifted implement
 Code shape:
 
 ```text
-data RequiredBehavior = ...
 data Obstruction
   = MissingEvidence(...)
   | MissingCapability(...)
@@ -141,7 +242,7 @@ Code shape:
 data State = ...
 data Input = ...
 data Observation = ...
-step : State × Input -> State
+step : State x Input -> State
 observe : State -> ObservationResult
 ```
 
@@ -167,8 +268,7 @@ Proof signals:
 
 - test and production handlers agree on declared observations;
 - every operation has a handler case;
-- handler omits operation -> failing test or exhaustive-match failure.
-
+- omitted operations fail through exhaustive matching or tests.
 
 ## Freyd effect boundary
 
@@ -180,7 +280,7 @@ Code shape:
 Pure C
 Effectful K
 embedPure J : C -> K
-sequence : K(A,B) × K(B,C) -> K(A,C)
+sequence : K(A,B) x K(B,C) -> K(A,C)
 centrality / commutativity witnesses
 ```
 
@@ -188,7 +288,7 @@ Proof signals:
 
 - `J` preserves identity and composition;
 - pure operations commute with effect context;
-- reordered effectful operations agree observationally only when certified;
+- reordered effects agree observationally only when certified;
 - at least one noncommuting pair demonstrates why sequencing matters.
 
 ## Operadic composition grammar
@@ -200,7 +300,7 @@ Code shape:
 ```text
 data Color / PortType
 data Operation(inputs, output)
-substitute : Operation × [Operation] -> Operation
+substitute : Operation x [Operation] -> Operation
 interpret : Operation -> SemanticComponent
 ```
 
@@ -208,7 +308,7 @@ Proof signals:
 
 - ports/colors type-check;
 - identity and substitution laws hold;
-- `interpret(substitute(...))` equals composition of interpreted components;
+- interpretation preserves substitution;
 - forbidden wiring and unjustified permutations are rejected.
 
 ## Explicit IR
@@ -227,7 +327,6 @@ Proof signal:
 ```text
 applyBoundaryCase(encode(oldCallback), input) == oldCallback(input)
 ```
-
 
 ## Dense probe presentation / semantic compression
 

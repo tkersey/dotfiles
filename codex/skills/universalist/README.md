@@ -2,7 +2,7 @@
 
 Single drop-in Universal Architecture workflow for domain algebra, law discovery, structural refactoring, and universal-construction-driven software synthesis. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
 
-It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It now folds Algebra-Driven Design into Track A0 so local worlds are discovered through carriers, operations, observations, laws, non-laws, interpreters, and property tests before escalation. It adds Track D for universal architecture boundaries: free syntax, coherent observations, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, explicit IR, and law tests.
+It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It now folds Algebra-Driven Design into Track A0 so local worlds are discovered through carriers, operations, observations, laws, non-laws, interpreters, and property tests before escalation. It adds Track D for universal architecture boundaries: free syntax, coherent observations, pullback witnesses, pushout integration, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, explicit IR, and law tests.
 
 ## Install
 
@@ -24,7 +24,7 @@ Activation is broad; escalation is proportional. The boundary pass may preserve 
 
 The skill decides whether the boundary should remain ordinary or needs:
 
-- product/coproduct/refined type/pullback/exponential/free construction;
+- product/coproduct/refined type/pullback/pushout/exponential/free construction;
 - canonical boundary artifact;
 - lifted implementation or obstruction report;
 - behavioral coalgebra for stateful/protocol behavior;
@@ -32,7 +32,7 @@ The skill decides whether the boundary should remain ordinary or needs:
 - observation/generation vocabulary;
 - explicit first-order IR.
 
-Use `$universalist` for the full boundary workflow. Detailed Kan extension/lift, Freyd/AFT, Yoneda/Coyoneda, codensity, categorical-data, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`; load them only after the boundary pass justifies escalation.
+Use `$universalist` for the full boundary workflow. Detailed Kan extension/lift, Freyd/AFT, pullback/pushout, Yoneda/Coyoneda, codensity, categorical-data, graph-rewrite, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`; load them only after the boundary pass justifies escalation.
 
 ## Ledger-addressed plans
 
@@ -51,7 +51,6 @@ the run. Use `ledger latest --source universalist` only as a recovery lookup,
 then verify the plan's task metadata before resuming it. Existing flat
 `.ledger/universalist-plan-*.md` files remain readable legacy addresses and
 are not rewritten.
-
 
 ## Track A0 — Domain Algebra Discovery
 
@@ -83,7 +82,7 @@ Ordinary code lives inside boundaries. Universal artifacts live at boundaries.
 
 ## Worlds and boundaries practice
 
-This version makes worlds and boundaries the first Track D step. Before selecting Kan, Freyd/AFT, Yoneda/Coyoneda, defunctionalization, effects, or coalgebras, the skill asks for worlds, objects, transformations, invariants, observations, primitives, composition rules, boundary kind, what is preserved/forgotten/generated/observed, and the law that would catch drift.
+This version makes worlds and boundaries the first Track D step. Before selecting Kan, Freyd/AFT, pullback/pushout, Yoneda/Coyoneda, defunctionalization, effects, or coalgebras, the skill asks for worlds, objects, transformations, invariants, observations, primitives, composition rules, boundary kind, what is preserved/forgotten/generated/observed, and the law that would catch drift.
 
 The rule is:
 
@@ -129,7 +128,6 @@ Useful commands:
 ./scripts/emit_context_publication_boundary.sh published-context agnostic
 ```
 
-
 ## Possibility Sheafification
 
 Track G treats the codebase as a usage site. Local uses are sections; shared fields, tests, traces, and observations are overlaps. A correct architecture-level abstraction behaves like a sheaf: compatible local meanings glue uniquely to one global meaning. Use this track to replace inexact abstractions with canonical artifacts and produce a Sheafification Certificate.
@@ -145,8 +143,6 @@ Useful commands:
 ./scripts/emit_category_pivot.sh abstract-domain agnostic
 ./scripts/emit_syntax_semantics_certificate.sh ToolOperation typescript
 ```
-
-
 
 ## Composition geometry: Freyd categories and operads
 
@@ -170,7 +166,31 @@ The former `freyd` mechanics name was ambiguous. Use:
 ./scripts/emit_mechanics_report.sh operad typescript
 ```
 
-A bare `freyd` mechanics request now fails with a disambiguation message rather than silently selecting the wrong construction.
+A bare `freyd` mechanics request fails with a disambiguation message rather than silently selecting the wrong construction.
+
+## Pullbacks, pushouts, and graph rewriting
+
+The mechanics layer now treats these as general software constructions rather than only a context-reconciliation analogy:
+
+```text
+pullback        canonical witness that two values agree through a shared projection
+pushout         canonical integration that glues two sources along explicit overlap
+double pushout  graph/model rewrite with delete-preserve-add structure
+```
+
+Use pullbacks for typed joins, authorization contexts, wire/domain compatibility, synchronized views, and evidence attached to required claims. Use pushouts for schema/data integration, modular API or language extension, canonical models, and overlap-based reconciliation. Use double-pushout mechanics when a graph/model rewrite may fail because the preserved interface or pushout complement is invalid.
+
+The distinctive proof obligation is not merely a commuting square. Require factorization through the canonical witness/integrated artifact and approximate uniqueness with opaque constructors, canonical IDs, normalization, and removal of competing public paths.
+
+Useful commands:
+
+```bash
+./scripts/emit_mechanics_report.sh pullback typescript
+./scripts/emit_mechanics_report.sh pushout agnostic
+./scripts/emit_mechanics_report.sh pullback-pushout agnostic
+./scripts/emit_mechanics_report.sh double-pushout agnostic
+bash ./scripts/check_pullback_pushout_mechanics.sh
+```
 
 ## Unified mechanics layer
 
@@ -186,7 +206,7 @@ Use the unified workflow:
 
 ```text
 $universalist identifies the signal, seam, worlds, boundary, artifact, witness, law, falsifier, and certificate.
-Mechanics references elaborate Kan/Yoneda/Coyoneda/Freyd/codensity/CQL/sheafification only when needed.
+Mechanics references elaborate Kan/Yoneda/Coyoneda/Freyd/pullback/pushout/codensity/CQL/sheafification only when needed.
 ```
 
 Useful mechanics commands:
@@ -194,6 +214,9 @@ Useful mechanics commands:
 ```bash
 ./scripts/emit_mechanics_report.sh index
 ./scripts/emit_mechanics_report.sh kan-lift typescript
+./scripts/emit_mechanics_report.sh pullback typescript
+./scripts/emit_mechanics_report.sh pushout agnostic
+./scripts/emit_mechanics_report.sh double-pushout agnostic
 ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
 ./scripts/emit_mechanics_report.sh cql-context agnostic
 ./scripts/emit_mechanics_report.sh sheafification typescript
@@ -202,8 +225,6 @@ Useful mechanics commands:
 ```
 
 You can safely remove `codex/skills/kan`; this package is self-contained.
-
-
 
 ## Effective universal substrate and custom-agent workflow
 
