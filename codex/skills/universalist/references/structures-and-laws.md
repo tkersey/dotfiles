@@ -14,7 +14,54 @@ Use when repeated predicates should be centralized. Laws: valid accepted, invali
 
 ## Pullback
 
-Use when two values must agree on a shared projection. Laws: mismatch rejected; projections preserved.
+Use when two values, models, contexts, or interfaces must agree through maps to a shared target.
+
+```text
+f : A -> C
+g : B -> C
+P = A x_C B
+```
+
+Practical laws:
+
+- `f(projectA(p)) == g(projectB(p))`;
+- mismatches are rejected at construction;
+- both projections are preserved;
+- every compatible alternate pair factors through the canonical witness object;
+- uniqueness is approximated by one opaque constructor/normal form and no unchecked bypass.
+
+Typical software forms: equijoins, authorization contexts, wire/domain compatibility witnesses, synchronized configuration/state, and evidence joined to required claims.
+
+## Pushout
+
+Use when two source worlds must be glued along an explicit overlap.
+
+```text
+i : O -> A
+j : O -> B
+Q = A +_O B
+```
+
+Practical laws:
+
+- `injectA(i(o)) == injectB(j(o))`;
+- only declared overlap is identified;
+- non-overlap structure and provenance survive;
+- conflict is surfaced or resolved by named policy;
+- every compatible pair of downstream consumers factors through the integrated artifact;
+- uniqueness is approximated by canonical IDs/quotients and one public integration path.
+
+Typical software forms: schema/data integration, modular API or language extension, canonical models, and overlap-based context reconciliation.
+
+## Pushout complement / double-pushout rewrite
+
+Use for graph/model transformations with delete-preserve-add structure:
+
+```text
+L <- K -> R
+```
+
+The pushout complement removes `L-K` from a matched host while preserving `K`; a second pushout adds `R-K`. Laws: preserved interface unchanged, deletions/additions exact, dangling and forbidden-identification cases rejected, failed complement reported as obstruction. Prefer adhesive or adhesive-like categories when local rewrites must compose predictably.
 
 ## Exponential
 
@@ -26,8 +73,7 @@ Use when syntax should be separated from execution. Laws: interpreters agree on 
 
 ## Canonical boundary artifact
 
-Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, projection, lowering, or interpreter equivalence.
-
+Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, lowering, or interpreter equivalence.
 
 ## Freyd / premonoidal category
 
