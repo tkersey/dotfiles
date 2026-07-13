@@ -13,7 +13,15 @@ invariants:
   - name: subagents_require_explicit_request
     when: "team mode"
     required: ["explicit request", "root synthesis", "one writer", "independent verifier"]
-
   - name: composition_geometry_requires_law
     when: "operad or Freyd category"
     required: ["Composition geometry", "Semantic interpretation", "Law witness", "Falsifier"]
+  - name: pullback_requires_agreement_and_factorization
+    when: "pullback"
+    required: ["Shared target", "Agreement equation", "Canonical witness", "Factorization", "Mismatch falsifier"]
+  - name: pushout_requires_overlap_and_factorization
+    when: "pushout"
+    required: ["Explicit overlap", "Source injections", "Conflict policy", "Provenance", "Factorization", "False-merge falsifier"]
+  - name: double_pushout_requires_complement_check
+    when: "double pushout or graph rewrite"
+    required: ["Preserved interface", "Pushout complement", "Dangling/identification conditions", "Obstruction report", "Rewrite trace"]
