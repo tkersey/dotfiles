@@ -17,6 +17,10 @@ Available mechanics topics:
 - freyd-category
 - operad
 - composition-geometry
+- pullback
+- pushout
+- pullback-pushout
+- double-pushout
 - yoneda
 - defunctionalization
 - codensity-presentation
@@ -34,6 +38,9 @@ Available mechanics topics:
 - property-tests
 
 Examples:
+  ./scripts/emit_mechanics_report.sh pullback typescript
+  ./scripts/emit_mechanics_report.sh pushout agnostic
+  ./scripts/emit_mechanics_report.sh double-pushout agnostic
   ./scripts/emit_mechanics_report.sh kan-lift typescript
   ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
   ./scripts/emit_mechanics_report.sh cql-context agnostic
@@ -51,6 +58,14 @@ OUT
     ./scripts/emit_operadic_architecture.sh component-wiring "$language" ;;
   composition-geometry|geometry)
     cat references/composition-geometry.md ;;
+  pullback|pullbacks)
+    bash ./scripts/emit_pullback_pushout_report.sh pullback "$language" ;;
+  pushout|pushouts)
+    bash ./scripts/emit_pullback_pushout_report.sh pushout "$language" ;;
+  pullback-pushout|pullbacks-pushouts|limit-colimit-square)
+    bash ./scripts/emit_pullback_pushout_report.sh compare "$language" ;;
+  double-pushout|dpo|graph-rewrite)
+    bash ./scripts/emit_pullback_pushout_report.sh dpo "$language" ;;
   freyd)
     echo "Ambiguous mechanics topic: freyd" >&2
     echo "Use 'freyd-aft' for the adjoint-functor/free-builder diagnostic or 'freyd-category' for effectful call-by-value composition." >&2
@@ -65,7 +80,7 @@ OUT
     ./scripts/emit_context_compilation_report.sh report "$language" ;;
   cql|cql-context)
     ./scripts/emit_cql_context_report.sh context-publication "$language" ;;
-  pushout|pushout-reconciliation)
+  pushout-reconciliation)
     ./scripts/emit_pushout_reconciliation_plan.sh context-merge "$language" ;;
   verified-context|verified-context-publication)
     ./scripts/emit_verified_context_publication_plan.sh publication-boundary "$language" ;;
