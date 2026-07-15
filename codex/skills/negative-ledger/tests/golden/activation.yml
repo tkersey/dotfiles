@@ -11,6 +11,14 @@ cases:
     should_use_skill: true
   - prompt: "Before trying the same-cluster route again, map the current artifact against prior negative evidence."
     should_use_skill: true
+  - prompt: "Run the source-memory checkpoint for a completed implementation whose evidence packet contains no failed or abandoned route."
+    should_use_skill: true
+    expected_disposition: no-op
+    expected_admission: not-applicable
+  - prompt: "Run the source-memory checkpoint after the benchmark-regressing route was reverted and a narrower route passed."
+    should_use_skill: true
+    expected_disposition: captured-or-transitioned
+    expected_admission: explicit
   - prompt: "A unit test is red while I am still writing the first implementation."
     should_use_skill: false
   - prompt: "Fix this typo in a comment."

@@ -7,7 +7,6 @@ import argparse
 import importlib.util
 import json
 from pathlib import Path
-import re
 import subprocess
 import sys
 from typing import Any
@@ -223,7 +222,7 @@ def main() -> int:
     if frontmatter.get("name") != "synesthesia":
         errors.append("frontmatter:name")
     version = str(frontmatter.get("metadata", {}).get("version", ""))
-    if version != "3.4.0":
+    if version != "4.0.0":
         errors.append(f"frontmatter:version:{version}")
     for phrase in (
         "representational ambiguity",
@@ -237,7 +236,8 @@ def main() -> int:
         "Do not activate merely because",
         "Generated current-state digest",
         "memory-digest",
-        "Lifecycle candidate pass",
+        "Ledger checkpoint participant",
+        "SYN-LEDGER-CHECKPOINT",
         "synesthesia: candidate:",
     ):
         if phrase.lower() not in body.lower():

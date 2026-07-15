@@ -400,14 +400,14 @@ Only the latter two set implementation outcome to complete. Only terminal
 binds the repository fingerprint, folded run digest, obligation discharge
 basis, terminal route, and next owner.
 
-Before handing off `ready-to-ship` or reporting terminal `complete`, invoke
-`$learnings` and retain one learning disposition. The disposition is a required
-execution checkpoint, not evidence that can satisfy an actuation obligation.
-If a canonical append changes the Git artifact evaluated by `decide`, that
-decision becomes stale: open and close a new generation whose allowed paths include
-the learning store before handoff or completion. An ignored/local source-store
-write that leaves the evaluated artifact unchanged does not invalidate the
-decision.
+Before handing off `ready-to-ship` or reporting terminal `complete`, invoke the
+`$ledger` source-memory checkpoint and retain one current three-participant
+receipt. The checkpoint is not evidence that can satisfy an actuation
+obligation. If any canonical source append or transition changes the Git
+artifact evaluated by `decide`, that decision becomes stale: open and close a
+new generation whose allowed paths include the source store before handoff or
+completion. An ignored/local source-store write that leaves the evaluated
+artifact unchanged does not invalidate the decision.
 
 Use the JSON verdict, not prose or exit-code folklore, as the workflow result.
 Malformed input, invalid transitions, unavailable state, stale artifacts, and

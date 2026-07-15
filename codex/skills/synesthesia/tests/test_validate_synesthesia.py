@@ -59,9 +59,9 @@ class SynesthesiaValidationTests(unittest.TestCase):
         ):
             self.assertTrue(hasattr(module, name), name)
 
-    def test_skill_version_is_3_4(self) -> None:
+    def test_skill_version_is_4_0(self) -> None:
         text = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn('version: "3.4.0"', text)
+        self.assertIn('version: "4.0.0"', text)
         self.assertIn("latest_synesthesia_digest.md", text)
 
 

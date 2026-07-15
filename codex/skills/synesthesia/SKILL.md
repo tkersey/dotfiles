@@ -2,7 +2,7 @@
 name: synesthesia
 description: "Reversible cross-modal diagnostic lens for software. Use when the user asks what code, architecture, behavior, logs, APIs, or alternatives feel, sound, look, or move like; for compare-by-feel analysis; when literal analysis leaves multiple plausible structural, temporal, interaction, or boundary interpretations that cross-modal recoding could distinguish; or after an owning technical workflow documents such an ambiguity. Start from literal evidence and translate every sensory statement into a technical hypothesis, uncertainty, falsifier, and next move. Not for ordinary architecture, performance, readability, or UX audits; exact syntax; legal/compliance or security sign-off; or code mutation by itself."
 metadata:
-  version: "3.4.0"
+  version: "4.0.0"
   activation_cost: low
   default_depth: adaptive
 ---
@@ -265,12 +265,18 @@ Do not merely describe a qualifying memory event without attempting the handoff.
 
 Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated.
 
-## Lifecycle candidate pass
+## Ledger checkpoint participant
 
-When Synesthesia is evaluated because `$learnings` lifecycle capture fired, do
-not stop at `ledger doctor --source synesthesia` or at the absence of explicit
-durable authority. Run a candidate pass over the learning, evidence, route
-delta, and final handoff:
+When invoked with `checkpoint_context=source-memory-checkpoint/v1`, consume the
+coordinator's existing Ledger readiness and shared evidence packet. Do not
+rerun `$ledger ensure`, invoke `$ledger` as lifecycle coordinator, or call
+Learnings or Negative Ledger. Evaluate only whether the packet contains a
+durable Synesthesia event or a useful reversible candidate.
+
+Do not stop at `ledger doctor --source synesthesia` or at the absence of
+explicit durable authority. Run a candidate pass over the literal evidence,
+user-authority events, representational ambiguity, route delta, and final
+handoff:
 
 1. If a durable memory event exists, append it through
    `ledger capture --source synesthesia` and emit the append proof.
@@ -279,6 +285,21 @@ delta, and final handoff:
    engineering translation, emit a non-durable candidate.
 3. Only if neither a durable event nor a useful candidate exists, emit
    `synesthesia: 0 records appended: <specific reason>`.
+
+Return exactly one lifecycle disposition:
+
+```text
+appended   durable user-authorized SYN event appended
+candidate  useful reversible proposal lacks durable authority
+no-op      literal model is sufficient or no reusable mapping exists
+blocked    required Synesthesia doctor, capture, or source validation failed
+```
+
+Also return one separate admission disposition. An appended event that passes
+the admission gate uses `created`, `duplicate-skip`, or `blocked`; an appended
+event that remains source-local uses `not-eligible`; a candidate, no-op, or
+blocked canonical disposition uses `not-applicable`. A source-note or digest
+failure never rolls back a successful `SYN-*` append.
 
 A lifecycle candidate must be compact and reversible:
 
@@ -294,6 +315,9 @@ the user to endorse, correct, or reject.
 Do not report `notes-only` as the substantive reason for zero capture. That is
 a store migration state, not a Synesthesia judgment. Import notes only when an
 explicit copy migration is intended.
+
+This checkpoint route is `SYN-LEDGER-CHECKPOINT`. Standalone explicit sensory
+or durable-memory requests remain source-local and do not open a checkpoint.
 
 ## Memory admission gate
 

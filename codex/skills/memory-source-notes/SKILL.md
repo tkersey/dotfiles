@@ -2,7 +2,7 @@
 name: memory-source-notes
 description: "Safely append, inspect, validate, deploy, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use only after a handoff from learnings, negative-ledger, or synesthesia, or an explicit custom source capture or diagnostic request. Never edits compiled memory."
 metadata:
-  version: "1.2.0"
+  version: "2.0.0"
 ---
 
 # Memory Source Notes
@@ -37,7 +37,7 @@ source skill or canonical domain store
 ```
 
 - `ledger --source learnings` owns `.ledger/learnings/events.jsonl` and the admission gate for learning snapshots.
-- `ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
+- `ledger --source negative-ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
 - `ledger --source synesthesia` owns `.ledger/synesthesia/events.jsonl` and the canonical sensory mapping or activation-boundary event.
 - `synesthesia` owns sensory mapping and activation-boundary admission semantics.
 - `memory-note` owns safe immutable transport.
@@ -65,6 +65,11 @@ Refuse `ad_hoc` and Chronicle. Native remember/forget/update requests belong to 
 Do not trigger merely because a task produced history. The owning skill must first establish a source-specific admission event.
 
 ## CLI discovery
+
+Before the first native Ledger command in a standalone admission or diagnostic
+workflow, load `$ledger` and complete `$ledger ensure`. A handoff carrying
+`checkpoint_context=source-memory-checkpoint/v1` consumes the coordinator's
+existing readiness instead and must not bootstrap recursively.
 
 For general extensions, resolve the writer in this order:
 
@@ -142,6 +147,37 @@ The adapter:
 - treats digest failure as a non-rollback warning, never as failure of the immutable source-note write.
 
 Do not bypass this adapter for new Synesthesia writes.
+
+## Negative Ledger validated adapter
+
+After `$negative-ledger` accepts a complete current projection for admission,
+use:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+  admit \
+  --id NEG-... \
+  --kind ledger-projection
+```
+
+Use `ledger-status-transition`, `ledger-supersession`, or `ledger-retraction`
+only when the source owner classifies that event. The adapter runs
+`ledger doctor --source negative-ledger`, obtains the authoritative native
+`memory-note` export, validates identity and projection completeness, preserves
+the deterministic export bytes, and invokes `memory-note` idempotently. It
+rejects `need-evidence`, `capture_candidate`, `unknown`, and incomplete active
+projections.
+
+The adapter is transport, not admission authority. It must be called only after
+Negative Ledger decides recurrence and utility. Inspect without writing via:
+
+```bash
+uv run python \
+  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+  inspect \
+  --id NEG-...
+```
 
 ## Synesthesia current-state digest
 
@@ -293,6 +329,11 @@ run_memory_note_tool doctor --extension negative-ledger
 run_memory_note_tool list --extension learnings
 run_memory_note_tool show --extension negative-ledger --id MSN-...
 ```
+
+For cross-source historical gaps, use the `$ledger` reconciliation workflow.
+It is read-only and distinguishes source eligibility decisions from transport,
+digest, and Phase 2 lag; this skill performs only the source-authorized writes
+returned by that workflow.
 
 ## Privacy and retrieval
 

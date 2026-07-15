@@ -146,6 +146,12 @@ scope, authority, payload, and source references before appending to:
 
 ## Same-turn memory-source admission
 
+Under `checkpoint_context=source-memory-checkpoint/v1`, the shared checkpoint
+packet is lifecycle evidence, but it is not durable Synesthesia authority.
+Synesthesia independently decides whether the packet contains an endorsed
+mapping or boundary, a non-durable candidate, or no reusable sensory event. It
+must not consume a Learnings or Negative Ledger disposition as authority.
+
 After the canonical append succeeds, load `$memory-source-notes` only when
 global memory admission is warranted. Export the memory-note adapter envelope:
 

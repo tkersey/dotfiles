@@ -299,8 +299,8 @@ After applying a candidate change through its owner:
 6. require the latest configured repeat cohort for every frozen scenario to
    pass; older successes cannot hide a newer failure;
 7. when `publication_authority=commit`, review the unchanged staged diff, run the
-   repo-required learning disposition, stage only campaign-owned changes, and
-   create the commit;
+   repo-required source-memory checkpoint, stage only campaign-owned changes,
+   and create the commit;
 8. append `publication_recorded` with the change ID, commit SHA, committed
    paths, target fingerprint, validation refs, and eligible promotion-grade
    IDs.

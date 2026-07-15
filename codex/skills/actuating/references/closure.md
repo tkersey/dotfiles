@@ -90,20 +90,21 @@ Each obligation is classified as `implementation`, `review`, `ship`, or
 `acceptance`; `decide` routes its discharge binding into `evidence_basis`,
 `review_basis`, or `ship_basis` without accepting caller-authored basis lists.
 
-## Learning disposition after decision
+## Source-memory checkpoint after decision
 
-Before a `ready-to-ship` handoff or terminal `complete` report, invoke
-`$learnings` and retain exactly one disposition: `appended`, `duplicate-skip`,
-`no-op`, or `blocked`. This checkpoint does not satisfy a kernel obligation and
-does not alter the meaning of `closure-decision/v1`.
+Before a `ready-to-ship` handoff or terminal `complete` report, invoke `$ledger`
+and retain one current `source-memory-checkpoint/v1` receipt containing exactly
+one Learnings, Synesthesia, and Negative Ledger disposition. This checkpoint
+does not satisfy a kernel obligation and does not alter the meaning of
+`closure-decision/v1`.
 
-Recompute artifact currency after an append. If the canonical learning write
-changes the Git artifact named by the decision, the decision becomes stale; open a
-new generation with the learning path admitted and obtain a new terminal
-decision. If the source store is ignored/local and the evaluated artifact is
-unchanged, preserve the existing decision. A blocked learning disposition must
-be reported as a source-memory closeout blocker even when the actuation fold is
-otherwise terminal.
+Recompute artifact currency after any canonical source write. If the write
+changes the Git artifact named by the decision, the decision becomes stale;
+open a new generation with the source path admitted and obtain a new terminal
+decision. If source stores are ignored/local and the evaluated artifact is
+unchanged, preserve the existing decision. A blocked checkpoint must be
+reported as a source-memory closeout blocker even when the actuation fold is
+otherwise terminal; it does not rewrite the terminal actuation outcome.
 
 ## Goal and implementation outcomes
 

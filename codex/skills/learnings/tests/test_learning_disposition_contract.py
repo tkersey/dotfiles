@@ -9,15 +9,16 @@ CODEX_ROOT = Path(__file__).resolve().parents[3]
 
 
 class LearningDispositionContractTests(unittest.TestCase):
-    def test_root_doctrine_keeps_implicit_execution_checkpoint(self) -> None:
+    def test_root_doctrine_moves_lifecycle_checkpoint_to_ledger(self) -> None:
         agents = (CODEX_ROOT / "AGENTS.md").read_text(encoding="utf-8")
         for required in (
-            "Learning disposition mandate",
-            "Invoke `$learnings` after a decision-shaping validation transition",
+            "Source-memory checkpoint mandate",
+            "Invoke `$ledger` after a decision-shaping validation transition",
             "before every Codex-made commit, PR handoff, or terminal implementation/review closeout",
-            "even when the user did not explicitly name the skill",
-            "`appended`, `duplicate-skip`, `no-op`, or `blocked`",
-            "Never silently discard invalid legacy records",
+            "evaluate Learnings, Synesthesia, and Negative Ledger",
+            "checkpoint_context=source-memory-checkpoint/v1",
+            "ledger validate source-memory-checkpoint",
+            "never silently discard invalid legacy records",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, agents)
@@ -36,9 +37,14 @@ class LearningDispositionContractTests(unittest.TestCase):
             "run `ledger --version`",
             "`>= 0.5.2`",
             "Never combine skip with `--mode move` or",
+            "## Ledger checkpoint participant",
+            "Do not rerun\n`$ledger ensure`",
+            "ledger export --source learnings --id lrn-... --format memory-note",
+            "do not invoke Synesthesia",
         ):
             with self.subTest(required=required):
                 self.assertIn(required, skill)
+        self.assertNotIn("evaluate `$synesthesia` in the same lifecycle point", skill)
 
     def test_actuation_handoff_cannot_bypass_disposition(self) -> None:
         skill = (CODEX_ROOT / "skills/actuating/SKILL.md").read_text(
@@ -51,7 +57,8 @@ class LearningDispositionContractTests(unittest.TestCase):
             "Before handing off `ready-to-ship` or reporting terminal `complete`",
             skill,
         )
-        self.assertIn("## Learning disposition after decision", closure)
+        self.assertIn("## Source-memory checkpoint after decision", closure)
+        self.assertIn("`source-memory-checkpoint/v1`", closure)
         self.assertIn("decision becomes stale", skill)
         self.assertIn("decision becomes stale", closure)
 
