@@ -59,10 +59,11 @@ The live objects are:
    `actuation-kernel-state/v1`.
 5. `closure-decision/v1`, projected by the kernel from that live fold.
 
-`actuation-review-policy/v2`, `review-resolution/v1`, RF-v2, EF-v1, CAS
-receipts, and SHIP-v1 remain owner-specific evidence. Bind their current
-identities into the GoalContract and discharge their predicates through exact
-verifier commands; do not copy their policy logic into the kernel.
+`actuation-review-policy/v2`, `owner-boundary-synthesis/v1`,
+`review-resolution/v1`, RF-v2, EF-v1, CAS receipts, and SHIP-v1 remain
+owner-specific evidence. Bind their current identities into the GoalContract
+and discharge their predicates through exact verifier commands; do not copy
+their policy logic into the kernel.
 
 Read [live-semantics.yaml](references/live-semantics.yaml) for canonical
 vocabulary and [closure.md](references/closure.md) for the terminal projection.
@@ -257,25 +258,41 @@ pre-bound policy request; never derive lens meaning from CAS output.
 
 Review evidence passes through `$review-fold`, which classifies and quotients
 findings, then through `ledger validate review-fold` as a pure invariant
-check. `review-resolution/v1` then selects at most one current owner-boundary
-repair. Read [review-resolution.md](references/review-resolution.md) before
-review-driven mutation.
+check. `review-resolution/v1` then joins every current accepted class with the
+current goal's retained resolution history. Form stable structural components
+from source and target worlds, carriers, operations, observations, and
+governing laws; implementation-specific owner names are component members, not
+component identity. Generation, tuple, commit, publication, batch, and attempt
+identities must not create new components.
 
-For every accepted RF-v2 equivalence class, invoke `$universalist` at the
-classified owner boundary and compile one `correctness_refinement`. Bind the
-class, discrepancy, law delta, smallest owner construction, preservation
-witness, and strict progress witness. Before mutation, require a passing
-correctness-refinement validation decision:
+Invoke `$universalist` once per cumulative structural component, not once
+independently per finding class, and compile one
+`owner-boundary-synthesis/v1`. Recurrence after an observed repair, multiple
+owners for one law, new semantic machinery, displacement of multiple
+abstractions, or a symptom repair after a replacement kernel creates structural
+pressure. Under pressure, choose a converged replacement kernel, prove a
+separation obstruction and reclassify, or block; another local repair is not a
+legal default. Read [review-resolution.md](references/review-resolution.md)
+before review-driven mutation.
+
+Then compile one `correctness_refinement` for every accepted RF-v2 equivalence
+class and bind it to its owner synthesis. Bind the class, discrepancy, law
+delta, synthesis-owned construction, preservation witness, and strict progress
+witness. Before mutation, require a passing refinement-and-synthesis validation
+decision from Ledger 0.9.0 or newer:
 
 ~~~bash
 ledger validate review-resolution \
   --phase preflight --input <resolution.json>
 ~~~
 
-The checker enforces the structural class-to-refinement join. It does not
-validate the entire resolution, execute witness commands, select a strategy,
-grant authority, or move review semantics into CAS. `$goal-actuating` must bind
-the complete current resolution and observe both witness obligations.
+The checker enforces the structural class-to-synthesis-to-refinement join,
+derives strategy from synthesis disposition, and validates the single selected
+node at the canonical owner. It does not validate the entire resolution,
+dereference history or observation receipts, execute witness commands, grant
+authority, or move review semantics into CAS. `$goal-actuating` must bind the
+complete current resolution and observe every correctness and synthesis
+obligation.
 
 For a review edit:
 
@@ -296,19 +313,27 @@ For a review edit:
   dispatch also ends verdictless, leave the request unresolved and block;
 - keep the preflight-bound resolution digest stable through the wave, then
   fold and adjudicate all collected findings before selecting a repair;
+- join current accepted classes to retained resolution history through stable
+  boundary-law components, materialize one owner synthesis per component, and
+  reject generation-scoped identity as a structural reset;
+- allow `local-repair` only from `reuse-owner` with no structural pressure;
+  route pressure to `converge-kernel`, an evidenced `separate-laws` component
+  split with any necessary RF-v2 reclassification, or `blocked`;
 - after an auxiliary-driven repair, invalidate every current request and
   preserve the standard suffix only by appending a certified non-credit carry;
 - bind the current resolution, publication epoch, and evidence identities into
   the GoalContract digest;
-- pass the correctness-refinement preflight and project both preservation
+- pass the refinement-and-synthesis preflight and project both preservation
   and progress witness commands into verifier-backed obligations;
-- project the selected resolution node into the operation's owner, exact paths,
-  and verifier-backed obligations;
+- project the synthesis-owned resolution node and its install, collapse,
+  delegation, and retirement obligations into the operation's owner, exact
+  paths, and verifier-backed obligations;
 - prepare the capability before mutation;
 - preserve cumulative finding semantics across adjacent repairs and reships;
 - require fresh closure-grade CAS evidence after the final published change;
-- pass the policy and correctness-refinement closeout checks, with both
-  witness obligations observed, before granting review credit.
+- pass the policy and refinement-and-synthesis closeout checks, with both
+  witness obligations and every synthesis structural obligation observed,
+  before granting review credit.
 
 The validation verdict grants no authority. Raw review prose, a fold receipt,
 a CAS record, or a suggested patch never grants mutation. `$ship` remains the
@@ -404,8 +429,8 @@ public effect would bypass `$ship`.
   transitions, ownership, and laws.
 - [review-policy.md](references/review-policy.md) — lens selection, exact
   request binding, lane accounting, and invalidation.
-- [review-resolution.md](references/review-resolution.md) — resolution schema,
-  strategy rules, and semantic balance.
+- [review-resolution.md](references/review-resolution.md) — cumulative owner
+  synthesis, per-class refinement, strategy rules, and semantic balance.
 - [closure.md](references/closure.md) — kernel terminal projection and lifecycle
   handoff.
 - [decision-contract.yaml](references/decision-contract.yaml) — trigger and

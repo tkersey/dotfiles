@@ -24,6 +24,39 @@ review_resolution:
       findings: []
       compression: {}
       routing_obligations: []
+  resolution_history:
+    goal_id:
+    prior_resolution_refs: []
+    prior_synthesis_refs: []
+  owner_syntheses:
+    - version: owner-boundary-synthesis/v1
+      synthesis_id:
+      stable_component_key: # derived only from boundary_identity
+      boundary_identity:
+        source_worlds: []
+        target_worlds: []
+        carriers: []
+        operations: []
+        observations: []
+        laws: []
+      class_refs: [] # current accepted RF-v2 classes in this structural component
+      prior_decision_refs: []
+      prior_synthesis_refs: []
+      owner_boundaries: []
+      pressure_signals: [] # recurrence-after-repair | multiple-law-owners | new-semantic-machinery | multi-abstraction-displacement | post-kernel-symptom-repair
+      disposition: reuse-owner | converge-kernel | separate-laws | blocked
+      canonical_owner:
+      construction:
+      separation_obstruction: # required only for separate-laws
+        statement:
+        falsifier:
+      structural_obligations:
+        - kind: install | collapse | retire | delegate
+          target:
+          verifier: []
+          observation_ref: # required at closeout
+      selected_work_node_ref:
+      falsifier:
   finding_ids: []
   change_surfaces: []
   review_profile:
@@ -41,6 +74,7 @@ review_resolution:
   decisions:
     - decision_id:
       owner_boundary:
+      owner_synthesis_ref:
       finding_ids: []
       liability_classes: [] # exactly one RF-v2 quotient_key
       strategy: local-repair | replacement-kernel | blocked
@@ -64,7 +98,7 @@ review_resolution:
         - abstraction:
           disposition: retain | retire | collapse | delegate | replace
           obligation_id:
-      selected_work_node: # optional while another owner decision is current
+      selected_work_node: # compatibility projection; present only on the member named by its synthesis
         node_id:
         run_id:
         owner_boundary:
@@ -92,17 +126,93 @@ must also include `multi-live-path` whenever the accepted-base diff contains
 more than one path. Bind the resulting resolution digest into the next
 GoalContract so it cannot be relabeled after kernel `open`.
 
+## Owner-boundary synthesis
+
+RF-v2 owns liability equivalence; owner-boundary synthesis owns construction
+convergence. Do not merge or rewrite RF-v2 classes here. Instead, form stable
+structural components from all current accepted classes plus the current
+goal's retained resolution history. Connect classes when their source and
+target worlds, carriers, operations, observations, and governing laws describe
+one boundary, even when implementation-specific owner names differ. Owner
+membership is evidence about the component; it does not define component
+identity. Derive `stable_component_key` only from `boundary_identity`. It must
+not contain or derive from a review generation, tuple, commit, publication,
+source batch, or attempt identity.
+`resolution_history.goal_id` must equal every retained RF-v2 fold goal, and
+every `prior_synthesis_ref` must join exactly one current component.
+
+The native validator derives the key as `sha256:` plus the lowercase SHA-256
+digest of `owner-boundary-synthesis/boundary-identity/v1\n` followed by compact
+JSON. The JSON keys are `source_worlds`, `target_worlds`, `carriers`,
+`operations`, `observations`, and `laws` in that order; sort every array
+lexicographically before encoding. This makes component identity insensitive
+to list order while excluding transport and generation provenance by
+construction.
+
+Invoke `$universalist` once for each cumulative structural component, not once
+independently for each finding class. Materialize one
+`owner-boundary-synthesis/v1`, then compile the required per-class
+`correctness_refinement` records against that synthesis. A per-class candidate
+construction is not repair authority and cannot bypass the synthesis.
+
+Record every applicable pressure signal:
+
+- `recurrence-after-repair`: the stable boundary-law component receives another
+  accepted counterexample after an observed repair;
+- `multiple-law-owners`: more than one implementation-specific owner expresses
+  the same governing law;
+- `new-semantic-machinery`: a local repair would add a protocol, state,
+  helper abstraction, branch family, or wound-specific test family;
+- `multi-abstraction-displacement`: the abstraction account would retire,
+  collapse, delegate, or replace more than one abstraction; and
+- `post-kernel-symptom-repair`: a prior replacement kernel would receive a
+  symptom-specific local repair.
+
+Source growth, file count, and comment count are prompts to inspect these
+signals, not proof that a new abstraction is warranted.
+
+Choose the synthesis disposition before repair strategy:
+
+- `reuse-owner` is legal only when `pressure_signals=[]`. It selects
+  `local-repair`, keeps the established owner, and adds no semantic machinery.
+- `converge-kernel` is required when pressure exists and one principal owner
+  construction can express the shared law. It selects `replacement-kernel`,
+  names one canonical owner, and records install, collapse, delegation, and
+  retirement obligations with exact verifier argv. Its structural obligation
+  set is non-empty.
+- `separate-laws` requires a concrete obstruction showing why the carriers,
+  operations, observations, or laws cannot share one honest construction,
+  plus a falsifier. It authorizes no repair: split the structural component
+  first and correct RF-v2 owner or law classification when that classification
+  caused the false join.
+- `blocked` is required when neither convergence nor separation has adequate
+  evidence.
+
+Every `local-repair` or `replacement-kernel` decision cites exactly one
+`owner_synthesis_ref`; a `blocked` decision cites its blocked synthesis.
+Decisions in one synthesis use its disposition-derived strategy and common
+construction. `separate-laws` creates no repair decision. The synthesis owns
+work selection. A repair-bearing mutation preflight materializes exactly one
+node in the whole resolution; at most one member decision materializes the node
+named by `selected_work_node_ref`, and that node's owner must equal
+`canonical_owner`.
+Generation-scoped class renaming cannot erase prior decisions or pressure. If
+a fresh fold changes a quotient key while the boundary and law remain stable,
+join it to the existing component and repair the RF-v2 classification rather
+than treating it as new structural authority.
+
 ## Strategy selection
 
-Use `local-repair` only when an existing owner abstraction can absorb the
-correction without a new protocol, state, helper abstraction, branch family, or
-wound-specific test family.
+Use `local-repair` only after a `reuse-owner` synthesis proves that the existing
+owner can absorb the correction without a new protocol, state, helper
+abstraction, branch family, or wound-specific test family.
 
-Use `replacement-kernel` when local repair would distribute one invariant,
-preserve a dominated abstraction, add machinery to tolerate invalid state, or
-patch several symptoms of one owner-level cause. Admit at most one current
-owner node; keep other owner decisions strategy-complete but node-free while
-the outcome is `pending`.
+Use `replacement-kernel` after `converge-kernel` when local repair would
+distribute one invariant, preserve a dominated abstraction, add machinery to
+tolerate invalid state, or patch several symptoms of one owner-level cause.
+Admit exactly one current synthesis-owned node in a repair-bearing mutation
+preflight. Keep non-current synthesis member decisions strategy-complete but
+node-free while the outcome is `pending`.
 
 Use `blocked` when authority, intended semantics, current evidence, or a
 falsifiable verifier is absent.
@@ -112,10 +222,12 @@ proof-only, ask-human, and follow-up findings remain terminal RF-v2
 dispositions and do not enter this object. Dangling fold IDs are insufficient:
 resolution construction joins the current artifact and exact
 `resolution-input` finding set to each decision. In `remediation-plan`, record
-the strategy but omit `selected_work_node`; the plan grants no execution
-authority. In review closeout, a pending multi-owner resolution may omit nodes
-for non-current decisions. Re-fold the changed artifact before admitting the
-next owner node; closure rejects `pending`.
+the synthesis and strategy but omit both `selected_work_node_ref` and
+`selected_work_node`; that artifact intentionally cannot pass mutation
+preflight and grants no execution authority. During review closeout, a pending
+multi-synthesis resolution omits nodes for non-current syntheses. Re-fold the
+changed artifact before admitting the next synthesis node; closure rejects
+`pending`.
 
 Every accepted RF-v2 equivalence class containing a `resolution-input` finding
 is consumed by exactly one resolution decision. Do not split one quotiented
@@ -123,7 +235,8 @@ cause into multiple comment-shaped decisions; if the quotient is wrong,
 correct the RF-v2 classification first. Each decision binds exactly one
 liability class; `correctness_refinement.class_ref` must be that same class.
 Across fresh folds, the same quotient key remains one class and extends that
-decision's finding set. A new quotient key requires a new decision.
+decision's finding set. A genuinely new quotient key requires a new decision,
+but not a new owner synthesis when it belongs to an existing stable component.
 
 Record rejected alternatives and a falsifier for every material decision.
 Judgment owns the strategy; comment count does not.
@@ -131,8 +244,9 @@ Judgment owns the strategy; comment count does not.
 ## Correctness refinement
 
 Treat each accepted RF-v2 equivalence class as a counterexample to an intended
-law, not as a patch instruction. Invoke `$universalist` on that owner boundary
-and materialize exactly one `correctness_refinement` before selecting mutation.
+law, not as a patch instruction. After `$universalist` has synthesized its
+cumulative structural component, materialize exactly one
+`correctness_refinement` per class before selecting mutation.
 The refinement names:
 
 - the quotiented counterexample class;
@@ -154,7 +268,8 @@ partiality -> totalize
 misbinding -> rebind
 ~~~
 
-`local-repair` may only use `restore-existing-law`. Use
+`local-repair` may only use `restore-existing-law` and a `reuse-owner`
+synthesis. Use
 `replacement-kernel` for `strengthen-representation` or `replace-owner` when
 the existing owner cannot make the law structural. This distinction limits
 the incision: correctness must strictly improve, but the artifact need not
@@ -169,13 +284,19 @@ ledger validate review-resolution \
   --phase closeout --input <resolution.json>
 ~~~
 
-This is a correctness-refinement sub-contract checker, not a complete validator
-for every `review-resolution/v1` field. It checks the embedded RF-v2 class,
-decision, witness argv, strategy, status, and semantic-balance joins. The
-GoalContract and `$goal-actuating` still bind the current artifact, review
-profile, resolution digest, selected node, abstraction account, and publication
-evidence. They must execute and observe both witness commands against the
-current artifact; the checker does not execute them or compare prior snapshots.
+This is a refinement-and-synthesis sub-contract checker, not a complete
+validator for every `review-resolution/v1` field. It checks the embedded RF-v2
+classes, cumulative synthesis references, stable component digests,
+disposition-derived strategies, common construction, selected-node ownership,
+witness argv, status, structural obligation declarations, and
+semantic-balance joins. At closeout, every structural obligation requires an
+`observation_ref`; `collapse`, `retire`, and `delegate` targets must also be
+completed semantic-balance retirements. The GoalContract and `$goal-actuating`
+bind the current artifact, review profile, resolution digest, referenced
+history and observations, abstraction account, and publication evidence. They
+must dereference and observe those receipts and execute the correctness and
+synthesis verifier commands against the current artifact; the checker does not
+dereference artifacts, execute commands, or compare prior snapshots.
 
 Bind both witness commands into the next GoalContract before mutation as
 `correctness:<decision_id>:preservation` and
@@ -257,6 +378,12 @@ event chain. The resolution does not repeat a caller-authored hunk inventory.
 
 While `status=pending`, `dominated_remaining` must equal the exact outstanding
 retirement debt. `clean` and `resolved` require that debt to be empty.
+
+For `converge-kernel`, closeout also requires every synthesis structural
+obligation to pass: the canonical owner is installed, dominated or duplicate
+implementations are collapsed, delegated, or retired, and callers retain only
+their genuinely distinct policy. A passing per-class witness cannot substitute
+for this convergence proof.
 
 Every declared added construct names a live goal or domain obligation, its
 source `obligation_ref`, and a distinct displaced construct. This is a

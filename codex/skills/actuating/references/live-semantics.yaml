@@ -49,9 +49,12 @@ live_semantics:
     actuation-review-policy/v2:
       owner: actuating
       purpose: Bind lens selection, exact instructions, request identity, tuple-honest standard attempt history, certified auxiliary-remediation carries, lane accounting, invalidation, and closeout credit before review execution.
+    owner-boundary-synthesis/v1:
+      owner: actuating
+      purpose: Join current accepted review classes with retained boundary-law history and select owner reuse, kernel convergence, evidenced law separation, or blockage before repair strategy.
     review-resolution/v1:
       owner: actuating
-      purpose: Turn classified equivalence classes into owner-boundary correctness refinements and strategies before review mutation.
+      purpose: Bind cumulative owner syntheses, per-class correctness refinements, and synthesis-owned work selection before review mutation.
 
   recursion_scheme:
     driver: /goal
@@ -81,6 +84,7 @@ live_semantics:
     public_effects: ship
 
   strategies: [local-repair, replacement-kernel, blocked]
+  synthesis_dispositions: [reuse-owner, converge-kernel, separate-laws, blocked]
   abstraction_dispositions: [retain, retire, collapse, delegate, replace]
 
   invariants:
@@ -111,7 +115,9 @@ live_semantics:
     - id: public-effects-owned-by-ship
       statement: Only ship may create update or promote a PR or perform another public tracker effect.
     - id: review-before-resolution
-      statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, one owner-boundary correctness refinement per accepted equivalence class, passing Actuating correctness-refinement preflight, and observed preservation and progress obligations; validation grants no authority.
+      statement: Review-derived mutation requires fresh classified evidence, a passing pure ledger validate review-fold decision, one cumulative owner-boundary synthesis per stable structural component, one correctness refinement per accepted equivalence class bound to that synthesis, passing Actuating refinement-and-synthesis preflight, and observed correctness and synthesis obligations; validation grants no authority.
+    - id: cumulative-owner-synthesis
+      statement: Current accepted classes join retained goal history by source and target worlds, carriers, operations, observations, and governing-law identity before strategy selection; implementation owner names and generation, tuple, commit, publication, batch, or attempt identities cannot reset structural pressure, and pressure permits only kernel convergence, evidenced law separation and reclassification, or blockage.
     - id: review-policy-owner
       statement: Actuating binds review semantics before execution and projects only opaque request identity into CAS transport; CAS tuple and verdict facts never select a lens or grant closeout credit.
     - id: non-cancelling-review-wave

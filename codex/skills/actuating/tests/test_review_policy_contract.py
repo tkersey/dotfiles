@@ -15,6 +15,7 @@ def normalized(path: Path) -> str:
 
 ACTUATING = normalized(ACTUATING_ROOT / "SKILL.md")
 GOAL_ACTUATING = normalized(SKILLS_ROOT / "goal-actuating" / "SKILL.md")
+GOAL_GRIND = normalized(SKILLS_ROOT / "goal-grind" / "SKILL.md")
 REVIEW_POLICY = normalized(ACTUATING_ROOT / "references" / "review-policy.md")
 REVIEW_RESOLUTION = normalized(
     ACTUATING_ROOT / "references" / "review-resolution.md"
@@ -124,6 +125,93 @@ class ActuatingReviewPolicyContractTests(unittest.TestCase):
         ]
         for token in required:
             with self.subTest(token=token):
+                self.assertIn(token, DECISION_CONTRACT)
+
+    def test_resolution_synthesizes_cumulative_structural_components(self) -> None:
+        required = [
+            "## Owner-boundary synthesis",
+            "`owner-boundary-synthesis/v1`",
+            "all current accepted classes plus the current goal's retained resolution history",
+            "Derive `stable_component_key` only from `boundary_identity`",
+            "owner-boundary-synthesis/boundary-identity/v1\\n",
+            "sort every array lexicographically before encoding",
+            "implementation-specific owner names",
+            "must not contain or derive from a review generation, tuple, commit, publication, source batch, or attempt identity",
+            "once for each cumulative structural component, not once independently for each finding class",
+            "recurrence-after-repair",
+            "multiple-law-owners",
+            "new-semantic-machinery",
+            "multi-abstraction-displacement",
+            "post-kernel-symptom-repair",
+            "reuse-owner | converge-kernel | separate-laws | blocked",
+            "A per-class candidate construction is not repair authority",
+            "Source growth, file count, and comment count are prompts to inspect these signals, not proof that a new abstraction is warranted",
+            "split the structural component first",
+            "`observation_ref`",
+            "A repair-bearing mutation preflight materializes exactly one",
+        ]
+        for token in required:
+            with self.subTest(token=token):
+                self.assertIn(token, REVIEW_RESOLUTION)
+
+    def test_actuating_routes_structural_pressure_before_local_repair(self) -> None:
+        required = [
+            "Invoke `$universalist` once per cumulative structural component, not once independently per finding class",
+            "another local repair is not a legal default",
+            "allow `local-repair` only from `reuse-owner` with no structural pressure",
+            "project the synthesis-owned resolution node",
+            "every synthesis structural obligation observed",
+            "Ledger 0.9.0 or newer",
+            "structural class-to-synthesis-to-refinement join",
+        ]
+        for token in required:
+            with self.subTest(token=token):
+                self.assertIn(token, ACTUATING)
+
+    def test_coordinator_owns_synthesis_and_executor_only_executes(self) -> None:
+        coordinator_required = [
+            "owner-boundary-synthesis/v1 for each component",
+            "A generation, tuple, commit, publication, source batch, or attempt suffix is provenance, never a new structural identity",
+            "Invoke `$universalist` once per cumulative component",
+            "A class-local construction cannot independently select a repair",
+            "The current resolution may select at most one synthesis-owned node",
+            "repair-bearing mutation preflight must select exactly one",
+        ]
+        for token in coordinator_required:
+            with self.subTest(surface="goal-actuating", token=token):
+                self.assertIn(token, GOAL_ACTUATING)
+
+        executor_required = [
+            "owner_synthesis_ref: # review edits only",
+            "Execute the synthesis-owned node exactly as selected",
+            "do not reconsider the synthesis disposition, choose repair strategy, or split the node into finding-shaped work",
+        ]
+        for token in executor_required:
+            with self.subTest(surface="goal-grind", token=token):
+                self.assertIn(token, GOAL_GRIND)
+        self.assertGreaterEqual(GOAL_GRIND.count("owner_synthesis_ref:"), 2)
+        self.assertNotIn("Prefer `replacement-kernel`", GOAL_GRIND)
+
+    def test_synthesis_boundary_is_auditable(self) -> None:
+        semantics_required = [
+            "owner-boundary-synthesis/v1",
+            "cumulative-owner-synthesis",
+            "implementation owner names and generation, tuple, commit, publication, batch, or attempt identities cannot reset structural pressure",
+        ]
+        for token in semantics_required:
+            with self.subTest(surface="live-semantics", token=token):
+                self.assertIn(token, LIVE_SEMANTICS)
+
+        contract_required = [
+            "owner-boundary-synthesis/v1 for each stable structural component before strategy selection",
+            "passing refinement-and-synthesis validation decision",
+            "every repair-bearing mutation preflight selects exactly one",
+            "per-class construction selects repair without owner synthesis",
+            "structural pressure receives another local repair",
+            "convergence closes with a duplicate or dominated implementation",
+        ]
+        for token in contract_required:
+            with self.subTest(surface="decision-contract", token=token):
                 self.assertIn(token, DECISION_CONTRACT)
 
 
