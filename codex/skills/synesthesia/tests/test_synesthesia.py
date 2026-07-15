@@ -36,7 +36,8 @@ class SynesthesiaPackageTests(unittest.TestCase):
             "do not activate merely because",
             "generated current-state digest",
             "memory-digest",
-            "lifecycle candidate pass",
+            "ledger checkpoint participant",
+            "syn-ledger-checkpoint",
             "synesthesia: candidate:",
         ):
             self.assertIn(phrase, text)

@@ -54,12 +54,14 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Treat legacy `.learnings.jsonl` as migration input only; never append new rows after migration.
 - Failure to create or update a memory-source admission note must not invalidate or roll back a successful canonical source-store write.
 
-### Learning disposition mandate
+### Source-memory checkpoint mandate
 
-- Invoke `$learnings` after a decision-shaping validation transition and before every Codex-made commit, PR handoff, or terminal implementation/review closeout. This is an execution obligation even when the user did not explicitly name the skill.
-- Evaluate the capture gate; do not force a low-value row. Retain exactly one internal disposition: `appended`, `duplicate-skip`, `no-op`, or `blocked`.
-- A canonical append must be inspected and, when publishable, included with the work it explains. A `blocked` disposition must identify the failed doctor/migration/capture boundary and cannot be reported as successful learning closeout.
-- If the learnings doctor reports `legacy-only` or `invalid`, follow `$learnings` migration policy. Never silently discard invalid legacy records; an explicit skip must preserve the legacy source and report skipped line spans.
+- Invoke `$ledger` after a decision-shaping validation transition and before every Codex-made commit, PR handoff, or terminal implementation/review closeout. Complete `$ledger ensure` once for the workflow, construct one freshness-bound `source-memory-checkpoint-input/v1` packet, and evaluate Learnings, Synesthesia, and Negative Ledger even when the user did not name them.
+- Require exactly one source-owned disposition from each participant: Learnings `appended|duplicate-skip|no-op|blocked`; Synesthesia `appended|candidate|no-op|blocked`; Negative Ledger `mapped|captured|transitioned|no-op|blocked`. A participant invoked with `checkpoint_context=source-memory-checkpoint/v1` evaluates only its own contract and must not invoke the coordinator or a sibling participant.
+- Preserve source authority and conditional effects. Do not force low-value canonical rows or memory admission. Record canonical and admission outcomes separately; an admission or digest failure after a canonical write makes the checkpoint `degraded` and must not roll back that write.
+- Retain one current `source-memory-checkpoint/v1` receipt, validate it with `ledger validate source-memory-checkpoint`, and refresh it after any material code, evidence, route, or authority change. Missing participants, stale/invalid evidence, or required canonical failures make source-memory closeout `blocked`; they do not independently block the surrounding delivery. Only the separate current exact Negative Ledger pre-route gate may block a selected route.
+- Inspect every canonical append or transition and include publishable `.ledger/*` rows with the work they explain. If Learnings doctor reports `legacy-only` or `invalid`, follow `$learnings` migration policy; never silently discard invalid legacy records, and preserve/report every explicitly skipped legacy span.
+- Keep ordinary all-no-op checkpoints internal. Report canonical writes, actionable Synesthesia candidates, admission degradation, and blockers.
 
 ### Negative-evidence routing mandate
 

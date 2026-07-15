@@ -1,6 +1,6 @@
 interface:
   display_name: "Ledger"
-  short_description: "Bootstrap and coordinate Ledger CLI access"
-  default_prompt: "Use $ledger to ensure ledger is available on PATH, then inspect repo-local Ledger sources through their native doctor, path, and query commands."
+  short_description: "Coordinate Ledger lifecycle and source state"
+  default_prompt: "Use $ledger to bootstrap the native CLI once, coordinate a freshness-bound Learnings, Synesthesia, and Negative Ledger lifecycle checkpoint without taking source authority, or reconcile canonical source records with immutable memory admissions read-only."
 policy:
   allow_implicit_invocation: true

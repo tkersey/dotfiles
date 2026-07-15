@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Memory Source Notes"
-  short_description: "Explicit-only skill"
-  default_prompt: "Use this skill only when explicitly invoked or handed off by an active workflow."
+  short_description: "Transport validated source-memory admissions"
+  default_prompt: "Use $memory-source-notes only after Learnings, Synesthesia, or Negative Ledger authorizes admission. Validate and append immutable source notes through the documented adapter, preserve canonical writes across transport or digest failure, and never edit compiled memory."

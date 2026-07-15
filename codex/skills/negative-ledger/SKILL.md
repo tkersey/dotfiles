@@ -2,7 +2,7 @@
 name: negative-ledger
 description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Query/map before repeating a route; capture only inspectable decision-shaping negative evidence through the repo-local `ledger` source API; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
-  version: "6.2.0"
+  version: "7.0.0"
 ---
 
 # Negative Ledger
@@ -14,8 +14,11 @@ Prune semantic search space without turning stale failures into permanent dogma.
 The operational authority is:
 
 ```text
-ledger
+ledger --source negative-ledger
 ```
+
+Source-less Negative Ledger commands remain compatible, but the source
+namespace is canonical for shared coordination.
 
 `.ledger/negative-ledger/events.jsonl` is the current persistent-adapter
 location, retained for path compatibility and legacy migration.
@@ -62,11 +65,37 @@ no-op        activation evaluated; evidence was not durable or route-shaping
 blocked      ledger unavailable/invalid or active exact/applicable exclusion matched
 ```
 
+## Ledger checkpoint participant
+
+When invoked with `checkpoint_context=source-memory-checkpoint/v1`, consume the
+coordinator's existing Ledger readiness and shared evidence packet. Do not
+rerun `$ledger ensure`, invoke `$ledger` as lifecycle coordinator, or call
+Learnings or Synesthesia.
+
+This lifecycle evaluation is distinct from the pre-route map. Normal successful
+work with no failed, no-effect, regressed, reverted, or abandoned route returns
+`no-op` without querying or doctoring the store. When the packet contains
+qualified negative evidence, apply the existing narrow capture or transition
+gate and return exactly one of `mapped|captured|transitioned|no-op|blocked`.
+Continue to require current artifact identity, exact source references,
+applicability, a narrow exclusion, and reopening criteria.
+
+Return one separate admission disposition after a capture or transition. Use
+`created` or `duplicate-skip` only after the complete current native projection
+passes the recurrence/utility gate; use `not-eligible` for a complete but
+non-reusable projection, `not-applicable` when no canonical write or transition
+occurred, and `blocked` when required export, validation, topology, or transport
+fails. Never admit `need-evidence`, `capture_candidate`, or an incomplete active
+projection. Admission failure does not change canonical capture or transition
+success.
+
 ## Canonical Store and CLI
 
 Before the first native Ledger command in this workflow, load `$ledger` and complete `$ledger ensure`. After readiness, invoke `ledger` directly.
 
-This hardened contract requires Ledger 0.7.0 or newer.
+This hardened standalone contract requires Ledger 0.7.0 or newer. The uniform
+source namespace and lifecycle participant require Ledger 0.10.0 or newer;
+the coordinator probes that version before checkpoint fan-out.
 
 Immediately observe the native compatibility boundary:
 
@@ -86,18 +115,18 @@ open the persistent adapter directly.
 Expected commands:
 
 ```text
-ledger init
+ledger init --source negative-ledger
 ledger --version
-ledger capture --json FILE|-
-ledger query
-ledger map --route ID --cluster ID --artifact ID [scope selectors]
-ledger show --id NEG-ID
-ledger handoff
-ledger compact
-ledger doctor
-ledger export --id NEG-ID [--format full|memory-note]
-ledger status --id NEG-ID --to STATUS --json transition.json
-ledger reopen --id NEG-ID --json reopen-proof.json
+ledger capture --source negative-ledger --json FILE|-
+ledger query --source negative-ledger
+ledger map --source negative-ledger --route ID --cluster ID --artifact ID [scope selectors]
+ledger show --source negative-ledger --id NEG-ID
+ledger handoff --source negative-ledger
+ledger compact --source negative-ledger
+ledger doctor --source negative-ledger
+ledger export --source negative-ledger --id NEG-ID [--format full|memory-note]
+ledger status --source negative-ledger --id NEG-ID --to STATUS --json transition.json
+ledger reopen --source negative-ledger --id NEG-ID --json reopen-proof.json
 ```
 
 `ledger export` is the only authoritative projection surface for memory admission. Never reconstruct a projection from the concise `ledger show` output.
@@ -125,7 +154,7 @@ Fuzzy or lexical overlap is suggest-only.
 2. Run:
 
    ```bash
-   ledger map \
+   ledger map --source negative-ledger \
      --route "<selected-route>" \
      --cluster "<cluster-id>" \
      --artifact "<artifact-state-id>"
@@ -144,7 +173,7 @@ Capture only when a failure changes future routing: witnessed no-effect attempt,
 Append only through:
 
 ```bash
-ledger capture --json capture.json
+ledger capture --source negative-ledger --json capture.json
 ```
 
 Captures without adequate witness evidence must become `need-evidence` or `capture_candidate`, never active exclusions.
@@ -165,7 +194,7 @@ Use append-only status events. Every transition requires a JSON proof packet wit
 ```
 
 ```bash
-ledger status \
+ledger status --source negative-ledger \
   --id NEG-000001 \
   --to accepted_risk \
   --json transition.json
@@ -191,7 +220,7 @@ Reopening requires a proved before/after change for an identified criterion alre
 ```
 
 ```bash
-ledger reopen --id NEG-000001 --json reopen-proof.json
+ledger reopen --source negative-ledger --id NEG-000001 --json reopen-proof.json
 ```
 
 Ledger rejects illegal edges, proofless promotion, unknown criteria, and unchanged before/after claims before append.
@@ -213,26 +242,31 @@ Do not admit prose-only negative-evidence claims, unpromoted `learnings` hits, p
 
 ## Admission Workflow
 
-After capture or lifecycle transition:
+After the source owner accepts admission for a capture or lifecycle transition,
+load `$memory-source-notes` and use the validated Negative Ledger adapter:
 
 ```bash
-ledger doctor
-ledger export --id NEG-000001 --format memory-note |
-  run_memory_note_tool append \
-    --extension negative-ledger \
-    --kind ledger-projection \
-    --json -
+uv run python \
+  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+  admit \
+  --id NEG-000001 \
+  --kind ledger-projection
 ```
 
 For a status transition:
 
 ```bash
-ledger export --id NEG-000001 --format memory-note |
-  run_memory_note_tool append \
-    --extension negative-ledger \
-    --kind ledger-status-transition \
-    --json -
+uv run python \
+  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+  admit \
+  --id NEG-000001 \
+  --kind ledger-status-transition
 ```
+
+The adapter runs the source doctor, obtains the authoritative native export,
+rejects incomplete projections, preserves the deterministic export bytes, and
+invokes `memory-note` idempotently. It transports an accepted source decision;
+it does not decide recurrence, utility, or route applicability.
 
 If `ledger export` is unavailable, preserve the canonical ledger write and report:
 
@@ -293,3 +327,4 @@ Raw activation count is not the success metric. Grade whether the skill appeared
 - Do not publish incomplete projections to Phase 2.
 - Do not capture every transient test failure merely because implicit activation occurred.
 - Do not bypass failed validation in `map`, `export`, or `handoff`; those boundaries must fail closed.
+- In checkpoint context, do not invoke the coordinator or a sibling participant.

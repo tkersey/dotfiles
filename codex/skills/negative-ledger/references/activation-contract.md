@@ -26,6 +26,21 @@ Activate when any of these could change the next route:
 
 The first action is normally `query` or `map`, not `capture`.
 
+## Ledger checkpoint evaluation
+
+`checkpoint_context=source-memory-checkpoint/v1` activates a separate closeout
+evaluation. Consume the coordinator's evidence packet and return one source
+disposition plus one admission disposition without invoking the coordinator or
+a sibling source. Do not repeat the online pre-route map during ordinary
+successful work with no failed-route semantics; return `no-op` cheaply.
+
+When the packet contains a witnessed failed, no-effect, regressed, reverted, or
+abandoned route, apply the capture gate below. After `captured` or
+`transitioned`, explicitly classify admission as `created`, `duplicate-skip`,
+`not-eligible`, or `blocked`. Candidate, no-op, mapped, and blocked canonical
+outcomes use `not-applicable`. Derived admission failure never rolls back a
+canonical event.
+
 ## Capture gate
 
 Capture only when the event has all of the following:
@@ -74,3 +89,5 @@ For each candidate episode, ask:
 4. Did a qualified event produce durable, narrow evidence?
 5. Did blocking require an active, fully validated, witnessed, exact native-scope match with current-state applicability?
 6. Did map, export, and handoff fail closed rather than project malformed authority?
+7. Under a Ledger checkpoint, did the participant return exactly one canonical
+   and one admission disposition without recursive coordination?

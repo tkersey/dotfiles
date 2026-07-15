@@ -2,7 +2,7 @@
 name: learnings
 description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings through the repo-local `ledger --source learnings` API. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
-  version: "6.2.0"
+  version: "7.0.0"
 ---
 
 # Learnings
@@ -70,15 +70,10 @@ report every skipped span with a `*_with_skips` status. Never combine skip with 
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
-When this skill is triggered for recall, capture, commit closeout, PR handoff,
-or wrap-up, evaluate `$synesthesia` in the same lifecycle point with
-`ledger --source synesthesia`. Append only if a durable sensory mapping or
-activation-boundary event exists. If no durable authority exists but the turn
-exposes a reusable sensory phrase, activation boundary, or representational
-ambiguity with a concrete engineering translation, treat it as a non-durable
-candidate for routing. Keep non-durable candidates and no-op outcomes out of
-normal final user-facing replies unless they need user action, explain a
-blocker/error, or the user explicitly asks.
+Standalone recall, browse, and explicit source-local capture remain Learnings
+operations. They do not invoke Synesthesia or open a Ledger lifecycle
+checkpoint. When the surrounding work reaches a material lifecycle boundary,
+the root `$ledger` coordinator invokes all three participants independently.
 
 ## Capture Gate
 
@@ -107,6 +102,26 @@ learning-disposition: blocked reason=<doctor, migration, or capture failure>
 The checkpoint is mandatory; the append is conditional. Do not claim learning
 closeout without a disposition. Keep `no-op` and `duplicate-skip` internal
 unless the user asks, while `blocked` is user-visible when it affects delivery.
+
+## Ledger checkpoint participant
+
+When invoked with `checkpoint_context=source-memory-checkpoint/v1`, consume the
+coordinator's existing Ledger readiness and evidence packet. Do not rerun
+`$ledger ensure`, invoke `$ledger` as a lifecycle coordinator, or call
+Synesthesia or Negative Ledger.
+
+Project only the packet's decision delta, validation transitions, changed
+paths, and final handoff through the existing capture gate. Return exactly one
+Learnings disposition plus one admission disposition. Preserve
+`appended|duplicate-skip|no-op|blocked`; do not append merely because the
+checkpoint is mandatory. A duplicate skip may identify the existing `lrn-*`
+row. A no-op or block must state its source-local reason.
+
+If a canonical row passes the admission gate, use the native export below and
+return `created`, `duplicate-skip`, or `blocked` with the note proof. If it does
+not pass, return `not-eligible`; if no canonical row exists, return
+`not-applicable`. An admission failure after a successful append never changes
+the canonical disposition.
 
 ## Write Workflow
 
@@ -198,51 +213,23 @@ At least one must also hold:
 
 Do not admit every `do_more` row, raw chronology, weak `review_later` candidates, failed-hypothesis exclusions better owned by `negative-ledger`, operating-correction events better handled as standing policy, or synesthetic mappings.
 
-## Learning Admission Payload
+## Native projection and admission
 
-After the canonical append succeeds, construct:
-
-```json
-{
-  "operation": "assert",
-  "authority": "ledger-cli",
-  "summary": "Admit lrn-... for Phase 2 consideration.",
-  "scope": {
-    "kind": "repo",
-    "repo": "owner/repo",
-    "paths": ["src/parser"]
-  },
-  "source_refs": [
-    {
-      "kind": "learning",
-      "ref": ".ledger/learnings/events.jsonl#lrn-...",
-      "summary": "Canonical learning row"
-    }
-  ],
-  "related_ids": [],
-  "supersedes_id": null,
-  "payload": {
-    "learning_id": "lrn-...",
-    "learning_status": "codify_now",
-    "repo": "owner/repo",
-    "source_path": ".ledger/learnings/events.jsonl",
-    "decision_delta": "Future Codex should do Y before Z.",
-    "evidence_snapshot": ["exact command/test/result"],
-    "future_behavior": "Operational default or route",
-    "verification": "Proof or stop condition",
-    "tags": ["memory-admission"]
-  }
-}
-```
-
-Then hand off:
+Ledger 0.10.0 or newer is required for authoritative Learnings export. After
+the source owner accepts admission, load `$memory-source-notes` and pass the
+native deterministic projection to the general writer:
 
 ```bash
-run_memory_note_tool append \
-  --extension learnings \
-  --kind learning-admission \
-  --json -
+ledger export --source learnings --id lrn-... --format memory-note |
+  run_memory_note_tool append \
+    --extension learnings \
+    --kind learning-admission \
+    --json -
 ```
+
+Do not reconstruct the payload from prose, `recent`, or query output. Native
+export validates the canonical store and fails closed for a missing or
+incomplete row; it does not decide admission eligibility.
 
 ## Admission Proof
 
@@ -279,7 +266,7 @@ Never edit or delete prior admission notes.
 
 ## Relationship to Negative Ledger
 
-A learning can seed negative evidence, but the learning source is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture`, then use `ledger export` plus `memory-note` for memory admission.
+A learning can seed negative evidence, but the learning source is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture --source negative-ledger`, then use native export plus `memory-note` for memory admission.
 
 ## Guardrails
 
@@ -292,3 +279,4 @@ A learning can seed negative evidence, but the learning source is not the operat
 - Do not admit every learning to memory.
 - Do not write compiled memory directly.
 - Do not use source notes to bypass the canonical store.
+- In checkpoint context, do not invoke the coordinator or a sibling participant.

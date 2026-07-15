@@ -1,15 +1,15 @@
 ---
 name: ledger
-description: "Ensure a `ledger` command is available on PATH for consumer skills, optionally installing the native Ledger CLI when it is missing, then coordinate repo-local source-memory stores, Universalist plan addresses, and pure validation of governance and review artifacts without bypassing source-specific authority. Use before a workflow's first Ledger command, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory admission handoff, Universalist plan addressing, or artifact validation."
+description: "Ensure a `ledger` command is available on PATH, coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation, address Universalist plans, and route pure artifact validation without bypassing source authority. Use before a workflow's first Ledger command, at material validation or delivery checkpoints, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory-admission handoff, reconciliation, Universalist plan addressing, or artifact validation."
 ---
 
 # Ledger
 
 ## Mission
 
-Own the shared Ledger bootstrap boundary, coordinate repo-local source-memory
-stores through native source APIs, and route pure validation of governance and
-review artifacts.
+Own the shared Ledger bootstrap and lifecycle-coordination boundaries,
+coordinate repo-local source-memory stores through native source APIs, and
+route pure validation of governance and review artifacts.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
 
@@ -70,7 +70,8 @@ the semantic operation and every requested write or effect.
 Canonical source APIs:
 
 - `ledger --source learnings`
-- `ledger` for negative evidence
+- `ledger --source negative-ledger` for negative evidence; source-less commands
+  remain a compatibility surface
 - `ledger --source synesthesia` when present
 - `ledger --source actuation`
 - `ledger --source hylo`
@@ -103,12 +104,14 @@ Stateless, non-authorizing observations:
 - `ledger validate review-fold --input FILE`
 - `ledger validate actuation-review-policy --phase PHASE --input FILE`
 - `ledger validate review-resolution --phase PHASE --input FILE`
+- `ledger validate source-memory-checkpoint --input FILE`
 
 These commands accept canonical JSON and never read or write `.ledger`. General
 governance contracts emit `ledger-validate-decision/v1`; Actuating contracts
 emit their domain validation-decision schemas. Ledger 0.7.0 and newer preserve
 v1 same-tuple review-policy validation and enforce the v2 certified
-cross-tuple standard-clean chain.
+cross-tuple standard-clean chain. Source-memory checkpoint coordination requires
+Ledger 0.10.0 or newer; probe `ledger --version` before opening that checkpoint.
 
 Source-store state model:
 
@@ -122,7 +125,7 @@ missing -> legacy-only -> migrated/current
 compatibility fallback, but writes and commit closeout must first run the owning
 source migration. For learnings, that owner is
 `ledger migrate --source learnings --mode copy`; for negative evidence, that
-owner is `ledger migrate --mode copy`. Synesthesia can report `notes-only`
+owner is `ledger migrate --source negative-ledger --mode copy`. Synesthesia can report `notes-only`
 during transition; copy import is explicit through
 `ledger migrate --source synesthesia --mode copy`.
 
@@ -136,6 +139,72 @@ task authorizes that omission.
 
 Compiled Codex memory is still owned by Phase 2. Memory-source notes are admission snapshots, not canonical stores.
 
+## Source-memory lifecycle checkpoint
+
+At a decision-shaping validation transition, material strategy pivot, delivery
+boundary after implementation, pre-commit boundary, PR handoff, terminal
+implementation/review closeout, or explicit checkpoint request:
+
+1. Complete `$ledger ensure` once for the workflow and require Ledger 0.10.0 or
+   newer. Participants consume that readiness; they do not bootstrap again.
+2. Construct one bounded immutable `source-memory-checkpoint-input/v1` packet
+   containing current subject identity, literal decision and validation
+   evidence, attempted routes, user-authority events, changed paths, and the
+   final handoff. Compute subject and evidence SHA-256 fingerprints.
+3. Invoke exactly `$learnings`, `$synesthesia`, and `$negative-ledger` with
+   `checkpoint_context=source-memory-checkpoint/v1`. Each participant evaluates
+   only its source contract, returns exactly one canonical disposition plus one
+   admission disposition, and does not invoke Ledger as coordinator or call a
+   sibling source.
+4. Continue collecting all three results when one participant fails. Canonical
+   source writes are independent and append-only; never roll one back because a
+   sibling or derived admission stage failed.
+5. Assemble `source-memory-checkpoint/v1`, validate it with
+   `ledger validate source-memory-checkpoint --input FILE|-`, and retain one
+   current receipt. Recompute both fingerprints before reuse; changed code,
+   evidence, route, or authority makes the prior receipt stale and requires a
+   fresh fan-out.
+
+Aggregate `complete` when every participant evaluated and neither a canonical
+nor derived operation is blocked; use `degraded` when semantic evaluation and
+canonical writes completed but a note or digest stage failed; use `blocked` for
+a missing participant, stale/invalid evidence, or a required canonical failure.
+This status proves source-memory closeout only. It does not grant delivery
+authority, and the separate exact current Negative Ledger pre-route map remains
+the only source-memory route gate.
+
+Evaluation is mandatory; writes and admissions are conditional. Keep ordinary
+all-no-op receipts internal. Report source writes, actionable Synesthesia
+candidates, derived-stage degradation, and exact blockers. See
+[source-memory-checkpoint.md](references/source-memory-checkpoint.md) for the
+packet, participant, receipt, freshness, idempotence, and reporting contracts.
+
+## Reconciliation boundary
+
+Lifecycle checkpointing prevents new gaps; it does not scan or admit historical
+rows. Run the read-only reconciliation workflow explicitly to compare canonical
+records, immutable notes, derived digests, and compiled-memory mentions. The
+report may identify `admitted`, `eligible-unadmitted`, `not-eligible`,
+`needs-source-review`, `incomplete-projection`, `stale-note`, and
+`phase2-lag`; it must not synthesize source eligibility or write notes.
+
+```bash
+uv run python \
+  codex/skills/ledger/scripts/source-memory-reconcile.py \
+  --repo "$(git rev-parse --show-toplevel)" \
+  --format text
+```
+
+When source owners have reviewed specific historical rows, pass an explicit
+`source-memory-eligibility/v1` JSON file via `--eligibility`. Each decision must
+name one canonical ID, `eligible|not-eligible`, and a non-empty source-owned
+reason. The reconciler uses that input only to distinguish a real admission gap
+from an ineligible or unreviewed record; it remains read-only and non-authorizing.
+
+After an owning source explicitly accepts a candidate, use its documented
+adapter or native export plus `memory-note`. Keep backfill bounded and auditable;
+never bulk-admit every learning or incomplete Negative Ledger projection.
+
 ## Trigger Cues
 
 - `$ledger`;
@@ -146,6 +215,8 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 - source memory stores;
 - migrate learnings;
 - memory harvesting;
+- source-memory lifecycle checkpoint;
+- reconcile canonical source records with memory notes;
 - harvest stores for memories;
 - why memories are not being captured;
 - doctor `.ledger`;
@@ -162,7 +233,9 @@ recommend. It does not proxy ordinary native commands. Writes remain delegated
 to source-specific skills and native source APIs:
 
 - `$learnings` / `ledger --source learnings`; the current compatibility adapter is `.ledger/learnings/events.jsonl`;
-- `$negative-ledger` / `ledger`; the current compatibility adapter is `.ledger/negative-ledger/events.jsonl`;
+- `$negative-ledger` / `ledger --source negative-ledger`; source-less commands
+  remain compatible, and the current persistent adapter is
+  `.ledger/negative-ledger/events.jsonl`;
 - `$synesthesia` / `ledger --source synesthesia`; the current compatibility adapter is `.ledger/synesthesia/events.jsonl`, and current Synesthesia notes remain transition evidence;
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
 - `$actuating` / `ledger --source actuation` for the operational actuation
@@ -267,6 +340,10 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - Do not install during an open actuation generation.
 - Do not mutate a source store except through its owning CLI.
 - Do not treat memory-source notes as the canonical store.
+- Do not persist checkpoint receipts or turn Ledger into a semantic source
+  decision engine without evidence that the stateless protocol is insufficient.
+- Do not reuse a checkpoint receipt after its subject or evidence fingerprint
+  changes.
 - Do not admit every source-store event to memory.
 - Do not block a route from Negative Ledger memory without current ledger verification.
 - Do not turn Synesthesia decorative language into memory.
