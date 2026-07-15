@@ -98,13 +98,15 @@ actuation-review-policy/v2
 -> live review source
 -> $review-fold
 -> review-resolution/v1
+-> cumulative stable boundary-law components
+-> owner-boundary-synthesis/v1 for each component
 -> correctness_refinement for each accepted RF-v2 class
--> passing correctness-refinement preflight decision
+-> passing refinement-and-synthesis preflight decision
 -> updated GoalContract and verifier obligations for any selected repair
 -> prepared repair operation
 -> action evidence
 -> current closure-grade review
--> passing policy and correctness-refinement closeout decisions
+-> passing policy and refinement-and-synthesis closeout decisions
 ~~~
 
 For every fresh or closure-grade CAS review, and for same-handle timeout
@@ -114,6 +116,8 @@ First require `cas_rer_opaque_request_binding_v1=true`,
 `cas_review_history_v2=true`, and
 `cas_review_scoped_instructions_v1=true` from `cas capabilities` for
 closure-grade work. Require Ledger 0.7.0 or newer before validating a v2 policy.
+Require Ledger 0.9.0 or newer before admitting an owner-synthesized review
+repair.
 
 ~~~bash
 cas review run --cwd <repo> --base <base-ref> \
@@ -193,9 +197,26 @@ current standard terminal facts in their actual order, including findings;
 require the current request attempts to equal the chain's current-tuple rows,
 and require the chain to end with a clean standard attempt on the current tuple.
 
-After `$review-fold`, require each accepted equivalence class to have exactly
-one `correctness_refinement` at the classified owner boundary. Before preparing
-a repair, execute:
+After `$review-fold`, join every current accepted class to the current goal's
+retained resolution and synthesis history. Form structural components from
+stable source and target worlds, carriers, operations, observations, and
+governing laws. Implementation-specific owner names are component members, not
+component identity. A generation, tuple, commit, publication, source batch, or
+attempt suffix is provenance, never a new structural identity.
+
+Invoke `$universalist` once per cumulative component and materialize one
+`owner-boundary-synthesis/v1` before selecting repair strategy. The synthesis
+must record recurrence after repair, multiple owners for one law, proposed
+semantic machinery, displacement of multiple abstractions, and symptom repairs
+after a replacement kernel. `reuse-owner` requires no such pressure;
+`converge-kernel` owns the replacement construction and structural obligations;
+`separate-laws` requires a concrete obstruction and routes back to component
+splitting plus any necessary RF-v2 owner or law correction without mutation;
+insufficient evidence blocks.
+
+Then require each accepted equivalence class to have exactly one
+`correctness_refinement` bound to that synthesis. A class-local construction
+cannot independently select a repair. Before preparing a repair, execute:
 
 ~~~bash
 ledger validate review-resolution \
@@ -205,21 +226,30 @@ ledger validate review-resolution \
 Project the refinement's preservation and progress verifier commands into the
 updated GoalContract as `correctness:<decision_id>:preservation` and
 `correctness:<decision_id>:progress`, with statements and argv copied exactly.
-Bind the passing RF-v2 validation decision and full resolution digest into that
+Project each synthesis install, collapse, delegation, and retirement verifier
+as `synthesis:<synthesis_id>:<obligation-index>`. Bind the passing RF-v2
+validation decision, synthesis identities, and full resolution digest into that
 contract. At closeout, rerun the same checker with `--phase closeout` against
-the cumulative resolution and require passing kernel observations for both
-named obligations on the current artifact and GoalContract digest. The checker
-validates the refinement sub-contract, not the full resolution or witness
-execution. Neither decision grants authority; the prepared actuation operation
-remains the only mutation gate.
+the cumulative resolution and require passing kernel observations for every
+correctness and synthesis obligation on the current artifact and GoalContract
+digest. The checker validates the refinement-and-synthesis sub-contract,
+including component identity, strategy binding, selected-node ownership, and
+declared closeout observations. It does not validate the full resolution,
+dereference history or observation receipts, or execute witness commands.
+Neither decision grants authority; the prepared actuation operation remains
+the only mutation gate.
 
 Do not admit a smaller review wait budget unless the user explicitly overrides
 it. Project the exact command into the review obligation so older installed CAS
 binaries cannot silently restore a shorter default. A timeout preserves the
 same review attempt; recover its handle instead of starting a duplicate tuple.
 
-The current resolution may select at most one owner node. Project that node's
-ID, owner, paths, and proof requirements into the operation and obligations.
+The current resolution may select at most one synthesis-owned node, and a
+repair-bearing mutation preflight must select exactly one. Project its
+synthesis ID, node ID, canonical owner, paths, and proof requirements into the
+operation and obligations. `$goal-grind` receives that selection but never
+reinterprets its synthesis disposition or repair strategy.
+
 Refresh sources and open a new generation after any repair or publication
 change; a finding by itself does not create that transition, and a closed
 generation is never relabeled. Relaunch the first standard attempt and every

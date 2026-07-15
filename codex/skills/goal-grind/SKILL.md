@@ -30,6 +30,7 @@ selected_operation:
   obligation_refs: []
   capability: AKC1-...
   review_resolution_ref: # review edits only
+  owner_synthesis_ref: # review edits only
 ~~~
 
 The raw capability exists only in the active executor. Never persist, quote,
@@ -63,8 +64,10 @@ prepared capability and native CLI remain the executable authority.
 5. Return changed paths, commands, transition event digests, observations, and
    any failure signature. Stop after this one operation.
 
-Prefer `replacement-kernel` when local repair would add semantic machinery,
-distribute one invariant, or preserve a dominated abstraction.
+For a review edit, require `owner_synthesis_ref` to match the prepared
+operation and current resolution. Execute the synthesis-owned node exactly as
+selected; do not reconsider the synthesis disposition, choose repair strategy,
+or split the node into finding-shaped work.
 
 ## Output
 
@@ -74,6 +77,8 @@ operation_result:
   step_id:
   idempotency_key:
   owner_boundary:
+  review_resolution_ref: # review edits only; copied unchanged
+  owner_synthesis_ref: # review edits only; copied unchanged
   changed_paths: []
   commands: []
   kernel_event_refs: []
