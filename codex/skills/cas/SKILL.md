@@ -58,7 +58,7 @@ the canonical current working directory's `.ledger/cas`. Do not use global
 Use an explicit store root only for diagnostics, migration, or compatibility:
 
 ```bash
-cas review_session run --cwd <repo> --base <base> --timeout-ms 1800000 --json --store-root <dir>
+cas review_session run --cwd <repo> --base <base> --timeout-ms 2700000 --json --store-root <dir>
 CAS_STORE_ROOT=<dir> cas review_session status --latest --json
 cas session_inquiry run --cwd <repo> --store-root <dir> ...
 ```
@@ -121,30 +121,43 @@ combined surface.
 Current production helpers:
 
 ```bash
-cas review_session run --cwd <repo> --base <base> --workflow-binding-json @binding.json --timeout-ms 1800000 --json --fallback none
+cas review_session run --cwd <repo> --base <base> --workflow-binding-json @binding.json --timeout-ms 2700000 --json --fallback none
 cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json
 cas review_session status --latest --json
 cas review_session status --path <record.json> --json
-cas review_session wait --latest --timeout-ms 1800000 --json
+cas review_session wait --latest --timeout-ms 2700000 --json
 cas review_session receipt normalize --path <receipt.json> --format json --summary
 cas review_session receipt classify --path <receipts.jsonl> --format jsonl
 ```
 
 ### Review wait budget
 
-Pass `--timeout-ms 1800000` for every real review wait: `review run`,
-`review_session run`, `start --wait`, `wait`, and `lane review`. CAS 0.2.74
-and newer select the same 30-minute default when the flag is absent, but
-production workflow commands must remain explicit so older installed binaries
-cannot shorten the wait. Keep lane smoke and smoke-suite waits at `300000`.
+Pass `--timeout-ms 2700000` for every real review wait: `review run`,
+`review_session run`, `start --wait`, `wait`, and `lane review`. This is the
+45-minute real-review wait budget. Production workflow commands must remain
+explicit even after the CLI's omitted-timeout default is updated so older
+installed binaries cannot shorten the wait. Keep lane smoke and smoke-suite
+waits at `300000`.
 Do not use a smaller real-review budget unless the user explicitly overrides
 it. A timed-out attempt still requires same-handle recovery; never
 start a duplicate review for the tuple.
 
+### Per-review terminal reporting
+
+When reviews run concurrently, monitor each attempt's complete receipt JSON and
+recorded process exit status (`rc`) independently of the aggregate executor. A
+review becomes reportable only when both exist. Report it immediately and exactly once;
+do not wait for siblings or for the aggregate command to return. Derive semantic
+status and finding count only from `.reviewVerdict`; use `rc` only to describe
+command or transport completion. Use an independent artifact
+monitor when an executor buffers stdout. Per-review reporting is observational:
+it does not cancel siblings or open retry, RF-v2, adjudication, or mutation
+barriers.
+
 When available, newer ledger helpers have this shape:
 
 ```bash
-cas review run --cwd <repo> --base <base> --timeout-ms 1800000 --json --fallback none
+cas review run --cwd <repo> --base <base> --timeout-ms 2700000 --json --fallback none
 cas review current --cwd <repo> --base <base> --json
 cas review list --cwd <repo> --base <base> --json
 cas review import --path <receipt.json> --json
@@ -181,7 +194,7 @@ Use `cas review_session` when low-level detached review lifecycle control matter
 For ordinary one-review execution on the current dispatcher, prefer the shipped broker:
 
 ```bash
-cas review_session run --cwd <repo> --base <base> --timeout-ms 1800000 --json --fallback none
+cas review_session run --cwd <repo> --base <base> --timeout-ms 2700000 --json --fallback none
 ```
 
 The current broker output is the legacy `reviewBrokerDecision + reviewVerdict` surface. Consume it as workflow evidence only when `reviewVerdict.tupleVerdictExists=true` and the base/head/fingerprint match the requested tuple. If the newer `cas review` ledger surface is available, prefer its `CAS-RUN-v1` output: one `CAS-RER-v1` record plus a broker decision.
@@ -219,7 +232,7 @@ Use `cas review_session lane` only for debugging, migration, or broker backend d
 If a caller only needs low-level start/wait control, use:
 
 ```bash
-cas review_session start --wait --cwd <repo> --base <base> --timeout-ms 1800000 --json --fallback none
+cas review_session start --wait --cwd <repo> --base <base> --timeout-ms 2700000 --json --fallback none
 ```
 
 Current `start --wait --json` can emit a `cas-start-wait` `reviewVerdict`
@@ -318,14 +331,14 @@ Use `failureCode="review_transport_lost"` only after `reviewThreadId` exists and
 
 If a timeout or transport-loss receipt contains `reviewThreadId`, `reviewTurnId`,
 `recordPath`, `eventLogPath`, target fingerprint, base SHA, and head SHA, prefer
-`cas review_session run ... --timeout-ms 1800000` for the same tuple. CAS will normalize terminal
+`cas review_session run ... --timeout-ms 2700000` for the same tuple. CAS will normalize terminal
 evidence, block if the old attempt might still be live, or auto-replace only
 when dead transport is proven from persisted owner/server liveness.
 
 If the caller lost the handle, first run `cas review_session status --latest
 --json` and verify `baseSha`, `headSha`, and `targetFingerprint` match the
 intended tuple. If they match, recover with `cas review_session wait --latest
---timeout-ms 1800000 --json` or copy the reported `reviewThreadId` into an explicit wait command.
+--timeout-ms 2700000 --json` or copy the reported `reviewThreadId` into an explicit wait command.
 This is diagnostic recovery; normal workflows should start from `run`.
 
 ### Account/resource exhaustion
@@ -427,7 +440,7 @@ CAS review reuse is scoped by the Codex session/thread id in addition to the
 repo/base/head/account tuple. Pass it explicitly when the caller can resolve it:
 
 ```bash
-cas review_session run --cwd <repo> --base <base> --timeout-ms 1800000 --json --codex-thread-id <id>
+cas review_session run --cwd <repo> --base <base> --timeout-ms 2700000 --json --codex-thread-id <id>
 ```
 
 `CODEX_THREAD_ID` and `CODEX_SESSION_ID` are accepted environment fallbacks. If
@@ -532,8 +545,8 @@ Reference validators and classifiers:
 
 ```bash
 cas review_session status --latest --json
-cas review_session wait --latest --timeout-ms 1800000 --json
-cas review_session run --cwd <repo> --base <base> --timeout-ms 1800000 --json
+cas review_session wait --latest --timeout-ms 2700000 --json
+cas review_session run --cwd <repo> --base <base> --timeout-ms 2700000 --json
 cas review_session lock gate --path <lock.json> --format json
 cas review_session receipt normalize --path <receipt.json> --format json --summary
 cas review_session receipt classify --path <receipts.jsonl> --format jsonl
@@ -567,12 +580,17 @@ CAS Review:
 - next legal action:
 ```
 
+Emit this block when each review becomes reportable. A later aggregate summary
+may cite it, but must not be the first completion report.
+
 ## Hard rules
 
 - A lane is not a review.
 - A review starts at `reviewThreadId`.
 - CAS records tuple-bound review evidence and opaque request identity.
-- Use a 30-minute real-review wait budget; keep smoke/control waits at 5 minutes.
+- Use a 45-minute real-review wait budget; keep smoke/control waits at 5 minutes.
+- Report each review immediately and exactly once after its complete receipt JSON
+  and process exit status (`rc`) exist; never delay it behind an aggregate wait.
 - Use `cas review_session run` as the current normal one-review path unless the installed dispatcher exposes `cas review run`.
 - Do not treat `pre_review_lane_transport_lost` as a failed review.
 - Do not duplicate a review when an active tuple lock points to an existing `reviewThreadId`.

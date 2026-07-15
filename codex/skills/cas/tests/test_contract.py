@@ -155,13 +155,31 @@ class CasContractTests(unittest.TestCase):
     def test_real_review_wait_budget_is_explicit(self) -> None:
         required = [
             "### Review wait budget",
-            "--timeout-ms 1800000",
+            "--timeout-ms 2700000",
+            "45-minute real-review wait budget",
             "review run",
             "review_session run",
             "start --wait",
             "lane review",
             "Keep lane smoke and smoke-suite waits at `300000`",
             "never start a duplicate review for the tuple",
+        ]
+        for token in required:
+            with self.subTest(token=token):
+                self.assertIn(token, NORMALIZED_CONTRACT)
+        self.assertNotIn("--timeout-ms 1800000", NORMALIZED_CONTRACT)
+
+    def test_parallel_review_completion_reporting_is_immediate_and_observational(self) -> None:
+        required = [
+            "### Per-review terminal reporting",
+            "complete receipt JSON",
+            "recorded process exit status",
+            "use `rc` only to describe command or transport completion",
+            "Report it immediately and exactly once",
+            "do not wait for siblings",
+            "`.reviewVerdict`",
+            "independent artifact monitor",
+            "does not cancel siblings or open retry, RF-v2, adjudication, or mutation barriers",
         ]
         for token in required:
             with self.subTest(token=token):

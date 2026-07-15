@@ -256,12 +256,24 @@ carries:
 cas review run --cwd <repo> --base <base-ref> \
   --custom-instructions @<instructions-ref> \
   --workflow-binding-json @<opaque-binding.json> \
-  --timeout-ms 1800000 --json --fallback none
+  --timeout-ms 2700000 --json --fallback none
 cas review list --cwd <repo> --base <base-ref> \
   --custom-instructions @<instructions-ref> \
   --workflow-binding-json @<opaque-binding.json> \
   --codex-thread-id <id> --json
 ~~~
+
+### Per-review terminal reporting
+
+Observe each dispatch independently of the aggregate executor. A completion
+report is eligible only after its complete receipt JSON and recorded process
+exit status (`rc`) both exist. Emit one report immediately and exactly once; do not
+wait for sibling requests. Derive semantic status and findings only from
+`.reviewVerdict`; use `rc` only for command or transport completion.
+Use an independent artifact monitor when the executor buffers stdout. This
+reporting projection does not advance request state, alter credit, cancel a
+sibling, or open the aggregate dispatch, failed-request recovery, RF-v2,
+adjudication, or mutation barriers.
 
 After terminal evidence, add `--fresh-attempt <source-bound-reason>` for each
 additional standard attempt. Reusing cached terminal evidence does not create a

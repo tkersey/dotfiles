@@ -226,6 +226,15 @@ preflight-bound resolution identity stable until every policy request has a
 valid terminal review fact; only then update the resolution or admit mutation.
 No auxiliary attempt or tuple transition contributes to the standard clean
 suffix.
+
+Treat per-review completion reporting as an observation separate from review
+accounting. Report a review immediately and exactly once after its complete receipt
+JSON and recorded process exit status (`rc`) both exist. `.reviewVerdict` is the
+semantic authority; `rc` describes command or transport completion
+only. Use an independent artifact monitor when an executor buffers stdout, and
+do not wait for siblings before reporting a completed review. Reporting neither
+cancels siblings nor opens retry, RF-v2, adjudication, or mutation barriers.
+
 Preserve prior standard credit across a changed CAS tuple only through a
 policy-bound `auxiliary-remediation` carry that cites the accepted finding,
 resolution, correctness observations, actuation events, and SHIP receipt while

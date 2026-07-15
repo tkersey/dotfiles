@@ -214,6 +214,51 @@ class ActuatingReviewPolicyContractTests(unittest.TestCase):
             with self.subTest(surface="decision-contract", token=token):
                 self.assertIn(token, DECISION_CONTRACT)
 
+    def test_review_completion_reporting_is_immediate_but_non_authorizing(self) -> None:
+        actuating_required = [
+            "per-review completion reporting",
+            "complete receipt JSON and recorded process exit status",
+            "`.reviewVerdict` is the semantic authority",
+            "`rc` describes command or transport completion only",
+            "independent artifact monitor",
+            "do not wait for siblings",
+            "Reporting neither cancels siblings nor opens retry, RF-v2, adjudication, or mutation barriers",
+        ]
+        for token in actuating_required:
+            with self.subTest(surface="actuating", token=token):
+                self.assertIn(token, ACTUATING)
+
+        goal_required = [
+            "--timeout-ms 2700000",
+            "45-minute real-review wait budget",
+            "independent artifact monitor",
+            "report that review immediately and exactly once",
+            "Read semantic status and findings only from `.reviewVerdict`",
+            "treat `rc` as command or transport status",
+            "Do not wait for sibling requests or the aggregate executor",
+            "reporting observation neither changes request state nor opens",
+            "Apply the same reporting rule to request-local recovery and later serial standard attempts",
+        ]
+        for token in goal_required:
+            with self.subTest(surface="goal-actuating", token=token):
+                self.assertIn(token, GOAL_ACTUATING)
+        self.assertNotIn("--timeout-ms 1800000", GOAL_ACTUATING)
+
+        policy_required = [
+            "### Per-review terminal reporting",
+            "--timeout-ms 2700000",
+            "complete receipt JSON and recorded process exit status",
+            "Emit one report immediately and exactly once",
+            "Derive semantic status and findings only from `.reviewVerdict`",
+            "use `rc` only for command or transport completion",
+            "independent artifact monitor",
+            "does not advance request state, alter credit, cancel a sibling, or open the aggregate dispatch, failed-request recovery, RF-v2, adjudication, or mutation barriers",
+        ]
+        for token in policy_required:
+            with self.subTest(surface="review-policy", token=token):
+                self.assertIn(token, REVIEW_POLICY)
+        self.assertNotIn("--timeout-ms 1800000", REVIEW_POLICY)
+
 
 if __name__ == "__main__":
     unittest.main()

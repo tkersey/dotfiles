@@ -110,7 +110,8 @@ actuation-review-policy/v2
 ~~~
 
 For every fresh or closure-grade CAS review, and for same-handle timeout
-recovery, pass `--timeout-ms 1800000` explicitly:
+recovery, pass `--timeout-ms 2700000` explicitly for the 45-minute real-review
+wait budget:
 
 First require `cas_rer_opaque_request_binding_v1=true`,
 `cas_review_history_v2=true`, and
@@ -123,13 +124,13 @@ repair.
 cas review run --cwd <repo> --base <base-ref> \
   --custom-instructions @<instructions-ref> \
   --workflow-binding-json @binding.json \
-  --timeout-ms 1800000 --json --fallback none
+  --timeout-ms 2700000 --json --fallback none
 cas review list --cwd <repo> --base <base-ref> \
   --custom-instructions @<instructions-ref> \
   --workflow-binding-json @binding.json \
   --codex-thread-id <id> --json
 cas review_session wait --cwd <repo> --review-thread-id <reviewThreadId> \
-  --timeout-ms 1800000 --json
+  --timeout-ms 2700000 --json
 ~~~
 
 The binding contains only the policy request's opaque `requestId` and
@@ -154,6 +155,17 @@ evidence from every launched dispatch before retrying a failed request. Keep the
 resolution barrier closed until every policy request has a valid terminal
 `clean` or `findings` fact and every finding has entered RF-v2. Only then build
 a new resolution or prepare review-driven mutation.
+
+Start an independent artifact monitor before dispatch when the Actuation
+verifier or executor may buffer stdout. For each request, wait until its complete
+receipt JSON and recorded process exit status (`rc`) both exist, then report that
+review immediately and exactly once. Read semantic status and findings only from
+`.reviewVerdict`; treat `rc` as command or transport status.
+Do not wait for sibling requests or the aggregate executor to return before
+reporting a completed review. This reporting observation neither changes
+request state nor opens the initial dispatch, failed-request recovery, RF-v2,
+adjudication, or mutation barriers. Apply the same reporting rule to
+request-local recovery and later serial standard attempts.
 
 Apply this request-local transition table exactly:
 
