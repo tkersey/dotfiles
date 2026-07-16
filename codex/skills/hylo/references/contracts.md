@@ -1,291 +1,461 @@
-# Hylo portable contracts
+# Hylo released contracts
 
-## Artifact and store layout
+This reference describes the released Hylo CRF/HCTP boundary used by `$hylo`.
+Installed CLI help, capabilities, validators, and executable schemas remain the
+authority when this document and a binary differ.
 
-A portable replay campaign is two language-neutral files:
+## Contract layers
 
-```text
-campaign.json
-scenarios.jsonl
-```
-
-An adapter in any language may interpret those files if it preserves request
-visibility, hidden references, environment and effect boundaries, split
-membership, oracles, and fingerprints.
-
-The native Ledger source owns operational evidence through Ledger's event-store
-contract. The current persistent adapter resolves the logical store to:
+Hylo currently has four additive layers:
 
 ```text
-<repo>/.ledger/hylo/events.jsonl
-<repo>/.ledger/hylo/events.jsonl.lock
+CRF episode graph      counterfactual cut, target bundle, world, runtime, custody
+HCTP trial protocol    blinded paired lanes, grades, reveal, proof
+campaign event fold    compatibility campaigns, attempts, grades, progress
+causal frontier fold   failures, hypotheses, experiments, RUN | OBSERVE | STOP
 ```
 
-Only `ledger --source hylo append` may mutate the logical event store. Under the
-current JSONL adapter, the lock sidecar is coordination state and must be
-Git-ignored. A custom `--path` must remain inside the addressed repository.
+Do not collapse them:
 
-## Identifiers and fingerprints
+- a replay episode is not a whole campaign;
+- a registered trial is not an authorization to reveal or edit;
+- a historical diagnostic is not a replay baseline;
+- a scalar grade is not a mechanism hypothesis;
+- `RUN` is not mutation authority.
 
-Stable identifiers match:
+## Canonical identity
+
+New CRF/HCTP identity uses:
 
 ```text
-[A-Za-z0-9][A-Za-z0-9._:-]{0,127}
+canonical JSON profile: hylo-canonical-json/v1
+digest algorithm label: sha256-hylo-canonical-json-v1
+fingerprint spelling:   sha256:<64 lowercase hexadecimal characters>
 ```
 
-Fingerprints are lowercase SHA-256 values:
+Important profile rules:
+
+- signed 64-bit integers retain their exact value;
+- arbitrary `number_string` and non-finite values are rejected;
+- finite binary64 values use the pinned shortest-round-trip spelling;
+- negative zero canonicalizes to `0`;
+- strings and keys must be valid UTF-8;
+- code points are preserved without Unicode normalization;
+- object keys sort by raw UTF-8 bytes;
+- array order remains significant.
+
+This is not an unrestricted RFC 8785 claim. Identity code must use the shared
+Hylo codec and its published vectors, not a language-default JSON writer.
+
+## CRF extraction graph
+
+### Command receipt
+
+Successful `seq hylo-extract` prints one:
 
 ```text
-sha256:<64 lowercase hexadecimal characters>
+hylo-extract-receipt/v1
 ```
 
-`ledger --source hylo fingerprint` parses one JSON value, rejects duplicate
-keys and invalid numbers, recursively sorts object keys, removes insignificant
-whitespace, emits normalized JSON scalars, and hashes the canonical UTF-8
-bytes. Array order remains significant.
+It binds the episode identity and fingerprint, exact cut lines, runner
+blindness, and absence of persisted custody plaintext. A receipt authorizes use
+only of the artifacts produced by that successful invocation.
 
-## `hylo-campaign/v1`
+### Runner root
 
-```json
-{
-  "schema": "hylo-campaign/v1",
-  "campaign_id": "cmp-example",
-  "target": {
-    "kind": "skill",
-    "id": "example-skill",
-    "baseline_fingerprint": "sha256:..."
-  },
-  "source": {
-    "corpus_fingerprint": "sha256:...",
-    "session_refs": [
-      {
-        "kind": "codex_session",
-        "ref": "session-id",
-        "fingerprint": "sha256:..."
-      }
-    ],
-    "exclusions": ["current_session", "injected_skill_text"]
-  },
-  "privacy": {
-    "mode": "sanitized",
-    "redactions": ["secrets", "private_reasoning", "personal_data"],
-    "redaction_receipt": {
-      "schema": "hylo-redaction-receipt/v1",
-      "tool": "seq",
-      "version": "v1",
-      "source_fingerprint": "sha256:...",
-      "output_fingerprint": "sha256:<same as source.corpus_fingerprint>",
-      "evidence_refs": ["seq:redaction-receipt"]
-    }
-  },
-  "rubric": {
-    "id": "rubric-v1",
-    "fingerprint": "sha256:...",
-    "dimensions": [
-      {
-        "id": "correctness",
-        "kind": "deterministic",
-        "weight": 1.0,
-        "critical": true,
-        "grader_ref": "test:required-test",
-        "grader_fingerprint": "sha256:..."
-      }
-    ],
-    "judge": {
-      "kind": "composite",
-      "id": "campaign-judge",
-      "version": "v1",
-      "config_fingerprint": "sha256:..."
-    },
-    "pass_policy": {
-      "minimum_aggregate": 1.0,
-      "zero_critical_violations": true
-    }
-  },
-  "replay_policy": {
-    "fingerprint": "sha256:...",
-    "blind_hidden_reference": true,
-    "holdout_blind": true,
-    "default_fidelity": "controlled_replay",
-    "repeat_count": 1
-  },
-  "stop_policy": {
-    "max_attempts": 100,
-    "require_holdout_pass": true,
-    "zero_critical_violations": true
-  },
-  "change_policy": {
-    "target_change_authority": "none",
-    "publication_authority": "none",
-    "allowed_paths": [],
-    "require_clean_scope": false
-  },
-  "scenarios_file": "scenarios.jsonl",
-  "scenario_manifest": [
-    {
-      "scenario_id": "scenario-001",
-      "scenario_fingerprint": "sha256:<canonical scenario object>",
-      "split": "holdout"
-    }
-  ]
-}
+The runner root contains:
+
+| File | Contract | Purpose |
+| --- | --- | --- |
+| `runner-input.json` | `hylo-runner-input/v1` | Pure manifest of runner-visible causal artifacts |
+| `stimulus.json` | `hylo-stimulus/v1` | Ordered visible messages, fixed instructions, target slot |
+| `baseline-bundle.json` | `hylo-target-bundle/v1` | Complete historical target treatment manifest |
+| captured target paths | bundle file carriers | Verified bytes referenced by the bundle |
+| `world.json` | `hylo-world-snapshot/v1` | Reconstructed observable world |
+| `world-availability.json` | `hylo-world-availability-receipt/v1` | Fidelity and replay eligibility |
+| `runtime.json` | `hylo-runtime-contract/v1` | Runtime identity and reconstruction label |
+
+The runner input MUST NOT contain custody locators that disclose sealed bytes,
+the historical response, future outcomes, grader references, or grade
+openings.
+
+### Custody root
+
+The private custody root contains:
+
+| File | Contract | Purpose |
+| --- | --- | --- |
+| `episode.json` | `hylo-replay-episode/v1` | Complete controller/custody episode |
+| `cut.json` | `hylo-counterfactual-cut-receipt/v1` | Exact activation and causal-cut proof |
+| `redaction.json` | `hylo-redaction-receipt/v1` | Source/output binding and substitutions |
+| `historical-response.sealed.json` | `hylo-sealed-historical-response/v1` | XChaCha20-Poly1305 envelope |
+| `manifest.json` | `hylo-custody-manifest/v1` | Sealed-entry fingerprint and owner-only key delivery |
+
+The custody root is caller-owned `0700`. Runner, custody, source, and target
+roots must not overlap by native filesystem identity or ancestry.
+
+### `hylo-stimulus/v1`
+
+The stimulus preserves:
+
+```text
+ordered message occurrences
+duplicate message occurrences
+roles and source-line provenance
+fixed pre-cut instructions
+one replaceable target instruction slot
+attachments and initial goal state when present
+requested and applied context policy
+stimulus fingerprint
 ```
 
-Rules:
+Instruction classes are:
 
-- Target kind is `skill`, `agent`, `prompt`, `workflow`, or
-  `model_configuration`.
-- Real-session campaigns have at least one fingerprinted source reference.
-- Privacy mode is `sanitized` or `local_full`; both explicitly redact
-  `secrets` and `private_reasoning` from persisted evidence. The redaction
-  receipt binds raw-source and sanitized-output fingerprints, and its output
-  fingerprint equals `source.corpus_fingerprint`. Labels alone are not proof
-  of sanitization.
-- Rubric dimension IDs are unique, weights are non-negative, and at least one
-  weight is positive. Every dimension and the campaign judge freeze declared
-  grader identity before replay. A model grader cannot be the sole critical
-  authority.
-- `minimum_aggregate` is in `[0,1]`.
-- Hidden references and holdouts are blind by policy. Repeat and attempt counts
-  are positive. Cycle and patience limits are skill-level routing choices, not
-  native v1 campaign claims.
-- Fidelity is `transcript_only`, `workspace_snapshot`, `controlled_replay`, or
-  `synthetic_mutation`.
-- Target change authority is `none`, `propose`, or `apply_via_owner`.
-- Publication authority is `none` or `commit`; it never authorizes push.
-- `apply_via_owner` requires clean scope and one or more unique,
-  non-overlapping relative path roots. Commit authority requires
-  `apply_via_owner`.
-- `scenarios_file` is a non-escaping relative path beside `campaign.json`.
-- `scenario_manifest` is non-empty and binds every scenario ID, split, and
-  canonical object fingerprint in JSONL order. Campaign validation recomputes
-  the file against it, admission rejects unknown or changed scenarios, and no
-  attempt may begin until the complete manifest is admitted.
-
-The example is intentionally non-authorizing. An opt-in change campaign uses
-`apply_via_owner`, `publication_authority:"commit"`, clean scope, and explicit
-relative path roots only after the user grants both authorities.
-
-The `campaign_created` event stores this entire object. Later folding does not
-trust a mutable copy on disk.
-
-## `hylo-scenario/v1`
-
-Each non-empty `scenarios.jsonl` line is one object:
-
-```json
-{
-  "schema": "hylo-scenario/v1",
-  "campaign_id": "cmp-example",
-  "scenario_id": "scenario-001",
-  "split": "holdout",
-  "source_refs": [
-    {
-      "kind": "decision_capsule",
-      "ref": "capsule.json",
-      "fingerprint": "sha256:..."
-    }
-  ],
-  "source_episode_fingerprint": "sha256:...",
-  "request": {
-    "message": "User-visible request",
-    "visible_context": [],
-    "hidden_reference_ref": "local:redacted-reference"
-  },
-  "environment": {
-    "fidelity": "controlled_replay",
-    "fingerprint": "sha256:...",
-    "repo_revision": "git:0123456789abcdef0123456789abcdef01234567",
-    "adapter": {
-      "id": "cas-replay",
-      "version": "v1",
-      "contract_ref": "artifact:adapter-contract",
-      "contract_fingerprint": "sha256:..."
-    },
-    "snapshot": {
-      "kind": "git",
-      "ref": "git:0123456789abcdef0123456789abcdef01234567",
-      "fingerprint": "sha256:..."
-    },
-    "setup_ref": "artifact:setup-plan",
-    "setup_fingerprint": "sha256:...",
-    "toolchain": [
-      {"id": "zig", "version": "0.16.0"}
-    ],
-    "fixtures": [],
-    "effect_policy": {
-      "filesystem": "read_only",
-      "allowed_paths": [],
-      "network": "deny",
-      "network_allowlist": [],
-      "external_side_effects": "deny",
-      "external_effect_allowlist": []
-    },
-    "limitations": []
-  },
-  "replay_policy_fingerprint": "sha256:...",
-  "oracles": [
-    {
-      "id": "required-test",
-      "kind": "deterministic",
-      "critical": true,
-      "observation": "test command exits 0",
-      "grader_ref": "test:required-test",
-      "grader_fingerprint": "sha256:..."
-    }
-  ],
-  "mutation": null
-}
+```text
+fixed
+replaceable_target
+runtime_owned
+unknown
 ```
 
-Rules:
+Extraction rejects an unknown state-bearing carrier that cannot safely cross
+the cut. The target's historical body is represented by the replaceable slot;
+it is not retained as fixed runner text.
 
-- Split is `practice`, `holdout`, or `challenge`.
-- Source references are non-empty. `source_episode_fingerprint` identifies the
-  frozen source episode; the admission event separately fingerprints the
-  complete scenario snapshot.
-- The request contains visible material only. `hidden_reference_ref` is a
-  non-empty `local:` or `artifact:` locator, or a full SHA-256 fingerprint.
-- Environment identity includes a versioned adapter contract, immutable
-  snapshot locator, setup artifact, toolchain versions, fingerprinted
-  fixtures, enforceable filesystem/network/external-effect policy, and
-  explicit reconstruction limitations. `workspace_snapshot` and
-  `controlled_replay` require a non-empty toolchain. Snapshot kind is `git`,
-  `archive`, `container`, `synthetic`, or `transcript`.
-- A Git snapshot ref is `git:` plus a full 40- or 64-hex commit object ID, and
-  `repo_revision` equals that ref. Moving names such as `HEAD` and branches are
-  invalid scenario state.
-- The replay-policy fingerprint equals the campaign's frozen value.
-- Oracles are non-empty and have unique IDs. Each oracle freezes its declared
-  grader ref and fingerprint in scenario syntax before any attempt. A model
-  oracle cannot be the sole critical authority.
-- A synthetic mutation uses `fidelity:"synthetic_mutation"`, names an earlier
-  parent scenario, states its operator, and lists preserved invariants. That
-  parent must precede the mutation in the portable JSONL and event lineage.
+### `hylo-counterfactual-cut-receipt/v1`
 
-If `stop_policy.require_holdout_pass` is true, the portable campaign contains
-at least one holdout scenario.
+The current extractor admits an exact structured skill-activation cut. It
+binds:
 
-## `hylo-event-intent/v1`
-
-Callers submit intent; Ledger supplies storage metadata:
-
-```json
-{
-  "schema": "hylo-event-intent/v1",
-  "campaign_id": "cmp-example",
-  "kind": "attempt_recorded",
-  "scenario_id": "scenario-001",
-  "attempt_id": "attempt-001",
-  "grade_id": null,
-  "payload": {}
-}
+```text
+activation reference
+last fixed turn and event
+first regenerated event
+rationale
+excluded-future digest
+historical target-content fingerprint
+cut fingerprint
 ```
 
-Allowed kinds, in their legal lineage, are:
+An evaluated answer that precedes same-turn target activation is invalid. A
+generic target mention is not exact activation authority.
+
+### `hylo-target-bundle/v1`
+
+Bundle identity covers:
+
+```text
+target kind and ID
+entrypoint
+ordered path, mode, and content fingerprints
+target-content fingerprint
+loader contract
+dependency bundle fingerprints
+bundle-fingerprint basis
+```
+
+Artifact location is provenance, not semantic treatment identity. Moving the
+same verified bytes must not manufacture a new target. Sensitive bytes in a
+captured target fail extraction; redacting them would mutate the treatment.
+
+### World and runtime
+
+`hylo-world-snapshot/v1` and `hylo-world-availability-receipt/v1` distinguish
+observable reconstruction from unavailable history. Relevant identity may
+include repository state, tool registry, clock, locale, environment
+substitutions, fixtures, network/effect policy, and limitations.
+
+Allowed fidelity language includes:
+
+```text
+exact_reconstruction
+controlled_replay
+workspace_snapshot
+tool_tape_replay
+transcript_only
+diagnostic_only
+unusable
+```
+
+Slice 1 reserves `exact_reconstruction`; admitted Slice 1 artifacts do not
+claim it. Missing repository or historical runtime bytes remain explicit
+missingness. `hylo-runtime-contract/v1` may label a compatible frozen current
+runtime as `paired_contemporary_counterfactual`; that is not an exact historical
+reconstruction.
+
+### Redaction and sealing
+
+Portable stimulus redaction uses stable per-value placeholders, including:
+
+```text
+<CREDENTIAL_1>
+<EMAIL_1>
+<HOME_1>
+```
+
+Repeated values reuse their placeholder. Redaction preserves surrounding
+authorization, assignment, flag, and URI syntax. The receipt binds source and
+output fingerprints, classes, counts, namespaces, semantic impact, and local
+unredacted availability.
+
+The historical response payload is sealed with XChaCha20-Poly1305. The key is
+delivered only through the declared owner FD and is not persisted in the
+runner root, custody manifest, event store, stdout, or proof bundle.
+
+### Pure validators
+
+```bash
+ledger validate hylo-replay-episode --input FILE
+ledger validate hylo-runner-input --input FILE
+ledger validate hylo-stimulus --input FILE
+ledger validate hylo-target-bundle --input FILE
+ledger validate hylo-world-snapshot --input FILE
+ledger validate hylo-world-availability-receipt --input FILE
+ledger validate hylo-runtime-contract --input FILE
+ledger validate hylo-counterfactual-cut-receipt --input FILE
+ledger validate hylo-redaction-receipt --input FILE
+ledger validate hylo-custody-manifest --input FILE
+```
+
+These validators are platform-neutral, read no Hylo store, mutate nothing, and
+grant no authority.
+
+## HCTP source governance
+
+`seq hctp-source` owns source-side HCTP selection and materialization:
+
+```text
+compile      derive the complete denominator, independence clusters, split
+             integrity, sanitization, source commitments, and sealed cases
+validate     prove one source-selection receipt matches one trial
+govern       derive source-governance evidence from admitted inputs
+materialize release one registered visible case and source profile by FD,
+             then emit a lane-scoped role attestation
+```
+
+```bash
+seq hctp-source compile \
+  --manifest source.json --output selection.json \
+  --source-signing-seed-fd 3
+
+seq hctp-source validate --receipt selection.json --trial trial.json
+```
+
+Case-blind compilation additionally uses a sealed directory and owner-only
+seal-key output FD. Materialization accepts the exact sealed case, registered
+trial, and lane ID; it receives the seal key and signing seed by FD and writes
+visible input and the optional historical source profile only to protected
+output FDs.
+
+The primary artifacts are:
+
+```text
+hylo-source-selection-receipt/v1
+hylo-sealed-case/v1
+hylo-case-materializer-contract/v1
+hylo-materialization-receipt/v1
+```
+
+The source-selection receipt must cover the registered units exactly, preserve
+scenario/split/cluster/source commitments, and reject exact cross-split
+duplicates. The materialization receipt binds one lane, one opaque arm, one
+visible-input fingerprint, the frozen producer, and the controller/materializer
+trust domain without disclosing semantic arm identity or hidden reference.
+
+## HCTP trial protocol
+
+### `hylo-trial/v1`
+
+A trial freezes the complete paired experiment before execution:
+
+```text
+trial and campaign identity
+purpose: practice_repair | promotion | mechanism_probe | environment_probe |
+         calibration_null | calibration_positive | reliability_probe
+canonical JSON profile
+assurance and trust policy
+allocation and order balancing
+units, scenarios, splits, and independence clusters
+pairs, repeats, lanes, and opaque arms
+source profiles and source-selection receipt
+target arm values and common projection
+execution, model, runtime, tool, and effect projections
+rubric, oracle, judge, and producer authorities
+case, arm, and grade visibility
+reveal and publication policy
+```
+
+Registration validates and appends the complete manifest atomically:
+
+```bash
+ledger --source hylo validate-trial --repo REPO --trial trial.json
+ledger --source hylo register-trial --repo REPO --trial trial.json
+```
+
+Changing any frozen field requires a new trial identity.
+
+Purpose constrains factor kind:
+
+```text
+practice_repair       target_snapshot | null
+promotion             target_snapshot
+mechanism_probe       instruction_bundle | evidence_set
+environment_probe     environment_variant | tool_policy
+calibration_null      null
+calibration_positive  instruction_bundle | evidence_set | environment_variant |
+                      model_configuration | tool_policy
+reliability_probe     null
+```
+
+Assurance levels are `precommitted`, `receipt_bound`, `role_separated`, and
+`sealed`. Every label must satisfy its declared trust and role contract; the
+label alone is not evidence.
+
+### Blinding
+
+Before reveal, public/controller-visible material may include:
+
+```text
+opaque arm and lane IDs
+commitments and fingerprints
+public producer metadata
+opaque acceptance acknowledgements
+terminal status without semantic outcome
+```
+
+It must not include:
+
+```text
+semantic arm map
+hidden reference
+historical response plaintext
+plaintext grade or pair winner
+private grade opening
+lease nonce or signing seed
+```
+
+### Lane lifecycle
+
+HCTP lifecycle events are:
+
+```text
+trial_registered
+lane_started
+lane_finished
+grade_committed
+pair_grade_committed
+pair_grade_recorded
+trial_revealed
+trial_closed
+```
+
+Only the high-level trial commands may create them. Low-level campaign
+`append` rejects trial lifecycle events.
+
+The public commands are:
+
+```text
+validate-trial
+register-trial
+start-lane
+commit-lane-start
+recover-lane-start
+lane-materialization
+finish-lane
+recover-lane-finish
+grade-lane
+grade-pair
+reveal-trial
+trial-result
+close-trial
+inspect
+proof-artifact-set
+export-proof
+verify-proof
+```
+
+`start-lane` delivers a fresh lease through a protected FD before the public
+start event commits. `commit-lane-start` accepts a caller-retained lease and is
+the sealed-assurance route. Recovery requires the exact retained lease and
+lineage; it re-emits an existing receipt and does not append changed work.
+
+### CAS lane runner
+
+`cas trial` exposes:
+
+```text
+preflight
+compile-replay
+run
+status
+cleanup
+key-info
+```
+
+CAS owns the persistent one-claim boundary. `run` claims before executing,
+uses a clean workspace, invokes the declared executor exactly once, hashes
+evidence, and emits `hylo-run-receipt/v1`. An existing claim makes retry a hard
+error; use status/recovery rather than executing again.
+
+The executor receives one request path and one result path. It does not receive
+the lane lease or hidden reference.
+
+### Grades and reveal
+
+Absolute and pair grades bind the registered:
+
+```text
+trial, unit, pair, lane, and attempt identity
+rubric and oracle contracts
+producer identity, version, binary fingerprint, key, and role
+run-receipt fingerprints
+grade commitments and private openings
+critical-policy derivation
+```
+
+Grade commitments may be public before reveal; plaintext outcomes and openings
+may not. Reveal must match the precommitted semantic arm map and all required
+terminal/grade conditions. A reveal does not retroactively authorize target
+mutation.
+
+### Proof bundles
+
+`hylo-proof-artifact-set/v1` enumerates the exact post-reveal artifact set that
+a trusted source owner may sign as
+`hylo-proof-sanitization-receipt/v1`. Export produces a deterministic
+`hylo-proof-bundle/v1`; verification checks internal closure and may bind
+explicit external anchors.
+
+Live verification accepts the declared global event range as an immutable
+prefix and validates the current suffix. An offline expected campaign head and
+trust-policy fingerprint are exact-value anchors, not claims about the current
+live head.
+
+## Compatibility campaign fold
+
+The pre-HCTP campaign API remains supported:
+
+```text
+hylo-campaign/v1
+hylo-scenario/v1
+hylo-event-intent/v1
+hylo-event/v1
+hylo-progress/v1
+hylo-target-snapshot-request/v1
+hylo-target-snapshot/v1
+```
+
+The portable campaign freezes target, source corpus, privacy receipt, rubric,
+replay policy, stop policy, change/publication authority, scenario file, and
+scenario manifest. Each scenario freezes visible request, hidden reference
+locator, environment/effect policy, oracles, split, and optional synthetic
+parent.
+
+Compatibility event kinds are:
 
 ```text
 campaign_created
+target_bundle_admitted
 scenario_admitted
 attempt_recorded
 grade_recorded
@@ -295,384 +465,177 @@ publication_recorded
 campaign_closed
 ```
 
-### Campaign and scenario admission
-
-`campaign_created` is first for its campaign and uses null scenario, attempt,
-and grade IDs:
-
-```json
-{
-  "campaign_fingerprint": "sha256:<canonical campaign object>",
-  "campaign": {"schema": "hylo-campaign/v1"}
-}
-```
-
-`scenario_admitted` supplies top-level `scenario_id`:
-
-```json
-{
-  "scenario_fingerprint": "sha256:<canonical scenario object>",
-  "scenario": {"schema": "hylo-scenario/v1"}
-}
-```
-
-Ledger recomputes both fingerprints and derives all later policy state from
-the embedded immutable snapshots.
-
-### `attempt_recorded`
-
-Top-level scenario and attempt IDs are required; grade ID is null:
-
-```json
-{
-  "status": "completed",
-  "target_fingerprint": "sha256:...",
-  "environment_fingerprint": "sha256:...",
-  "replay_policy_fingerprint": "sha256:...",
-  "origin": "controlled_replay",
-  "role": "replay_baseline",
-  "blind": true,
-  "evidence_refs": ["cas:replay-receipt"],
-  "trace_ref": "artifact:attempt-trace",
-  "trace_fingerprint": "sha256:...",
-  "historical_provenance": null,
-  "target_snapshot_revision": "0123456789abcdef0123456789abcdef01234567",
-  "target_snapshot_fingerprint": "sha256:...",
-  "target_snapshot": {
-    "schema": "hylo-target-snapshot/v1",
-    "roots": ["codex/skills/example-skill"],
-    "entries": [
-      {
-        "mode": "100644",
-        "object_id": "0123456789abcdef0123456789abcdef01234567",
-        "object_type": "blob",
-        "path": "codex/skills/example-skill/SKILL.md"
-      }
-    ]
-  }
-}
-```
-
-Status is `completed`, `failed`, or `blocked`. Completed attempts require a
-trace reference and fingerprint; other statuses forbid them. Roles bind to
-origins:
-
-```text
-historical_baseline -> historical
-replay_baseline     -> controlled_replay
-candidate           -> controlled_replay
-mutation            -> synthetic
-```
-
-Both baselines use the campaign's baseline target fingerprint. Candidate and
-mutation attempts use either that baseline or an already applied target
-fingerprint. Controlled and synthetic attempts bind the admitted environment
-and replay policy. In commit-authorized campaigns they also embed a canonical
-target snapshot whose ordered roots exactly equal the campaign's target roots;
-one logical target fingerprint cannot map to two physical snapshots. A replay
-baseline names a resolved commit SHA. Candidate and mutation attempts name
-`INDEX`; before append, Ledger recomputes both that snapshot and the recorded
-staged-diff fingerprint from the addressed repository.
-
-Historical attempts instead set environment and replay-policy fingerprints to
-null, omit target snapshots, and supply:
-
-```json
-{
-  "historical_provenance": {
-    "status": "partial",
-    "environment_fingerprint": null,
-    "repo_revision": null,
-    "limitations": ["original workspace unavailable"],
-    "evidence_refs": ["session:source"]
-  }
-}
-```
-
-Historical provenance is `exact`, `partial`, or `unavailable`. Non-exact
-provenance states its limitations instead of falsely borrowing replay identity.
-The campaign's attempt cap is enforced during append.
-
-### `grade_recorded`
-
-Top-level scenario, attempt, and grade IDs are required:
-
-```json
-{
-  "status": "pass",
-  "target_fingerprint": "sha256:...",
-  "rubric_fingerprint": "sha256:...",
-  "environment_fingerprint": "sha256:...",
-  "replay_policy_fingerprint": "sha256:...",
-  "blind": true,
-  "comparison_eligible": true,
-  "aggregate": 0.9,
-  "dimensions": [
-    {
-      "id": "correctness",
-      "score": 0.9,
-      "weight": 1.0,
-      "grader_kind": "deterministic",
-      "grader_ref": "test:required-test",
-      "grader_fingerprint": "sha256:...",
-      "evidence_refs": ["test:required-test"]
-    }
-  ],
-  "oracle_results": [
-    {
-      "id": "required-test",
-      "status": "pass",
-      "grader_kind": "deterministic",
-      "grader_ref": "test:required-test",
-      "grader_fingerprint": "sha256:...",
-      "evidence_refs": ["test:required-test"]
-    }
-  ],
-  "critical_violations": [],
-  "judge": {
-    "kind": "composite",
-    "id": "test-runner",
-    "version": "v1",
-    "config_fingerprint": "sha256:..."
-  },
-  "evidence_refs": ["trace:attempt-001"]
-}
-```
-
-Status is `pass`, `fail`, `invalid`, or `incomparable`. For pass/fail, the
-dimension set and weights exactly match the frozen rubric. Ledger recomputes
-the weighted aggregate and rejects a caller-supplied mismatch. Each dimension
-and scenario oracle records its grader kind, identity, fingerprint, and
-evidence. Grader kind, ref, and fingerprint must equal the authority already
-frozen in campaign or scenario syntax; later declared drift is invalid. These
-are consistency checks over attestations, not authentication of the producer.
-Deterministic and trace results therefore cite independently inspectable
-execution receipts, while human results require human confirmation. Every
-scenario oracle appears exactly once in frozen order.
-
-`comparison_eligible:true` additionally requires a completed blind attempt,
-pass/fail status, complete fingerprint agreement, and no earlier eligible
-grade for that attempt. Candidate and mutation grades additionally require an
-eligible like-for-like `replay_baseline` grade whose attempt predates the
-candidate attempt for that scenario. Direct comparison freezes environment,
-replay policy, rubric, judge kind/ID/version, judge configuration,
-per-dimension graders, and oracle graders. A historical attempt is always
-diagnostic, even when its reconstructed visibility is marked blind.
-
-Pass and fail labels are derived against the frozen threshold and critical
-policy: a pass that misses policy and a fail that already satisfies policy are
-both rejected. This prevents manufactured failures from authorizing repairs.
-
-### `feedback_recorded`
-
-Top-level scenario, attempt, and grade IDs identify the grade being explained:
-
-```json
-{
-  "summary": "The trace violated the required ordering.",
-  "next_action": "replay",
-  "evidence_refs": ["trace:attempt-001"]
-}
-```
-
-`next_action` is `replay`, `mutate`, `repair_environment`, `handoff_tune`,
-`rebaseline`, `stop`, or `blocked`. Feedback proposes a route; it never rewrites
-a grade.
-
-### `change_recorded`
-
-All top-level lineage IDs are null:
-
-```json
-{
-  "change_id": "change-001",
-  "status": "applied",
-  "before_target_fingerprint": "sha256:...",
-  "after_target_fingerprint": "sha256:...",
-  "owner_route": "refine",
-  "authority_ref": "user:turn-id",
-  "paths": ["codex/skills/example-skill/SKILL.md"],
-  "diff_ref": "git-index:HEAD",
-  "diff_fingerprint": "sha256:...",
-  "motivation_grade_ids": ["grade-replay-001"],
-  "validation_refs": ["test:skill-validation"]
-}
-```
-
-Status is `applied`, `rejected`, or `blocked`. Applied changes require campaign
-authority, a before fingerprint equal to the current target, a distinct after
-fingerprint that has never named an earlier target epoch, paths inside the
-frozen scope, validation evidence, and at least one earlier
-comparison-eligible failing practice grade for that before target.
-Holdout and challenge grades cannot motivate a repair, so they remain
-independent promotion evidence. Once an eligible holdout or challenge grade is
-recorded for the current target, no later applied change may use that target as
-its base; exposed promotion evidence requires a new campaign.
-
-An applied change is a Git-index observation, not a caller assertion. Stage
-only its scoped paths, set `diff_ref:"git-index:HEAD"`, and fingerprint the raw
-output of:
+The native store adds global and campaign sequences, predecessor digests,
+canonical body digests, event digests, and timestamps. Only this command may
+append ordinary campaign intents:
 
 ```bash
-git diff --cached --binary --full-index --no-ext-diff --no-color HEAD --
+ledger --source hylo append --repo REPO --json intent.json
 ```
 
-Before append, Ledger recomputes that fingerprint, requires the complete staged
-path set to equal `paths`, and rejects tracked or untracked contamination under
-any campaign target root. Each candidate or mutation attempt repeats this
-check and independently recomputes its `INDEX` target snapshot, so staged drift
-requires a fresh change record. The event records the owner-routed
-intervention; it does not make the edit.
-
-### `publication_recorded`
-
-All top-level lineage IDs are null:
-
-```json
-{
-  "publication_id": "publication-001",
-  "status": "committed",
-  "change_id": "change-001",
-  "authority_ref": "user:turn-id",
-  "candidate_target_fingerprint": "sha256:...",
-  "commit_sha": "0123456789abcdef0123456789abcdef01234567",
-  "commit_tree_ref": "git-tree:0123456789abcdef0123456789abcdef01234567",
-  "paths": ["codex/skills/example-skill/SKILL.md"],
-  "validation_refs": ["test:skill-validation"],
-  "promotion_grade_ids": ["grade-holdout-001"]
-}
-```
-
-Status is `committed` or `blocked`. A committed publication requires explicit
-campaign commit authority, the current applied change, exact change paths,
-and later comparison-eligible passing candidate or mutation grades for its
-target. Every frozen scenario—not a caller-selected subset—has at least
-`repeat_count` cited grades after the change. Those IDs must be exactly the
-latest eligible cohort for each scenario, and the entire cohort must pass;
-older successes cannot hide a newer failure. When the stop policy requires
-zero critical violations, no eligible post-change grade for the candidate may
-contain one.
-
-Before append, Ledger asks the addressed Git repository to resolve the exact
-commit object and tree, then compares the commit's complete changed-path set
-with the event paths. It independently projects every campaign target root
-from that commit and requires its canonical snapshot fingerprint to equal the
-snapshot used by every promotion attempt. A false SHA, tree, path, or target
-content claim leaves the store unchanged. This proves the local commit object,
-scope, and equality to the graded target; it does not prove branch reachability,
-remote push, or generalized improvement.
-
-A blocked publication has no commit or promotion-grade claim.
-
-### `campaign_closed`
-
-All top-level lineage IDs are null. Payload is:
-
-```json
-{"reason": "configured budget exhausted"}
-```
-
-No later event may target a closed campaign.
-
-## `hylo-event/v1`
-
-Ledger persists one canonical JSON object per line:
+The current adapter is:
 
 ```text
-schema: hylo-event/v1
-sequence
-previous_digest
-campaign_sequence
-previous_campaign_digest
-campaign_id
-kind
-recorded_at_unix
-body
-body_digest
-event_digest
+<repo>/.ledger/hylo/events.jsonl
 ```
 
-`body` contains nullable scenario, attempt, and grade IDs plus the intent
-payload. `body_digest` hashes its canonical JSON. `event_digest` binds schema,
-global predecessor and sequence, campaign predecessor and sequence, campaign,
-kind, timestamp, and body digest. Interleaved campaigns therefore preserve one
-global append order and one independent lineage per campaign.
+Do not read its line layout as an API or write it directly.
 
-On load, Ledger checks strict schemas, canonical digests, both predecessor
-chains, monotonic sequences, and every state-transition law. A failed append
-writes no line. The event-store boundary compares the loaded revision again
-under its lock, rejects concurrent replacement, and refuses any append whose
-result would exceed the next reload cap. Doctor never repairs or truncates
-evidence.
+### Attempts and baselines
 
-## `hylo-progress/v1`
-
-`progress` derives, rather than stores:
+Attempt roles include:
 
 ```text
-campaign status, event count, and campaign chain head
-scenario and split counts
-attempt status and historical-baseline counts
-current-target pass/fail and critical-violation counts by split
-target-by-split aggregate and per-dimension means
-latest current-target outcome and consecutive passing-repeat count per scenario
-current-target, latest-cohort unresolved frontier
-grader-stable comparable adjacent cross-target deltas
-progress fingerprint bound to the campaign head
+historical_baseline  diagnostic historical evidence only
+replay_baseline      fresh blind compatible baseline execution
+candidate            controlled candidate execution
+mutation             admitted synthetic execution
 ```
 
-It does not infer causality, statistical significance, or general capability.
-The skill applies those claim rules using sample size, repeats, uncertainty,
-split, and environment limitations.
+Historical attempts omit comparable world/replay identity unless genuinely
+known and remain comparison-ineligible. A candidate grade requires an earlier
+compatible replay-baseline attempt for the same scenario. The historical
+response never supplies the comparison denominator.
 
-## Native commands
+### Target snapshots and changes
 
-These commands require Ledger `>= 0.6.1`.
+For Git-backed targets:
 
 ```bash
-# Probe the source
-ledger --source hylo --help
+ledger --source hylo snapshot-target \
+  --repo REPO --revision HEAD --input target-roots.json
 
-# Canonical fingerprint for a JSON artifact; FILE may be -
-ledger --source hylo fingerprint --input FILE
-
-# Validate campaign.json and its scenarios JSONL
-ledger --source hylo validate-campaign --campaign campaign.json
-
-# Resolve HEAD or another commit name, then snapshot ordered roots; INDEX is staged state
 ledger --source hylo snapshot-target \
   --repo REPO --revision INDEX --input target-roots.json
+```
 
-# Append one validated event intent
-ledger --source hylo append --repo REPO --json intent.json
+`HEAD` resolves to the immutable commit SHA. `INDEX` observes staged candidate
+content. Applied changes bind the exact staged binary diff, exact path set,
+before/after identities, owner authority, motivating practice grades, and
+validation. One target fingerprint cannot name two physical snapshots.
 
-# Validate the complete event store
+Publication requires the exact current applied change, explicit commit
+authority, exact changed paths, the exact promoted candidate projection, and
+the latest complete passing repeat cohort.
+
+## Typed causal frontier
+
+Typed causal event kinds are:
+
+```text
+failure_signature_recorded
+hypothesis_recorded
+experiment_recorded
+next_step_recorded
+```
+
+### Failure signature
+
+`hylo-failure-signature/v1` binds an observable predicate, affected families,
+dimensions or hard gates, and evidence references. It must be reusable and
+must not depend on private reasoning.
+
+### Hypothesis
+
+`hylo-causal-hypothesis/v1` binds:
+
+```text
+applicability context
+mechanism claim
+failure signatures and observable evidence
+causal cut points
+predicted affected and protected scope
+candidate intervention
+falsifiers
+status
+```
+
+A scalar score change alone cannot support a mechanism.
+
+### Experiment
+
+`hylo-experiment/v1` binds:
+
+```text
+kind and hypothesis IDs
+bounded intervention and allowed paths
+semantic change budget and reversibility
+measurable predictions
+protected controls
+explicit falsifiers
+practice and reserved holdout budget
+selection-basis certificate
+```
+
+Read-only probes must not mutate the target. Target interventions must change
+content-addressed treatment identity.
+
+### Dominance and next step
+
+Eligibility rejects unreproducible failures, unsupported hypotheses,
+unmeasurable predictions, missing controls/falsifiers, unchanged targets,
+out-of-scope edits, infeasible promotion budgets, equivalent refuted routes,
+holdout-motivated repairs, insufficient reconstruction, and nondeterministic
+bundle construction.
+
+Pareto comparison is ordinal over evidence, discriminability, coverage,
+semantic scope, reversibility, risk, and cost.
+
+```text
+one non-dominated eligible intervention          -> RUN
+several alternatives + bounded separating probe -> OBSERVE
+no eligible intervention                         -> STOP
+several alternatives + no bounded probe         -> STOP
+```
+
+`hylo-dominance-certificate/v1` records the eligible, dominated, and
+undominated set. `hylo-next-step-decision/v1` always records
+`authority_granted:false` and `target_mutated:false`.
+
+## Native observation commands
+
+```bash
+ledger --source hylo capabilities
 ledger --source hylo doctor --repo REPO
-
-# Derive progress
-ledger --source hylo progress \
-  --repo REPO --campaign-id cmp-example --format json
-
-# Print the resolved repo-local store path
+ledger --source hylo progress --repo REPO --campaign-id ID --format json
+ledger --source hylo frontier --repo REPO --campaign-id ID --format json
+ledger --source hylo next-experiment --repo REPO --campaign-id ID
+ledger --source hylo trial-result --repo REPO --trial-id ID --format json
+ledger --source hylo inspect --repo REPO --trial-id ID --kind KIND
 ledger --source hylo path --repo REPO
 ```
 
-`target-roots.json` is:
+Malformed identity, invalid transitions, false Git claims, chain corruption,
+authority mismatch, fixture drift, or storage failure must exit nonzero and
+leave the store unchanged.
 
-```json
-{
-  "schema": "hylo-target-snapshot-request/v1",
-  "roots": ["codex/skills/example-skill"]
-}
+## Availability and threat model
+
+The released CRF/HCTP product commands are admitted on macOS. Their sealing
+route uses Zig, macOS/POSIX process primitives, cryptographic commitments,
+separate roles, anonymous descriptors, and an encrypted recovery checkpoint.
+It intentionally records `os_confinement:false`.
+
+Therefore the proof does establish:
+
+```text
+content and lineage commitments
+one-shot capability delivery
+role and producer separation
+pre-reveal public non-disclosure
+exactly-once lane claims
+deterministic fold and proof verification
 ```
 
-The receipt carries `hylo-target-snapshot/v1` syntax plus its canonical
-fingerprint. `INDEX` observes staged content without creating a commit; an
-input such as `HEAD` is resolved and emitted as the full immutable commit SHA.
-Use that resolved SHA—not the moving input name—in scenario and attempt
-contracts.
+It does not establish:
 
-Malformed input, an invalid transition, a false Git publication claim, a
-corrupt chain, or a storage failure exits nonzero. The error receipt names the
-precise Zig error class. Do not place secrets, capabilities, private reasoning,
-or unredacted sensitive material in input files, arguments, or event evidence.
+```text
+hostile same-user process isolation
+removal of all compiler/register/allocator secret remnants
+arbitrary remote artifact-store security
+generalized causal truth outside the admitted episodes
+```
+
+Do not add an undocumented platform-specific isolation substitute. A stronger
+same-user threat model requires a separately authorized artifact store or
+custody boundary with its own contract and evidence.

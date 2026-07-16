@@ -1,390 +1,497 @@
 ---
 name: hylo
-description: "Compile real Codex sessions and repo-local Ledger evidence into portable replay campaigns, run blind repeated attempts in reconstructed or generated environments, grade outcomes with evidence-bound rubrics, append attempts and grades through the native Hylo Ledger source, and derive comparable progress/frontier views. Use for `$hylo`, self-replay, experience-driven evaluation, session-derived training environments, replay-and-grade loops, repeated agent or skill improvement on real historical requests, or tracking whether responses improve across controlled reruns."
+description: "Compile historical Codex sessions into blinded counterfactual replay episodes, govern sealed paired HCTP trials, grade comparable observable outcomes, and fold typed evidence into RUN, OBSERVE, or STOP. Use for `$hylo`, counterfactual replay, causal frontiers, paired baseline/candidate trials, sealed evidence, or evidence-governed improvement."
 ---
 
 # Hylo
 
 ## Mission
 
-Turn lived execution history into a renewable improvement substrate.
+Turn historical execution evidence into controlled counterfactual experiments
+and a reusable causal frontier.
 
 ```text
-unfold(session evidence + Ledger evidence) -> portable replay scenarios
-interpret(scenario, target version)         -> attempt trace
-grade(trace, rubric version)                -> evidence-bound grade
-fold(append-only events)                    -> progress frontier
-select(frontier)                            -> next replay, mutation, repair, or stop
+historical session
+  -> counterfactual cut + blinded replay episode
+  -> baseline and candidate executions under one frozen contract
+  -> observable traces + frozen grades + paired comparison
+  -> failure signatures + hypotheses + bounded experiments
+  -> RUN | OBSERVE | STOP
 ```
 
-Hylo is not a static benchmark and does not train model weights. It repeatedly
-exercises an agent, skill, prompt, workflow, or model configuration against
-real work, records what happened, and supports evidence-bound behavioral
-improvement.
+Hylo does not imitate a transcript, recover private reasoning, train model
+weights, or invent a sequence of edits. It freezes the causal prefix before a
+target first influences the session and regenerates everything downstream.
+
+`STOP: no_obvious_next_step` is a successful result when the evidence does not
+justify one intervention.
+
+## Current product boundary
+
+The released CRF/HCTP product route is:
+
+```text
+Seq 0.3.50+     episode compilation and source governance
+Ledger 0.10.3+  artifact validation, trial custody, event folds, causal frontier
+CAS 0.2.80+     one-claim lane execution and run-receipt normalization
+```
+
+The `seq hylo-extract`, `ledger --source hylo`, and `cas trial` product
+surfaces are currently admitted on macOS. Stateless `ledger validate hylo-*`
+schema checks remain platform-neutral. Do not invent an unadmitted
+platform-specific isolation route.
+
+The supported macOS proof establishes commitments, role separation, one-shot
+descriptor delivery, and public non-disclosure. It records
+`os_confinement:false`; it does not claim hostile same-user isolation.
 
 ## Ownership
 
-Keep these boundaries explicit:
-
 ```text
-$seq       selects and freezes historical session evidence
-$cas       owns controlled thread or transcript replay lifecycle
-$retrace   owns bounded historical-decision experiments and epistemic claims
-$ghost     may export a portable behavior contract
-$emulator  may instantiate or mutate synthetic worlds from that contract
-$hylo      owns campaigns, splits, rubrics, grade lineage, iteration, and progress
-$tune      diagnoses a target-skill delta from Hylo evidence
-$refine    edits a target skill only after an explicit apply gate
-$learnings captures a durable cross-task lesson, not every grade
+$seq / seq hylo-extract
+    owns historical parsing, target activation, the causal cut, redaction,
+    episode construction, target capture, and runner/custody separation
+
+$ledger / ledger --source hylo
+    owns validation, trial registration and lifecycle, immutable campaign
+    events, deterministic folds, proof export, and causal-frontier decisions
+
+$cas / cas trial
+    owns one-claim lane execution, clean workspaces, observable evidence hashes,
+    and hylo-run-receipt/v1 production
+
+runner and grader adapters
+    own model/tool execution and frozen observations; they do not edit targets
+
+target owner workflow
+    owns any authorized edit, staging, commit, or publication
+
+$hylo
+    coordinates those owners without borrowing their authority
 ```
 
-`$goal-grind` executes one capability already prepared by `$goal-actuating`.
-It is not a campaign runner and must not create Hylo authority or loop itself.
+The historical response is sealed source evidence. It MAY support diagnostic
+failure mining after authorized custody access, but it MUST NOT satisfy a replay
+baseline or act as a golden answer.
 
-## Core artifacts
+## Source-of-truth order
 
-Use three portable contracts:
+When surfaces disagree, use this order:
 
-```text
-hylo-campaign/v1  target, source corpus, rubric, replay policy, stop policy
-hylo-scenario/v1  one source-governed request, world, oracle, and split
-hylo-event/v1     append-only campaign, attempt, grade, feedback, and close evidence
-```
+1. installed CLI help and capabilities;
+2. released validators and schemas;
+3. implementation documentation and executable fixtures;
+4. this skill;
+5. proposed specifications or historical campaign prose.
 
-Derive `hylo-progress/v1` from events. Never store a progress summary as peer
-truth or hand-edit it.
+Do not invoke a proposed `hylo replay`, `hylo grade`, or `hylo compare` binary.
+Those standalone commands are not the released product surface.
 
-Read [contracts.md](references/contracts.md) before creating a campaign or
-writing events. Read [grading-and-progression.md](references/grading-and-progression.md)
-when selecting graders, comparing target versions, or declaring improvement.
+## Bootstrap and capability gate
 
-## Ledger boundary
-
-Before the first native Ledger command in a workflow, load `$ledger` and
-complete `$ledger ensure` once. Use native Ledger sources only for the evidence
-they own.
-
-Probe the required source before compiling or running a campaign:
+Before the first native Ledger command, load `$ledger` and complete
+`$ledger ensure` once. Then probe all three released owners:
 
 ```bash
 ledger --version
+ledger --source hylo capabilities
 ledger --source hylo --help
+
+seq --version
+seq capabilities --format json
+seq hylo-extract --help
+seq hctp-source --help
+
+cas --version
+cas capabilities --json
+cas trial --help
 ```
 
-Require Ledger `>= 0.6.1`, and confirm that Hylo help advertises
-`snapshot-target` as well as `validate-campaign`, `append`, `doctor`, and
-`progress`. `$ledger ensure` establishes command availability, not this version
-floor. If either check fails, stop before creating or mutating a campaign and
-report that the native source must be upgraded. Never route Hylo grades through
-`learnings`, `negative-ledger`, `actuation`, `synesthesia`, or `universalist`
-merely to obtain append semantics.
-
-The native Hylo source is the exclusive mutation owner for operational replay
-evidence. Hylo semantics depend on Ledger's event-store contract, not a storage
-format. The current persistent adapter retains this path for compatibility:
+For the complete route, require the version floor in **Current product
+boundary** and these capabilities or commands:
 
 ```text
-<repo>/.ledger/hylo/events.jsonl
+Seq:    hylo_extract_v1, hctp_source_selection_v1, hctp_sealed_case_v1
+Ledger: hylo_trial_v1, hylo_lane_leases_v1, hylo_pair_grade_v1,
+        hylo_trial_reveal_v1, hylo_proof_bundle_v1,
+        hylo_grade_commit_open_v1
+CAS:    trial preflight, compile-replay, run, status, cleanup
 ```
 
-Use it directly:
+If a required surface is absent, stop before creating evidence. Do not emulate
+the source with a fallback writer or hand-edit `.ledger/hylo/events.jsonl`.
 
-```bash
-ledger --source hylo doctor --repo <repo>
-ledger --source hylo snapshot-target --repo <repo> --revision INDEX --input <roots.json>
-ledger --source hylo append --repo <repo> --json <intent.json>
-ledger --source hylo progress --repo <repo> --campaign-id <id> --format markdown
-```
-
-Ledger adds sequence numbers, campaign lineage, timestamps, canonical body
-digests, and global plus per-campaign hash chains. Do not write the JSONL
-directly.
+Read [contracts.md](references/contracts.md) before authoring artifacts or
+trial events. Read
+[grading-and-progression.md](references/grading-and-progression.md) before
+grading, comparing, selecting an experiment, or claiming improvement.
 
 ## Modes
 
-Choose exactly one mode per invocation:
+Choose one primary mode per invocation:
 
 ```text
-compile   select source episodes and produce a portable campaign
-run       execute selected scenarios and record attempt evidence
-grade     apply a frozen rubric to recorded attempts
-iterate   perform one bounded run -> grade -> next-route cycle
-report    derive progress, frontier, and comparability limits
-doctor    validate campaign artifacts or the event chain
+extract   compile one historical response into a blinded CRF episode
+trial     register or advance one paired HCTP trial
+measure   grade observable attempts and derive paired evidence
+frontier  compile typed hypotheses, experiments, and RUN | OBSERVE | STOP
+report    inspect progress, trial state, proof state, or limitations
+doctor    validate artifacts, campaign state, or event-chain integrity
 ```
 
-`iterate` performs one cycle unless the user explicitly requests persistent
-goal execution. A terminal request does not authorize target edits, external
-effects, or unbounded model spend.
-
-## Request shape
-
-Prefer:
-
-```yaml
-hylo_request:
-  mode: compile | run | grade | iterate | report | doctor
-  target:
-    kind: skill | agent | prompt | workflow | model_configuration
-    id:
-    fingerprint:
-  source:
-    session_ids: []
-    query:
-    root: ~/.codex/sessions
-    exclusions: [current_session, injected_skill_text, quoted_transcripts]
-  campaign_id:
-  scenario_budget:
-  repeat_count:
-  privacy: sanitized | local_full
-  replay_fidelity: transcript_only | workspace_snapshot | controlled_replay | synthetic_mutation
-  target_change_authority: none | propose | apply_via_owner
-  publication_authority: none | commit
-```
-
-Default to `sanitized`, exclude the current session, and keep target change and
-publication authority at `none` unless the user explicitly grants more.
+A persistent request may repeat a verified mode transition. It does not grant
+target-edit, external-effect, reveal, publication, or spend authority.
 
 ## Workflow
 
-### 1. Freeze the source corpus
+### 1. Compile the counterfactual episode
 
-Probe the installed Seq surface first:
+Select one historical response and the target whose influence is being
+replaced. Use the canonical trace compiler, not an analytics projection that
+deduplicates messages or drops context.
 
 ```bash
-seq --version
-seq capabilities --format json
-seq decision-capsule --help
+umask 077
+: >./owner.key
+chmod 600 ./owner.key
+
+seq hylo-extract \
+  --root ~/.codex/sessions \
+  --session-id <session-id> \
+  --turn-index <one-based-turn-or-zero-for-first> \
+  --target-skill <skill-name> \
+  --target-root /absolute/path/to/complete/target \
+  --context-policy dependency-closed \
+  --capture-world \
+  --output-root ./runner \
+  --sealed-root ./custody \
+  --seal-key-output-fd 3 3>./owner.key
 ```
 
-Use the narrowest lifted command: `decision-capsule`, `turns`,
-`session-detail`, `skill-decision-audit`, or another advertised surface. Do not
-parse raw session JSONL when Seq owns the fact. Record the corpus window,
-session IDs, exclusions, Seq version, and corpus fingerprint.
+The key sink must be a caller-owned `0600` single-link regular file outside
+the source, target, runner, and custody roots, or an anonymous pipe. Never use
+stdin, stdout, stderr, an environment variable, a named FIFO, or a file inside
+an artifact root.
 
-Separate source material into:
+`--target-root` names the complete historical bundle, including referenced
+files, scripts, templates, and assets. Extraction fails closed on target drift,
+root overlap, symlinks, malformed trace data, ambiguous activation, unknown
+state-bearing pre-cut carriers, sensitive target bytes, or answer-before-
+activation ordering.
+
+The cut MUST precede the earliest structured target influence. Preserve
+ordered and duplicate message occurrences, fixed pre-cut observations, and the
+replaceable target slot. Regenerate post-cut target behavior, workers, tools,
+files, responses, and outcomes.
+
+### 2. Keep runner and custody artifacts separate
+
+The runner root receives only causal inputs:
 
 ```text
-visible_input      request and context available to the replay target
-hidden_reference  original response, later outcome, private oracle data
-world_evidence    repo revision, files, tools, permissions, external state
-outcome_evidence  tests, review findings, user feedback, side effects
+runner-input.json
+stimulus.json
+baseline-bundle.json
+captured target files
+world.json
+world-availability.json
+runtime.json
 ```
 
-Never expose hidden reference material to a blind attempt.
+The private `0700` custody root receives controller/grader evidence:
 
-### 2. Compile replay syntax
-
-Create `campaign.json` and `scenarios.jsonl` using the portable contracts.
-Each scenario must bind:
-
-- source refs and fingerprints;
-- an evidence-bound redaction receipt before session text is persisted;
-- user request and visible context;
-- a versioned replay adapter, snapshot, setup plan, toolchain, fixtures, and
-  reconstructability limits;
-- enforceable filesystem, network, and external-effect boundaries;
-- deterministic oracles and trace invariants;
-- optional model/human rubric dimensions;
-- split: `practice`, `holdout`, or `challenge`;
-- mutation parent and preserved invariants when generated.
-
-Freeze every scenario ID, split, and canonical fingerprint into the campaign's
-`scenario_manifest`. Admit the complete manifest before the first attempt; an
-unadmitted scenario is not an optional case.
-
-Treat missing historical state as explicit missingness. Do not fabricate an
-exact world. Use `$ghost` when a reusable language-neutral behavior contract is
-needed; use `$emulator` for generated or mutated worlds.
-
-Validate before running:
-
-```bash
-ledger --source hylo validate-campaign --campaign <campaign.json>
+```text
+episode.json
+cut.json
+redaction.json
+historical-response.sealed.json
+manifest.json
 ```
 
-### 3. Establish two baselines
+The runner consumes `runner-input.json`, not custody `episode.json`. Never
+copy the sealed response, excluded-future digest material, future outcomes, or
+grader-only references into the runner root.
 
-First ingest and grade the response that actually occurred as a
-`historical_baseline`. Use later outcome, tests, review findings, user feedback,
-and trace evidence to expose its strengths and failure frontier. The original
-response is evidence, not a golden answer.
+Treat `world-availability.json` as authoritative for fidelity. Slice 1
+reserves `exact_reconstruction`; it does not claim it. If historical repository
+or runtime bytes are unavailable, retain the explicit limitation and do not
+upgrade a `transcript_only` or `replay_eligible:false` episode by assertion.
 
-Historical grades are diagnostic and never comparison-eligible: the exact
-model state, workspace, or environment may be unavailable. Then record at
-least one blind `replay_baseline` attempt of the historical
-target/configuration before any candidate attempt for the same scenario. Grade
-practice baselines immediately. Keep holdout and challenge results quarantined
-until the candidate change is frozen; their baseline attempts may be recorded
-first and graded afterward. That controlled replay establishes the comparable
-denominator without choosing it after observing the candidate.
-
-Use CAS/Retrace when historical lineage matters; use an explicitly declared
-adapter for reconstructed or synthetic environments. Record origin, role,
-target, environment, replay-policy, trace, and artifact fingerprints.
-
-A replay is a new execution. It is not the source model's hidden reasoning and
-must not be described as recovered chain of thought.
-
-Historical attempts use explicit `exact`, `partial`, or `unavailable`
-provenance and do not borrow replay environment or policy fingerprints. For a
-Git-backed controlled target, use the native `snapshot-target` command to bind
-the replay to an immutable revision or the staged `INDEX` projection.
-
-### 4. Grade evidence
-
-Apply graders in this order:
-
-1. state assertions, tests, schemas, and side-effect checks;
-2. trace invariants, forbidden actions, budgets, and permission checks;
-3. calibrated model judgment where deterministic checks cannot express quality;
-4. human judgment for ambiguous, high-stakes, or rubric-calibration cases.
-
-Bind every grade to attempt, target, rubric, environment, replay policy, judge,
-per-dimension grader, oracle result, and evidence refs. Freeze judge and
-dimension authority in campaign syntax and oracle authority in scenario syntax
-before any replay; native Ledger rejects declared drift. That is declaration
-consistency, not authentication: deterministic and trace graders need
-independently inspectable execution receipts, and human grades need human
-confirmation. Keep dimension scores visible. Native Ledger recomputes the
-scalar and pass/fail status from the frozen policy; a caller-authored mismatch
-is invalid.
-
-### 5. Fold progress and select the next frontier
-
-Derive the current view:
+Validate the generated graph before trial construction:
 
 ```bash
+ledger validate hylo-runner-input --input ./runner/runner-input.json
+ledger validate hylo-stimulus --input ./runner/stimulus.json
+ledger validate hylo-target-bundle --input ./runner/baseline-bundle.json
+ledger validate hylo-world-snapshot --input ./runner/world.json
+ledger validate hylo-world-availability-receipt --input ./runner/world-availability.json
+ledger validate hylo-runtime-contract --input ./runner/runtime.json
+ledger validate hylo-replay-episode --input ./custody/episode.json
+ledger validate hylo-counterfactual-cut-receipt --input ./custody/cut.json
+ledger validate hylo-redaction-receipt --input ./custody/redaction.json
+ledger validate hylo-custody-manifest --input ./custody/manifest.json
+```
+
+These are pure schema/invariant checks. A pass grants no replay, reveal, edit,
+or publication authority.
+
+### 3. Freeze source selection
+
+Use `seq hctp-source` to compile the complete denominator, dependency-aware
+independence clusters, split integrity, sanitized source commitments, and any
+case-blind sealed payloads:
+
+```bash
+seq hctp-source compile \
+  --manifest source.json --output selection.json \
+  --source-signing-seed-fd <fd>
+seq hctp-source validate --receipt selection.json --trial trial.json
+```
+
+`govern` derives source-governance evidence. `materialize` releases one exact
+registered visible case through a protected FD and emits a lane-scoped signed
+receipt; it must not release the hidden reference. Consult
+`seq hctp-source --help` for sealed-case arguments and descriptor ownership.
+
+### 4. Freeze a paired HCTP trial
+
+Build `hylo-trial/v1` before candidate execution. Freeze:
+
+- campaign, purpose, split, units, independence clusters, pairs, and repeats;
+- opaque arms and balanced A/B-B/A execution order;
+- baseline and candidate target identities and common projection;
+- source-selection and visible/hidden commitments;
+- runtime, tool/effect policy, runner, model, and environment projections;
+- rubric, oracle, judge, producer, trust, and assurance authorities;
+- reveal, stop, publication, and proof policies.
+
+Use `practice_repair` trials to select repairs. Reserve untouched `promotion` units for
+holdout evidence. A null trial is a real control: its two semantic arms have an
+identical common target projection and a declared null intervention witness.
+
+```bash
+ledger --source hylo validate-trial --repo <repo> --trial trial.json
+ledger --source hylo register-trial --repo <repo> --trial trial.json
+```
+
+Registration is atomic over the complete manifest. Trial lifecycle events are
+owned by high-level Hylo commands; low-level `append` must not author them.
+
+### 5. Execute lanes without unblinding
+
+Use `cas trial` for each registered lane:
+
+```bash
+cas trial preflight --trial trial.json --lane-id <lane> --json
+cas trial compile-replay \
+  --trial trial.json --lane-id <lane> --output-dir <compiled-dir> --json
+```
+
+For an admitted run, the controller obtains or commits the lane lease through
+Ledger, delivers the lease and visible input through protected file
+descriptors, and calls `cas trial run` with the exact registration and start
+digests. CAS claims the lane before execution, creates a fresh workspace,
+invokes the executor exactly once, hashes every evidence file, and emits one
+`hylo-run-receipt/v1`.
+
+The executor receives only:
+
+```text
+EXECUTOR --request REQUEST.json --result RESULT.json
+```
+
+It must not receive the lane lease, semantic arm identity, sealed historical
+response, hidden reference, future outcome, grade opening, or pair result.
+
+For `assurance.required_level:sealed`, use the supported broker/driver route
+with `commit-lane-start`; output-style `start-lane` is invalid. Preserve the
+encrypted pending checkpoint and use exact recovery commands after an
+acknowledgement loss. Recovery may finish already-admitted work; it must not
+create changed or additional work.
+
+Public lifecycle primitives include:
+
+```text
+register-trial
+start-lane | commit-lane-start | recover-lane-start
+lane-materialization
+finish-lane | recover-lane-finish
+grade-lane
+grade-pair
+reveal-trial
+trial-result
+close-trial
+inspect
+proof-artifact-set
+export-proof
+verify-proof
+```
+
+Consult `ledger --source hylo --help` for the exact current arguments. Never
+put leases, signing seeds, grade openings, hidden references, or custody keys
+in command-line arguments, environment variables, normal stdout, the event
+store, or proof bundles.
+
+### 6. Grade observable consequences
+
+Grade hard gates before scored dimensions. Use visible messages, tool events,
+file effects, worker events, tests, runtime metadata, signed receipts, and
+human attestations. Never request or persist private chain-of-thought.
+
+Record blind absolute lane grades and blind pair grades against the frozen
+producer and grader authorities. Pre-reveal controller output may contain only
+public metadata, commitments, fingerprints, and opaque acknowledgements. It
+must not disclose plaintext grades, pair winners, or semantic arm labels.
+
+The historical response may be inspected only by an authorized custody/grader
+route and remains diagnostic. The comparison denominator is a fresh compatible
+`replay_baseline` executed before the candidate for the same episode.
+
+### 7. Reveal, compare, and prove
+
+Reveal only after every required lane and grade is terminal and the frozen
+reveal policy is satisfied:
+
+```bash
+ledger --source hylo reveal-trial --repo <repo> --reveal reveal.json
+ledger --source hylo trial-result \
+  --repo <repo> --trial-id <trial-id> --format markdown
+```
+
+After reveal, derive paired dimension deltas, hard-gate changes, dispersion,
+critical violations, observable behavior deltas, and calibration/null-trial
+results. Keep association, comparison-valid delta, supported mechanism, and
+causal claim distinct.
+
+For portable proof, obtain the exact artifact set, have the trusted source
+owner sign that set, then export and verify:
+
+```bash
+ledger --source hylo proof-artifact-set \
+  --repo <repo> --trial-id <trial-id> --output proof-artifacts.json
+
+ledger --source hylo export-proof \
+  --repo <repo> --trial-id <trial-id> --output proof.tar \
+  --sanitization-receipt proof-sanitization.json
+
+ledger --source hylo verify-proof --repo <repo> --input proof.tar
+```
+
+Proof verification establishes the declared closure and anchors. It does not
+grant target-edit, commit, push, or generalized-improvement authority.
+
+### 8. Fold campaign evidence and the causal frontier
+
+The compatible campaign fold remains available for
+`hylo-campaign/v1`, `hylo-scenario/v1`, target snapshots, attempts, grades,
+changes, publications, and progress:
+
+```bash
+ledger --source hylo validate-campaign --campaign campaign.json
+ledger --source hylo snapshot-target \
+  --repo <repo> --revision INDEX --input target-roots.json
+ledger --source hylo append --repo <repo> --json event-intent.json
+ledger --source hylo doctor --repo <repo>
 ledger --source hylo progress \
-  --repo <repo> --campaign-id <id> --format json
+  --repo <repo> --campaign-id <campaign-id> --format json
 ```
 
-Prefer the smallest next action that can change the observed failure:
+Do not confuse compatibility with authority. A `historical_baseline` event is
+diagnostic only; candidate comparison still requires a compatible prior
+`replay_baseline`.
+
+Typed causal events are:
 
 ```text
-replay same scenario for reliability
-shrink or clarify a counterexample
-add a missing deterministic oracle
-repair an environment reconstruction gap
-propose one target change through its owner skill
-promote an unseen holdout scenario
-stop because the frontier is empty or the budget is exhausted
+failure_signature_recorded
+hypothesis_recorded
+experiment_recorded
+next_step_recorded
 ```
 
-When a target skill appears deficient, emit evidence suitable for `$tune`.
-When change authority is `apply_via_owner`, route the smallest bounded repair
-through the target owner (`$tune` -> `$refine` for skills, the repository's
-normal implementation workflow for code, or `$goal-actuating` for a prepared
-goal operation). Hylo remains the campaign controller; it does not bypass the
-owner's apply gate.
+Every target-changing experiment must bind observable evidence, one mechanism,
+a bounded intervention, measurable predictions, protected controls, explicit
+falsifiers, a changed content-addressed target, and sufficient reserved
+promotion budget.
 
-After applying a candidate change through its owner:
+Derive, do not guess, the next step:
 
-1. use only failing practice evidence as repair motivation; never tune against
-   holdout or challenge results inside the same campaign;
-2. stage exactly the authorized paths and record the verified
-   `git-index:HEAD` diff, before/after target fingerprints, owner, and
-   validation evidence as `change_recorded`;
-3. before every candidate attempt, rederive the recorded staged-diff
-   fingerprint, require tracked and untracked cleanliness across every target
-   root, and snapshot `INDEX`; drift invalidates the change and requires a new
-   owner-routed `change_recorded` event;
-4. rerun every practice scenario, then reveal and grade the quarantined
-   baseline plus candidate results for untouched blind holdout/challenge cases;
-   after an eligible holdout or challenge grade is recorded, the campaign is
-   sealed against further repair;
-5. repair only a practice failure. A holdout or challenge miss requires
-   rejection or a new campaign with untouched cases; never adapt this candidate
-   from the exposed result;
-6. require the latest configured repeat cohort for every frozen scenario to
-   pass; older successes cannot hide a newer failure;
-7. when `publication_authority=commit`, review the unchanged staged diff, run the
-   repo-required source-memory checkpoint, stage only campaign-owned changes,
-   and create the commit;
-8. append `publication_recorded` with the change ID, commit SHA, committed
-   paths, target fingerprint, validation refs, and eligible promotion-grade
-   IDs.
+```bash
+ledger --source hylo frontier \
+  --repo <repo> --campaign-id <campaign-id> --format json
 
-Ledger rejects publication unless the commit's target projection exactly
-equals the snapshot graded during promotion. Overlapping edits after grading
-therefore invalidate publication rather than silently riding the old grades.
+ledger --source hylo next-experiment \
+  --repo <repo> --campaign-id <campaign-id>
+```
 
-The invocation must grant commit authority explicitly. Do not infer it from
-`iterate`, “improve,” or a terminal/persistent request. Pushing remains outside
-the Hylo v1 publication authority.
-
-### 6. Rebaseline honestly
-
-Start a new campaign when the rubric semantics, visibility policy, or required
-environment observations change. Do not splice incomparable epochs into one
-trend. A target-only change may remain in the same campaign when all comparison
-fingerprints stay fixed.
-
-## Improvement gate
-
-Claim improvement only when all hold:
-
-- source and split membership are fixed;
-- candidate attempts were blind to hidden references;
-- rubric, environment, replay policy, and required observations are comparable;
-- critical invariant violations did not increase;
-- the claimed dimension or pass-rate delta is derived from eligible events;
-- baseline and candidate grader configurations are identical;
-- holdout evidence supports generalization when the claim extends beyond practice cases;
-- uncertainty and sample size are reported.
-
-Otherwise report `practice_gain`, `incomparable`, `insufficient_evidence`, or
-`regression` rather than `improved`.
-
-## Stop conditions
-
-Stop the campaign when any configured condition fires:
+Interpret the result literally:
 
 ```text
-verified frontier empty at required reliability
-holdout threshold met with zero critical violations
-no measurable delta across an operator-declared patience window
-budget, latency, or attempt cap reached
-grader or environment validity fails
-target change requires missing authority
-human-owned ambiguity blocks a meaningful next scenario
+RUN      exactly one eligible intervention is non-dominated
+OBSERVE  one bounded read-only probe can discriminate among alternatives
+STOP     no eligible intervention, or unresolved alternatives have no bounded probe
 ```
 
-An empty practice frontier without holdout evidence is not general capability.
+Every projection reports `authority_granted:false` and
+`target_mutated:false`. A `RUN` decision selects an experiment; it does not
+authorize or apply the edit.
+
+### 9. Route an authorized repair through the owner
+
+Only practice evidence may motivate a change in the active campaign. Route the
+selected experiment through the target's owner workflow and preserve:
+
+```text
+experiment_id
+hypothesis_ids
+before and after bundle fingerprints
+before and after target snapshots
+prediction-contract fingerprint
+authorized paths and semantic change budget
+```
+
+After eligible holdout or challenge evidence is exposed for the candidate,
+reject further target changes in that campaign. A miss means reject the
+candidate or begin a new campaign with untouched cases.
+
+Publication requires explicit authority, the exact evaluated bundle and
+snapshot, the latest complete required repeat cohort, no forbidden critical
+violations, exact changed paths, and equality between the committed target
+projection and the promoted projection. Push authority remains separate.
 
 ## Output
 
 ```text
 Hylo:
-- mode / campaign / target fingerprint
-- source corpus / exclusions / split counts
-- replay fidelity / environment limitations
-- attempts / eligible grades / critical violations
-- comparable deltas / holdout result / uncertainty
-- current frontier
-- event-chain head / progress fingerprint
-- next route: replay | mutate | repair-environment | handoff-tune | rebaseline | stop | blocked
+- mode / campaign / trial / target bundle
+- episode / cut / world / runtime / fidelity limitations
+- runner-custody separation and blindness status
+- pairs / repeats / terminal lanes / eligible grades
+- hard gates / dimension deltas / behavior deltas / uncertainty
+- active failure signatures / hypotheses / experiments
+- decision: RUN | OBSERVE | STOP
+- Hylo authority_granted: false; report any owner authority separately
+- event-chain or proof identity
 ```
 
 ## Hard rules
 
-- No scenario without source lineage or an explicit synthetic parent.
-- No blind attempt may see the source response, later outcome, or hidden oracle.
-- No grade without attempt evidence and a frozen rubric fingerprint.
-- No model judge may be the sole authority for safety-critical behavior.
-- No comparison across changed grade, environment, or visibility semantics.
-- No progress claim from practice cases alone when generalization is claimed.
-- No target edit without explicit authority and the target owner's workflow.
-- No attempt before the complete frozen scenario manifest is admitted.
-- No holdout or challenge evidence may motivate a repair in the same campaign.
-- No new repair after an eligible holdout or challenge grade has been exposed.
-- No candidate comparison without a like-for-like controlled replay baseline.
-- No candidate attempt before the matching replay-baseline attempt.
-- No commit without explicit campaign publication authority and a passing blind promotion gate.
-- No promotion from cherry-picked historical passes; the latest repeat cohort must pass.
-- No publication unless committed target bytes equal the promoted target snapshot.
-- No staging unrelated paths; do not force-add locally excluded Hylo Ledger artifacts.
-- No raw capabilities, secrets, private reasoning, or unredacted sensitive data in campaign artifacts or events.
-- No hand-editing the current `.ledger/hylo/events.jsonl` adapter.
-- No fallback store writer when the native Hylo source is unavailable.
-- No infinite self-improvement claim: report the observed campaign boundary and stop rule.
+- No cut after the first causally relevant target influence.
+- No dropped or deduplicated fixed-prefix message occurrence.
+- No historical answer, future outcome, hidden oracle, or grade opening in runner input.
+- No historical response as a replay baseline or golden answer.
+- No invented world, exact-reconstruction claim, fixture response, or missing observation.
+- No target label change without a target-content change.
+- No trial change after registration; changed contracts require a new trial.
+- No lane execution without registration, lease lineage, and one-claim custody.
+- No trial lifecycle event through low-level `append`.
+- No private reasoning in attempts, grades, portable artifacts, or proofs.
+- No hard-gate failure averaged away by a scalar score.
+- No comparison across episode, world, runtime, tool/effect, oracle, grader, or visibility drift.
+- No repair motivated by exposed holdout or challenge evidence.
+- No intervention without predictions, controls, falsifiers, scope, and budget.
+- No `RUN` decision treated as mutation authority.
+- No publication from cherry-picked repeats or mismatched committed bytes.
+- No unadmitted platform-specific isolation claim or hidden OS-confinement assumption.
+- No hand-editing `.ledger/hylo/events.jsonl`.
+- No endless edit loop when the derived answer is `STOP`.

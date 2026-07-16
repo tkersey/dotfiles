@@ -1,6 +1,6 @@
 interface:
   display_name: "Hylo"
-  short_description: "Replay real sessions into measured improvement"
-  default_prompt: "Use $hylo to compile my real Codex sessions into a portable replay campaign, grade repeated attempts, and track comparable improvement in the repo-local Hylo Ledger."
+  short_description: "Compile blinded replays into causal next steps"
+  default_prompt: "Use $hylo to compile a historical Codex session at its counterfactual cut, run a blinded paired baseline/candidate trial, grade observable evidence, and derive RUN, OBSERVE, or STOP without treating the result as edit authority."
 policy:
   allow_implicit_invocation: false

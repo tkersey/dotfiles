@@ -1,170 +1,367 @@
-# Grading and progression
+# Hylo grading, comparison, and causal progression
 
-## Grade the world, trace, and answer
+## What is being measured
 
-Prefer outcome and trace evidence over final-text resemblance. Separate:
+Measure observable consequences, not resemblance to the historical answer:
 
 ```text
 world outcome       repository or external state reached
-trace behavior      tools, permissions, ordering, budgets, side effects
-answer quality      correctness, completeness, clarity, calibration
-operational cost    tokens, latency, retries, human intervention
+trace behavior      tools, workers, ordering, permissions, budgets, side effects
+answer quality      correctness, coverage, clarity, evidence, calibration
+operational cost    tokens, latency, retries, and human intervention
 ```
 
-The original response is evidence, not a golden answer. It may contain both
-good behavior and the defect the campaign is meant to improve.
+The historical response is sealed diagnostic evidence. It may help identify a
+failure after an authorized custody/grader reveal, but it is not a golden
+answer and never supplies the replay-baseline denominator.
 
-Grade that original response first as the historical diagnostic baseline.
-Then create a separate blind replay baseline for comparisons. Never claim a
-target-version delta by comparing a controlled candidate run directly against
-an unreconstructed historical response.
+## Freeze evaluation before candidate execution
+
+Freeze these contracts before the candidate runs:
+
+```text
+episode and split membership
+counterfactual cut and target slots
+world, runtime, tool registry, and effect policy
+baseline and candidate bundle identities
+trial pairs, repeats, order seed, and independence clusters
+rubric dimensions and weights
+hard gates and critical policy
+oracle authority
+absolute and pair grader authority
+producer identities, binaries, keys, and roles
+reveal, pass, stop, publication, and proof policy
+```
+
+Changed evaluation semantics require a new baseline, trial, or campaign. Do
+not splice incomparable epochs into one trend.
+
+## Hard gates before scores
+
+Examples of hard gates:
+
+```text
+required output missing
+forbidden side effect
+path-scope violation
+incorrect deterministic result
+required test failure
+schema invalid
+critical oracle failure
+hidden-reference exposure
+target, world, runtime, tool, or grader drift
+```
+
+A hard-gate failure cannot be averaged away by a high scalar score.
+
+Scored dimensions may include:
+
+```text
+task correctness
+instruction fidelity
+coverage
+evidence quality
+clarity
+tool efficiency
+latency
+token cost
+robustness
+```
+
+Use fixed-point or canonical decimal values on identity-bearing protocol
+surfaces. Let native Ledger recompute aggregates and pass/fail policy; reject a
+caller-supplied mismatch.
 
 ## Grader authority
 
-Use the strongest available authority:
+Use the strongest available observation:
 
-1. deterministic state/test/schema assertion;
+1. deterministic state, test, or schema assertion;
 2. deterministic trace invariant;
 3. model grader calibrated against human anchors;
 4. human judgment.
 
-Record disagreement instead of averaging it away. A model grader cannot be
-the sole authority for a safety-critical pass.
+Do not average genuine disagreement into false certainty. A model grader cannot
+be the sole critical authority.
 
-Campaign and scenario syntax freeze declared grader identities before replay;
-Ledger compares grades against them but does not execute or authenticate those
-graders. Treat deterministic and trace grades as credible only when their refs
-resolve to independently inspectable receipts, and treat human grades as
-authoritative only after human confirmation.
+HCTP freezes grader producers by role, producer ID/version, binary
+fingerprint, key ID, judge/oracle contract, and rubric fingerprint. Campaign
+grades freeze judge, dimension, and oracle identities in the admitted syntax.
+Ledger verifies declaration consistency and signed receipt lineage; an
+uninspectable evidence reference remains a limitation.
 
-For pass/fail events, submit every frozen rubric dimension with its frozen
-weight. Native Ledger recomputes the weighted aggregate and rejects mismatches;
-the caller cannot improve a result by changing weights or supplying a different
-scalar. Record at most one comparison-eligible grade per attempt.
+## Blinding and commitments
 
-## Blindness
+Before reveal, the controller and runner must not receive:
 
-A progress-eligible attempt must not receive:
-
-- the source response;
-- later source-session messages or outcome;
+- semantic arm identities;
+- the historical response or hidden reference;
+- later source-session outcomes;
 - hidden oracle values;
-- grades or feedback for the same holdout scenario;
-- target-specific repair hints derived from the hidden reference.
+- plaintext absolute grades;
+- pair winner or pair rationale;
+- grade openings;
+- target-specific repair hints derived from sealed evidence.
 
-Practice scenarios may become non-blind after feedback, but their later grades
-must be marked `comparison_eligible=false` unless a fresh blind variant is
-used.
+Public pre-reveal output may contain commitments, fingerprints, producer
+metadata, terminal state, and opaque acknowledgements.
 
-## Comparability
+For sealed assurance, use distinct role processes and anonymous descriptor
+delivery. Record the truth: the current proof has role and cryptographic
+separation with `os_confinement:false`, not hostile same-user isolation.
 
-Two grades are directly comparable only when all of these match:
+## Comparable paired evidence
+
+A candidate is directly comparable with a baseline only when these agree:
 
 ```text
-scenario_id
-rubric_fingerprint
-environment_fingerprint
-replay_policy_fingerprint
-required observation surface
-judge kind, identity, version, and configuration fingerprint
-per-dimension and per-oracle grader fingerprints
+episode and source profile
+counterfactual cut
+world and world-availability identity
+runtime and model projection
+tool registry and effect policy
+oracle and required observation surface
+rubric and critical policy
+absolute and pair grader authority
+split, unit, independence cluster, and repeat contract
+target common projection and target dependencies
+hidden-reference visibility
 ```
 
-The target fingerprint may differ; that difference is the candidate
-intervention. If any comparison field changes, create a new baseline or mark
-the grade incomparable.
+The treatment bundle may differ. That planned difference is the intervention.
 
-A candidate grade also requires a like-for-like controlled `replay_baseline`
-whose attempt predates the candidate attempt for that scenario. The baseline
-may be graded after the target change is frozen, which lets holdout results
-remain quarantined while preventing post-candidate baseline selection.
-Historical diagnostics never supply the comparison denominator.
+Every candidate lane requires a compatible replay-baseline lane from the
+frozen pair. In the compatibility campaign fold, the replay-baseline attempt
+must predate the candidate attempt for that scenario. Historical diagnostics
+never satisfy this requirement.
 
-## Progress views
+Invalidate or label diagnostic any comparison with unexpected drift. Do not
+repair drift by relabeling a target, world, runtime, grader, or oracle.
 
-Report at least:
+## Repeats and pairing
 
-- sample count and repeat count;
-- pass/fail counts by split;
-- critical invariant violations;
-- per-dimension means or distributions;
-- target fingerprints compared;
-- unresolved scenarios;
-- environment and grader limitations.
+When deterministic seeds exist, pair them. Otherwise use frozen balanced order
+and mandatory repeats for promotion claims.
 
-Do not let a weighted aggregate conceal a critical regression. Do not combine
-practice and holdout denominators. Report target-by-split summaries and compute
-the frontier only for the current target and configured repeat count. A repeat
-gate is the latest consecutive cohort; a newer failure reopens the frontier
-even when older passes exist.
+Report:
 
-## Improvement vocabulary
+```text
+pair and repeat count
+pass and failure count
+median, minimum, maximum, and dispersion
+critical violation count
+position or order effects
+independence-cluster coverage
+latest consecutive passing cohort
+null-trial or calibration result
+```
+
+The promotion cohort is the latest required complete cohort. A newer failure
+reopens the frontier; older successes cannot be cherry-picked around it.
+
+## Absolute and pair grades
+
+An absolute lane grade answers whether one attempt satisfies the frozen rubric
+and hard gates. A pair grade compares two opaque arms under the frozen pair
+contract. Neither may see the semantic arm map before reveal.
+
+Grade commitment/opening flow preserves:
+
+```text
+private grade outcome before reveal
+public commitment identity
+exact ordered request identity
+producer signature and role
+run-receipt binding
+opening equality at reveal
+```
+
+Treat a missing or mismatched opening, wrong producer, wrong ordered pair,
+unregistered receipt, or changed retry as invalid evidence rather than a
+recoverable score.
+
+## Observable behavior delta
+
+After reveal, explain score changes using observable differences:
+
+```text
+target activation
+tool and worker sequence
+artifact reads and writes
+constraint coverage
+response structure
+claims and citations
+hard-gate outcomes
+stop condition
+cost and latency
+```
+
+A behavior delta bridges “the score changed” and “this observable mechanism
+may have changed.” It does not reveal or infer private chain-of-thought.
+
+## Claim vocabulary
 
 Use:
 
 ```text
-improved               comparable holdout evidence supports the stated delta
-practice_gain          comparable practice evidence improved; holdout unproved
-regression             comparable evidence worsened materially
-incomparable           the comparison contract changed
-insufficient_evidence  the sample/repeat/uncertainty gate is unmet
-invalid                replay, trace, grader, or chain integrity failed
+observed_association       two observations differ; causal validity unproved
+comparison_valid_delta    frozen paired comparison supports the stated delta
+practice_gain             comparable practice evidence improved
+supported_mechanism       predictions held and controls survived within scope
+refuted_mechanism         an explicit falsifier fired
+regression                comparable evidence worsened materially
+incomparable              a required comparison contract changed
+insufficient_evidence     repeat, sample, uncertainty, or fidelity gate unmet
+invalid                   custody, replay, grader, chain, or proof integrity failed
 ```
 
-State the dimension and denominator: “correctness improved on 8/10 holdout
-scenarios across 3 blind repeats” is meaningful; “score improved” is not.
+State dimension and denominator. “Instruction fidelity improved on 8/10
+holdout units over three blind repeats” is meaningful; “the score improved” is
+not.
 
-## Frontier selection
+Do not claim causality outside the admitted episodes, worlds, runtimes,
+graders, and interventions.
 
-Choose the next scenario by this order:
+## Failure signatures
 
-1. critical invariant violation;
-2. environment or grader invalidity;
-3. reproducible holdout failure, routed to rejection or rebaseline;
-4. reproducible practice failure, eligible to motivate repair;
-5. high-uncertainty or flaky scenario;
-6. mutation that tests whether the repair transfers.
-
-One failure may produce one repair hypothesis. A target change is not
-validated until a fresh blind replay observes the expected delta without a new
-critical regression.
-
-Only practice evidence may shape a target repair. Once a holdout or challenge
-case influences a repair hypothesis, it is no longer independent promotion
-evidence; start a new campaign with untouched cases instead. Native Ledger
-therefore seals a target against further applied changes as soon as an eligible
-holdout or challenge grade for that target is recorded.
-
-## Promotion and commit
-
-Treat a candidate change as three distinct states:
+A failure signature must be observable and reusable. Bind:
 
 ```text
-applied       the owner changed the target and validation ran
-promoted      fresh comparison-eligible grades passed the campaign gate
-committed     explicit publication authority produced a commit
+predicate or hard-gate failure
+episode families and independence clusters
+affected dimensions
+evidence references
+applicability conditions
 ```
 
-Do not collapse these states. A commit without a promotion grade is not a
-Hylo-validated improvement; a promotion grade without commit authority remains
-a validated local candidate. Record the exact committed paths and never stage
-unrelated worktree changes.
+Prefer repeated signatures over anecdotes. One unexplained scalar decline is
+not yet a mechanism.
 
-Before each candidate replay, require the staged diff to retain the recorded
-fingerprint, require all target roots to be free of tracked and untracked
-contamination, and let Ledger recompute the staged target snapshot. Drift
-invalidates the change record.
+## Causal hypotheses
 
-For publication, cite exactly the latest configured repeat cohort for every
-frozen scenario; every member must pass. Native Ledger verifies the local
-commit object, tree, exact changed paths, and equality between the committed
-target projection and every promotion attempt's target snapshot. That proves
-publication scope and target identity, not remote push or generalized
-improvement.
+A hypothesis must state:
+
+```text
+mechanism claim
+observable evidence and failure signatures
+applicability context
+causal cut point
+predicted affected scope
+protected scope
+bounded candidate intervention
+explicit falsifiers
+```
+
+Statuses are typed, such as:
+
+```text
+proposed
+eligible
+supported
+refuted
+inconclusive
+superseded
+inapplicable
+```
+
+A supported hypothesis requires its predicted observation and surviving
+controls. A score change alone is insufficient.
+
+## Experiments
+
+A target intervention must:
+
+- reference an eligible hypothesis;
+- change content-addressed target identity;
+- stay inside owner authority, allowed paths, and semantic change budget;
+- predict measurable changes on admitted practice units;
+- name protected controls;
+- name explicit falsifiers;
+- classify reversibility;
+- reserve enough untouched promotion attempts.
+
+A read-only probe must answer one discriminating question, name the hypotheses
+it separates, stay bounded in cost, and leave the target unchanged.
+
+Previously refuted routes are ineligible under equivalent applicability
+conditions unless new evidence proves that those conditions changed.
+
+## Dominance and next-step selection
+
+Evaluate eligible experiments with ordinal dimensions:
+
+```text
+evidence          direct | triangulated | speculative
+discriminability unique | partial | none
+coverage          multi_failure | single_failure | anecdotal
+scope             single_rule | single_section | multi_surface
+reversibility     complete | partial | poor
+risk              low | bounded | high
+cost              low | medium | high
+```
+
+Experiment A dominates B when A is no worse on the declared decision
+dimensions, strictly better on at least one, and no broader in semantic scope.
+
+The deterministic decision is:
+
+```text
+exactly one non-dominated eligible intervention -> RUN
+multiple alternatives + bounded probe           -> OBSERVE
+no eligible intervention                         -> STOP
+multiple alternatives + no bounded probe        -> STOP
+```
+
+`RUN` selects one experiment but grants no edit authority. `OBSERVE` selects a
+read-only probe. `STOP` is the honest answer when the evidence cannot justify
+one obvious next step.
+
+The stored `next_step_recorded` body must match Ledger's recomputed decision
+exactly.
+
+## Practice, holdout, and challenge discipline
+
+Only practice evidence may shape a repair in the active campaign.
+
+Use holdout and challenge evidence only after candidate lock. Once eligible
+holdout or challenge evidence for the candidate is exposed, the campaign must
+reject further changes from that target state. A miss means rejection or a new
+campaign with untouched cases.
+
+Keep family siblings and source-dependent cases in one split. Report practice
+and holdout denominators separately.
+
+## Promotion and publication
+
+Keep these states distinct:
+
+```text
+selected    causal frontier emitted RUN
+applied     owner changed the exact bounded target surface
+promoted    complete blind cohort passed the frozen gate
+committed   explicit publication authority produced an exact commit
+pushed      separate remote authority published it
+```
+
+Promotion requires:
+
+- exact evaluated bundle and target snapshot;
+- latest complete repeat cohort for every required frozen unit;
+- all hard gates and critical policies satisfied;
+- no disallowed critical violation;
+- intact null/calibration evidence where required;
+- no grader, oracle, runtime, world, tool, or effect drift.
+
+Publication additionally requires exact changed paths, exact commit/tree, and
+equality between committed and promoted target projections. A successful
+scalar alone cannot authorize publication.
 
 ## Stop rule
 
-Treat the stop condition as reopenable campaign evidence, not proof of general
-intelligence. Close only against the configured scenario distribution,
-rubric, environment fidelity, repeat count, and budget. A new failure,
-distribution, rubric, or target version may reopen work through a new campaign.
+Stop when the compiled answer is `STOP`, when budget is exhausted, when the
+environment or grader is invalid, when promotion evidence has been exposed and
+the candidate misses, or when required owner authority is absent.
+
+Stopping is scoped to the current episodes, world, runtime, rubric, target,
+and budget. A materially new observation or campaign may reopen the work; an
+urge to keep editing may not.
