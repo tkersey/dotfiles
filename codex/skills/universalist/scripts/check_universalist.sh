@@ -4,7 +4,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 required=(
   SKILL.md README.md package.json agents/openai.yaml
-  references/universalist-overview.md references/discovery-signals.md references/language-encoding-matrix.md references/domain-algebra/algebra-driven-design.md references/domain-algebra/law-discovery-and-non-laws.md references/domain-algebra/property-test-derivation.md references/domain-algebra/agentic-workflow-algebras.md references/domain-algebra/examples-shopping-cart.md references/domain-algebra/examples-payment-lifecycle.md
+  references/universalist-overview.md references/discovery-signals.md references/decision-contract.yaml references/language-encoding-matrix.md references/domain-algebra/algebra-driven-design.md references/domain-algebra/law-discovery-and-non-laws.md references/domain-algebra/property-test-derivation.md references/domain-algebra/agentic-workflow-algebras.md references/domain-algebra/examples-shopping-cart.md references/domain-algebra/examples-payment-lifecycle.md
   references/framework-boundaries.md references/cost-model-and-false-positives.md references/structures-and-laws.md
   references/testing-playbook.md references/migration-playbooks.md references/case-studies.md
   references/examples-haskell.md references/examples-go.md references/examples-typescript.md references/examples-python.md
@@ -21,7 +21,7 @@ required=(
   templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/domain-algebra-card.md templates/law-table.md templates/non-law-ledger.md templates/property-test-plan.md
   templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md templates/composition-certificate.md
   templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md templates/effective-universal-architecture-certificate.md templates/computational-substrate-certificate.md templates/universal-synthesis-packet.md
-  scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py scripts/emit_add_pass.sh scripts/emit_domain_algebra_card.sh scripts/emit_law_table.sh scripts/emit_property_test_plan.sh
+  scripts/init_universalist_plan.sh scripts/emit_decision_receipt.py scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py scripts/emit_add_pass.sh scripts/emit_domain_algebra_card.sh scripts/emit_law_table.sh scripts/emit_property_test_plan.sh
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
   scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
   scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh scripts/emit_composition_certificate.sh
@@ -33,7 +33,7 @@ required=(
   templates/mechanics-report.md templates/mechanics/freyd-category-report.md templates/mechanics/operadic-composition-report.md templates/mechanics/codensity-presentation-report.md templates/mechanics/context-compilation-report.md templates/mechanics/sheafification-kan-report.md templates/mechanics/category-pivot-report.md templates/mechanics/syntax-semantics-report.md
   scripts/emit_mechanics_report.sh scripts/emit_kan_stub.sh scripts/emit_freyd_category.sh scripts/emit_operadic_architecture.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh
   scripts/emit_cql_context_report.sh scripts/emit_sheafification_kan.sh scripts/emit_abstraction_replacement_kan.sh
-  tests/golden/activation.yml tests/golden/output-invariants.yml
+  tests/golden/activation.yml tests/golden/output-invariants.yml tests/test_decision_observability.py
 )
 for f in "${required[@]}"; do
   test -f "$f" || { echo "missing $f" >&2; exit 1; }
@@ -148,6 +148,9 @@ for plan_contract in (
     '.ledger/universalist/plan-{plan-id}.md',
     'YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN',
     'must never reuse, truncate, or overwrite an earlier plan',
+    'references/decision-contract.yaml',
+    'scripts/emit_decision_receipt.py',
+    'exactly one root-scoped receipt',
 ):
     if plan_contract not in text:
         raise SystemExit(f'SKILL.md missing ledger plan contract: {plan_contract}')
@@ -160,6 +163,7 @@ for field in (
     '## Composition Certificate:',
     '## Boundary Normal Form status:',
     '## Category pivot / Syntax-Semantics certificate:',
+    '## Root decision receipt: pending / emitted',
 ):
     if field not in template:
         raise SystemExit(f'Universalist plan template missing field: {field}')
@@ -170,6 +174,21 @@ for token in ('ensure-ledger', 'ledger --version', '0.5.3', 'ledger create', '--
 if 'cat >' in initializer or '.universalist-plan.md' in initializer:
     raise SystemExit('plan initializer must delegate allocation to ledger')
 print('ledger-addressed plan contract ok')
+decision_contract = Path('references/decision-contract.yaml').read_text()
+for receipt_contract in (
+    'UNI-DISPOSITION-001',
+    'UNI-MINIMAL-001',
+    'UNI-MECHANICS-001',
+    'UNI-ROOT-001',
+    'one root SDR-v1 receipt',
+    'advanced mechanics disposition',
+):
+    if receipt_contract not in decision_contract:
+        raise SystemExit(f'decision contract missing: {receipt_contract}')
+for line in decision_contract.splitlines():
+    if line.strip().startswith('aliases:') and line.strip() != 'aliases: []':
+        raise SystemExit('decision contract route aliases must remain empty')
+print('decision observability contract ok')
 activation = Path('tests/golden/activation.yml').read_text()
 cases = {
     prompt: should_use == 'true'
@@ -201,6 +220,8 @@ for required_output in (
     'Source / target',
     'Law',
     'Falsifier',
+    'consequential_route_requires_one_root_receipt',
+    'one root SDR-v1 receipt',
 ):
     if required_output not in output_invariants:
         raise SystemExit(f'boundary output invariant missing: {required_output}')
@@ -218,6 +239,9 @@ for required_guidance in (
 print('global boundary mandate ok')
 print('metadata ok')
 PY
+seq skill-contract validate --file references/decision-contract.yaml --format json >/dev/null
+uv run --with pyyaml -- python3 ../tune/tools/decision_contract_lint.py references/decision-contract.yaml >/dev/null
+PYTHONDONTWRITEBYTECODE=1 uv run --with pyyaml -- python3 tests/test_decision_observability.py
 bash -n scripts/init_universalist_plan.sh
 ./scripts/emit_law_test_stub.sh coproduct typescript >/dev/null
 ./scripts/emit_add_pass.sh payment-lifecycle typescript >/dev/null

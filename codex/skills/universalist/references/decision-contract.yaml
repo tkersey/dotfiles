@@ -1,0 +1,70 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: universalist
+    kind: mixed
+    source_fingerprint: universalist-boundary-decision-v2
+  triggers:
+    - trigger_id: UNI-BOUNDARY
+      description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
+      cue_literals: [code boundary, boundary disposition, source / target, preserved / forgotten / generated / observed, law, falsifier]
+      cue_regexes: []
+      exclusions: [work wholly internal to one unchanged boundary, category theory exposition without a concrete seam]
+    - trigger_id: UNI-CONSEQUENTIAL
+      description: The boundary pass selects or preserves a route by rejecting a nearby alternative for a changed seam.
+      cue_literals: [smallest honest construction, canonical boundary artifact, preserve the existing boundary, obstruction report, advanced mechanics]
+      cue_regexes: []
+      exclusions: [ceremonial activation with no route choice, static schema example]
+  routes:
+    - route_id: UNI-PRESERVE
+      description: Preserve an already exact boundary and continue without a new abstraction.
+      aliases: []
+      terminal: "yes"
+    - route_id: UNI-ORDINARY
+      description: Apply the smallest ordinary product coproduct refinement pullback strategy or syntax construction that makes the seam exact.
+      aliases: []
+      terminal: "no"
+    - route_id: UNI-CANONICAL
+      description: Apply a named canonical boundary artifact or advanced mechanics topic because the ordinary ladder is insufficient.
+      aliases: []
+      terminal: "no"
+    - route_id: UNI-OBSTRUCT
+      description: Stop with an obstruction or explicitly justify a primitive bypass when no honest construction is available.
+      aliases: []
+      terminal: "yes"
+  clauses:
+    - clause_id: UNI-DISPOSITION-001
+      trigger_refs: [UNI-BOUNDARY]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [boundary disposition and owner, source and target worlds, preserved forgotten generated and observed information, compatibility plan, law, falsifier]
+      success_signals: [the owning seam and observable law are explicit, preservation is representable without inventing structure]
+      failure_signals: [boundary language without an owner, compatibility or falsifier omitted, symptom-only downstream patch]
+      rationale: Broad activation is useful only when every considered boundary receives an explicit disposition and executable falsifier.
+    - clause_id: UNI-MINIMAL-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [selected construction, alternatives considered, rejected route, expected outcome, resource impact]
+      success_signals: [one signal one seam one smallest honest construction, rejected alternatives are decision relevant]
+      failure_signals: [categorical label without a code or test delta, widened seam without a law requirement]
+      rationale: The decision record must expose what changed because of Universalist rather than merely proving that the skill was present.
+    - clause_id: UNI-MECHANICS-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler or lowering when mechanics are used, mechanics law and falsifier when mechanics are used]
+      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected]
+      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad codensity CQL or sheafification vocabulary, mechanics selected without an executable witness]
+      rationale: Deep mechanics should be attributable as a construction choice and should remain absent when they buy no stronger boundary.
+    - clause_id: UNI-ROOT-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [one ledger-addressed Universalist plan, one root SDR-v1 receipt, plan-bound artifact state, worker references to the root decision id]
+      success_signals: [exactly one root receipt per changed seam, a distinct seam allocates a distinct plan and decision id]
+      failure_signals: [duplicate worker receipts, one receipt spans unrelated seams, receipt emitted from a static example]
+      rationale: Root-scoped receipts preserve attribution without multiplying one architectural decision across collaborators.
+  instrumentation:
+    decision_receipt: required
+    rationale: Consequential boundary-route choices need one plan-bound receipt so Seq can separate activation from decision influence.

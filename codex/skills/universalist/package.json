@@ -1,6 +1,6 @@
 {
   "name": "universalist",
-  "version": "16.0.2",
+  "version": "16.0.3",
   "description": "Boundary-triggered Universal Architecture workflow for implementation, resolution, effective substrates, and typed composition.",
   "private": true,
   "unified_mechanics": true,

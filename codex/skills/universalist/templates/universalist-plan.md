@@ -19,5 +19,6 @@
 ## Wire/storage compatibility plan:
 ## Verification command(s):
 ## Runtime-only leftovers:
+## Root decision receipt: pending / emitted
 ## Status: planned / editing / verified / staged
 ## Next seam:

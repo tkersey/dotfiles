@@ -4,6 +4,9 @@ invariants:
   - name: boundary_trigger_requires_disposition
     when: "implementation or resolution considers a code boundary"
     required: ["Boundary and compatibility plan", "Boundary", "Disposition", "Owner", "Source / target", "Law", "Falsifier"]
+  - name: consequential_route_requires_one_root_receipt
+    when: "Universalist selects or preserves a route by rejecting a nearby alternative for a changed seam"
+    required: ["ledger-addressed plan", "decision id", "selected route", "rejected route", "advanced mechanics disposition", "law", "falsifier", "one root SDR-v1 receipt"]
   - name: track_d_requires_artifact
     when: "Track D"
     required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]

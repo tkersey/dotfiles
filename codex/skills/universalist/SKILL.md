@@ -26,6 +26,28 @@ Resolution includes PR/review findings, failing tests, regressions, migration de
 
 Activation is broad; escalation is narrow. If the existing boundary is already exact, record it as preserved and continue ordinary implementation or resolution. Do not invent categorical structure merely because the lens activated.
 
+## Trigger-to-evidence kernel
+
+When the boundary trigger fires, execute this kernel before entering the longer doctrine:
+
+1. Record the compact boundary disposition immediately:
+
+```text
+Boundary:
+Disposition: preserved / introduced / changed / repaired / removed / bypass-justified
+Owner:
+Source / target:
+Preserved / forgotten / generated / observed:
+Law:
+Falsifier:
+```
+
+2. Decide whether the route is consequential under **Decision observability**: it selects or preserves a construction for one changed seam by rejecting a nearby route.
+3. If the route is consequential, select the track, allocate one fresh ledger-addressed Universalist plan through **Step 0**, and emit exactly one root `SDR-v1`. When mutation is in scope, complete this gate before mutating the seam. A consequential `UNI-PRESERVE` decision follows the same gate.
+4. If the route is not consequential, retain the compact disposition and continue the ordinary workflow. Do not allocate a plan or emit `SDR-v1` solely because the skill activated.
+
+This kernel is the execution entrypoint. **Step -1**, **Step 0**, and **Decision observability** remain the detailed authorities for the receipt, plan, and decision contract.
+
 This is an **inner lens** for choosing the right structural move. It may trigger during ordinary implementation or resolution when a boundary is considered, but it does not replace the repo's implementation, review, or closeout workflow.
 
 This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/`, `templates/mechanics/`, and `scripts/emit_mechanics_report.sh`.
@@ -479,19 +501,7 @@ Broad rewrites without a stable seam and domains with unstable rules still trigg
 
 ## Step -1 — World and Boundary Inventory
 
-For every boundary-triggered implementation or resolution, record at least this compact boundary receipt:
-
-```text
-Boundary:
-Disposition: preserved / introduced / changed / repaired / removed / bypass-justified
-Owner:
-Source / target:
-Preserved / forgotten / generated / observed:
-Law:
-Falsifier:
-```
-
-For any non-trivial structural request, expand that receipt into the full world and boundary inventory below. This prevents fake category labels and keeps the response anchored in repo reality.
+Use the compact boundary disposition from the **Trigger-to-evidence kernel** for every boundary-triggered implementation or resolution. For any non-trivial structural request, expand it into the full world and boundary inventory below. This prevents fake category labels and keeps the response anchored in repo reality.
 
 A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
 
@@ -1135,11 +1145,38 @@ Minimum fields:
 ## Wire/storage compatibility plan:
 ## Verification command(s):
 ## Runtime-only leftovers:
+## Root decision receipt: pending / emitted
 ## Status: planned / editing / verified / staged
 ## Next seam:
 ```
 
 If context compacts, resolve the retained plan id and read that file first. If the id was lost, resolve `latest`, verify its task identity, then resume from its status line.
+
+## Decision observability
+
+Use [references/decision-contract.yaml](references/decision-contract.yaml) as the route authority for consequential Universalist decisions. A decision is consequential when the boundary pass selects or preserves a construction for one changed seam by rejecting a nearby route. Ceremonial activation does not require a receipt.
+
+After selecting the route and before mutating the implementation seam, emit exactly one root-scoped receipt from the current ledger-addressed plan:
+
+```bash
+uv run --with pyyaml -- python3 scripts/emit_decision_receipt.py \
+  --plan "$UNIVERSALIST_PLAN" \
+  --question "Which construction owns this seam?" \
+  --selected-route UNI-ORDINARY \
+  --rejected-route UNI-CANONICAL \
+  --expected-outcome "The owner boundary enforces one observable law." \
+  --disposition changed \
+  --construction "checked adapter at the owner boundary" \
+  --law "required observations are preserved" \
+  --falsifier "a mismatched source is accepted" \
+  --advanced-mechanics none \
+  --evidence-ref "code:path" \
+  --write-plan
+```
+
+The emitter derives the decision id, skill version, contract fingerprint, repository HEAD, plan id, and plan path; it validates the contract and receipt before writing. Emit its JSON output once as a root assistant message so Seq can observe the decision. Keep the same concrete receipt at the end of the plan. Do not paste a static schema example.
+
+One plan represents one changed seam and admits one receipt. Allocate a fresh plan for a distinct seam. In team mode, workers reference the root `decision_id`; they do not echo the receipt unless they own a genuinely distinct seam with its own plan. Keep route aliases empty and use exact route ids or structured receipts; generic prose aliases contaminate retrospective audits. Set `--advanced-mechanics` to `none` unless a named mechanics topic produces the concrete artifact, interpreter or projection, law, and falsifier.
 
 ## Operator loop
 
@@ -1500,6 +1537,7 @@ Core references:
 
 - `references/universalist-overview.md`
 - `references/discovery-signals.md`
+- `references/decision-contract.yaml`
 - `references/language-encoding-matrix.md`
 - `references/framework-boundaries.md`
 - `references/cost-model-and-false-positives.md`
@@ -1568,6 +1606,7 @@ Internal mechanics references from former `kan` skill:
 ## Scripts
 
 - `scripts/init_universalist_plan.sh`
+- `scripts/emit_decision_receipt.py`
 - `scripts/detect_signals.py`
 - `scripts/emit_scaffold.py`
 - `scripts/emit_boundary_adapter.py`
