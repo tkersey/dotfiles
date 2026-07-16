@@ -3,11 +3,11 @@ skill_decision_contract:
   skill:
     name: zig
     kind: mixed
-    source_fingerprint: generated-with-semantic-router-v2
+    source_fingerprint: generated-with-semantic-router-v3-tiger-style
   triggers:
   - trigger_id: ZIG-DIRECT
-    description: The task contains direct Zig files, tools, APIs, or version-sensitive
-      behavior.
+    description: The task contains direct Zig files, tools, APIs, version-sensitive behavior,
+      or an explicit Tiger Style review request.
     cue_literals:
     - .zig
     - build.zig
@@ -15,10 +15,13 @@ skill_decision_contract:
     - zig test
     - zig fmt
     - comptime
+    - TigerStyle
+    - Tiger Style
+    - ZTS-v1
     cue_regexes: []
     exclusions: []
   - trigger_id: ZIG-SEMANTIC
-    description: A known Zig repository/task contains a semantic failure-family cue.
+    description: A known Zig repository or task contains a semantic failure-family cue.
     cue_literals:
     - fingerprint
     - returned slice
@@ -26,6 +29,21 @@ skill_decision_contract:
     - verifier
     - golden
     - stale proof
+    cue_regexes: []
+    exclusions:
+    - non-Zig repository
+  - trigger_id: ZIG-BOUNDEDNESS
+    description: A known Zig surface contains work that can grow, wait, retry, recurse,
+      allocate, or fan out and therefore needs the cross-cutting Tiger Style contract.
+    cue_literals:
+    - while true
+    - recursion
+    - retry loop
+    - queue capacity
+    - timeout
+    - assertion pair
+    - catch unreachable
+    - function too long
     cue_regexes: []
     exclusions:
     - non-Zig repository
@@ -57,8 +75,7 @@ skill_decision_contract:
     - verifier-completeness
     terminal: 'no'
   - route_id: ZIG-ROUTE-REPO-CLOSURE
-    description: Synchronize repository registries, generated artifacts, and aggregate
-      proof.
+    description: Synchronize repository registries, generated artifacts, and aggregate proof.
     aliases:
     - repo-closure
     terminal: 'no'
@@ -68,7 +85,7 @@ skill_decision_contract:
     - proof-context
     terminal: 'no'
   - route_id: ZIG-ROUTE-BLOCKED
-    description: Stop when version, evidence, owner, or proof context is insufficient.
+    description: Stop when version, evidence, owner, bounds, or proof context is insufficient.
     aliases:
     - blocked
     terminal: 'yes'
@@ -77,6 +94,7 @@ skill_decision_contract:
     trigger_refs:
     - ZIG-DIRECT
     - ZIG-SEMANTIC
+    - ZIG-BOUNDEDNESS
     expected_routes:
     - ZIG-ROUTE-NONMATERIAL
     - ZIG-ROUTE-CLAIM-BINDING
@@ -91,16 +109,21 @@ skill_decision_contract:
     - Zig version
     - artifact state
     - ZSR-v1 for material work
+    - ZTS-v1 for material code or a concrete non-material reason
     - ZPE-v1 for material closure or explicit non-material reason
     success_signals:
     - semantic family selected before first edit
     - owner and proof named
+    - growing and waiting work has explicit bounds and failures
+    - safety-relevant invariants have independent assertion pairs or a reason
     - final proof matches final context
     failure_signals:
     - green build treated as sufficient for active family
     - semantic route selected after patching
+    - unbounded loop, recursion, retry, allocation, or fanout introduced
+    - operating error converted to unreachable without proof
     - stale proof after context change
-    rationale: Zig expertise must govern route selection before implementation.
+    rationale: Zig expertise must govern route selection and cross-cutting safety before implementation.
   instrumentation:
     decision_receipt: optional
-    rationale: ZSR-v1 and ZPE-v1 provide the material routing and proof evidence.
+    rationale: ZSR-v1, ZTS-v1, and ZPE-v1 provide material routing, style, and proof evidence.
