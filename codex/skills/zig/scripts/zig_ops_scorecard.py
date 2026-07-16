@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Operational scorecard for $zig routing and semantic-family effectiveness."""
+"""Operational scorecard for $zig routing, Tiger Style, and semantic-family effectiveness."""
 
 from __future__ import annotations
 
@@ -33,6 +33,7 @@ SAFE_CUES = {
         {"name": "cimport", "pattern": "@cimport", "case_insensitive": True},
         {"name": "extern_fn", "pattern": "extern fn", "case_insensitive": True},
         {"name": "compare_exchange", "pattern": "compareExchange", "case_insensitive": True},
+        {"name": "tiger_style", "pattern": "ZTS-v1", "case_insensitive": True},
     ]
 }
 
@@ -131,10 +132,10 @@ def run_decision_audit(config: Config) -> dict[str, Any]:
         return {"available": False, "reason": f"decision-audit-failed:{exc}"}
 
 
-def query_route_sessions(config: Config) -> dict[str, Any]:
+def query_marker_rows(config: Config, marker: str) -> list[dict[str, Any]]:
     seq = shutil.which("seq")
     if not seq:
-        return {"route_sessions": 0, "family_sessions": {family: 0 for family in FAMILIES}}
+        return []
     spec = {
         "dataset": "messages",
         "where": [
@@ -142,24 +143,37 @@ def query_route_sessions(config: Config) -> dict[str, Any]:
             {
                 "field": "text",
                 "op": "contains",
-                "value": "zig_semantic_route",
+                "value": marker,
                 "case_insensitive": True,
             },
         ],
         "select": ["path", "text", "timestamp"],
         "format": "jsonl",
     }
-    command = [seq, "query", "--root", config.root, "--spec", json.dumps(spec), "--since", config.since]
+    command = [
+        seq,
+        "query",
+        "--root",
+        config.root,
+        "--spec",
+        json.dumps(spec),
+        "--since",
+        config.since,
+    ]
     if config.until:
         command.extend(["--until", config.until])
     try:
-        rows = [
+        return [
             json.loads(line)
             for line in run_cmd(command).splitlines()
             if line.strip().startswith("{")
         ]
     except (RuntimeError, json.JSONDecodeError):
-        rows = []
+        return []
+
+
+def query_route_sessions(config: Config) -> dict[str, Any]:
+    rows = query_marker_rows(config, "zig_semantic_route")
     route_paths = {row.get("path") for row in rows if row.get("path")}
     family_sessions = {
         family: len(
@@ -174,10 +188,28 @@ def query_route_sessions(config: Config) -> dict[str, Any]:
     return {"route_sessions": len(route_paths), "family_sessions": family_sessions}
 
 
+def query_tiger_style_sessions(config: Config) -> dict[str, Any]:
+    rows = [
+        *query_marker_rows(config, "zig_tiger_style"),
+        *query_marker_rows(config, "ZTS-v1"),
+    ]
+    paths = {row.get("path") for row in rows if row.get("path")}
+    exception_paths = {
+        row.get("path")
+        for row in rows
+        if row.get("path") and "tiger-style: allow(" in str(row.get("text", "")).lower()
+    }
+    return {
+        "contract_sessions": len(paths),
+        "exception_sessions": len(exception_paths),
+    }
+
+
 def recommendations(
     skill_lines: int,
     trigger: dict[str, Any],
     routes: dict[str, Any],
+    tiger_style: dict[str, Any],
     decision: dict[str, Any],
 ) -> list[str]:
     recs = []
@@ -191,10 +223,19 @@ def recommendations(
         for row in trigger.get("semantic_families", {}).values()
     )
     route_sessions = int(routes.get("route_sessions", 0))
+    style_sessions = int(tiger_style.get("contract_sessions", 0))
     if opportunities and route_sessions == 0:
         recs.append("Semantic-family opportunities exist but no ZSR-v1 route artifacts were observed.")
+    if route_sessions and style_sessions == 0:
+        recs.append(
+            "ZSR-v1 routes were observed but no ZTS-v1 Tiger Style contract evidence was observed; "
+            "review material routes for boundedness and assertion proof."
+        )
     if not decision.get("available"):
-        recs.append("Decision-effect evidence unavailable; activation and route artifacts cannot prove $zig changed decisions.")
+        recs.append(
+            "Decision-effect evidence unavailable; activation and route artifacts cannot prove "
+            "$zig changed decisions."
+        )
     for family, row in trigger.get("semantic_families", {}).items():
         if int(row.get("opportunity_sessions", 0)) >= 3 and float(row.get("activation_rate_pct", 0.0)) < 50:
             recs.append(f"Strengthen contextual routing for {family}.")
@@ -214,6 +255,8 @@ def render_text(report: dict[str, Any]) -> str:
         f"routing_gap_since_applied: {str(report['routing_gap_since_applied']).lower()}",
         f"decision_audit_available: {str(report['decision_audit']['available']).lower()}",
         f"semantic_route_sessions: {report['semantic_routes']['route_sessions']}",
+        f"tiger_style_contract_sessions: {report['tiger_style']['contract_sessions']}",
+        f"tiger_style_exception_sessions: {report['tiger_style']['exception_sessions']}",
         "semantic_families:",
     ]
     for family, row in sorted(report["trigger_audit"].get("semantic_families", {}).items()):
@@ -240,7 +283,13 @@ def main() -> int:
     routing, routing_since = run_routing_gap(config)
     decision = run_decision_audit(config)
     routes = query_route_sessions(config)
-    skill_lines = sum(1 for _ in (Path(__file__).resolve().parents[1] / "SKILL.md").open(encoding="utf-8"))
+    tiger_style = query_tiger_style_sessions(config)
+    skill_lines = sum(
+        1
+        for _ in (Path(__file__).resolve().parents[1] / "SKILL.md").open(
+            encoding="utf-8"
+        )
+    )
 
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -252,11 +301,22 @@ def main() -> int:
         "routing_gap": routing,
         "trigger_audit": trigger,
         "semantic_routes": routes,
+        "tiger_style": tiger_style,
         "decision_audit": decision,
     }
-    report["recommendations"] = recommendations(skill_lines, trigger, routes, decision)
+    report["recommendations"] = recommendations(
+        skill_lines,
+        trigger,
+        routes,
+        tiger_style,
+        decision,
+    )
 
-    payload = json.dumps(report, indent=2, sort_keys=True) + "\n" if args.format == "json" else render_text(report)
+    payload = (
+        json.dumps(report, indent=2, sort_keys=True) + "\n"
+        if args.format == "json"
+        else render_text(report)
+    )
     if args.output:
         path = Path(args.output).expanduser()
         path.parent.mkdir(parents=True, exist_ok=True)

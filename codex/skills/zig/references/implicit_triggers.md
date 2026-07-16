@@ -1,6 +1,7 @@
 # Zig Implicit Trigger Taxonomy
 
-Use `$zig` when the repository/task is Zig-specific even if the user does not type `$zig`.
+Use `$zig` when the repository or task is Zig-specific even if the user does not
+type `$zig`.
 
 ## Direct Zig cues
 
@@ -15,9 +16,10 @@ zig-pkg
 .zig-cache / zig-cache / zig-out
 ZIG_GLOBAL_CACHE_DIR
 --cache-dir / --global-cache-dir
+TigerStyle / Tiger Style / ZTS-v1
 ```
 
-## Version/migration cues
+## Version and migration cues
 
 ```text
 std.Io
@@ -31,7 +33,7 @@ std.testing.Smith
 Zig 0.16
 ```
 
-## Comptime/generation cues
+## Comptime and generation cues
 
 ```text
 comptime
@@ -46,7 +48,7 @@ specialization
 @compileError / @setEvalBranchQuota
 ```
 
-## Low-level/hazard cues
+## Low-level and hazard cues
 
 ```text
 allocator ownership
@@ -60,9 +62,36 @@ atomics/concurrency
 ReleaseFast/ReleaseSmall
 ```
 
+## Tiger Style cross-cutting cues
+
+These activate the Tiger Style contract only when the repository or changed
+surface is already known to be Zig.
+
+```text
+while (true)
+recursion / recursive descent
+retry / polling / fixed point
+timeout / deadline
+queue / worklist / fanout
+maximum bytes / maximum items
+assert / assertion density / paired assertions
+positive and negative space
+catch unreachable / empty catch
+function over 70 lines
+line over 100 columns
+implicit options / default options
+control plane / data plane
+network disk memory CPU sketch
+startup allocation / fixed-capacity pool
+```
+
+Do not infer a violation from a cue alone. The cue starts boundedness,
+assertion-pair, error-class, control-flow, and performance-sketch review.
+
 ## Contextual semantic-family cues
 
-These trigger `$zig` only when the repository or changed surface is already known to be Zig.
+These trigger `$zig` only when the repository or changed surface is already
+known to be Zig.
 
 ### Claim binding
 
@@ -111,6 +140,10 @@ Once `$zig` is active:
 classify work surface
 classify semantic failure family
 emit ZSR-v1 for material changes
+emit ZTS-v1 for material code or state a concrete non-material reason
 ```
 
-Combine with repository invariant/verification skills only when their independent trigger is genuinely met. `$zig` owns Zig-specific routing, toolchain checks, proof context, and semantic-family contracts.
+Combine with repository invariant or verification skills only when their
+independent trigger is genuinely met. `$zig` owns Zig-specific routing,
+toolchain checks, proof context, semantic-family contracts, and the cross-cutting
+Tiger Style adaptation.
