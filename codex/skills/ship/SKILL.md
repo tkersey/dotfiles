@@ -180,7 +180,7 @@ gh pr create --draft --title "<title>" --body-file <body-file> --base <base> --h
 Existing PR update:
 
 ```bash
-gh pr view <pr> --json body --jq .body > <current-body-file>
+gh pr view <pr> --json body | jq -j .body > <current-body-file>
 # Replace or append only the managed proof block into <merged-body-file>.
 gh pr edit <pr> --body-file <merged-body-file>
 ```

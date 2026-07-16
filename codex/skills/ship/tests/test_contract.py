@@ -1,4 +1,6 @@
+import json
 from pathlib import Path
+import subprocess
 import unittest
 
 
@@ -26,6 +28,29 @@ class ShipContractTests(unittest.TestCase):
             self.assertIn("Preserve", text)
         self.assertIn("Never overwrite human-authored PR body content", SKILL)
         self.assertIn("unbalanced, duplicated, or ambiguous", BODY)
+
+    def test_body_acquisition_preserves_exact_bytes(self) -> None:
+        body = (
+            "Human-authored café context\n"
+            "<!-- ship-proof:start -->\nmanaged\n<!-- ship-proof:end -->\n"
+            "Human-authored suffix without a terminal newline"
+        )
+        payload = json.dumps({"body": body}, ensure_ascii=False).encode("utf-8")
+
+        result = subprocess.run(
+            ["jq", "-j", ".body"],
+            input=payload,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+
+        self.assertEqual(body.encode("utf-8"), result.stdout)
+        self.assertIn(
+            "gh pr view <pr> --json body | jq -j .body > <current-body-file>",
+            SKILL,
+        )
+        self.assertNotIn("gh pr view <pr> --json body --jq .body", SKILL)
 
     def test_promotion_updates_proof_before_ready_transition(self) -> None:
         section = SKILL.split("Existing draft promotion must update proof first:", 1)[1]
