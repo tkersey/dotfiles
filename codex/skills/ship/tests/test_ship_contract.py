@@ -38,7 +38,7 @@ class ShipContractTests(unittest.TestCase):
         payload = json.dumps({"body": body}, ensure_ascii=False).encode("utf-8")
 
         result = subprocess.run(
-            ["jq", "-j", ".body"],
+            ["jq", "-erj", ".body | strings"],
             input=payload,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -47,16 +47,61 @@ class ShipContractTests(unittest.TestCase):
 
         self.assertEqual(body.encode("utf-8"), result.stdout)
         self.assertIn(
-            "gh pr view <pr> --json body | jq -j .body > <current-body-file>",
+            "if ! gh pr view <pr> --repo <repository> --json body > <current-body-json-file>; then",
             SKILL,
         )
+        self.assertIn(
+            "if ! jq -erj '.body | strings' < <current-body-json-file> > <current-body-file>; then",
+            SKILL,
+        )
+        self.assertNotIn("gh pr view <pr> --json body | jq", SKILL)
         self.assertNotIn("gh pr view <pr> --json body --jq .body", SKILL)
+
+    def test_body_acquisition_fails_closed_before_edit(self) -> None:
+        section = SKILL.split("Existing PR update:", 1)[1]
+        section = section.split("Existing draft promotion", 1)[0]
+        fetch = section.index(
+            "if ! gh pr view <pr> --repo <repository> --json body > <current-body-json-file>; then"
+        )
+        project = section.index(
+            "if ! jq -erj '.body | strings' < <current-body-json-file> > <current-body-file>; then"
+        )
+        edit = section.index(
+            "gh pr edit <pr> --repo <repository> --body-file <merged-body-file>"
+        )
+        self.assertLess(fetch, project)
+        self.assertLess(project, edit)
+        self.assertEqual(2, section.count("exit 1"))
+        self.assertNotIn("| jq", section)
+
+    def test_body_acquisition_rejects_missing_or_malformed_body(self) -> None:
+        for payload in (b"{}", b'{"body": null}', b'{"body": 42}', b"not-json"):
+            with self.subTest(payload=payload):
+                result = subprocess.run(
+                    ["jq", "-erj", ".body | strings"],
+                    input=payload,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    check=False,
+                )
+                self.assertNotEqual(0, result.returncode)
+
+    def test_all_github_commands_use_explicit_repository(self) -> None:
+        section = SKILL.split("## Command policy", 1)[1]
+        section = section.split("## Publication postconditions", 1)[0]
+        command_lines = [line for line in section.splitlines() if "gh pr " in line]
+        self.assertGreaterEqual(len(command_lines), 7)
+        for line in command_lines:
+            with self.subTest(line=line):
+                self.assertIn("--repo <repository>", line)
 
     def test_promotion_updates_proof_before_ready_transition(self) -> None:
         section = SKILL.split("Existing draft promotion must update proof first:", 1)[1]
         section = section.split("After every create, update, or promotion", 1)[0]
-        edit = section.index("gh pr edit <pr> --body-file <merged-body-file>")
-        ready = section.index("gh pr ready <pr>")
+        edit = section.index(
+            "gh pr edit <pr> --repo <repository> --body-file <merged-body-file>"
+        )
+        ready = section.index("gh pr ready <pr> --repo <repository>")
         self.assertLess(edit, ready)
         self.assertIn("Never promote a draft before updating", SKILL)
 

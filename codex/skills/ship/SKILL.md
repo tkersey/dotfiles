@@ -163,39 +163,48 @@ For a new PR, the body may consist only of this block. For an existing PR:
 
 ## Command policy
 
-Use GitHub CLI where applicable.
+Use GitHub CLI where applicable. Pass the intended `repository` explicitly to
+every PR observation and mutation; never rely on the current directory or
+`GH_REPO` to select the public-effect target.
 
 Ready PR creation:
 
 ```bash
-gh pr create --title "<title>" --body-file <body-file> --base <base> --head <branch>
+gh pr create --repo <repository> --title "<title>" --body-file <body-file> --base <base> --head <branch>
 ```
 
 Draft PR creation only when `pr_decision.final_state: draft`:
 
 ```bash
-gh pr create --draft --title "<title>" --body-file <body-file> --base <base> --head <branch>
+gh pr create --repo <repository> --draft --title "<title>" --body-file <body-file> --base <base> --head <branch>
 ```
 
 Existing PR update:
 
 ```bash
-gh pr view <pr> --json body | jq -j .body > <current-body-file>
+if ! gh pr view <pr> --repo <repository> --json body > <current-body-json-file>; then
+  echo "blocked: unable to fetch current PR body" >&2
+  exit 1
+fi
+if ! jq -erj '.body | strings' < <current-body-json-file> > <current-body-file>; then
+  echo "blocked: PR body response is missing or malformed" >&2
+  exit 1
+fi
 # Replace or append only the managed proof block into <merged-body-file>.
-gh pr edit <pr> --body-file <merged-body-file>
+gh pr edit <pr> --repo <repository> --body-file <merged-body-file>
 ```
 
 Existing draft promotion must update proof first:
 
 ```bash
-gh pr edit <pr> --body-file <merged-body-file>
-gh pr ready <pr>
+gh pr edit <pr> --repo <repository> --body-file <merged-body-file>
+gh pr ready <pr> --repo <repository>
 ```
 
 After every create, update, or promotion, read back live state:
 
 ```bash
-gh pr view <pr> \
+gh pr view <pr> --repo <repository> \
   --json number,url,state,isDraft,baseRefName,baseRefOid,headRefName,headRefOid,body
 ```
 
