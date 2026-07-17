@@ -408,6 +408,12 @@ Worktree cleanup is complete only when no inventory record contains
 
 ## 11. Branch cleanup
 
+If requested cleanup observes that the exact local or remote branch ref is
+already absent, record `already-absent` as a successful no-op. Prove absence by
+querying the exact ref; an API error, inaccessible repository, or ambiguous
+lookup is `blocked`, not absence. Never report `deleted` when this landing
+attempt performed no deletion.
+
 Remote branch deletion requires:
 
 ```text

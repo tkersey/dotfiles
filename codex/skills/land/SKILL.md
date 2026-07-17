@@ -220,6 +220,9 @@ before deleting the local branch. See the exact algorithm in
 Delete the remote branch only when the live remote ref still equals the landed
 head OID and the head repository is the intended deletion target. Delete the
 local branch only when its ref still equals the landed head OID, no worktree is associated with it, and the current worktree is on the updated base branch.
+If requested cleanup observes that the exact local or remote branch ref is
+already absent, report `already-absent` as a successful no-op; never claim that
+the landing workflow deleted it.
 
 Under squash merge, a force branch deletion may be necessary because the landed
 commit is not an ancestor of the squash commit. Use it only after the OID and

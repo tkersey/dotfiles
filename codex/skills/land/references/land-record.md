@@ -62,12 +62,12 @@ land_record:
     remote_branch:
       requested: yes | no
       observed_oid:
-      action: deleted | preserved | not-requested | blocked
+      action: deleted | already-absent | preserved | not-requested | blocked
       reason:
     local_branch:
       requested: yes | no
       observed_oid:
-      action: deleted | preserved | not-requested | blocked
+      action: deleted | already-absent | preserved | not-requested | blocked
       reason:
     overall: complete | degraded | not-requested | blocked
 
@@ -89,6 +89,9 @@ land_record:
   rewrite a successful merge as failed.
 - Worktree items are reported independently. Do not collapse a dirty or locked
   worktree into a generic branch-deletion failure.
+- `already-absent` is a successful no-op only when requested cleanup proves the
+  exact local or remote branch ref was absent before mutation. It must not imply
+  that this landing attempt deleted the ref.
 - `admin_override` must remain false unless the user explicitly authorized a
   specific bypass in the current landing attempt.
 - Copied SHIP-v1 fields may be referenced in surrounding evidence, but LAND-v1

@@ -104,6 +104,16 @@ class LandContractTests(unittest.TestCase):
             self.assertIn(field, RECORD)
         self.assertIn("cleanup blocker does not", RECORD)
 
+    def test_branch_cleanup_records_an_already_absent_ref_truthfully(self) -> None:
+        action = (
+            "action: deleted | already-absent | preserved | not-requested | blocked"
+        )
+        self.assertEqual(2, RECORD.count(action))
+        self.assertIn("already absent", SKILL)
+        self.assertIn("already absent", PROTOCOL)
+        self.assertIn("performed no deletion", PROTOCOL)
+        self.assertIn("absent before mutation", RECORD)
+
     def test_pure_evaluator_and_contract_are_packaged(self) -> None:
         self.assertIn("evaluate_preflight.py", SKILL)
         self.assertIn("The evaluator is pure", PROTOCOL)
