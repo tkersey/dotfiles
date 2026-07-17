@@ -491,6 +491,22 @@ Use a **Freyd category** when values and computations share types, pure code sho
 
 Do not introduce these structures when ordinary composition is already exact, the grammar changes no code or tests, or a smaller sum/product/interface suffices.
 
+## Comonadic Spatiality Selector
+
+Use comonadic spatiality only when locality changes correctness, ownership, authority, evidence, or another required observation. Prefer an ordinary labelled graph or context object when it already makes the seam exact.
+
+Before selecting this mechanics family, require:
+
+- named points and local patches;
+- explicit local-to-global identity and provenance;
+- an effective finite, bounded, indexed, incremental, or queryable halo;
+- center/counit and nested-neighborhood coherence;
+- a basis/reconstruction witness or explicit non-basis status;
+- restriction/germ behavior, locality-preserving transport, and a resource law;
+- a falsifier where the point survives but required locality or labels do not.
+
+When those obligations change the artifact and proof, read `references/comonadic-spatiality-doctrine.md` and `references/mechanics/comonads-as-spaces.md`, then use `scripts/emit_comonadic_spatiality.sh` or the `comonad-space`, `density-comonad`, `halo`, and `continuous-comonad-map` topics in `scripts/emit_mechanics_report.sh`. Distinguish comonad coalgebras from behavioral coalgebras and ordinary comonad maps from continuous locality-preserving maps.
+
 ## Do not trigger for
 
 - Work wholly internal to one established boundary that does not choose, change, preserve, validate, migrate, bypass, remove, or resolve boundary behavior.
@@ -773,6 +789,9 @@ Choose by where the unknown lives:
 | In typed hierarchical component assembly | Colored operad / operadic wiring syntax | interpretation preserves substitution; illegal wiring rejected |
 | After a source-to-target boundary `K` | Transported semantics / Lan-style | identity or embedding path preserves behavior |
 | In coherent behavior under observations | Coherent observations / Ran/Yoneda-style | overlapping observations commute |
+| In coherent local context around points | Comonadic spatiality | center and nested-neighborhood laws; locality falsifier |
+| In patches intended to generate situated objects | Density comonad / basis | canonical reconstruction or explicit non-basis obstruction |
+| Across a locality-sensitive boundary | Continuous comonadic map / spatial boundary | required halos, restrictions, identities, and labels are preserved |
 | Behind a projection `P` | Lifted implementation / Kan-lift-style | `project(realize(case)) == required(case)` |
 | Behind `P`, but canonical construction is possible | Free builder behind projection | `project(free(required(case)))` satisfies required behavior |
 | Behind `P`, but construction is impossible | Obstruction report | named loss of evidence/template/constraint |
@@ -1512,7 +1531,7 @@ Then read the relevant internal mechanics reference or run:
 ./scripts/emit_mechanics_report.sh <topic> <language>
 ```
 
-Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, possibility sheafification, category pivots, and syntax/semantics.
+Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, comonadic spatiality, density comonads, halos, continuous comonadic maps, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, possibility sheafification, category pivots, and syntax/semantics.
 
 
 For Track I and team mode, read:
@@ -1561,6 +1580,7 @@ Universal architecture references:
 - `references/universal-architecture-law-tests.md`
 - `references/universal-composition-doctrine.md`
 - `references/composition-certificates.md`
+- `references/comonadic-spatiality-doctrine.md`
 - `references/boundary-normal-form.md references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md`
 
 
@@ -1597,6 +1617,7 @@ Internal mechanics references from former `kan` skill:
 - `references/mechanics/freyd-aft.md`
 - `references/mechanics/yoneda-coyoneda.md`
 - `references/mechanics/codensity-presentations.md`
+- `references/mechanics/comonads-as-spaces.md`
 - `references/mechanics/defunctionalization.md`
 - `references/mechanics/context-compilation.md`
 - `references/mechanics/cql-context-management.md`
@@ -1630,6 +1651,8 @@ Internal mechanics references from former `kan` skill:
 - `scripts/emit_category_pivot.sh`
 - `scripts/emit_syntax_semantics_certificate.sh`
 - `scripts/emit_mechanics_report.sh`
+- `scripts/emit_comonadic_spatiality.sh`
+- `scripts/check_comonadic_spatiality.sh`
 - `scripts/emit_effective_universal_architecture.sh`
 - `scripts/emit_substrate_certificate.sh`
 - `scripts/emit_universalist_team_prompt.sh`

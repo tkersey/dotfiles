@@ -5,6 +5,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
 required=(
+  SKILL.md
   references/comonadic-spatiality-doctrine.md
   references/mechanics/comonads-as-spaces.md
   templates/mechanics/comonadic-spatiality-report.md
@@ -37,6 +38,12 @@ require_text references/mechanics/comonads-as-spaces.md "ordinary comonad map !=
 require_text references/mechanics/comonads-as-spaces.md "local point"
 require_text references/mechanics/comonads-as-spaces.md "Labelled halos"
 require_text references/mechanics/comonads-as-spaces.md "basis supports canonical reconstruction"
+require_text SKILL.md "## Comonadic Spatiality Selector"
+require_text SKILL.md 'references/comonadic-spatiality-doctrine.md'
+require_text SKILL.md 'references/mechanics/comonads-as-spaces.md'
+require_text SKILL.md 'scripts/emit_comonadic_spatiality.sh'
+require_text SKILL.md "Prefer an ordinary labelled graph or context object"
+require_text SKILL.md "ordinary comonad maps from continuous locality-preserving maps"
 require_text references/presentation-strategies.md "Density-comonadic spatial presentation"
 require_text references/exact-context-doctrine.md "Context as a germ"
 require_text references/possibility-sheafification.md "Density generates locality"
