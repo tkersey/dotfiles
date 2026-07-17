@@ -2,7 +2,7 @@
 name: learnings
 description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings through the repo-local `ledger --source learnings` API. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
-  version: "7.0.0"
+  version: "7.1.0"
 ---
 
 # Learnings
@@ -44,14 +44,17 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 
 Before the first native Ledger command in this workflow, load `$ledger` and
 complete `$ledger ensure`. Learnings doctor/migration recovery requires Ledger
-`>= 0.5.2`; after readiness, run `ledger --version` and block or perform an
-authorized Homebrew upgrade when the version is older. Only then invoke the
-learnings commands directly.
+`>= 0.5.2`; exact single-record `show` requires Ledger `>= 0.10.5`. After
+readiness, run `ledger --version` and block or perform an authorized Homebrew
+upgrade when the version is older than the command this workflow requires.
+Only then invoke the learnings commands directly.
 
 Use `ledger capture --source learnings` for writes and native query, recall,
-recent, doctor, and path commands for reads and diagnostics. Treat the source
-API and returned learning ID as canonical identity. Do not open or hand-edit
-the current persistent adapter during normal operation. Legacy
+recent, doctor, and path commands for reads and diagnostics. Use
+`ledger show --source learnings --id lrn-...` for an exact single-record read;
+it is the source-owned alias for `export --format full`. Treat the source API
+and returned learning ID as canonical identity. Do not open or hand-edit the
+current persistent adapter during normal operation. Legacy
 `.ledger/learnings/learnings.jsonl` and
 `.learnings.jsonl` are read only during migration. Use
 `ledger migrate --source learnings --mode copy` to copy old rows into the
@@ -173,8 +176,9 @@ the canonical disposition.
 6. Retain the appended learning ID from the capture receipt, then run
    `ledger doctor --source learnings` and a focused native recall or query to
    verify the source remains readable through its API.
-7. Before any Codex-made commit, inspect the current learning through native
-   Ledger commands. Do not read the persistent adapter directly.
+7. Before any Codex-made commit, inspect the current learning through
+   `ledger show --source learnings --id <reported-id>`. Do not read the
+   persistent adapter directly.
 8. Retain exactly one canonical learning proof line in working evidence. Include
    source-memory proof in the final user-facing reply only when it changed
    repo-visible state, needs user action, explains a blocker/error, or the user
