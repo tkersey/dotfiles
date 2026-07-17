@@ -30,10 +30,25 @@
 - Syntax:
 - Semantics:
 - Effects:
-- State/coalgebra:
+- State / behavioral coalgebra:
 - Observations:
 - Canonical constructions:
 - Presentation strategy:
+
+## Spatial worlds, when applicable
+
+- Points:
+- Local patch vocabularies / subbases:
+- Basis / canonical reconstruction claims:
+- Local points / global points / identification maps:
+- Comonads or practical spatial approximations:
+- Coalgebras / situated-object semantics:
+- Representative halos:
+- Labelled-halo fields:
+- Germ / restriction semantics:
+- Continuous locality-preserving boundaries:
+- Topological/category shadows and information loss:
+- Effective representation / invalidation:
 
 ## Resource model
 
@@ -43,6 +58,8 @@
 - Failure/recovery:
 - Security/capabilities:
 - Persistence/deployment:
+- Halo size/traversal/basis reconstruction:
+- Spatial index freshness/invalidation:
 
 ## Laws and falsifiers
 
@@ -51,6 +68,11 @@
 - Composition:
 - Effect/state law:
 - Observation law:
+- Center/counit and neighborhood-coherence law:
+- Restriction/germ law:
+- Basis-density/reconstruction law:
+- Continuity/labelled-halo law:
+- Local/global identity/provenance law:
 - Resource claim:
 - Strongest falsifier:
 
@@ -58,6 +80,7 @@
 
 - Input:
 - Path through substrate:
+- Local/spatial context:
 - Observable result:
 - Verification commands:
 
@@ -66,7 +89,9 @@
 - Exact construction unavailable:
 - Approximation boundary:
 - Missing evidence/primitives:
+- Non-effective halo/basis:
+- Discontinuous boundary:
 
 ## Status
 
-planned / synthesized / challenged / implemented / verified / obstructed
+planned / synthesized / challenged / implemented / verified / approximated / obstructed
