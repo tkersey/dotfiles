@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Land"
-  short_description: "Help with Land tasks and workflows"
-  default_prompt: "Use $land for this task."
+  short_description: "Safely merge a ready GitHub PR and clean its state"
+  default_prompt: "Use $land to verify the exact PR and head commit, merge or wait for queue completion, prove live merged state, and safely clean branches and associated worktrees."

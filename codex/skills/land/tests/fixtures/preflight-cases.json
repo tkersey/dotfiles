@@ -1,0 +1,328 @@
+{
+  "already-merged": {
+    "checks": {
+      "items": [
+        {
+          "bucket": "pass",
+          "name": "tests",
+          "required": true
+        },
+        {
+          "bucket": "pass",
+          "name": "lint",
+          "required": true
+        }
+      ],
+      "required_expected": true
+    },
+    "expected": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "pr_number": 42,
+      "repository": "octo/example"
+    },
+    "merge": {
+      "admin_override": false,
+      "branch_up_to_date": true,
+      "conflict_free": true,
+      "delivery_mode": "immediate",
+      "method_allowed": true,
+      "policy_satisfied": true
+    },
+    "observed": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "is_draft": false,
+      "merge_commit_oid": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "merged_at": "2026-07-17T19:00:00Z",
+      "pr_number": 42,
+      "repository": "octo/example",
+      "state": "MERGED"
+    },
+    "policy": {
+      "allow_required_skipping": false,
+      "approvals_required": true
+    },
+    "reviews": {
+      "explicit_blockers": 0,
+      "inventory_complete": true,
+      "requested_changes_active": false,
+      "review_decision": "APPROVED",
+      "unresolved_threads": 0
+    }
+  },
+  "auto": {
+    "checks": {
+      "items": [
+        {
+          "bucket": "pass",
+          "name": "tests",
+          "required": true
+        },
+        {
+          "bucket": "pass",
+          "name": "lint",
+          "required": true
+        }
+      ],
+      "required_expected": true
+    },
+    "expected": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "pr_number": 42,
+      "repository": "octo/example"
+    },
+    "merge": {
+      "admin_override": false,
+      "branch_up_to_date": true,
+      "conflict_free": true,
+      "delivery_mode": "auto",
+      "method_allowed": true,
+      "policy_satisfied": true
+    },
+    "observed": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "is_draft": false,
+      "pr_number": 42,
+      "repository": "octo/example",
+      "state": "OPEN"
+    },
+    "policy": {
+      "allow_required_skipping": false,
+      "approvals_required": true
+    },
+    "reviews": {
+      "explicit_blockers": 0,
+      "inventory_complete": true,
+      "requested_changes_active": false,
+      "review_decision": "APPROVED",
+      "unresolved_threads": 0
+    }
+  },
+  "cancelled": {
+    "checks": {
+      "items": [
+        {
+          "bucket": "cancel",
+          "name": "tests",
+          "required": true
+        },
+        {
+          "bucket": "pass",
+          "name": "lint",
+          "required": true
+        }
+      ],
+      "required_expected": true
+    },
+    "expected": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "pr_number": 42,
+      "repository": "octo/example"
+    },
+    "merge": {
+      "admin_override": false,
+      "branch_up_to_date": true,
+      "conflict_free": true,
+      "delivery_mode": "immediate",
+      "method_allowed": true,
+      "policy_satisfied": true
+    },
+    "observed": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "is_draft": false,
+      "pr_number": 42,
+      "repository": "octo/example",
+      "state": "OPEN"
+    },
+    "policy": {
+      "allow_required_skipping": false,
+      "approvals_required": true
+    },
+    "reviews": {
+      "explicit_blockers": 0,
+      "inventory_complete": true,
+      "requested_changes_active": false,
+      "review_decision": "APPROVED",
+      "unresolved_threads": 0
+    }
+  },
+  "head-mismatch": {
+    "checks": {
+      "items": [
+        {
+          "bucket": "pass",
+          "name": "tests",
+          "required": true
+        },
+        {
+          "bucket": "pass",
+          "name": "lint",
+          "required": true
+        }
+      ],
+      "required_expected": true
+    },
+    "expected": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "pr_number": 42,
+      "repository": "octo/example"
+    },
+    "merge": {
+      "admin_override": false,
+      "branch_up_to_date": true,
+      "conflict_free": true,
+      "delivery_mode": "immediate",
+      "method_allowed": true,
+      "policy_satisfied": true
+    },
+    "observed": {
+      "base_ref": "main",
+      "head_oid": "ffffffffffffffffffffffffffffffffffffffff",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "is_draft": false,
+      "pr_number": 42,
+      "repository": "octo/example",
+      "state": "OPEN"
+    },
+    "policy": {
+      "allow_required_skipping": false,
+      "approvals_required": true
+    },
+    "reviews": {
+      "explicit_blockers": 0,
+      "inventory_complete": true,
+      "requested_changes_active": false,
+      "review_decision": "APPROVED",
+      "unresolved_threads": 0
+    }
+  },
+  "merge-now": {
+    "checks": {
+      "items": [
+        {
+          "bucket": "pass",
+          "name": "tests",
+          "required": true
+        },
+        {
+          "bucket": "pass",
+          "name": "lint",
+          "required": true
+        }
+      ],
+      "required_expected": true
+    },
+    "expected": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "pr_number": 42,
+      "repository": "octo/example"
+    },
+    "merge": {
+      "admin_override": false,
+      "branch_up_to_date": true,
+      "conflict_free": true,
+      "delivery_mode": "immediate",
+      "method_allowed": true,
+      "policy_satisfied": true
+    },
+    "observed": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "is_draft": false,
+      "pr_number": 42,
+      "repository": "octo/example",
+      "state": "OPEN"
+    },
+    "policy": {
+      "allow_required_skipping": false,
+      "approvals_required": true
+    },
+    "reviews": {
+      "explicit_blockers": 0,
+      "inventory_complete": true,
+      "requested_changes_active": false,
+      "review_decision": "APPROVED",
+      "unresolved_threads": 0
+    }
+  },
+  "queue": {
+    "checks": {
+      "items": [
+        {
+          "bucket": "pass",
+          "name": "tests",
+          "required": true
+        },
+        {
+          "bucket": "pass",
+          "name": "lint",
+          "required": true
+        }
+      ],
+      "required_expected": true
+    },
+    "expected": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "pr_number": 42,
+      "repository": "octo/example"
+    },
+    "merge": {
+      "admin_override": false,
+      "branch_up_to_date": true,
+      "conflict_free": true,
+      "delivery_mode": "queue",
+      "method_allowed": true,
+      "policy_satisfied": true
+    },
+    "observed": {
+      "base_ref": "main",
+      "head_oid": "0123456789abcdef0123456789abcdef01234567",
+      "head_ref": "feature/land-v2",
+      "head_repository": "octo/example",
+      "is_draft": false,
+      "pr_number": 42,
+      "repository": "octo/example",
+      "state": "OPEN"
+    },
+    "policy": {
+      "allow_required_skipping": false,
+      "approvals_required": true
+    },
+    "reviews": {
+      "explicit_blockers": 0,
+      "inventory_complete": true,
+      "requested_changes_active": false,
+      "review_decision": "APPROVED",
+      "unresolved_threads": 0
+    }
+  }
+}

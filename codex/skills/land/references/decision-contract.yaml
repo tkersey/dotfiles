@@ -1,0 +1,99 @@
+skill_decision_contract:
+  contract_version: SKDC-v1
+  skill:
+    name: land
+    kind: mixed
+    source_fingerprint: land-v2-exact-head-postcondition-worktree-cleanup
+  triggers:
+    - trigger_id: LAND-EXPLICIT-INTENT
+      description: The user explicitly asks to merge, land, or finish one GitHub pull request.
+      cue_literals: [$land, land this PR, merge this PR, finish this PR]
+      cue_regexes: []
+      exclusions: [watch checks only, close without merge, delete branch only, sync local state only]
+    - trigger_id: LAND-LIVE-STATE
+      description: Live PR state must be classified before an irreversible merge or cleanup action.
+      cue_literals: [headRefOid, reviewDecision, merge queue, auto-merge, MERGED]
+      cue_regexes: []
+      exclusions: []
+    - trigger_id: LAND-CLEANUP
+      description: A merged PR's local branch, remote branch, or associated worktree requires cleanup.
+      cue_literals: [delete branch, worktree cleanup, git worktree]
+      cue_regexes: []
+      exclusions: [detached worktree at the same commit, unmerged PR cleanup]
+  routes:
+    - route_id: LAND-MERGE-NOW
+      description: Merge the exact approved head immediately with an exact-head guard, then verify live merged state.
+      aliases: [merge-now]
+      terminal: "no"
+    - route_id: LAND-QUEUE-WAIT
+      description: Admit the exact approved head to the merge queue and wait for live merged state.
+      aliases: [queue-and-wait]
+      terminal: "no"
+    - route_id: LAND-AUTO-WAIT
+      description: Enable explicitly authorized auto-merge for the exact approved head and wait for live merged state.
+      aliases: [auto-merge-and-wait]
+      terminal: "no"
+    - route_id: LAND-CLEANUP-ONLY
+      description: Skip merge mutation because the exact PR is already merged and perform guarded cleanup only.
+      aliases: [cleanup-only]
+      terminal: "no"
+    - route_id: LAND-COMPLETE
+      description: Emit LAND-v1 after live merged-state proof and independently verified cleanup outcomes.
+      aliases: [merged-and-cleaned, merged-with-degraded-cleanup]
+      terminal: "yes"
+    - route_id: LAND-BLOCK
+      description: Preserve state because identity, evidence, policy, authority, postcondition, or cleanup safety is incomplete.
+      aliases: [blocked]
+      terminal: "yes"
+  clauses:
+    - clause_id: LAND-IDENTITY-001
+      trigger_refs: [LAND-EXPLICIT-INTENT, LAND-LIVE-STATE]
+      expected_routes: [LAND-MERGE-NOW, LAND-QUEUE-WAIT, LAND-AUTO-WAIT, LAND-CLEANUP-ONLY, LAND-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [repository, PR number, base ref, head repository, head ref, expected head OID]
+      success_signals: [all live identity fields match one immutable target]
+      failure_signals: [branch-name-only targeting, changed head, mismatched repository or PR]
+      rationale: Irreversible actions require an exact repository and commit target.
+    - clause_id: LAND-FRESHNESS-001
+      trigger_refs: [LAND-LIVE-STATE]
+      expected_routes: [LAND-MERGE-NOW, LAND-QUEUE-WAIT, LAND-AUTO-WAIT, LAND-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [fresh complete thread inventory, structured reviews, terminal required-check buckets, merge policy snapshot]
+      success_signals: [all evidence was rebuilt after the final material mutation]
+      failure_signals: [stale review sweep, partial pagination, canceled required check treated as green]
+      rationale: A push or review mutation invalidates prior landing evidence.
+    - clause_id: LAND-MUTATION-001
+      trigger_refs: [LAND-EXPLICIT-INTENT, LAND-LIVE-STATE]
+      expected_routes: [LAND-MERGE-NOW, LAND-QUEUE-WAIT, LAND-AUTO-WAIT, LAND-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [expected head OID, repository-approved merge method, exact-head mutation]
+      success_signals: [merge command binds expected head, no bundled branch deletion, no unauthorized admin bypass]
+      failure_signals: [missing match-head guard, delete-branch bundled into merge, implicit admin override]
+      rationale: The mutation must fail rather than land a different head or bypass policy silently.
+    - clause_id: LAND-POSTCONDITION-001
+      trigger_refs: [LAND-LIVE-STATE]
+      expected_routes: [LAND-COMPLETE, LAND-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [live MERGED state, mergedAt, merge commit OID, expected landed head OID]
+      success_signals: [live postcondition passes before cleanup]
+      failure_signals: [queued or auto-enabled reported as merged, cleanup starts before MERGED readback]
+      rationale: Command success and queue admission are not terminal landing proof.
+    - clause_id: LAND-WORKTREE-001
+      trigger_refs: [LAND-CLEANUP]
+      expected_routes: [LAND-COMPLETE, LAND-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [NUL-safe worktree inventory, exact branch association, per-worktree head and cleanliness proof]
+      success_signals: [linked worktrees removed without force, primary worktree switched to base, no associated record remains]
+      failure_signals: [detached worktree deleted by OID, dirty or locked worktree forced away, directory removed with rm -rf]
+      rationale: Worktrees can hold unique local state and must be cleaned before branch deletion without destructive inference.
+    - clause_id: LAND-CLEANUP-001
+      trigger_refs: [LAND-CLEANUP]
+      expected_routes: [LAND-COMPLETE, LAND-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [landed head OID, remote ref readback, local ref readback, final worktree inventory]
+      success_signals: [each cleanup surface reports an independent verified result]
+      failure_signals: [branch ref drift ignored, cleanup failure rewrites merge outcome, implicit force deletion]
+      rationale: Cleanup is a post-merge transaction with separate remote, local, and worktree facts.
+  instrumentation:
+    decision_receipt: optional
+    rationale: LAND-v1 is the required operational receipt; emit SDR-v1 only when route selection needs separate tuning evidence.
