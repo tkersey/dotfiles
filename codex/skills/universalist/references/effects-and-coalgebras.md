@@ -1,6 +1,6 @@
 # Effects and Coalgebras
 
-These two artifact families complete Track D for systems that are not just syntax or migration.
+These artifact families cover systems that are not just static syntax or migration. Distinguish effect interpretation, behavioral unfolding, and comonadic situatedness.
 
 ## Effect signatures and handlers
 
@@ -74,8 +74,62 @@ First seam examples:
 - one stream processor state update;
 - one domain lifecycle with external observations.
 
+## Comonad coalgebras / situated objects
+
+Use when the problem is not primarily how a state evolves, but how an object is coherently situated inside a local neighborhood, scope, dependency region, evidence context, capability region, or other spatial world.
+
+Code/mechanics shape:
+
+```text
+C : S -> S
+epsilon : C => Id
+delta : C => C . C
+h : E -> C(E)
+```
+
+Reading:
+
+```text
+C(E)       E-valued local views
+h(e)       the local context assigned to e
+epsilon    e is the center of its context
+delta      local contexts of nearby points agree coherently
+```
+
+Proof signals:
+
+```text
+epsilon(h(e)) == e
+C(h)(h(e)) == delta(h(e))
+restrict(germ, smallerValidHalo) preserves center meaning
+continuousBoundary preserves required halos and labels
+```
+
+First seam examples:
+
+- a symbol plus scope/call/test/ownership neighborhood;
+- an endpoint plus tenant/principal/policy/persistence neighborhood;
+- a task plus evidence/provenance/capability neighborhood;
+- a schema object plus mappings/constraints/report neighborhood;
+- a component plus provider/dependency/configuration neighborhood.
+
+## Density comonads and bases
+
+Use when local patch types generate the situated world:
+
+```text
+P : B -> S
+<P> = Lan_P P
+```
+
+A subbasis generates a candidate spatial structure. A basis additionally permits canonical reconstruction of every situated object from basic patches. Example coverage alone is not density.
+
 ## Selection rule
 
 - Choose **free syntax/effects** when the main smell is many interpreters for the same operations.
-- Choose **coalgebra** when the main smell is ongoing behavior with duplicated transition/observation logic.
-- Combine them when a workflow program drives a stateful runtime.
+- Choose **behavioral coalgebra** when the main smell is ongoing behavior with duplicated transition/observation logic.
+- Choose **comonadic spatiality** when locality, neighborhoods, restriction, local/global identity, or continuity are semantic.
+- Combine free effects with behavioral coalgebra when a workflow program drives a stateful runtime.
+- Combine behavioral and comonad coalgebras when a situated process both evolves over time and must preserve its local context.
+
+Guardrail: a type named `Context<T>` is not evidence of a comonad. Require center, nested-context coherence, situated-object laws, effective halos, and a locality-changing proof signal.

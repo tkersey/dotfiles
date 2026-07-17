@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v2
+    source_fingerprint: universalist-boundary-decision-v3
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -21,7 +21,7 @@ skill_decision_contract:
       aliases: []
       terminal: "yes"
     - route_id: UNI-ORDINARY
-      description: Apply the smallest ordinary product coproduct refinement pullback strategy or syntax construction that makes the seam exact.
+      description: Apply the smallest ordinary product coproduct refinement pullback strategy syntax graph or context construction that makes the seam exact.
       aliases: []
       terminal: "no"
     - route_id: UNI-CANONICAL
@@ -29,7 +29,7 @@ skill_decision_contract:
       aliases: []
       terminal: "no"
     - route_id: UNI-OBSTRUCT
-      description: Stop with an obstruction or explicitly justify a primitive bypass when no honest construction is available.
+      description: Stop with an obstruction or explicitly justify a primitive bypass when no honest or effective construction is available.
       aliases: []
       terminal: "yes"
   clauses:
@@ -53,9 +53,9 @@ skill_decision_contract:
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler or lowering when mechanics are used, mechanics law and falsifier when mechanics are used]
+      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport or locality representation when mechanics are used, mechanics law and falsifier when mechanics are used]
       success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected]
-      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad codensity CQL or sheafification vocabulary, mechanics selected without an executable witness]
+      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout comonad density halo codensity CQL or sheafification vocabulary, comonadic spatiality without center coherence effective halo basis or continuity evidence, mechanics selected without an executable witness]
       rationale: Deep mechanics should be attributable as a construction choice and should remain absent when they buy no stronger boundary.
     - clause_id: UNI-ROOT-001
       trigger_refs: [UNI-CONSEQUENTIAL]

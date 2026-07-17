@@ -2,7 +2,7 @@
 
 Single drop-in Universal Architecture workflow for domain algebra, law discovery, structural refactoring, and universal-construction-driven software synthesis. This version folds the former `kan` skill into `universalist` as an internal mechanics layer, so `$universalist` is the only top-level skill needed for this doctrine.
 
-It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It now folds Algebra-Driven Design into Track A0 so local worlds are discovered through carriers, operations, observations, laws, non-laws, interpreters, and property tests before escalation. It adds Track D for universal architecture boundaries: free syntax, coherent observations, pullback witnesses, pushout integration, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, explicit IR, and law tests.
+It keeps the Universalist intent: **one signal, one seam, one smallest honest construction**. It folds Algebra-Driven Design into Track A0 so local worlds are discovered through carriers, operations, observations, laws, non-laws, interpreters, and property tests before escalation. Track D covers free syntax, coherent observations, pullback witnesses, pushout integration, transported semantics, lifted implementations, Freyd/AFT-style free-builder diagnostics, obstruction reports, behavioral coalgebras, effect signatures with handlers, Freyd/premonoidal effect boundaries, operadic component grammars, comonadic spatiality, explicit IR, and law tests.
 
 ## Install
 
@@ -20,7 +20,7 @@ chmod +x scripts/*.sh scripts/*.py
 
 `$universalist` is implicitly invoked whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal, including ordinary feature work and PR/review resolution.
 
-Activation is broad; escalation is proportional. The boundary pass may preserve an already exact seam and return to ordinary delivery. Stronger constructions are justified only when the pass finds drift, invalid states, hidden composition, lossy projection, uncertified context, or another structural liability.
+Activation is broad; escalation is proportional. The boundary pass may preserve an already exact seam and return to ordinary delivery. Stronger constructions are justified only when the pass finds drift, invalid states, hidden composition, lossy projection, uncertified context, lost locality, or another structural liability.
 
 The skill decides whether the boundary should remain ordinary or needs:
 
@@ -28,11 +28,12 @@ The skill decides whether the boundary should remain ordinary or needs:
 - canonical boundary artifact;
 - lifted implementation or obstruction report;
 - behavioral coalgebra for stateful/protocol behavior;
+- comonadic spatiality for coherent local context, halos, and locality-preserving boundaries;
 - effect signature and handlers;
 - observation/generation vocabulary;
 - explicit first-order IR.
 
-Use `$universalist` for the full boundary workflow. Detailed Kan extension/lift, Freyd/AFT, pullback/pushout, Yoneda/Coyoneda, codensity, categorical-data, graph-rewrite, and defunctionalization mechanics now live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`; load them only after the boundary pass justifies escalation.
+Use `$universalist` for the full boundary workflow. Detailed Kan extension/lift, Freyd/AFT, pullback/pushout, comonads-as-spaces, Yoneda/Coyoneda, density/codensity, categorical-data, graph-rewrite, and defunctionalization mechanics live inside `references/mechanics/` and `scripts/emit_mechanics_report.sh`; load them only after the boundary pass justifies escalation.
 
 ## Ledger-addressed plans
 
@@ -82,7 +83,9 @@ Ordinary code lives inside boundaries. Universal artifacts live at boundaries.
 
 ## Worlds and boundaries practice
 
-This version makes worlds and boundaries the first Track D step. Before selecting Kan, Freyd/AFT, pullback/pushout, Yoneda/Coyoneda, defunctionalization, effects, or coalgebras, the skill asks for worlds, objects, transformations, invariants, observations, primitives, composition rules, boundary kind, what is preserved/forgotten/generated/observed, and the law that would catch drift.
+Worlds and boundaries are the first Track D step. Before selecting Kan, Freyd/AFT, pullback/pushout, comonadic spatiality, Yoneda/Coyoneda, defunctionalization, effects, or coalgebras, the skill asks for worlds, objects, transformations, invariants, observations, primitives, composition rules, boundary kind, what is preserved/forgotten/generated/observed, and the law that would catch drift.
+
+When locality is semantic, the world inventory additionally asks for points, local patches/subbasis, local and global identities, an effective basis or explicit non-basis, representative halos and labels, restriction/germ behavior, continuity, and resource-bounded implementation.
 
 The rule is:
 
@@ -93,7 +96,7 @@ Do not allow arbitrary composition across architecture boundaries.
 
 ## Presentation strategy update
 
-This version adds semantic compression and dense-dual presentation diagnostics. Track D now asks not only which canonical artifact belongs at a boundary, but how the artifact is presented: algebraically, codensity/dense-dual, mixed, or primitive. Track E Composition Certificates now include a Presentation section with probes, dual/observation bridge, reconstruction law, domain-specific assumptions, and falsifier.
+Track D asks not only which canonical artifact belongs at a boundary, but how the artifact is presented: algebraically, codensity/dense-dual, density-comonadic spatial, mixed, or primitive. Track E Composition Certificates include a Presentation section with probes, local patches, basis/halo representation, reconstruction/restriction laws, domain-specific assumptions, and falsifier.
 
 Useful command:
 
@@ -103,15 +106,17 @@ Useful command:
 
 ## Exact Context Doctrine
 
-This version treats context preparation as a first-class universal-architecture concern. Use Track F when any semantic consumer needs exactly the right data at exactly the right time: model, human reviewer, policy engine, compiler pass, workflow scheduler, deployment controller, BI dashboard, auditor, action selector, or agent runtime.
+Use Track F when any semantic consumer needs exactly the right data at exactly the right time: model, human reviewer, policy engine, compiler pass, workflow scheduler, deployment controller, BI dashboard, auditor, action selector, or agent runtime.
 
 The core rule is: **Allow arbitrary sources. Forbid uncertified semantic consumption.**
 
 A context is prepared by compiling candidate source data into a task-indexed, schema-shaped, constraint-closed, provenance-preserving, freshness-valid, observationally minimal context instance before rendering it to a prompt, dashboard, JSON payload, review packet, policy input, decision packet, or tool argument.
 
+When locality changes correctness, the task/consumer is treated as a point, its relevant semantic neighborhood as an effective halo, and `Context(q)` as a certified germ/section over that halo. Retrieval output is not automatically the halo.
+
 ## Verified Context Plane
 
-This version adds the neutral, universal framing from the CQL/context work:
+The neutral, universal framing is:
 
 ```text
 Operational stores own mutation.
@@ -132,9 +137,11 @@ Useful commands:
 
 Track G treats the codebase as a usage site. Local uses are sections; shared fields, tests, traces, and observations are overlaps. A correct architecture-level abstraction behaves like a sheaf: compatible local meanings glue uniquely to one global meaning. Use this track to replace inexact abstractions with canonical artifacts and produce a Sheafification Certificate.
 
+Comonadic spatiality adds a prior question when locality is under-modeled: does the patch vocabulary merely cover examples, generate a subbasis, or form a genuine/effectively approximated basis that canonically reconstructs situated objects? Density generates locality; sheafification glues within it.
+
 ## Category Pivot / Syntax-Semantics
 
-Track H adds Easy-World Transfer. Use it when a problem is hard because it is being solved in the ordinary executable-program world even though syntax, semantics, posets, relations, coalgebras, schema instances, resource models, or presheaf sites would make the structure explicit. The most important agentic case is syntax/semantics: plans, tool calls, policies, memory queries, patches, and workflows should be explicit syntax when they need inspection before execution; handlers/interpreters give semantics; laws certify soundness and adequacy.
+Track H adds Easy-World Transfer. Use it when a problem is hard because it is being solved in the ordinary executable-program world even though syntax, semantics, posets, relations, coalgebras, schema instances, resource models, presheaf sites, or comonadic spaces would make the structure explicit. The most important agentic case is syntax/semantics: plans, tool calls, policies, memory queries, patches, and workflows should be explicit syntax when they need inspection before execution; handlers/interpreters give semantics; laws certify soundness and adequacy.
 
 Useful commands:
 
@@ -144,9 +151,43 @@ Useful commands:
 ./scripts/emit_syntax_semantics_certificate.sh ToolOperation typescript
 ```
 
+## Comonadic spatiality: worlds have halos
+
+Use this mechanics family when locality, scope, dependency, ownership, capability, evidence, or context neighborhoods are part of correctness.
+
+```text
+points                 symbols, modules, endpoints, states, tasks, entities
+local patches          scopes, dependency regions, evidence/capability contexts
+<P> = Lan_P P          density comonad generated by the patch vocabulary
+coalgebras             coherently situated objects
+halos                  effective/formal neighborhoods around points
+germs                   values or evidence valid on a sufficiently local patch
+continuous boundaries  point maps that also preserve required locality
+```
+
+Core maxims:
+
+```text
+Worlds have halos.
+Context is a germ.
+Boundaries preserve locality.
+```
+
+Use a plain labelled graph or context object when sufficient. Escalation requires center/counit and nested-neighborhood coherence, effective halo/basis representation, restriction, labelled-halo preservation, continuity, resource laws, and falsifiers. An ordinary comonad map is not automatically a continuous map; a fixture catalog is not automatically a basis; a local point is not automatically the same as its global identity.
+
+Useful commands:
+
+```bash
+./scripts/emit_mechanics_report.sh comonad-space typescript
+./scripts/emit_mechanics_report.sh density-comonad agnostic
+./scripts/emit_mechanics_report.sh halo typescript
+./scripts/emit_mechanics_report.sh continuous-comonad-map agnostic
+bash ./scripts/check_comonadic_spatiality.sh
+```
+
 ## Composition geometry: Freyd categories and operads
 
-Track D now selects not only a canonical artifact but the weakest honest **composition geometry**:
+Track D selects not only a canonical artifact but the weakest honest **composition geometry**:
 
 ```text
 category                sequential transformations
@@ -158,7 +199,7 @@ traced/coalgebraic       feedback and ongoing behavior
 resource-sensitive      consumable, graded, or permissioned resources
 ```
 
-The former `freyd` mechanics name was ambiguous. Use:
+The former `freyd` mechanics name is ambiguous. Use:
 
 ```bash
 ./scripts/emit_mechanics_report.sh freyd-aft agnostic
@@ -170,7 +211,7 @@ A bare `freyd` mechanics request fails with a disambiguation message rather than
 
 ## Pullbacks, pushouts, and graph rewriting
 
-The mechanics layer now treats these as general software constructions rather than only a context-reconciliation analogy:
+The mechanics layer treats these as general software constructions rather than only a context-reconciliation analogy:
 
 ```text
 pullback        canonical witness that two values agree through a shared projection
@@ -194,7 +235,7 @@ bash ./scripts/check_pullback_pushout_mechanics.sh
 
 ## Unified mechanics layer
 
-The former standalone `kan` skill is now folded into this skill as an internal mechanics layer:
+The former standalone `kan` skill is folded into this skill as an internal mechanics layer:
 
 ```text
 references/mechanics/
@@ -206,7 +247,7 @@ Use the unified workflow:
 
 ```text
 $universalist identifies the signal, seam, worlds, boundary, artifact, witness, law, falsifier, and certificate.
-Mechanics references elaborate Kan/Yoneda/Coyoneda/Freyd/pullback/pushout/codensity/CQL/sheafification only when needed.
+Mechanics references elaborate Kan/Yoneda/Coyoneda/Freyd/pullback/pushout/comonadic-spatiality/density/codensity/CQL/sheafification only when needed.
 ```
 
 Useful mechanics commands:
@@ -217,6 +258,10 @@ Useful mechanics commands:
 ./scripts/emit_mechanics_report.sh pullback typescript
 ./scripts/emit_mechanics_report.sh pushout agnostic
 ./scripts/emit_mechanics_report.sh double-pushout agnostic
+./scripts/emit_mechanics_report.sh comonad-space typescript
+./scripts/emit_mechanics_report.sh density-comonad agnostic
+./scripts/emit_mechanics_report.sh halo typescript
+./scripts/emit_mechanics_report.sh continuous-comonad-map agnostic
 ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
 ./scripts/emit_mechanics_report.sh cql-context agnostic
 ./scripts/emit_mechanics_report.sh sheafification typescript
@@ -228,7 +273,7 @@ You can safely remove `codex/skills/kan`; this package is self-contained.
 
 ## Effective universal substrate and custom-agent workflow
 
-This version adds Track I and a bundled categorical-substrate team. The target thesis is:
+Track I and the bundled categorical-substrate team target this thesis:
 
 ```text
 I can implement any computable software on an effective universal computational substrate

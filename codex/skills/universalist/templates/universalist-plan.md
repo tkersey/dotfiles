@@ -7,6 +7,7 @@
 ## Worlds / boundaries inventory:
 ## Boundary kind:
 ## Pullback / pushout square:
+## Spatial geometry / halo:
 ## Composition geometry:
 ## Boundary law:
 ## Freyd/AFT boundary diagnostic:

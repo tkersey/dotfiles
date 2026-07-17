@@ -28,3 +28,15 @@ invariants:
   - name: double_pushout_requires_complement_check
     when: "double pushout or graph rewrite"
     required: ["Preserved interface", "Pushout complement", "Dangling/identification conditions", "Obstruction report", "Rewrite trace"]
+  - name: comonadic_spatiality_requires_locality_laws
+    when: "comonadic spatiality or comonad as space"
+    required: ["Points", "Local patches", "Center/counit law", "Neighborhood coherence", "Effective halo", "Restriction/germ law", "Labelled-halo fields", "Continuity law", "Resource law", "Locality falsifier"]
+  - name: density_basis_requires_reconstruction
+    when: "density comonad or basis"
+    required: ["Patch vocabulary/subbasis", "Local points", "Global points", "Local-to-global map", "Basis or explicit non-basis", "Canonical reconstruction", "Basis-density witness", "Obstruction"]
+  - name: continuous_spatial_boundary_requires_halo_preservation
+    when: "continuous comonadic map or locality-preserving boundary"
+    required: ["Point map", "Halo-map direction", "Coalgebra/context transport", "Labels preserved/translated/forgotten", "Restriction law", "Continuity law", "Continuity falsifier"]
+  - name: spatial_context_requires_germ_and_budget
+    when: "Context(q) is modeled as a germ"
+    required: ["Task point", "Effective halo", "Local/global identity", "Restriction rules", "Provenance", "Freshness", "Halo budget", "Rendering continuity"]

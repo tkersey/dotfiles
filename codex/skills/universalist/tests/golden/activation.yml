@@ -51,3 +51,15 @@ cases:
   - prompt: "Rewrite this typed architecture graph by deleting one pattern, preserving its interface, and adding a replacement."
     should_use_skill: true
     expected: ["double pushout", "pushout complement", "preserved interface", "obstruction"]
+  - prompt: "Before editing this symbol, compute its dependency, ownership, test, and provenance neighborhood and preserve that locality through the refactor."
+    should_use_skill: true
+    expected: ["comonadic spatiality", "halo", "labelled", "continuity law", "resource budget"]
+  - prompt: "These local patches cover our examples; determine whether they form a basis that canonically reconstructs every situated object."
+    should_use_skill: true
+    expected: ["density comonad", "subbasis", "basis", "canonical reconstruction", "obstruction"]
+  - prompt: "The new API preserves entity IDs but loses scope and capability context."
+    should_use_skill: true
+    expected: ["continuous map", "point map", "halo preservation", "locality falsifier"]
+  - prompt: "Treat this nearby-files list as a comonad even though there is no extract, duplicate, restriction, or locality law."
+    should_use_skill: true
+    expected: ["reject", "plain dependency graph", "no comonad claim", "falsifier"]
