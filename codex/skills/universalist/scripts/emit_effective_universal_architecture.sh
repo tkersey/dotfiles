@@ -29,9 +29,22 @@ cat <<OUT
 - worlds and boundaries:
 - syntax and semantics:
 - effects and handlers:
-- state / coalgebra / protocol:
+- state / behavioral coalgebra / protocol:
 - canonical constructions:
 - presentation strategy:
+
+## Spatial worlds, when applicable
+- points:
+- local patch vocabularies / subbases:
+- basis / reconstruction claims:
+- local points / global points / identification maps:
+- comonads or practical spatial approximations:
+- coalgebras / situated objects:
+- representative and labelled halos:
+- germ / restriction semantics:
+- continuous locality-preserving boundaries:
+- topological/category shadows and forgotten observations:
+- effective representation / invalidation:
 
 ## Resource model
 - time / space:
@@ -39,17 +52,25 @@ cat <<OUT
 - concurrency / failure:
 - security / capability:
 - persistence / deployment:
+- halo size / traversal / basis reconstruction:
+- spatial index freshness / invalidation:
 
 ## Laws, falsifier, obstruction
 - soundness:
 - adequacy/completeness:
 - observation law:
+- center/counit and neighborhood coherence:
+- restriction/germ law:
+- basis-density/reconstruction law:
+- continuity/labelled-halo law:
+- local/global identity/provenance law:
 - resource claim:
 - strongest falsifier:
 - obstruction / approximation:
 
 ## Witness seam
 - first end-to-end slice:
+- local/spatial context:
 - verification commands:
 - stop point:
 OUT
