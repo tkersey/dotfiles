@@ -48,17 +48,17 @@ require_text tests/golden/output-invariants.yml "comonadic_spatiality_requires_l
 
 bash -n scripts/emit_comonadic_spatiality.sh
 bash -n scripts/emit_mechanics_report.sh
-./scripts/emit_comonadic_spatiality.sh space agnostic >/dev/null
-./scripts/emit_comonadic_spatiality.sh density agnostic >/dev/null
-./scripts/emit_comonadic_spatiality.sh halo typescript >/dev/null
-./scripts/emit_comonadic_spatiality.sh continuous agnostic >/dev/null
-./scripts/emit_comonadic_spatiality.sh compare agnostic >/dev/null
-./scripts/emit_mechanics_report.sh comonad-space agnostic >/dev/null
-./scripts/emit_mechanics_report.sh density-comonad agnostic >/dev/null
-./scripts/emit_mechanics_report.sh halo typescript >/dev/null
-./scripts/emit_mechanics_report.sh continuous-comonad-map agnostic >/dev/null
+bash scripts/emit_comonadic_spatiality.sh space agnostic >/dev/null
+bash scripts/emit_comonadic_spatiality.sh density agnostic >/dev/null
+bash scripts/emit_comonadic_spatiality.sh halo typescript >/dev/null
+bash scripts/emit_comonadic_spatiality.sh continuous agnostic >/dev/null
+bash scripts/emit_comonadic_spatiality.sh compare agnostic >/dev/null
+bash scripts/emit_mechanics_report.sh comonad-space agnostic >/dev/null
+bash scripts/emit_mechanics_report.sh density-comonad agnostic >/dev/null
+bash scripts/emit_mechanics_report.sh halo typescript >/dev/null
+bash scripts/emit_mechanics_report.sh continuous-comonad-map agnostic >/dev/null
 
-if ./scripts/emit_comonadic_spatiality.sh nonsense agnostic >/dev/null 2>&1; then
+if bash scripts/emit_comonadic_spatiality.sh nonsense agnostic >/dev/null 2>&1; then
   echo "unknown comonadic spatiality mode must fail" >&2
   exit 1
 fi
