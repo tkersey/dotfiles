@@ -21,6 +21,10 @@ Available mechanics topics:
 - pushout
 - pullback-pushout
 - double-pushout
+- comonad-space
+- density-comonad
+- halo
+- continuous-comonad-map
 - yoneda
 - defunctionalization
 - codensity-presentation
@@ -41,6 +45,10 @@ Examples:
   ./scripts/emit_mechanics_report.sh pullback typescript
   ./scripts/emit_mechanics_report.sh pushout agnostic
   ./scripts/emit_mechanics_report.sh double-pushout agnostic
+  ./scripts/emit_mechanics_report.sh comonad-space typescript
+  ./scripts/emit_mechanics_report.sh density-comonad agnostic
+  ./scripts/emit_mechanics_report.sh halo typescript
+  ./scripts/emit_mechanics_report.sh continuous-comonad-map agnostic
   ./scripts/emit_mechanics_report.sh kan-lift typescript
   ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
   ./scripts/emit_mechanics_report.sh cql-context agnostic
@@ -66,6 +74,14 @@ OUT
     bash ./scripts/emit_pullback_pushout_report.sh compare "$language" ;;
   double-pushout|dpo|graph-rewrite)
     bash ./scripts/emit_pullback_pushout_report.sh dpo "$language" ;;
+  comonad-space|comonads-as-spaces|spatiality|spatial-world)
+    ./scripts/emit_comonadic_spatiality.sh space "$language" ;;
+  density-comonad|density-comonads|subbasis|basis)
+    ./scripts/emit_comonadic_spatiality.sh density "$language" ;;
+  halo|halos|labelled-halo|labeled-halo|germ|germs)
+    ./scripts/emit_comonadic_spatiality.sh halo "$language" ;;
+  continuous-comonad-map|continuous-comonadic-map|locality-preserving|spatial-continuity)
+    ./scripts/emit_comonadic_spatiality.sh continuous "$language" ;;
   freyd)
     echo "Ambiguous mechanics topic: freyd" >&2
     echo "Use 'freyd-aft' for the adjoint-functor/free-builder diagnostic or 'freyd-category' for effectful call-by-value composition." >&2
