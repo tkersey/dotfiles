@@ -1,43 +1,259 @@
 ---
 name: land
-description: "Land GitHub PRs end-to-end: update branch/PR, confirm reviews resolved, monitor CI until green, squash-merge, and clean local/remote state. Use for `$land`, finish/land/merge/close a PR, watch checks/runs, squash-merge, delete branch, or sync local state."
+description: "Safely finish an explicitly selected GitHub PR: bind exact repository/base/head identity, close review blockers, verify required checks, merge or wait for queue/auto-merge completion, prove live MERGED state, and then clean remote/local branches and associated worktrees. Use only for explicit `$land` or unmistakable merge/land intent. Do not use merely to watch CI, close an unmerged PR, delete a branch, sync local state, or open/update a PR."
 ---
 
 # Land
 
-## Overview
-Land a PR end-to-end: push updates, watch checks, squash-merge, and clean up state.
+## Purpose
 
-## Workflow
-1) Identify the PR and target branch.
-   - Use `gh pr view` (current branch) or `gh pr list` to locate it.
+Land one explicitly selected pull request as a fail-closed transaction.
 
-2) Update the PR.
-   - Ensure the branch is up to date, run required checks, and push:
-     - `git status`, fix issues, then `git push`.
+Core rule:
 
-3) Confirm and close review conversations before merge.
-   - Fetch a complete review-thread inventory before merging. Include `totalCount`, `pageInfo{hasNextPage endCursor}`, thread `id`, `isResolved`, `isOutdated`, location, and latest comment URL/body. For example:
-     - `gh api graphql -f owner='<owner>' -f repo='<repo>' -F number=<pr> -f query='query($owner:String!,$repo:String!,$number:Int!,$cursor:String){repository(owner:$owner,name:$repo){pullRequest(number:$number){reviewThreads(first:100,after:$cursor){totalCount pageInfo{hasNextPage endCursor} nodes{id isResolved isOutdated path line comments(last:1){nodes{author{login} body url}}}}}}}'`
-   - If `pageInfo.hasNextPage` is true, page through every review thread until the collected node count equals `totalCount`; API failure, missing `totalCount`, or partial collection blocks the merge.
-   - Do not merge while any review thread has `isResolved: false`, including outdated threads. For every unresolved thread, choose an explicit disposition first: address with code/docs, resolve-thread-only because it is obsolete/withdrawn, or block/defer with user approval.
-   - If an unresolved thread was addressed by the PR changes, resolve the GitHub thread with `gh api graphql -f threadId='<thread-id>' -f query='mutation($threadId:ID!){resolveReviewThread(input:{threadId:$threadId}){thread{id isResolved}}}'`, then refetch the complete thread inventory.
-   - Immediately before `gh pr merge`, rerun the complete paginated review-thread sweep and require `unresolved_count == 0`, `hasNextPage == false`, and the checked `headRefOid` to match the merge command's `--match-head-commit` value. A stale sweep from before the final push or before thread resolution does not count.
-   - Also inspect `gh pr view --comments` and latest reviews for top-level comments or reviews that are not thread-resolvable; treat unresolved questions, requested changes, or explicit blockers as merge blockers until addressed or clearly withdrawn.
+```text
+Mutation success is not landing success.
+Do not clean branches or worktrees until live GitHub state proves the intended PR is MERGED.
+```
 
-4) Monitor checks until green.
-   - Use `gh pr checks --watch` or `gh run watch <run-id>`.
-   - If checks fail, fix, push, and re-watch.
+`$ship` owns PR creation, proof publication, and draft-to-ready promotion. `$land`
+consumes live state and may consume SHIP-v1 as a hint, but copied receipts are
+never authoritative for merge readiness.
 
-5) Squash-merge the PR.
-   - Prefer `gh pr merge --squash --delete-branch` unless repo policy dictates otherwise.
-   - If approvals are missing, request them before merging.
+## Activation boundary
 
-6) Clean up local state.
-   - Fetch the updated mainline, switch to it, and delete the merged branch.
+Use `$land` for explicit `$land`, merge, land, or finish-the-PR intent.
+
+Do not use `$land` merely to:
+
+- watch checks or workflow runs;
+- close or abandon an unmerged PR;
+- delete a branch or worktree without a merged-PR target;
+- synchronize ordinary local state;
+- open, update, or promote a PR; use `$ship`.
+
+The skill is side-effecting and must remain explicit-invocation only.
+
+## Input
+
+Establish one immutable target before any mutation:
+
+```yaml
+land_input:
+  repository: owner/name
+  pr_number:
+  pr_url:
+  expected:
+    base_ref:
+    base_oid:
+    head_repository: owner/name
+    head_ref:
+    head_oid:
+  requested_merge_method: merge | squash | rebase | repo-policy
+  cleanup:
+    remote_branch: yes | no
+    local_branch: yes | no
+    associated_worktrees: yes | no
+```
+
+Resolve the repository and PR explicitly. Never infer an irreversible target
+from a branch name alone. Require the live repository, PR number, base ref, head
+repository, head ref, and head OID to match the target. Record the base OID as a
+preflight fact; merge queues may legitimately advance the base before the PR
+lands.
+
+## State model
+
+Choose exactly one mode:
+
+```text
+merge-now
+queue-and-wait
+auto-merge-and-wait
+cleanup-only
+blocked
+```
+
+- `merge-now`: every gate passes and the repository permits immediate merge.
+- `queue-and-wait`: every admission gate passes and repository policy requires a merge queue.
+- `auto-merge-and-wait`: every admission gate passes and explicit repository/user policy selects auto-merge.
+- `cleanup-only`: the exact PR is already merged and only post-merge cleanup remains.
+- `blocked`: target identity, evidence, policy, or authority is incomplete or inconsistent.
+
+A draft PR, closed-unmerged PR, conflicting PR, changed head, active requested
+changes, incomplete review inventory, missing approval, or non-green required
+check is `blocked`. Do not silently reopen, promote, update, override, or retarget.
+
+## Freshness invariant
+
+Every push, branch update, review-thread resolution, approval change, or other
+material PR mutation invalidates all cached landing evidence.
+
+After the final mutation, rebuild one fresh snapshot containing:
+
+- exact target identity and `headRefOid`;
+- complete paginated review-thread inventory;
+- structured review decision, latest reviews, and review requests;
+- final required-check buckets;
+- conflict, branch-freshness, merge-method, queue, and repository-policy state.
+
+Run the pure evaluator:
+
+```bash
+uv run python3 codex/skills/land/scripts/evaluate_preflight.py <snapshot.json>
+```
+
+Proceed only when its route matches the intended mode. See
+[references/landing-protocol.md](references/landing-protocol.md).
+
+## Review gate
+
+Fetch every review-thread page. Require the collected node count to equal
+`totalCount`, the final `hasNextPage` to be false, and every page to report the
+same expected head OID. API failure, missing counts, duplicate/partial pages, or
+head drift blocks landing.
+
+Every unresolved thread requires one explicit disposition:
+
+```text
+fixed-and-evidenced
+obsolete-and-explicitly-withdrawn
+resolve-only-with-user-authorization
+still-blocking
+needs-reviewer-clarification
+```
+
+Do not equate `isOutdated` with resolved. Resolve a GitHub thread only when the
+concern is objectively fixed or explicitly withdrawn; ambiguous design concerns,
+questions, and reviewer-owned blockers remain open. After any resolution,
+rebuild the complete inventory.
+
+Use structured `reviewDecision`, `latestReviews`, and `reviewRequests` before
+interpreting free-form top-level comments. An explicit unresolved human blocker
+still blocks even when GitHub's normalized review decision appears permissive.
+
+## Required-check gate
+
+`gh pr checks --watch` is only a waiter. After it returns, read a structured
+final snapshot with `name`, `state`, `bucket`, and `link`.
+
+For required checks:
+
+- `pass` is accepted;
+- `fail`, `pending`, or `cancel` blocks;
+- `skipping` blocks unless repository policy explicitly accepts that required context as skipped;
+- an empty required-check set is accepted only after proving repository policy requires none.
+
+Never interpret command exit zero alone as green.
+
+## Merge mutation
+
+Immediately before mutation, recapture the exact live `headRefOid`. Pass that
+same OID to the merge command's exact-head guard.
+
+- Never bundle cleanup into the merge command; do not use `--delete-branch`.
+- Never use `--admin` unless the user explicitly authorizes a named protection bypass after seeing the exact blocked rule.
+- Keep the merge method aligned with repository policy.
+- A queue or auto-merge submission is nonterminal. Continue monitoring until live state is actually merged.
+
+If the head OID changes, the merge must fail or stop. Do not retarget the attempt
+to the new head automatically.
+
+## Landing postcondition
+
+Before reporting success or cleaning anything, read live PR state and prove:
+
+```text
+repository and PR still match the target
+state == MERGED
+mergedAt is non-null
+mergeCommit OID is non-null
+landed head OID == expected head OID
+```
+
+For queue and auto-merge modes, wait through all nonterminal states. A successful
+submission, enabled auto-merge request, or queue admission is not a completed
+landing.
+
+## Cleanup transaction
+
+Cleanup is post-merge and independently reported. A cleanup blocker does not
+undo a successful merge; it produces a degraded cleanup result.
+
+Order:
+
+```text
+associated worktrees
+remote head branch
+local head branch
+final verification
+```
+
+### Associated worktrees
+
+Discover records with:
+
+```bash
+git worktree list --porcelain -z
+```
+
+A worktree is associated only when its record contains the exact branch ref
+`refs/heads/<head_ref>`. A detached worktree at the same commit is not associated
+and must be preserved.
+
+For every associated worktree:
+
+- require its `HEAD` and branch ref to equal the landed head OID;
+- require a clean tracked and untracked status;
+- preserve and report locked worktrees, inaccessible paths, head drift, unique commits, or dirty state;
+- never use `git worktree remove --force` and never delete the directory with `rm -rf`;
+- if it is the primary worktree, switch it to the base branch and fast-forward rather than removing it;
+- if it is a linked worktree, move the running shell outside that path, run `git worktree remove -- <path>`, and verify the record disappeared;
+- prune only stale administrative metadata after path-safe removal and then refetch the full worktree inventory.
+
+All associated worktrees must be removed or switched away from the head branch
+before deleting the local branch. See the exact algorithm in
+[references/landing-protocol.md](references/landing-protocol.md).
+
+### Branches
+
+Delete the remote branch only when the live remote ref still equals the landed
+head OID and the head repository is the intended deletion target. Delete the
+local branch only when its ref still equals the landed head OID, no worktree is associated with it, and the current worktree is on the updated base branch.
+
+Under squash merge, a force branch deletion may be necessary because the landed
+commit is not an ancestor of the squash commit. Use it only after the OID and
+worktree proofs above; never inherit an implicit force-delete from `gh pr merge`.
+
+## Output
+
+Emit one `LAND-v1` record after terminal readback and cleanup. Keep merge outcome,
+remote cleanup, local cleanup, and per-worktree cleanup separate. Use
+[references/land-record.md](references/land-record.md).
 
 ## Guardrails
-- Do not merge if any review thread remains unresolved, the thread inventory was not fully paginated, requested changes are active, or required checks or approvals are missing.
-- Treat addressed-but-unresolved GitHub review threads as still open; close them through GitHub and verify a fresh zero-unresolved sweep before merging.
-- Keep the merge method aligned with repo policy.
-- If any step is blocked, state the blocker and required next action.
+
+- Never merge an ambiguous PR target.
+- Never reuse evidence from before the final material mutation.
+- Never merge with an unresolved or incompletely inventoried review thread.
+- Never treat canceled required checks as green.
+- Never bypass protections with `--admin` without explicit user authorization.
+- Never report queued, auto-enabled, or command-success state as merged.
+- Never clean a branch or worktree before a live `MERGED` postcondition.
+- Never force-remove a dirty, locked, drifted, or unidentified worktree.
+- If blocked, preserve state and report the exact failed gate and next safe action.
+
+## Validation
+
+```bash
+uv run python3 -m unittest discover -s codex/skills/land/tests -p 'test_*.py'
+uv run --with pyyaml -- python3 \
+  codex/skills/tune/tools/decision_contract_lint.py \
+  codex/skills/land/references/decision-contract.yaml
+```
+
+## Resources
+
+- [landing-protocol.md](references/landing-protocol.md)
+- [land-record.md](references/land-record.md)
+- [decision-contract.yaml](references/decision-contract.yaml)
