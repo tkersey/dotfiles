@@ -56,7 +56,7 @@ require_text tests/golden/activation.yml "compute its dependency, ownership, tes
 require_text tests/golden/output-invariants.yml "comonadic_spatiality_requires_locality_laws"
 require_text ../../agents/universalist-world-cartographer.toml "representative halos"
 require_text ../../agents/universalist-categorical-architect.toml "comonads as spaces"
-require_text ../../agents/universalist-semanticist.toml "Comonad coalgebras"
+require_text ../../agents/universalist-semanticist.toml "comonad coalgebras"
 require_text ../../agents/universalist-proof-auditor.toml "point preservation as continuity"
 require_text ../../agents/universalist-resource-realist.toml "basis explosion"
 require_text ../../agents/universalist-verifier.toml "bounded halo"
