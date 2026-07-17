@@ -12,6 +12,9 @@ Requirements:
 - add laws/falsifiers before or with implementation;
 - preserve unrelated changes;
 - use concrete primitives only through declared handlers/boundaries;
+- when spatiality is selected, implement only the certified point/patch/halo representation, local-global identity map, restriction/transport, and continuity/resource checks needed for the witness;
+- preserve required labelled relationships such as target, kind, owner, capability, effect, provenance, trust, time, and cost;
+- do not replace a bounded spatial approximation with an unbounded traversal or silently widen its invalidation frontier;
 - do not widen the architecture or invent a competing design;
 - run the narrowest meaningful verification;
 - report changed files, commands, results, remaining obstruction, and exact stop point.
@@ -19,5 +22,4 @@ Requirements:
 Do not spawn agents, commit, publish, or touch unrelated files.
 
 Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
-
 """
