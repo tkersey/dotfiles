@@ -52,6 +52,34 @@ Effective construction: validator / join / quotient / union-find / graph rewrite
 Pushout-complement or existence obstruction:
 Provenance and conflict policy:
 
+## Spatial geometry, when applicable
+
+Applicable: yes / no
+Spatial structure: ordinary graph / density comonad / comonadic space / approximation
+Points:
+Local patches / subbasis:
+Basis or coverage claim:
+Local points:
+Global points:
+Local-to-global map and identifications:
+Representative halo:
+Halo representation: formal / finite / bounded / indexed
+Labelled-halo fields:
+Coalgebra / situated-object interpretation:
+Counit / center extraction:
+Comultiplication / nested local views:
+Restriction / germ operation:
+Point map across boundary:
+Coalgebra/context transport:
+Halo-map direction:
+Ordinary comonad map / continuous map / both / neither:
+Locality preserved:
+Locality forgotten / translated / generated:
+Basis-density or reconstruction witness:
+Continuity law:
+Continuity falsifier:
+Resource / invalidation law:
+
 ## Composition grammar
 
 Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive
@@ -76,11 +104,14 @@ Noncommuting witness:
 
 ## Presentation
 
-Mode: algebraic / codensity / mixed / primitive
+Mode: algebraic / codensity / density-comonadic-spatial / mixed / primitive
 Generators / operations / equations:
 Dense probes / finite approximants:
 Dualizing observation object:
+Local patches / subbasis:
+Effective basis / halo representation:
 Reconstruction / codensity operation:
+Restriction / continuity operation:
 Domain-specific theorem or assumption:
 Presentation law:
 Presentation falsifier:
@@ -104,4 +135,4 @@ Negative witness / falsifier:
 
 ## Status
 
-planned / implemented / verified / obstructed / primitive exception
+planned / implemented / verified / approximated / obstructed / primitive exception

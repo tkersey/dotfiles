@@ -25,6 +25,22 @@ cat <<OUT
 - may discard:
 - uncertainty/missingness to expose:
 
+## Spatial locality, when applicable
+
+- applicable: yes / no
+- task point:
+- spatial world:
+- patch vocabulary / subbasis:
+- basis or coverage claim:
+- effective halo approximation:
+- halo budget / invalidation:
+- local points:
+- global point:
+- local-to-global identity map:
+- restriction / germ rules:
+- labelled-halo fields:
+- continuity requirements:
+
 ## Source instance I_candidate
 
 - source worlds:
@@ -72,6 +88,11 @@ cat <<OUT
 - freshness law:
 - missingness/contradiction law:
 - rendering law:
+- spatial center/counit law:
+- restriction/germ law:
+- continuity/halo-preservation law:
+- local/global identity and labelled-halo law:
+- spatial resource law:
 
 ## Falsifier
 
@@ -79,8 +100,13 @@ cat <<OUT
 - irrelevant distracting context:
 - stale context:
 - unsupported claim:
+- point preserved but locality lost:
+- local points collapsed before provenance:
+- retrieved set mistaken for semantic halo:
+- halo approximation omits an observation-changing dependency:
+- invalid germ after boundary transport:
 
 ## Status
 
-planned / verified / stale / missing / contradictory / overfull / undercertified
+planned / verified / stale / missing / contradictory / overfull / undercertified / discontinuous / non-effective
 OUT

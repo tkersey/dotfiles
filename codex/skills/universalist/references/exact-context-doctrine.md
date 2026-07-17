@@ -31,6 +31,54 @@ Where:
 
 A semantic consumer should not receive raw source data. It should receive the smallest task-indexed, constraint-satisfying, provenance-preserving, freshness-valid context instance that preserves the observables required for the next decision, action, approval, execution, audit, or inference.
 
+## Context as a germ
+
+When locality changes correctness, refine Exact Context with Comonadic Spatiality:
+
+```text
+task / semantic consumer q = a point
+relevant local structure   = Halo(q)
+prepared Context(q)        = a certified section or germ over an effective halo
+rendering                  = a consumer-specific presentation of that germ
+```
+
+This changes the preparation question from:
+
+```text
+Which globally retrieved facts should be trimmed?
+```
+
+to:
+
+```text
+Which local patch around q supports the required observations,
+and how does validity survive restriction and boundary transport?
+```
+
+Spatial context is optional. Use it when scope, dependency, ownership, capability, evidence, provenance, or temporal neighborhoods are semantic. A plain context schema remains sufficient when no locality law changes implementation.
+
+Spatial fields:
+
+```text
+task point
+spatial world
+patch vocabulary / subbasis
+effective basis or explicit non-basis
+halo approximation and budget
+local points / global point / identification map
+restriction and germ rules
+labelled-halo schema
+continuity law across compilation, publication, and rendering
+```
+
+Guardrails:
+
+- retrieval output is not automatically the halo;
+- a dependency list is not automatically a comonadic neighborhood;
+- local identity must not be collapsed into global identity before provenance is recorded;
+- a context boundary preserving facts may still be discontinuous if it loses their validity neighborhood;
+- formal/infinite halos require a finite or effective approximation and resource law.
+
 ## Plane split
 
 ```text
@@ -70,6 +118,14 @@ No observables without provenance and freshness.
 No rendering without an observable-preservation law.
 ```
 
+When spatial locality is claimed, add:
+
+```text
+No context germ without a named point and effective halo.
+No halo without restriction and coherence laws.
+No locality-sensitive boundary without a continuity falsifier.
+```
+
 ## Retrieval is candidate generation
 
 Retrieval produces candidate material. It does not produce context.
@@ -78,7 +134,7 @@ Retrieval produces candidate material. It does not produce context.
 retrieval + mapping + closure + provenance + minimization + rendering = context preparation
 ```
 
-A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-checked, and placed in a task schema.
+A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-checked, and placed in a task schema. When spatiality is material, it must also be placed in the right local neighborhood with its labels and local/global identity retained.
 
 ## Context versus rendering
 
@@ -91,3 +147,5 @@ The prompt, report, dashboard, JSON payload, tool argument, policy input, deploy
 ## Verified context technology stance
 
 Exact Context Doctrine is implementation-agnostic. CQL/categorical database tooling is a reference architecture for verified context publication when schemas, mappings, constraints, integration, provenance, and canonicalization dominate. It is not automatically the right live operational store.
+
+Comonadic spatial tooling is likewise implementation-agnostic. In ordinary systems, an effective labelled graph, query, incremental index, or bounded halo may implement the spatial laws without a literal generic comonad library.
