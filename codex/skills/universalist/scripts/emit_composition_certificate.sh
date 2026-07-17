@@ -26,7 +26,7 @@ Target world:
 ## Boundary
 
 - name:
-- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / adapter
+- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / locality-preserving / adapter
 - function or module:
 - preserved:
 - forgotten:
@@ -35,7 +35,7 @@ Target world:
 
 ## Unknown
 
-- location: after boundary / behind boundary / compatible witness / integrated output / inside syntax / behavior / effects / observation / generation / callback
+- location: after boundary / behind boundary / compatible witness / integrated output / local neighborhood / inside syntax / behavior / effects / observation / generation / callback
 
 ## Canonical artifact
 
@@ -56,6 +56,34 @@ Target world:
 - effective construction: validator / join / quotient / union-find / graph rewrite
 - pushout-complement or existence obstruction:
 - provenance and conflict policy:
+
+## Spatial geometry, when applicable
+
+- applicable: yes / no
+- spatial structure: ordinary graph / density comonad / comonadic space / approximation
+- points:
+- local patches / subbasis:
+- basis or coverage claim:
+- local points:
+- global points:
+- local-to-global map / identifications:
+- representative halo:
+- halo representation: formal / finite / bounded / indexed
+- labelled-halo fields:
+- coalgebra / situated-object interpretation:
+- counit / center extraction:
+- comultiplication / nested local views:
+- restriction / germ operation:
+- point map across boundary:
+- coalgebra/context transport:
+- halo-map direction:
+- ordinary comonad map / continuous map / both / neither:
+- locality preserved:
+- locality forgotten / translated / generated:
+- basis-density / reconstruction witness:
+- continuity law:
+- continuity falsifier:
+- resource / invalidation law:
 
 ## Composition grammar
 
@@ -79,6 +107,20 @@ Target world:
 - certified commuting or parallel operations:
 - noncommuting witness:
 
+## Presentation
+
+- mode: algebraic / codensity / density-comonadic-spatial / mixed / primitive
+- generators / operations / equations:
+- dense probes / finite approximants:
+- dualizing observation object:
+- local patches / subbasis:
+- effective basis / halo representation:
+- reconstruction / codensity operation:
+- restriction / continuity operation:
+- domain-specific theorem or assumption:
+- presentation law:
+- presentation falsifier:
+
 ## Primitive effects
 
 - allowed primitives:
@@ -94,10 +136,10 @@ Target world:
 ## Law witness
 
 - positive law test:
-- factorization / uniqueness approximation:
+- factorization / uniqueness / reconstruction approximation:
 - falsifier / negative witness:
 
 ## Status
 
-planned / implemented / verified / obstructed / primitive exception
+planned / implemented / verified / approximated / obstructed / primitive exception
 OUT
