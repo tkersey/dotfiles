@@ -73,7 +73,73 @@ Use when syntax should be separated from execution. Laws: interpreters agree on 
 
 ## Canonical boundary artifact
 
-Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, lowering, or interpreter equivalence.
+Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, comonadic spatiality, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, locality, lowering, or interpreter equivalence.
+
+## Behavioral coalgebra
+
+Use when behavior unfolds over time. Typical shape:
+
+```text
+step : State x Input -> State
+observe : State -> Observation
+```
+
+Laws: trace observations, invalid-transition rejection, behavioral equivalence.
+
+## Comonadic spatiality
+
+Use when objects are situated in coherent local context rather than merely evolving over time.
+
+```text
+C : S -> S
+epsilon : C => Id
+delta : C => C . C
+h : E -> C(E)
+```
+
+Software reading:
+
+```text
+C(A)       A-valued local views
+epsilon    extract the center
+delta      local view of local views
+h          assign each element its coherent situated neighborhood
+```
+
+Laws:
+
+- center/counit: extracting a local view returns the original value;
+- neighborhood coherence: nested local views associate;
+- coalgebra centeredness/coherence;
+- restriction preserves germ meaning;
+- labelled halos preserve target, kind, owner, capability, effect, provenance, trust, and time as required;
+- locality-sensitive boundaries preserve halos continuously;
+- finite/effective representation and invalidation stay within the resource model.
+
+Do not conflate a behavioral coalgebra `X -> F(X)` with a coalgebra `E -> C(E)` for a comonad. The first describes unfolding; the second describes coherent contextual placement.
+
+## Density comonad / spatial basis
+
+Use when local patches generate the spatial world:
+
+```text
+P : B -> S
+<P> = Lan_P P
+```
+
+A subbasis generates the candidate comonad. A basis additionally supports canonical reconstruction of all situated objects/coalgebras from basic patches.
+
+Laws:
+
+- patch restriction/reindexing respects germs;
+- basis-density/canonical reconstruction;
+- local/global identities and identifications are explicit;
+- coverage without density is recorded as subbasis-only;
+- unbounded/non-effective basis yields obstruction rather than overclaim.
+
+## Continuous comonadic boundary
+
+Use when a point/value map must also preserve locality. Laws: point map, coalgebra/context transport, cartesian/restriction compatibility, halo and label preservation, and a continuity falsifier. An ordinary comonad map is not automatically a continuous map.
 
 ## Freyd / premonoidal category
 
