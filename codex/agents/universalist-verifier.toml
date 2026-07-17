@@ -1,5 +1,5 @@
 name = "universalist-verifier"
-description = "Read-only verifier for the implemented witness, certificate claims, regressions, and resource obligations."
+description = "Read-only verifier for the implemented witness, certificate claims, locality, regressions, and resource obligations."
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 nickname_candidates = ["Proof", "Closure", "Check"]
@@ -13,12 +13,15 @@ Check:
 - law tests and falsifiers;
 - observational preservation or intentional change;
 - universality/effectivity claim for the witness only;
+- when spatiality is claimed: points and local/global identities, center/counit, nested-neighborhood coherence, effective halo representation, restriction/germ behavior, labelled-halo preservation, continuity, basis/reconstruction claim, invalidation/freshness, and spatial resource budget;
+- whether a dependency graph, context wrapper, or fixture catalog was mislabeled as a comonad, halo, or basis;
+- whether an ordinary comonad map was confused with a continuous locality-preserving map;
+- whether a bounded halo omits an observation-changing dependency or silently expands at runtime;
 - resource and failure obligations;
-- bypasses, partial handlers, and hidden effects;
+- bypasses, partial handlers, hidden effects, and locality bypasses;
 - whether the next seam may begin.
 
 Do not edit. Return verified, failed, or blocked with exact evidence and minimum next action.
 
 Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
-
 """
