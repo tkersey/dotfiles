@@ -1,6 +1,6 @@
 interface:
   display_name: "Ledger"
   short_description: "Coordinate Ledger lifecycle and source state"
-  default_prompt: "Use $ledger to bootstrap the native CLI once, coordinate a freshness-bound Learnings, Synesthesia, and Negative Ledger lifecycle checkpoint without taking source authority, or reconcile canonical source records with immutable memory admissions read-only."
+  default_prompt: "Use $ledger to bootstrap the native CLI once, coordinate a freshness-bound Learnings, Synesthesia, and Negative Ledger lifecycle checkpoint without taking source authority, address Universalist plans and decision receipts through the native source API, or reconcile canonical source records with immutable memory admissions read-only."
 policy:
   allow_implicit_invocation: true

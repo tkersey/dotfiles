@@ -3,42 +3,44 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Sequence
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = SKILL_ROOT.parents[2]
 SKILL = SKILL_ROOT / "SKILL.md"
-EMITTER = SKILL_ROOT / "scripts" / "emit_decision_receipt.py"
 CONTRACT = SKILL_ROOT / "references" / "decision-contract.yaml"
 PLAN_TEMPLATE = SKILL_ROOT / "templates" / "universalist-plan.md"
 SDR_GATE = SKILL_ROOT.parent / "tune" / "tools" / "sdr_gate.py"
+LEDGER = os.environ.get("LEDGER_BIN", "ledger")
 
 
-def run(command: Sequence[str], *, expected: int = 0) -> subprocess.CompletedProcess[str]:
-    completed = subprocess.run(command, check=False, capture_output=True, text=True)
+def run(
+    command: Sequence[str],
+    *,
+    expected: int = 0,
+    cwd: Path | None = None,
+) -> subprocess.CompletedProcess[str]:
+    completed = subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+        cwd=cwd,
+    )
     if completed.returncode != expected:
         raise AssertionError(
             f"expected exit {expected}, got {completed.returncode}: {' '.join(command)}\n"
             f"stdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
         )
     return completed
-
-
-def load_emitter() -> Any:
-    spec = importlib.util.spec_from_file_location("universalist_receipt", EMITTER)
-    if spec is None or spec.loader is None:
-        raise AssertionError("unable to load the decision receipt emitter")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 class DecisionObservabilityTest(unittest.TestCase):
@@ -66,10 +68,14 @@ class DecisionObservabilityTest(unittest.TestCase):
 
     def emitter_command(self) -> list[str]:
         return [
-            sys.executable,
-            str(EMITTER),
+            LEDGER,
+            "emit",
+            "--source",
+            "universalist",
             "--plan",
             str(PLAN_TEMPLATE),
+            "--contract",
+            str(CONTRACT),
             "--decision-id",
             "UNI-TEST-001",
             "--question",
@@ -95,32 +101,60 @@ class DecisionObservabilityTest(unittest.TestCase):
         ]
 
     def test_plan_append_is_exactly_once(self) -> None:
-        emitter = load_emitter()
         with tempfile.TemporaryDirectory() as directory:
-            plan = Path(directory) / "plan-test.md"
+            repo = Path(directory)
+            run(["git", "init", "--quiet"], cwd=repo)
+            plan_id = "20260715T120000000000000Z-0000"
+            plan = repo / ".ledger" / "universalist" / f"plan-{plan_id}.md"
+            plan.parent.mkdir(parents=True)
             plan.write_text(
-                "---\nschema: universalist-plan/v1\nplan_id: test\n---\n\n"
+                "---\nschema: universalist-plan/v1\n"
+                f"plan_id: {plan_id}\n"
+                "created_at: 2026-07-15T12:00:00.000000000Z\n---\n\n"
                 + PLAN_TEMPLATE.read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
-            receipt = json.dumps(
-                {
-                    "skill_decision_receipt": {
-                        "receipt_version": "SDR-v1",
-                        "decision_id": "UNI-TEST-001",
-                        "skill": "universalist",
-                        "selected_route": "UNI-ORDINARY",
-                        "rejected_routes": ["UNI-CANONICAL"],
-                        "artifact_state": {"plan_id": "test"},
-                    }
-                },
-                separators=(",", ":"),
-                sort_keys=True,
+            run(["git", "add", str(plan.relative_to(repo))], cwd=repo)
+            run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Universalist Test",
+                    "-c",
+                    "user.email=universalist-test@example.invalid",
+                    "commit",
+                    "--quiet",
+                    "-m",
+                    "Add plan fixture",
+                ],
+                cwd=repo,
             )
-            emitter.append_receipt(plan, receipt, "UNI-TEST-001")
+
+            command = self.emitter_command()
+            plan_index = command.index("--plan") + 1
+            command[plan_index] = str(plan)
+            decision_index = command.index("--decision-id")
+            del command[decision_index : decision_index + 2]
+            command.append("--write-plan")
+            invalid = command.copy()
+            selected_index = invalid.index("--selected-route") + 1
+            invalid[selected_index] = "UNI-UNKNOWN"
+            before_invalid = plan.read_text(encoding="utf-8")
+            run(invalid, expected=2)
+            self.assertEqual(plan.read_text(encoding="utf-8"), before_invalid)
+
+            emitted = run(command)
+            receipt = json.loads(emitted.stdout)
+            self.assertEqual(
+                receipt["skill_decision_receipt"]["decision_id"],
+                f"UNI-{plan_id}",
+            )
             text = plan.read_text(encoding="utf-8")
             self.assertEqual(text.count('"skill_decision_receipt"'), 1)
-            self.assertIn("## Root decision receipt: emitted (UNI-TEST-001)", text)
+            self.assertIn(
+                f"## Root decision receipt: emitted (UNI-{plan_id})",
+                text,
+            )
             validation = run(
                 [
                     "seq",
@@ -135,8 +169,43 @@ class DecisionObservabilityTest(unittest.TestCase):
             self.assertTrue(
                 json.loads(validation.stdout)["skill_decision_receipt"]["valid"]
             )
-            with self.assertRaises(emitter.ReceiptError):
-                emitter.append_receipt(plan, receipt, "UNI-TEST-001")
+            run(command, expected=2)
+
+    def test_projection_does_not_require_plan_directory_write_access(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repo = Path(directory)
+            run(["git", "init", "--quiet"], cwd=repo)
+            plan_dir = repo / "readonly"
+            plan_dir.mkdir()
+            plan = plan_dir / "universalist-template.md"
+            plan.write_text(PLAN_TEMPLATE.read_text(encoding="utf-8"), encoding="utf-8")
+            run(["git", "add", str(plan.relative_to(repo))], cwd=repo)
+            run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Universalist Test",
+                    "-c",
+                    "user.email=universalist-test@example.invalid",
+                    "commit",
+                    "--quiet",
+                    "-m",
+                    "Add read-only fixture",
+                ],
+                cwd=repo,
+            )
+            original = plan.read_text(encoding="utf-8")
+            plan.chmod(0o444)
+            plan_dir.chmod(0o555)
+            try:
+                command = self.emitter_command()
+                plan_index = command.index("--plan") + 1
+                command[plan_index] = str(plan)
+                run(command)
+                self.assertEqual(plan.read_text(encoding="utf-8"), original)
+            finally:
+                plan_dir.chmod(0o755)
+                plan.chmod(0o644)
 
     def test_receipt_validates_and_becomes_one_seq_episode(self) -> None:
         emitted = run(self.emitter_command())

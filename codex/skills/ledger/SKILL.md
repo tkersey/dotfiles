@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Ensure a `ledger` command is available on PATH, coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation, address Universalist plans, and route pure artifact validation without bypassing source authority. Use before a workflow's first Ledger command, at material validation or delivery checkpoints, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory-admission handoff, reconciliation, Universalist plan addressing, or artifact validation."
+description: "Ensure a `ledger` command is available on PATH, coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation, address Universalist plans and receipts, and route pure artifact validation without bypassing source authority. Use before a workflow's first Ledger command, at material validation or delivery checkpoints, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory-admission handoff, reconciliation, Universalist plan addressing or receipt emission, or artifact validation."
 ---
 
 # Ledger
@@ -225,6 +225,7 @@ never bulk-admit every learning or incomplete Negative Ledger projection.
 - `ledger validate`.
 - create or resolve a Universalist plan;
 - find the newest Universalist plan without overwriting an earlier run.
+- emit or atomically append a Universalist SDR-v1 decision receipt.
 
 ## Authority
 
@@ -243,9 +244,10 @@ to source-specific skills and native source APIs:
 - `$hylo` / `ledger --source hylo` for operational replay-campaign evidence;
   the current compatibility adapter is `.ledger/hylo/events.jsonl`, and this is
   not a memory-admission source.
-- `$universalist` owns plan contents and updates;
-  `ledger --source universalist` owns plan identity, atomic creation, and
-  address resolution.
+- `$universalist` owns decision policy, its SKDC-v1 contract, plan templates,
+  and ordinary Markdown field updates; `ledger --source universalist` owns plan
+  identity, atomic creation, address resolution, SDR-v1 receipt construction,
+  Seq validation, and single-receipt atomic append.
 
 Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
 
@@ -284,6 +286,37 @@ New plans use `.ledger/universalist/plan-{plan-id}.md`. Exact-id and `latest`
 lookup preserve read access to legacy `.ledger/universalist-plan-{plan-id}.md`
 files without rewriting them; the namespaced path is canonical when both
 layouts contain the same id.
+
+Ledger 0.10.4 or newer, paired with Skills Seq 0.3.51 or newer, emits the
+consequential root receipt selected by Universalist:
+
+```bash
+ledger emit --source universalist \
+  --plan .ledger/universalist/plan-PLAN_ID.md \
+  --contract /path/to/universalist/references/decision-contract.yaml \
+  --question "Which construction owns this seam?" \
+  --selected-route UNI-ORDINARY \
+  --rejected-route UNI-CANONICAL \
+  --expected-outcome "One owner enforces the observable law." \
+  --disposition changed \
+  --construction "checked owner-boundary adapter" \
+  --law "required observations are preserved" \
+  --falsifier "a mismatched source is accepted" \
+  --advanced-mechanics none \
+  --evidence-ref "code:path" \
+  --write-plan
+```
+
+The native command preserves the Universalist contract as policy authority,
+accepts YAML and JSON SKDC-v1, and consumes Seq's fingerprint, decision-capable
+skill kind, parsed identities, and clause-route bindings from one validation of
+one immutable contract snapshot. It validates the generated SDR-v1 with that
+capability-compatible Skills Seq companion and fails before plan mutation on an
+unknown reference, noncanonical write target, invalid receipt, concurrent
+writer, or duplicate JSON or YAML receipt. Ledger checks a sibling `seq` before
+searching `PATH` and skips same-name binaries that do not advertise the required
+receipt-binding projection and receipt-validation capabilities. Without
+`--write-plan`, receipt projection leaves the plan unchanged.
 
 ## Read-Only Workflow
 

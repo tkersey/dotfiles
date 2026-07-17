@@ -1159,8 +1159,9 @@ Use [references/decision-contract.yaml](references/decision-contract.yaml) as th
 After selecting the route and before mutating the implementation seam, emit exactly one root-scoped receipt from the current ledger-addressed plan:
 
 ```bash
-uv run --with pyyaml -- python3 scripts/emit_decision_receipt.py \
+ledger emit --source universalist \
   --plan "$UNIVERSALIST_PLAN" \
+  --contract /path/to/universalist/references/decision-contract.yaml \
   --question "Which construction owns this seam?" \
   --selected-route UNI-ORDINARY \
   --rejected-route UNI-CANONICAL \
@@ -1174,7 +1175,7 @@ uv run --with pyyaml -- python3 scripts/emit_decision_receipt.py \
   --write-plan
 ```
 
-The emitter derives the decision id, skill version, contract fingerprint, repository HEAD, plan id, and plan path; it validates the contract and receipt before writing. Emit its JSON output once as a root assistant message so Seq can observe the decision. Keep the same concrete receipt at the end of the plan. Do not paste a static schema example.
+Ledger 0.10.4 or newer with Skills Seq 0.3.51 or newer derives the decision id, skill version, contract fingerprint, repository HEAD, plan id, and plan path. It consumes Seq's parsed receipt-binding projection from one immutable snapshot and validates the receipt through Seq before writing. Universalist owns the decision policy and contract; Ledger owns receipt construction and atomic plan mutation. Emit the command's JSON output once as a root assistant message so Seq can observe the decision. Keep the same concrete receipt at the end of the plan. Do not paste a static schema example.
 
 One plan represents one changed seam and admits one receipt. Allocate a fresh plan for a distinct seam. In team mode, workers reference the root `decision_id`; they do not echo the receipt unless they own a genuinely distinct seam with its own plan. Keep route aliases empty and use exact route ids or structured receipts; generic prose aliases contaminate retrospective audits. Set `--advanced-mechanics` to `none` unless a named mechanics topic produces the concrete artifact, interpreter or projection, law, and falsifier.
 
@@ -1606,7 +1607,6 @@ Internal mechanics references from former `kan` skill:
 ## Scripts
 
 - `scripts/init_universalist_plan.sh`
-- `scripts/emit_decision_receipt.py`
 - `scripts/detect_signals.py`
 - `scripts/emit_scaffold.py`
 - `scripts/emit_boundary_adapter.py`
