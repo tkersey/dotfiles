@@ -21,7 +21,7 @@ required=(
   templates/universalist-plan.md templates/universalist-report.md templates/universal-architecture-report.md templates/domain-algebra-card.md templates/law-table.md templates/non-law-ledger.md templates/property-test-plan.md
   templates/freyd-boundary-diagnostic.md templates/world-boundary-inventory.md templates/composition-certificate.md
   templates/boundary-normal-form-report.md templates/presentation-diagnostic.md templates/context-certificate.md templates/context-normal-form-report.md templates/verified-context-plane-report.md templates/cql-fit-assessment.md templates/context-provenance-manifest.md templates/sheafification-certificate.md templates/abstraction-normal-form-report.md templates/category-pivot-certificate.md templates/syntax-semantics-certificate.md templates/effective-universal-architecture-certificate.md templates/computational-substrate-certificate.md templates/universal-synthesis-packet.md
-  scripts/init_universalist_plan.sh scripts/emit_decision_receipt.py scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py scripts/emit_add_pass.sh scripts/emit_domain_algebra_card.sh scripts/emit_law_table.sh scripts/emit_property_test_plan.sh
+  scripts/init_universalist_plan.sh scripts/detect_signals.py scripts/emit_scaffold.py scripts/emit_boundary_adapter.py scripts/emit_add_pass.sh scripts/emit_domain_algebra_card.sh scripts/emit_law_table.sh scripts/emit_property_test_plan.sh
   scripts/emit_verification_plan.py scripts/emit_law_test_stub.sh scripts/emit_universal_artifact_matrix.sh
   scripts/emit_canonical_artifact_plan.sh scripts/emit_universal_architecture_prompt.sh scripts/emit_freyd_boundary_diagnostic.sh
   scripts/emit_world_boundary_inventory.sh scripts/emit_boundary_law_catalogue.sh scripts/emit_composition_certificate.sh
@@ -149,7 +149,7 @@ for plan_contract in (
     'YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN',
     'must never reuse, truncate, or overwrite an earlier plan',
     'references/decision-contract.yaml',
-    'scripts/emit_decision_receipt.py',
+    'ledger emit --source universalist',
     'exactly one root-scoped receipt',
 ):
     if plan_contract not in text:
@@ -189,6 +189,9 @@ for line in decision_contract.splitlines():
     if line.strip().startswith('aliases:') and line.strip() != 'aliases: []':
         raise SystemExit('decision contract route aliases must remain empty')
 print('decision observability contract ok')
+if Path('scripts/emit_decision_receipt.py').exists():
+    raise SystemExit('receipt generation must be owned by ledger, not a Universalist Python helper')
+print('native ledger receipt ownership ok')
 activation = Path('tests/golden/activation.yml').read_text()
 cases = {
     prompt: should_use == 'true'
