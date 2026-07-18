@@ -463,6 +463,20 @@ class HyloOperatorRecipeContractTests(unittest.TestCase):
         recipe_step = workflow.index("Execute pinned native operator recipe")
         self.assertLess(recipe_step, workflow.index("Verify documentation contract"))
 
+    def test_operator_contract_binds_the_exact_candidate_tuple(self) -> None:
+        workflow = read(OPERATOR_CONTRACT_WORKFLOW)
+        self.assertIn("name: Hylo candidate operator contract", workflow)
+        self.assertIn("ref: ${{ github.event.pull_request.head.sha }}", workflow)
+        self.assertIn(
+            'test "$dotfiles_commit" = "${{ github.event.pull_request.head.sha }}"',
+            workflow,
+        )
+        self.assertIn(
+            'test "$native_commit" = "${{ steps.native-surface.outputs.commit }}"',
+            workflow,
+        )
+        self.assertNotIn("ref: main", workflow)
+
     def test_registration_order_matches_the_native_transition_graph(self) -> None:
         section = markdown_section(self.orchestration, "Registration order")
         ordered_markers = (

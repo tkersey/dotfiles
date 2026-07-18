@@ -1,4 +1,4 @@
-name: Hylo operator contract
+name: Hylo candidate operator contract
 
 on:
   pull_request:
@@ -21,6 +21,7 @@ jobs:
       - name: Check out dotfiles
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           path: dotfiles
           persist-credentials: false
 
@@ -46,6 +47,20 @@ jobs:
           ref: ${{ steps.native-surface.outputs.commit }}
           path: skills-zig
           persist-credentials: false
+
+      - name: Verify and report exact candidate tuple
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotfiles_commit="$(git -C dotfiles rev-parse HEAD)"
+          native_commit="$(git -C skills-zig rev-parse HEAD)"
+          test "$dotfiles_commit" = "${{ github.event.pull_request.head.sha }}"
+          test "$native_commit" = "${{ steps.native-surface.outputs.commit }}"
+          printf 'dotfiles=%s\n' "$dotfiles_commit"
+          printf 'skills-zig=%s\n' "$native_commit"
+          printf '%s\n' \
+            "- dotfiles: \`$dotfiles_commit\`" \
+            "- skills-zig: \`$native_commit\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install Zig
         uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
