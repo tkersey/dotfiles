@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Goal WorkGraph"
-  short_description: "Project accepted work into bounded nodes"
-  default_prompt: "Use $goal-workgraph to project this accepted run or review resolution into verifier-bound owner-level work nodes."
+  short_description: "Derive only necessary verifier-bound work graphs"
+  default_prompt: "Use $goal-workgraph to decide whether decomposition changes execution. Omit the graph for one bounded owner operation; otherwise derive the smallest current-evidence verifier-bound graph and keep shared-owner mutation serial."
