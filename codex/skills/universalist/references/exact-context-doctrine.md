@@ -79,6 +79,72 @@ Guardrails:
 - a context boundary preserving facts may still be discontinuous if it loses their validity neighborhood;
 - formal/infinite halos require a finite or effective approximation and resource law.
 
+## Requirement-indexed convolution
+
+Use Day or promonoidal convolution only when context requirements themselves form a real composition world:
+
+```text
+(Requirement, tensor, UnitRequirement)
+ContextFragment : Requirement -> ContextData
+```
+
+Then:
+
+```text
+(ContextA star ContextB)(r)
+```
+
+ranges over lawful decompositions:
+
+```text
+r1 tensor r2 -> r
+```
+
+or over an explicit partial/relational kernel:
+
+```text
+ComposeRequirement(r1,r2;r)
+```
+
+This may support:
+
+- combining independently justified context fragments;
+- capability- or policy-indexed context;
+- context assembled over decomposed task obligations;
+- static context plans with execution, cost, provenance, and rendering interpreters;
+- residual questions such as which additional context would suffice for a requirement.
+
+A closed/residuated description world may express:
+
+```text
+KnownContext star MissingContext <= RequiredContext
+```
+
+as a residual-obligation query. This is an architecture inference, not a default retrieval formula.
+
+Required fields:
+
+```text
+requirement index world
+tensor or promonoidal kernel
+unit requirement
+context fragment family
+legal decomposition witnesses
+coend/normalization policy
+schema/provenance merge semantics
+residual, if claimed
+effective enumeration and resource bound
+```
+
+Guardrails:
+
+- context concatenation is not Day convolution;
+- evidence union/deduplication is not Day convolution;
+- shared-key agreement is usually a pullback;
+- overlap reconciliation is usually a pushout;
+- requirement-independent context combination is usually an ordinary or pointwise product;
+- a legal context decomposition does not waive schema, constraint, provenance, freshness, missingness, contradiction, germ, or rendering laws.
+
 ## Plane split
 
 ```text
@@ -126,6 +192,16 @@ No halo without restriction and coherence laws.
 No locality-sensitive boundary without a continuity falsifier.
 ```
 
+When requirement-indexed convolution is claimed, add:
+
+```text
+No context convolution without a requirement tensor/kernel.
+No composite fragment without a legal decomposition witness.
+No quotient without a provenance/collision policy.
+No residual without an order/closedness law.
+No convolution without an effective enumeration/normalization bound.
+```
+
 ## Retrieval is candidate generation
 
 Retrieval produces candidate material. It does not produce context.
@@ -134,7 +210,7 @@ Retrieval produces candidate material. It does not produce context.
 retrieval + mapping + closure + provenance + minimization + rendering = context preparation
 ```
 
-A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-checked, and placed in a task schema. When spatiality is material, it must also be placed in the right local neighborhood with its labels and local/global identity retained.
+A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-checked, and placed in a task schema. When spatiality is material, it must also be placed in the right local neighborhood with its labels and local/global identity retained. When requirements compose, the fragment must also carry its requirement index and legal composition witness.
 
 ## Context versus rendering
 
@@ -149,3 +225,5 @@ The prompt, report, dashboard, JSON payload, tool argument, policy input, deploy
 Exact Context Doctrine is implementation-agnostic. CQL/categorical database tooling is a reference architecture for verified context publication when schemas, mappings, constraints, integration, provenance, and canonicalization dominate. It is not automatically the right live operational store.
 
 Comonadic spatial tooling is likewise implementation-agnostic. In ordinary systems, an effective labelled graph, query, incremental index, or bounded halo may implement the spatial laws without a literal generic comonad library.
+
+Day/promonoidal context composition is also implementation-agnostic. A sparse indexed map, relational query, constraint solver, semiring dynamic program, or static plan IR may implement the laws without a generic coend library.
