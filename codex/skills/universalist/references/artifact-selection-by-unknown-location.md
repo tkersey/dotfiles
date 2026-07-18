@@ -21,6 +21,13 @@ Choose the artifact by asking where the unknown lives.
 | Same-index descriptions only | Pointwise/Hadamard product | pointwise pair/map | same-index interpretation agrees; no decomposition search |
 | Recursive insertion into typed slots | Operadic substitution / plethysm | operation collection + substitution | interpretation preserves substitution |
 | Value-dependent computation descriptions | Endofunctor composition / free monad | bindable program syntax | bind/interpreter law; dependency case preserved |
+| Context-stable generalized morphism | Tambara module | profunctor + `frame`/strength operation | unit, nested framing, endpoint naturality, interpretation law |
+| Different context actions on source and target | Mixed Tambara module | separate left/right actions + framed profunctor | both actions preserve observations and mixed framing coheres |
+| Explicit residual-context accessor | Optic/double/residual IR | residual type + decompose/rebuild + Tambara interpreter | residual quotient and optic interpretation laws |
+| Bare capability needs every legal frame | Free Tambara construction | generated context-closed capability IR | every supported frame generated once modulo reindexing |
+| Capability must expose behavior under all frames | Cofree/end-based Tambara construction | symbolic/all-context observation surface | unit/coassociativity and finite/effective observation law |
+| Context changes type/index | Dependent Tambara / double-category action | indexed frame IR / horizontal natural transformation | index transport and dependent framing law |
+| Generalized morphism must be a real implementation map | Representability/module-functor diagnostic | concrete realizer or obstruction | representation round-trip/right-adjoint witness |
 | Operations with many runtimes | Effect signature + handlers | operation IR + handlers | handlers agree on declared observations |
 | Pure values with order-sensitive effects | Freyd / premonoidal category | pure/effect boundary + centrality registry | pure embedding laws and noncommuting witness |
 | Typed hierarchical component assembly | Colored operad | colors/ports + operations + semantic algebras | interpretation preserves substitution |
@@ -39,5 +46,7 @@ Use pullback only when there is a real shared target/observation and an agreemen
 Use comonadic spatiality only when locality changes correctness, points/patches can be named, center and coherence laws are meaningful, and an effective halo/basis representation changes code or tests. A plain dependency graph, contextual wrapper, or fixture set is not automatically a comonadic space or basis.
 
 Use Day convolution only when the artifacts are genuinely indexed descriptions, the index world has a tensor/unit, all lawful decompositions should contribute, and coherent reindexings should be quotiented. Use promonoidal convolution when composition is partial or relation-valued. Static/applicative description composition does not prove effect commutativity; runtime order remains a Freyd/resource obligation.
+
+Use Tambara mechanics only when a real context world acts on both endpoint worlds and a profunctorial capability must remain valid under several context extensions. A `Context<T>` wrapper, repeated middleware, reader argument, or dependency-injection container is not automatically a Tambara module. Tambara framing does not prove runtime commutativity or domain optic laws.
 
 If the unknown location is unclear, do not escalate. First pick a smaller seam and a concrete witness.

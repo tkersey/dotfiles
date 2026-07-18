@@ -23,6 +23,16 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 | Day interpretation | `interpret(F star G) == combine(interpret(F),interpret(G))` under declared observations | description composition and semantic composition disagree |
 | Promonoidal admissibility | partial/relation-valued composition contributes only through explicit `P(a,b;c)` witnesses | incompatible resources/interfaces are silently totalized |
 | Convolution effectivity | decomposition, aggregation, quotient, and invalidation stay within the declared resource bound | decomposition explodes or equality/normalization is unavailable without obstruction |
+| Tambara unit | `frame_I(p) ~= p` | the identity/empty context changes the capability |
+| Tambara associativity | `frame_(m tensor n)(p) ~= frame_m(frame_n(p))` | nested context extension depends on grouping or wrapper order |
+| Tambara endpoint naturality | `dimap(f,g,frame_m(p)) ~= frame_m(dimap(f,g,p))` | preprocessing/postprocessing and framing disagree |
+| Tambara context coherence | coherent reindexing of a context leaves framed observations unchanged | equivalent residual/context presentations produce different behavior |
+| Tambara interpretation | `interpret(frame_m(p)) == frameSemantics(m,interpret(p))` | framed syntax/capability and runtime semantics disagree |
+| Mixed Tambara action | source action `L` and target action `R` frame one profunctor coherently | one endpoint is framed by an incompatible or implicit action |
+| Optic residual | `interpretOptic(m,decompose,rebuild,p) == dimap(decompose,rebuild,frame_m(p))` | hidden residual identity leaks or reconstruction loses required context |
+| Free Tambara closure | every supported legal frame of a generator is represented once modulo coherent reindexing | frame omitted, duplicated observably, or quotient collapses required provenance |
+| Cofree Tambara observation | all supported frames are exposed coherently with unit/coassociativity | all-context claim omits a frame or nested observations disagree |
+| Tambara representability | generalized module round-trips through a concrete context-preserving realizer | claimed implementation map exists only as a nonfunctional relation/specification |
 | Behavioral coalgebra | `observe(step(state,input))` satisfies trace expectations | invalid transition admitted or equivalent states diverge observationally |
 | Comonadic center | `extract(localView(x)) == x` | the supposed local view is not centered at the original value/point |
 | Comonadic neighborhood coherence | `localViewOfLocalViews(x)` agrees with `expandLocalView(localView(x))` | nested contexts disagree, duplicate changes meaning, or nearby views are incoherent |
@@ -41,3 +51,5 @@ For pullbacks and pushouts, do not stop at square commutativity. The distinctive
 For comonadic spatiality, do not stop at a type named `Context`, a dependency graph, or point preservation. Require center/coherence, effective halo or basis representation, restriction behavior, labelled locality, a continuity falsifier, and a resource law.
 
 For Day convolution, do not stop at a nested loop or binary combination function. Require a real index tensor/kernel, representable preservation, unit/associativity, sound and complete decompositions, an explicit coend/normalization policy, interpretation law, effect-order guardrail, and effective implementation. Static/applicative structure never grants runtime commutativity by itself.
+
+For Tambara modules, do not stop at a context parameter, wrapper, reader environment, or optic-shaped record. Require a real context action on both endpoint worlds, an underlying profunctor, unit/associativity/naturality/coherence, an interpretation law, effective residual/context representation, representability status, and a falsifier. Framing never grants effect commutativity, duplication, or domain-specific optic lawfulness by itself.

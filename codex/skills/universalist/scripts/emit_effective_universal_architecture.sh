@@ -51,6 +51,24 @@ cat <<OUT
 - collision/provenance policy:
 - complexity/resource bounds:
 
+## Context actions and Tambara modules, when applicable
+- ambient context worlds/categories:
+- tensors/units/partial or dependent composition:
+- endpoint worlds and source/target actions:
+- underlying profunctors/generalized capabilities:
+- Tambara forms: ordinary / mixed / two-sided / dependent
+- frame/strength operations:
+- unit/associativity/naturality/coherence laws:
+- optic/residual representations and normal forms:
+- free contextual closures:
+- cofree/all-context observation surfaces:
+- representability/module-functor witnesses:
+- nonrepresentability obstructions:
+- Day-center/Cayley hypotheses, if claimed:
+- Context Certificate agreements:
+- effect-order/resource owners:
+- effective residual/framing implementations:
+
 ## Spatial worlds, when applicable
 - points:
 - local patch vocabularies / subbases:
@@ -62,6 +80,7 @@ cat <<OUT
 - germ / restriction semantics:
 - continuous locality-preserving boundaries:
 - spatial Day products / external-product patches:
+- spatial Tambara actions / halo framing:
 - topological/category shadows and forgotten observations:
 - effective representation / invalidation:
 
@@ -76,6 +95,9 @@ cat <<OUT
 - description support / decomposition count:
 - quotient / normalization cost:
 - convolution cache / invalidation:
+- context frame count / residual size:
+- framing normalization / cache / invalidation:
+- representability/realizer cost:
 
 ## Laws, falsifier, obstruction
 - soundness:
@@ -86,6 +108,12 @@ cat <<OUT
 - coend/quotient coherence:
 - description interpretation/lax-monoidal law:
 - promonoidal admissibility/residual law:
+- Tambara unit/associativity/naturality law:
+- context reindexing/coherence law:
+- context-framing interpretation law:
+- optic residual/domain law:
+- free/cofree contextual closure law:
+- representability/module-functor law:
 - effect-order law:
 - center/counit and neighborhood coherence:
 - restriction/germ law:
@@ -99,8 +127,10 @@ cat <<OUT
 ## Witness seam
 - first end-to-end slice:
 - indexed description / composite:
+- local capability / context frame:
+- residual / optic path:
 - local/spatial context:
-- negative decomposition/collision witness:
+- negative decomposition/collision/framing witness:
 - verification commands:
 - stop point:
 OUT

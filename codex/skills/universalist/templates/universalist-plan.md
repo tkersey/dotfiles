@@ -10,6 +10,7 @@
 ## Spatial geometry / halo:
 ## Composition geometry:
 ## Description composition:
+## Context action / Tambara module:
 ## Boundary law:
 ## Freyd/AFT boundary diagnostic:
 ## Composition Certificate:

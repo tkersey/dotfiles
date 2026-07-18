@@ -83,3 +83,23 @@ cases:
     expected: ["reject Day", "ordinary product", "no index tensor", "smallest honest construction"]
   - prompt: "Optimize this image convolution kernel without changing any architecture boundary."
     should_use_skill: false
+  - prompt: "We route the same validator through tenant, evidence, and capability wrappers; make the framing lawful without duplicating the local rule."
+    should_use_skill: true
+    expected: ["Tambara module", "context action", "profunctor", "unit", "nested framing", "effect-order guardrail"]
+  - prompt: "Our domain and wire representations use different context wrappers around the same observation/update capability."
+    should_use_skill: true
+    expected: ["mixed Tambara", "source action", "target action", "framing law", "representation"]
+  - prompt: "This accessor repeatedly decomposes a whole into focus plus residual, updates the focus, and rebuilds the whole."
+    should_use_skill: true
+    expected: ["optic", "residual", "Tambara interpreter", "coend quotient", "domain laws"]
+  - prompt: "Generate every lawful environment frame around this local policy operation."
+    should_use_skill: true
+    expected: ["free Tambara", "context basis", "normal form", "effective closure", "falsifier"]
+  - prompt: "The capability context changes the protocol state index, so do not erase it into a dynamic Context object."
+    should_use_skill: true
+    expected: ["dependent Tambara", "double-category action", "index transport", "typed framing", "counterexample"]
+  - prompt: "Call this Reader parameter a Tambara module even though there is no context action or framing law."
+    should_use_skill: true
+    expected: ["reject Tambara", "ordinary parameter", "no real action", "smallest honest construction"]
+  - prompt: "Use this Tambara functor from equivariant homotopy theory to model transfer and norm maps."
+    should_use_skill: false

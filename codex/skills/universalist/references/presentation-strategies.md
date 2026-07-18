@@ -135,6 +135,45 @@ Codensity probe presentation
 
 Do not add `Day` as a presentation mode. It is a tensor/product on indexed descriptions. A description family may be algebraically, densely, spatially, or primitively presented and still use pointwise, Day, promonoidal, substitutional, or sequential composition.
 
+## Context action is a separate decision
+
+Presentation also does not answer:
+
+```text
+How does a generalized transformation remain valid when context is added around its endpoints?
+```
+
+After selecting a presentation and any description product, choose the context-action structure when needed:
+
+```text
+plain parameter/adapter                 -> ordinary function/profunctor
+same action on both endpoints           -> Tambara module
+separate source and target actions       -> mixed/generalized Tambara module
+residual context made explicit           -> optic/double/residual IR
+bare capability closed under all frames  -> free Tambara construction
+all-context coherent observation         -> cofree/end-based Tambara construction
+index-changing context                   -> dependent Tambara/double-category action
+concrete implementation required         -> representability/module-functor diagnostic
+```
+
+Examples:
+
+```text
+Algebraic validation rule
+  + mixed Tambara framing through evidence and wire contexts
+  + Freyd runtime for effectful checks.
+
+Density-comonadic spatial presentation
+  + Tambara action for halo extension
+  + continuity and restriction laws.
+
+Explicit optic residual IR
+  + Tambara interpreter
+  + separate lens/prism/business laws.
+```
+
+Do not add `Tambara` as a presentation mode. It is action structure on a profunctor/generalized morphism. An algebraically, densely, spatially, mixed, or primitively presented capability may be unframed, Tambara-framed, mixed, dependent, free/cofree, or representable.
+
 ## Rule
 
 Do not accept a universal artifact merely because a canonical construction exists. Prefer a simple, testable presentation that reduces proof burden and separates generic mechanics from domain-specific assumptions.
@@ -142,3 +181,5 @@ Do not accept a universal artifact merely because a canonical construction exist
 For spatial presentations, require an effective subbasis/basis, halo representation, restriction/continuity law, and obstruction report when locality cannot be represented within the resource model.
 
 For Day/promonoidal description composition, require an explicit index tensor/kernel, legal-decomposition and quotient policy, representable/interpretation laws, effect-order guardrail, and effective enumeration/normalization bound.
+
+For Tambara/contextual-morphism structure, require a real ambient context action on both endpoint worlds, an underlying profunctor, unit/associativity/naturality/coherence, an interpretation law, representability status, effect/resource ownership, and an effective residual/context representation. A Reader parameter or wrapper is usually the smaller honest construction.

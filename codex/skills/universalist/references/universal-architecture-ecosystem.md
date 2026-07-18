@@ -1,6 +1,6 @@
 # Universal Architecture Ecosystem
 
-Universal architecture is the practice of designing software around canonical boundary artifacts, lawful composition of indexed descriptions, and effective spatial structure when locality is semantic:
+Universal architecture is the practice of designing software around canonical boundary artifacts, lawful composition of indexed descriptions, lawful context actions on generalized morphisms, and effective spatial structure when locality is semantic:
 
 ```text
 free syntax
@@ -14,12 +14,13 @@ effect signatures with handlers
 Freyd/premonoidal effect geometry
 operadic composition grammars
 pointwise, Day, and promonoidal description products
+Tambara modules and optic/residual-context morphisms
 comonadic spaces, density bases, halos, germs, and continuous boundaries
 explicit IRs
 law tests
 ```
 
-This extends the ordinary `universalist` construction ladder. Products, coproducts, refined types, pullbacks, exponentials, free constructions, labelled graphs, plain context objects, and pointwise products remain the first choices. Escalate only when the pressure sits at a boundary between worlds, when locality inside a world changes correctness, or when descriptions indexed by a composed world need a canonical product.
+This extends the ordinary `universalist` construction ladder. Products, coproducts, refined types, pullbacks, exponentials, free constructions, labelled graphs, plain context objects, ordinary profunctors, explicit residual records, and pointwise products remain the first choices. Escalate only when the pressure sits at a boundary between worlds, when locality inside a world changes correctness, when descriptions indexed by a composed world need a canonical product, or when a generalized morphism must survive a lawful context action.
 
 ## Core patterns
 
@@ -42,11 +43,18 @@ index world + tensor/kernel + indexed descriptions + quotient + interpreter + re
   -> pointwise / Day / promonoidal / substitutional / sequential product
 ```
 
-The artifact, spatial model, or description product is valuable only if it changes code shape, tests, static analysis, representable programs/states, or resource accounting.
+Contextual-morphism refinement:
+
+```text
+context world + endpoint actions + profunctor + frame + laws + realizer/effect owner
+  -> ordinary / Tambara / mixed / free-cofree / dependent / representable morphism
+```
+
+The artifact, spatial model, description product, or context action is valuable only if it changes code shape, tests, static analysis, representable programs/states/morphisms, or resource accounting.
 
 ## Ecosystem table
 
-| Universal move | CS intuition | Boundary/spatial/description artifact |
+| Universal move | CS intuition | Boundary/spatial/description/context artifact |
 | --- | --- | --- |
 | Product | independent fields | record/object with projection tests |
 | Coproduct | exclusive cases | ADT/sealed union with exhaustive handling |
@@ -70,11 +78,19 @@ The artifact, spatial model, or description product is valuable only if it chang
 | Promonoidal convolution | composition is partial or relation-valued | admissibility kernel + witnessed composites + residuals |
 | Free applicative / static Day monoid | full computation shape known before results | inspectable plan + analysis/execution interpreters |
 | Resource convolution | predicates combine over legal resource splits | separating assertion + disjointness/admissibility law |
+| Tambara module | one generalized capability survives a shared context action | profunctor + frame/strength + unit/associativity/naturality |
+| Mixed Tambara module | context acts differently on source and target | separate left/right actions + framed profunctor |
+| Optic/double | focus plus residual context rebuilds a whole | residual IR + decompose/rebuild + Tambara interpreter |
+| Free Tambara | bare capability gains all legal frames | generated context-closed IR + quotient/normal form |
+| Cofree Tambara | capability exposes all supported frames coherently | symbolic all-context observation + coalgebra laws |
+| Dependent Tambara | context changes endpoint indices | double-category action + typed frame transport |
+| Tambara representability | generalized morphism is or is not a real map | module functor/adapter witness or obstruction |
 | Density comonad | local patches generate a space of situated context | subbasis/basis + coalgebras + reconstruction |
 | Comonad coalgebra | object is coherently situated in local context | centered local view with nested-neighborhood coherence |
 | Halo / germ | effective neighborhood and locally valid value | labelled locality index + restriction law |
 | Continuous comonadic map | boundary preserves neighborhoods, not only points | point map + context transport + halo/label law |
 | Spatial Day convolution | two locality descriptions compose through product patches | external-product subbasis + combined halos + continuous projections |
+| Spatial Tambara framing | local transformation survives lawful halo/context extension | halo action + framed profunctor + restriction/continuity law |
 | Yoneda | object by observations | `Observation` plus `runObservation` |
 | Coyoneda | payload plus deferred map | `Generated(payload,path)` plus `lowerGenerated` |
 | Defunctionalization | callbacks/functions to data | first-order IR plus `apply` |
@@ -83,11 +99,12 @@ The artifact, spatial model, or description product is valuable only if it chang
 
 Do not reach for advanced terms first. Ask:
 
-1. Is a product/coproduct/refined type/pullback/exponential/free construction, labelled graph, plain context object, or pointwise product enough?
-2. If not, is the smell a boundary artifact smell, a locality/spatiality smell, or an indexed-description composition smell?
+1. Is a product/coproduct/refined type/pullback/exponential/free construction, labelled graph, plain context object, ordinary profunctor/adapter, explicit residual record, or pointwise product enough?
+2. If not, is the smell a boundary artifact smell, a locality/spatiality smell, an indexed-description composition smell, or a context-framing smell?
 3. For spatiality, can points, patches, local/global identity, an effective halo, and restriction/continuity laws be named?
 4. For description composition, can an index world, tensor/unit or promonoidal kernel, indexed family, legal decompositions, quotient/normal form, interpreter, and resource bound be named?
-5. Can a single witness slice and law test make the artifact honest?
-6. Would the artifact prevent drift, duplication, hidden behavior, lossy projection, invalid state evolution, premature identity collapse, locality loss, illegal decomposition, or semantic collision?
+5. For contextual morphisms, can an ambient context world, source/target actions, profunctor, frame operation, unit/associativity/naturality/coherence, representability status, and effect/resource owner be named?
+6. Can a single witness slice and law test make the artifact honest?
+7. Would the artifact prevent drift, duplication, hidden behavior, lossy projection, invalid state evolution, premature identity collapse, locality loss, illegal decomposition, semantic collision, or framing inconsistency?
 
 If the answer to the applicable structure question, witness question, or value question is no, do not escalate. Record an ordinary solution or an obstruction.
