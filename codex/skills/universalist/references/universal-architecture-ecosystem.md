@@ -1,6 +1,6 @@
 # Universal Architecture Ecosystem
 
-Universal architecture is the practice of designing software around canonical boundary artifacts and effective spatial structure when locality is semantic:
+Universal architecture is the practice of designing software around canonical boundary artifacts, lawful composition of indexed descriptions, and effective spatial structure when locality is semantic:
 
 ```text
 free syntax
@@ -13,14 +13,15 @@ behavioral coalgebras
 effect signatures with handlers
 Freyd/premonoidal effect geometry
 operadic composition grammars
+pointwise, Day, and promonoidal description products
 comonadic spaces, density bases, halos, germs, and continuous boundaries
 explicit IRs
 law tests
 ```
 
-This extends the ordinary `universalist` construction ladder. Products, coproducts, refined types, pullbacks, exponentials, free constructions, labelled graphs, and plain context objects remain the first choices. Escalate only when the pressure sits at a boundary between worlds or when locality inside a world changes correctness.
+This extends the ordinary `universalist` construction ladder. Products, coproducts, refined types, pullbacks, exponentials, free constructions, labelled graphs, plain context objects, and pointwise products remain the first choices. Escalate only when the pressure sits at a boundary between worlds, when locality inside a world changes correctness, or when descriptions indexed by a composed world need a canonical product.
 
-## Core pattern
+## Core patterns
 
 ```text
 worlds + boundary + known side + unknown artifact + proof signal
@@ -34,11 +35,18 @@ points + local patches + local/global identity + effective halo + continuity law
   -> locality-preserving world/boundary design
 ```
 
-The artifact or spatial model is valuable only if it changes code shape or tests.
+Description-composition refinement:
+
+```text
+index world + tensor/kernel + indexed descriptions + quotient + interpreter + resource law
+  -> pointwise / Day / promonoidal / substitutional / sequential product
+```
+
+The artifact, spatial model, or description product is valuable only if it changes code shape, tests, static analysis, representable programs/states, or resource accounting.
 
 ## Ecosystem table
 
-| Universal move | CS intuition | Boundary/spatial artifact |
+| Universal move | CS intuition | Boundary/spatial/description artifact |
 | --- | --- | --- |
 | Product | independent fields | record/object with projection tests |
 | Coproduct | exclusive cases | ADT/sealed union with exhaustive handling |
@@ -57,10 +65,16 @@ The artifact or spatial model is valuable only if it changes code shape or tests
 | Freyd category | pure values coexist with ordered call-by-value effects | pure embedding + premonoidal sequencing + centrality law |
 | Colored operad | typed components assemble hierarchically | ports/colors + substitution grammar + semantic algebras |
 | PROP/properad | multiple-input/multiple-output network wiring | explicit network composition |
+| Pointwise/Hadamard product | descriptions combine at one unchanged index | same-index pair/map + naturality law |
+| Day convolution | descriptions combine over every tensor decomposition | indexed family + decomposition/normalization + lax-monoidal interpreter |
+| Promonoidal convolution | composition is partial or relation-valued | admissibility kernel + witnessed composites + residuals |
+| Free applicative / static Day monoid | full computation shape known before results | inspectable plan + analysis/execution interpreters |
+| Resource convolution | predicates combine over legal resource splits | separating assertion + disjointness/admissibility law |
 | Density comonad | local patches generate a space of situated context | subbasis/basis + coalgebras + reconstruction |
 | Comonad coalgebra | object is coherently situated in local context | centered local view with nested-neighborhood coherence |
 | Halo / germ | effective neighborhood and locally valid value | labelled locality index + restriction law |
 | Continuous comonadic map | boundary preserves neighborhoods, not only points | point map + context transport + halo/label law |
+| Spatial Day convolution | two locality descriptions compose through product patches | external-product subbasis + combined halos + continuous projections |
 | Yoneda | object by observations | `Observation` plus `runObservation` |
 | Coyoneda | payload plus deferred map | `Generated(payload,path)` plus `lowerGenerated` |
 | Defunctionalization | callbacks/functions to data | first-order IR plus `apply` |
@@ -69,10 +83,11 @@ The artifact or spatial model is valuable only if it changes code shape or tests
 
 Do not reach for advanced terms first. Ask:
 
-1. Is a product/coproduct/refined type/pullback/exponential/free construction, labelled graph, or plain context object enough?
-2. If not, is the smell a boundary artifact smell or a locality/spatiality smell?
+1. Is a product/coproduct/refined type/pullback/exponential/free construction, labelled graph, plain context object, or pointwise product enough?
+2. If not, is the smell a boundary artifact smell, a locality/spatiality smell, or an indexed-description composition smell?
 3. For spatiality, can points, patches, local/global identity, an effective halo, and restriction/continuity laws be named?
-4. Can a single witness slice and law test make the artifact honest?
-5. Would the artifact prevent drift, duplication, hidden behavior, lossy projection, invalid state evolution, premature identity collapse, or locality loss?
+4. For description composition, can an index world, tensor/unit or promonoidal kernel, indexed family, legal decompositions, quotient/normal form, interpreter, and resource bound be named?
+5. Can a single witness slice and law test make the artifact honest?
+6. Would the artifact prevent drift, duplication, hidden behavior, lossy projection, invalid state evolution, premature identity collapse, locality loss, illegal decomposition, or semantic collision?
 
-If the answer to 3, 4, or 5 is no, do not escalate. Record an ordinary solution or an obstruction.
+If the answer to the applicable structure question, witness question, or value question is no, do not escalate. Record an ordinary solution or an obstruction.
