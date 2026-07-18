@@ -1,6 +1,6 @@
 ---
 name: cas
-description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, review evidence ledger import/validation, session inquiry replay, and multi-instance fanout. For review evidence, distinguish CAS-RER records, pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
+description: "Run Zig CAS helpers (`cas`, `cas_account`, `cas_goal`, `cas_smoke_check`, `cas_instance_runner`, `cas_review_session`, `cas_session_inquiry`, `cas_trial`, `cas_conformance_suite`) for v2 app-server account status, smoke checks, goal lifecycle control, direct thread/turn execution, detached review control, HCTP one-claim lane execution, review evidence ledger import/validation, session inquiry replay, and multi-instance fanout. For review evidence, distinguish CAS-RER records, pre-review lane transport, real review attempts, normalized tuple-bound review verdicts, account/resource exhaustion, and tuple concurrency guards."
 ---
 
 # cas (Zig App-Server Control)
@@ -33,6 +33,7 @@ cas smoke_check
 cas instance_runner
 cas review_session
 cas session_inquiry <preflight|run|start|status|wait|interrupt|receipt|cleanup>
+cas trial <preflight|compile-replay|run|status|cleanup|key-info>
 cas conformance
 ```
 
@@ -41,6 +42,145 @@ cas conformance
 `cas conformance` probes app-server helper compatibility and retry-policy scenarios.
 
 `cas session_inquiry` owns safe historical replay lifecycle for `$retrace`; see `references/retrace-session-inquiry.md`.
+
+## HCTP trial execution
+
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once. Reuse that readiness for every later Ledger
+command.
+
+`cas trial` is an admitted macOS product surface. Probe
+`cas capabilities --json` and require only the exact features needed by the
+route. Private-v2 direct execution requires:
+
+```text
+hylo_trial_runner_v2
+hylo_fd_lane_lease_v1
+hylo_signed_run_receipt_v2
+hylo_private_lane_materialization_fd_v1
+hylo_private_receipt_redaction_v1
+hylo_target_common_projection_opening_v1
+hylo_trial_route_projection_v1
+```
+
+Historical execution additionally requires:
+
+```text
+hylo_internal_historical_replay_v1
+dcp_v2
+rip_v1
+fir_v1
+```
+
+These keys are absent on non-macOS builds. Do not infer historical replay or a
+sealed broker from `hylo_trial_runner_v2`. Legacy `hylo_trial_runner_v1` and
+`hylo_signed_run_receipt_v1` remain compatibility features only.
+
+Run preflight for each frozen lane:
+
+```bash
+cas trial preflight --trial trial.json --lane-id <lane-id> --json
+```
+
+Its route projection uses these exact fields:
+
+```text
+source_profile_kind
+compile_replay_required
+replay_preparation_mode
+source_profile_body_delivery
+execution_route
+required_lineage
+```
+
+For a direct lane, require `source_profile_kind:"direct"`,
+`compile_replay_required:false`, `source_profile_body_delivery:"none"`,
+`replay_preparation_mode:"none"`, `execution_route:"direct"`, and
+`required_lineage:null`. Skip
+`compile-replay`; materialize the visible input, receive the exact lease-bound
+Ledger claim through `--materialization-fd`, and invoke `cas trial run` exactly
+once.
+
+For a historical lane, require `source_profile_kind:"historical_decision"`,
+`compile_replay_required:false`, `replay_preparation_mode:"integrated_run"`,
+`execution_route:"historical_replay"`, and the frozen `required_lineage`.
+For every v2 historical lane, require
+`source_profile_body_delivery:"source_profile_fd"`; the public
+`units[*].source_profile` is only the exact validator-defined safe projection,
+and extra keys or semantic profile material are invalid. Supply the complete
+historical profile directly to `cas trial run --source-profile-fd` from the
+admitted materializer. Before claiming the lane, `cas trial run` privately
+compiles exactly one DCP and RIP and binds their fingerprints into the claim
+and terminal receipt. It then executes one bounded replay; a successful
+terminal receipt must join the resulting FIR lineage, while a failed terminal
+receipt records FIR unavailability. Embedded delivery is legacy v1 or
+standalone diagnostic compatibility, not the v2 execution route.
+
+Every `hylo-trial/v2` lane requires `--materialization-fd`, independently of
+source route. The FD carries `hylo-lane-materialization-claim/v2` from
+`ledger --source hylo lane-materialization`; it binds the public trial,
+registration/start lineage, retained lease, selected treatment commitment, and
+private treatment body without disclosing semantic role. It is distinct from
+the visible-input, lease, source-profile, and signing-seed descriptors.
+
+That private claim also carries the exact
+`hylo-target-common-projection-opening/v1`. CAS accepts no raw
+`target_common_projection` alias: it verifies the whole opening against the
+public trial's target-common-projection commitment, then verifies the nested
+`hylo-target-common-projection/v1` against its public projection fingerprint
+before executor preparation. Neither opening nor projection body appears in
+the public run receipt.
+
+CAS emits `hylo-run-receipt/v2` for v2 trials. Its public materialization
+projection is commitment-only: it may expose the treatment commitment,
+visible-input lineage, permitted historical fingerprints, source-profile
+delivery mode, and non-disclosure booleans. It must not expose semantic role,
+raw target snapshot/materialization identities, target/factor archive paths,
+package-tree fingerprints, or private evidence references. Its FIR carrier is
+exactly `hylo-fir-public-projection/v1`; the full FIR stays private. Legacy
+`hylo-trial/v1` continues to emit `hylo-run-receipt/v1` with its compatible
+full-FIR carrier.
+
+The v2 public materialization projection also carries
+`materialization_claim_fingerprint`. Before reveal, it must exact-join the
+same lane's `hylo-lane-materialization-receipt/v2.claim_fingerprint`. Ledger
+requires one matching v2 receipt per lane and rejects changed, missing,
+duplicate, or version-mixed per-lane safe-receipt sets before appending reveal.
+This join does not apply to the legacy v1 receipt carrier.
+
+Protected lane leases, visible inputs, treatment claims, source profiles, and
+signing seeds use distinct anonymous directional descriptors numbered `>=3`.
+Do not carry their secret bytes in argv, environment variables, regular files,
+normal stdout, the event store, or proof bundles. A started one-claim lane is
+never retried as new work; `status` and recovery may only finish or re-emit
+already-admitted state.
+
+### Diagnostic `compile-replay`
+
+The standalone `cas trial compile-replay` command is historical-only diagnostic
+infrastructure. It rejects direct lanes, case-blind or FD-delivered source
+profiles, and `role_separated` or `sealed` assurance. It grants no execution
+authority, reports `execution_authority:false`, and must not enter the normal
+historical path. `cas trial run` neither consumes its receipt nor its DCP/RIP
+files; run performs authoritative integrated preparation before the one-shot
+claim.
+
+For an allowed open, embedded historical diagnostic, `--output-dir` must name
+a caller-owned canonical private root with no symlink path components and mode
+`0700`. CAS creates the lane DCP and RIP as new `0600` files, rejects conflicts,
+and revalidates modes, ownership, inode shape, and content fingerprints. Normal
+stdout contains only `cas-trial-replay-plan-receipt/v1` metadata and
+fingerprints; it never returns the semantic source profile, DCP, or RIP bodies.
+
+### Sealed broker boundary
+
+Sealed assurance requires an explicitly admitted external broker satisfying the
+published role, protected-FD, checkpoint, recovery, and non-disclosure
+contracts. The repository-owned `hctp-sealed-role-driver` is conformance/test
+infrastructure, not an installed product command or capability. Fail closed
+before secret generation or trial mutation when no admitted broker exists.
+Retain `os_confinement:false`; the macOS route does not claim hostile same-user
+process isolation.
 
 ## Artifact store
 

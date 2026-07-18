@@ -95,6 +95,82 @@ retrace_inquiry_plan / RIP-v1
 decision_reconstruction_record / DRR-v1
 ```
 
+## HCTP historical lane bridge
+
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once. Reuse that readiness for every later Ledger
+command.
+
+When a Retrace source becomes a Hylo `historical_decision` lane, preserve this native evidence chain:
+
+```text
+SGG-v1 -> pre_decision DCP-v2 -> source-target-text witness
+-> one-lane/one-replay RIP-v1 -> FIR-v1 with the frozen lineage
+```
+
+Seq derives `hylo-source-route-admission/v1` from a validated CRF episode and
+source profile, then binds the admission into the selection core covered by the
+source-owner attestation in `hylo-source-selection-receipt/v1`. Retrace evidence
+cannot relabel a replay-ineligible episode as direct execution. The routing law
+is:
+
+```text
+replay_eligible:true + direct profile -> direct comparison may be admitted
+replay_eligible:false + direct profile -> diagnostic_only; comparison forbidden
+replay_eligible:true + valid historical_decision -> historical replay may be admitted
+replay_eligible:false + valid historical_decision -> historical replay may be admitted,
+  with effective reconstruction capped by CRF fidelity
+absent or invalid historical governance -> compilation fails;
+  source remains diagnostic evidence only
+```
+
+A historical profile requires governed SGG evidence, a DCP target-text witness,
+`retrace_mode:"replay"`, `required_lineage`, `required_fir_version:"FIR-v1"`,
+and an explicit reconstructability class with retained limitations. Generic
+Retrace may admit `declared_uncontrolled` with that limitation, but HCTP
+`practice_repair` and `promotion` require authoritative governance at the
+effective Ledger/CAS gate.
+
+During HCTP execution, `cas trial run` privately compiles the lane DCP/RIP and
+binds their fingerprints before the one-shot claim. A successful replay must
+verify the FIR/native-receipt lineage; a terminal failure records FIR
+unavailability. Standalone `cas trial compile-replay` is an open, embedded,
+historical diagnostic with `execution_authority:false`; `run` consumes neither
+its receipt nor its DCP/RIP files. It is not the case-blind or sealed execution
+path. Historical preflight reports `compile_replay_required:false` and
+`replay_preparation_mode:"integrated_run"`.
+For case-blind lanes, never expose source target text, source-profile bodies,
+rejected routes, or historical answers through controller-visible artifacts.
+For v2, public `units[*].source_profile` is always the exact native safe
+projection with no semantic extras. V1 retains its established source-profile
+contract.
+
+Generic Retrace may retain the full `FIR-v1` under its owning lifecycle. An
+HCTP v2 public run receipt carries only the exact
+`hylo-fir-public-projection/v1`; its full FIR remains private. The v1 HCTP path
+retains its compatible full-FIR carrier. Never treat the v2 projection as a
+substitute for private FIR validation.
+
+Historical source-profile delivery is independent of private-v2 treatment
+custody. Every `hylo-trial/v2` lane also receives one lease-bound treatment
+claim from `ledger --source hylo lane-materialization` through CAS
+`--materialization-fd`; that claim discloses no semantic arm role.
+
+Case-blind source release has its own custody projection: Seq receives the
+exact `hylo-source-selection-opening/v1` through
+`--source-selection-opening-fd`, while CAS receives the historical profile
+directly on the protected FD named by `cas trial run --source-profile-fd` only
+when preflight freezes that delivery. The
+lease-bound treatment claim separately carries the private
+`hylo-target-common-projection-opening/v1`. Do not substitute one carrier for
+another or expose any of their bodies through a public receipt.
+
+The staged baseline/intervention sequence below describes an ordinary Retrace
+experiment. If its artifacts feed an HCTP paired trial, follow the trial's
+frozen balanced A/B-B/A lane order; either semantic arm may run first. A
+baseline-before-candidate chronology rule applies only to the legacy Hylo
+compatibility fold, not to HCTP lane execution.
+
 ## Modes
 ```text
 explain        contemporaneous rationale reconstruction
