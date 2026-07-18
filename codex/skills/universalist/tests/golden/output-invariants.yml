@@ -40,3 +40,24 @@ invariants:
   - name: spatial_context_requires_germ_and_budget
     when: "Context(q) is modeled as a germ"
     required: ["Task point", "Effective halo", "Local/global identity", "Restriction rules", "Provenance", "Freshness", "Halo budget", "Rendering continuity"]
+  - name: day_convolution_requires_index_tensor
+    when: "Day convolution"
+    required: ["Index category/world", "Index tensor", "Unit", "Indexed descriptions", "Legal decompositions", "Representable law", "Coend/normalization policy", "Interpreter", "Effectivity bound", "Falsifier"]
+  - name: promonoidal_convolution_requires_admissibility_kernel
+    when: "promonoidal convolution"
+    required: ["Promonoidal kernel", "Admissibility witness", "Partial composition", "Incompatible-pair rejection", "Witness provenance", "Resource bound"]
+  - name: day_convolution_requires_representable_law
+    when: "Day or Cauchy product"
+    required: ["represent(a) star represent(b)", "represent(a tensor b)", "Unit law", "Associativity law", "Interpretation law"]
+  - name: day_convolution_requires_effective_decomposition
+    when: "description composition ranges over decompositions"
+    required: ["Enumeration/query strategy", "Finite support or approximation", "Aggregation", "Normalization", "Complexity", "Obstruction"]
+  - name: coend_quotient_requires_collision_policy
+    when: "coend or quotient identifies intermediate presentations"
+    required: ["Equivalence relation", "Information forgotten", "Provenance retained", "Canonical representative", "Collision falsifier"]
+  - name: applicative_structure_does_not_imply_effect_commutativity
+    when: "applicative or static effect description"
+    required: ["Static computation shape", "Value-dependent countercase", "Freyd/resource owner", "No implicit parallelism", "Noncommuting witness"]
+  - name: spatial_convolution_requires_external_product_basis
+    when: "Day convolution of comonadic spatial worlds"
+    required: ["Left subbasis", "Right subbasis", "External-product patches", "Combined halos", "Label translation", "Continuous projections", "Effective product representation"]
