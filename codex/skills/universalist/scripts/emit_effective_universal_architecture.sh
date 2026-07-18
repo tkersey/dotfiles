@@ -31,7 +31,25 @@ cat <<OUT
 - effects and handlers:
 - state / behavioral coalgebra / protocol:
 - canonical constructions:
-- presentation strategy:
+- base composition geometries:
+- presentation strategies:
+
+## Description composition, when applicable
+- index worlds/categories:
+- tensors / promonoidal kernels:
+- units:
+- indexed description families:
+- selected products: pointwise / Day / promonoidal / substitution / endofunctor composition
+- atomic/representable embeddings:
+- legal decomposition/admissibility witnesses:
+- coend/reindexing equivalences:
+- executable representations:
+- enumeration / aggregation / normalization:
+- lax-monoidal interpreters:
+- residuals/internal homs:
+- effect-order restrictions:
+- collision/provenance policy:
+- complexity/resource bounds:
 
 ## Spatial worlds, when applicable
 - points:
@@ -43,6 +61,7 @@ cat <<OUT
 - representative and labelled halos:
 - germ / restriction semantics:
 - continuous locality-preserving boundaries:
+- spatial Day products / external-product patches:
 - topological/category shadows and forgotten observations:
 - effective representation / invalidation:
 
@@ -54,11 +73,20 @@ cat <<OUT
 - persistence / deployment:
 - halo size / traversal / basis reconstruction:
 - spatial index freshness / invalidation:
+- description support / decomposition count:
+- quotient / normalization cost:
+- convolution cache / invalidation:
 
 ## Laws, falsifier, obstruction
 - soundness:
 - adequacy/completeness:
 - observation law:
+- Day representable/unit/associativity law:
+- decomposition soundness/completeness:
+- coend/quotient coherence:
+- description interpretation/lax-monoidal law:
+- promonoidal admissibility/residual law:
+- effect-order law:
 - center/counit and neighborhood coherence:
 - restriction/germ law:
 - basis-density/reconstruction law:
@@ -70,7 +98,9 @@ cat <<OUT
 
 ## Witness seam
 - first end-to-end slice:
+- indexed description / composite:
 - local/spatial context:
+- negative decomposition/collision witness:
 - verification commands:
 - stop point:
 OUT

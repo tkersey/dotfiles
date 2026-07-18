@@ -73,7 +73,7 @@ Use when syntax should be separated from execution. Laws: interpreters agree on 
 
 ## Canonical boundary artifact
 
-Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, comonadic spatiality, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, locality, lowering, or interpreter equivalence.
+Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, comonadic spatiality, indexed-description convolution, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, locality, decomposition, quotient, lowering, or interpreter equivalence.
 
 ## Behavioral coalgebra
 
@@ -140,6 +140,88 @@ Laws:
 ## Continuous comonadic boundary
 
 Use when a point/value map must also preserve locality. Laws: point map, coalgebra/context transport, cartesian/restriction compatibility, halo and label preservation, and a continuity falsifier. An ordinary comonad map is not automatically a continuous map.
+
+## Pointwise / Hadamard description product
+
+Use when two description families are combined only at the same index:
+
+```text
+(F pointwise G)(c) = F(c) x G(c)
+```
+
+There is no sum over decompositions. Laws: same-index pairing and interpretation; index changes are natural. Do not call this Day convolution.
+
+## Day convolution
+
+Use when descriptions are indexed by a monoidal world and every legal tensor decomposition should contribute:
+
+```text
+(C, tensor, I)
+F,G : C -> V
+F star G = Lan_tensor(F external-product G)
+```
+
+Pointwise, schematically:
+
+```text
+(F star G)(c)
+  ~= coend_{a,b} C(a tensor b,c) * F(a) * G(b)
+```
+
+Software forms:
+
+- graded/Cauchy families;
+- static/applicative computation descriptions;
+- weighted/formal languages;
+- combinatorial species;
+- operation/rule collections;
+- requirement-indexed context fragments;
+- product descriptions of comonadic spatial worlds.
+
+Laws:
+
+- representables preserve tensor: `represent(a) star represent(b) ~= represent(a tensor b)`;
+- unit: `J star F ~= F ~= F star J`;
+- associativity up to the declared normal form/equivalence;
+- decomposition soundness and completeness;
+- coend/reindexing quotient coherence;
+- interpreter/lax-monoidal preservation;
+- static structure does not imply runtime effect commutativity;
+- decomposition, aggregation, quotient, and invalidation are effective within the resource model.
+
+## Promonoidal convolution
+
+Use when index composition is partial, relation-valued, nondeterministic, or multi-witnessed:
+
+```text
+Compose(a,b;c)
+(F star G)(c)
+  ~= coend_{a,b} Compose(a,b;c) * F(a) * G(b)
+```
+
+Software forms: separation/resource predicates, partially composable grades, capability combinations, interface/rule matches, and provenance-bearing composition.
+
+Laws:
+
+- every composite carries an admissibility witness;
+- incompatible pairs fail closed;
+- every supported legal witness contributes;
+- witness provenance survives when observable;
+- residual/internal-hom claims agree with the declared order;
+- partiality is not hidden by sentinel values.
+
+## Substitution versus Day versus monadic composition
+
+Distinguish:
+
+```text
+Day convolution       combine over index decompositions
+operadic substitution recursively insert operations into typed slots
+monadic composition   later computation structure depends on earlier results
+pointwise product     combine at one unchanged index
+```
+
+Use one counterexample that distinguishes the selected product from the nearest alternative.
 
 ## Freyd / premonoidal category
 

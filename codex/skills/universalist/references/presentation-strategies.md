@@ -94,8 +94,51 @@ Agentic systems may stress this combination, but they are not the center of the 
 
 Use when the boundary is intentionally treated as an external primitive effect and contained by handlers/observations.
 
+## Description composition is a separate decision
+
+Presentation answers:
+
+```text
+How is one artifact represented?
+```
+
+Description composition answers:
+
+```text
+How do artifacts indexed by a composed world combine?
+```
+
+After selecting a presentation, choose the description product when needed:
+
+```text
+same index                         -> pointwise / Hadamard
+all tensor decompositions          -> Day convolution
+partial/relation-valued composition -> promonoidal convolution
+recursive typed insertion          -> substitution / plethysm
+value-dependent sequencing         -> endofunctor composition / monad
+```
+
+Examples:
+
+```text
+Algebraic operation syntax
+  + Day/applicative product
+  + Freyd runtime.
+
+Density-comonadic spatial presentation
+  + Day product of external-product patches
+  + continuous projections.
+
+Codensity probe presentation
+  + pointwise product when probes share an index.
+```
+
+Do not add `Day` as a presentation mode. It is a tensor/product on indexed descriptions. A description family may be algebraically, densely, spatially, or primitively presented and still use pointwise, Day, promonoidal, substitutional, or sequential composition.
+
 ## Rule
 
 Do not accept a universal artifact merely because a canonical construction exists. Prefer a simple, testable presentation that reduces proof burden and separates generic mechanics from domain-specific assumptions.
 
 For spatial presentations, require an effective subbasis/basis, halo representation, restriction/continuity law, and obstruction report when locality cannot be represented within the resource model.
+
+For Day/promonoidal description composition, require an explicit index tensor/kernel, legal-decomposition and quotient policy, representable/interpretation laws, effect-order guardrail, and effective enumeration/normalization bound.

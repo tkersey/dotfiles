@@ -2,6 +2,6 @@ interface:
   display_name: "Universalist"
   short_description: "Apply Universalist at every code boundary."
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to inspect the code boundary this implementation or resolution creates, changes, preserves, repairs, or removes; choose the smallest honest artifact and law witness, including effective halos and locality preservation when local context is semantic."
+  default_prompt: "Use $universalist to inspect the code boundary this implementation or resolution creates, changes, preserves, repairs, or removes; choose the smallest honest artifact and law witness, including effective halos for semantic locality and the correct pointwise, Day, promonoidal, substitutional, or sequential product for indexed descriptions."
 policy:
   allow_implicit_invocation: true

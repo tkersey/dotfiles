@@ -80,6 +80,41 @@ Continuity law:
 Continuity falsifier:
 Resource / invalidation law:
 
+## Description composition, when applicable
+
+Applicable: yes / no
+Base index category/world:
+Index objects / grades / resources / interfaces:
+Index morphisms / refinements:
+Base tensor or composition operation:
+Unit:
+Promonoidal kernel, if partial/relational:
+Description category:
+Variance: covariant / presheaf
+Indexed descriptions:
+Selected product: pointwise / Day / promonoidal / substitution / endofunctor composition / ordinary
+Nearby product rejected:
+Counterexample distinguishing products:
+Day/Kan specification: `F star G = Lan_tensor(F external-product G)`
+Pointwise/coend formula:
+Legal decomposition witnesses:
+Coend/reindexing equivalence:
+Atomic/representable embedding:
+Executable representation:
+Finite-support / boundedness policy:
+Decomposition enumeration/query:
+Aggregation/target tensor:
+Normalization/quotient strategy:
+Canonical representative:
+Provenance retained outside quotient:
+Monoid/lax-monoidal interpretation:
+Residual/internal hom, if any:
+Effect-order owner and restrictions:
+Collision policy:
+Complexity/resource bound:
+Description-composition law:
+Description-composition falsifier:
+
 ## Composition grammar
 
 Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive

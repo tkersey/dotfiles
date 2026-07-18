@@ -37,6 +37,23 @@ Restriction / germ rules:
 Labelled-halo fields:
 Continuity requirements:
 
+## Requirement-indexed composition
+
+Applicable: yes / no
+Requirement index world:
+Requirement tensor or promonoidal kernel:
+Unit requirement:
+Context fragment family:
+Selected product: pointwise / Day / promonoidal / ordinary
+Nearby product rejected:
+Legal requirement decompositions:
+Coend/reindexing equivalence:
+Fragment schema/provenance combination:
+Residual / missing-context operation:
+Enumeration/normalization strategy:
+Collision policy:
+Effectivity/resource bound:
+
 ## Source instance
 
 Source worlds:
@@ -89,6 +106,11 @@ Restriction/germ law:
 Continuity/halo-preservation law:
 Local/global identity and labelled-halo law:
 Spatial resource law:
+Requirement decomposition soundness/completeness law:
+Day representable/unit/associativity law:
+Context-fragment interpretation law:
+Residual law:
+Convolution resource/effectivity law:
 
 ## Falsifier
 
@@ -101,6 +123,10 @@ Local points collapsed before provenance:
 Retrieved set mistaken for semantic halo:
 Halo approximation omits an observation-changing dependency:
 Invalid germ after boundary transport:
+Illegal context decomposition admitted:
+Legal context decomposition omitted:
+Provenance collapsed under convolution quotient:
+Context union mislabeled as Day convolution:
 
 ## Status
 

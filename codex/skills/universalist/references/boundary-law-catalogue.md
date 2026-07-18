@@ -16,6 +16,13 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 | Handler | `run(handler(program))` satisfies operation observations | handler omits or misinterprets operation case |
 | Freyd effect order | pure embedding preserves identity/composition; reordered effects agree observationally only when certified | accepted reordering changes state, trace, result, or failure |
 | Operadic substitution | `interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))` | legal wiring changes meaning under hierarchical substitution or forbidden wiring is admitted |
+| Day representable | `represent(a) star represent(b) ~= represent(a tensor b)` | two atomic descriptions compose differently from their indices |
+| Day unit/associativity | `J star F ~= F ~= F star J`; `(F star G) star H ~= F star (G star H)` | normalization depends on grouping or the unit changes observations |
+| Day decomposition | every emitted composite has a legal decomposition witness and every supported legal decomposition contributes | illegal decomposition admitted or legal decomposition omitted |
+| Day quotient coherence | coherent reindexing of an intermediate representative leaves normalized observations unchanged | quotient collapses required provenance/order or equivalent presentations diverge |
+| Day interpretation | `interpret(F star G) == combine(interpret(F),interpret(G))` under declared observations | description composition and semantic composition disagree |
+| Promonoidal admissibility | partial/relation-valued composition contributes only through explicit `P(a,b;c)` witnesses | incompatible resources/interfaces are silently totalized |
+| Convolution effectivity | decomposition, aggregation, quotient, and invalidation stay within the declared resource bound | decomposition explodes or equality/normalization is unavailable without obstruction |
 | Behavioral coalgebra | `observe(step(state,input))` satisfies trace expectations | invalid transition admitted or equivalent states diverge observationally |
 | Comonadic center | `extract(localView(x)) == x` | the supposed local view is not centered at the original value/point |
 | Comonadic neighborhood coherence | `localViewOfLocalViews(x)` agrees with `expandLocalView(localView(x))` | nested contexts disagree, duplicate changes meaning, or nearby views are incoherent |
@@ -32,3 +39,5 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 For pullbacks and pushouts, do not stop at square commutativity. The distinctive universal obligation is factorization through the selected artifact, with uniqueness approximated by an opaque canonical constructor, quotient/normal form, and no competing public construction path.
 
 For comonadic spatiality, do not stop at a type named `Context`, a dependency graph, or point preservation. Require center/coherence, effective halo or basis representation, restriction behavior, labelled locality, a continuity falsifier, and a resource law.
+
+For Day convolution, do not stop at a nested loop or binary combination function. Require a real index tensor/kernel, representable preservation, unit/associativity, sound and complete decompositions, an explicit coend/normalization policy, interpretation law, effect-order guardrail, and effective implementation. Static/applicative structure never grants runtime commutativity by itself.

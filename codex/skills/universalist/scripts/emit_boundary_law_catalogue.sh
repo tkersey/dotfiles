@@ -14,6 +14,11 @@ case "$kind" in
   handler) echo 'Handler law: run(handler(program)) satisfies operation observations' ;;
   freyd-category) echo 'Freyd effect-order law: pure embedding preserves identity/composition; reorder only with observational commutativity' ;;
   operad) echo 'Operadic substitution law: interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))' ;;
+  day-convolution|day) echo 'Day laws: represent(a) star represent(b) ~= represent(a tensor b); unit/associativity; legal decompositions sound and complete; quotient and interpretation preserve observations' ;;
+  promonoidal-convolution|promonoidal) echo 'Promonoidal law: every composite carries an explicit P(a,b;c) admissibility witness; incompatible pairs fail closed; witness provenance survives when observable' ;;
+  applicative-convolution|applicative) echo 'Applicative/Day law: static description combination is lax monoidal; analysis and execution agree on declared structure; static shape does not imply effect commutativity' ;;
+  resource-convolution|separation) echo 'Resource convolution law: only compatible splits contribute; the unit is neutral; residuals agree with the resource order; split enumeration stays within budget' ;;
+  spatial-convolution) echo 'Spatial Day law: external-product patches generate the product description; projections preserve required halos, labels, identities, and restrictions within the resource bound' ;;
   coalgebra|behavioral-coalgebra) echo 'Behavioral coalgebra law: observe(step(state,input)) satisfies protocol trace expectations' ;;
   comonad-space|comonadic-spatiality) echo 'Comonadic spatiality laws: extract(localView(x)) == x; nested local views cohere; restriction preserves germ meaning; locality-sensitive boundaries preserve required halos and labels' ;;
   halo|labelled-halo) echo 'Halo law: the effective halo is centered, restriction-stable, label-preserving, and complete enough for required observations within its declared budget' ;;
@@ -35,6 +40,11 @@ Migration: oldReport(old) == oldReport(restrict(migrate(old)))
 Handler: run(handler(program)) satisfies operation observations
 Freyd category: pure embedding preserves identity/composition; reorder only with observational commutativity
 Operad: interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))
+Day convolution: representables preserve tensor; unit/associativity; sound/complete decompositions; quotient and interpretation laws
+Promonoidal convolution: every composite has an admissibility witness and incompatible pairs fail closed
+Applicative/Day: static analysis and execution agree; static shape does not imply effect commutativity
+Resource convolution: only compatible splits contribute and residual/resource laws hold
+Spatial convolution: external-product patches preserve halos, labels, identities, restrictions, and resource bounds
 Behavioral coalgebra: observe(step(state,input)) satisfies protocol trace expectations
 Comonadic spatiality: center, nested-neighborhood coherence, germ restriction, halo/label continuity, and resource laws
 Basis density: supported situated objects reconstruct canonically from basic patches

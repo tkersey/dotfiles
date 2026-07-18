@@ -63,3 +63,23 @@ cases:
   - prompt: "Treat this nearby-files list as a comonad even though there is no extract, duplicate, restriction, or locality law."
     should_use_skill: true
     expected: ["reject", "plain dependency graph", "no comonad claim", "falsifier"]
+  - prompt: "These graded families have manual nested loops over all grade decompositions; derive their composition from the grade tensor."
+    should_use_skill: true
+    expected: ["Day convolution", "index tensor", "representable law", "decomposition completeness", "normal form"]
+  - prompt: "Combine these resource assertions over every valid disjoint heap split."
+    should_use_skill: true
+    expected: ["promonoidal convolution", "partial composition", "admissibility witness", "overlap falsifier", "residual"]
+  - prompt: "These build-task descriptions have a fixed structure and need execution, cost, dependency, and documentation interpreters."
+    should_use_skill: true
+    expected: ["applicative convolution", "static structure", "lax monoidal interpreter", "effect-order guardrail"]
+  - prompt: "Compose these two comonadic spatial worlds from their local patch bases."
+    should_use_skill: true
+    expected: ["spatial convolution", "external-product patches", "Day tensor", "continuous projections", "effective halo product"]
+  - prompt: "The next request depends on the previous response; force it into a free applicative so we can parallelize it."
+    should_use_skill: true
+    expected: ["reject applicative", "monadic sequencing", "value-dependent", "no unsafe parallelism"]
+  - prompt: "Pair these two independent values and call it Day convolution."
+    should_use_skill: true
+    expected: ["reject Day", "ordinary product", "no index tensor", "smallest honest construction"]
+  - prompt: "Optimize this image convolution kernel without changing any architecture boundary."
+    should_use_skill: false
