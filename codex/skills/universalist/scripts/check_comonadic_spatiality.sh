@@ -67,7 +67,7 @@ require_text ../../agents/universalist-semanticist.toml "comonad coalgebras"
 require_text ../../agents/universalist-proof-auditor.toml "point preservation as continuity"
 require_text ../../agents/universalist-resource-realist.toml "basis explosion"
 require_text ../../agents/universalist-verifier.toml "bounded halo"
-require_text package.json '"version": "16.1.0"'
+require_text package.json '"version": "16.2.0"'
 
 bash -n scripts/emit_comonadic_spatiality.sh
 bash -n scripts/emit_mechanics_report.sh

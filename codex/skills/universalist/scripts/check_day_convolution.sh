@@ -29,7 +29,7 @@ require_text references/description-composition-doctrine.md "Descriptions convol
 require_text references/description-composition-doctrine.md "Index composition before description composition."
 require_text references/description-composition-doctrine.md "Density generates locality."
 require_text references/mechanics/day-convolution.md "F star G = Lan_tensor(F external-product G)"
-require_text references/mechanics/day-convolution.md "represent(a) star represent(b) ~= represent(a tensor b)"
+require_text references/mechanics/day-convolution.md "y(a) star y(b) ~= y(a tensor b)"
 require_text references/mechanics/day-convolution.md "Promonoidal generalization"
 require_text references/mechanics/day-convolution.md "coend"
 require_text references/mechanics/day-convolution.md "Do not assume convolution preserves monomorphisms"
