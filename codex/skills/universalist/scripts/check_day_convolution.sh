@@ -59,7 +59,7 @@ require_text scripts/emit_mechanics_report.sh "spatial-convolution"
 require_text tests/golden/output-invariants.yml "day_convolution_requires_index_tensor"
 require_text tests/golden/output-invariants.yml "applicative_structure_does_not_imply_effect_commutativity"
 require_text tests/golden/activation.yml "manual nested loops over all grade decompositions"
-require_text package.json '"version": "16.2.0"'
+require_text package.json '"version": "16.3.0"'
 
 for agent in \
   ../../agents/universalist-world-cartographer.toml \
