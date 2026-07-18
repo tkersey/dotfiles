@@ -1,5 +1,26 @@
 # Hylo grading, comparison, and causal progression
 
+## Contents
+
+- [What is being measured](#what-is-being-measured)
+- [Candidate lifecycle](#candidate-lifecycle)
+- [Freeze evaluation before candidate execution](#freeze-evaluation-before-candidate-execution)
+- [Hard gates before scores](#hard-gates-before-scores)
+- [Grader authority](#grader-authority)
+- [Blinding and commitments](#blinding-and-commitments)
+- [Comparable paired evidence](#comparable-paired-evidence)
+- [Repeats, allocation, and order effects](#repeats-allocation-and-order-effects)
+- [Absolute and pair grades](#absolute-and-pair-grades)
+- [Observable behavior delta](#observable-behavior-delta)
+- [Claim vocabulary](#claim-vocabulary)
+- [Failure signatures](#failure-signatures)
+- [Causal hypotheses](#causal-hypotheses)
+- [Experiments](#experiments)
+- [Dominance and next-step selection](#dominance-and-next-step-selection)
+- [Practice, holdout, and challenge discipline](#practice-holdout-and-challenge-discipline)
+- [Promotion and publication](#promotion-and-publication)
+- [Stop rule](#stop-rule)
+
 ## What is being measured
 
 Measure observable consequences, not resemblance to the historical answer:
@@ -14,6 +35,30 @@ operational cost    tokens, latency, retries, and human intervention
 The historical response is sealed diagnostic evidence. It may help identify a
 failure after an authorized custody/grader reveal, but it is not a golden
 answer and never supplies the replay-baseline denominator.
+
+## Candidate lifecycle
+
+Keep evaluation and derivation separate:
+
+```text
+evaluate_existing_candidate
+  owner-applied candidate already exists
+  -> before/after target identities and bounded change are admitted
+  -> freeze baseline and candidate before trial execution
+  -> run, grade, reveal, and fold evidence
+
+derive_next_candidate
+  prior evidence already exists
+  -> failures -> hypotheses -> experiments -> RUN | OBSERVE | STOP
+  -> RUN selects but does not apply an intervention
+  -> owner may apply it only under separate authority
+  -> evaluate the new candidate in a new trial
+```
+
+Report `candidate_state` independently as `absent`, `owner_applied`,
+`frozen_for_trial`, `evaluated`, `promoted`, or `rejected`. Report
+`frontier_decision` independently as `RUN`, `OBSERVE`, `STOP`, or
+`not_computed`. Hylo always reports `authority_granted_by_hylo:false`.
 
 ## Freeze evaluation before candidate execution
 
@@ -92,10 +137,17 @@ uninspectable evidence reference remains a limitation.
 
 ## Blinding and commitments
 
-Before reveal, the controller and runner must not receive:
+Before reveal, public/controller-visible material must not contain:
 
 - semantic arm identities;
 - the historical response or hidden reference;
+- the full source-selection receipt or sealed-case locator;
+- the `hylo-source-selection-opening/v1` or its nonce;
+- raw before/after target fingerprints or change ID;
+- the target common projection, its
+  `hylo-target-common-projection-opening/v1`, or intervention witness body;
+- a treatment opening or materialization body;
+- a full FIR rather than `hylo-fir-public-projection/v1` on a v2 surface;
 - later source-session outcomes;
 - hidden oracle values;
 - plaintext absolute grades;
@@ -104,11 +156,24 @@ Before reveal, the controller and runner must not receive:
 - target-specific repair hints derived from sealed evidence.
 
 Public pre-reveal output may contain commitments, fingerprints, producer
-metadata, terminal state, and opaque acknowledgements.
+metadata, terminal state, and opaque acknowledgements. A v2 runner privately
+receives only its lease-bound `hylo-lane-materialization-claim/v2`; the claim
+contains the selected treatment without semantic role and never enters the
+event store or proof bundle. CAS returns commitment-only
+`hylo-run-receipt/v2`.
+
+Public proof sanitization rejects private semantic keys such as
+`private_reasoning`, `historical_response`, and `source_target_text`. It may
+retain a schema-declared boolean disclosure observation such as
+`hidden_reference:false`; that value proves non-disclosure and carries no
+hidden-reference content.
 
 For sealed assurance, use distinct role processes and anonymous descriptor
 delivery. Record the truth: the current proof has role and cryptographic
 separation with `os_confinement:false`, not hostile same-user isolation.
+Sealed execution additionally requires a caller-provided admitted broker. The
+repository's `hctp-sealed-role-driver` is conformance infrastructure, not an
+installed product command.
 
 ## Comparable paired evidence
 
@@ -131,14 +196,18 @@ hidden-reference visibility
 The treatment bundle may differ. That planned difference is the intervention.
 
 Every candidate lane requires a compatible replay-baseline lane from the
-frozen pair. In the compatibility campaign fold, the replay-baseline attempt
-must predate the candidate attempt for that scenario. Historical diagnostics
-never satisfy this requirement.
+frozen pair. HCTP follows its frozen balanced A/B-B/A allocation, so either
+semantic arm may execute first. Comparability requires both matching frozen
+lanes, not baseline-first execution.
+
+Only in the compatibility campaign fold must the replay-baseline attempt
+predate the candidate attempt for that scenario. Historical diagnostics never
+satisfy this requirement.
 
 Invalidate or label diagnostic any comparison with unexpected drift. Do not
 repair drift by relabeling a target, world, runtime, grader, or oracle.
 
-## Repeats and pairing
+## Repeats, allocation, and order effects
 
 When deterministic seeds exist, pair them. Otherwise use frozen balanced order
 and mandatory repeats for promotion claims.
@@ -159,11 +228,28 @@ null-trial or calibration result
 The promotion cohort is the latest required complete cohort. A newer failure
 reopens the frontier; older successes cannot be cherry-picked around it.
 
+After reveal, report order effects as diagnostic observations. Include the
+terminal baseline-first and candidate-first pair counts. For each dimension,
+report contributor count and mean second-minus-first only when both
+orientations exist; otherwise report `null`. Order effects are noncausal and
+must not manufacture, invalidate, or strengthen a treatment claim by
+themselves.
+
 ## Absolute and pair grades
 
 An absolute lane grade answers whether one attempt satisfies the frozen rubric
 and hard gates. A pair grade compares two opaque arms under the frozen pair
 contract. Neither may see the semantic arm map before reveal.
+
+For v2 trials, `hylo-grade-presentation-receipt/v1`,
+`hylo-grade-receipt/v1`, and `hylo-pair-grade-receipt/v1` are closed and exact
+native shapes. Reject unknown top-level keys, undeclared nested keys, and fields
+outside their applicable optional branch. Every consumed public
+`evidence_refs` item, pair-dimension `rationale_ref`, `grade_receipt_ref`,
+`pair_grade_receipt_ref`, and `grade_presentation_receipt_ref` is exactly
+`artifact:sha256:<64 lowercase hex>`; a companion fingerprint must equal the
+reference digest. V1 trial carriers retain their established receipt
+compatibility.
 
 Grade commitment/opening flow preserves:
 
@@ -179,6 +265,14 @@ opening equality at reveal
 Treat a missing or mismatched opening, wrong producer, wrong ordered pair,
 unregistered receipt, or changed retry as invalid evidence rather than a
 recoverable score.
+
+V2 reveal also closes the run/materialization evidence join. Each lane must
+provide exactly one `hylo-lane-materialization-receipt/v2` whose
+`claim_fingerprint` equals
+`hylo-run-receipt/v2.materialization.materialization_claim_fingerprint`.
+Changed, missing, duplicate, or version-mixed per-lane safe receipts invalidate
+reveal before append. `--reveal FILE` remains a v1-only carrier; v2 reveal is
+derived from validated custody delivered through `--reveal-material-fd`.
 
 ## Observable behavior delta
 
@@ -214,6 +308,10 @@ incomparable              a required comparison contract changed
 insufficient_evidence     repeat, sample, uncertainty, or fidelity gate unmet
 invalid                   custody, replay, grader, chain, or proof integrity failed
 ```
+
+Classify a `replay_eligible:false` CRF source routed as `direct` as `invalid`,
+not merely low fidelity. A valid historical route may retain the CRF
+reconstruction ceiling and limitations; it does not upgrade them.
 
 State dimension and denominator. “Instruction fidelity improved on 8/10
 holdout units over three blind repeats” is meaningful; “the score improved” is
@@ -338,7 +436,10 @@ Keep these states distinct:
 ```text
 selected    causal frontier emitted RUN
 applied     owner changed the exact bounded target surface
+frozen      owner-applied candidate was bound into an immutable trial
+evaluated   required trial evidence reached a revealed result
 promoted    complete blind cohort passed the frozen gate
+rejected    revealed evidence failed the frozen acceptance gate
 committed   explicit publication authority produced an exact commit
 pushed      separate remote authority published it
 ```

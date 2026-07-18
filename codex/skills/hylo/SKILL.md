@@ -1,160 +1,154 @@
 ---
 name: hylo
-description: "Compile historical Codex sessions into blinded counterfactual replay episodes, govern sealed paired HCTP trials, grade comparable observable outcomes, and fold typed evidence into RUN, OBSERVE, or STOP. Use for `$hylo`, counterfactual replay, causal frontiers, paired baseline/candidate trials, sealed evidence, or evidence-governed improvement."
+description: "Compile historical Codex sessions into governed counterfactual evidence, evaluate an existing owner-applied candidate through blinded paired HCTP trials, and fold observable evidence into RUN, OBSERVE, or STOP. Use for `$hylo`, CRF extraction, counterfactual replay, source-governed direct or historical trials, sealed evidence, paired baseline/candidate evaluation, causal frontiers, or evidence-governed improvement."
 ---
 
 # Hylo
 
 ## Mission
 
-Turn historical execution evidence into controlled counterfactual experiments
-and a reusable causal frontier.
+Coordinate the released CRF/HCTP owners into one custody-safe experiment:
 
 ```text
-historical session
-  -> counterfactual cut + blinded replay episode
-  -> baseline and candidate executions under one frozen contract
-  -> observable traces + frozen grades + paired comparison
-  -> failure signatures + hypotheses + bounded experiments
-  -> RUN | OBSERVE | STOP
+CRF evidence
+  -> governed source selection
+  -> admitted campaign, scenarios, and target bundles
+  -> existing owner-applied candidate
+  -> validated and source-bound paired trial
+  -> route-correct one-claim lanes
+  -> blind grades -> reveal -> observe result -> close -> proof
+  -> causal frontier -> owner-routed action or STOP
 ```
 
-Hylo does not imitate a transcript, recover private reasoning, train model
-weights, or invent a sequence of edits. It freezes the causal prefix before a
-target first influences the session and regenerates everything downstream.
-
-`STOP: no_obvious_next_step` is a successful result when the evidence does not
-justify one intervention.
+Hylo does not recover private reasoning, treat a historical answer as a replay
+baseline, create a candidate, or grant edit, reveal, commit, push, spend, or
+external-effect authority. `STOP: no_obvious_next_step` is a successful result.
 
 ## Current product boundary
 
-The released CRF/HCTP product route is:
-
 ```text
-Seq 0.3.50+     episode compilation and source governance
-Ledger 0.10.3+  artifact validation, trial custody, event folds, causal frontier
-CAS 0.2.80+     one-claim lane execution and run-receipt normalization
+Seq 0.3.52+     CRF extraction, source governance, route admission, materialization
+Ledger 0.10.6+  campaign/trial validation, compilation, lifecycle, folds, proof
+CAS 0.2.81+     route projection, internal historical preparation, one-claim execution
 ```
 
-The `seq hylo-extract`, `ledger --source hylo`, and `cas trial` product
-surfaces are currently admitted on macOS. Stateless `ledger validate hylo-*`
-schema checks remain platform-neutral. Do not invent an unadmitted
-platform-specific isolation route.
+`seq hylo-extract`, `seq hctp-source`, `ledger --source hylo`, and `cas trial`
+are macOS product surfaces. Root `ledger validate hylo-*` artifact validators
+are platform-neutral. The macOS route establishes commitments, role separation,
+one-shot descriptor delivery, public non-disclosure, and exactly-once claims
+while reporting
+`os_confinement:false`; it does not establish hostile same-user isolation.
 
-The supported macOS proof establishes commitments, role separation, one-shot
-descriptor delivery, and public non-disclosure. It records
-`os_confinement:false`; it does not claim hostile same-user isolation.
+Sealed assurance requires a caller-provided admitted broker whose binary and
+contract fingerprints satisfy the native role, FD, checkpoint, recovery, and
+non-disclosure contracts. Native `compile-trial` currently rejects every sealed
+build request as `SealedBrokerUnavailable`; a sealed trial therefore requires a
+separately validator-backed trial and an admitted external broker. The
+repository's `hctp-sealed-role-driver` is conformance infrastructure, not an
+installed product command. Fail closed before secret generation or trial
+mutation when either prerequisite is absent.
 
 ## Ownership
 
 ```text
-$seq / seq hylo-extract
-    owns historical parsing, target activation, the causal cut, redaction,
-    episode construction, target capture, and runner/custody separation
-
-$ledger / ledger --source hylo
-    owns validation, trial registration and lifecycle, immutable campaign
-    events, deterministic folds, proof export, and causal-frontier decisions
-
-$cas / cas trial
-    owns one-claim lane execution, clean workspaces, observable evidence hashes,
-    and hylo-run-receipt/v1 production
-
-runner and grader adapters
-    own model/tool execution and frozen observations; they do not edit targets
-
-target owner workflow
-    owns any authorized edit, staging, commit, or publication
-
-$hylo
-    coordinates those owners without borrowing their authority
+$seq       historical parsing, cut, redaction, source selection, route admission
+$ledger    validation, immutable admission, trial compilation/lifecycle, folds, proof
+$cas       route projection, private historical replay preparation, one-claim run
+adapters   frozen model/tool execution and observable grading
+owner      target changes, staging, commit, push, and publication
+$hylo      coordination only; authority_granted:false
 ```
 
-The historical response is sealed source evidence. It MAY support diagnostic
-failure mining after authorized custody access, but it MUST NOT satisfy a replay
-baseline or act as a golden answer.
+The historical response is sealed diagnostic evidence. It is never the fresh
+baseline or a golden answer.
 
 ## Source-of-truth order
 
-When surfaces disagree, use this order:
+When surfaces disagree, use:
 
 1. installed CLI help and capabilities;
-2. released validators and schemas;
-3. implementation documentation and executable fixtures;
-4. this skill;
-5. proposed specifications or historical campaign prose.
+2. released validators, schemas, and executable fixtures;
+3. implementation documentation;
+4. this skill and its references;
+5. historical or proposed specifications.
 
-Do not invoke a proposed `hylo replay`, `hylo grade`, or `hylo compare` binary.
-Those standalone commands are not the released product surface.
+Do not invent standalone `hylo replay`, `hylo grade`, or `hylo compare`
+commands.
 
-## Bootstrap and capability gate
+## Mode-sensitive capability gate
 
 Before the first native Ledger command, load `$ledger` and complete
-`$ledger ensure` once. Then probe all three released owners:
+`$ledger ensure` once. Probe only the requested operation:
+
+| Operation | Required surface |
+| --- | --- |
+| `validate` (pure artifact validation) | Root `ledger validate hylo-*`; no Seq or CAS requirement |
+| repo-aware `doctor`, report, or frontier | macOS `ledger --source hylo` product surface and selected command |
+| `extract` | pure validation plus Seq `hylo_extract_v1`, `seq hylo-extract` |
+| source selection | Seq `hctp_source_selection_v1`, `hctp_source_route_admission_v1`, `hctp_independence_clusters_v1`, `seq hctp-source` |
+| open/direct trial | Ledger `hylo_trial_v2`, `hylo_private_trial_custody_v1`, `hylo_trial_custody_fd_v1`, `hylo_private_lane_start_custody_fd_v1`, `hylo_lane_materialization_v1`, `hylo_lane_materialization_receipt_v2`, `hylo_lane_leases_v1`, `hylo_signed_attestations_v1`, `hylo_trial_compiler_v1`, `hylo_trial_build_receipt_v2`, `hylo_run_receipt_v2`, `hylo_trial_reveal_v2`, `hylo_reveal_material_fd_v1`; CAS `hylo_trial_runner_v2`, `hylo_fd_lane_lease_v1`, `hylo_signed_run_receipt_v2`, `hylo_private_lane_materialization_fd_v1`, `hylo_private_receipt_redaction_v1`, `hylo_target_common_projection_opening_v1`, `hylo_trial_route_projection_v1` |
+| historical trial | direct requirements plus CAS `hylo_internal_historical_replay_v1`, `dcp_v2`, `rip_v1`, `fir_v1` |
+| case-blind trial | source-selection plus selected direct/historical requirements and Seq `hctp_sealed_case_v1`, `hctp_materializer_v1`, `hctp_source_materialization_v1`, `hctp_source_selection_opening_fd_v1`; historical case-blind additionally requires `hctp_historical_profile_v1` and `hctp_case_blind_source_profile_fd_v1` |
+| sealed trial | Native `compile-trial` is unavailable (`SealedBrokerUnavailable`); require a separately validator-backed trial, the selected trial capabilities, and an explicitly admitted external broker |
+| proof export | Ledger v2 trial/custody requirements plus `hylo_proof_bundle_v1`, `hylo_external_proof_anchor_v1`, and proof commands; no Seq or CAS requirement after close |
+
+`hylo_trial_v1`, `hylo_trial_runner_v1`, and `hylo_signed_run_receipt_v1`
+remain legacy compatibility features. They do not satisfy the private-v2 happy
+path.
+
+Use the installed capabilities shape:
 
 ```bash
 ledger --version
 ledger --source hylo capabilities
-ledger --source hylo --help
-
 seq --version
 seq capabilities --format json
-seq hylo-extract --help
-seq hctp-source --help
-
 cas --version
 cas capabilities --json
-cas trial --help
 ```
 
-For the complete route, require the version floor in **Current product
-boundary** and these capabilities or commands:
+Probe command help only for commands selected by the mode. If a required
+feature or broker is absent, stop before evidence creation or mutation; do not
+emulate it or hand-edit `.ledger/hylo/events.jsonl`.
+
+## Candidate lifecycle
+
+Choose one lifecycle before building a trial:
 
 ```text
-Seq:    hylo_extract_v1, hctp_source_selection_v1, hctp_sealed_case_v1
-Ledger: hylo_trial_v1, hylo_lane_leases_v1, hylo_pair_grade_v1,
-        hylo_trial_reveal_v1, hylo_proof_bundle_v1,
-        hylo_grade_commit_open_v1
-CAS:    trial preflight, compile-replay, run, status, cleanup
+evaluate_existing_candidate
+  owner-applied candidate already exists
+  -> admit before/after identities and bounded change
+  -> freeze and evaluate it in a new trial
+
+derive_next_candidate
+  prior evidence exists
+  -> fold failures, hypotheses, experiments, and frontier
+  -> RUN | OBSERVE | STOP
+  -> owner may apply RUN only under separate authority
+  -> return after a new candidate identity exists
 ```
 
-If a required surface is absent, stop before creating evidence. Do not emulate
-the source with a fallback writer or hand-edit `.ledger/hylo/events.jsonl`.
-
-Read [contracts.md](references/contracts.md) before authoring artifacts or
-trial events. Read
-[grading-and-progression.md](references/grading-and-progression.md) before
-grading, comparing, selecting an experiment, or claiming improvement.
-
-## Modes
-
-Choose one primary mode per invocation:
-
-```text
-extract   compile one historical response into a blinded CRF episode
-trial     register or advance one paired HCTP trial
-measure   grade observable attempts and derive paired evidence
-frontier  compile typed hypotheses, experiments, and RUN | OBSERVE | STOP
-report    inspect progress, trial state, proof state, or limitations
-doctor    validate artifacts, campaign state, or event-chain integrity
-```
-
-A persistent request may repeat a verified mode transition. It does not grant
-target-edit, external-effect, reveal, publication, or spend authority.
+`RUN` selects an eligible experiment. It neither mutates the target nor creates
+the candidate. Report candidate state independently as `absent`,
+`owner_applied`, `frozen_for_trial`, `evaluated`, `promoted`, or `rejected`.
 
 ## Workflow
 
-### 1. Compile the counterfactual episode
+Read [orchestration.md](references/orchestration.md) before executing a trial;
+it owns the complete state machine and protected-FD rules. Read
+[contracts.md](references/contracts.md) before authoring artifacts or event
+intents. Read
+[grading-and-progression.md](references/grading-and-progression.md) before
+grading, comparing, promoting, or selecting an experiment.
 
-Select one historical response and the target whose influence is being
-replaced. Use the canonical trace compiler, not an analytics projection that
-deduplicates messages or drops context.
+### 1. Extract and apply the fidelity gate
+
+Run `seq hylo-extract` with the complete target root. Deliver the seal key only
+through an already-open, unlinked anonymous protected descriptor supplied by
+the admitted custodian; every sensitive FD is distinct and `>=3`.
 
 ```bash
-umask 077
-: >./owner.key
-chmod 600 ./owner.key
-
 seq hylo-extract \
   --root ~/.codex/sessions \
   --session-id <session-id> \
@@ -165,333 +159,383 @@ seq hylo-extract \
   --capture-world \
   --output-root ./runner \
   --sealed-root ./custody \
-  --seal-key-output-fd 3 3>./owner.key
+  --seal-key-output-fd <custodian-key-sink-fd>
 ```
 
-The key sink must be a caller-owned `0600` single-link regular file outside
-the source, target, runner, and custody roots, or an anonymous pipe. Never use
-stdin, stdout, stderr, an environment variable, a named FIFO, or a file inside
-an artifact root.
+Never replace a protected-FD placeholder with regular-file redirection, a
+named FIFO, stdin/stdout/stderr, argv, or an environment variable.
 
-`--target-root` names the complete historical bundle, including referenced
-files, scripts, templates, and assets. Extraction fails closed on target drift,
-root overlap, symlinks, malformed trace data, ambiguous activation, unknown
-state-bearing pre-cut carriers, sensitive target bytes, or answer-before-
-activation ordering.
+Validate the complete extraction graph with Ledger's pure validators. Then
+record the episode fingerprint, cut, target bundle, world availability,
+runtime, fidelity, `replay_eligible`, and limitations. Schema validity alone
+does not admit execution.
 
-The cut MUST precede the earliest structured target influence. Preserve
-ordered and duplicate message occurrences, fixed pre-cut observations, and the
-replaceable target slot. Regenerate post-cut target behavior, workers, tools,
-files, responses, and outcomes.
+### 2. Select and compile the source route
 
-### 2. Keep runner and custody artifacts separate
+Apply this non-upgrading gate:
 
-The runner root receives only causal inputs:
+| CRF evidence | Source profile | Native result |
+| --- | --- | --- |
+| `replay_eligible:true` | genuinely `direct` | direct comparison admission |
+| `replay_eligible:false` | `direct` | `diagnostic_only` source admission; trial compilation, registration, and comparison execution forbidden |
+| `replay_eligible:true` | valid governed `historical_decision` | historical replay admission |
+| `replay_eligible:false` | valid governed `historical_decision` | historical replay admission at the retained reconstruction ceiling |
+| any | absent or invalid `historical_decision` governance | compilation fails; the source remains diagnostic evidence only |
 
-```text
-runner-input.json
-stimulus.json
-baseline-bundle.json
-captured target files
-world.json
-world-availability.json
-runtime.json
-```
+A historical source must never be relabeled `direct`. Historical
+`practice_repair` and `promotion` require authoritative SGG/DCP target-text
+witness governance and the required RIP/FIR lineage.
 
-The private `0700` custody root receives controller/grader evidence:
-
-```text
-episode.json
-cut.json
-redaction.json
-historical-response.sealed.json
-manifest.json
-```
-
-The runner consumes `runner-input.json`, not custody `episode.json`. Never
-copy the sealed response, excluded-future digest material, future outcomes, or
-grader-only references into the runner root.
-
-Treat `world-availability.json` as authoritative for fidelity. Slice 1
-reserves `exact_reconstruction`; it does not claim it. If historical repository
-or runtime bytes are unavailable, retain the explicit limitation and do not
-upgrade a `transcript_only` or `replay_eligible:false` episode by assertion.
-
-Validate the generated graph before trial construction:
-
-```bash
-ledger validate hylo-runner-input --input ./runner/runner-input.json
-ledger validate hylo-stimulus --input ./runner/stimulus.json
-ledger validate hylo-target-bundle --input ./runner/baseline-bundle.json
-ledger validate hylo-world-snapshot --input ./runner/world.json
-ledger validate hylo-world-availability-receipt --input ./runner/world-availability.json
-ledger validate hylo-runtime-contract --input ./runner/runtime.json
-ledger validate hylo-replay-episode --input ./custody/episode.json
-ledger validate hylo-counterfactual-cut-receipt --input ./custody/cut.json
-ledger validate hylo-redaction-receipt --input ./custody/redaction.json
-ledger validate hylo-custody-manifest --input ./custody/manifest.json
-```
-
-These are pure schema/invariant checks. A pass grants no replay, reveal, edit,
-or publication authority.
-
-### 3. Freeze source selection
-
-Use `seq hctp-source` to compile the complete denominator, dependency-aware
-independence clusters, split integrity, sanitized source commitments, and any
-case-blind sealed payloads:
+Compile the source-selection receipt before trial construction. The signing
+seed and any seal key use admitted protected descriptors:
 
 ```bash
 seq hctp-source compile \
-  --manifest source.json --output selection.json \
-  --source-signing-seed-fd <fd>
-seq hctp-source validate --receipt selection.json --trial trial.json
+  --manifest source.json \
+  --output selection.json \
+  --source-signing-seed-fd <source-owner-seed-fd>
 ```
 
-`govern` derives source-governance evidence. `materialize` releases one exact
-registered visible case through a protected FD and emits a lane-scoped signed
-receipt; it must not release the hidden reference. Consult
-`seq hctp-source --help` for sealed-case arguments and descriptor ownership.
+Do not run `hctp-source validate` yet; it requires the completed trial.
 
-### 4. Freeze a paired HCTP trial
+### 3. Admit the parent campaign
 
-Build `hylo-trial/v1` before candidate execution. Freeze:
-
-- campaign, purpose, split, units, independence clusters, pairs, and repeats;
-- opaque arms and balanced A/B-B/A execution order;
-- baseline and candidate target identities and common projection;
-- source-selection and visible/hidden commitments;
-- runtime, tool/effect policy, runner, model, and environment projections;
-- rubric, oracle, judge, producer, trust, and assurance authorities;
-- reveal, stop, publication, and proof policies.
-
-Use `practice_repair` trials to select repairs. Reserve untouched `promotion` units for
-holdout evidence. A null trial is a real control: its two semantic arms have an
-identical common target projection and a declared null intervention witness.
-
-```bash
-ledger --source hylo validate-trial --repo <repo> --trial trial.json
-ledger --source hylo register-trial --repo <repo> --trial trial.json
-```
-
-Registration is atomic over the complete manifest. Trial lifecycle events are
-owned by high-level Hylo commands; low-level `append` must not author them.
-
-### 5. Execute lanes without unblinding
-
-Use `cas trial` for each registered lane:
-
-```bash
-cas trial preflight --trial trial.json --lane-id <lane> --json
-cas trial compile-replay \
-  --trial trial.json --lane-id <lane> --output-dir <compiled-dir> --json
-```
-
-For an admitted run, the controller obtains or commits the lane lease through
-Ledger, delivers the lease and visible input through protected file
-descriptors, and calls `cas trial run` with the exact registration and start
-digests. CAS claims the lane before execution, creates a fresh workspace,
-invokes the executor exactly once, hashes every evidence file, and emits one
-`hylo-run-receipt/v1`.
-
-The executor receives only:
-
-```text
-EXECUTOR --request REQUEST.json --result RESULT.json
-```
-
-It must not receive the lane lease, semantic arm identity, sealed historical
-response, hidden reference, future outcome, grade opening, or pair result.
-
-For `assurance.required_level:sealed`, use the supported broker/driver route
-with `commit-lane-start`; output-style `start-lane` is invalid. Preserve the
-encrypted pending checkpoint and use exact recovery commands after an
-acknowledgement loss. Recovery may finish already-admitted work; it must not
-create changed or additional work.
-
-Public lifecycle primitives include:
-
-```text
-register-trial
-start-lane | commit-lane-start | recover-lane-start
-lane-materialization
-finish-lane | recover-lane-finish
-grade-lane
-grade-pair
-reveal-trial
-trial-result
-close-trial
-inspect
-proof-artifact-set
-export-proof
-verify-proof
-```
-
-Consult `ledger --source hylo --help` for the exact current arguments. Never
-put leases, signing seeds, grade openings, hidden references, or custody keys
-in command-line arguments, environment variables, normal stdout, the event
-store, or proof bundles.
-
-### 6. Grade observable consequences
-
-Grade hard gates before scored dimensions. Use visible messages, tool events,
-file effects, worker events, tests, runtime metadata, signed receipts, and
-human attestations. Never request or persist private chain-of-thought.
-
-Record blind absolute lane grades and blind pair grades against the frozen
-producer and grader authorities. Pre-reveal controller output may contain only
-public metadata, commitments, fingerprints, and opaque acknowledgements. It
-must not disclose plaintext grades, pair winners, or semantic arm labels.
-
-The historical response may be inspected only by an authorized custody/grader
-route and remains diagnostic. The comparison denominator is a fresh compatible
-`replay_baseline` executed before the candidate for the same episode.
-
-### 7. Reveal, compare, and prove
-
-Reveal only after every required lane and grade is terminal and the frozen
-reveal policy is satisfied:
-
-```bash
-ledger --source hylo reveal-trial --repo <repo> --reveal reveal.json
-ledger --source hylo trial-result \
-  --repo <repo> --trial-id <trial-id> --format markdown
-```
-
-After reveal, derive paired dimension deltas, hard-gate changes, dispersion,
-critical violations, observable behavior deltas, and calibration/null-trial
-results. Keep association, comparison-valid delta, supported mechanism, and
-causal claim distinct.
-
-For portable proof, obtain the exact artifact set, have the trusted source
-owner sign that set, then export and verify:
-
-```bash
-ledger --source hylo proof-artifact-set \
-  --repo <repo> --trial-id <trial-id> --output proof-artifacts.json
-
-ledger --source hylo export-proof \
-  --repo <repo> --trial-id <trial-id> --output proof.tar \
-  --sanitization-receipt proof-sanitization.json
-
-ledger --source hylo verify-proof --repo <repo> --input proof.tar
-```
-
-Proof verification establishes the declared closure and anchors. It does not
-grant target-edit, commit, push, or generalized-improvement authority.
-
-### 8. Fold campaign evidence and the causal frontier
-
-The compatible campaign fold remains available for
-`hylo-campaign/v1`, `hylo-scenario/v1`, target snapshots, attempts, grades,
-changes, publications, and progress:
+Construct `campaign.json` and its complete scenarios JSONL. An HCTP campaign
+opts into `hylo-trial/v2` (and MAY also retain `hylo-trial/v1` compatibility),
+`hylo-canonical-json/v1`, its trial policy,
+`source_route_admission:"required"`, proof authority/trust where required, and
+the complete scenario manifest.
 
 ```bash
 ledger --source hylo validate-campaign --campaign campaign.json
-ledger --source hylo snapshot-target \
-  --repo <repo> --revision INDEX --input target-roots.json
-ledger --source hylo append --repo <repo> --json event-intent.json
+ledger --source hylo append --repo <repo> --json campaign-created.json
+ledger --source hylo append --repo <repo> --json baseline-target-bundle-admitted.json
+ledger --source hylo append --repo <repo> --json candidate-target-bundle-admitted.json
+ledger --source hylo append --repo <repo> --json scenario-admitted-001.json
+ledger --source hylo append --repo <repo> --json change-recorded.json
 ledger --source hylo doctor --repo <repo>
-ledger --source hylo progress \
-  --repo <repo> --campaign-id <campaign-id> --format json
 ```
 
-Do not confuse compatibility with authority. A `historical_baseline` event is
-diagnostic only; candidate comparison still requires a compatible prior
-`replay_baseline`.
+Append every remaining `scenario_admitted` intent in the frozen manifest before
+the change intent and doctor pass.
 
-Typed causal events are:
+A trial is additive to an admitted campaign, not a campaign substitute. Do not
+compile or register it until the campaign, every required scenario, and both
+required target identities are admitted. Promotion must cover the complete
+applicable protected set fixed by the campaign.
 
-```text
-failure_signature_recorded
-hypothesis_recorded
-experiment_recorded
-next_step_recorded
-```
+### 4. Bind the existing candidate
 
-Every target-changing experiment must bind observable evidence, one mechanism,
-a bounded intervention, measurable predictions, protected controls, explicit
-falsifiers, a changed content-addressed target, and sufficient reserved
-promotion budget.
+Require the owner-applied candidate, exact before/after bundle and snapshot
+identities, bounded path set, and applied change event. If no concrete candidate
+exists, stop trial construction and use the causal frontier first.
 
-Derive, do not guess, the next step:
+### 5. Compile, validate, source-validate, and register
+
+Use the native compiler and deliver `hylo-trial-custody/v1` to an admitted
+custodian over an unlinked anonymous protected descriptor. The public output is
+commitment-only `hylo-trial/v2`:
 
 ```bash
-ledger --source hylo frontier \
-  --repo <repo> --campaign-id <campaign-id> --format json
+ledger --source hylo compile-trial \
+  --repo <repo> \
+  --request trial-build-request.json \
+  --source-receipt selection.json \
+  --output trial.json \
+  --custody-output-fd <custodian-custody-sink-fd>
 
-ledger --source hylo next-experiment \
-  --repo <repo> --campaign-id <campaign-id>
+ledger --source hylo validate-trial --repo <repo> --trial trial.json
+seq hctp-source validate --receipt selection.json --trial trial.json
+ledger --source hylo register-trial \
+  --repo <repo> \
+  --trial trial.json \
+  --custody-input-fd <custodian-registration-source-fd>
 ```
 
-Interpret the result literally:
+Stop if any command fails. The `hylo-trial-build-receipt/v2` on stdout with
+`custody_material_delivered:true` is the compiler's completion observation. The
+compiler attempts to remove the public trial when private delivery reports
+failure; `TrialOutputRollbackFailed` identifies an uncommitted recovery path.
+Transient file visibility or a partial custody stream is not completion or
+authority. Source
+validation joins the external signed receipt to the public portable
+`artifact:sha256:<64 lowercase hex>` reference, fingerprint, and commitment;
+the reference digest equals the receipt fingerprint. The public trial never
+embeds the full receipt or a caller-local path.
+
+Every public v2 `units[*].source_profile` is the exact native safe projection.
+Exact-key validation rejects semantic extras; a full historical profile body,
+source target text, rationale, rejected routes, and hidden references remain
+outside the public trial and use the admitted private carrier when required.
+
+The custodian retains the exact custody record outside public artifacts and
+re-delivers it through a fresh protected pipe for registration, each new v2
+lane start or caller-retained start commit, each lane materialization, and
+reveal. The public registration event persists only the v2 trial and a
+validated nonsemantic custody-commitment observation. Exact recovery of an
+already-started lane uses the retained lease and does not create changed work.
+
+For private-v2 registration, the earlier validators and command preflight are
+necessary but do not own the append decision. Ledger reacquires exclusive
+store ownership, loads the exact append snapshot, and reruns the full semantic
+trial-against-campaign validation on the custody-backed trial before applying
+or appending `trial_registered`. A stale or mismatched semantic view fails
+without append. The legacy v1 registration path retains its established public
+trial contract.
+
+### 6. Execute each lane by its frozen route
+
+Run `cas trial preflight --trial trial.json --lane-id <lane> --json` and obey
+its exact `source_profile_kind`, `compile_replay_required`,
+`replay_preparation_mode`, `source_profile_body_delivery`, `execution_route`,
+and `required_lineage`. Direct lanes report
+`compile_replay_required:false` and `replay_preparation_mode:"none"`;
+historical lanes report `compile_replay_required:false` and
+`replay_preparation_mode:"integrated_run"`.
 
 ```text
-RUN      exactly one eligible intervention is non-dominated
-OBSERVE  one bounded read-only probe can discriminate among alternatives
-STOP     no eligible intervention, or unresolved alternatives have no bounded probe
+source_profile.kind == "direct"
+  -> materialize visible input
+  -> start or commit the lease
+  -> privately materialize the selected treatment from custody under that lease
+  -> cas trial run once with --materialization-fd and no source-profile FD
+  -> finish or recover the terminal acknowledgement
+
+source_profile.kind == "historical_decision"
+  -> materialize visible input
+  -> privately materialize the source profile through the required v2 FD
+  -> start or commit the lease
+  -> privately materialize the selected treatment from custody under that lease
+  -> cas trial run receives --materialization-fd and --source-profile-fd,
+     then prepares one DCP/RIP internally before claim
+  -> validate FIR/native receipt lineage
+  -> finish or recover the terminal acknowledgement
 ```
 
-Every projection reports `authority_granted:false` and
-`target_mutated:false`. A `RUN` decision selects an experiment; it does not
-authorize or apply the edit.
+For every v2 lane, bind the public start event to `treatment_commitment`, retain
+the exact lease, and supply custody while the new start validates the private
+target treatment under the repository locks:
 
-### 9. Route an authorized repair through the owner
+```bash
+ledger --source hylo start-lane \
+  --repo <repo> \
+  --campaign-id <campaign-id> \
+  --trial-id <trial-id> \
+  --lane-id <lane-id> \
+  --runner-id <runner-id> \
+  --custody-input-fd <custodian-start-source-fd> \
+  --lease-output-fd <runner-lease-sink-fd>
+```
 
-Only practice evidence may motivate a change in the active campaign. Route the
-selected experiment through the target's owner workflow and preserve:
+For a caller-retained start, `commit-lane-start` likewise receives the exact
+custody through `--custody-input-fd` alongside its lease input. Then invoke the
+private treatment bridge:
+
+```bash
+ledger --source hylo lane-materialization \
+  --repo <repo> \
+  --trial-id <trial-id> \
+  --lane-id <lane-id> \
+  --registration-event-digest <registration-digest> \
+  --lane-started-event-digest <start-digest> \
+  --lane-lease-digest <lease-digest> \
+  --custody-input-fd <custodian-lane-source-fd> \
+  --lease-input-fd <retained-lease-source-fd> \
+  --materialization-output-fd <cas-materialization-sink-fd>
+
+cas trial run \
+  --trial trial.json \
+  --lane-id <lane-id> \
+  ... \
+  --materialization-fd <ledger-materialization-source-fd>
+```
+
+Ledger emits only `hylo-lane-materialization-receipt/v2` on stdout; retain that
+safe receipt for reveal. The FD carries the lease-bound claim and selected
+treatment without semantic role. It also carries the exact
+`hylo-target-common-projection-opening/v1`; CAS verifies the committed opening
+and nested projection before execution. CAS emits commitment-only
+`hylo-run-receipt/v2`; raw target, factor, archive, and treatment fields remain
+private. Its only public FIR carrier is the exact
+`hylo-fir-public-projection/v1`; the full FIR remains private. A v1 run receipt
+retains its compatible full-FIR carrier.
+
+For each v2 lane, retain and exact-join the safe receipt's `claim_fingerprint`
+to
+`hylo-run-receipt/v2.materialization.materialization_claim_fingerprint`.
+Reveal admits one matching `hylo-lane-materialization-receipt/v2` per lane;
+changed, missing, duplicate, or version-mixed per-lane safe receipts fail
+before append.
+
+For case-blind input materialization, the custodian projects only the exact
+`hylo-source-selection-opening/v1` from trial custody onto a separate protected
+FD:
+
+```bash
+seq hctp-source materialize \
+  --sealed-case <sealed-case> \
+  --trial trial.json \
+  --lane-id <lane-id> \
+  --seal-key-fd <custodian-seal-key-source-fd> \
+  --visible-output-fd <runner-visible-input-sink-fd> \
+  --source-selection-opening-fd <custodian-source-selection-opening-source-fd> \
+  --signing-seed-fd <materializer-signing-seed-source-fd> \
+  --output <safe-materialization-receipt>
+```
+
+For every v2 historical lane, preflight freezes
+`source_profile_body_delivery:"source_profile_fd"`. Add
+`--source-profile-output-fd <runner-source-profile-sink-fd>` and connect that
+protected source directly to the historical `cas trial run
+--source-profile-fd` input. Embedded historical delivery is legacy v1 or
+standalone diagnostic compatibility, not the v2 execution route.
+
+Direct lanes skip and forbid `compile-replay`. Historical execution also does
+not use the standalone command: CAS performs private replay preparation inside
+`run` before the irreversible claim. The standalone `compile-replay` surface is
+diagnostic-only, rejects direct/case-blind/role-separated/sealed use, grants no
+execution authority, reports `execution_authority:false`, and is not part of
+the trial happy path. `run` does not consume its receipt or DCP/RIP files.
+
+Follow the frozen balanced A/B-B/A lane order exactly; either semantic arm may
+execute first. Never retry a claimed lane as new work. Use native status and
+recovery to re-emit or finish only the exact admitted work.
+
+### 7. Grade, reveal, and prove
+
+Record hard gates before scores, then blind absolute and pair grades under the
+frozen authorities. Pre-reveal public output contains only commitments,
+fingerprints, opaque acknowledgements, and permitted terminal metadata.
+
+When consumed by a v2 trial, `hylo-grade-receipt/v1`,
+`hylo-pair-grade-receipt/v1`, and
+`hylo-grade-presentation-receipt/v1` are closed and exact native shapes:
+unknown keys or undeclared nested fields are invalid. Every consumed public
+evidence, rationale, grade-receipt, pair-grade-receipt, and
+presentation-receipt reference uses exactly
+`artifact:sha256:<64 lowercase hex>` and exact-joins any companion fingerprint.
+V1 trial carriers retain their established compatibility behavior.
+
+Reveal only after every required lane and grade is terminal and policy permits
+it. Supply the exact custody record plus every required safe lane-materialization
+receipt:
+
+```bash
+ledger --source hylo reveal-trial \
+  --repo <repo> \
+  --reveal-material-fd <custodian-reveal-source-fd> \
+  --materialization-receipt lane-001-materialization-receipt.json
+```
+
+Repeat `--materialization-receipt` for every lane.
+
+`--reveal FILE` is legacy v1-only and accepts only
+`hylo-trial-reveal/v1`. A caller-authored `hylo-trial-reveal/v2` file has no
+admitted provenance. V2 reveal requires the validated `hylo-trial-custody/v1`
+record through `--reveal-material-fd`; Ledger derives and validates the v2
+reveal, exact-joins every lane receipt to its run receipt, and only then may
+append `trial_revealed`.
+
+Validated `hylo-trial-reveal/v2` is the first public semantic opening. It opens
+the arm map, treatments, target epoch, intervention witness, and target common
+projection; the full source-selection receipt remains custody-only. Derive
+paired deltas, hard-gate changes, critical regressions, dispersion,
+uncertainty, independence-cluster coverage, null/calibration results, and
+post-reveal diagnostic position/order effects. Observe the derived result, then
+close the trial; proof occurs only after close:
+
+```bash
+ledger --source hylo trial-result --repo <repo> --trial-id <trial-id> --format json
+ledger --source hylo close-trial --repo <repo> --trial-id <trial-id>
+```
+
+Proof export grants no mutation or publication authority. Proof bundles exclude
+`hylo-trial-custody/v1` and private lane claims/materializations and derive
+semantic evidence only from the validated public reveal. Public proof
+sanitization rejects private semantic keys such as `private_reasoning`,
+`historical_response`, and `source_target_text`, while retaining
+schema-declared boolean non-disclosure observations such as
+`hidden_reference:false`.
+
+### 8. Fold the frontier and route owner action
+
+Derive failure signatures, hypotheses, bounded experiments, and the native
+frontier decision:
 
 ```text
-experiment_id
-hypothesis_ids
-before and after bundle fingerprints
-before and after target snapshots
-prediction-contract fingerprint
-authorized paths and semantic change budget
+RUN      owner may apply the selected intervention only under separate authority
+OBSERVE  execute only the bounded read-only probe
+STOP     stop the current campaign scope
 ```
 
-After eligible holdout or challenge evidence is exposed for the candidate,
-reject further target changes in that campaign. A miss means reject the
-candidate or begin a new campaign with untouched cases.
-
-Publication requires explicit authority, the exact evaluated bundle and
-snapshot, the latest complete required repeat cohort, no forbidden critical
-violations, exact changed paths, and equality between the committed target
-projection and the promoted projection. Push authority remains separate.
+A newly applied candidate requires a new evaluation trial. Keep the HCTP
+allocation law separate from the compatibility campaign law: HCTP accepts A/B
+or B/A frozen pairs, while the legacy fold still requires a `replay_baseline`
+attempt to predate its matching `candidate` attempt.
 
 ## Output
 
 ```text
 Hylo:
-- mode / campaign / trial / target bundle
-- episode / cut / world / runtime / fidelity limitations
-- runner-custody separation and blindness status
-- pairs / repeats / terminal lanes / eligible grades
-- hard gates / dimension deltas / behavior deltas / uncertainty
-- active failure signatures / hypotheses / experiments
-- decision: RUN | OBSERVE | STOP
-- Hylo authority_granted: false; report any owner authority separately
+- requested operation, assurance, versions, and capability result
+- campaign ID/head and admission completeness
+- episode/cut, CRF fidelity, replay_eligible, route, and retained limitations
+- source-selection receipt fingerprint/commitment and independence-cluster coverage
+- trial ID/fingerprint, purpose, allocation, pair/repeat/lane counts
+- direct/historical preparation and terminal/recovered lane counts
+- hard gates, grades, pair deltas, position effects, and uncertainty
+- reveal/proof state and scoped claim class
+- active failures, hypotheses, experiments, and frontier decision
+- candidate_state
+- authority_granted_by_hylo:false
+- owner_authority: none | propose | apply | commit | push
 - event-chain or proof identity
 ```
+
+Never print private reasoning, pre-reveal semantic arm mapping, historical
+answer, hidden reference, full source-selection receipt, raw target epoch,
+target common projection, intervention witness, treatment materialization,
+lease material, openings, signing seeds, custody record, or custody keys.
 
 ## Hard rules
 
 - No cut after the first causally relevant target influence.
-- No dropped or deduplicated fixed-prefix message occurrence.
-- No historical answer, future outcome, hidden oracle, or grade opening in runner input.
-- No historical response as a replay baseline or golden answer.
-- No invented world, exact-reconstruction claim, fixture response, or missing observation.
-- No target label change without a target-content change.
-- No trial change after registration; changed contracts require a new trial.
-- No lane execution without registration, lease lineage, and one-claim custody.
-- No trial lifecycle event through low-level `append`.
-- No private reasoning in attempts, grades, portable artifacts, or proofs.
-- No hard-gate failure averaged away by a scalar score.
-- No comparison across episode, world, runtime, tool/effect, oracle, grader, or visibility drift.
+- No dropped or deduplicated fixed-prefix occurrence.
+- No replay-ineligible CRF source relabeled as direct.
+- No source receipt validation before a complete trial exists.
+- No trial compilation or registration before complete campaign admission.
+- No private-v2 registration without the exact custody record on a protected FD.
+- No private-v2 registration append without full semantic revalidation against
+  the exact exclusive append snapshot.
+- No new private-v2 lane start or caller-retained start commit without the
+  exact custody record on `--custody-input-fd`.
+- No private-v2 case materialization without the exact custody-projected
+  `hylo-source-selection-opening/v1` on `--source-selection-opening-fd`.
+- No private-v2 CAS run without the exact lease-bound lane materialization FD.
+- No v2 reveal without one exact per-lane join from
+  `hylo-lane-materialization-receipt/v2.claim_fingerprint` to
+  `hylo-run-receipt/v2.materialization.materialization_claim_fingerprint`.
+- No caller-authored v2 reveal through legacy `--reveal FILE`.
+- No full FIR or source-profile semantic extras on a v2 public trial, run
+  receipt, event, or proof surface.
+- No unknown keys in v2-consumed grade, pair-grade, or presentation receipts;
+  no nonportable public evidence, rationale, or receipt reference.
+- No trial mutation after registration; changed contracts require a new trial.
+- No protected-FD value carried through argv, environment variables,
+  regular-file redirection, named FIFOs, normal stdout, the event store, or
+  proof bundles; native private DCP/RIP files remain governed by their explicit
+  `0700`/`0600` custody contract.
+- No standalone `compile-replay` in an execution path.
+- No custody record or private lane claim included in a public event or proof.
+- No baseline-first requirement imposed on frozen HCTP B/A allocation.
+- No historical answer used as a baseline or golden answer.
+- No claimed lane retried as new execution.
+- No low-level `append` used for trial lifecycle events.
+- No hard-gate failure averaged away.
+- No comparison across source, world, runtime, model, tool/effect, oracle,
+  grader, visibility, or split drift.
 - No repair motivated by exposed holdout or challenge evidence.
-- No intervention without predictions, controls, falsifiers, scope, and budget.
-- No `RUN` decision treated as mutation authority.
-- No publication from cherry-picked repeats or mismatched committed bytes.
-- No unadmitted platform-specific isolation claim or hidden OS-confinement assumption.
+- No `RUN` represented as target mutation or candidate creation.
+- No uninstalled sealed driver represented as product infrastructure.
+- No OS-confinement, generalized-causality, or authority overclaim.
 - No hand-editing `.ledger/hylo/events.jsonl`.
-- No endless edit loop when the derived answer is `STOP`.
