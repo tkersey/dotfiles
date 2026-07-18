@@ -81,12 +81,12 @@ bash -n scripts/emit_context_certificate.sh
 bash -n scripts/emit_effective_universal_architecture.sh
 bash -n scripts/emit_universalist_team_prompt.sh
 
-./scripts/emit_day_convolution.sh day agnostic >/dev/null
-./scripts/emit_day_convolution.sh promonoidal agnostic >/dev/null
-./scripts/emit_day_convolution.sh applicative typescript >/dev/null
-./scripts/emit_day_convolution.sh resource agnostic >/dev/null
-./scripts/emit_day_convolution.sh spatial agnostic >/dev/null
-./scripts/emit_day_convolution.sh compare agnostic >/dev/null
+bash ./scripts/emit_day_convolution.sh day agnostic >/dev/null
+bash ./scripts/emit_day_convolution.sh promonoidal agnostic >/dev/null
+bash ./scripts/emit_day_convolution.sh applicative typescript >/dev/null
+bash ./scripts/emit_day_convolution.sh resource agnostic >/dev/null
+bash ./scripts/emit_day_convolution.sh spatial agnostic >/dev/null
+bash ./scripts/emit_day_convolution.sh compare agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh day-convolution agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh promonoidal-convolution agnostic >/dev/null
 ./scripts/emit_mechanics_report.sh applicative-convolution typescript >/dev/null
@@ -99,7 +99,7 @@ bash -n scripts/emit_universalist_team_prompt.sh
 ./scripts/emit_effective_universal_architecture.sh convolution typescript >/dev/null
 ./scripts/emit_universalist_team_prompt.sh convolution >/dev/null
 
-if ./scripts/emit_day_convolution.sh nonsense agnostic >/dev/null 2>&1; then
+if bash ./scripts/emit_day_convolution.sh nonsense agnostic >/dev/null 2>&1; then
   echo "unknown Day convolution mode must fail" >&2
   exit 1
 fi
