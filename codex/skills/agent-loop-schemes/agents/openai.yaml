@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: false
-interface:
-  display_name: "Agent Loop Schemes"
-  short_description: "Translate goals into normalized run steps"
-  default_prompt: "Use $agent-loop-schemes to translate this accepted goal into the smallest verifier-bound actuation-run step topology."
