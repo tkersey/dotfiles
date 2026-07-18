@@ -73,9 +73,10 @@ and evidence.
 ## Compilation laws
 
 1. **Current control basis.** Derive nodes only from the current GoalContract,
-   selected review resolution or construction, subject identity, path scope,
-   obligations, and verifier bindings. Raw findings and suggested patches are
-   never nodes.
+   selected review resolution or construction, current counterexamples, the
+   canonical applicable route-exclusion projection, subject identity, path
+   scope, obligations, and verifier bindings. Raw findings and suggested
+   patches are never nodes.
 2. **Repeated-class compression.** When many instances share one governing law
    and one construction, create one canonical owner edit node. Instance
    application or verification may fan out; do not duplicate architecture
@@ -84,6 +85,7 @@ and evidence.
    observation. Cached node state or an earlier ready frontier cannot authorize
    continuation.
 4. **Whole-graph invalidation.** A change to the source, selected construction,
+   current counterexamples, canonical applicable route-exclusion projection,
    subject identity, paths, obligations, or verifier bindings invalidates the
    complete graph. Regenerate it rather than repairing stale graph state.
 5. **Distinct stop meanings.** Keep failed execution, blocked progress, and
@@ -91,7 +93,9 @@ and evidence.
    does not become an implementation failure or a repair node.
 6. **Selected architecture only.** Read-only experiments may compare candidate
    behavior, but architecture selection remains outside the graph. Only the
-   already-selected construction may produce edit nodes.
+   already-selected construction may inform edit nodes. When the source is a
+   review resolution, only its exact synthesis-owned `selected_work_node` may
+   become an edit node.
 7. **Bounded parallelism.** Parallelize only resource-disjoint read-only scout,
    review, or proof nodes. Shared-owner mutation remains serial and every fanout
    returns through `$goal-actuating`.
@@ -105,12 +109,15 @@ and evidence.
 4. Compress repeated instances that share one law and construction.
 5. Group already-quotiented review findings into one resolution decision; never
    create one node per comment.
-6. Create edit nodes only for an already-selected `local-repair` or
-   `replacement-kernel` construction.
+6. For review-resolution-derived work, create edit nodes only from the exact
+   synthesis-owned `selected_work_node` of an already-selected `local-repair`
+   or `replacement-kernel` decision; construction-only and node-free decisions
+   do not produce edit nodes.
 7. Make replacement-kernel work one serial canonical-owner node with explicit
    retirements.
-8. Consume current counterexamples and route exclusions before proposing inspect
-   work; reopen an excluded route only when its recorded criterion changes.
+8. Consume current counterexamples and the canonical applicable
+   `$negative-ledger` route-exclusion projection before proposing inspect work;
+   never infer or perform reopening locally.
 9. Return the currently ready node IDs to `$goal-actuating` for lead selection.
 
 ## Guardrails
