@@ -1,19 +1,34 @@
 # Mechanics references
 
-These files are the former standalone `kan` skill folded into `universalist` as an internal mechanics layer.
+These files are the full categorical theorem library folded into `$universalist`. They are not a flat menu for the root agent.
 
-Use these references only after `universalist` has identified:
+Use mechanics only after Universalist has produced:
 
 ```text
-signal
-seam/worlds
-boundary kind
-known side
-unknown location
-canonical artifact
-witness slice
-law/falsifier
-certificate type
+signal and one seam
+boring repository-native candidate
+comparison universe
+architectural hole
+sanctioned observations and equivalence
+authority/effect/resource policy
+material architectural dimension that may change
+law and falsifier
+```
+
+The source of truth for theorem-card routing is:
+
+- `../universal-problem-kernel.md` — universal-problem IR, bytecode, proof contract, and materiality gate;
+- `../universal-construction-registry.yaml` — machine-readable categorical concepts, preconditions, competitors, mediators, lowerings, witnesses, falsifiers, and fallbacks.
+
+The normal workflow is:
+
+```text
+boring candidate
+  -> universal shadow
+  -> theorem-card completion or obstruction
+  -> material-delta comparison
+  -> repository-native lowering
+  -> erase the categorical derivation unless requested
 ```
 
 Mechanics include:
@@ -35,15 +50,7 @@ pushout reconciliation
 possibility sheafification mechanics
 ```
 
-Use `pullback` when two source values or structures must agree through a shared observation. Use `pushout` when two sources must be glued along an explicit overlap. Use `double-pushout` for graph/model rewrites with delete-preserve-add structure and a potentially failing pushout complement.
-
-Use `comonad-space` when locality is semantic and a world needs points with coherent neighborhoods. Use `density-comonad` when local patches should generate the spatial structure and a basis/reconstruction claim must be tested. Use `halo` for effective or labelled neighborhoods and germs. Use `continuous-comonad-map` when a boundary must preserve locality rather than only point values.
-
-Use `day-convolution` when descriptions are indexed by a world with a tensor and every legal decomposition should contribute. Use `promonoidal-convolution` when composition is partial, relation-valued, or multi-witnessed. Use `applicative-convolution` for statically structured computation descriptions, `resource-convolution` for split/ownership assertions, and `spatial-convolution` for external-product patch systems.
-
-Use `tambara-module` when a generalized transformation must remain valid under a shared context action. Use `mixed-optic` when source and target receive different actions, `free-tambara` when a bare capability must be closed under every legal frame, `dependent-tambara` when context changes indices, and `day-center-tambara` only when the closed/rigid hypotheses connecting strong Tambara modules to the Day center are explicit.
-
-Do not conflate:
+## Distinctions the optimizer must preserve
 
 ```text
 pointwise product          same index only
@@ -53,10 +60,20 @@ operadic substitution      recursive typed insertion
 monadic composition        value-dependent sequencing
 Tambara framing            generalized morphism stable under context action
 Freyd composition          ordered runtime effects
+behavioral coalgebra       behavior unfolding over time
+comonad coalgebra          coherent situated/local structure
+sheafification             compatible local meanings glue globally
 ```
 
-Do not conflate behavioral coalgebras with coalgebras of a comonad. The former model unfolding behavior; the latter model coherent situated/local structure.
+## Ordinary-first rules
 
-Do not conflate these Tambara modules with equivariant Tambara functors. A `Context<T>` wrapper, reader parameter, or repeated middleware call is not a Tambara module without a real context action, profunctor, and framing laws.
+- Use `pullback` only when two sources agree through a real shared observation and factorization changes ownership or proof.
+- Use `pushout` only when sources glue along an explicit overlap and non-overlap/provenance must survive.
+- Use `double-pushout` only for delete-preserve-add graph/model rewrites with a valid complement.
+- Use `comonad-space` only when locality changes correctness and center, coherence, restriction, effective halo/basis, and continuity laws are meaningful.
+- Use `day-convolution` only when descriptions share a declared monoidal index or explicit product index and every lawful decomposition must contribute.
+- Use `promonoidal-convolution` when composition is partial, relational, or multi-witnessed.
+- Use `tambara-module` only when a real context world acts on endpoint worlds and one generalized capability must survive several lawful frames.
+- Use a plain adapter, context parameter, graph, residual record, pointwise product, or state machine whenever it already captures the exact seam.
 
-The old `$kan` handoff is removed. Use `$universalist`; then read the relevant mechanics reference lazily.
+A mechanics selection that changes only terminology fails the materiality gate.

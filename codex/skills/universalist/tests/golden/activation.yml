@@ -74,7 +74,7 @@ cases:
     expected: ["applicative convolution", "static structure", "lax monoidal interpreter", "effect-order guardrail"]
   - prompt: "Compose these two comonadic spatial worlds from their local patch bases."
     should_use_skill: true
-    expected: ["spatial convolution", "external-product patches", "Day tensor", "continuous projections", "effective halo product"]
+    expected: ["spatial convolution", "shared or product index world", "external-product patches", "continuous projections", "effective halo product"]
   - prompt: "The next request depends on the previous response; force it into a free applicative so we can parallelize it."
     should_use_skill: true
     expected: ["reject applicative", "monadic sequencing", "value-dependent", "no unsafe parallelism"]
@@ -103,3 +103,18 @@ cases:
     expected: ["reject Tambara", "ordinary parameter", "no real action", "smallest honest construction"]
   - prompt: "Use this Tambara functor from equivariant homotopy theory to model transfer and norm maps."
     should_use_skill: false
+  - prompt: "Compare the obvious checked tenant-pair constructor with the strongest universal solution and keep the category theory only if it changes the architecture."
+    should_use_skill: true
+    expected: ["boring candidate", "admissible alternatives", "mediation", "material delta"]
+  - prompt: "The public behavior leaves retry policy and authority unspecified; do not invent a canonical implementation."
+    should_use_skill: true
+    expected: ["underdetermined", "obstruction", "missing policy", "no invented default"]
+  - prompt: "Use a pullback explanation, but retain the existing checked constructor if factorization adds no code or proof delta."
+    should_use_skill: true
+    expected: ["ordinary candidate", "theorem card explanatory only", "materiality gate"]
+  - prompt: "Turn these callbacks into an explicit command language and prove every supported interpreter is determined by its constructors."
+    should_use_skill: true
+    expected: ["free construction", "boring candidate", "interpreter", "mediation", "falsifier"]
+  - prompt: "Show the expert categorical derivation for this already selected boundary artifact without changing code."
+    should_use_skill: true
+    expected: ["expert explanation", "claim boundary", "no new architectural delta"]

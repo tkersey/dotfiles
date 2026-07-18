@@ -1,65 +1,118 @@
 # Universalist overview
 
-Universalist is an inner lens invoked whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional.
+Universalist is an inner architectural lens invoked whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional. The boundary pass may preserve an already exact seam and return to ordinary delivery.
 
-The boundary pass may preserve an already exact seam and return to ordinary delivery. It escalates only when changing the shape of truth would reduce drift, invalid states, hidden composition, lossy projection, uncertified context, lost locality, miscomposed indexed descriptions, inconsistent context framing, or another structural liability.
-
-Default discipline:
+Its execution model is a proof-carrying architecture compiler:
 
 ```text
-one signal -> one seam -> one smallest honest construction -> one proof signal
+one signal
+  -> one seam
+  -> one boring repository-native candidate
+  -> one task-local comparison universe
+  -> one universal shadow
+  -> one material-delta decision
+  -> one effective lowering
+  -> one proof signal and falsifier
 ```
 
-Use the construction ladder before reaching for advanced machinery:
+Category theory remains the optimizer. It is not the default user interface. The normal result is a repository-native type, constructor, adapter, schema, IR, interpreter, handler, state machine, context snapshot, migration, law test, or obstruction.
 
-1. product;
-2. coproduct;
-3. refined type / equalizer;
-4. pullback witness;
-5. exponential / function object;
-6. free construction / initial algebra;
-7. ordinary profunctor / adapter / explicit residual record;
-8. canonical boundary artifact.
+## Boring candidate first
 
-When locality is semantic, add a spatial pass:
+Before loading advanced mechanics, construct the smallest plausible solution in the repository's ordinary language and framework:
+
+1. product/record;
+2. coproduct/tagged union;
+3. refined value/checked constructor;
+4. checked agreement object;
+5. canonical overlap integration;
+6. supplied strategy;
+7. explicit syntax or residual IR;
+8. ordinary adapter, profunctor, context parameter, graph, or state machine.
+
+The boring candidate must already have the correct owner, compatibility behavior, one positive law, and one falsifier. It is not a straw man.
+
+## Universal shadow
+
+The hidden categorical pass defines:
 
 ```text
-points
-local patches / subbasis
-effective basis or explicit non-basis
-halos and labels
-local/global identity map
-restriction / germ behavior
-continuity law
-resource-bounded representation
+objects                 candidate representations or implementations
+admissible maps         changes allowed to count as contract-preserving
+observations            what downstream consumers may distinguish
+equivalence             normalization or observational equality
+required equations      compatibility, coherence, or interpretation laws
+authority/effects        capability, ordering, duplication, retry, failure
+resources                time, memory, latency, persistence, invalidation
+hole                     missing object, map, composition, representation, or proof
 ```
 
-When indexed descriptions compose, add a description-product pass:
+It then instantiates a theorem card from `references/universal-construction-registry.yaml` and asks for:
 
 ```text
-index world
-tensor/unit or promonoidal kernel
-indexed family
-pointwise / Day / promonoidal / substitution / monadic selector
-decomposition and quotient
-interpreter
-resource bound
+existence
+commutation / observation preservation
+mediation / factorization of admissible competitors
+canonicality up to declared equivalence
+effective implementation within the resource budget
+one counterexample or falsifier
 ```
 
-When one generalized capability must survive ambient context, add a context-action pass:
+The universal candidate is selected only when it changes at least one material architectural dimension:
+
+- boundary ownership;
+- representable states or programs;
+- legal composition;
+- information preservation or quotienting;
+- authority or effect semantics;
+- interpreter/projection ownership;
+- public construction paths or normalization;
+- proof obligations;
+- resource behavior;
+- migration strategy;
+- existence versus obstruction.
+
+If category theory changes only the explanation, preserve the boring candidate.
+
+## Universal bytecode
+
+The theorem cards compile into a small internal instruction set:
 
 ```text
-ambient context world
-source and target actions
-underlying profunctor/capability
-ordinary / mixed / dependent Tambara selector
-frame operation
-unit / associativity / naturality / context coherence
-residual/optic representation, if any
-representability status
-effect/resource owner
+DECLARE    define the comparison universe and architectural hole
+CONSTRAIN  enforce simultaneous equations or observations
+GLUE       integrate contributors along declared overlap
+GENERATE   create the least syntax or structure closed under primitives
+OBSERVE    characterize behavior through sanctioned probes or traces
+TRANSPORT  extend or migrate semantics across a boundary
+REALIZE    construct an implementation behind a fixed projection
+COMPOSE    make legal sequencing, wiring, decomposition, or feedback explicit
+FRAME      preserve a capability under lawful context extension
+LOCALIZE   preserve neighborhoods, restriction, and local/global identity
+NORMALIZE  quotient equivalent presentations without losing observations
+OBSTRUCT   explain why no exact, canonical, representable, or effective solution exists
 ```
 
-Use a plain labelled graph or context object when sufficient. Use a plain function/profunctor, Reader parameter, adapter, or explicit residual record when sufficient. Escalate to density-comonadic, Day/promonoidal, or Tambara mechanics only when their laws and representation change implementation and proof obligations.
+Named categorical concepts remain available as expert theorem cards. The ordinary response should emit their architectural consequences rather than their names.
 
-The skill should prefer plain engineering language. Category words are useful only when they select code shape, tests, migration strategy, a boundary artifact, a locality law, an indexed-description product, or a context-framing law.
+## Orthogonal structural decisions
+
+Do not collapse these into one selector:
+
+```text
+semantic artifact       what owns the boundary
+presentation            how one artifact is represented
+base composition        how values, effects, ports, or resources compose
+description composition how indexed descriptions combine
+context action          how a capability survives ambient framing
+locality                which neighborhoods make meaning valid
+runtime semantics       how effects execute and which reorderings are legal
+```
+
+Use plain structures when they are exact. Load advanced mechanics only after the comparison universe, preconditions, and materiality gate justify them.
+
+## Claim boundary
+
+A categorical label is justified only when its universal property changes code shape, tests, ownership, migration, legal composition, representable states, resource accounting, or the existence result. Architecture recommendations remain engineering interpretations unless the repository explicitly models the relevant worlds, maps, universal property, hypotheses, and laws.
+
+For the full execution protocol, read `references/universal-problem-kernel.md`. For the theorem library, read `references/universal-construction-registry.yaml`.

@@ -1,8 +1,10 @@
 {
   "name": "universalist",
   "version": "16.3.0",
-  "description": "Boundary-triggered Universal Architecture workflow for effective substrates, typed composition, locality, indexed descriptions, and context-stable morphisms.",
+  "description": "Boundary-triggered proof-carrying architecture compiler with a categorical universal-problem optimizer.",
   "private": true,
   "unified_mechanics": true,
-  "custom_subagents": true
+  "custom_subagents": true,
+  "universal_problem_compiler": true,
+  "theorem_registry_schema": "universal-construction-registry/v1"
 }

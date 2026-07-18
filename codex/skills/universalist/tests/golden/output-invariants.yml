@@ -7,6 +7,24 @@ invariants:
   - name: consequential_route_requires_one_root_receipt
     when: "Universalist selects or preserves a route by rejecting a nearby alternative for a changed seam"
     required: ["ledger-addressed plan", "decision id", "selected route", "rejected route", "advanced mechanics disposition", "law", "falsifier", "one root SDR-v1 receipt"]
+  - name: universal_shadow_starts_with_boring_candidate
+    when: "a consequential seam is analyzed"
+    required: ["Boring candidate", "Repository-native artifact", "Law", "Falsifier"]
+  - name: universal_problem_defines_comparison_universe
+    when: "a theorem card is considered"
+    required: ["Objects", "Admissible transformations", "Sanctioned observations", "Equivalence", "Required equations", "Effects", "Authority", "Resource budget", "Architectural hole"]
+  - name: universal_claim_requires_full_proof_contract
+    when: "a universal or canonical construction is selected"
+    required: ["Existence", "Commutation", "Mediation", "Canonicality", "Effectivity", "Falsifier"]
+  - name: materiality_gate_discards_explanatory_only_theory
+    when: "the universal candidate is compared with the boring candidate"
+    required: ["Material delta", "Changed dimensions", "Selected: ordinary / universal / obstruction", "Category theory must beat the boring candidate"]
+  - name: obstruction_is_first_class
+    when: "no exact representable or effective completion follows"
+    required: ["Underdetermined or obstructed", "Missing evidence/policy/hypothesis/resource", "No invented default", "Repair obligation"]
+  - name: plain_output_erases_derivation
+    when: "expert explanation was not requested"
+    required: ["Repository-native artifact", "Plain engineering language", "Theorem card retained in plan", "No decorative category label"]
   - name: track_d_requires_artifact
     when: "Track D"
     required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]
@@ -43,6 +61,9 @@ invariants:
   - name: day_convolution_requires_index_tensor
     when: "Day convolution"
     required: ["Index category/world", "Index tensor", "Unit", "Indexed descriptions", "Legal decompositions", "Representable law", "Coend/normalization policy", "Interpreter", "Effectivity bound", "Falsifier"]
+  - name: spatial_day_requires_shared_or_product_index
+    when: "Day convolution combines spatial descriptions over different patch bases"
+    required: ["Shared ambient monoidal index or explicit product index", "Tensor and unit", "Variance", "External-product patches", "Density comparison map", "Continuous projections", "Effective representation"]
   - name: promonoidal_convolution_requires_admissibility_kernel
     when: "promonoidal convolution"
     required: ["Promonoidal kernel", "Admissibility witness", "Partial composition", "Incompatible-pair rejection", "Witness provenance", "Resource bound"]
@@ -60,7 +81,7 @@ invariants:
     required: ["Static computation shape", "Value-dependent countercase", "Freyd/resource owner", "No implicit parallelism", "Noncommuting witness"]
   - name: spatial_convolution_requires_external_product_basis
     when: "Day convolution of comonadic spatial worlds"
-    required: ["Left subbasis", "Right subbasis", "External-product patches", "Combined halos", "Label translation", "Continuous projections", "Effective product representation"]
+    required: ["Left subbasis", "Right subbasis", "Shared/product index world", "External-product patches", "Combined halos", "Label translation", "Continuous projections", "Effective product representation"]
   - name: tambara_module_requires_real_context_action
     when: "Tambara module or contextual morphism"
     required: ["Ambient context world", "Tensor/unit or dependent action", "Source action", "Target action", "Underlying profunctor", "Frame operation", "Interpretation law", "Falsifier"]

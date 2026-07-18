@@ -1,7 +1,7 @@
 interface:
   display_name: "Universalist"
-  short_description: "Apply Universalist at every code boundary."
+  short_description: "Compile code-boundary problems into effective universal solutions."
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to inspect the code boundary this implementation or resolution creates, changes, preserves, repairs, or removes; choose the smallest honest artifact and law witness, including effective halos for semantic locality, the correct product for indexed descriptions, and a lawful context action/Tambara frame when one generalized capability must survive ambient context."
+  default_prompt: "Use $universalist on the boundary this implementation or resolution creates, changes, preserves, repairs, or removes. Start with one boring repository-native candidate. Then run the hidden universal-problem pass: declare admissible alternatives and observations, select a theorem card only when it adds mediation/canonicality/effectivity, compare the material delta, and emit plain engineering architecture plus a law, falsifier, resource bound, or obstruction."
 policy:
   allow_implicit_invocation: true
