@@ -30,6 +30,13 @@ Available mechanics topics:
 - applicative-convolution
 - resource-convolution
 - spatial-convolution
+- tambara-module
+- mixed-optic
+- free-tambara
+- cofree-tambara
+- dependent-tambara
+- day-center-tambara
+- tambara-representability
 - yoneda
 - defunctionalization
 - codensity-presentation
@@ -59,6 +66,11 @@ Examples:
   ./scripts/emit_mechanics_report.sh applicative-convolution typescript
   ./scripts/emit_mechanics_report.sh resource-convolution agnostic
   ./scripts/emit_mechanics_report.sh spatial-convolution agnostic
+  ./scripts/emit_mechanics_report.sh tambara-module typescript
+  ./scripts/emit_mechanics_report.sh mixed-optic typescript
+  ./scripts/emit_mechanics_report.sh free-tambara agnostic
+  ./scripts/emit_mechanics_report.sh dependent-tambara agnostic
+  ./scripts/emit_mechanics_report.sh day-center-tambara agnostic
   ./scripts/emit_mechanics_report.sh kan-lift typescript
   ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
   ./scripts/emit_mechanics_report.sh cql-context agnostic
@@ -102,6 +114,26 @@ OUT
     bash ./scripts/emit_day_convolution.sh resource "$language" ;;
   spatial-convolution|comonadic-product|locality-convolution)
     bash ./scripts/emit_day_convolution.sh spatial "$language" ;;
+  tambara-module|contextual-morphism|context-framing)
+    bash ./scripts/emit_tambara_module.sh module "$language" ;;
+  mixed-optic|mixed-tambara)
+    bash ./scripts/emit_tambara_module.sh mixed "$language" ;;
+  optic-tambara|optic-representation)
+    bash ./scripts/emit_tambara_module.sh optic "$language" ;;
+  free-tambara|contextual-closure)
+    bash ./scripts/emit_tambara_module.sh free "$language" ;;
+  cofree-tambara|all-context-tambara)
+    bash ./scripts/emit_tambara_module.sh cofree "$language" ;;
+  dependent-tambara|dependent-optic)
+    bash ./scripts/emit_tambara_module.sh dependent "$language" ;;
+  day-center-tambara|tambara-center)
+    bash ./scripts/emit_tambara_module.sh center "$language" ;;
+  tambara-representability|module-functor-representability)
+    bash ./scripts/emit_tambara_module.sh representable "$language" ;;
+  tambara)
+    echo "Ambiguous mechanics topic: tambara" >&2
+    echo "Use tambara-module for context-stable profunctors. Equivariant Tambara functors and Tambara-Yamagami categories are different subjects." >&2
+    exit 2 ;;
   convolution)
     echo "Ambiguous mechanics topic: convolution" >&2
     echo "Use day-convolution, promonoidal-convolution, applicative-convolution, resource-convolution, or spatial-convolution. Numerical convolution and operadic substitution are different concerns." >&2

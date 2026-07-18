@@ -51,6 +51,29 @@
 - Effect-order restrictions:
 - Complexity/resource bound:
 
+## Context action / Tambara structure, when applicable
+
+- Ambient context category/world:
+- Tensor/unit/partiality/dependence:
+- Source endpoint world and action:
+- Target endpoint world and action:
+- Underlying profunctor/generalized capability:
+- Tambara form: ordinary / mixed / two-sided / dependent
+- Frame operation:
+- Unit law:
+- Associativity/nested-framing law:
+- Endpoint naturality:
+- Context reindexing/coherence:
+- Interpretation/framing law:
+- Residual/optic IR, if any:
+- Residual quotient/normal form:
+- Free/cofree contextual closure, if any:
+- Context basis/enumeration/query:
+- Representability status:
+- Concrete realizer/right-adjoint witness:
+- Effect-order owner/restrictions:
+- Effective representation/resource bound:
+
 ## Operation performed in easy world
 
 - Operation:
@@ -86,6 +109,14 @@ represent(a) star represent(b)
 represent(a tensor b)
 ```
 
+Context-framing law, if used:
+
+```text
+frame_I(p) ~= p
+frame_(m tensor n)(p) ~= frame_m(frame_n(p))
+interpret(frame_m(p)) == frameSemantics(m, interpret(p))
+```
+
 ## Falsifier
 
 - Case where the easy-world result fails after transport back:
@@ -96,7 +127,15 @@ represent(a tensor b)
 - Legal decomposition omitted:
 - Semantic collision under quotient:
 - Static description used to justify unsafe effect reordering:
-- Smaller product already suffices:
+- No real context action exists:
+- Identity context changes the capability:
+- Nested framing depends on grouping:
+- Endpoint reindexing and framing disagree:
+- Residual identity leaks into observations:
+- Tambara framing used to justify unsafe effect reordering:
+- Claimed representable module has no realizer:
+- Equivariant Tambara terminology confused with profunctor Tambara module:
+- Smaller product/adapter/profunctor/context parameter already suffices:
 
 ## Status
 

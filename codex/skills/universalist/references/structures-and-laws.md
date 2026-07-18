@@ -73,7 +73,7 @@ Use when syntax should be separated from execution. Laws: interpreters agree on 
 
 ## Canonical boundary artifact
 
-Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, comonadic spatiality, indexed-description convolution, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, locality, decomposition, quotient, lowering, or interpreter equivalence.
+Use when a boundary requires free syntax, coherent observations, transported semantics, lifted implementations, pullback witnesses, pushout integration, comonadic spatiality, indexed-description convolution, Tambara/contextual-morphism structure, explicit IR, or residual obligations. Laws depend on the artifact: preservation, coherence, agreement, factorization, projection, locality, decomposition, framing, quotient, lowering, or interpreter equivalence.
 
 ## Behavioral coalgebra
 
@@ -210,18 +210,147 @@ Laws:
 - residual/internal-hom claims agree with the declared order;
 - partiality is not hidden by sentinel values.
 
-## Substitution versus Day versus monadic composition
+## Tambara module / context-stable profunctor
+
+Use when an ambient context world acts on two endpoint worlds and a generalized transformation must remain valid under that action.
+
+```text
+(M, tensor, I)
+L : M x C -> C
+R : M x D -> D
+P : C^op x D -> V
+frame_m : P(a,b) -> P(L(m,a), R(m,b))
+```
+
+Software forms:
+
+- one validation/observation/update capability reused under many contexts;
+- generalized relations stable under environment, evidence, capability, or residual framing;
+- profunctor optics;
+- context-aware adapters between mixed endpoint worlds;
+- contextualized specifications that may not be representable by a function.
+
+Laws:
+
+- unit: `frame_I(p) ~= p`;
+- associativity: `frame_(m tensor n)(p) ~= frame_m(frame_n(p))`;
+- endpoint naturality: `dimap(f,g,frame_m(p)) ~= frame_m(dimap(f,g,p))`;
+- context reindexing/dinaturality preserves observations;
+- interpretation: `interpret(frame_m(p)) == frameSemantics(m,interpret(p))`;
+- framing does not grant effect commutativity, duplication, discard, or parallelism;
+- effective context/residual representation stays within the resource model.
+
+## Mixed Tambara module
+
+Use when one ambient context world acts differently on source and target endpoint worlds:
+
+```text
+L : M x C -> C
+R : M x D -> D
+```
+
+Typical software boundaries: domain/wire, read/write, logical/physical, plain/effectful reconstruction, or indexed source/target representations. Laws include both actions' coherence and the mixed interpretation law. Do not force identical endpoint types or actions merely to reuse an ordinary encoding.
+
+## Optic / residual-context representation
+
+Use when a boundary explicitly decomposes a whole into residual context plus focus and rebuilds the whole after updating the focus:
+
+```text
+exists m.
+  decompose : s -> L(m,a)
+  rebuild   : R(m,b) -> t
+```
+
+Tambara interpretation:
+
+```text
+p
+  -> frame_m(p)
+  -> dimap(decompose,rebuild,frame_m(p))
+```
+
+Laws:
+
+- coherent residual reindexing is quotiented;
+- interpretation agrees with direct behavior;
+- hidden residual identity is unobservable;
+- separate lens/prism/traversal/business laws hold;
+- representation theorem claims state enrichment/parametricity hypotheses.
+
+## Free Tambara construction
+
+Use when a bare profunctorial capability must be closed under every legal context frame. The free construction is coend-like: generate residual/context frames, endpoint paths, and quotient coherent reindexings.
+
+Laws:
+
+- every supported legal frame is generated;
+- equivalent context presentations normalize together;
+- required provenance survives the quotient;
+- generated contextual closure interprets like direct framing;
+- context enumeration and normalization are effective.
+
+## Cofree / all-context Tambara construction
+
+Use when a capability must expose coherent behavior under every supported frame. The end-based all-context construction makes Tambara structure coalgebraic.
+
+Laws:
+
+- identity context returns the original capability;
+- nested context observations cohere;
+- all supported contexts are represented symbolically, lazily, or through an effective basis;
+- missing or non-effective context coverage yields obstruction.
+
+## Dependent Tambara module
+
+Use when context changes indices or depends on the focused object. Model the action with a double category and horizontal naturality rather than erasing the indices.
+
+Typical software forms: state-indexed protocols, schema-indexed fields, capability-indexed operations, dependent records, and context-sensitive syntax.
+
+Laws:
+
+- index transport is explicit and type-preserving;
+- dependent framing composes horizontally;
+- vertical/horizontal coherence holds;
+- one invalid index transition is rejected;
+- effective representation does not collapse into untyped dynamic tags.
+
+## Representability / module-functor diagnostic
+
+Tambara modules are generalized morphisms and need not be concrete functions. Use this diagnostic when the architecture requires an actual context-preserving implementation map.
+
+Record:
+
+- candidate module functor/realizer;
+- right-adjoint/Cauchy-completeness or equivalent representability witness;
+- representation and round-trip law;
+- nonrepresentability obstruction.
+
+Do not synthesize a function from a lawful relation without evidence.
+
+## Day center and Tambara strength
+
+Under suitable closedness or rigidity assumptions, strong Tambara modules correspond to central objects in the Day-convolution functor category.
+
+```text
+Day centrality    descriptions move coherently through convolution
+Tambara strength generalized morphisms move coherently through context action
+```
+
+State the hypotheses and executable consequence. Do not claim the equivalence in arbitrary nonclosed/nonrigid settings.
+
+## Substitution versus Day versus Tambara versus monadic composition
 
 Distinguish:
 
 ```text
 Day convolution       combine over index decompositions
 operadic substitution recursively insert operations into typed slots
+Tambara framing       lift a generalized morphism through context action
 monadic composition   later computation structure depends on earlier results
 pointwise product     combine at one unchanged index
 ```
 
-Use one counterexample that distinguishes the selected product from the nearest alternative.
+Use one counterexample that distinguishes the selected construction from the nearest alternative.
 
 ## Freyd / premonoidal category
 

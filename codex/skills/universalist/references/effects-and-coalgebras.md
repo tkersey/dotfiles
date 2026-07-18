@@ -1,6 +1,6 @@
-# Effects and Coalgebras
+# Effects, Coalgebras, and Context-Stable Morphisms
 
-These artifact families cover systems that are not just static syntax or migration. Distinguish static description composition, effect interpretation, behavioral unfolding, and comonadic situatedness.
+These artifact families cover systems that are not just static syntax or migration. Distinguish static description composition, context framing, effect interpretation, behavioral unfolding, and comonadic situatedness.
 
 ## Effect signatures and handlers
 
@@ -85,6 +85,61 @@ Guardrails:
 - parallelization still requires Freyd centrality, observational commutativity, or resource-disjointness;
 - decomposition enumeration and normalization require an effective resource model.
 
+## Context-stable profunctors / Tambara modules
+
+Use when the problem is not how descriptions combine or how effects execute, but how one generalized transformation remains valid when an admissible context is added around both endpoints.
+
+Shape:
+
+```text
+(M, tensor, I)       context world
+L : M x C -> C       source action
+R : M x D -> D       target action
+P : C^op x D -> V    generalized capability
+frame_m : P(a,b) -> P(L(m,a), R(m,b))
+```
+
+Universal reading:
+
+```text
+context acts on endpoint worlds;
+Tambara structure frames a profunctorial capability through that context.
+```
+
+Use for:
+
+- one validator or observation reused under tenant, evidence, policy, or capability context;
+- repeated product/coproduct residual handling behind lenses, prisms, or mixed optics;
+- a domain/wire or read/write boundary whose endpoint contexts differ;
+- a bare local capability that should be closed under every legal context;
+- a capability that must expose coherent behavior for all supported contexts;
+- typed context changes requiring a dependent/double-categorical action.
+
+Proof signals:
+
+```text
+frame_I(p) ~= p
+frame_(m tensor n)(p) ~= frame_m(frame_n(p))
+dimap(f,g,frame_m(p)) ~= frame_m(dimap(f,g,p))
+interpret(frame_m(p)) == frameSemantics(m, interpret(p))
+```
+
+If an optic/residual representation is used:
+
+```text
+interpretOptic(m,decompose,rebuild,p)
+  == dimap(decompose,rebuild,frame_m(p))
+```
+
+Guardrails:
+
+- a `Context<T>` wrapper, Reader parameter, middleware stack, or dependency-injection container is not automatically a Tambara module;
+- Tambara framing does not prove effect commutativity, parallelism, duplication, discard, or resource independence;
+- optic interpretation/composition does not prove Get-Put, Put-Get, Put-Put, validation, provenance, or business laws;
+- a generalized Tambara module may not be representable by a concrete function/module functor;
+- free/cofree context closure requires a finite, bounded, symbolic, queryable, or otherwise effective presentation;
+- this Tambara terminology is distinct from equivariant Tambara functors.
+
 ## Behavioral coalgebras
 
 Use when behavior unfolds over time and is best specified by transitions plus observations.
@@ -160,7 +215,7 @@ First seam examples:
 - a schema object plus mappings/constraints/report neighborhood;
 - a component plus provider/dependency/configuration neighborhood.
 
-## Density comonads, bases, and Day products
+## Density comonads, bases, Day products, and spatial framing
 
 Use density when local patch types generate the situated world:
 
@@ -181,14 +236,26 @@ When two such spatial description worlds have a meaningful product of patches, D
 
 This is a description-level product of locality, not a replacement for center/coherence, halo, continuity, or resource laws.
 
+When a local generalized transformation must remain valid while its halo/context expands, a Tambara action may frame it:
+
+```text
+frame_m : Capability(a,b)
+       -> Capability(m act a, m act b)
+```
+
+The context/halo family must form an honest ordinary, promonoidal, or dependent action. The framing law must preserve center, restriction, labels/provenance, and continuity where those observations matter.
+
 ## Selection rule
 
 - Choose **free monadic syntax/effects** when later operation structure may depend on earlier results or the main smell is dynamic sequencing with many interpreters.
 - Choose **free applicative / Day static descriptions** when the whole operation/dependency shape is known before results and static analysis matters.
+- Choose **Tambara/contextual-morphism structure** when one profunctorial capability must survive several context extensions.
 - Choose **behavioral coalgebra** when the main smell is ongoing behavior with duplicated transition/observation logic.
 - Choose **comonadic spatiality** when locality, neighborhoods, restriction, local/global identity, or continuity are semantic.
 - Combine static/applicative descriptions with a Freyd runtime when plans are inspectable but execution order remains effectful.
+- Combine Tambara framing with a Freyd runtime when an effectful capability must retain residual/context semantics but order remains observable.
+- Combine Tambara framing with comonadic spatiality when a transformation must remain valid under lawful halo/context extension.
 - Combine free effects with behavioral coalgebra when a workflow program drives a stateful runtime.
 - Combine behavioral and comonad coalgebras when a situated process both evolves over time and must preserve its local context.
 
-Guardrail: a type named `Context<T>` is not evidence of a comonad, and a binary static-plan combinator is not evidence of Day convolution. Require the relevant laws, effective representation, and a code/test delta.
+Guardrail: a type named `Context<T>` is not evidence of a comonad or Tambara module, and a binary static-plan combinator is not evidence of Day convolution. Require the relevant laws, effective representation, and a code/test delta.

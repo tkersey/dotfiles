@@ -145,6 +145,66 @@ Guardrails:
 - requirement-independent context combination is usually an ordinary or pointwise product;
 - a legal context decomposition does not waive schema, constraint, provenance, freshness, missingness, contradiction, germ, or rendering laws.
 
+## Context-stable semantic capability
+
+A Context Certificate proves that a particular context instance `m` is valid for a task. A Tambara/contextual-morphism law answers a different question:
+
+```text
+Can one local/generalized capability be transported through m coherently?
+```
+
+Model:
+
+```text
+(M, tensor, I)          certified context world
+L : M x C -> C          source/payload action
+R : M x D -> D          target/result action
+P : C^op x D -> V       validation/decision/observation/update capability
+frame_m : P(a,b) -> P(L(m,a), R(m,b))
+```
+
+Potential uses:
+
+- one validator reused under tenant, evidence, capability, or policy context;
+- one observation/update rule reused across plain, audited, and provenance-bearing representations;
+- mixed domain/wire or read/write context actions;
+- a local semantic operation lifted into a certified task germ;
+- a residual optic that retains the context needed to rebuild a result.
+
+Required fields:
+
+```text
+ambient context world and certification boundary
+source and target actions
+underlying profunctor/generalized capability
+frame operation
+unit and nested-framing law
+endpoint naturality and context-reindexing coherence
+schema/provenance/freshness/authority preservation
+interpreter and effect-order owner
+representability status
+effective context/residual representation
+```
+
+Core laws:
+
+```text
+frame_I(p) ~= p
+frame_(m tensor n)(p) ~= frame_m(frame_n(p))
+interpret(frame_m(p)) == frameSemantics(m, interpret(p))
+```
+
+The Context Certificate and Tambara certificate must agree on what `m` means. A frame operation cannot make an uncertified context valid, and a valid context does not automatically imply that every capability can be framed through it.
+
+Guardrails:
+
+- raw prompt concatenation is not a context action;
+- passing a `Context` argument or wrapping a value in a record is not Tambara structure;
+- context framing does not waive schema, provenance, freshness, missingness, contradiction, locality, or rendering laws;
+- Tambara framing does not justify effect reordering or parallel execution;
+- optic composition does not prove domain lens/prism/business laws;
+- if context changes indices, use dependent/double-categorical structure rather than erasing types.
+
 ## Plane split
 
 ```text
@@ -202,6 +262,16 @@ No residual without an order/closedness law.
 No convolution without an effective enumeration/normalization bound.
 ```
 
+When a context-stable semantic capability is claimed, add:
+
+```text
+No contextual frame without an ambient context action.
+No frame without unit, associativity, naturality, and interpretation laws.
+No context framing without agreement with the Context Certificate.
+No representability claim without a concrete realizer or obstruction.
+No framing law may justify effect commutativity.
+```
+
 ## Retrieval is candidate generation
 
 Retrieval produces candidate material. It does not produce context.
@@ -210,7 +280,7 @@ Retrieval produces candidate material. It does not produce context.
 retrieval + mapping + closure + provenance + minimization + rendering = context preparation
 ```
 
-A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-checked, and placed in a task schema. When spatiality is material, it must also be placed in the right local neighborhood with its labels and local/global identity retained. When requirements compose, the fragment must also carry its requirement index and legal composition witness.
+A chunk is not evidence until it is typed, mapped, provenance-linked, freshness-checked, and placed in a task schema. When spatiality is material, it must also be placed in the right local neighborhood with its labels and local/global identity retained. When requirements compose, the fragment must also carry its requirement index and legal composition witness. When a capability is framed, its context action and preservation laws must also be explicit.
 
 ## Context versus rendering
 
@@ -227,3 +297,5 @@ Exact Context Doctrine is implementation-agnostic. CQL/categorical database tool
 Comonadic spatial tooling is likewise implementation-agnostic. In ordinary systems, an effective labelled graph, query, incremental index, or bounded halo may implement the spatial laws without a literal generic comonad library.
 
 Day/promonoidal context composition is also implementation-agnostic. A sparse indexed map, relational query, constraint solver, semiring dynamic program, or static plan IR may implement the laws without a generic coend library.
+
+Tambara/contextual-morphism structure is implementation-agnostic as well. A typed frame API, residual IR, action dictionary, generated wrapper, or mixed optic may implement the laws without a generic optics library, provided the action, profunctor, framing laws, and falsifiers remain explicit.

@@ -54,6 +54,27 @@ Enumeration/normalization strategy:
 Collision policy:
 Effectivity/resource bound:
 
+## Context-stable capability
+
+Applicable: yes / no
+Ambient certified context world:
+Context composition/unit/partiality:
+Local capability / profunctor `P(a,b)`:
+Source action on payload/focus:
+Target action on result/output:
+Tambara form: ordinary / mixed / dependent
+Frame operation:
+Unit and nested-framing law:
+Endpoint naturality/context coherence:
+Schema/provenance/freshness/authority preservation:
+Interpretation/framing law:
+Residual/optic representation:
+Free/cofree contextual closure:
+Representability status and realizer:
+Effect-order owner/restrictions:
+Effective context/residual representation:
+Context Certificate agreement law:
+
 ## Source instance
 
 Source worlds:
@@ -111,6 +132,11 @@ Day representable/unit/associativity law:
 Context-fragment interpretation law:
 Residual law:
 Convolution resource/effectivity law:
+Tambara unit/associativity/naturality law:
+Context-framing interpretation law:
+Context Certificate / frame agreement law:
+Tambara representability/obstruction law:
+Tambara resource/effect-order law:
 
 ## Falsifier
 
@@ -127,7 +153,13 @@ Illegal context decomposition admitted:
 Legal context decomposition omitted:
 Provenance collapsed under convolution quotient:
 Context union mislabeled as Day convolution:
+Context parameter/wrapper mislabeled as Tambara module:
+Identity context changes capability:
+Nested frames disagree:
+Frame loses schema/provenance/freshness/authority:
+Framing used to justify unsafe effect reordering:
+Claimed context-preserving realizer does not exist:
 
 ## Status
 
-planned / verified / stale / missing / contradictory / overfull / undercertified / discontinuous / non-effective
+planned / verified / stale / missing / contradictory / overfull / undercertified / discontinuous / non-effective / misframed

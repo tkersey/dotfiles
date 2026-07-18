@@ -2,7 +2,7 @@
 
 Universalist is an inner lens invoked whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional.
 
-The boundary pass may preserve an already exact seam and return to ordinary delivery. It escalates only when changing the shape of truth would reduce drift, invalid states, hidden composition, lossy projection, uncertified context, lost locality, ad hoc indexed-description composition, or another structural liability.
+The boundary pass may preserve an already exact seam and return to ordinary delivery. It escalates only when changing the shape of truth would reduce drift, invalid states, hidden composition, lossy projection, uncertified context, lost locality, miscomposed indexed descriptions, inconsistent context framing, or another structural liability.
 
 Default discipline:
 
@@ -18,9 +18,10 @@ Use the construction ladder before reaching for advanced machinery:
 4. pullback witness;
 5. exponential / function object;
 6. free construction / initial algebra;
-7. canonical boundary artifact.
+7. ordinary profunctor / adapter / explicit residual record;
+8. canonical boundary artifact.
 
-When locality is semantic, add a spatial pass before selecting the artifact:
+When locality is semantic, add a spatial pass:
 
 ```text
 points
@@ -33,26 +34,32 @@ continuity law
 resource-bounded representation
 ```
 
-Use a plain labelled graph or context object when that is sufficient. Escalate to a density comonad/comonadic-space model only when coherent nested neighborhoods, canonical reconstruction from patches, or locality-preserving boundaries change implementation and proof obligations.
-
-When software manipulates descriptions indexed by a composed world, add a description-composition pass:
+When indexed descriptions compose, add a description-product pass:
 
 ```text
-index category/world
-index tensor or partial composition kernel
-unit
-indexed description families
-pointwise vs Day vs promonoidal vs substitution vs monadic product
-decomposition and quotient laws
-effective enumeration/normalization strategy
+index world
+tensor/unit or promonoidal kernel
+indexed family
+pointwise / Day / promonoidal / substitution / monadic selector
+decomposition and quotient
+interpreter
+resource bound
 ```
 
-Core rule:
+When one generalized capability must survive ambient context, add a context-action pass:
 
 ```text
-Index composition before description composition.
+ambient context world
+source and target actions
+underlying profunctor/capability
+ordinary / mixed / dependent Tambara selector
+frame operation
+unit / associativity / naturality / context coherence
+residual/optic representation, if any
+representability status
+effect/resource owner
 ```
 
-Use Day convolution only when all lawful index decompositions should contribute and coherent reindexings should be quotiented. Use promonoidal convolution when composition is partial or relation-valued. Use pointwise product, operadic substitution, monadic sequencing, pullback, pushout, or an ordinary product when those are the smaller honest construction.
+Use a plain labelled graph or context object when sufficient. Use a plain function/profunctor, Reader parameter, adapter, or explicit residual record when sufficient. Escalate to density-comonadic, Day/promonoidal, or Tambara mechanics only when their laws and representation change implementation and proof obligations.
 
-The skill should prefer plain engineering language. Category words are useful only when they select code shape, tests, migration strategy, a boundary artifact, a locality law, or a description-composition law.
+The skill should prefer plain engineering language. Category words are useful only when they select code shape, tests, migration strategy, a boundary artifact, a locality law, an indexed-description product, or a context-framing law.

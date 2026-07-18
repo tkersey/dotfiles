@@ -26,7 +26,7 @@ Target world:
 ## Boundary
 
 - name:
-- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / locality-preserving / indexed-description / adapter
+- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / locality-preserving / indexed-description / contextual-morphism / optic / adapter
 - function or module:
 - preserved:
 - forgotten:
@@ -35,7 +35,7 @@ Target world:
 
 ## Unknown
 
-- location: after boundary / behind boundary / compatible witness / integrated output / local neighborhood / indexed descriptions / inside syntax / behavior / effects / observation / generation / callback
+- location: after boundary / behind boundary / compatible witness / integrated output / local neighborhood / indexed descriptions / context action / residual / inside syntax / behavior / effects / observation / generation / callback
 
 ## Canonical artifact
 
@@ -120,6 +120,43 @@ Target world:
 - description-composition law:
 - description-composition falsifier:
 
+## Context action / Tambara structure, when applicable
+
+- applicable: yes / no
+- terminology: Pastro-Street/profunctor Tambara module / equivariant Tambara functor / other
+- ambient context category/world M:
+- context objects and morphisms:
+- tensor/composition and unit:
+- symmetry/order/partiality/dependence:
+- source endpoint world C:
+- target endpoint world D:
+- source action L : M x C -> C:
+- target action R : M x D -> D:
+- underlying profunctor P : C^op x D -> V:
+- meaning of P(a,b):
+- Tambara form: ordinary / mixed / two-sided / dependent
+- frame operation alpha_m:
+- context reindexing/dinaturality:
+- unit law:
+- associativity/nested-framing law:
+- endpoint naturality law:
+- left/right compatibility:
+- interpretation/framing law:
+- residual/optic representation:
+- decompose / rebuild paths:
+- residual quotient / canonical form:
+- profunctor representation theorem assumptions:
+- domain optic/business laws:
+- free/cofree mode: none / free contextual closure / cofree all-context observation
+- context basis/enumeration/query:
+- representability status: concrete module functor / generalized only / unknown
+- concrete realizer/right-adjoint witness:
+- nonrepresentability obstruction:
+- effect-order owner/restrictions:
+- resource/normalization/invalidation bound:
+- context-framing law:
+- context-framing falsifier:
+
 ## Composition grammar
 
 - geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive
@@ -171,7 +208,7 @@ Target world:
 ## Law witness
 
 - positive law test:
-- factorization / uniqueness / reconstruction approximation:
+- factorization / uniqueness / reconstruction / framing approximation:
 - falsifier / negative witness:
 
 ## Status

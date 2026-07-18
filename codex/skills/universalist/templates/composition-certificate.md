@@ -115,6 +115,43 @@ Complexity/resource bound:
 Description-composition law:
 Description-composition falsifier:
 
+## Context action / Tambara structure, when applicable
+
+Applicable: yes / no
+Terminology: Pastro-Street/profunctor Tambara module / equivariant Tambara functor / other
+Ambient context category/world `M`:
+Context objects and morphisms:
+Tensor/composition and unit:
+Symmetry/order/partiality/dependence:
+Source endpoint world `C`:
+Target endpoint world `D`:
+Source action `L : M x C -> C`:
+Target action `R : M x D -> D`:
+Underlying profunctor `P : C^op x D -> V`:
+Meaning of `P(a,b)`:
+Tambara form: ordinary / mixed / two-sided / dependent
+Frame operation `frame_m : P(a,b) -> P(L(m,a),R(m,b))`:
+Context reindexing/dinaturality:
+Unit law:
+Associativity/nested-framing law:
+Endpoint naturality law:
+Left/right compatibility law:
+Interpretation/framing law:
+Residual/optic representation:
+Decompose / rebuild paths:
+Residual quotient / canonical form:
+Profunctor representation theorem assumptions:
+Domain optic/business laws:
+Free/cofree mode: none / free contextual closure / cofree all-context observation
+Context basis/enumeration/query:
+Representability status: concrete module functor / generalized only / unknown
+Concrete realizer/right-adjoint witness:
+Nonrepresentability obstruction:
+Effect-order owner/restrictions:
+Resource/normalization/invalidation bound:
+Tambara/context-framing law:
+Tambara/context-framing falsifier:
+
 ## Composition grammar
 
 Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive

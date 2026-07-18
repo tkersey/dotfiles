@@ -1,7 +1,7 @@
 {
   "name": "universalist",
-  "version": "16.2.0",
-  "description": "Boundary-triggered Universal Architecture workflow for implementation, resolution, effective substrates, typed composition, locality, and indexed descriptions.",
+  "version": "16.3.0",
+  "description": "Boundary-triggered Universal Architecture workflow for effective substrates, typed composition, locality, indexed descriptions, and context-stable morphisms.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true

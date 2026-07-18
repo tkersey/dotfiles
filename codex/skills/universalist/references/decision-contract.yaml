@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v4
+    source_fingerprint: universalist-boundary-decision-v5
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -21,7 +21,7 @@ skill_decision_contract:
       aliases: []
       terminal: "yes"
     - route_id: UNI-ORDINARY
-      description: Apply the smallest ordinary product coproduct refinement pullback strategy syntax graph context or pointwise construction that makes the seam exact.
+      description: Apply the smallest ordinary product coproduct refinement pullback strategy syntax graph context profunctor residual or pointwise construction that makes the seam exact.
       aliases: []
       terminal: "no"
     - route_id: UNI-CANONICAL
@@ -53,9 +53,9 @@ skill_decision_contract:
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport locality representation or description composition when mechanics are used, mechanics law and falsifier when mechanics are used]
-      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected, Day or promonoidal mechanics name the index tensor kernel decomposition quotient and effective implementation]
-      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout comonad density halo Day promonoidal codensity CQL or sheafification vocabulary, comonadic spatiality without center coherence effective halo basis or continuity evidence, Day convolution without index tensor unit representable law decomposition quotient interpreter and resource evidence, applicative structure used to imply effect commutativity, mechanics selected without an executable witness]
+      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport locality representation description composition or context framing when mechanics are used, mechanics law and falsifier when mechanics are used]
+      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected, Day or promonoidal mechanics name the index tensor kernel decomposition quotient and effective implementation, Tambara mechanics name the ambient context action endpoint actions profunctor frame laws representability and effect owner]
+      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout comonad density halo Day promonoidal Tambara optic codensity CQL or sheafification vocabulary, comonadic spatiality without center coherence effective halo basis or continuity evidence, Day convolution without index tensor unit representable law decomposition quotient interpreter and resource evidence, Tambara module without a real context action profunctor unit associativity naturality interpretation and effective witness, Reader middleware DI or Context wrapper mislabeled as Tambara, equivariant Tambara functor confused with profunctor Tambara module, applicative or Tambara structure used to imply effect commutativity, mechanics selected without an executable witness]
       rationale: Deep mechanics should be attributable as a construction choice and should remain absent when they buy no stronger boundary.
     - clause_id: UNI-ROOT-001
       trigger_refs: [UNI-CONSEQUENTIAL]

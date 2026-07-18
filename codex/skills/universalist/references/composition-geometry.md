@@ -1,6 +1,6 @@
 # Composition Geometry Selector
 
-Universal Architecture must select not only *what artifact exists*, but *how compositions are allowed to form*. Use the weakest structure that makes legal assembly and sequencing explicit.
+Universal Architecture must select not only *what artifact exists*, but *how compositions are allowed to form*. Use the weakest structure that makes legal assembly, description composition, context action, and sequencing explicit.
 
 ## Stage 1 — Base composition geometry
 
@@ -29,20 +29,45 @@ Once the base/index world is known, separately decide how descriptions indexed b
 | later computation structure depends on an earlier result | endofunctor composition / monadic sequencing | value-dependent control structure |
 | descriptions are not meaningfully indexed | ordinary product/coproduct/interface | avoid decorative convolution |
 
+## Stage 3 — Context-action / contextual-morphism selector
+
+After the context world and endpoint worlds are known, decide whether a generalized boundary capability must be stable under context extension.
+
+| Context pressure | Structure | What becomes explicit |
+| --- | --- | --- |
+| one context world acts on both endpoint worlds | Tambara module | `P(a,b)` lifts coherently to `P(m act a, m act b)` |
+| source and target receive different actions | generalized / mixed Tambara module | domain/wire, read/write, or pure/effect framing without forcing identical worlds |
+| residual context must be explicit and composable | optic / double / residual IR | decompose, retain residual, rebuild, and quotient coherent residual presentations |
+| bare capability must be closed under every legal frame | free Tambara construction | generated contextual closure |
+| capability must expose coherent behavior under every frame | cofree/end-based Tambara construction | all-context observation |
+| context changes indices or depends on the focus | dependent Tambara / double-category action | indexed context transport without erasing dependencies |
+| generalized morphism must be an actual implementation map | representability/module-functor diagnostic | concrete realizer versus relation/specification only |
+| context is only an ordinary parameter | reader/environment/adapter | avoid decorative Tambara structure |
+
 Core distinction:
 
 ```text
 Base composition geometry:
-  how indices, resources, interfaces, or patches compose.
+  how indices, resources, interfaces, contexts, or patches compose.
 
 Description product:
   how functors, presheaves, predicates, plans, or graded families over that world compose.
+
+Context action / contextual morphism:
+  how a generalized transformation remains valid when context is added around its endpoints.
 
 Runtime semantics:
   how the resulting description executes and which effects may reorder.
 ```
 
-Do not put Day convolution in the same selector row as Freyd categories or operads. Day usually lifts a selected base geometry into a functor/presheaf category. Operadic substitution and monadic composition are nearby but different products.
+Do not put Day convolution, Tambara modules, Freyd categories, and operads in one undifferentiated selector:
+
+```text
+Day convolution    product on indexed descriptions
+Tambara module     profunctor stable under context action
+Freyd category     ordered effectful runtime composition
+operad             grammar of hierarchical component substitution
+```
 
 ## Day fit diagnostic
 
@@ -61,6 +86,25 @@ effective enumeration/normalization
 ```
 
 Use Day convolution only when all lawful decompositions should contribute and coherent changes of intermediate presentation should not create distinct public composites. Use promonoidal convolution when composition is partial or relation-valued.
+
+## Tambara fit diagnostic
+
+Require:
+
+```text
+ambient context category/world M
+tensor/unit or explicit partial/dependent context composition
+source action L : M x C -> C
+target action R : M x D -> D
+underlying profunctor P : C^op x D -> V
+frame operation alpha_m
+unit and associativity
+endpoint naturality and context coherence
+interpreter/observation law
+effective context/residual representation
+```
+
+Use Tambara mechanics only when the same local/generalized capability must survive several lawful context extensions. Use mixed Tambara when endpoint actions differ, dependent Tambara when indices change, and an ordinary adapter/profunctor/context parameter when no framing algebra is gained.
 
 ## Core law shapes
 
@@ -81,14 +125,27 @@ represent(a) star represent(b)
 Day interpretation:
 interpret(F star G)
   == combine(interpret(F), interpret(G))
+
+Tambara unit:
+frame_I(p) ~= p
+
+Tambara associativity:
+frame_(m tensor n)(p)
+  ~= frame_m(frame_n(p))
+
+Tambara interpretation:
+interpret(frame_m(p))
+  == frameSemantics(m, interpret(p))
 ```
 
 ## Selection discipline
 
-Do not grant symmetry, commutation, duplication, discard, feedback, parallelism, decomposition completeness, or quotient safety for free. Each is an architectural law with a witness.
+Do not grant symmetry, commutation, duplication, discard, feedback, parallelism, decomposition completeness, quotient safety, context framing, or representability for free. Each is an architectural law with a witness.
 
-A static/applicative description shape does not prove effect commutativity. Actual execution remains subject to Freyd/resource laws.
+A static/applicative description shape does not prove effect commutativity. Tambara framing does not prove effect commutativity, resource duplication, or safe parallelism. Actual execution remains subject to Freyd/resource laws.
 
 ## Anti-overreach
 
-Use a plain function/interface when it already captures the exact composition. An operad, Freyd model, or Day convolution is justified only when it changes legal wiring, sequencing, indexed composition, tests, ownership, static validation, simulation, interpretation, or the set of representable states/programs.
+Use a plain function/interface when it already captures the exact composition. An operad, Freyd model, Day convolution, or Tambara module is justified only when it changes legal wiring, sequencing, indexed composition, context framing, tests, ownership, static validation, simulation, interpretation, or the set of representable states/programs.
+
+Do not call a `Context<T>` wrapper, reader parameter, dependency-injection container, repeated middleware call, or ordinary optic record a Tambara module without the ambient action, profunctor, framing laws, and falsifier.
