@@ -1,11 +1,39 @@
 ---
 name: creative-problem-solver
-description: "Lateral-thinking playbook returning a five-tier strategy portfolio (Quick Win through Moonshot) with a default-basin check. Use for options, alternatives, trade-offs, stalled/repeated failures, creative reframing, or strategic path selection before execution."
+description: "Generate a compact five-tier strategy portfolio when the user needs multiple materially different paths before execution. Implicitly invoke for explicit requests for options, alternatives, trade-offs, reframing, or help escaping a repeated stall/failure. Do not activate for direct implementation, single-answer advice, repository-evidence opportunity mining ($ideate), or detailed planning ($plan)."
 ---
 
 # Creative Problem Solver
 
-Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then stop for a human choice.
+Purpose: when a strategy choice is still open, generate a five-tier portfolio that compounds through an Artifact Spine, then stop for a human choice.
+
+## Activation boundary
+
+Implicit invocation is enabled. The activation signal is an **unresolved strategy choice plus a request for divergent options**. Difficulty alone is not enough.
+
+### Activate when
+
+- The user explicitly asks for options, alternatives, trade-offs, a strategy portfolio, fresh angles, reframing, or "what else could we try?"
+- Progress is stalled or repeated attempts fail, and selecting a materially different approach is the next task.
+- A multi-constraint or high-uncertainty decision would benefit from several distinct conceptual frames before execution.
+- The user asks to brainstorm or ideate in the ordinary sense without requesting repository evidence mining, tickets, a detailed plan, or implementation.
+- The primary deliverable is at least three materially different paths and a human choice among them.
+
+### Do not activate; route elsewhere
+
+- Direct implementation, debugging, review, or execution after an approach is selected: use the normal task flow or the owning implementation/review skill.
+- A single factual answer, a straightforward recommendation, or comparison of a small known set where a portfolio would add ceremony: answer directly.
+- Evidence-backed repository or product opportunity mining, ranked improvement discovery, or choosing what to plan next: use `$ideate`.
+- Turning a selected direction into a detailed implementation plan, specification, or work graph: use `$plan` or `$spec-pipeline` as appropriate.
+- Architecture or codebase understanding without a request for divergent paths: use direct analysis or `$codebase-archaeology`.
+- The user already chose a tier or path and asks to execute it: hand off to the execution owner; do not regenerate the portfolio.
+
+### Tie-breakers
+
+- Explicit `$creative-problem-solver` invocation wins unless a safety or domain-specific boundary requires another owner.
+- `$ideate` wins when repository evidence mining and ranked opportunities are central to the request.
+- `$plan` wins when the direction is already selected and the requested output is an execution plan.
+- Activate this skill when the requested outcome is a choice set; do not activate when the requested outcome is one answer, one plan, or one implementation.
 
 ## Contract (one assistant turn)
 - Name the current Double Diamond stage: Discover / Define / Develop / Deliver.
@@ -19,9 +47,10 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 - Keep output compact: target <= 60 lines; 1-3 bullets per section.
 
 ## When to use
+- The next useful action is selecting among materially different paths, not executing one.
 - Progress is stalled or blocked.
 - Repeated attempts fail the same way.
-- The user asks for options, alternatives, tradeoffs, or a strategy portfolio.
+- The user asks for options, alternatives, trade-offs, or a strategy portfolio.
 - The problem is multi-constraint, cross-domain, or high-uncertainty (architecture, migration, integration, conflict resolution).
 
 ## Quick start
@@ -48,7 +77,7 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 - Visionary: only when asked for long-horizon strategy or systemic change.
 
 ## Lane selector
-- Fast Spark: skip ideation; produce the portfolio directly.
+- Fast Spark: skip broad candidate generation; produce the portfolio directly.
 - Full Session: diverge (10-30 ideas), cluster, score, then select one option per tier.
 
 ## Reframe selection (required)
@@ -76,7 +105,6 @@ Purpose: generate a five-tier portfolio that compounds (Artifact Spine), then st
 - Ensure at least two tiers come from different conceptual frames, not just different sizes of the same idea.
 - Valid frame shifts include substrate, interface, constraint, proof surface, incentive, time horizon, operating model, or user ritual.
 - If the five tiers cannot honestly diverge, say so and mark the portfolio as same-basin.
-
 
 ## Accretion (required)
 - Accretive artifact: a durable asset you keep even if the option is wrong (measurement, harness, spec, test, automation, interface, dataset, doc).
@@ -192,10 +220,21 @@ Scores (S/A/E/R/Sp):
 Human Input Required: pick a tier (Quick Win .. Moonshot) or update constraints.
 ```
 
-## Activation cues
-- "need options" / "alternatives" / "tradeoffs" / "portfolio"
-- "brainstorm" / "ideate"
-- "stuck" / "blocked" / "nothing works"
-- "outside the box" / "fresh angles"
-- "ambiguous" / "uncertain" / "unknowns"
-- "architecture" / "system design" / "migration" / "integration"
+## Routing examples
+
+### Should activate
+
+- "Give me several materially different ways to reduce onboarding drop-off before we choose one."
+- "We have tried tuning the query twice and are still stuck. What else could we try?"
+- "Reframe this migration problem and show the trade-offs among distinct paths."
+- "Brainstorm a strategy portfolio for entering this market; do not execute anything yet."
+- "The problem is still ambiguous; give me learning moves rather than a build plan."
+
+### Should not activate
+
+- "Implement the selected cache design and run the tests." -> implementation owner
+- "Mine this repository for evidence-backed product and DX opportunities." -> `$ideate`
+- "Turn the chosen event-sourcing direction into a detailed implementation plan." -> `$plan`
+- "Explain this repository's architecture and data flow." -> direct analysis or `$codebase-archaeology`
+- "Review this pull request for defects." -> review owner
+- "We chose the Quick Win. Build it now." -> execution owner

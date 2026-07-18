@@ -1,0 +1,93 @@
+{
+  "cases": [
+    {
+      "activate": true,
+      "id": "explicit-options",
+      "prompt": "Give me several materially different ways to reduce onboarding drop-off before we choose one."
+    },
+    {
+      "activate": true,
+      "id": "tradeoff-portfolio",
+      "prompt": "Map the trade-offs between building, buying, and partnering, then include a credible moonshot."
+    },
+    {
+      "activate": true,
+      "id": "stalled-repeated-failure",
+      "prompt": "We have tried tuning the query twice and are still stuck. What else could we try?"
+    },
+    {
+      "activate": true,
+      "id": "reframe-migration",
+      "prompt": "Reframe this migration problem and show several distinct paths before execution."
+    },
+    {
+      "activate": true,
+      "id": "ordinary-brainstorm",
+      "prompt": "Brainstorm a strategy portfolio for entering this market; do not execute anything yet."
+    },
+    {
+      "activate": true,
+      "id": "architecture-choice-set",
+      "prompt": "Show several architecture paths for multi-region failover and how we could learn before committing."
+    },
+    {
+      "activate": true,
+      "id": "ambiguous-learning-moves",
+      "prompt": "The problem is still ambiguous; give me learning moves rather than a build plan."
+    },
+    {
+      "activate": true,
+      "id": "explicit-skill",
+      "prompt": "Use $creative-problem-solver to generate a five-tier portfolio for this decision."
+    },
+    {
+      "activate": false,
+      "id": "direct-implementation",
+      "owner": "implementation",
+      "prompt": "Implement the selected cache design and run the tests."
+    },
+    {
+      "activate": false,
+      "id": "single-factual-answer",
+      "owner": "direct",
+      "prompt": "What does this compiler error mean?"
+    },
+    {
+      "activate": false,
+      "id": "repo-opportunity-mining",
+      "owner": "ideate",
+      "prompt": "Mine this repository for evidence-backed product and DX opportunities and rank what to plan next."
+    },
+    {
+      "activate": false,
+      "id": "selected-direction-plan",
+      "owner": "plan",
+      "prompt": "Turn the chosen event-sourcing direction into a detailed implementation plan."
+    },
+    {
+      "activate": false,
+      "id": "architecture-onboarding",
+      "owner": "codebase-archaeology",
+      "prompt": "Explain this repository's architecture and data flow so I can get oriented."
+    },
+    {
+      "activate": false,
+      "id": "pull-request-review",
+      "owner": "review",
+      "prompt": "Review this pull request for defects."
+    },
+    {
+      "activate": false,
+      "id": "chosen-tier-execution",
+      "owner": "implementation",
+      "prompt": "We chose the Quick Win. Build it now."
+    },
+    {
+      "activate": false,
+      "id": "small-known-comparison",
+      "owner": "direct",
+      "prompt": "Compare these two already-selected retry policies and recommend one."
+    }
+  ],
+  "schema": "creative-problem-solver-routing-cases/v1"
+}
