@@ -19,7 +19,7 @@ An architecture-level abstraction is exact when compatible local meanings glue t
 compatible local meanings glue uniquely to global meaning
 ```
 
-## Density before sheafification
+## Density, convolution, and sheafification
 
 When the usage site's locality is itself unclear, first use Comonadic Spatiality:
 
@@ -31,16 +31,29 @@ local patch vocabulary P
   -> sheafification of compatible local meanings
 ```
 
+When local or indexed descriptions themselves have a composition law, insert the description-composition layer:
+
+```text
+base patch/index composition
+  -> Day or promonoidal convolution of descriptions
+  -> compatibility checks on overlaps
+  -> sheafification / canonical gluing
+```
+
 The roles differ:
 
 ```text
 Density generates locality.
-Sheafification glues within locality.
+Convolution composes indexed descriptions.
+Day convolution composes locality when patch products are the index tensor.
+Sheafification glues compatible meaning within locality.
 ```
 
 A collection of call sites, fixtures, or examples is not automatically a basis. A basis claim requires canonical reconstruction of situated objects from basic patches, or a clearly bounded engineering approximation. If the patch family only generates a subbasis, record that and do not claim complete local-to-global reconstruction.
 
 The local point/global point distinction also matters: several representations inside different patches may map to one coarse global identity while retaining distinct scope, provenance, capability, or dependency meaning.
+
+Day convolution does not establish compatibility or global glue. It aggregates over legal decompositions. The resulting sections may still disagree on overlaps, lack a global representative, or admit non-unique/global excess states.
 
 ## What it manipulates
 
@@ -52,6 +65,7 @@ Possibility Sheafification manipulates abstractions by comparing their **possibi
 - Inconsistent: local sections disagree on overlaps.
 - Misplaced: the global meaning is hidden in a callback, serializer, test, or adapter.
 - Discontinuous: a refactor preserves global values while destroying the neighborhoods that justify local meaning.
+- Miscomposed: indexed local descriptions use pointwise, Day, substitutional, or sequential composition inconsistently.
 
 ## Four failures
 
@@ -77,17 +91,19 @@ The global abstraction admits states that no local behavior can justify. Repair 
 2. Build the usage site: local contexts that cover the abstraction.
 3. If locality is semantic, name points, patches, local/global identity, and an effective halo representation.
 4. Decide whether the patch vocabulary is merely a subbasis or supports a basis/canonical reconstruction claim.
-5. Extract local sections: what each context believes the abstraction means.
-6. Identify overlaps: shared keys, observations, traces, fields, tests, invariants.
-7. Check compatibility on overlaps.
-8. Check existence of global glue.
-9. Check uniqueness of global glue.
-10. Check whether the proposed refactor is continuous with respect to required halos/labels.
-11. Classify the sheaf failure.
-12. Select the canonical repair.
-13. Emit a Sheafification Certificate.
-14. Add one gluing law and one falsifier.
-15. Refactor one witness slice and stop.
+5. If indexed descriptions compose, name the index tensor/kernel and select pointwise, Day, promonoidal, substitution, or sequential composition.
+6. Extract local sections: what each context believes the abstraction means.
+7. Identify overlaps: shared keys, observations, traces, fields, tests, invariants.
+8. Check compatibility on overlaps.
+9. Check existence of global glue.
+10. Check uniqueness of global glue.
+11. Check whether the proposed refactor is continuous with respect to required halos/labels.
+12. Check that convolutional decomposition/quotient choices preserve required local observations and provenance.
+13. Classify the sheaf failure.
+14. Select the canonical repair.
+15. Emit a Sheafification Certificate, with a linked Day report when description composition is consequential.
+16. Add one gluing law and one falsifier.
+17. Refactor one witness slice and stop.
 
 ## Canonical repairs
 
@@ -104,9 +120,12 @@ The global abstraction admits states that no local behavior can justify. Repair 
 | Ongoing behavior over time | trace/protocol pressure | behavioral coalgebra |
 | Consumer sees raw source data | uncertified context | Exact Context / Context Certificate |
 | Locality changes but boundary preserves only points | locality drift | comonadic spatial presentation + continuous/labelled-halo law |
+| Indexed descriptions compose ad hoc | composition drift | explicit index world + Day/promonoidal/pointwise/substitution selector |
 
 ## Guardrail
 
 Do not sheafify local helpers or intentionally open extension points. Use Possibility Sheafification when the abstraction is architecture-level and local usage evidence shows an exactness gap.
 
 Do not call every usage map a topology, every dependency list a halo, or every fixture catalog a basis. Use the density-comonadic layer only when its center, neighborhood coherence, restriction, reconstruction, continuity, and resource laws are meaningful.
+
+Do not call every local combination Day convolution. Require a real index tensor/kernel, legal-decomposition policy, quotient coherence, interpretation law, and effective representation. Convolution composes descriptions; it does not by itself prove overlap compatibility or unique global gluing.
