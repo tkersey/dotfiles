@@ -890,6 +890,22 @@ class HyloOperatorRecipeContractTests(unittest.TestCase):
         unsafe = re.compile(r"(?m)(?:^|\s)(?:[3-9]|[1-9][0-9]+)(?:>|<)(?![&])")
         self.assertIsNone(unsafe.search(shell_blocks(self.documentation)))
 
+    def test_plain_historical_probe_requires_source_profile_fd(self) -> None:
+        closure, selected_route = self.checker["project_mode"](
+            "historical-trial", None
+        )
+
+        self.assertEqual("historical_decision", selected_route)
+        self.assertTrue(self.checker["requires_historical_profile_fd"](closure))
+        with self.assertRaisesRegex(
+            self.checker["CheckFailure"], "--source-profile-fd N"
+        ):
+            self.checker["require_tokens"](
+                "--lease-fd N --input-fd N --materialization-fd N",
+                "CAS trial help",
+                {"--source-profile-fd N"},
+            )
+
     def test_live_probe_keeps_case_blinding_orthogonal_to_source_route(self) -> None:
         manifest = self.require_surface_manifest()
         project_mode = self.checker["project_mode"]
@@ -964,7 +980,7 @@ class HyloOperatorRecipeContractTests(unittest.TestCase):
         )
         self.assertFalse(requires_historical_profile_fd(direct))
         self.assertTrue(requires_historical_profile_fd(historical))
-        self.assertFalse(requires_historical_profile_fd(plain_historical))
+        self.assertTrue(requires_historical_profile_fd(plain_historical))
 
     def test_proof_export_requires_v2_trial_custody_and_proof_capabilities(self) -> None:
         manifest = self.require_surface_manifest()

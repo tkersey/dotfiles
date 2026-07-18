@@ -403,7 +403,7 @@ def required_features(closure: set[str], requirements: dict[str, set[str]]) -> s
 
 
 def requires_historical_profile_fd(closure: set[str]) -> bool:
-    return HISTORICAL_CASE_BLIND_MODE in closure
+    return "historical-trial" in closure
 
 
 def check_feature_set(label: str, available: set[str], required: set[str]) -> None:
