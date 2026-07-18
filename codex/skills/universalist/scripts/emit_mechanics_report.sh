@@ -25,6 +25,11 @@ Available mechanics topics:
 - density-comonad
 - halo
 - continuous-comonad-map
+- day-convolution
+- promonoidal-convolution
+- applicative-convolution
+- resource-convolution
+- spatial-convolution
 - yoneda
 - defunctionalization
 - codensity-presentation
@@ -49,6 +54,11 @@ Examples:
   ./scripts/emit_mechanics_report.sh density-comonad agnostic
   ./scripts/emit_mechanics_report.sh halo typescript
   ./scripts/emit_mechanics_report.sh continuous-comonad-map agnostic
+  ./scripts/emit_mechanics_report.sh day-convolution typescript
+  ./scripts/emit_mechanics_report.sh promonoidal-convolution agnostic
+  ./scripts/emit_mechanics_report.sh applicative-convolution typescript
+  ./scripts/emit_mechanics_report.sh resource-convolution agnostic
+  ./scripts/emit_mechanics_report.sh spatial-convolution agnostic
   ./scripts/emit_mechanics_report.sh kan-lift typescript
   ./scripts/emit_mechanics_report.sh codensity-presentation agnostic
   ./scripts/emit_mechanics_report.sh cql-context agnostic
@@ -82,6 +92,20 @@ OUT
     bash ./scripts/emit_comonadic_spatiality.sh halo "$language" ;;
   continuous-comonad-map|continuous-comonadic-map|locality-preserving|spatial-continuity)
     bash ./scripts/emit_comonadic_spatiality.sh continuous "$language" ;;
+  day-convolution|day|cauchy-product|description-convolution)
+    bash ./scripts/emit_day_convolution.sh day "$language" ;;
+  promonoidal-convolution|promonoidal|partial-convolution)
+    bash ./scripts/emit_day_convolution.sh promonoidal "$language" ;;
+  applicative-convolution|applicative|static-effects)
+    bash ./scripts/emit_day_convolution.sh applicative "$language" ;;
+  resource-convolution|separation-convolution|resource-splitting)
+    bash ./scripts/emit_day_convolution.sh resource "$language" ;;
+  spatial-convolution|comonadic-product|locality-convolution)
+    bash ./scripts/emit_day_convolution.sh spatial "$language" ;;
+  convolution)
+    echo "Ambiguous mechanics topic: convolution" >&2
+    echo "Use day-convolution, promonoidal-convolution, applicative-convolution, resource-convolution, or spatial-convolution. Numerical convolution and operadic substitution are different concerns." >&2
+    exit 2 ;;
   freyd)
     echo "Ambiguous mechanics topic: freyd" >&2
     echo "Use 'freyd-aft' for the adjoint-functor/free-builder diagnostic or 'freyd-category' for effectful call-by-value composition." >&2
