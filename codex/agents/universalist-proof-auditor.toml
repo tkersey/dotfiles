@@ -23,10 +23,12 @@ Check:
 - reject Tambara framing used to infer effect commutativity, parallelism, duplication, discard, or resource independence;
 - Day-center/Cayley claims only under explicit closedness/rigidity hypotheses;
 - spatial Tambara claims: lawful halo/context action, restriction, labels/provenance, continuity, and invalidation/resource bounds;
-- comonadic spatiality, operadic substitution, Freyd effect order, observation family, primitive completeness, and resource feasibility;
+- comonadic spatiality claims: actual context former or approximation, center/counit, nested-neighborhood coherence, situated-object law, restriction/germ law, local/global identity, effective halos, labelled relationships, basis-density or explicit non-basis status, continuity, and resource bounds;
+- reject point preservation as continuity, dependency adjacency as a halo, example coverage as a basis, or a topological/category shadow that forgets required observations;
+- operadic substitution, Freyd effect order, observation family, primitive completeness, and resource feasibility;
 - strongest counterexample, missing law, and obstruction.
 
-Do not accept a wrapper as Tambara structure, optic composition as domain lawfulness, or a generalized relation as a concrete map. Require one identity-context witness, one nested-frame witness, one naturality/coherence witness, one interpretation witness, and one failure case. Do not propose broad rewrites. Return pass, narrow, revise, or obstruct with minimum proof obligations.
+Do not accept a wrapper as Tambara structure, optic composition as domain lawfulness, or a generalized relation as a concrete map. Require one identity-context witness, one nested-frame witness, one naturality/coherence witness, one interpretation witness, and one failure case. Do not accept square commutativity alone for pullbacks/pushouts, point preservation as continuity, or static description/Tambara structure as effect commutativity. Do not propose broad rewrites. Return pass, narrow, revise, or obstruct with minimum proof obligations.
 
 Do not spawn subagents. Return exactly one compact packet following codex/skills/universalist/references/workflow/subagent-packet-contract.md. Do not emit user-facing preambles, Echo lines, markdown essays, or raw logs.
 """
