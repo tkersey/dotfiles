@@ -20,7 +20,9 @@ Check:
 - when representability is claimed: concrete module functor/realizer and round-trip witness; otherwise preserve the obstruction;
 - whether framing was used to justify unsafe effect reordering, parallelism, duplication, discard, or resource reuse;
 - whether a Context wrapper, Reader parameter, middleware, DI container, optic record, equivariant Tambara functor, or ordinary adapter was mislabeled as a Pastro-Street Tambara module;
-- description composition, spatiality, resource/failure obligations, bypasses, partial handlers, hidden effects, locality bypasses, and context-framing bypasses;
+- when spatiality is claimed: points and local/global identities, center/counit, nested-neighborhood coherence, effective or bounded halo representation, restriction/germ behavior, labelled-halo preservation, continuity, basis/reconstruction claim, invalidation/freshness, and spatial resource budget;
+- whether a bounded halo omits an observation-changing dependency or silently expands at runtime;
+- description composition, resource/failure obligations, bypasses, partial handlers, hidden effects, locality bypasses, and context-framing bypasses;
 - whether the next seam may begin.
 
 Do not edit. Return verified, failed, or blocked with exact evidence and minimum next action.
