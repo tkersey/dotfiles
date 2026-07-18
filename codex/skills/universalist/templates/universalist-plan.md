@@ -9,6 +9,7 @@
 ## Pullback / pushout square:
 ## Spatial geometry / halo:
 ## Composition geometry:
+## Description composition:
 ## Boundary law:
 ## Freyd/AFT boundary diagnostic:
 ## Composition Certificate:
