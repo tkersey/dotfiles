@@ -26,7 +26,7 @@ Target world:
 ## Boundary
 
 - name:
-- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / locality-preserving / adapter
+- kind: embedding / projection / forgetful / interpreter / compiler / serializer / view / handler / observer / migration / pullback agreement / pushout integration / graph rewrite / locality-preserving / indexed-description / adapter
 - function or module:
 - preserved:
 - forgotten:
@@ -35,7 +35,7 @@ Target world:
 
 ## Unknown
 
-- location: after boundary / behind boundary / compatible witness / integrated output / local neighborhood / inside syntax / behavior / effects / observation / generation / callback
+- location: after boundary / behind boundary / compatible witness / integrated output / local neighborhood / indexed descriptions / inside syntax / behavior / effects / observation / generation / callback
 
 ## Canonical artifact
 
@@ -84,6 +84,41 @@ Target world:
 - continuity law:
 - continuity falsifier:
 - resource / invalidation law:
+
+## Description composition, when applicable
+
+- applicable: yes / no
+- base index category/world:
+- index objects / grades / resources / interfaces:
+- index morphisms / refinements:
+- base tensor / composition operation:
+- unit:
+- promonoidal kernel, if partial/relational:
+- description category:
+- variance: covariant / presheaf
+- indexed descriptions:
+- selected product: pointwise / Day / promonoidal / substitution / endofunctor composition / ordinary
+- nearby product rejected:
+- distinguishing counterexample:
+- Day specification: F star G = Lan_tensor(F external-product G)
+- pointwise/coend formula:
+- legal decomposition witnesses:
+- coend/reindexing equivalence:
+- atomic/representable embedding:
+- executable representation:
+- finite support / boundedness:
+- decomposition enumerator / query:
+- aggregation/target tensor:
+- normalization / quotient:
+- canonical representative:
+- provenance retained outside quotient:
+- lax-monoidal interpreter:
+- residual/internal hom, if any:
+- effect-order owner/restrictions:
+- collision policy:
+- complexity/resource bound:
+- description-composition law:
+- description-composition falsifier:
 
 ## Composition grammar
 
