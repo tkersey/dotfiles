@@ -41,6 +41,23 @@ cat <<OUT
 - labelled-halo fields:
 - continuity requirements:
 
+## Requirement-indexed composition, when applicable
+
+- applicable: yes / no
+- requirement index world:
+- requirement tensor or promonoidal kernel:
+- unit requirement:
+- context fragment family:
+- selected product: pointwise / Day / promonoidal / ordinary
+- nearby product rejected:
+- legal requirement decompositions:
+- coend/reindexing equivalence:
+- fragment schema/provenance combination:
+- residual / missing-context operation:
+- enumeration / normalization strategy:
+- collision policy:
+- effectivity/resource bound:
+
 ## Source instance I_candidate
 
 - source worlds:
@@ -93,6 +110,11 @@ cat <<OUT
 - continuity/halo-preservation law:
 - local/global identity and labelled-halo law:
 - spatial resource law:
+- requirement decomposition soundness/completeness law:
+- Day representable/unit/associativity law:
+- context-fragment interpretation law:
+- residual law:
+- convolution resource/effectivity law:
 
 ## Falsifier
 
@@ -105,6 +127,10 @@ cat <<OUT
 - retrieved set mistaken for semantic halo:
 - halo approximation omits an observation-changing dependency:
 - invalid germ after boundary transport:
+- illegal context decomposition admitted:
+- legal context decomposition omitted:
+- provenance collapsed under convolution quotient:
+- context union mislabeled as Day convolution:
 
 ## Status
 
