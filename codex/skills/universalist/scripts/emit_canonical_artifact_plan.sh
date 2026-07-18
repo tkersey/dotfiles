@@ -236,6 +236,53 @@ Typed components assemble hierarchically, but legal wiring is hidden in an accid
 interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))
 OUT
     ;;
+  day-convolution|description-convolution|promonoidal-convolution|applicative-convolution|resource-convolution|spatial-convolution)
+    cat <<OUT
+# Canonical artifact plan: Day/promonoidal description composition (${language})
+
+## Signal
+Artifacts are indexed by a composed world, but their combination is implemented by ad hoc loops, merges, or callbacks and the intended product is unclear.
+
+## Base index world
+- category/world:
+- tensor or promonoidal kernel:
+- unit:
+- partiality/admissibility:
+
+## Description family
+- indexed descriptions F,G:
+- target semantic category:
+- variance:
+- selected product: pointwise / Day / promonoidal / substitution / endofunctor composition
+- nearby product rejected:
+
+## Artifact
+- indexed description IR / sparse family
+- legal decomposition enumerator/query
+- coend/normalization policy
+- aggregation/target tensor
+- interpreter / lax-monoidal multiplication
+- residual/internal hom, if any
+
+## First seam
+- one pair of atomic descriptions:
+- one legal decomposition:
+- one illegal/omitted/collision witness:
+
+## Proof signal
+represent(a) star represent(b) ~= represent(a tensor b)
+unit and associativity hold under normalization
+all supported legal decompositions contribute and illegal ones fail
+interpret(F star G) == combine(interpret(F),interpret(G))
+static structure does not justify effect reordering without an independent witness
+
+## Resource/effectivity
+- finite support or bound:
+- enumeration complexity:
+- quotient/normalization cost:
+- provenance/collision policy:
+OUT
+    ;;
   explicit-ir|defunctionalization|ir)
     cat <<OUT
 # Canonical artifact plan: explicit IR (${language})
