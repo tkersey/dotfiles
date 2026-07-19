@@ -1,0 +1,13 @@
+scripts/check_universal_problem.sh: line 6: uv: command not found
+description length ok: 948 chars
+boundary discovery metadata ok
+boundary activation doctrine aligned: 8 surfaces
+SKILL.md missing Context Normal Form
+check_pullback_pushout_mechanics: ok
+../../agents/universalist-semanticist.toml missing required text: comonad coalgebras
+../../agents/universalist-resource-realist.toml missing required text: description composition
+../../agents/universalist-world-cartographer.toml missing required text: Tambara
+description length ok: 948 chars
+boundary discovery metadata ok
+boundary activation doctrine aligned: 8 surfaces
+SKILL.md missing Context Normal Form
