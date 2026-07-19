@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - universalist
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
 
 permissions:
   contents: read
