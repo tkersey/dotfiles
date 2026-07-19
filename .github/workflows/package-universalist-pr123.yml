@@ -1,12 +1,18 @@
 name: Apply Universalist 17.1.0
 
 on:
-  push:
+  pull_request:
     branches:
-      - universalist
+      - main
+    types:
+      - synchronize
 
 permissions:
   contents: write
+
+concurrency:
+  group: universalist-pr123-apply
+  cancel-in-progress: true
 
 jobs:
   apply:
