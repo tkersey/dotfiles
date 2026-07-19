@@ -25,8 +25,6 @@ jobs:
           mkdir -p /tmp/pr123/codex/skills /tmp/pr123/codex/agents
           cp -a codex/skills/universalist /tmp/pr123/codex/skills/
           cp -a codex/agents/universalist-*.toml /tmp/pr123/codex/agents/
-          cp codex/AGENTS.md /tmp/pr123/codex/AGENTS.md
-          cp AGENTS.md /tmp/pr123/AGENTS.md
           tar -czf /tmp/universalist-pr123.tar.gz -C /tmp/pr123 .
       - uses: actions/upload-artifact@v4
         with:
