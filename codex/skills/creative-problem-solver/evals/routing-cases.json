@@ -22,7 +22,7 @@
     },
     {
       "activate": true,
-      "id": "ordinary-brainstorm",
+      "id": "ordinary-strategy-brainstorm",
       "prompt": "Brainstorm a strategy portfolio for entering this market; do not execute anything yet."
     },
     {
@@ -37,8 +37,18 @@
     },
     {
       "activate": true,
-      "id": "explicit-skill",
+      "id": "explicit-skill-imperative",
       "prompt": "Use $creative-problem-solver to generate a five-tier portfolio for this decision."
+    },
+    {
+      "activate": true,
+      "id": "selected-direction-rollout-options",
+      "prompt": "We selected event sourcing; show materially different rollout, containment, and proof strategies before execution."
+    },
+    {
+      "activate": true,
+      "id": "high-uncertainty-cross-domain-choice",
+      "prompt": "We need several distinct ways to redesign this partner integration across product, legal, and operations before choosing a path."
     },
     {
       "activate": false,
@@ -87,6 +97,48 @@
       "id": "small-known-comparison",
       "owner": "direct",
       "prompt": "Compare these two already-selected retry policies and recommend one."
+    },
+    {
+      "activate": false,
+      "id": "skill-analysis-mention",
+      "owner": "tune",
+      "prompt": "Do a deep analysis of my $creative-problem-solver skill."
+    },
+    {
+      "activate": false,
+      "id": "skill-edit-mention",
+      "owner": "tune",
+      "prompt": "Patch $creative-problem-solver so it stops over-triggering."
+    },
+    {
+      "activate": false,
+      "id": "skill-refine-brief",
+      "owner": "refine",
+      "prompt": "Apply this complete REFINE-SKILL-v3 brief to $creative-problem-solver and validate the package."
+    },
+    {
+      "activate": false,
+      "id": "keyword-bearing-debugging",
+      "owner": "debugging",
+      "prompt": "I am blocked by this compiler error. What else can I try?"
+    },
+    {
+      "activate": false,
+      "id": "ordinary-name-brainstorm",
+      "owner": "direct",
+      "prompt": "Brainstorm twenty names for this command."
+    },
+    {
+      "activate": false,
+      "id": "mixed-options-and-implementation",
+      "owner": "implementation",
+      "prompt": "Give me several options, choose the best one, and implement it now."
+    },
+    {
+      "activate": false,
+      "id": "explain-skill-concept",
+      "owner": "direct",
+      "prompt": "What does $creative-problem-solver mean by Artifact Spine?"
     }
   ],
   "schema": "creative-problem-solver-routing-cases/v1"
