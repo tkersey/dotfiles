@@ -28,8 +28,7 @@ jobs:
 
       - name: Install Universalist native proof tools
         run: |
-          curl -fsSL \
-            -o /tmp/seq.tar.gz \
+          curl -fsSL -o /tmp/seq.tar.gz \
             https://github.com/tkersey/skills-zig/releases/download/seq-v0.3.52/seq-v0.3.52-linux-x86_64.tar.gz
           echo "d26822bbebba7c6a85018696d05c311378c70f6d5227f5d70afea6b3c5e259d4  /tmp/seq.tar.gz" \
             | sha256sum --check --strict
@@ -38,8 +37,7 @@ jobs:
           sudo install -m 0755 "$(find /tmp/seq -type f -name seq -print -quit)" \
             /usr/local/bin/seq
 
-          curl -fsSL \
-            -o /tmp/ledger.tar.gz \
+          curl -fsSL -o /tmp/ledger.tar.gz \
             https://github.com/tkersey/skills-zig/releases/download/ledger-v0.10.7/ledger-v0.10.7-linux-x86_64.tar.gz
           echo "43e12593a9efc1340ed34ccdce8f699462aedf0febb05ac5ad381d77da2153df  /tmp/ledger.tar.gz" \
             | sha256sum --check --strict
@@ -102,8 +100,7 @@ jobs:
               "41898282+github-actions[bot]@users.noreply.github.com"
             git add .github/universalist-v17-bootstrap/apply-error.txt
             git commit -m "universalist: capture v17 bootstrap failure"
-            git push origin \
-              HEAD:agent/universalist-universal-problem-ir
+            git push origin HEAD:agent/universalist-universal-problem-ir
             cat /tmp/universalist-v17-apply.log
             exit "$status"
           fi
@@ -114,62 +111,69 @@ jobs:
           set +e
           python3 - <<'PY' > /tmp/universalist-v17-compatibility.log 2>&1
           from pathlib import Path
+          import re
 
           skill = Path('codex/skills/universalist/SKILL.md')
           text = skill.read_text(encoding='utf-8')
           if 'Context Normal Form' not in text:
-              marker = '## Exact Context\n\n'
               addition = (
-                  'A system reaches **Context Normal Form** when every semantic consumer '
+                  '\nA system reaches **Context Normal Form** when every semantic consumer '
                   'receives a task-indexed, schema-shaped, provenance-preserving, '
                   'freshness-valid, observationally minimal context instance through a '
-                  'certified publication boundary.\n\n'
+                  'certified publication boundary.\n'
               )
-              if marker not in text:
-                  raise SystemExit('Exact Context marker missing while restoring Context Normal Form')
-              text = text.replace(marker, marker + addition, 1)
+              text, count = re.subn(
+                  r'^(## Exact Context[^\n]*)$',
+                  lambda match: match.group(1) + addition,
+                  text,
+                  count=1,
+                  flags=re.MULTILINE,
+              )
+              if count != 1:
+                  raise SystemExit('Exact Context heading missing while restoring Context Normal Form')
               skill.write_text(text, encoding='utf-8')
 
           semantic = Path('codex/agents/universalist-semanticist.toml')
           text = semantic.read_text(encoding='utf-8')
           if 'comonad coalgebras' not in text:
-              marker = '- state machines, behavioral coalgebras, protocols, traces, and interaction;\n'
               addition = (
-                  '- distinguish behavioral coalgebras for unfolding behavior from '
-                  'comonad coalgebras for coherently situated context;\n'
+                  '\n- distinguish behavioral coalgebras for unfolding behavior from '
+                  'comonad coalgebras for coherently situated context;'
               )
-              if marker not in text:
-                  raise SystemExit('semanticist coalgebra marker missing')
-              text = text.replace(marker, marker + addition, 1)
+              text, count = re.subn(
+                  r'(- state machines, behavioral coalgebras[^\n]*;)',
+                  lambda match: match.group(1) + addition,
+                  text,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit('semanticist behavioral-coalgebra line missing')
               semantic.write_text(text, encoding='utf-8')
 
           resource = Path('codex/agents/universalist-resource-realist.toml')
           text = resource.read_text(encoding='utf-8')
           if 'description composition' not in text:
-              old = 'For indexed composition inspect support size,'
-              new = 'For description composition inspect support size,'
-              if old not in text:
-                  raise SystemExit('resource-realist description marker missing')
-              text = text.replace(old, new, 1)
+              text, count = re.subn(
+                  r'For indexed composition inspect',
+                  'For description composition inspect',
+                  text,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit('resource-realist indexed-composition phrase missing')
               resource.write_text(text, encoding='utf-8')
 
           cartographer = Path('codex/agents/universalist-world-cartographer.toml')
           text = cartographer.read_text(encoding='utf-8')
           if 'Tambara' not in text:
-              old = (
-                  'Do not call a nested loop a decomposition theorem, a dependency list '
-                  'a coherent locality model, example coverage a basis, a context wrapper '
-                  'a comonad, or a Reader/middleware/DI wrapper a context-action theorem.'
+              text, count = re.subn(
+                  r'a Reader/middleware/DI wrapper a context-action theorem',
+                  'a Reader/middleware/DI wrapper a Tambara module or context-action theorem',
+                  text,
+                  count=1,
               )
-              new = (
-                  'Do not call a nested loop a decomposition theorem, a dependency list '
-                  'a coherent locality model, example coverage a basis, a context wrapper '
-                  'a comonad, or a Reader/middleware/DI wrapper a Tambara module or '
-                  'context-action theorem.'
-              )
-              if old not in text:
-                  raise SystemExit('cartographer Tambara marker missing')
-              text = text.replace(old, new, 1)
+              if count != 1:
+                  raise SystemExit('cartographer context-action guardrail missing')
               cartographer.write_text(text, encoding='utf-8')
           PY
           status=$?
@@ -182,8 +186,7 @@ jobs:
               "41898282+github-actions[bot]@users.noreply.github.com"
             git add .github/universalist-v17-bootstrap/compatibility-error.txt
             git commit -m "universalist: capture v17 compatibility failure"
-            git push origin \
-              HEAD:agent/universalist-universal-problem-ir
+            git push origin HEAD:agent/universalist-universal-problem-ir
             cat /tmp/universalist-v17-compatibility.log
             exit "$status"
           fi
@@ -213,8 +216,7 @@ jobs:
               "41898282+github-actions[bot]@users.noreply.github.com"
             git add .github/universalist-v17-bootstrap/validation-error.txt
             git commit -m "universalist: capture v17 validation failure"
-            git push origin \
-              HEAD:agent/universalist-universal-problem-ir
+            git push origin HEAD:agent/universalist-universal-problem-ir
             cat /tmp/universalist-v17-validation.log
             exit "$status"
           fi
@@ -233,5 +235,4 @@ jobs:
           git add -A
           git commit -m \
             "universalist: compile categorical mechanics through a universal problem IR"
-          git push origin \
-            HEAD:agent/universalist-universal-problem-ir
+          git push origin HEAD:agent/universalist-universal-problem-ir
