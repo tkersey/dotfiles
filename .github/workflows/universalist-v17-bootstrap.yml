@@ -111,7 +111,8 @@ jobs:
 
       - name: Preserve compatibility doctrine
         run: |
-          python3 - <<'PY'
+          set +e
+          python3 - <<'PY' > /tmp/universalist-v17-compatibility.log 2>&1
           from pathlib import Path
 
           skill = Path('codex/skills/universalist/SKILL.md')
@@ -171,6 +172,22 @@ jobs:
               text = text.replace(old, new, 1)
               cartographer.write_text(text, encoding='utf-8')
           PY
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            cp /tmp/universalist-v17-compatibility.log \
+              .github/universalist-v17-bootstrap/compatibility-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email \
+              "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/universalist-v17-bootstrap/compatibility-error.txt
+            git commit -m "universalist: capture v17 compatibility failure"
+            git push origin \
+              HEAD:agent/universalist-universal-problem-ir
+            cat /tmp/universalist-v17-compatibility.log
+            exit "$status"
+          fi
+          cat /tmp/universalist-v17-compatibility.log
 
       - name: Validate
         run: |
