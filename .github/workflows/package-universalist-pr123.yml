@@ -20,15 +20,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: universalist
-      - name: Build audit archive
+          fetch-depth: 1
+      - name: Build exact checkout archive
         run: |
-          mkdir -p /tmp/pr123/codex/skills /tmp/pr123/codex/agents
-          cp -a codex/skills/universalist /tmp/pr123/codex/skills/
-          cp -a codex/agents/universalist-*.toml /tmp/pr123/codex/agents/
-          tar -czf /tmp/universalist-pr123.tar.gz -C /tmp/pr123 .
+          tar --exclude=.git -czf /tmp/pr123-checkout.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
-          name: universalist-pr123-audit
-          path: /tmp/universalist-pr123.tar.gz
+          name: pr123-exact-checkout
+          path: /tmp/pr123-checkout.tar.gz
           if-no-files-found: error
           retention-days: 1
