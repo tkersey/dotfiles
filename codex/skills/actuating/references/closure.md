@@ -65,7 +65,7 @@ A serialized `actuating-closure-receipt/v1` is a cacheable view. Bind at least:
 Goal Contract
 Construction Contract
 current subject digest
-Evidence Ledger material and full heads
+goal-local Evidence Ledger head
 static Review Contract
 review campaign and owner-issued publication projection when present
 projected verdict and blockers

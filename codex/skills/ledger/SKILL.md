@@ -136,7 +136,7 @@ ledger --source actuation --goal GOAL_ID decide
 The static Review Contract is not mutable per-goal state. `state` is a
 discardable view. `decide` deterministically binds the Goal Contract, current
 Construction Contract, current subject digest, goal-local Evidence Ledger
-material and full heads, and Review Contract into an
+head, and Review Contract into an
 `actuating-closure-receipt/v1`. A serialized receipt is a cache, not an
 independently authored completion decision; discard and recompute it whenever
 any bound input changes.

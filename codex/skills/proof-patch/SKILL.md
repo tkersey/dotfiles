@@ -36,18 +36,20 @@ proof_patch_input:
       goal_contract_ref:
       construction_ref:
       subject_digest:
-      evidence_material_head:
-      evidence_head_at_projection:
+      evidence_head:
       review_contract_digest:
-      review_head_sha: null | GIT_OBJECT_ID
-      review_merge_base_sha: null | GIT_OBJECT_ID
-      publication_repository: null | owner/name
-      publication_pr_url: null | URL
-      publication_base_sha: null | GIT_OBJECT_ID
-      publication_head_sha: null | GIT_OBJECT_ID
       verdict: complete
       blockers: []
-      created_at:
+      proof:
+        complete: true
+        missing_obligations: 0
+        missing_retirements: 0
+      review:
+        auxiliaries_current: true
+        clean_streak: 5
+        full_wave_complete: true
+      publication:
+        current: true | false
     goal_contract: {}
     construction_contract: {}
     counterexample_sets: []
@@ -82,7 +84,7 @@ proof_patch_input:
 ```
 
 For `artifact-kernel-v1`, rederive closure from the current Goal Contract,
-Construction Contract, subject digest, Evidence Ledger material and full heads,
+Construction Contract, subject digest, goal-local Evidence Ledger head,
 and static Review Contract before rendering. Reject a receipt whose bound input
 or deterministic projection no longer matches. Render architecture only from the current
 Construction Contract, classified bugs only from registered Counterexample
@@ -109,7 +111,7 @@ alone are not enough.
 - Goal Contract / legacy run:
 - Construction Contract / legacy closure decision:
 - Subject / branch-head-live state:
-- Evidence Ledger material/full head / legacy run digest:
+- Evidence Ledger head / legacy run digest:
 - Review Contract / legacy resolution digest:
 - Goal outcome:
 - Next owner:

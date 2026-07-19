@@ -83,18 +83,20 @@ ship_input:
         goal_contract_ref:
         construction_ref:
         subject_digest:
-        evidence_material_head:
-        evidence_head_at_projection:
+        evidence_head:
         review_contract_digest:
-        review_head_sha: null | GIT_OBJECT_ID
-        review_merge_base_sha: null | GIT_OBJECT_ID
-        publication_repository: null
-        publication_pr_url: null
-        publication_base_sha: null
-        publication_head_sha: null
         verdict: ready-to-ship
         blockers: []
-        created_at:
+        proof:
+          complete: true
+          missing_obligations: 0
+          missing_retirements: 0
+        review:
+          auxiliaries_current: false
+          clean_streak: 0
+          full_wave_complete: false
+        publication:
+          current: false
     legacy:
       closure_decision_id:
       closure_verdict: ready-to-ship
