@@ -22,6 +22,7 @@ jobs:
           ref: agent/universalist-universal-problem-ir
           fetch-depth: 0
           persist-credentials: true
+          show-progress: false
 
       - name: Reconstruct runtime bundle
         run: |
@@ -36,8 +37,25 @@ jobs:
 
       - name: Apply change set
         run: |
+          set +e
           python3 /tmp/universalist-v17-runtime/apply_universalist_v17.py \
-            "$GITHUB_WORKSPACE"
+            "$GITHUB_WORKSPACE" > /tmp/universalist-v17-apply.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ]; then
+            cp /tmp/universalist-v17-apply.log \
+              .github/universalist-v17-bootstrap/apply-error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email \
+              "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/universalist-v17-bootstrap/apply-error.txt
+            git commit -m "universalist: capture v17 bootstrap failure"
+            git push origin \
+              HEAD:agent/universalist-universal-problem-ir
+            cat /tmp/universalist-v17-apply.log
+            exit "$status"
+          fi
+          cat /tmp/universalist-v17-apply.log
 
       - name: Validate
         run: |
