@@ -258,9 +258,11 @@ respond_command() {
   fi
 
   local image
-  for image in "${images[@]}"; do
-    args+=(--image "$image")
-  done
+  if [ "${images+present}" = "present" ]; then
+    for image in "${images[@]}"; do
+      args+=(--image "$image")
+    done
+  fi
 
   if [ -n "$schema" ]; then
     args+=(--schema "$schema")
