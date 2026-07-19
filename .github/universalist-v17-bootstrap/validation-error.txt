@@ -1,13 +1,24 @@
-scripts/check_universal_problem.sh: line 6: uv: command not found
+Installed 1 package in 1ms
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.937s
+
+OK
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.223s
+
+OK
+check_universal_problem: ok
 description length ok: 948 chars
 boundary discovery metadata ok
 boundary activation doctrine aligned: 8 surfaces
-SKILL.md missing Context Normal Form
+plan initializer missing ledger token: ledger --version
 check_pullback_pushout_mechanics: ok
-../../agents/universalist-semanticist.toml missing required text: comonad coalgebras
-../../agents/universalist-resource-realist.toml missing required text: description composition
-../../agents/universalist-world-cartographer.toml missing required text: Tambara
+../../agents/universalist-proof-auditor.toml missing required text: point preservation as continuity
+../../agents/universalist-witness-implementer.toml missing required text: description composition
+../../agents/universalist-semanticist.toml missing required text: Tambara
 description length ok: 948 chars
 boundary discovery metadata ok
 boundary activation doctrine aligned: 8 surfaces
-SKILL.md missing Context Normal Form
+plan initializer missing ledger token: ledger --version
