@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v10
+    source_fingerprint: universalist-boundary-decision-v11
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -11,8 +11,8 @@ skill_decision_contract:
       cue_regexes: []
       exclusions: [work wholly internal to one unchanged boundary, category theory exposition without a concrete seam]
     - trigger_id: UNI-CONSEQUENTIAL
-      description: At least two plausible routes materially differ in persistent behavior authority compatibility migration or proof obligations.
-      cue_literals: [smallest honest construction, ordinary candidate, relevant construction cards, material architectural delta, obstruction report, advanced mechanics]
+      description: At least two plausible routes materially differ in persistent behavior authority compatibility migration enforcement invalidation or proof obligations.
+      cue_literals: [smallest effective artifact, current-context contract, comparison universe, one axis and typed hole, Boundary Artifact Contract, enforcement matrix, proof lease, invalidation triggers]
       cue_regexes: []
       exclusions: [routine seam with one plausible route, ceremonial activation with no route choice, static schema example, categorical label with no material delta]
   routes:
@@ -37,18 +37,42 @@ skill_decision_contract:
       trigger_refs: [UNI-BOUNDARY]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [boundary disposition with attributed rationale and owner, source and target worlds, preserved forgotten generated and observed information, compatibility plan, law, falsifier]
-      success_signals: [the owning seam and observable law are explicit, preservation is representable without inventing structure, ordinary routing follows the declared disposition]
-      failure_signals: [boundary disposition without attributed rationale, boundary language without an owner, compatibility or falsifier omitted, symptom-only downstream patch, a newly introduced ordinary boundary mislabeled as preserve]
+      required_artifacts: [boundary disposition with attributed rationale and owner, source and target worlds, current requirements and required observations, preserved forgotten generated and observed information, compatibility plan, residual obligations, invalidation triggers, law, falsifier]
+      success_signals: [the owning seam current requirements observable law and invalidators are explicit, preservation is representable without inventing structure, ordinary routing follows the declared disposition]
+      failure_signals: [boundary disposition without attributed rationale, boundary language without an owner or current requirements, compatibility residuals invalidators or falsifier omitted, symptom-only downstream patch, a newly introduced ordinary boundary mislabeled as preserve]
       rationale: Broad activation is useful only when every considered boundary receives an explicit disposition and executable falsifier.
     - clause_id: UNI-MINIMAL-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [ordinary candidate, relevant construction cards and dispositions, selected construction, alternatives considered, rejected route, material architectural delta, expected outcome, resource impact]
-      success_signals: [one signal one seam one smallest honest construction, every relevant card is selected rejected contradicted or unresolved, rejected alternatives are decision relevant]
-      failure_signals: [relevant card ignored, signal count evidence count diagnostic order or registry order manufactures a winner, categorical label without a code or test delta, widened seam without a law requirement]
+      required_artifacts: [ordinary candidate, declared comparison universe, one architectural axis and typed hole, relevant construction cards and dispositions, selected construction, alternatives considered, rejected route, material architectural delta, expected outcome, resource impact]
+      success_signals: [one owned boundary one axis one typed hole one smallest effective artifact, every relevant card is selected rejected contradicted or unresolved, dominance is evidenced relative to the declared universe, incomparable minima remain underdetermined]
+      failure_signals: [comparison universe omitted, relevant card ignored, signal count evidence count diagnostic order registry order or categorical sophistication manufactures a winner, incomparable candidates forced into one route, widened seam without a law requirement]
       rationale: The decision record must expose what changed because of Universalist rather than merely proving that the skill was present.
+    - clause_id: UNI-CONTEXT-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [context identifier or evidence fingerprint, requirement sources, required observations and equivalence, authority and policy, compatibility and migration constraints, effects and ordering, resource constraints, host enforcement capabilities, freshness or validity horizon]
+      success_signals: [correctness claims are explicitly relative to an attributed current context, host capability bounds claim strength, freshness and authority changes invalidate the proof lease]
+      failure_signals: [correctness claimed without an attributed context, static enforcement claimed beyond host capabilities, authority compatibility effects resources or freshness omitted, stale context treated as current]
+      rationale: Context-relative correctness is valid only while its attributed requirements capabilities and freshness horizon remain current.
+    - clause_id: UNI-ARTIFACT-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL]
+      prohibited_routes: []
+      required_artifacts: [Boundary Artifact Contract, boundary owner and requirements discharged, representation or carrier, applicable constructors eliminators compositions and interpreter or projection or handler, required observations, compatibility and migration, bypass prevention, resource bound, claim strength, artifact-specific rationale for every inapplicable surface]
+      success_signals: [the selected direction lowers into one repository-native artifact, public construction composition and interpretation preserve the current requirements, inapplicable surfaces are explicit and justified]
+      failure_signals: [theorem nomination treated as final architecture, ceremonial constructor eliminator composition or interpreter invented, inapplicable field left blank or unexplained, bypass path remains unowned, claim strength exceeds the effective lowering]
+      rationale: A theorem card nominates a direction; architecture exists only after an honest repository-native lowering with applicable surfaces and bypass policy.
+    - clause_id: UNI-ENFORCEMENT-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [enforcement matrix, one semantic owner and one primary disposition per requirement with status enforced residual or obstructed, semantic authority and primary locus, derived guard loci with shared-rule conformance when present, positive witness and failure behavior, residual owner and check time, invalidation triggers and proof lease]
+      success_signals: [every requirement has one semantic authority and one primary disposition as enforced residual or obstructed, derived guards preserve the same rule without becoming competing owners, residuals and invalidators have explicit owners and actions]
+      failure_signals: [orphan requirement, competing semantic authorities, redundant guard treated as independent policy, derived guard lacks conformance or drift witness, residual lacks owner or check time, proof lease lacks invalidation triggers]
+      rationale: Single semantic authority prevents policy drift while compatible derived guards preserve defense in depth.
     - clause_id: UNI-MECHANICS-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
@@ -69,9 +93,9 @@ skill_decision_contract:
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [one ledger-addressed Universalist plan, one root SDR-v1 receipt, plan-bound artifact state, worker references to the root decision id]
-      success_signals: [exactly one root receipt per consequential changed seam, independent axis analysis shares the root seam decision unless it becomes a genuinely distinct changed seam]
-      failure_signals: [duplicate worker receipts, one receipt spans unrelated seams, receipt emitted from a static example]
+      required_artifacts: [one ledger-addressed Universalist plan, one root SDR-v1 receipt, applicable clause refs covering the selected route, current Seq contract fingerprint, plan-bound artifact state, worker references to the root decision id]
+      success_signals: [exactly one root receipt per consequential changed seam, receipt clause refs cover every applicable current policy clause, receipt fingerprint matches the validated contract snapshot, independent axis analysis shares the root seam decision unless it becomes a genuinely distinct changed seam]
+      failure_signals: [duplicate worker receipts, applicable policy clause omitted, missing or stale contract fingerprint, one receipt spans unrelated seams, receipt emitted from a static example]
       rationale: Root-scoped receipts preserve attribution without multiplying one architectural decision across collaborators.
   instrumentation:
     decision_receipt: required

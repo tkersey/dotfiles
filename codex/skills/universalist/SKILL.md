@@ -176,7 +176,7 @@ The registry's `universal.role: emitter` means that a selected artifact maps coh
 
 ## Boundary Artifact Contract
 
-A selected direction is not yet architecture. Lower it into one repository-native **Boundary Artifact Contract**:
+A selected direction is not yet architecture. Lower it into one repository-native **Boundary Artifact Contract**. Complete every applicable field. When the artifact kind has no honest constructor, eliminator, composition, or interpreter surface, record `not applicable` with an artifact-specific rationale instead of inventing ceremonial structure:
 
 ```text
 Context identifier / proof lease:
@@ -215,7 +215,7 @@ One explicit interpreter, projection, serializer, compiler, handler, or renderer
 
 ## Enforcement allocation
 
-Every requirement must be discharged exactly once at the strongest honest locus the host permits:
+Every requirement must have exactly one semantic owner and one primary disposition at the strongest honest locus the host permits: enforced, retained as a residual, or proved obstructed.
 
 ```text
 representation / type
@@ -229,15 +229,17 @@ residual obligation
 obstruction
 ```
 
-Prefer structural enforcement, but do not duplicate the same authority across layers. When static enforcement is impossible, centralize the runtime check at the earliest boundary that owns the evidence needed to decide it.
+Prefer structural enforcement. Additional guards are allowed when they are explicitly derived from the same semantic authority, preserve the same acceptance rule, have named failure behavior, and carry a conformance or drift witness. They provide defense in depth; they do not become competing owners. When static enforcement is impossible, centralize the primary runtime decision at the earliest boundary that owns the evidence needed to decide it.
 
 An enforcement matrix is complete only when every current requirement maps to:
 
 ```text
-owner
-enforcement locus
+semantic owner / authority
+primary enforcement locus
+derived guard loci, if any
 positive witness
 failure behavior
+conformance / drift witness
 residual status
 invalidation trigger
 ```
@@ -254,7 +256,7 @@ A context-relative boundary artifact must satisfy the laws applicable to its sea
 4. **Composition closure** — lawful composition stays inside the valid state space.
 5. **Composition admissibility** — no illegal composition enters through a public path.
 6. **Interpretation preservation** — lowering agrees with required semantics and observations.
-7. **Enforcement completeness** — every requirement has one owner and one enforcement or residual locus.
+7. **Enforcement completeness** — every requirement has one semantic owner and one primary disposition—enforced, residual, or obstructed; any derived guards trace to that authority and preserve its rule.
 8. **Bypass exclusion** — unchecked construction, composition, or interpretation paths are absent or explicitly primitive.
 9. **Effectivity** — construction, checking, normalization, interpretation, and invalidation fit the resource model.
 10. **Context validity** — the proof lease remains valid under the recorded context and invalidation policy.
@@ -422,7 +424,7 @@ ledger --source universalist path --repo PROJECT_ROOT --id PLAN_ID
 ledger --source universalist latest --repo PROJECT_ROOT
 ```
 
-Before mutation, write the ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, and falsifier into the plan.
+Before mutation, write the current-context contract, ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract with explicit applicability rationales, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, and falsifier into the plan.
 
 After root adjudication emit exactly one receipt:
 
@@ -430,6 +432,13 @@ After root adjudication emit exactly one receipt:
 ledger --source universalist emit \
   --plan PLAN_PATH \
   --contract /path/to/universalist/references/decision-contract.yaml \
+  --clause-ref UNI-DISPOSITION-001 \
+  --clause-ref UNI-MINIMAL-001 \
+  --clause-ref UNI-CONTEXT-001 \
+  --clause-ref UNI-ARTIFACT-001 \
+  --clause-ref UNI-ENFORCEMENT-001 \
+  --clause-ref UNI-MECHANICS-001 \
+  --clause-ref UNI-ROOT-001 \
   --question "Which context-relative boundary artifact owns this seam?" \
   --selected-route UNI-ORDINARY \
   --rejected-route UNI-CANONICAL \
@@ -443,7 +452,9 @@ ledger --source universalist emit \
   --write-plan
 ```
 
-Ledger owns plan identity, addressing, receipt construction, validation, and atomic append. Universalist owns architecture policy. The root agent alone selects the route and authorizes mutation.
+Pass every applicable clause explicitly so receipt coverage does not depend on Ledger's compatibility defaults. `UNI-PRESERVE`, `UNI-ORDINARY`, and `UNI-CANONICAL` use the seven clauses above. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`.
+
+Ledger owns plan identity, addressing, receipt construction, validation, and atomic append. Universalist owns architecture policy. `references/decision-contract.yaml` is the machine-readable authority for consequential triggers, routes, clauses, and required decision evidence; this file supplies their operational semantics. Change the skill, contract, and plan template together when that policy changes. Seq validates contract structure and fingerprinting, not prose-to-contract semantic equivalence. The root agent alone selects the route and authorizes mutation.
 
 ## Decision observability
 
@@ -452,18 +463,21 @@ A route is consequential only when at least two plausible routes materially diff
 Consequential decisions require:
 
 ```text
+current-context contract
 ordinary candidate
 comparison universe
 one axis and typed hole
 relevant cards and dispositions
-Boundary Artifact Contract
+Boundary Artifact Contract with applicability rationales
 material delta
 selected and rejected routes
 law and falsifier
 resource impact
+enforcement matrix
 residual obligations
 invalidation triggers / proof lease
 one root SDR-v1 receipt
+applicable SKDC clause refs
 ```
 
 Routine seams, ceremonial activation, and uncontested implementation details use the compact boundary disposition only.
@@ -490,7 +504,7 @@ A card's legacy route hint never determines this choice.
 - **Track H — Category Pivot:** move one hard operation to a world where it is explicit, then transport it back.
 - **Track I — Effective universal substrate:** design a whole capability with concrete primitives, recursion/partiality, effects, state, observations, and resources.
 
-Every track lowers to the same Boundary Artifact Contract where a code boundary is changed.
+Every track lowers to the applicable profile of the same Boundary Artifact Contract where a code boundary is changed; inapplicable surfaces require a concrete rationale rather than placeholder architecture.
 
 ## Team mode
 

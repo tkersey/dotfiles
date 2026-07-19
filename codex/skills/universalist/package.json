@@ -1,7 +1,7 @@
 {
   "name": "universalist",
-  "version": "17.1.0",
-  "description": "Boundary-triggered architecture workflow with 55 evidence-bound construction cards and native Ledger decision observability.",
+  "version": "17.2.0",
+  "description": "Context-relative boundary-artifact workflow with 55 evidence-bound construction cards and native Seq/Ledger decision binding.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true,
@@ -13,6 +13,6 @@
   "derived_mechanics": true,
   "decision_receipts": "consequential_only",
   "runtime_scripts": 0,
-  "tests_shipped": true,
-  "validation_surface": "unit-contract-and-skill-validation"
+  "tests_shipped": false,
+  "validation_surface": "seq-skdc-and-ledger-receipt-binding"
 }

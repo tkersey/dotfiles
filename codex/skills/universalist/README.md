@@ -1,27 +1,24 @@
-# Universalist 17.1.0
+# Universalist 17.2.0
 
 Universalist is a boundary-triggered architecture workflow. It keeps one operating discipline:
 
-> one signal, one seam, one smallest honest construction
+> one owned boundary, one current context, one smallest effective artifact
 
 It uses category theory when that changes the artifact, law, or proof—not as decorative vocabulary and not through skill-local executables.
 
 ## Install and validate
 
-Place the complete tree at `codex/skills/universalist/`. The skill has no runtime scripts.
+Place the complete tree at `codex/skills/universalist/`. The skill has no runtime scripts and ships no skill-local executable tests.
 
 From the repository root:
 
 ```bash
-uv run --with pyyaml -- python3 -m unittest discover \
-  -s codex/skills/universalist/tests -p 'test_*.py'
 seq skill-contract validate \
   --file codex/skills/universalist/references/decision-contract.yaml \
   --format json
-uv run --with pyyaml -- python3 \
-  codex/skills/.system/skill-creator/scripts/quick_validate.py \
-  codex/skills/universalist
 ```
+
+Seq validates the `SKDC-v1` structure and computes the contract fingerprint used by Ledger receipts. It does not compare prose in `SKILL.md` with the contract. `references/decision-contract.yaml` is the machine-readable authority for consequential triggers, routes, clauses, and required evidence; update it together with `SKILL.md` and `templates/universalist-plan.md` whenever that policy changes.
 
 ## Use
 
@@ -42,11 +39,19 @@ Law:
 Falsifier:
 ```
 
-Use ordinary repository-native types, adapters, handlers, interpreters, and tests when they make the seam exact. Escalate only when a stronger construction materially changes persistent behavior, authority, compatibility, migration, representable states, legal composition, effects, locality, information flow, proof, or resources.
+Use ordinary repository-native types, adapters, handlers, interpreters, and tests when they make the seam exact. Escalate only when a stronger construction materially changes persistent behavior, authority, compatibility, migration, enforcement, invalidation, representable states, legal composition, effects, locality, information flow, proof, or resources.
+
+## Context-relative artifact contract
+
+For every consequential seam, record the attributed current context, comparison universe, one architectural axis and typed hole, Boundary Artifact Contract, enforcement matrix, residual obligations, and invalidation triggers.
+
+Every requirement has one semantic owner and one primary disposition: enforced, retained as a residual, or proved obstructed. Compatible derived guards may provide defense in depth when they preserve the same rule, declare failure behavior, and carry a conformance or drift witness. They do not become competing authorities.
+
+Complete only the Boundary Artifact Contract surfaces that honestly apply to the artifact kind. Mark an inapplicable constructor, eliminator, composition, or interpreter surface as `not applicable` with a concrete rationale; do not invent placeholder architecture.
 
 ## Construction cards
 
-The 55 YAML cards in `references/universal-constructions/` are the active architectural decision table. The registry at `references/universal-construction-registry.yaml` supplies their axes, signals, prerequisites, routes, laws, falsifiers, proof profiles, and theory references.
+The 55 YAML cards in `references/universal-constructions/` are evidence-bound theorem nominations, not route authority. The registry at `references/universal-construction-registry.yaml` supplies their axes, signals, prerequisites, compatibility hints, laws, falsifiers, proof profiles, and theory references.
 
 For a consequential choice:
 
@@ -65,7 +70,7 @@ The registry value `universal.role: emitter` describes the categorical direction
 
 ## Consequential decision receipts
 
-A decision is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, or proof obligations. Routine seams, ceremonial activation, and uncontested choices use the compact boundary disposition without a plan or receipt.
+A decision is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations. Routine seams, ceremonial activation, and uncontested choices use the compact boundary disposition without a plan or receipt.
 
 Before the first Ledger command, load `$ledger` and complete `$ledger ensure` once. Then use native Ledger directly. Universalist requires Ledger 0.10.6 or newer and Skills Seq 0.3.52 or newer.
 
@@ -77,6 +82,13 @@ ledger --source universalist create \
 ledger --source universalist emit \
   --plan /path/to/.ledger/universalist/plan-PLAN_ID.md \
   --contract /path/to/universalist/references/decision-contract.yaml \
+  --clause-ref UNI-DISPOSITION-001 \
+  --clause-ref UNI-MINIMAL-001 \
+  --clause-ref UNI-CONTEXT-001 \
+  --clause-ref UNI-ARTIFACT-001 \
+  --clause-ref UNI-ENFORCEMENT-001 \
+  --clause-ref UNI-MECHANICS-001 \
+  --clause-ref UNI-ROOT-001 \
   --question "Which construction owns this seam?" \
   --selected-route UNI-ORDINARY \
   --rejected-route UNI-CANONICAL \
@@ -90,7 +102,7 @@ ledger --source universalist emit \
   --write-plan
 ```
 
-Ledger owns plan identity, address resolution, receipt construction, validation, and atomic append. Universalist owns the decision policy and Markdown fields.
+Pass every applicable clause explicitly. For `UNI-OBSTRUCT`, replace `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`. Ledger owns plan identity, address resolution, receipt construction, validation, and atomic append. Universalist owns the decision policy and Markdown fields. A receipt proves the exact contract version and clause set used for the decision; it does not prove that the policy text is semantically correct.
 
 ## Tracks
 
