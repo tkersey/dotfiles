@@ -1,0 +1,244 @@
+constructions:
+- id: joint_aggregate
+  expert_name: Product
+  public_name: joint data aggregate
+  route: UNI-ORDINARY
+  priority: 10
+  moves:
+  - constrain
+  signals:
+  - independent-data
+  requires:
+  - independent_components
+  emits:
+  - record-or-struct
+  laws:
+  - each projection recovers its component
+  - construction and projection round-trip
+  falsifiers:
+  - a component cannot be recovered
+  fallback: plain record
+  universal:
+    role: receiver
+    competitors: every admissible producer satisfying the required equations
+    mediator: one comparison path from each producer into the selected owner
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: exclusive_cases
+  expert_name: Coproduct
+  public_name: explicit exclusive-state model
+  route: UNI-ORDINARY
+  priority: 10
+  moves:
+  - glue
+  signals:
+  - exclusive-cases
+  - invalid-state-matrix
+  requires:
+  - cases_are_exclusive
+  emits:
+  - tagged-union-or-enum
+  laws:
+  - elimination is exhaustive
+  - invalid mixtures are unrepresentable
+  falsifiers:
+  - an impossible case combination is accepted
+  fallback: validated legacy flags
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated
+      artifact
+    mediator: one comparison path from the selected artifact into each compatible
+      consumer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: validated_subtype
+  expert_name: Equalizer / refined type
+  public_name: validated value object
+  route: UNI-ORDINARY
+  priority: 12
+  moves:
+  - constrain
+  signals:
+  - stable-predicate
+  - repeated-validation
+  requires:
+  - predicate_is_stable
+  emits:
+  - checked-constructor
+  laws:
+  - valid values are accepted
+  - invalid values are rejected
+  - normalization is idempotent
+  falsifiers:
+  - an invalid value crosses the owner boundary
+  fallback: boundary validator
+  universal:
+    role: receiver
+    competitors: every admissible producer satisfying the required equations
+    mediator: one comparison path from each producer into the selected owner
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: compatibility_object
+  expert_name: Pullback
+  public_name: owned compatibility object
+  route: UNI-ORDINARY
+  priority: 14
+  moves:
+  - constrain
+  signals:
+  - shared-observation-agreement
+  - shared-key-agreement
+  requires:
+  - shared_observation
+  - agreement_is_witnessable
+  - owner_can_be_opaque
+  emits:
+  - checked-aggregate-or-join-witness
+  laws:
+  - shared observations agree
+  - both projections are preserved
+  - every compatible producer factors through the owner
+  falsifiers:
+  - a mismatch is accepted
+  - an unchecked pair bypasses the owner
+  fallback: checked pair
+  universal:
+    role: receiver
+    competitors: every compatible source pair satisfying the shared observation agreement
+    mediator: one owner-controlled construction path from each compatible pair
+    canonicality: the path is unique up to owner normalization while both source projections
+      remain observable
+    effectivity: agreement is computable or supplied by a verifiable witness
+- id: canonical_quotient
+  expert_name: Coequalizer / quotient
+  public_name: canonical normalized representation
+  route: UNI-ORDINARY
+  priority: 18
+  moves:
+  - normalize
+  signals:
+  - redundant-representations
+  - equivalent-presentations
+  requires:
+  - equivalence_relation
+  - observable_distinctions_declared
+  emits:
+  - normal-form-or-canonical-id
+  laws:
+  - equivalent presentations normalize together
+  - normalization respects all sanctioned observations
+  falsifiers:
+  - two observation-distinct values collide
+  fallback: explicit normalization helper
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated
+      artifact
+    mediator: one comparison path from the selected artifact into each compatible
+      consumer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: canonical_integration
+  expert_name: Pushout
+  public_name: canonical overlap-aware integration
+  route: UNI-CANONICAL
+  priority: 30
+  moves:
+  - glue
+  - normalize
+  signals:
+  - explicit-overlap-integration
+  - schema-merge
+  requires:
+  - explicit_overlap
+  - source_injections
+  - conflict_policy
+  emits:
+  - integrated-model-or-schema
+  laws:
+  - source injections agree on overlap
+  - non-overlap and provenance survive
+  - compatible consumers factor through the integration
+  falsifiers:
+  - unrelated entities are identified
+  - a conflict is silently erased
+  fallback: named merge with provenance
+  universal:
+    role: emitter
+    competitors: every pair of sources and downstream consumers agreeing on the declared
+      overlap
+    mediator: source injections and one integrated artifact mediate all compatible
+      consumers
+    canonicality: only declared overlap is identified; canonical IDs or normalization
+      remove competing merge meanings
+    effectivity: conflict detection, provenance retention, and normalization fit the
+      integration budget
+- id: safe_graph_rewrite
+  expert_name: Pushout complement / double pushout
+  public_name: validated delete-preserve-add rewrite
+  route: UNI-CANONICAL
+  priority: 35
+  moves:
+  - glue
+  - obstruct
+  signals:
+  - delete-preserve-add-rewrite
+  - graph-rewrite
+  requires:
+  - preserved_interface
+  - match_is_typed
+  emits:
+  - rewrite-rule-and-trace
+  laws:
+  - preserved interface remains unchanged
+  - deletions and additions are exact
+  falsifiers:
+  - dangling reference
+  - forbidden identification
+  fallback: transactional rewrite with explicit checks
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated
+      artifact
+    mediator: one comparison path from the selected artifact into each compatible
+      consumer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: supplied_behavior
+  expert_name: Exponential
+  public_name: supplied strategy boundary
+  route: UNI-ORDINARY
+  priority: 15
+  moves:
+  - declare
+  signals:
+  - branchy-policy
+  - supplied-behavior
+  requires:
+  - behavior_is_configurable
+  emits:
+  - strategy-or-function
+  laws:
+  - evaluation agrees with prior branch fixtures
+  falsifiers:
+  - strategy changes an undeclared observation
+  fallback: named strategy interface
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model

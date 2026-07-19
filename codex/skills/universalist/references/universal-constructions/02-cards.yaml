@@ -1,0 +1,235 @@
+constructions:
+- id: generated_language
+  expert_name: Free construction / initial algebra
+  public_name: generated operation language
+  route: UNI-ORDINARY
+  priority: 20
+  moves:
+  - generate
+  signals:
+  - syntax-execution-mix
+  - operations-need-ir
+  requires:
+  - operation_vocabulary
+  emits:
+  - ast-or-command-ir
+  laws:
+  - every constructor has semantics
+  - any operation-preserving interpreter is determined by constructors
+  falsifiers:
+  - required operation is not representable
+  - unsupported operation is representable
+  fallback: explicit enum plus interpreter
+  universal:
+    role: emitter
+    competitors: every implementation of the declared primitive operations
+    mediator: one total interpreter from the generated syntax into each implementation
+    canonicality: the interpreter is determined by the constructors and declared equations
+    effectivity: syntax, traversal, and interpretation have finite or explicitly recursive
+      representations
+- id: generated_effect_program
+  expert_name: Algebraic effects / free effect syntax
+  public_name: operation program with explicit handlers
+  route: UNI-CANONICAL
+  priority: 36
+  moves:
+  - generate
+  - transport
+  signals:
+  - multiple-effect-handlers
+  - effect-drift
+  requires:
+  - operation_vocabulary
+  - handler_observations
+  emits:
+  - operation-ir-and-handlers
+  laws:
+  - every operation has a handler
+  - handlers agree on declared observations
+  falsifiers:
+  - an operation is unhandled
+  - handlers disagree without an explicit law
+  fallback: explicit command interface
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated
+      artifact
+    mediator: one comparison path from the selected artifact into each compatible
+      consumer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: value_dependent_program
+  expert_name: Monad / endofunctor composition
+  public_name: value-dependent program sequence
+  route: UNI-ORDINARY
+  priority: 20
+  moves:
+  - compose
+  signals:
+  - value-dependent-sequencing
+  requires:
+  - later_shape_depends_on_result
+  emits:
+  - bindable-program-ir
+  laws:
+  - bind preserves interpreter semantics
+  falsifiers:
+  - a later operation is chosen before the required value exists
+  fallback: ordinary sequential function
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: static_program_plan
+  expert_name: Free applicative
+  public_name: statically inspectable program plan
+  route: UNI-CANONICAL
+  priority: 32
+  moves:
+  - generate
+  - compose
+  signals:
+  - static-computation-shape
+  - multiple-static-interpreters
+  requires:
+  - shape_known_before_results
+  emits:
+  - static-plan-ir
+  laws:
+  - analysis and execution agree on declared structure
+  - unit and static combination laws hold
+  falsifiers:
+  - a later operation depends on an earlier value
+  - static structure is used to infer effect commutativity
+  fallback: explicit list or tree of operations
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: coherent_state_machine
+  expert_name: Behavioral coalgebra
+  public_name: observable transition system
+  route: UNI-ORDINARY
+  priority: 18
+  moves:
+  - observe
+  - compose
+  signals:
+  - ongoing-behavior
+  - state-machine-drift
+  requires:
+  - transition_and_observation
+  emits:
+  - step-and-observe
+  laws:
+  - expected traces are reproduced
+  - observationally equivalent states remain equivalent
+  falsifiers:
+  - invalid transition is accepted
+  - claimed-equivalent states have different observations
+  fallback: explicit state machine
+  universal:
+    role: observation
+    competitors: every behavior distinguishable by the sanctioned observations or
+      traces
+    mediator: one observation path through the selected vocabulary or observer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: observation_vocabulary
+  expert_name: Yoneda
+  public_name: first-class observation vocabulary
+  route: UNI-CANONICAL
+  priority: 34
+  moves:
+  - observe
+  signals:
+  - projection-sprawl
+  - duplicated-observations
+  requires:
+  - sanctioned_observations
+  emits:
+  - observation-ir-and-runner
+  laws:
+  - representation changes preserve every sanctioned observation
+  falsifiers:
+  - an allowed observation distinguishes values that were collapsed
+  fallback: central projection service
+  universal:
+    role: observation
+    competitors: every behavior distinguishable by the sanctioned observations or
+      traces
+    mediator: one observation path through the selected vocabulary or observer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: deferred_generation_path
+  expert_name: Coyoneda
+  public_name: payload with deferred lowering path
+  route: UNI-CANONICAL
+  priority: 34
+  moves:
+  - transport
+  signals:
+  - generated-provenance-loss
+  - early-mapping
+  requires:
+  - payload_and_path
+  emits:
+  - generated-payload-path-ir
+  laws:
+  - lowering equals direct interpretation
+  - path provenance survives
+  falsifiers:
+  - two paths with different observable provenance are collapsed
+  fallback: payload plus explicit converter
+  universal:
+    role: transport
+    competitors: every compatible path that extends, restricts, lowers, or repackages
+      the source behavior
+    mediator: one observation-preserving comparison through the selected transport
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: first_order_behavior_ir
+  expert_name: Defunctionalization
+  public_name: first-order boundary behavior IR
+  route: UNI-ORDINARY
+  priority: 20
+  moves:
+  - generate
+  signals:
+  - callback-crosses-boundary
+  - opaque-function-boundary
+  requires:
+  - finite_or_effective_cases
+  emits:
+  - case-ir-and-apply
+  laws:
+  - encoded behavior agrees with the original callback
+  falsifiers:
+  - a callback case cannot be encoded
+  - captured authority is lost
+  fallback: named callback registry
+  universal:
+    role: transport
+    competitors: every compatible path that extends, restricts, lowers, or repackages
+      the source behavior
+    mediator: one observation-preserving comparison through the selected transport
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model

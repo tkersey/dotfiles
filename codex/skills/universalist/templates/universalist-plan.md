@@ -2,9 +2,15 @@
 
 ## Track:
 ## Signal:
+## Ordinary candidate:
+## Universal shadow:
+## Material architectural delta:
 ## Construction:
 ## Canonical boundary artifact:
+## Universal witness / mediator:
 ## Worlds / boundaries inventory:
+## Admissible alternatives / comparison maps:
+## Observations / equivalence:
 ## Boundary kind:
 ## Pullback / pushout square:
 ## Spatial geometry / halo:
@@ -12,6 +18,8 @@
 ## Description composition:
 ## Context action / Tambara module:
 ## Boundary law:
+## Falsifier / negative witness:
+## Effectivity / resource bound:
 ## Freyd/AFT boundary diagnostic:
 ## Composition Certificate:
 ## Boundary Normal Form status:

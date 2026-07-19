@@ -1,0 +1,259 @@
+constructions:
+- id: same_index_product
+  expert_name: Pointwise / Hadamard product
+  public_name: same-index description product
+  route: UNI-ORDINARY
+  priority: 16
+  moves:
+  - compose
+  signals:
+  - same-index-descriptions
+  requires:
+  - shared_index
+  emits:
+  - pointwise-map-or-pair
+  laws:
+  - same-index interpretation agrees
+  - no decomposition search occurs
+  falsifiers:
+  - descriptions at different indices are combined silently
+  fallback: ordinary map zip
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: decomposition_product
+  expert_name: Day convolution
+  public_name: all-decompositions description product
+  route: UNI-CANONICAL
+  priority: 45
+  moves:
+  - compose
+  - glue
+  - normalize
+  signals:
+  - indexed-decomposition
+  - graded-combination
+  requires:
+  - index_world
+  - index_tensor
+  - index_unit
+  - decomposition_enumerator
+  - quotient_policy
+  - effective_bound
+  emits:
+  - sparse-indexed-family-and-normalizer
+  laws:
+  - representables preserve tensor
+  - every legal decomposition contributes
+  - interpretation preserves combination
+  falsifiers:
+  - legal decomposition omitted
+  - illegal decomposition admitted
+  - observable derivations collide
+  fallback: explicit bounded decomposition loop
+  universal:
+    role: composition
+    competitors: every target description assembled from legal decompositions of the
+      target index
+    mediator: each legal decomposition contributes through the declared aggregation
+      and normalization path
+    canonicality: coherent reindexings identify exactly equivalent presentations and
+      preserve observable provenance
+    effectivity: decomposition enumeration, aggregation, quotienting, and invalidation
+      are bounded or explicitly approximated
+- id: witnessed_partial_product
+  expert_name: Promonoidal convolution
+  public_name: witnessed partial description product
+  route: UNI-CANONICAL
+  priority: 44
+  moves:
+  - compose
+  - glue
+  signals:
+  - partial-index-composition
+  - resource-splitting
+  requires:
+  - composition_kernel
+  - admissibility_witness
+  - effective_bound
+  emits:
+  - witnessed-composite-ir
+  laws:
+  - every composite carries a legal witness
+  - incompatible pairs fail closed
+  falsifiers:
+  - invalid pair accepted
+  - legal witness omitted
+  fallback: checked partial combine
+  universal:
+    role: composition
+    competitors: every composite supported by an admissibility witness in the partial
+      composition kernel
+    mediator: the witness carries each legal pair into the composite representation
+    canonicality: witnesses normalize only under the declared observational equivalence
+    effectivity: kernel queries and witness/provenance storage remain within the resource
+      bound
+- id: recursive_substitution
+  expert_name: Operadic substitution / plethysm
+  public_name: recursive typed insertion
+  route: UNI-CANONICAL
+  priority: 40
+  moves:
+  - compose
+  signals:
+  - recursive-typed-insertion
+  requires:
+  - typed_slots
+  - substitution_semantics
+  emits:
+  - substitution-ir
+  laws:
+  - interpretation preserves substitution
+  falsifiers:
+  - a recursive insertion violates a slot type
+  fallback: recursive AST transform
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: context_stable_capability
+  expert_name: Tambara module
+  public_name: context-stable generalized capability
+  route: UNI-CANONICAL
+  priority: 46
+  moves:
+  - frame
+  signals:
+  - shared-context-framing
+  - repeated-context-wrappers
+  requires:
+  - ambient_context_world
+  - context_tensor_or_action
+  - source_action
+  - target_action
+  - underlying_profunctor
+  - frame_operation
+  - effective_context_representation
+  emits:
+  - typed-frame-api
+  laws:
+  - empty frame is identity
+  - nested framing equals combined framing
+  - interpretation preserves framing
+  falsifiers:
+  - framing changes an observation
+  - framing widens authority or reorders effects
+  fallback: ordinary context parameter
+  universal:
+    role: framing
+    competitors: every legal shared-context frame of the local generalized capability
+    mediator: one frame operation transports the capability through each context action
+    canonicality: empty framing is identity and nested framing agrees with combined
+      framing up to observation
+    effectivity: the context family and residual representation are finite, generated,
+      indexed, or otherwise bounded
+- id: mixed_context_stable_capability
+  expert_name: Mixed Tambara module
+  public_name: mixed-endpoint context-stable capability
+  route: UNI-CANONICAL
+  priority: 47
+  moves:
+  - frame
+  signals:
+  - mixed-context-framing
+  requires:
+  - ambient_context_world
+  - source_action
+  - target_action
+  - underlying_profunctor
+  - frame_operation
+  emits:
+  - mixed-frame-api
+  laws:
+  - both endpoint actions cohere with framing
+  falsifiers:
+  - source and target context changes are conflated
+  fallback: two explicit adapters
+  universal:
+    role: framing
+    competitors: every legal context whose source and target actions may differ
+    mediator: one mixed frame operation transports the capability through both endpoint
+      actions
+    canonicality: source and target reindexing commute with framing under the declared
+      observations
+    effectivity: both actions and their index transport have an executable typed representation
+- id: residual_focus_ir
+  expert_name: Optic / residual coend
+  public_name: explicit residual focus-and-rebuild IR
+  route: UNI-CANONICAL
+  priority: 42
+  moves:
+  - frame
+  - normalize
+  signals:
+  - focus-residual-rebuild
+  - optic-drift
+  requires:
+  - decompose
+  - rebuild
+  - residual_equivalence
+  emits:
+  - residual-ir
+  laws:
+  - equivalent residual presentations normalize together
+  - interpretation agrees with direct behavior
+  falsifiers:
+  - residual identity leaks into observations
+  - domain optic laws fail
+  fallback: explicit getter and updater
+  universal:
+    role: framing
+    competitors: every legal context extension of the local capability
+    mediator: one coherent frame path for each supported context
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: generated_context_closure
+  expert_name: Free Tambara construction
+  public_name: generated closure under legal contexts
+  route: UNI-CANONICAL
+  priority: 50
+  moves:
+  - generate
+  - frame
+  - normalize
+  signals:
+  - close-under-all-contexts
+  requires:
+  - context_basis
+  - frame_operation
+  - effective_context_representation
+  emits:
+  - context-closed-capability-ir
+  laws:
+  - every supported frame is generated
+  - equivalent frames normalize together
+  falsifiers:
+  - a legal frame is missing
+  - context closure is unbounded
+  fallback: generated wrappers for known contexts
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated
+      artifact
+    mediator: one comparison path from the selected artifact into each compatible
+      consumer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model

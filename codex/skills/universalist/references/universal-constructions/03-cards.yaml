@@ -1,0 +1,228 @@
+constructions:
+- id: probe_presentation
+  expert_name: Codensity / dense-dual presentation
+  public_name: probe-based semantic presentation
+  route: UNI-CANONICAL
+  priority: 42
+  moves:
+  - observe
+  - normalize
+  signals:
+  - semantic-artifact-too-large
+  - probe-determined-semantics
+  requires:
+  - probe_family
+  - reconstruction_assumption
+  emits:
+  - probe-ir-and-reconstruction
+  laws:
+  - required observations factor through probes
+  - coherent probes reconstruct required semantics
+  falsifiers:
+  - a required observation is absent from the probes
+  fallback: direct semantic interface
+  universal:
+    role: presentation
+    competitors: every semantic artifact satisfying the required observation family
+    mediator: one effective representation/reconstruction path
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: sequential_composition
+  expert_name: Category
+  public_name: sequential typed composition
+  route: UNI-ORDINARY
+  priority: 8
+  moves:
+  - declare
+  - compose
+  signals:
+  - sequential-transformations
+  requires:
+  - identity_and_composition
+  emits:
+  - typed-pipeline
+  laws:
+  - identity and associativity hold
+  falsifiers:
+  - path grouping changes observations
+  fallback: ordinary function composition
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: side_by_side_composition
+  expert_name: Monoidal category
+  public_name: lawful side-by-side composition
+  route: UNI-CANONICAL
+  priority: 30
+  moves:
+  - compose
+  signals:
+  - independent-parallel-context
+  requires:
+  - tensor_and_unit
+  - lawful_interchange
+  emits:
+  - parallel-or-paired-composition-api
+  laws:
+  - unit and associativity hold
+  - interchange preserves observations
+  falsifiers:
+  - supposedly independent components interfere
+  fallback: explicit pair or batch
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: ordered_effect_boundary
+  expert_name: Freyd / premonoidal category
+  public_name: ordered pure/effect boundary
+  route: UNI-CANONICAL
+  priority: 32
+  moves:
+  - compose
+  signals:
+  - effect-order-sensitive
+  - pure-and-effectful-mixed
+  requires:
+  - pure_embedding
+  - evaluation_order
+  - noncommuting_witness
+  emits:
+  - pure-embedding-and-sequencer
+  laws:
+  - pure embedding preserves identity and composition
+  - reordering is allowed only with observational commutativity
+  falsifiers:
+  - a reversed effect pair changes state trace result or failure
+  fallback: explicit sequential effect pipeline
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: hierarchical_wiring_grammar
+  expert_name: Colored operad
+  public_name: typed hierarchical wiring grammar
+  route: UNI-CANONICAL
+  priority: 34
+  moves:
+  - generate
+  - compose
+  signals:
+  - typed-hierarchical-assembly
+  requires:
+  - port_types
+  - substitution_rules
+  emits:
+  - component-operation-ir
+  laws:
+  - interpretation preserves substitution
+  - forbidden wiring is rejected
+  falsifiers:
+  - an illegal port composition is accepted
+  fallback: typed builder API
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: multi_io_network
+  expert_name: PROP / properad
+  public_name: explicit multi-input multi-output network
+  route: UNI-CANONICAL
+  priority: 38
+  moves:
+  - compose
+  signals:
+  - multi-input-multi-output-network
+  requires:
+  - network_ports
+  - horizontal_and_vertical_composition
+  emits:
+  - network-ir
+  laws:
+  - network composition preserves declared semantics
+  falsifiers:
+  - product bundling loses an output distinction
+  fallback: graph of typed components
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: explicit_feedback
+  expert_name: Traced monoidal category
+  public_name: explicit feedback architecture
+  route: UNI-CANONICAL
+  priority: 38
+  moves:
+  - compose
+  signals:
+  - feedback-or-cycles
+  requires:
+  - feedback_semantics
+  - guardedness_or_resource_bound
+  emits:
+  - feedback-or-loop-ir
+  laws:
+  - feedback laws preserve declared observations
+  falsifiers:
+  - unguarded feedback diverges or duplicates effects
+  fallback: explicit state loop
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: resource_aware_composition
+  expert_name: Linear / graded / resource-sensitive category
+  public_name: resource-accounted composition
+  route: UNI-CANONICAL
+  priority: 34
+  moves:
+  - compose
+  - constrain
+  signals:
+  - consumable-resources
+  - graded-capabilities
+  requires:
+  - resource_accounting
+  - duplication_policy
+  emits:
+  - resource-witnessed-operation-ir
+  laws:
+  - resource use is conserved or explicitly transformed
+  falsifiers:
+  - a consumable capability is duplicated or discarded
+  fallback: explicit capability parameter
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model

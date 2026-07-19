@@ -1,0 +1,60 @@
+schema: universal-construction-registry/v1
+purpose: Use category theory as an internal optimizer. Emit repository-native architecture
+  and expose expert names only on request.
+plain_output_default: true
+material_dimensions:
+- owner
+- representable_states
+- legal_composition
+- information_flow
+- interpreter
+- construction_paths
+- proof
+- resources
+- existence
+- migration
+moves:
+  declare: Define admissible artifacts, transformations, observations, equivalence,
+    effects, authority, and resources.
+  constrain: Construct the most general artifact satisfying simultaneous equations
+    or agreement.
+  glue: Construct the freest integration that identifies only declared overlap.
+  generate: Construct the least syntax or structure closed under declared operations.
+  observe: Characterize an artifact by sanctioned observations, traces, probes, or
+    contexts.
+  transport: Extend, restrict, or migrate semantics coherently across a boundary.
+  realize: Find a concrete implementation behind a fixed projection or return an obstruction.
+  compose: Make legal sequencing, parallel context, wiring, decomposition, or feedback
+    explicit.
+  frame: Preserve a generalized capability when context is added around its endpoints.
+  localize: Represent objects together with coherent neighborhoods, restrictions,
+    and provenance.
+  normalize: Identify equivalent presentations without collapsing observable distinctions.
+  obstruct: Explain why no exact, canonical, representable, or effective solution
+    exists.
+universal_roles:
+  receiver: Every admissible competitor has a comparison path into the selected owner.
+  emitter: The selected artifact has a comparison path into every admissible consumer
+    or interpretation.
+  transport: Every compatible extension or restriction compares through the selected
+    transport.
+  realization: Every admissible implementation is compared through a fixed observation
+    or projection boundary.
+  observation: The selected observation surface distinguishes exactly the behavior
+    the contract permits.
+  composition: Every legal composite is represented and no illegal composite is admitted.
+  framing: Every legal context extension transports the capability coherently.
+  locality: Every required local restriction and local-to-global comparison is represented
+    coherently.
+  presentation: Every required semantic observation factors through the effective
+    representation.
+  obstruction: Every exact candidate violates a named prerequisite, observation, authority,
+    or resource bound.
+includes:
+- universal-constructions/01-cards.yaml
+- universal-constructions/02-cards.yaml
+- universal-constructions/03-cards.yaml
+- universal-constructions/04-cards.yaml
+- universal-constructions/05-cards.yaml
+- universal-constructions/06-cards.yaml
+- universal-constructions/07-cards.yaml

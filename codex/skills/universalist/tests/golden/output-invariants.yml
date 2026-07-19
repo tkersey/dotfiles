@@ -7,6 +7,18 @@ invariants:
   - name: consequential_route_requires_one_root_receipt
     when: "Universalist selects or preserves a route by rejecting a nearby alternative for a changed seam"
     required: ["ledger-addressed plan", "decision id", "selected route", "rejected route", "advanced mechanics disposition", "law", "falsifier", "one root SDR-v1 receipt"]
+  - name: universal_shadow_starts_with_boring_candidate
+    when: "Universalist evaluates a consequential architecture route"
+    required: ["Ordinary candidate", "Universal shadow", "Material architectural delta", "repository-native artifact"]
+  - name: categorical_name_without_material_delta_is_discarded
+    when: "the hidden categorical shadow changes no material architecture dimension"
+    required: ["advanced mechanics: none", "ordinary candidate retained", "no new categorical artifact"]
+  - name: universal_claim_requires_competitor_mediation
+    when: "a universal or canonical construction is claimed"
+    required: ["Admissible alternatives", "Existence", "Commutation", "Competitor mediation", "Canonicality or uniqueness up to", "Effective presentation", "Falsifier"]
+  - name: theory_is_hidden_by_default
+    when: "the user did not request categorical explanation"
+    required: ["plain engineering language", "internal construction key", "expert name omitted"]
   - name: track_d_requires_artifact
     when: "Track D"
     required: ["Canonical boundary artifact", "Law / proof signal", "Falsifier"]
@@ -58,9 +70,9 @@ invariants:
   - name: applicative_structure_does_not_imply_effect_commutativity
     when: "applicative or static effect description"
     required: ["Static computation shape", "Value-dependent countercase", "Freyd/resource owner", "No implicit parallelism", "Noncommuting witness"]
-  - name: spatial_convolution_requires_external_product_basis
+  - name: spatial_convolution_requires_shared_product_index
     when: "Day convolution of comonadic spatial worlds"
-    required: ["Left subbasis", "Right subbasis", "External-product patches", "Combined halos", "Label translation", "Continuous projections", "Effective product representation"]
+    required: ["Left subbasis", "Right subbasis", "Shared/product index world", "Tensor or promonoidal kernel", "External-product patches", "Density-Day comparison map", "Isomorphism or bounded-approximation status", "Combined halos", "Label translation", "Continuous projections", "Effective product representation"]
   - name: tambara_module_requires_real_context_action
     when: "Tambara module or contextual morphism"
     required: ["Ambient context world", "Tensor/unit or dependent action", "Source action", "Target action", "Underlying profunctor", "Frame operation", "Interpretation law", "Falsifier"]

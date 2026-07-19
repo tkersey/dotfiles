@@ -1,0 +1,245 @@
+constructions:
+- id: all_context_observation
+  expert_name: Cofree Tambara construction
+  public_name: coherent all-context observation
+  route: UNI-CANONICAL
+  priority: 50
+  moves:
+  - observe
+  - frame
+  signals:
+  - observe-under-all-contexts
+  requires:
+  - context_basis
+  - effective_context_representation
+  emits:
+  - symbolic-all-context-observer
+  laws:
+  - identity and nested context observations cohere
+  falsifiers:
+  - supported context omitted
+  - all-context representation is non-effective
+  fallback: explicit context matrix
+  universal:
+    role: observation
+    competitors: every behavior distinguishable by the sanctioned observations or
+      traces
+    mediator: one observation path through the selected vocabulary or observer
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: dependent_context_transport
+  expert_name: Dependent Tambara / double-category action
+  public_name: typed index-changing context transport
+  route: UNI-CANONICAL
+  priority: 52
+  moves:
+  - frame
+  - transport
+  signals:
+  - index-changing-context
+  requires:
+  - dependent_action
+  - typed_index_transport
+  - frame_operation
+  emits:
+  - dependent-frame-ir
+  laws:
+  - horizontal framing preserves indices
+  - invalid index transition is rejected
+  falsifiers:
+  - context indices are erased into dynamic tags
+  fallback: explicit indexed adapter
+  universal:
+    role: framing
+    competitors: every legal context extension of the local capability
+    mediator: one coherent frame path for each supported context
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: concrete_realizer_check
+  expert_name: Representability / module-functor diagnostic
+  public_name: concrete-realizer check
+  route: UNI-CANONICAL
+  priority: 52
+  moves:
+  - realize
+  - obstruct
+  signals:
+  - generalized-relation-needs-map
+  - representability-question
+  requires:
+  - generalized_capability
+  - observation_boundary
+  emits:
+  - realizer-or-obstruction
+  laws:
+  - representation round-trip holds when realizable
+  falsifiers:
+  - a lawful relation is treated as a function without evidence
+  fallback: explicit selection policy
+  universal:
+    role: realization
+    competitors: every admissible implementation satisfying the fixed projection or
+      observation boundary
+    mediator: one comparison between the selected realizer and each admissible implementation
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: situated_context
+  expert_name: Comonad as space / comonad coalgebra
+  public_name: coherently situated value model
+  route: UNI-CANONICAL
+  priority: 48
+  moves:
+  - localize
+  signals:
+  - semantic-locality
+  - nested-context
+  requires:
+  - points
+  - patches
+  - center
+  - nested_neighborhood
+  - effective_halo
+  emits:
+  - situated-value-and-halo-api
+  laws:
+  - center extraction returns the point
+  - nested neighborhoods cohere
+  falsifiers:
+  - point survives while required locality is lost
+  fallback: labelled dependency graph
+  universal:
+    role: locality
+    competitors: every required local patch, restriction, and compatible local family
+    mediator: one locality-preserving restriction or gluing path
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: generated_locality
+  expert_name: Density comonad
+  public_name: locality generated from patches
+  route: UNI-CANONICAL
+  priority: 52
+  moves:
+  - generate
+  - localize
+  signals:
+  - patches-generate-locality
+  - basis-question
+  requires:
+  - patch_vocabulary
+  - reconstruction_claim
+  - effective_halo
+  emits:
+  - subbasis-or-basis-index
+  laws:
+  - situated objects reconstruct from a basis or non-basis is explicit
+  falsifiers:
+  - example coverage is mistaken for reconstruction
+  fallback: bounded patch catalogue
+  universal:
+    role: locality
+    competitors: every situated object reconstructed from the declared local patch
+      vocabulary
+    mediator: patch observations assemble through the density/reconstruction map
+    canonicality: reconstruction is canonical up to the declared local observations
+      or is marked subbasis-only
+    effectivity: the patch basis, reconstruction, halo maintenance, and invalidation
+      are finite or bounded
+- id: effective_local_fact
+  expert_name: Halo / germ
+  public_name: effective local validity context
+  route: UNI-ORDINARY
+  priority: 24
+  moves:
+  - localize
+  signals:
+  - local-validity
+  - dependency-neighborhood
+  requires:
+  - point
+  - effective_halo
+  - restriction_rules
+  emits:
+  - labelled-halo-or-scoped-value
+  laws:
+  - restriction preserves local meaning
+  falsifiers:
+  - fact is used outside its validity neighborhood
+  fallback: scoped context object
+  universal:
+    role: locality
+    competitors: every required local patch, restriction, and compatible local family
+    mediator: one locality-preserving restriction or gluing path
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: locality_preserving_boundary
+  expert_name: Continuous comonadic map
+  public_name: locality-preserving boundary
+  route: UNI-CANONICAL
+  priority: 50
+  moves:
+  - localize
+  - transport
+  signals:
+  - locality-sensitive-boundary
+  requires:
+  - point_map
+  - halo_transport
+  - restriction_rules
+  - label_policy
+  emits:
+  - point-map-plus-context-transport
+  laws:
+  - required neighborhoods and labels are preserved
+  falsifiers:
+  - point value survives while authority evidence or provenance neighborhood is lost
+  fallback: point map plus explicit dependency copy
+  universal:
+    role: locality
+    competitors: every source point together with the neighborhood required by its
+      observations
+    mediator: the point map is accompanied by restriction- and label-preserving neighborhood
+      transport
+    canonicality: transport agrees with repeated restriction and preserves local/global
+      identity policy
+    effectivity: halo transport and invalidation stay within the declared fan-out
+      and freshness budget
+- id: usage_site
+  expert_name: Presheaf / site
+  public_name: explicit local-usage site
+  route: UNI-CANONICAL
+  priority: 44
+  moves:
+  - localize
+  - observe
+  signals:
+  - distributed-local-meanings
+  - usage-site
+  requires:
+  - patches
+  - restrictions
+  - overlaps
+  emits:
+  - usage-site-index
+  laws:
+  - restrictions compose and overlaps are explicit
+  falsifiers:
+  - a local meaning has no valid restriction path
+  fallback: call-site inventory
+  universal:
+    role: locality
+    competitors: every required local patch, restriction, and compatible local family
+    mediator: one locality-preserving restriction or gluing path
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model

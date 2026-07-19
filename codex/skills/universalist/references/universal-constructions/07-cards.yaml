@@ -1,0 +1,154 @@
+constructions:
+- id: coherent_observation_completion
+  expert_name: Right Kan extension
+  public_name: observation-determined compatibility facade
+  route: UNI-CANONICAL
+  priority: 42
+  moves:
+  - observe
+  - transport
+  signals:
+  - coherent-old-views
+  - observation-completion
+  requires:
+  - observation_family
+  - target_world
+  - effective_bound
+  emits:
+  - observation-vocabulary-and-facade
+  laws:
+  - overlapping observations commute
+  - the facade is determined by sanctioned observations
+  falsifiers:
+  - a required old observation is inconsistent or missing
+  fallback: explicit compatibility projections
+  universal:
+    role: transport
+    competitors: every compatible path that extends, restricts, lowers, or repackages
+      the source behavior
+    mediator: one observation-preserving comparison through the selected transport
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: implementation_realizer
+  expert_name: Kan lift
+  public_name: implementation realizer behind a fixed projection
+  route: UNI-CANONICAL
+  priority: 44
+  moves:
+  - realize
+  signals:
+  - public-behavior-determines-internals
+  - lift-shaped-boundary
+  requires:
+  - required_behavior
+  - implementation_world
+  - observation_projection
+  emits:
+  - realizer-and-projection
+  laws:
+  - projecting the realizer satisfies required behavior
+  falsifiers:
+  - required behavior cannot be represented behind the projection
+  fallback: explicit per-case implementation
+  universal:
+    role: realization
+    competitors: every internal implementation whose projection satisfies the required
+      public behavior
+    mediator: one realizer maps each public case into an implementation behind the
+      fixed projection
+    canonicality: competing realizers are compared by the declared public observations
+      and implementation obligations
+    effectivity: the realization search is constructive, bounded, generated from templates,
+      or returns an obstruction
+- id: canonical_builder_check
+  expert_name: Freyd/AFT-style free builder
+  public_name: canonical builder or projection obstruction
+  route: UNI-CANONICAL
+  priority: 48
+  moves:
+  - realize
+  - obstruct
+  signals:
+  - canonical-builder-question
+  - projection-may-be-lossy
+  requires:
+  - observation_projection
+  - implementation_constraints
+  - bounded_templates
+  emits:
+  - free-builder-or-obstruction
+  laws:
+  - projecting the free builder satisfies the requirement
+  falsifiers:
+  - the projection forgets evidence needed for a canonical builder
+  fallback: require explicit implementation obligations
+  universal:
+    role: realization
+    competitors: every implementation-side realization of the required observable
+      behavior
+    mediator: the proposed builder maps required behavior into an implementation that
+      projects back correctly
+    canonicality: the builder is free/canonical only when the projection preserves
+      the required constraint structure
+    effectivity: candidate templates form a bounded effective family; otherwise emit
+      an obstruction
+- id: derived_obligations
+  expert_name: Residual obligation
+  public_name: derived implementation obligations
+  route: UNI-ORDINARY
+  priority: 24
+  moves:
+  - realize
+  - constrain
+  signals:
+  - public-requirement-implies-checks
+  - missing-obligations
+  requires:
+  - public_requirement
+  - obligation_owner
+  emits:
+  - obligation-ir
+  laws:
+  - satisfying all obligations makes projection possible
+  falsifiers:
+  - omitting one obligation still passes
+  fallback: explicit validation checklist
+  universal:
+    role: realization
+    competitors: every admissible implementation satisfying the fixed projection or
+      observation boundary
+    mediator: one comparison between the selected realizer and each admissible implementation
+    canonicality: the comparison is unique up to the declared observations, equations,
+      and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the
+      declared resource model
+- id: semantic_obstruction
+  expert_name: Obstruction report
+  public_name: explicit architectural obstruction
+  route: UNI-OBSTRUCT
+  priority: 99
+  moves:
+  - obstruct
+  signals:
+  - no-effective-solution
+  - missing-evidence
+  - underdetermined-realization
+  requires: []
+  emits:
+  - typed-obstruction
+  laws:
+  - the missing evidence structure or resource bound is named and reproducible
+  falsifiers:
+  - the implementation silently invents a default
+  fallback: stop and request the missing contract
+  universal:
+    role: obstruction
+    competitors: every claimed exact, canonical, representable, or effective solution
+    mediator: the obstruction exhibits the prerequisite or observation each claimed
+      solution violates
+    canonicality: the failure is stable under the declared comparison maps rather
+      than an artifact of one implementation
+    effectivity: the counterexample or resource lower bound is executable or independently
+      checkable

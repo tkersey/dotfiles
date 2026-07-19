@@ -103,3 +103,12 @@ cases:
     expected: ["reject Tambara", "ordinary parameter", "no real action", "smallest honest construction"]
   - prompt: "Use this Tambara functor from equivariant homotopy theory to model transfer and norm maps."
     should_use_skill: false
+  - prompt: "Use category theory internally, but show me the smallest ordinary architecture unless the universal shadow materially improves it."
+    should_use_skill: true
+    expected: ["ordinary candidate", "universal shadow", "material architectural delta", "plain engineering output"]
+  - prompt: "The categorical shadow names a pullback, but it changes no owner, state, composition, proof, resource, or migration decision."
+    should_use_skill: true
+    expected: ["discard shadow", "advanced mechanics none", "retain ordinary candidate"]
+  - prompt: "The public behavior underdetermines authority and retry policy; do not invent a canonical implementation."
+    should_use_skill: true
+    expected: ["representability", "obstruction", "missing obligations", "no invented defaults"]

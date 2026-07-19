@@ -4,6 +4,12 @@
 
 ## Signal
 
+## Ordinary candidate
+
+## Universal shadow
+
+## Material architectural delta
+
 ## Construction
 
 ## Why this instead of nearby alternatives

@@ -1,8 +1,12 @@
 {
   "name": "universalist",
-  "version": "16.3.0",
-  "description": "Boundary-triggered Universal Architecture workflow for effective substrates, typed composition, locality, indexed descriptions, and context-stable morphisms.",
+  "version": "17.0.0",
+  "description": "Boundary-triggered proof-carrying architecture compiler with a hidden categorical optimizer.",
   "private": true,
   "unified_mechanics": true,
-  "custom_subagents": true
+  "custom_subagents": true,
+  "universal_problem_ir": true,
+  "plain_output_default": true,
+  "minimum_ledger_version": "0.10.4",
+  "minimum_seq_version": "0.3.51"
 }
