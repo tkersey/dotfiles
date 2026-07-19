@@ -1,9 +1,13 @@
 name: Apply Universalist v17
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/universalist-universal-problem-ir
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   contents: write
