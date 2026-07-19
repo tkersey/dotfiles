@@ -7,6 +7,8 @@ nickname_candidates = ["Counterexample", "Witness", "Skeptic"]
 developer_instructions = """
 Role: Attack the root-synthesized Effective Universal Architecture Certificate.
 
+Audit every construction card the root marked relevant. Reject a selected card when its signals, prerequisites, material delta, proof profile, or falsifier lack repository evidence; missing evidence remains unresolved rather than becoming an obstruction.
+
 Check:
 - computational-universality claims and effective representation;
 - category-theoretic claims versus engineering analogy;

@@ -1,8 +1,18 @@
 {
   "name": "universalist",
-  "version": "16.3.0",
-  "description": "Boundary-triggered Universal Architecture workflow for effective substrates, typed composition, locality, indexed descriptions, and context-stable morphisms.",
+  "version": "17.2.0",
+  "description": "Context-relative boundary-artifact workflow with 55 evidence-bound construction cards and native Seq/Ledger decision binding.",
   "private": true,
   "unified_mechanics": true,
-  "custom_subagents": true
+  "custom_subagents": true,
+  "registry_schema": "universal-construction-registry/v6",
+  "plain_output_default": true,
+  "minimum_ledger_version": "0.10.6",
+  "minimum_seq_version": "0.3.52",
+  "registry_cards": 55,
+  "derived_mechanics": true,
+  "decision_receipts": "consequential_only",
+  "runtime_scripts": 0,
+  "tests_shipped": false,
+  "validation_surface": "seq-skdc-and-ledger-receipt-binding"
 }

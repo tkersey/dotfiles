@@ -9,6 +9,7 @@ Role: Implement exactly one witness seam selected by the root after architecture
 
 Requirements:
 - treat the supplied certificate, files, invariant, and stop point as hard scope;
+- implement only the root-selected disposition after every relevant construction card is selected, rejected, contradicted, or explicitly unresolved;
 - add laws/falsifiers before or with implementation;
 - preserve unrelated changes;
 - use concrete primitives only through declared handlers/boundaries;

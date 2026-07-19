@@ -1,0 +1,406 @@
+schema: universal-construction-fragment/v6
+constructions:
+- id: locality_preserving_boundary
+  expert_name: Continuous comonadic map
+  public_name: locality-preserving boundary
+  route: UNI-CANONICAL
+  moves:
+  - localize
+  - transport
+  signals:
+  - locality-sensitive-boundary
+  requires:
+  - point_map
+  - halo_transport
+  - restriction_rules
+  - label_policy
+  emits:
+  - point-map-plus-context-transport
+  laws:
+  - required neighborhoods and labels are preserved
+  falsifiers:
+  - point value survives while authority evidence or provenance neighborhood is lost
+  fallback: point map plus explicit dependency copy
+  universal:
+    role: locality
+    competitors: every source point together with the neighborhood required by its observations
+    mediator: the point map is accompanied by restriction- and label-preserving neighborhood transport
+    canonicality: transport agrees with repeated restriction and preserves local/global identity policy
+    effectivity: halo transport and invalidation stay within the declared fan-out and freshness budget
+  selection_mode: selectable
+  diagnostic_order: 48
+  hole_kinds:
+  - locality
+  - map
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - migration
+  - proof
+  - resources
+  - locality
+  axes:
+  - locality
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - comonadic-spatiality-doctrine.md
+  - mechanics/comonads-as-spaces.md
+- id: usage_site
+  expert_name: Presheaf / site
+  public_name: explicit local-usage site
+  route: UNI-CANONICAL
+  moves:
+  - localize
+  - observe
+  signals:
+  - distributed-local-meanings
+  - usage-site
+  requires:
+  - patches
+  - restrictions
+  - overlaps
+  emits:
+  - usage-site-index
+  laws:
+  - restrictions compose and overlaps are explicit
+  falsifiers:
+  - a local meaning has no valid restriction path
+  fallback: call-site inventory
+  universal:
+    role: locality
+    competitors: every required local patch, restriction, and compatible local family
+    mediator: one locality-preserving restriction or gluing path
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 49
+  hole_kinds:
+  - locality
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - proof
+  - locality
+  axes:
+  - locality
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - possibility-sheafification.md
+  - mechanics/possibility-sheafification-mechanics.md
+- id: exact_global_abstraction
+  expert_name: Sheafification
+  public_name: canonical local-to-global abstraction
+  route: UNI-CANONICAL
+  moves:
+  - constrain
+  - glue
+  - normalize
+  signals:
+  - local-to-global-gluing
+  - inexact-abstraction
+  requires:
+  - usage_site
+  - overlap_compatibility
+  - global_equivalence
+  emits:
+  - exact-global-model
+  laws:
+  - compatible locals glue
+  - global glue is unique up to declared equivalence
+  - unsupported global states are rejected
+  falsifiers:
+  - local disagreement
+  - missing global case
+  - nonunique global representation
+  - invisible impossible state
+  fallback: refined model plus normalization
+  universal:
+    role: locality
+    competitors: every compatible family of local meanings over the declared usage site
+    mediator: compatible local sections glue into one global representation
+    canonicality: global glue is unique up to the intended quotient or normalization
+    effectivity: overlap checks, gluing, and normalization are executable over the declared cover or bounded approximation
+  selection_mode: selectable
+  diagnostic_order: 50
+  hole_kinds:
+  - object
+  - equivalence
+  - locality
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - information_flow
+  - construction_paths
+  - proof
+  - locality
+  - compatibility
+  axes:
+  - locality
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - possibility-sheafification.md
+  - sheafification-certificates.md
+- id: schema_world
+  expert_name: Schema as category / instance as functor
+  public_name: typed schema-and-instance boundary
+  route: UNI-CANONICAL
+  moves:
+  - declare
+  signals:
+  - typed-schema-mappings
+  - data-integration
+  requires:
+  - source_schema
+  - target_schema
+  - schema_maps
+  emits:
+  - typed-schema-instance-model
+  laws:
+  - instances respect schema equations and references
+  falsifiers:
+  - data violates a schema equation
+  fallback: typed DTO and mapper
+  universal:
+    role: presentation
+    competitors: every semantic artifact satisfying the required observation family
+    mediator: one effective representation/reconstruction path
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 51
+  hole_kinds:
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - migration
+  - proof
+  axes:
+  - schema-context
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - mechanics/categorical-data-for-context.md
+  - exact-context-doctrine.md
+- id: schema_restriction
+  expert_name: Delta / restriction
+  public_name: structure-preserving schema restriction
+  route: UNI-CANONICAL
+  moves:
+  - transport
+  signals:
+  - restrict-schema-instance
+  requires:
+  - schema_map
+  emits:
+  - projected-instance-or-view
+  laws:
+  - restriction preserves schema structure
+  falsifiers:
+  - projection breaks a required equation
+  fallback: explicit projection query
+  universal:
+    role: receiver
+    competitors: every admissible producer satisfying the required equations
+    mediator: one comparison path from each producer into the selected owner
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 52
+  hole_kinds:
+  - map
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - migration
+  - information_flow
+  axes:
+  - schema-context
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - mechanics/categorical-data-for-context.md
+  - mechanics/context-compilation.md
+- id: generated_schema_migration
+  expert_name: Sigma / left pushforward
+  public_name: generated target-schema migration
+  route: UNI-CANONICAL
+  moves:
+  - transport
+  - glue
+  signals:
+  - freely-migrate-schema-instance
+  requires:
+  - schema_map
+  - target_schema
+  emits:
+  - migrated-instance
+  laws:
+  - migration is universal for source-generated target data
+  - provenance survives
+  falsifiers:
+  - source-generated fact is omitted
+  fallback: explicit ETL mapping
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 53
+  hole_kinds:
+  - map
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - migration
+  - information_flow
+  - construction_paths
+  axes:
+  - schema-context
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - mechanics/categorical-data-for-context.md
+  - mechanics/context-compilation.md
+- id: coherent_schema_completion
+  expert_name: Pi / right pushforward
+  public_name: coherent target-side schema completion
+  route: UNI-CANONICAL
+  moves:
+  - observe
+  - transport
+  signals:
+  - coherent-schema-completion
+  requires:
+  - schema_map
+  - coherence_observations
+  - effective_bound
+  emits:
+  - derived-view-or-instance
+  laws:
+  - all required coherent observations are represented
+  falsifiers:
+  - completion is non-effective or invents unsupported data
+  fallback: explicit derived query
+  universal:
+    role: observation
+    competitors: every behavior distinguishable by the sanctioned observations or traces
+    mediator: one observation path through the selected vocabulary or observer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 54
+  hole_kinds:
+  - map
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - migration
+  - information_flow
+  - resources
+  - proof
+  axes:
+  - schema-context
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - mechanics/categorical-data-for-context.md
+  - mechanics/context-compilation.md
+- id: verified_context_publication
+  expert_name: CQL / categorical database
+  public_name: verified context publication plane
+  route: UNI-CANONICAL
+  moves:
+  - declare
+  - transport
+  - constrain
+  - glue
+  signals:
+  - multi-source-context
+  - verified-data-publication
+  requires:
+  - task_schema
+  - source_mappings
+  - constraints
+  - provenance
+  emits:
+  - published-context-snapshot
+  laws:
+  - mappings and constraints hold
+  - provenance and conflicts survive
+  falsifiers:
+  - raw source data bypasses verification
+  fallback: validated integration pipeline
+  universal:
+    role: presentation
+    competitors: every semantic artifact satisfying the required observation family
+    mediator: one effective representation/reconstruction path
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 55
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - owner
+  - information_flow
+  - migration
+  - construction_paths
+  - proof
+  axes:
+  - schema-context
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - mechanics/cql-context-management.md
+  - verified-context-plane.md

@@ -1,0 +1,378 @@
+schema: universal-construction-fragment/v6
+constructions:
+- id: exact_decision_context
+  expert_name: Exact Context
+  public_name: task-indexed certified decision context
+  route: UNI-CANONICAL
+  moves:
+  - transport
+  - constrain
+  - observe
+  - normalize
+  signals:
+  - semantic-consumer-context
+  - raw-context-dump
+  requires:
+  - task_schema
+  - required_observations
+  - provenance
+  - freshness
+  emits:
+  - context-certificate-and-rendering
+  laws:
+  - every required observable is answered missing contradicted or unsupported explicitly
+  - rendering preserves required observations
+  falsifiers:
+  - stale or provenance-free evidence reaches the consumer
+  fallback: typed decision packet
+  universal:
+    role: receiver
+    competitors: every admissible producer satisfying the required equations
+    mediator: one comparison path from each producer into the selected owner
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 56
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - owner
+  - information_flow
+  - resources
+  - proof
+  - authority
+  - compatibility
+  axes:
+  - schema-context
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - exact-context-doctrine.md
+  - context-certificates.md
+- id: generated_semantics_transport
+  expert_name: Left Kan extension
+  public_name: least coherent target-side semantics
+  route: UNI-CANONICAL
+  moves:
+  - transport
+  - generate
+  signals:
+  - extend-semantics
+  - source-to-target-transport
+  requires:
+  - source_world
+  - target_world
+  - boundary_map
+  - source_semantics
+  emits:
+  - transport-path-and-interpreter
+  laws:
+  - identity transport preserves behavior
+  - source-generated target behavior is covered
+  falsifiers:
+  - two equivalent source paths produce different target observations
+  fallback: explicit adapter per supported source case
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 57
+  hole_kinds:
+  - map
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - migration
+  - information_flow
+  - interpreter
+  - construction_paths
+  axes:
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - kan-boundaries-for-universalist.md
+  - mechanics/kan-lifts.md
+- id: coherent_observation_completion
+  expert_name: Right Kan extension
+  public_name: observation-determined compatibility facade
+  route: UNI-CANONICAL
+  moves:
+  - observe
+  - transport
+  signals:
+  - coherent-old-views
+  - observation-completion
+  requires:
+  - observation_family
+  - target_world
+  - effective_bound
+  emits:
+  - observation-vocabulary-and-facade
+  laws:
+  - overlapping observations commute
+  - the facade is determined by sanctioned observations
+  falsifiers:
+  - a required old observation is inconsistent or missing
+  fallback: explicit compatibility projections
+  universal:
+    role: transport
+    competitors: every compatible path that extends, restricts, lowers, or repackages the source behavior
+    mediator: one observation-preserving comparison through the selected transport
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 58
+  hole_kinds:
+  - map
+  - equivalence
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - interpreter
+  - proof
+  axes:
+  - transport-realization
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - kan-boundaries-for-universalist.md
+  - mechanics/kan-lifts.md
+- id: implementation_realizer
+  expert_name: Kan lift
+  public_name: implementation realizer behind a fixed projection
+  route: UNI-CANONICAL
+  moves:
+  - realize
+  signals:
+  - public-behavior-determines-internals
+  - lift-shaped-boundary
+  requires:
+  - required_behavior
+  - implementation_world
+  - observation_projection
+  emits:
+  - realizer-and-projection
+  laws:
+  - projecting the realizer satisfies required behavior
+  falsifiers:
+  - required behavior cannot be represented behind the projection
+  fallback: explicit per-case implementation
+  universal:
+    role: realization
+    competitors: every internal implementation whose projection satisfies the required public behavior
+    mediator: one realizer maps each public case into an implementation behind the fixed projection
+    canonicality: competing realizers are compared by the declared public observations and implementation obligations
+    effectivity: the realization search is constructive, bounded, generated from templates, or returns an obstruction
+  selection_mode: selectable
+  diagnostic_order: 59
+  hole_kinds:
+  - map
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - existence
+  - interpreter
+  - construction_paths
+  - proof
+  axes:
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - kan-boundaries-for-universalist.md
+  - mechanics/kan-lifts.md
+- id: canonical_builder_check
+  expert_name: Freyd/AFT-style free builder
+  public_name: canonical builder or projection obstruction
+  route: UNI-CANONICAL
+  moves:
+  - realize
+  - obstruct
+  signals:
+  - canonical-builder-question
+  - projection-may-be-lossy
+  requires:
+  - observation_projection
+  - implementation_constraints
+  - bounded_templates
+  emits:
+  - free-builder-or-obstruction
+  laws:
+  - projecting the free builder satisfies the requirement
+  falsifiers:
+  - the projection forgets evidence needed for a canonical builder
+  fallback: require explicit implementation obligations
+  universal:
+    role: realization
+    competitors: every implementation-side realization of the required observable behavior
+    mediator: the proposed builder maps required behavior into an implementation that projects back correctly
+    canonicality: the builder is free/canonical only when the projection preserves the required constraint structure
+    effectivity: candidate templates form a bounded effective family; otherwise emit an obstruction
+  selection_mode: selectable
+  diagnostic_order: 60
+  hole_kinds:
+  - map
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - existence
+  - construction_paths
+  - proof
+  - resources
+  axes:
+  - transport-realization
+  - proof
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - freyd-aft-boundary-diagnostic.md
+  - mechanics/freyd-aft.md
+- id: derived_obligations
+  expert_name: Residual obligation
+  public_name: derived implementation obligations
+  route: UNI-ORDINARY
+  moves:
+  - realize
+  - constrain
+  signals:
+  - public-requirement-implies-checks
+  - missing-obligations
+  requires:
+  - public_requirement
+  - obligation_owner
+  emits:
+  - obligation-ir
+  laws:
+  - satisfying all obligations makes projection possible
+  falsifiers:
+  - omitting one obligation still passes
+  fallback: explicit validation checklist
+  universal:
+    role: realization
+    competitors: every admissible implementation satisfying the fixed projection or observation boundary
+    mediator: one comparison between the selected realizer and each admissible implementation
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 61
+  hole_kinds:
+  - object
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - existence
+  - construction_paths
+  - proof
+  axes:
+  - transport-realization
+  - proof
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - canonical-boundary-artifacts.md
+  - freyd-aft-boundary-diagnostic.md
+- id: semantic_obstruction
+  expert_name: Obstruction report
+  public_name: explicit architectural obstruction
+  route: UNI-OBSTRUCT
+  moves:
+  - obstruct
+  signals:
+  - witnessed-nonexistence
+  - inconsistent-requirements
+  - nonrepresentable-specification
+  - resource-lower-bound-failure
+  - underdetermined-canonical-realization
+  requires:
+  - obstruction_counterexample
+  - reopening_condition
+  emits:
+  - typed-obstruction
+  laws:
+  - the missing evidence structure or resource bound is named and reproducible
+  falsifiers:
+  - the counterexample does not rule out an admissible effective solution
+  - the alleged obstruction is only missing or uninspected evidence
+  fallback: retain the ordinary candidate or remain blocked until the named reopening condition changes
+  universal:
+    role: obstruction
+    competitors: every claimed exact, canonical, representable, or effective solution
+    mediator: the obstruction exhibits the prerequisite or observation each claimed solution violates
+    canonicality: the failure is stable under the declared comparison maps rather than an artifact of one implementation
+    effectivity: the counterexample or resource lower bound is executable or independently checkable
+  selection_mode: selectable
+  diagnostic_order: 62
+  hole_kinds:
+  - object
+  - map
+  - interpreter
+  - composition
+  - representation
+  - equivalence
+  - locality
+  - context-action
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - existence
+  - proof
+  axes:
+  - data-shape
+  - syntax-semantics
+  - behavior
+  - base-composition
+  - description-composition
+  - context-action
+  - locality
+  - schema-context
+  - transport-realization
+  - presentation
+  - proof
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: obstruction
+  theory_refs:
+  - canonical-boundary-artifacts.md
+  - freyd-aft-boundary-diagnostic.md
+  - effective-categorical-normal-form.md

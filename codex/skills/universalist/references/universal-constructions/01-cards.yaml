@@ -1,0 +1,411 @@
+schema: universal-construction-fragment/v6
+constructions:
+- id: task_local_comparison_universe
+  expert_name: Category / task-local world
+  public_name: task-local comparison universe
+  route: NONE
+  selection_mode: support_only
+  diagnostic_order: 1
+  hole_kinds:
+  - object
+  - map
+  - interpreter
+  - composition
+  - representation
+  - equivalence
+  - locality
+  - context-action
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees: []
+  moves:
+  - declare
+  signals:
+  - comparison-universe
+  requires: []
+  emits:
+  - evidence-bound competitor and comparison policy
+  laws:
+  - every admissible candidate and comparison map is stated relative to evidence-backed observations, effects, authority,
+    and resources
+  falsifiers:
+  - an unexamined implementation or transformation is silently admitted as a competitor
+  fallback: keep the ordinary repository model and state the missing comparison policy
+  universal:
+    role: support
+    competitors: the evidence-backed alternatives admitted for this seam
+    mediator: not applicable; this card defines the universe in which mediation is judged
+    canonicality: not an implementation artifact
+    effectivity: the universe is finite enough to inspect or has an explicit bounded representation
+  axes: &id001
+  - data-shape
+  - syntax-semantics
+  - behavior
+  - base-composition
+  - description-composition
+  - context-action
+  - locality
+  - schema-context
+  - transport-realization
+  - presentation
+  - proof
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: support
+  theory_refs:
+  - world-boundary-inventory.md
+  - mechanics/foundations.md
+- id: effectivity_hypothesis_guard
+  expert_name: Existence and effectivity hypotheses
+  public_name: construction precondition guard
+  route: NONE
+  selection_mode: support_only
+  diagnostic_order: 2
+  hole_kinds:
+  - object
+  - map
+  - interpreter
+  - composition
+  - representation
+  - equivalence
+  - locality
+  - context-action
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees: []
+  moves:
+  - obstruct
+  signals:
+  - effectivity-hypothesis
+  requires: []
+  emits:
+  - explicit hypothesis, approximation, or evidence debt
+  laws:
+  - no existence or universality claim is upgraded beyond the evidenced hypotheses
+  falsifiers:
+  - a formal construction is treated as executable without a representation and resource bound
+  fallback: downgrade to an ordinary or bounded construction
+  universal:
+    role: support
+    competitors: candidate constructions whose existence or execution depends on additional hypotheses
+    mediator: not applicable; this card guards theorem use
+    canonicality: not an implementation artifact
+    effectivity: every guarded hypothesis is evidenced, assumed explicitly, approximated, or left blocking
+  axes: *id001
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: support
+  theory_refs:
+  - effective-categorical-normal-form.md
+  - effective-computational-substrate.md
+  - sources.md
+- id: joint_aggregate
+  expert_name: Product
+  public_name: joint data aggregate
+  route: UNI-ORDINARY
+  moves:
+  - constrain
+  signals:
+  - independent-data
+  requires:
+  - independent_components
+  emits:
+  - record-or-struct
+  laws:
+  - each projection recovers its component
+  - construction and projection round-trip
+  falsifiers:
+  - a component cannot be recovered
+  fallback: plain record
+  universal:
+    role: receiver
+    competitors: every admissible producer satisfying the required equations
+    mediator: one comparison path from each producer into the selected owner
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 10
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - information_flow
+  - construction_paths
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
+- id: exclusive_cases
+  expert_name: Coproduct
+  public_name: explicit exclusive-state model
+  route: UNI-ORDINARY
+  moves:
+  - glue
+  signals:
+  - exclusive-cases
+  - invalid-state-matrix
+  requires:
+  - cases_are_exclusive
+  emits:
+  - tagged-union-or-enum
+  laws:
+  - elimination is exhaustive
+  - invalid mixtures are unrepresentable
+  falsifiers:
+  - an impossible case combination is accepted
+  fallback: validated legacy flags
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 11
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - construction_paths
+  - proof
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
+- id: validated_subtype
+  expert_name: Equalizer / refined type
+  public_name: validated value object
+  route: UNI-ORDINARY
+  moves:
+  - constrain
+  signals:
+  - stable-predicate
+  - repeated-validation
+  requires:
+  - predicate_is_stable
+  emits:
+  - checked-constructor
+  laws:
+  - valid values are accepted
+  - invalid values are rejected
+  - normalization is idempotent
+  falsifiers:
+  - an invalid value crosses the owner boundary
+  fallback: boundary validator
+  universal:
+    role: receiver
+    competitors: every admissible producer satisfying the required equations
+    mediator: one comparison path from each producer into the selected owner
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 12
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - construction_paths
+  - proof
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
+- id: compatibility_object
+  expert_name: Pullback
+  public_name: owned compatibility object
+  route: UNI-ORDINARY
+  moves:
+  - constrain
+  signals:
+  - shared-observation-agreement
+  - shared-key-agreement
+  requires:
+  - shared_observation
+  - agreement_is_witnessable
+  - owner_can_be_opaque
+  emits:
+  - checked-aggregate-or-join-witness
+  laws:
+  - shared observations agree
+  - both projections are preserved
+  - every compatible producer factors through the owner
+  falsifiers:
+  - a mismatch is accepted
+  - an unchecked pair bypasses the owner
+  fallback: checked pair
+  universal:
+    role: receiver
+    competitors: every compatible source pair satisfying the shared observation agreement
+    mediator: one owner-controlled construction path from each compatible pair
+    canonicality: the path is unique up to owner normalization while both source projections remain observable
+    effectivity: agreement is computable or supplied by a verifiable witness
+  selection_mode: selectable
+  diagnostic_order: 13
+  hole_kinds:
+  - object
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - owner
+  - representable_states
+  - information_flow
+  - construction_paths
+  - proof
+  - compatibility
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - mechanics/pullbacks-and-pushouts.md
+- id: canonical_quotient
+  expert_name: Coequalizer / quotient
+  public_name: canonical normalized representation
+  route: UNI-ORDINARY
+  moves:
+  - normalize
+  signals:
+  - redundant-representations
+  - equivalent-presentations
+  requires:
+  - equivalence_relation
+  - observable_distinctions_declared
+  emits:
+  - normal-form-or-canonical-id
+  laws:
+  - equivalent presentations normalize together
+  - normalization respects all sanctioned observations
+  falsifiers:
+  - two observation-distinct values collide
+  fallback: explicit normalization helper
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 14
+  hole_kinds:
+  - object
+  - equivalence
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - information_flow
+  - construction_paths
+  - proof
+  axes:
+  - data-shape
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - possibility-sheafification.md
+- id: canonical_integration
+  expert_name: Pushout
+  public_name: canonical overlap-aware integration
+  route: UNI-CANONICAL
+  moves:
+  - glue
+  - normalize
+  signals:
+  - explicit-overlap-integration
+  - schema-merge
+  requires:
+  - explicit_overlap
+  - source_injections
+  - conflict_policy
+  emits:
+  - integrated-model-or-schema
+  laws:
+  - source injections agree on overlap
+  - non-overlap and provenance survive
+  - compatible consumers factor through the integration
+  falsifiers:
+  - unrelated entities are identified
+  - a conflict is silently erased
+  fallback: named merge with provenance
+  universal:
+    role: emitter
+    competitors: every pair of sources and downstream consumers agreeing on the declared overlap
+    mediator: source injections and one integrated artifact mediate all compatible consumers
+    canonicality: only declared overlap is identified; canonical IDs or normalization remove competing merge meanings
+    effectivity: conflict detection, provenance retention, and normalization fit the integration budget
+  selection_mode: selectable
+  diagnostic_order: 15
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - owner
+  - information_flow
+  - construction_paths
+  - migration
+  - proof
+  - compatibility
+  axes:
+  - data-shape
+  - schema-context
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - mechanics/pullbacks-and-pushouts.md
+  - pushout-reconciliation.md

@@ -7,6 +7,8 @@ nickname_candidates = ["Kan", "Yoneda", "Adjoint"]
 developer_instructions = """
 Role: Select the smallest canonical categorical architecture that closes the assigned obligation.
 
+For a consequential seam, consult `codex/skills/universalist/references/universal-construction-registry.yaml` and only the cards matching the evidenced axis and signals. Compare them with the ordinary candidate, classify every relevant card as selected, rejected, contradicted, or unresolved, and return evidence to the root without owning the route.
+
 Focus on:
 - products, coproducts, refinements, equalizers/coequalizers, pullbacks, pushouts, quotients, free/cofree objects;
 - pullback agreement objects, pushout integration, pushout complements, double-pushout graph/model rewriting, and adhesive-category assumptions;

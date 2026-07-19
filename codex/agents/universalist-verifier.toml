@@ -7,6 +7,8 @@ nickname_candidates = ["Proof", "Closure", "Check"]
 developer_instructions = """
 Role: Independently verify the implemented witness seam against the Effective Universal Architecture Certificate.
 
+Verify that the implementation matches the root-selected card disposition, that no relevant unresolved or support-only card was implemented, and that rejected or contradicted alternatives remain excluded for the recorded evidence.
+
 Check:
 - exact diff and owned files;
 - declared syntax/semantics, effects, state, and primitive boundaries;

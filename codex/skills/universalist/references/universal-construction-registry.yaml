@@ -1,0 +1,193 @@
+schema: universal-construction-registry/v6
+purpose: Use category theory as an active evidence-bound architectural decision table. Evaluate only cards
+  relevant to one seam and one architectural axis; the root workflow remains the sole architecture decision
+  authority.
+plain_output_default: true
+claim_modes:
+- nomination
+- verification
+hole_kinds:
+- object
+- map
+- interpreter
+- composition
+- representation
+- equivalence
+- locality
+- context-action
+- proof
+material_dimensions:
+- owner
+- authority
+- compatibility
+- representable_states
+- legal_composition
+- effect_semantics
+- locality
+- information_flow
+- interpreter
+- construction_paths
+- proof
+- resources
+- existence
+- migration
+allowed_evidence_schemes:
+- code
+- test
+- doc
+- trace
+- schema
+- config
+- command
+- artifact
+- requirement
+- review
+- issue
+- plan
+- metric
+fact_statuses:
+  evidenced: satisfied must be true and evidence must be non-empty
+  absent: satisfied must be false and evidence must be non-empty
+  unknown: satisfied must be null and reason must be non-empty
+moves:
+  declare: Define admissible artifacts, transformations, observations, equivalence, effects, authority,
+    and resources.
+  constrain: Construct the most general artifact satisfying simultaneous equations or agreement.
+  glue: Construct the freest integration that identifies only declared overlap.
+  generate: Construct the least syntax or structure closed under declared operations.
+  observe: Characterize an artifact by sanctioned observations, traces, probes, or contexts.
+  transport: Extend, restrict, or migrate semantics coherently across a boundary.
+  realize: Find a concrete implementation behind a fixed projection or return an obstruction.
+  compose: Make legal sequencing, parallel context, wiring, decomposition, or feedback explicit.
+  frame: Preserve a generalized capability when context is added around its endpoints.
+  localize: Represent objects together with coherent neighborhoods, restrictions, and provenance.
+  normalize: Identify equivalent presentations without collapsing observable distinctions.
+  obstruct: Explain why no exact, canonical, representable, or effective solution exists.
+universal_roles:
+  receiver: Every admissible competitor has a comparison path into the selected owner.
+  emitter: The selected artifact has a comparison path into every admissible consumer or interpretation.
+  transport: Every compatible extension or restriction compares through the selected transport.
+  realization: Every admissible implementation is compared through a fixed observation or projection boundary.
+  observation: The selected observation surface distinguishes exactly the behavior the contract permits.
+  composition: Every legal composite is represented and no illegal composite is admitted.
+  framing: Every legal context extension transports the capability coherently.
+  locality: Every required local restriction and local-to-global comparison is represented coherently.
+  presentation: Every required semantic observation factors through the effective representation.
+  obstruction: Every exact candidate violates a named prerequisite, observation, authority, or resource
+    bound.
+  support: Defines or guards the comparison universe; never a product artifact or route.
+includes:
+- universal-constructions/01-cards.yaml
+- universal-constructions/02-cards.yaml
+- universal-constructions/03-cards.yaml
+- universal-constructions/04-cards.yaml
+- universal-constructions/05-cards.yaml
+- universal-constructions/06-cards.yaml
+- universal-constructions/07-cards.yaml
+claim_scopes:
+- literal
+- effective_realization
+- bounded_approximation
+axes:
+- data-shape
+- syntax-semantics
+- behavior
+- base-composition
+- description-composition
+- context-action
+- locality
+- schema-context
+- transport-realization
+- presentation
+- proof
+proof_profiles:
+  support: []
+  universal:
+  - existence
+  - commutation
+  - mediation
+  - canonicality
+  - effectivity
+  - falsifier
+  obstruction:
+  - nonexistence
+  - counterexample
+  - stability
+  - effectivity
+  - falsifier
+  - reopening_condition
+decision_discipline:
+  one_axis_at_a_time: true
+  cross_axis_signal: analyze the independent axis separately before root synthesis
+  unknown_signal: leave the card unresolved rather than infer applicability or obstruction
+  verification_target: verification mode names exactly one selectable construction card
+scope_obligations:
+  literal: []
+  effective_realization: []
+  bounded_approximation:
+  - approximation_boundary
+  - refinement_condition
+rejection_bases:
+- counterexample
+- prerequisite-absent
+- observation-failure
+- requirement-mismatch
+- resource-dominance
+- ordinary-dominance
+- scope-mismatch
+derived_mechanics:
+  category_pivot:
+    axes:
+    - presentation
+    - transport-realization
+    card_composition:
+    - generated_language
+    - generated_semantics_transport
+    rule: Represent the hard operation in an easier world, then verify the attributed interpretation back;
+      analyze each axis separately rather than selecting a new global winner.
+  spatial_description_product:
+    axes:
+    - locality
+    - description-composition
+    card_composition:
+    - generated_locality
+    - decomposition_product
+    rule: First evidence the spatial world and effective patch basis; then compile the description product
+      over an explicit shared/product index tensor or kernel.
+  spatial_context_framing:
+    axes:
+    - locality
+    - context-action
+    card_composition:
+    - situated_context
+    - context_stable_capability
+    rule: First evidence locality and restriction; then verify that one generalized capability frames
+      coherently through the admitted halo/context action.
+  day_center_context_guard:
+    axes:
+    - description-composition
+    - context-action
+    - proof
+    card_composition:
+    - decomposition_product
+    - context_stable_capability
+    - effectivity_hypothesis_guard
+    rule: Treat strong-context/Day-center correspondence only as a guarded expert derivation under explicit
+      closedness or rigidity hypotheses; it is never an independent implementation artifact.
+  cayley_representation_guard:
+    axes:
+    - context-action
+    - transport-realization
+    - proof
+    card_composition:
+    - context_stable_capability
+    - concrete_realizer_check
+    - effectivity_hypothesis_guard
+    rule: Use a Cayley-style representation only after a concrete representability witness and resource-feasible
+      lowering are evidenced.
+  primitive_presentation:
+    axes:
+    - presentation
+    card_composition: []
+    rule: When an external primitive already owns the operation, keep it behind an explicit handler and
+      observation law; do not manufacture a categorical product artifact.

@@ -1,0 +1,397 @@
+schema: universal-construction-fragment/v6
+constructions:
+- id: safe_graph_rewrite
+  expert_name: Pushout complement / double pushout
+  public_name: validated delete-preserve-add rewrite
+  route: UNI-CANONICAL
+  moves:
+  - glue
+  - obstruct
+  signals:
+  - delete-preserve-add-rewrite
+  - graph-rewrite
+  requires:
+  - preserved_interface
+  - match_is_typed
+  emits:
+  - rewrite-rule-and-trace
+  laws:
+  - preserved interface remains unchanged
+  - deletions and additions are exact
+  falsifiers:
+  - dangling reference
+  - forbidden identification
+  fallback: transactional rewrite with explicit checks
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 16
+  hole_kinds:
+  - map
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - construction_paths
+  - migration
+  - proof
+  - compatibility
+  axes:
+  - data-shape
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - mechanics/pullbacks-and-pushouts.md
+  - sources.md
+- id: supplied_behavior
+  expert_name: Exponential
+  public_name: supplied strategy boundary
+  route: UNI-ORDINARY
+  moves:
+  - declare
+  signals:
+  - branchy-policy
+  - supplied-behavior
+  requires:
+  - behavior_is_configurable
+  emits:
+  - strategy-or-function
+  laws:
+  - evaluation agrees with prior branch fixtures
+  falsifiers:
+  - strategy changes an undeclared observation
+  fallback: named strategy interface
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 17
+  hole_kinds:
+  - map
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - interpreter
+  - construction_paths
+  axes:
+  - data-shape
+  - syntax-semantics
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
+- id: generated_language
+  expert_name: Free construction / initial algebra
+  public_name: generated operation language
+  route: UNI-ORDINARY
+  moves:
+  - generate
+  signals:
+  - syntax-execution-mix
+  - operations-need-ir
+  requires:
+  - operation_vocabulary
+  emits:
+  - ast-or-command-ir
+  laws:
+  - every constructor has semantics
+  - any operation-preserving interpreter is determined by constructors
+  falsifiers:
+  - required operation is not representable
+  - unsupported operation is representable
+  fallback: explicit enum plus interpreter
+  universal:
+    role: emitter
+    competitors: every implementation of the declared primitive operations
+    mediator: one total interpreter from the generated syntax into each implementation
+    canonicality: the interpreter is determined by the constructors and declared equations
+    effectivity: syntax, traversal, and interpretation have finite or explicitly recursive representations
+  selection_mode: selectable
+  diagnostic_order: 18
+  hole_kinds:
+  - representation
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - interpreter
+  - construction_paths
+  - proof
+  axes:
+  - syntax-semantics
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - canonical-boundary-artifacts.md
+  - syntax-semantics-pivot.md
+- id: generated_effect_program
+  expert_name: Algebraic effects / free effect syntax
+  public_name: operation program with explicit handlers
+  route: UNI-CANONICAL
+  moves:
+  - generate
+  - transport
+  signals:
+  - multiple-effect-handlers
+  - effect-drift
+  requires:
+  - operation_vocabulary
+  - handler_observations
+  emits:
+  - operation-ir-and-handlers
+  laws:
+  - every operation has a handler
+  - handlers agree on declared observations
+  falsifiers:
+  - an operation is unhandled
+  - handlers disagree without an explicit law
+  fallback: explicit command interface
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 19
+  hole_kinds:
+  - representation
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - interpreter
+  - legal_composition
+  - proof
+  - effect_semantics
+  axes:
+  - syntax-semantics
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - effects-and-coalgebras.md
+  - syntax-semantics-pivot.md
+- id: value_dependent_program
+  expert_name: Monad / endofunctor composition
+  public_name: value-dependent program sequence
+  route: UNI-ORDINARY
+  moves:
+  - compose
+  signals:
+  - value-dependent-sequencing
+  requires:
+  - later_shape_depends_on_result
+  emits:
+  - bindable-program-ir
+  laws:
+  - bind preserves interpreter semantics
+  falsifiers:
+  - a later operation is chosen before the required value exists
+  fallback: ordinary sequential function
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 20
+  hole_kinds:
+  - composition
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - interpreter
+  - representable_states
+  axes:
+  - syntax-semantics
+  - description-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - effects-and-coalgebras.md
+  - description-composition-doctrine.md
+- id: static_program_plan
+  expert_name: Free applicative
+  public_name: statically inspectable program plan
+  route: UNI-CANONICAL
+  moves:
+  - generate
+  - compose
+  signals:
+  - static-computation-shape
+  - multiple-static-interpreters
+  requires:
+  - shape_known_before_results
+  emits:
+  - static-plan-ir
+  laws:
+  - analysis and execution agree on declared structure
+  - unit and static combination laws hold
+  falsifiers:
+  - a later operation depends on an earlier value
+  - static structure is used to infer effect commutativity
+  fallback: explicit list or tree of operations
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 21
+  hole_kinds:
+  - composition
+  - representation
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - interpreter
+  - resources
+  - proof
+  axes:
+  - syntax-semantics
+  - description-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - effects-and-coalgebras.md
+  - mechanics/day-convolution.md
+- id: coherent_state_machine
+  expert_name: Behavioral coalgebra
+  public_name: observable transition system
+  route: UNI-ORDINARY
+  moves:
+  - observe
+  - compose
+  signals:
+  - ongoing-behavior
+  - state-machine-drift
+  requires:
+  - transition_and_observation
+  emits:
+  - step-and-observe
+  laws:
+  - expected traces are reproduced
+  - observationally equivalent states remain equivalent
+  falsifiers:
+  - invalid transition is accepted
+  - claimed-equivalent states have different observations
+  fallback: explicit state machine
+  universal:
+    role: observation
+    competitors: every behavior distinguishable by the sanctioned observations or traces
+    mediator: one observation path through the selected vocabulary or observer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 22
+  hole_kinds:
+  - representation
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - interpreter
+  - proof
+  - effect_semantics
+  axes:
+  - behavior
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - effects-and-coalgebras.md
+  - canonical-boundary-artifacts.md
+- id: observation_vocabulary
+  expert_name: Yoneda
+  public_name: first-class observation vocabulary
+  route: UNI-CANONICAL
+  moves:
+  - observe
+  signals:
+  - projection-sprawl
+  - duplicated-observations
+  requires:
+  - sanctioned_observations
+  emits:
+  - observation-ir-and-runner
+  laws:
+  - representation changes preserve every sanctioned observation
+  falsifiers:
+  - an allowed observation distinguishes values that were collapsed
+  fallback: central projection service
+  universal:
+    role: observation
+    competitors: every behavior distinguishable by the sanctioned observations or traces
+    mediator: one observation path through the selected vocabulary or observer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 23
+  hole_kinds:
+  - representation
+  - equivalence
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - interpreter
+  - proof
+  axes:
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - yoneda-coyoneda-defunctionalization.md
+  - mechanics/yoneda-coyoneda.md
