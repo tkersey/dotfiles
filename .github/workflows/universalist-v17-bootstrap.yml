@@ -1,0 +1,64 @@
+name: Apply Universalist v17
+
+on:
+  push:
+    branches:
+      - agent/universalist-universal-problem-ir
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/universalist-universal-problem-ir
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Reconstruct runtime bundle
+        run: |
+          cat .github/universalist-v17-bootstrap/runtime2.part.* \
+            | tr -d '\n' \
+            | base64 --decode > /tmp/universalist-v17-runtime.tar.xz
+          echo "c864ef51ce1691e0a02f237545ff39036549c44abbfe62896a19b42004f66817  /tmp/universalist-v17-runtime.tar.xz" \
+            | sha256sum --check --strict
+          mkdir -p /tmp/universalist-v17-runtime
+          tar -xJf /tmp/universalist-v17-runtime.tar.xz \
+            -C /tmp/universalist-v17-runtime
+
+      - name: Apply change set
+        run: |
+          python3 /tmp/universalist-v17-runtime/apply_universalist_v17.py \
+            "$GITHUB_WORKSPACE"
+
+      - name: Validate
+        run: |
+          cd codex/skills/universalist
+          chmod +x scripts/*.sh scripts/*.py
+          bash scripts/check_universal_problem.sh
+          bash scripts/check_universalist.sh
+          bash scripts/check_pullback_pushout_mechanics.sh
+          bash scripts/check_comonadic_spatiality.sh
+          bash scripts/check_day_convolution.sh
+          bash scripts/check_tambara_modules.sh
+          bash scripts/check_universalist_replacement.sh
+
+      - name: Remove bootstrap artifacts
+        run: |
+          rm -rf .github/universalist-v17-bootstrap
+          rm -f .github/workflows/universalist-v17-bootstrap.yml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m \
+            "universalist: compile categorical mechanics through a universal problem IR"
+          git push origin \
+            HEAD:agent/universalist-universal-problem-ir
