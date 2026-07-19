@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "FM"
+  short_description: "Run Apple's fm models without Swift"
+  default_prompt: "Use $fm to run Apple's local fm CLI from this Mac. Check prerequisites, default to the on-device system model, use PCC only when explicitly requested, and never interpolate user content into shell code."
