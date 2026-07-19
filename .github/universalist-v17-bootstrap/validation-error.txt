@@ -1,12 +1,12 @@
 Installed 1 package in 1ms
 ........
 ----------------------------------------------------------------------
-Ran 8 tests in 0.937s
+Ran 8 tests in 0.961s
 
 OK
 .....
 ----------------------------------------------------------------------
-Ran 5 tests in 0.223s
+Ran 5 tests in 0.227s
 
 OK
 check_universal_problem: ok
