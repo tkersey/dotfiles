@@ -1,0 +1,31 @@
+name: Package Universalist PR123
+
+on:
+  push:
+    branches:
+      - universalist
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: universalist
+      - name: Build audit archive
+        run: |
+          mkdir -p /tmp/pr123/codex/skills /tmp/pr123/codex/agents
+          cp -a codex/skills/universalist /tmp/pr123/codex/skills/
+          cp -a codex/agents/universalist-*.toml /tmp/pr123/codex/agents/
+          cp codex/AGENTS.md /tmp/pr123/codex/AGENTS.md
+          cp AGENTS.md /tmp/pr123/AGENTS.md
+          tar -czf /tmp/universalist-pr123.tar.gz -C /tmp/pr123 .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universalist-pr123-audit
+          path: /tmp/universalist-pr123.tar.gz
+          if-no-files-found: error
+          retention-days: 1
