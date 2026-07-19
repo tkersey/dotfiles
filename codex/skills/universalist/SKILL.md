@@ -43,7 +43,7 @@ Law:
 Falsifier:
 ```
 
-2. Decide whether the route is consequential under **Decision observability**: it selects or preserves a construction for one changed seam by rejecting a nearby route.
+2. Decide whether the route is consequential under **Decision observability**: at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, or proof obligations.
 3. If the route is consequential, select the track, allocate one fresh ledger-addressed Universalist plan through **Step 0**, and emit exactly one root `SDR-v1`. When mutation is in scope, complete this gate before mutating the seam. A consequential `UNI-PRESERVE` decision follows the same gate.
 4. If the route is not consequential, retain the compact disposition and continue the ordinary workflow. Do not allocate a plan or emit `SDR-v1` solely because the skill activated.
 
@@ -51,52 +51,29 @@ This kernel is the execution entrypoint. **Step -1**, **Step 0**, and **Decision
 
 This is an **inner lens** for choosing the right structural move. It may trigger during ordinary implementation or resolution when a boundary is considered, but it does not replace the repo's implementation, review, or closeout workflow.
 
-This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/`, `templates/mechanics/`, and `scripts/emit_mechanics_report.sh`.
+This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/` and `templates/mechanics/`.
 
-## Universal Problem shadow
+## Construction card decision table
 
-For a consequential structural choice, state the **ordinary candidate** first, then formulate an evidence-bound **comparison universe** and one **architectural axis with one typed hole**. Use `references/universal-problem-ir.md` and `references/universal-construction-registry.yaml` as the hidden categorical nomination protocol. The current contract is `universal-problem/v6`; every packet declares a claim mode (`nomination` or `verification`), a claim scope (`literal`, `effective_realization`, or `bounded_approximation`), and an attributed rationale for the boundary disposition.
+For a consequential structural choice, state the **ordinary candidate** first, then consult `references/universal-construction-registry.yaml` and only the card fragments relevant to the seam's axis and evidenced signals. The 55 YAML cards are active architectural decision doctrine, not passive reference data and not executable commands.
 
-One packet addresses one axis:
+For each relevant card, record one evidence-bound disposition: **selected**, **rejected**, **contradicted**, or **unresolved**. A selectable card may displace the ordinary candidate only when it materially changes persistent behavior, authority, compatibility, representable states, legal composition, effect semantics, locality, information flow, interpreter, construction paths, proof, resources, existence, or migration. Support-only cards may guard reasoning but never become implementation artifacts.
 
-```text
-data shape / syntax-semantics / behavior / base composition /
-description composition / context action / locality / schema-context /
-transport-realization / presentation / proof
-```
+When one seam has independent pressures on several axes, evaluate each axis separately before root synthesis. Do not select one global card that silently drops effect order, description composition, context framing, locality, transport, or presentation obligations.
 
-When one seam has independent pressures on several axes, compile separate linked Universal Problem packets under the same root plan. Do not select one global theorem-card winner that silently drops effect order, description composition, context framing, locality, transport, or presentation obligations.
+Repository evidence must establish a card's signals, prerequisites, laws, and required proof profile. The universal proof profile is existence, commutation or preservation, competitor mediation, canonicality or uniqueness-up-to, effectivity, and falsifier. The obstruction profile is nonexistence, counterexample, stability, effectivity, falsifier, and reopening condition. Card prose is guidance, not repository proof.
 
-The comparison universe must attribute its objects, admissible transformations, observations/equivalence, effects, authority, and resources to repository evidence. Signals must be known by the registry and compatible with the packet axis, hole, claim mode, and claim scope. Unknown signals, unknown fact keys, unrelated facts, and cross-axis signals fail closed. Prerequisite facts use exact epistemic states: evidenced true, evidenced absent, or unknown. Strings such as `"yes"`, assumptions, and uninspected prose do not satisfy a prerequisite.
+Do not let signal count, evidence count, `diagnostic_order`, or registry order manufacture a winner. Missing evidence leaves a card unresolved; it is not an obstruction. A complete constructive card and a complete obstruction remain an explicit evidence conflict until the root adjudicates them.
 
-The compiler validates and nominates; the root workflow adjudicates. Nomination mode leaves `verification_target` null. Verification mode names exactly one selectable theorem-card id and verifies only that target; it does not rerun an open-ended tournament or emit a root route. `scripts/compile_universal_problem.py` may report an ordinary-sufficient route, one nomination, underdetermination, unresolved alternatives, evidence conflict, obstruction debt, or epistemic debt. It never owns the final route, implementation authorization, plan, or `SDR-v1` receipt.
+Ordinary routing follows boundary disposition. An ordinary solution for an introduced, changed, repaired, or removed seam is `UNI-ORDINARY`, not `UNI-PRESERVE`. `UNI-PRESERVE` is reserved for an already exact preserved seam. A justified primitive bypass uses `UNI-OBSTRUCT`.
 
-The executable compiler is experimental decision support. It may be skipped when the root can apply this protocol directly with less ceremony. Removing compiler output never removes the category theory: the theorem registry, mechanics, universal witness contract, materiality gate, and obstruction discipline remain authoritative reasoning aids.
-
-For `bounded_approximation`, the proof profile additionally requires an attributed approximation boundary and a refinement condition showing how stronger evidence, budget, or representation can narrow the loss.
-
-A selectable candidate needs two distinct evidence layers:
-
-1. exact requirement-level witnesses showing a material change in owner, authority, compatibility, representable states, legal composition, effect semantics, locality, information flow, interpreter, construction paths, proof, resources, existence, or migration;
-2. a complete evidence-bound proof profile.
-
-The universal proof profile is existence, commutation/preservation, competitor mediation, canonicality/uniqueness-up-to, effectivity, and falsifier. The obstruction profile is nonexistence, counterexample, stability, effectivity, falsifier, and reopening condition. Generic theorem-card prose is guidance, not repository proof.
-
-Do not let signal count, evidence count, diagnostic priority, or registry order manufacture a winner. Explicit candidate rejection is a typed attributed record whose basis is one of: counterexample, prerequisite absence, observation failure, requirement mismatch, resource dominance, ordinary dominance, or scope mismatch. A complete candidate may be nominated only after every other attributed alternative is contradicted by prerequisite evidence or explicitly rejected with evidence. A rejected candidate cannot also carry witnesses or proofs. Support-only cards define or guard the comparison universe and can never become implementation artifacts.
-
-Missing evidence is not obstruction; it is an epistemic block. An active obstruction blocks constructive nomination until it is completed, contradicted, or explicitly rejected. A complete obstruction and a complete constructive candidate produce an evidence conflict for root adjudication; neither wins by priority.
-
-If exact hole requirements remain unmet and no compatible selectable signal classifies the hole, return `unclassified-hole` with no route. If every attributed candidate is contradicted or rejected while requirements remain unmet, return `no-admissible-construction` with no route. Never disguise either state as an ordinary or preserved boundary.
-
-Ordinary routing follows boundary disposition. An ordinary solution for an introduced, changed, repaired, or removed seam is `UNI-ORDINARY`, not `UNI-PRESERVE`. `UNI-PRESERVE` is reserved for an already exact preserved seam. A justified primitive bypass uses the `UNI-OBSTRUCT` policy route.
-
-Derived expert mechanics such as category pivots, spatial Day composition, spatial contextual framing, Day-center/strong-context correspondences, Cayley-style representations, and primitive presentation are expressed as linked axis packets or hypothesis guards. They are not added as global peer winners.
+The registry's `universal.role: emitter` names the categorical direction from a selected artifact to admissible consumers. It never denotes a shell or Python emitter.
 
 Default user-facing output is plain repository language. Expose expert names and linked theorem references only when the user explicitly asks for the mathematical derivation.
 
 ## Doctrine index
 
-Universalist includes Track A0, Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Domain Algebra Discovery, Algebra before architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, ADD carriers/operations/observations/laws, Freyd/AFT, Freyd categories, operads, composition geometry, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Universalist includes Track A0, Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Domain Algebra Discovery, Algebra before architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, ADD carriers/operations/observations/laws, Freyd/AFT, Freyd categories, operads, composition geometry, free builder, obstruction report, Behavioral coalgebra, Effect signature, and the internal mechanics references for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
 Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit. For whole-system work, require an effective computational substrate, concrete primitive register, universal evaluator or equivalent, recursion/partiality, effect and state semantics, observations, resource model, and executable witnesses.
 
 The enriched slogan is:
@@ -547,7 +524,7 @@ Before selecting this mechanics family, require:
 - restriction/germ behavior, locality-preserving transport, and a resource law;
 - a falsifier where the point survives but required locality or labels do not.
 
-When those obligations change the artifact and proof, read `references/comonadic-spatiality-doctrine.md` and `references/mechanics/comonads-as-spaces.md`, then use `scripts/emit_comonadic_spatiality.sh` or the `comonad-space`, `density-comonad`, `halo`, and `continuous-comonad-map` topics in `scripts/emit_mechanics_report.sh`. Distinguish comonad coalgebras from behavioral coalgebras and ordinary comonad maps from continuous locality-preserving maps.
+When those obligations change the artifact and proof, read `references/comonadic-spatiality-doctrine.md` and `references/mechanics/comonads-as-spaces.md`. Distinguish comonad coalgebras from behavioral coalgebras and ordinary comonad maps from continuous locality-preserving maps.
 
 ## Do not trigger for
 
@@ -1140,20 +1117,14 @@ In explicit team mode, synthesize specialist packets before choosing the witness
 
 ## Step 0 — Allocate a ledger-addressed plan
 
-For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one fresh progress record through the `skills-zig` ledger CLI before mutation:
+For every consequential route, including Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one fresh progress record through the native Ledger CLI before mutation:
 
 Before allocation, load `$ledger` and complete `$ledger ensure` once. After
 readiness, invoke native `ledger` directly. Consequential plans and receipts require
-Ledger 0.10.4 or newer and Skills Seq 0.3.51 or newer.
+Ledger 0.10.6 or newer and Skills Seq 0.3.52 or newer.
 
 ```bash
-scripts/init_universalist_plan.sh [PROJECT_ROOT]
-```
-
-Equivalent direct form:
-
-```bash
-ledger create --source universalist \
+ledger --source universalist create \
   --repo PROJECT_ROOT \
   --template /path/to/universalist/templates/universalist-plan.md
 ```
@@ -1171,14 +1142,14 @@ The plan id is `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`: a lexicographically sortable UT
 Retain the returned plan id for the entire run. Resolve that exact address with:
 
 ```bash
-ledger path --source universalist --repo PROJECT_ROOT --id PLAN_ID
+ledger --source universalist path --repo PROJECT_ROOT --id PLAN_ID
 ```
 
 Use `latest` only when no run-specific address survives:
 
 ```bash
-ledger latest --source universalist --repo PROJECT_ROOT
-ledger latest --source universalist --repo PROJECT_ROOT --format path
+ledger --source universalist latest --repo PROJECT_ROOT
+ledger --source universalist latest --repo PROJECT_ROOT --format path
 ```
 
 `latest` scans valid plan ids and does not maintain a mutable pointer. Before resuming a recovered latest plan, verify that its Track, Signal, and Seam / files identify the current task; concurrent runs may have newer plans. If the required ledger source is unavailable, stop with the exact missing command/version rather than inventing an id or writing the file directly.
@@ -1190,33 +1161,18 @@ Minimum fields:
 
 ## Track:
 ## Boundary disposition:
+## Disposition rationale and evidence:
 ## Signal and evidence:
-## Claim mode / claim scope:
 ## Ordinary candidate:
-## Comparison universe:
 ## Architectural axis:
-## Architectural hole / exact requirements:
-## Linked Universal Problem packets:
-## Candidate requirement witnesses:
-## Candidate proof profiles:
-## Alternatives considered / contradicted / rejected / unresolved:
-## Universal shadow nomination:
+## Relevant cards and dispositions:
+## Alternatives considered:
 ## Material architectural delta:
 ## Evidence debt:
-## Root adjudication / selected route:
+## Selected route:
 ## Construction:
 ## Canonical boundary artifact:
-## Universal witness / mediator:
-## Existence / nonexistence:
-## Commutation / preservation:
-## Competitor mediation:
-## Canonicality / uniqueness-up-to:
-## Falsifier / negative witness:
-## Obstruction counterexample / stability / reopening condition:
-## Effective presentation / resource bound:
 ## Worlds / boundaries inventory:
-## Admissible alternatives / comparison maps:
-## Observations / equivalence:
 ## Boundary kind:
 ## Composition geometry:
 ## Boundary law:
@@ -1239,12 +1195,12 @@ If context compacts, resolve the retained plan id and read that file first. If t
 
 ## Decision observability
 
-Use [references/decision-contract.yaml](references/decision-contract.yaml) as the route authority for consequential Universalist decisions. A decision is consequential when the root boundary pass selects or preserves a construction for one changed seam by rejecting a nearby route. Ceremonial activation does not require a receipt. A Universal Problem compiler certificate is nomination evidence only; it is never the route decision or the receipt.
+Use [references/decision-contract.yaml](references/decision-contract.yaml) as the route authority for consequential Universalist decisions. A decision is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, or proof obligations. Routine seams, ceremonial activation, and uncontested choices do not allocate a plan or receipt.
 
-After the root adjudicates the nomination, selects the route, and before mutating the implementation seam, emit exactly one root-scoped receipt from the current ledger-addressed plan:
+After the root selects the route and before mutating the implementation seam, emit exactly one root-scoped receipt from the current ledger-addressed plan:
 
 ```bash
-ledger emit --source universalist \
+ledger --source universalist emit \
   --plan "$UNIVERSALIST_PLAN" \
   --contract /path/to/universalist/references/decision-contract.yaml \
   --question "Which construction owns this seam?" \
@@ -1260,7 +1216,7 @@ ledger emit --source universalist \
   --write-plan
 ```
 
-Ledger 0.10.4 or newer with Skills Seq 0.3.51 or newer derives the decision id, skill version, contract fingerprint, repository HEAD, plan id, and plan path. It consumes Seq's parsed receipt-binding projection from one immutable snapshot and validates the receipt through Seq before writing. Universalist owns the decision policy and contract; Ledger owns receipt construction and atomic plan mutation. Emit the command's JSON output once as a root assistant message so Seq can observe the decision. Keep the same concrete receipt at the end of the plan. Do not paste a static schema example.
+Ledger 0.10.6 or newer with Skills Seq 0.3.52 or newer derives the decision id, skill version, contract fingerprint, repository HEAD, plan id, and plan path. It consumes Seq's parsed receipt-binding projection from one immutable snapshot and validates the receipt through Seq before writing. Universalist owns the decision policy and contract; Ledger owns receipt construction and atomic plan mutation. Emit the command's JSON output once as a root assistant message so Seq can observe the decision. Keep the same concrete receipt at the end of the plan. Do not paste a static schema example.
 
 One plan represents one changed seam and admits one receipt. Allocate a fresh plan for a distinct seam. In team mode, workers reference the root `decision_id`; they do not echo the receipt unless they own a genuinely distinct seam with its own plan. Keep route aliases empty and use exact route ids or structured receipts; generic prose aliases contaminate retrospective audits. Set `--advanced-mechanics` to `none` unless a named mechanics topic produces the concrete artifact, interpreter or projection, law, and falsifier.
 
@@ -1463,28 +1419,18 @@ One plan represents one changed seam and admits one receipt. Allocate a fresh pl
 
 ## Output contract
 
-For any non-trivial consequential response, produce these headings in order, embedding them inside the repository's host workflow when that workflow already owns closeout:
+For any non-trivial response, produce these headings in order, embedding them inside the repository's host workflow when that workflow already owns closeout:
 
-1. **Track and boundary disposition**
-2. **Signal and evidence**
-3. **Ordinary candidate**
-4. **Comparison universe**
-5. **Architectural axis / typed hole / exact requirements**
-6. **Linked Universal Problem packets** (when the seam has independent axes)
-7. **Alternatives considered / contradicted / rejected / unresolved**
-8. **Universal shadow nomination**
-9. **Proof stack** — existence or nonexistence, commutation, mediation, canonicality, effectivity, falsifier, and obstruction reopening when applicable
-10. **Material architectural delta**
-11. **Evidence debt**
-12. **Root adjudication / selected route**
-13. **Construction**
-14. **Why this instead of nearby alternatives**
-15. **Seam / files**
-16. **Boundary and compatibility plan**
-17. **Before -> After**
-18. **Verification**
-19. **Runtime-only leftovers**
-20. **Next seam** (optional)
+1. **Track**
+2. **Signal**
+3. **Construction**
+4. **Why this instead of nearby alternatives**
+5. **Seam / files**
+6. **Boundary and compatibility plan**
+7. **Before -> After**
+8. **Verification**
+9. **Runtime-only leftovers**
+10. **Next seam** (optional)
 
 For every boundary-triggered implementation or resolution, use **Boundary and compatibility plan** to record the compact boundary receipt: boundary, disposition, owner, source/target, preserved/forgotten/generated/observed information, law, and falsifier. Activation may conclude that the existing boundary is preserved and no new abstraction is required.
 
@@ -1592,22 +1538,17 @@ Mechanics are used only after `universalist` has identified:
 ```text
 attributed registry signal and repository evidence
 ordinary repository-native candidate with law, falsifier, and resource impact
-evidence-bound comparison universe
-one architectural axis, one typed hole, and exact requirements
+one seam and the architectural axis under pressure
+relevant construction cards and their evidence-bound dispositions
 seam/worlds, boundary disposition, and boundary kind
 known side and unknown location
-typed prerequisite facts with exact epistemic state
-candidate requirement witnesses and complete proof profile
-evidence-bound contradiction or rejection for competing alternatives
+selected construction or explicit unresolved/obstructed result
+proof obligations for any selected advanced construction
 law/falsifier and effective presentation boundary
 root-owned certificate and decision boundary
 ```
 
-Then read the relevant internal mechanics reference or run:
-
-```bash
-./scripts/emit_mechanics_report.sh <topic> <language>
-```
+Then read the relevant internal mechanics reference and, when useful, its matching template.
 
 Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, comonadic spatiality, density comonads, halos, continuous comonadic maps, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, possibility sheafification, category pivots, and syntax/semantics.
 
@@ -1623,7 +1564,7 @@ For Track I and team mode, read:
 - `references/workflow/team-routing.md`
 - `references/workflow/subagent-packet-contract.md`
 
-Use `scripts/emit_universalist_team_prompt.sh` to produce an explicit orchestration prompt and `scripts/emit_effective_universal_architecture.sh` or `scripts/emit_substrate_certificate.sh` for the central artifacts.
+Use the workflow references and certificate templates to produce the explicit orchestration prompt and central artifacts.
 
 - Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
 - Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
@@ -1647,7 +1588,6 @@ Core references:
 
 Universal architecture references:
 
-- `references/universal-problem-ir.md`
 - `references/universal-construction-registry.yaml`
 - `references/universal-architecture-kernel.md`
 - `references/universal-architecture-ecosystem.md`
@@ -1704,47 +1644,6 @@ Internal mechanics references from former `kan` skill:
 - `references/mechanics/possibility-sheafification-mechanics.md`
 - `references/mechanics/category-pivot-mechanics.md`
 - `references/mechanics/syntax-semantics-mechanics.md`
-
-## Scripts
-
-- `scripts/compile_universal_problem.py`
-- `scripts/compile_universal_problem.sh`
-- `scripts/doctor.py`
-- `scripts/check_universal_problem.sh`
-- `scripts/init_universalist_plan.sh`
-- `scripts/detect_signals.py`
-- `scripts/emit_scaffold.py`
-- `scripts/emit_boundary_adapter.py`
-- `scripts/emit_verification_plan.py`
-- `scripts/emit_law_test_stub.sh`
-- `scripts/emit_universal_artifact_matrix.sh`
-- `scripts/emit_canonical_artifact_plan.sh`
-- `scripts/emit_universal_architecture_prompt.sh`
-- `scripts/emit_freyd_boundary_diagnostic.sh`
-- `scripts/emit_composition_certificate.sh`
-- `scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh`
-- `scripts/emit_context_certificate.sh`
-- `scripts/emit_context_compiler_plan.sh`
-- `scripts/emit_exact_context_prompt.sh`
-- `scripts/check_universalist.sh`
-
-
-- `scripts/emit_possibility_sheafifier.sh`
-- `scripts/emit_sheafification_certificate.sh`
-- `scripts/emit_abstraction_normal_form_plan.sh`
-- `scripts/emit_category_pivot.sh`
-- `scripts/emit_syntax_semantics_certificate.sh`
-- `scripts/emit_mechanics_report.sh`
-- `scripts/emit_comonadic_spatiality.sh`
-- `scripts/check_comonadic_spatiality.sh`
-- `scripts/emit_effective_universal_architecture.sh`
-- `scripts/emit_substrate_certificate.sh`
-- `scripts/emit_universalist_team_prompt.sh`
-- `scripts/emit_kan_stub.sh`
-- `scripts/emit_codensity_presentation.sh`
-- `scripts/emit_context_compilation_report.sh`
-- `scripts/emit_cql_context_report.sh`
-- `scripts/emit_sheafification_kan.sh`
 
 ## Templates
 

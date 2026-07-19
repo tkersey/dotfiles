@@ -4,36 +4,16 @@
 ## Boundary disposition:
 ## Disposition rationale and evidence:
 ## Signal and evidence:
-## Claim mode / claim scope:
-## Verification target: null / theorem-card id
 ## Ordinary candidate:
-## Comparison universe:
 ## Architectural axis:
-## Architectural hole / exact requirements:
-## Linked Universal Problem packets:
-## Candidate requirement witnesses:
-## Candidate proof profiles:
-## Bounded approximation boundary / refinement condition:
-## Alternatives considered / contradicted / typed rejection basis / unresolved:
-## Universal shadow nomination:
+## Relevant cards and dispositions:
+## Alternatives considered:
 ## Material architectural delta:
 ## Evidence debt:
-## Root adjudication / selected route:
-## Compiler route nomination / verified route evidence:
-## Decision receipt candidate: true / false
+## Selected route:
 ## Construction:
 ## Canonical boundary artifact:
-## Universal witness / mediator:
-## Existence / nonexistence:
-## Commutation / preservation:
-## Competitor mediation:
-## Canonicality / uniqueness-up-to:
-## Falsifier / negative witness:
-## Obstruction counterexample / stability / reopening condition:
-## Effective presentation / resource bound:
 ## Worlds / boundaries inventory:
-## Admissible alternatives / comparison maps:
-## Observations / equivalence:
 ## Boundary kind:
 ## Pullback / pushout square:
 ## Spatial geometry / halo:

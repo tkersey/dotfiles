@@ -426,21 +426,6 @@ Use when universalist has selected Track G / Possibility Sheafification.
 - Prefer plain engineering language when it conveys the same plan.
 - No sheafification mechanics without local sections, overlaps, gluing failure, possibility-envelope gap, law, and falsifier.
 
-## Scripts
-
-- `scripts/emit_sheafification_kan.sh <focus> [language]`
-- `scripts/emit_abstraction_replacement_kan.sh <focus> [language]`
-
-- `scripts/emit_world_boundary_preamble.sh scripts/emit_composition_certificate_kan.sh scripts/emit_boundary_normal_form_kan.sh scripts/emit_codensity_presentation.sh scripts/emit_context_compilation_report.sh <focus> [language]`
-- `scripts/emit_boundary_kind_map.sh [kind]`
-- `scripts/emit_kan_stub.sh <kind> [language]`
-- `scripts/emit_law_test_plan.sh <direction> [language]`
-- `scripts/emit_yoneda_pass.sh <focus> [language]`
-- `scripts/emit_defun_pass.sh <focus> [language]`
-- `scripts/emit_freyd_pass.sh <focus> [language]`
-- `scripts/emit_source_pack.sh <track> [focus]`
-- `scripts/check_skill.sh`
-
 ## References
 
 - `references/possibility-sheafification-mechanics.md`
