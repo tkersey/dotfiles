@@ -29,7 +29,20 @@ jobs:
 
       - name: Reconstruct patch
         run: |
-          cat .github/universalist-17.1.0-bootstrap/part.* \
+          cat \
+            .github/universalist-17.1.0-bootstrap/part.00 \
+            .github/universalist-17.1.0-bootstrap/part.01 \
+            .github/universalist-17.1.0-bootstrap/part.02a \
+            .github/universalist-17.1.0-bootstrap/part.02b \
+            .github/universalist-17.1.0-bootstrap/part.02c \
+            .github/universalist-17.1.0-bootstrap/part.02d \
+            .github/universalist-17.1.0-bootstrap/part.03 \
+            .github/universalist-17.1.0-bootstrap/part.04 \
+            .github/universalist-17.1.0-bootstrap/part.05 \
+            .github/universalist-17.1.0-bootstrap/part.06 \
+            .github/universalist-17.1.0-bootstrap/part.07 \
+            .github/universalist-17.1.0-bootstrap/part.08 \
+            .github/universalist-17.1.0-bootstrap/part.09 \
             | tr -d '\n' \
             | base64 --decode > /tmp/pr123-final-patch.tar.xz
           echo "4a19d5db97092006b4017b1f28bbdd67faaf1ba895e276ca47f32f92dc9e7266  /tmp/pr123-final-patch.tar.xz" \
