@@ -4,6 +4,7 @@
 Usage:
     emit_boundary_adapter.py <kind> <language>
 """
+
 from __future__ import annotations
 
 import argparse

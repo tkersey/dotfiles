@@ -1,7 +1,14 @@
 interface:
-  display_name: "Universalist"
-  short_description: "Apply Universalist at every code boundary."
-  brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to inspect the code boundary this implementation or resolution creates, changes, preserves, repairs, or removes. Produce the smallest boring repository-native candidate first, run the categorical corpus as a hidden universal shadow, keep it only when it creates a material architectural delta, and emit plain engineering artifacts, laws, falsifiers, or an obstruction. Expose categorical names only when explicitly requested."
+  display_name: Universalist
+  short_description: Apply Universalist at every code boundary.
+  brand_color: '#6D5EF6'
+  default_prompt: Use $universalist to inspect the owned boundary this implementation
+    or resolution creates, changes, preserves, repairs, removes, or bypasses. Record
+    an attributed disposition rationale, start with the smallest ordinary repository-native
+    candidate, and use the hidden experimental Universal Problem compiler only when
+    a consequential one-axis architectural hole remains. The compiler nominates or
+    verifies one evidence-bound theorem card; the root adjudicates. Missing evidence,
+    unclassified holes, and no-admissible-construction states fail closed without
+    invented routes.
 policy:
   allow_implicit_invocation: true

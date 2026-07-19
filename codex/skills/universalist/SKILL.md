@@ -1,89 +1,131 @@
 ---
 name: universalist
-description: "Use whenever implementing, reviewing, or resolving code that considers a boundary: creating, changing, preserving, validating, migrating, bypassing, or removing how values, effects, state, evidence, authority, or behavior cross modules, APIs, schemas/DTOs, serializers, storage/wire formats, parsers/validators, handlers, runtimes, protocols, plugins/tools/CLIs, processes, repositories, or public/internal contracts. Trigger even for ordinary feature work or PR/review resolution when boundary behavior is in scope; boundary consideration itself is the signal. Start with one boundary/seam; identify source/target worlds, carriers, operations, observations, laws/non-laws, interpreter/projection/handler, compatibility, falsifier, and resource impact, then choose the smallest honest construction. Keep implicit invocation enabled. Team mode only on explicit request. Use category theory as a hidden optimizer; expose expert names only on request."
+description: "Use whenever implementing, reviewing, or resolving code that considers a boundary: creating, changing, preserving, validating, migrating, bypassing, or removing how values, effects, state, evidence, authority, or behavior cross modules, APIs, schemas/DTOs, serializers, storage/wire formats, parsers/validators, handlers, runtimes, protocols, plugins/tools/CLIs, processes, repositories, or public/internal contracts. Trigger even for ordinary feature work or PR/review resolution when boundary behavior is in scope; boundary consideration itself is the signal. Start with one boundary/seam; identify source/target worlds, carriers, operations, observations, laws/non-laws, interpreter/projection/handler, compatibility, falsifier, and resource impact, then choose the smallest honest construction. Keep implicit invocation enabled. Team mode only on explicit request. Includes ADD, Kan/Yoneda/Coyoneda/Freyd-AFT/Freyd-category/operad/codensity/CQL/sheafification mechanics."
 ---
 
 # Universalist
 
-Use this skill whenever implementation, refactoring, review, migration, or resolution considers a code boundary. A boundary is a seam where values, effects, state, evidence, authority, or observable behavior cross between owners or representations.
+Use this skill whenever a code boundary is considered. Its highest leverage comes from changing the **shape of truth** in a codebase, but it may conclude that an existing boundary is already exact and should be preserved.
 
-Default discipline:
+Default operating discipline: one signal, one seam, one smallest honest construction.
 
-```text
-one signal
-one seam
-one smallest honest construction
-one executable law
-one falsifier
-```
+## Boundary-trigger mandate
 
-Activation is broad; escalation is narrow. The existing boundary may already be exact. In that case record it as preserved and continue ordinary delivery without inventing new structure.
+Use this skill whenever implementation, refactoring, review, migration, or resolution work considers a code boundary. Do not wait for category-theory language or a broad architecture request. Boundary consideration itself is the activation signal.
+
+A code boundary is any seam where values, effects, state, evidence, authority, or observable behavior cross between owners or representations. This includes module/package APIs, public/internal contracts, DTOs/schemas/codecs, parsers/validators, storage/wire formats, syntax/interpreters/compilers, pure/effect handlers, state machines/protocols, plugins/tools/CLIs, processes, repositories, and deployment surfaces.
+
+A boundary is considered whenever the task chooses, creates, changes, preserves, validates, migrates, bypasses, removes, or resolves that seam.
+
+Apply the lens in both directions:
+
+- **Implementation** — name the boundary and owner; state preserved, forgotten, generated, and observed information; name compatibility, law, and falsifier before mutation; then let the repo's normal implementation flow carry the change.
+- **Resolution** — classify whether the finding or failure is a boundary liability; repair it at the owner boundary; reject symptom-only patches that leave boundary drift; verify the boundary disposition and law after repair.
+
+Resolution includes PR/review findings, failing tests, regressions, migration defects, compatibility defects, and closeout decisions whose repair changes or relies on boundary behavior.
+
+Activation is broad; escalation is narrow. If the existing boundary is already exact, record it as preserved and continue ordinary implementation or resolution. Do not invent categorical structure merely because the lens activated.
 
 ## Trigger-to-evidence kernel
 
-Record this compact disposition immediately:
+When the boundary trigger fires, execute this kernel before entering the longer doctrine:
+
+1. Record the compact boundary disposition immediately:
 
 ```text
 Boundary:
 Disposition: preserved / introduced / changed / repaired / removed / bypass-justified
+Disposition rationale and evidence:
 Owner:
 Source / target:
 Preserved / forgotten / generated / observed:
-Compatibility:
 Law:
 Falsifier:
-Resource impact:
 ```
 
-For implementation, name the boundary and owner before mutation. For review or resolution, repair boundary liabilities at the owning seam rather than patching downstream symptoms.
+2. Decide whether the route is consequential under **Decision observability**: it selects or preserves a construction for one changed seam by rejecting a nearby route.
+3. If the route is consequential, select the track, allocate one fresh ledger-addressed Universalist plan through **Step 0**, and emit exactly one root `SDR-v1`. When mutation is in scope, complete this gate before mutating the seam. A consequential `UNI-PRESERVE` decision follows the same gate.
+4. If the route is not consequential, retain the compact disposition and continue the ordinary workflow. Do not allocate a plan or emit `SDR-v1` solely because the skill activated.
 
-## Universal problem compiler
+This kernel is the execution entrypoint. **Step -1**, **Step 0**, and **Decision observability** remain the detailed authorities for the receipt, plan, and decision contract.
 
-Category theory is the hidden optimizer, not the default user-facing vocabulary. Every consequential seam uses a two-pass decision:
+This is an **inner lens** for choosing the right structural move. It may trigger during ordinary implementation or resolution when a boundary is considered, but it does not replace the repo's implementation, review, or closeout workflow.
+
+This is now the single top-level skill for the Universal Architecture doctrine. The former `kan` skill has been folded into this skill as an internal mechanics layer under `references/mechanics/`, `templates/mechanics/`, and `scripts/emit_mechanics_report.sh`.
+
+## Universal Problem shadow
+
+For a consequential structural choice, state the **ordinary candidate** first, then formulate an evidence-bound **comparison universe** and one **architectural axis with one typed hole**. Use `references/universal-problem-ir.md` and `references/universal-construction-registry.yaml` as the hidden categorical nomination protocol. The current contract is `universal-problem/v6`; every packet declares a claim mode (`nomination` or `verification`), a claim scope (`literal`, `effective_realization`, or `bounded_approximation`), and an attributed rationale for the boundary disposition.
+
+One packet addresses one axis:
 
 ```text
-repository facts
-  -> smallest boring repository-native candidate
-  -> universal-problem IR
-  -> hidden categorical shadow
-  -> material-delta gate
-  -> selected effective presentation or obstruction
+data shape / syntax-semantics / behavior / base composition /
+description composition / context action / locality / schema-context /
+transport-realization / presentation / proof
 ```
 
-Use this protocol:
+When one seam has independent pressures on several axes, compile separate linked Universal Problem packets under the same root plan. Do not select one global theorem-card winner that silently drops effect order, description composition, context framing, locality, transport, or presentation obligations.
 
-1. **Ordinary candidate** — first propose the smallest ordinary type, adapter, checked constructor, context parameter, state machine, operation IR, handler, graph, query, merge, or explicit loop that could own the seam.
-2. **Comparison universe** — declare admissible alternatives, allowed transformations, required observations, equivalence/normalization, compatibility, authority, effects, and resources.
-3. **Architectural hole** — identify whether the unknown is an object, map, extension, realizer, composition, representation, observation surface, local context, or local-to-global glue.
-4. **Universal shadow** — search `references/universal-construction-registry.yaml` and its `references/universal-constructions/` theorem cards for a distinguished effective completion or obstruction. Never invent missing preconditions.
-5. **Materiality gate** — retain the shadow only when it changes at least one of: owner, representable states, legal composition, information flow, interpreter/projection ownership, public construction paths, proof obligations, resources, existence, or migration strategy.
-6. **Lowering** — compile the selected semantics into repository-native code using current language, framework, tests, compatibility, and cost constraints.
-7. **Theory erasure** — ordinary output uses plain engineering language. Preserve the construction key in the plan/certificate; show expert categorical names only when explicitly requested.
+The comparison universe must attribute its objects, admissible transformations, observations/equivalence, effects, authority, and resources to repository evidence. Signals must be known by the registry and compatible with the packet axis, hole, claim mode, and claim scope. Unknown signals, unknown fact keys, unrelated facts, and cross-axis signals fail closed. Prerequisite facts use exact epistemic states: evidenced true, evidenced absent, or unknown. Strings such as `"yes"`, assumptions, and uninspected prose do not satisfy a prerequisite.
 
-A categorical name without a material architectural delta is discarded. Record `advanced mechanics: none` and retain the ordinary candidate.
+The compiler validates and nominates; the root workflow adjudicates. Nomination mode leaves `verification_target` null. Verification mode names exactly one selectable theorem-card id and verifies only that target; it does not rerun an open-ended tournament or emit a root route. `scripts/compile_universal_problem.py` may report an ordinary-sufficient route, one nomination, underdetermination, unresolved alternatives, evidence conflict, obstruction debt, or epistemic debt. It never owns the final route, implementation authorization, plan, or `SDR-v1` receipt.
 
-Use `scripts/compile_universal_problem.py` for deterministic theorem-card selection. Read `references/universal-problem-ir.md` for the protocol and use `templates/universal-problem-certificate.md` for consequential decisions.
+The executable compiler is experimental decision support. It may be skipped when the root can apply this protocol directly with less ceremony. Removing compiler output never removes the category theory: the theorem registry, mechanics, universal witness contract, materiality gate, and obstruction discipline remain authoritative reasoning aids.
 
-## Universal witness contract
+For `bounded_approximation`, the proof profile additionally requires an attributed approximation boundary and a refinement condition showing how stronger evidence, budget, or representation can narrow the loss.
 
-A local equation or commuting square is not yet a universal architectural claim. A consequential universal claim requires:
+A selectable candidate needs two distinct evidence layers:
+
+1. exact requirement-level witnesses showing a material change in owner, authority, compatibility, representable states, legal composition, effect semantics, locality, information flow, interpreter, construction paths, proof, resources, existence, or migration;
+2. a complete evidence-bound proof profile.
+
+The universal proof profile is existence, commutation/preservation, competitor mediation, canonicality/uniqueness-up-to, effectivity, and falsifier. The obstruction profile is nonexistence, counterexample, stability, effectivity, falsifier, and reopening condition. Generic theorem-card prose is guidance, not repository proof.
+
+Do not let signal count, evidence count, diagnostic priority, or registry order manufacture a winner. Explicit candidate rejection is a typed attributed record whose basis is one of: counterexample, prerequisite absence, observation failure, requirement mismatch, resource dominance, ordinary dominance, or scope mismatch. A complete candidate may be nominated only after every other attributed alternative is contradicted by prerequisite evidence or explicitly rejected with evidence. A rejected candidate cannot also carry witnesses or proofs. Support-only cards define or guard the comparison universe and can never become implementation artifacts.
+
+Missing evidence is not obstruction; it is an epistemic block. An active obstruction blocks constructive nomination until it is completed, contradicted, or explicitly rejected. A complete obstruction and a complete constructive candidate produce an evidence conflict for root adjudication; neither wins by priority.
+
+If exact hole requirements remain unmet and no compatible selectable signal classifies the hole, return `unclassified-hole` with no route. If every attributed candidate is contradicted or rejected while requirements remain unmet, return `no-admissible-construction` with no route. Never disguise either state as an ordinary or preserved boundary.
+
+Ordinary routing follows boundary disposition. An ordinary solution for an introduced, changed, repaired, or removed seam is `UNI-ORDINARY`, not `UNI-PRESERVE`. `UNI-PRESERVE` is reserved for an already exact preserved seam. A justified primitive bypass uses the `UNI-OBSTRUCT` policy route.
+
+Derived expert mechanics such as category pivots, spatial Day composition, spatial contextual framing, Day-center/strong-context correspondences, Cayley-style representations, and primitive presentation are expressed as linked axis packets or hypothesis guards. They are not added as global peer winners.
+
+Default user-facing output is plain repository language. Expose expert names and linked theorem references only when the user explicitly asks for the mathematical derivation.
+
+## Doctrine index
+
+Universalist includes Track A0, Track D, Track E, Track F, Track G, Track H, and Track I. It uses Universal architecture, Domain Algebra Discovery, Algebra before architecture, Universal Composition Doctrine, Composition Certificate, Boundary Normal Form, Presentation Strategy Doctrine, Dense-Dual Presentation, Exact Context Doctrine, Context Certificate, Context Normal Form, Verified Context Plane, Possibility Sheafification, Sheafification Certificate, Abstraction Normal Form, Syntax/Semantics Pivot, Easy-World Transfer, Category Pivot Certificate, World and Boundary Inventory, Boundary Kind Taxonomy, Boundary Law Catalogue, Unknown-location artifact selector, ADD carriers/operations/observations/laws, Freyd/AFT, Freyd categories, operads, composition geometry, free builder, obstruction report, Behavioral coalgebra, Effect signature, and internal mechanics layer via `emit_mechanics_report.sh` for `P : B -> C`. Core guardrails include: Allow arbitrary domain primitives; Allow arbitrary sources; Forbid uncertified semantic consumption; Operational stores own mutation; Verified context planes own semantic publication; Presentations compress; Do not merely abstract. Sheafify possibility.
+Do not force a hard problem to stay in the ordinary executable-program world when syntax, semantics, posets, relations, coalgebras, schemas, resources, or presheaves make the required operation explicit. For whole-system work, require an effective computational substrate, concrete primitive register, universal evaluator or equivalent, recursion/partiality, effect and state semantics, observations, resource model, and executable witnesses.
+
+The enriched slogan is:
+
+> Universal architecture is the practice of designing software around canonical boundary artifacts: **free syntax, coherent observations, transported semantics, lifted implementations, free builders behind projections, obstruction reports, behavioral coalgebras, effect signatures with handlers, explicit IRs, and law tests.**
+
+Core discipline:
+
+> Allow arbitrary domain primitives, but do not allow arbitrary composition across architecture boundaries.
+
+> Do not merely abstract. Sheafify possibility.
+
+Ordinary code may live inside a boundary: I/O, math, parsing, vendor APIs, database drivers, model calls, clocks, randomness, local algorithms, and low-level loops. Composition boundaries should be explicit artifacts: syntax, observations, projections, transports, lifts, handlers, state transitions, IRs, or law tests.
+
+
+
+## Track A0 — Domain Algebra Discovery
+
+Use Track A0 before universal-architecture escalation when the local world is not yet algebraically clear. This is the former Algebra-Driven Design kernel folded into `universalist`.
+
+Core rule:
 
 ```text
-existence
-commutation / observation preservation
-admissible competitors
-mediator / factorization
-canonicality or uniqueness up to declared equivalence
-finite or effective presentation
-resource bound
-nearest-route falsifier
+Algebra before architecture.
 ```
 
-A mathematically existing construction without an effective presentation is an obstruction, not an implementation.
+Do not choose a universal boundary artifact until the local domain algebra has exposed the carriers, operations, observations, laws, and non-laws that make the world real.
 
-## Domain algebra before architecture
-
-When the local world is unclear, run a compact Domain Algebra Discovery pass:
+A compact Domain Algebra pass produces:
 
 ```text
 Domain:
@@ -98,11 +140,432 @@ Architecture implications:
 Escalation candidates:
 ```
 
-Do not select a boundary artifact until carriers, operations, observations, laws, and non-laws are concrete enough to change code or tests.
+Use Track A0 when:
 
-## World and boundary inventory
+- carriers or data domains are unclear;
+- operations are named only by controllers, services, or helper functions;
+- equality is implicit or observation-dependent;
+- laws are suspected but untested;
+- tempting algebraic laws may be false under stronger observations;
+- pure and effectful operations are mixed;
+- the system needs property-test-derived implementation guidance before a larger Track D/E/F/G/H move.
 
-For a non-trivial seam record:
+ADD mappings into Universalist:
+
+| ADD term | Universalist role |
+| --- | --- |
+| Carrier | object/type/world inhabitant |
+| Operation | morphism, constructor, eliminator, effect, transition |
+| Observation | semantic consumer / equality probe / Yoneda-like observation |
+| Law | invariant, interpreter law, boundary law, property test |
+| Non-law | falsifier, obstruction, false equivalence, observation-strength warning |
+| Interpreter | syntax/semantics boundary, handler, evaluator |
+| Property test | executable witness |
+| Architecture implication | Track B/D/E/F/G/H routing candidate |
+
+The output of Track A0 should either stay local—types, operations, law tests—or justify escalation:
+
+```text
+law failure at a boundary      -> Track D / Track E
+uncertified context            -> Track F
+inexact abstraction            -> Track G
+wrong representation category  -> Track H
+whole-system substrate design  -> Track I
+```
+
+
+## Effective Universal Architecture Thesis
+
+Thesis:
+
+> I can implement any computable software on an effective universal computational substrate while using category theory to define its entire architecture of composition, interpretation, effects, state, boundaries, observations, and laws.
+
+Treat this as an engineering thesis with proof obligations, not as permission to call every abstraction categorical. Category theory governs architecture; effective syntax, interpreters, concrete primitives, and runtime machinery make it executable.
+
+A qualifying substrate must make these capabilities concrete:
+
+```text
+program/data representation
+universal evaluation or equivalent interpretation
+composition and identities
+general recursion, iteration, partiality, or another universal-computation mechanism
+external effects and concrete primitives
+state and ongoing interaction
+concurrency/distribution when the target requires them
+observations and an equivalence notion
+finite/effective presentations of categorical artifacts
+resource semantics: time, space, latency, failure, capability, or cost
+```
+
+Use the **Substrate Reality Law**:
+
+```text
+No universality claim without an effective program representation.
+No categorical artifact without an executable interpreter or compiler.
+No external behavior without a named concrete primitive and handler.
+No semantic-equivalence claim without observations.
+No practical architecture without a resource model.
+```
+
+A system is in **Effective Categorical Normal Form** when:
+
+- every architecture-level composition is governed by a named categorical artifact;
+- every artifact has a finite or effective presentation;
+- every presentation has an interpreter, compiler, handler, projection, or lowering;
+- concrete primitives are isolated behind explicit effect/boundary interfaces;
+- recursion/partiality and ongoing interaction are modeled honestly;
+- required observations and laws are executable;
+- resource and deployment constraints are part of the architecture rather than afterthoughts;
+- unsupported constructions produce obstruction reports instead of decorative mathematics.
+
+Use Track I when the task is to design, implement, or refactor an entire software capability under this thesis.
+
+## Categorical Substrate Team Mode
+
+Universalist is a workflow skill with bundled custom subagents. Subagent use is **explicitly gated**:
+
+```text
+Only spawn the team when the current user prompt explicitly asks for subagents,
+parallel agents, team mode, the categorical substrate team, or equivalent delegation.
+```
+
+Otherwise run the same workflow in the root agent without spawning children.
+
+When team mode is authorized, use the smallest sufficient roster from `codex/agents/`:
+
+- `universalist-world-cartographer` — map worlds, boundaries, existing abstractions, primitives, observations, and evidence.
+- `universalist-substrate-architect` — test computational universality, effective presentation, recursion/partiality, and concrete primitive support.
+- `universalist-categorical-architect` — select canonical constructions, category pivots, and boundary artifacts.
+- `universalist-semanticist` — separate syntax/semantics and model effects, state, interpretation, observations, and equivalence.
+- `universalist-resource-realist` — pressure-test time, space, latency, concurrency, failure, security, deployment, and operational fit.
+- `universalist-proof-auditor` — challenge effectivity, soundness, completeness, observational equivalence, laws, and falsifiers.
+- `universalist-witness-implementer` — implement exactly one root-selected witness seam after architecture is synthesized.
+- `universalist-verifier` — independently verify the implemented witness and certificate claims.
+
+Workflow:
+
+```text
+explicit team request
+  -> spawn 2-6 read-only specialists in parallel
+  -> wait for all packets
+  -> root synthesizes one Effective Universal Architecture Certificate
+  -> proof auditor challenges it
+  -> root selects one witness seam
+  -> one writer implements it
+  -> verifier checks the laws and resource claims
+  -> root integrates, certifies, and stops
+```
+
+The root agent owns scope, synthesis, final decisions, write ordering, closure, and user-facing conclusions. Specialist packets are evidence, not truth. Read-only agents must not edit. Only one writer may mutate a seam at a time. Child agents must not recursively spawn more agents.
+
+## Universal Composition Doctrine
+
+Maxim:
+
+```text
+Allow arbitrary primitives. Forbid arbitrary composition.
+```
+
+A software system is universally architected when every meaningful composition boundary between worlds factors through a canonical boundary artifact, and every such artifact has an interpreter, projection, lowering, handler, or law-test witness.
+
+Use this doctrine to separate two questions:
+
+```text
+Can the primitive compute?      Ordinary implementation question.
+Can the boundary compose?      Universal architecture question.
+```
+
+A **Composition Certificate** is the unit of universal architecture. It records:
+
+```text
+worlds
+boundary
+unknown location
+canonical artifact
+interpreter / projection / lowering / handler
+law witness
+falsifier
+bypass policy
+```
+
+A codebase is in **Boundary Normal Form** when all meaningful cross-world composition boundaries have Composition Certificates, and all bypasses are removed or explicitly justified as primitive effects.
+
+Engineering law:
+
+```text
+No boundary without an artifact.
+No artifact without an interpreter.
+No interpreter without a law.
+No law without a falsifier.
+```
+
+Use Track E when the user wants to move a codebase toward Boundary Normal Form, or when the main output should be a Composition Certificate rather than an immediate implementation.
+
+## Presentation Strategy Doctrine
+
+The codensity transcript adds one more architectural question: not only **what canonical artifact owns the boundary**, but **how that artifact is presented**. Complex artifacts need presentation strategies.
+
+Use this extension of the engineering law stack:
+
+```text
+No boundary without an artifact.
+No artifact without a presentation.
+No presentation without an interpreter / projection / reconstruction.
+No reconstruction without a law.
+No law without a falsifier.
+```
+
+Presentation modes:
+
+- **Algebraic presentation** — use generators, operations, equations, syntax, free objects, effect signatures, and handlers. Prefer when the artifact is operational, finitary, command-like, or naturally syntax-first.
+- **Codensity / dense-dual presentation** — use a small dense world of probes plus a dual/observational bridge and reconstruction. Prefer when the artifact is semantic, infinitary, completion-like, probabilistic, topological, observational, or too large for a clean generators/equations presentation.
+- **Mixed presentation** — use algebraic syntax for operations and dense probes for semantic competence, safety, policy, probability, traces, or compatibility. Agentic systems are a stress test, not the center of the doctrine.
+- **Primitive presentation** — explicitly contain the boundary as a primitive effect when no useful artifact/presentation is available yet.
+
+New doctrine sentence:
+
+```text
+Primitives compute. Boundaries compose. Presentations compress. Contexts prepare. Witnesses certify.
+```
+
+Dense-Dual Presentation principle:
+
+> When a semantic artifact is too large, infinitary, observational, or completion-like to present by generators and equations, try to present it by a small dense world of probes plus a duality or observation bridge into the semantic world.
+
+Reject canonical-but-useless presentations. Prefer small, testable, dense presentations that separate generic boundary machinery from domain-specific representation assumptions.
+
+## Exact Context Doctrine
+
+Maxim:
+
+```text
+Allow arbitrary sources. Forbid uncertified semantic consumption.
+```
+
+Exact Context Doctrine is the context-preparation layer of Universal Composition. It applies whenever a model, human, policy engine, planner, scheduler, workflow, tool selector, compiler pass, or other semantic consumer is about to decide, act, rank, classify, answer, approve, execute, or infer.
+
+A semantic consumer should not receive raw retrieved material, raw tool output, stale memory, untyped chunks, or unconstrained summaries. It should receive a **task-indexed, schema-shaped, constraint-closed, provenance-preserving, freshness-valid, observationally minimal context instance**.
+
+Use this pipeline:
+
+```text
+Task q
+  -> task-specific context schema T_q
+  -> task observables Obs_q
+  -> candidate source instance I_candidate
+  -> source-to-context mapping M_q
+  -> migrated context instance
+  -> chase / deterministic constraint closure
+  -> provenance + missingness + contradiction structure
+  -> observational core relative to Obs_q
+  -> rendered decision packet
+  -> semantic consumer
+```
+
+Compact formula:
+
+```text
+Context(q) = core_Obs(chase(migrate_{M_q}(I_candidate)))
+DecisionPacket(q) = render(Context(q))
+```
+
+The prompt is not the context. A prompt, dashboard, JSON payload, tool argument, review packet, or decision brief is only a rendering of the semantic context.
+
+Engineering law:
+
+```text
+No semantic consumption without certified context.
+No context without a schema.
+No schema without observables.
+No observables without provenance and freshness.
+```
+
+Use Track F when the main issue is having just the right data at just the right time.
+
+## Verified Context Plane Principle
+
+Exact Context is universal, not agent-specific. The general boundary is:
+
+```text
+Prepared Context -> Semantic Consumer
+```
+
+A semantic consumer may be a model, human reviewer, policy engine, compiler pass, workflow scheduler, deployment controller, planner, ranker, classifier, BI dashboard, auditor, test harness, action selector, or agent runtime.
+
+Use this plane split:
+
+```text
+Operational Source Plane
+  mutable systems of record, logs, documents, APIs, event streams, tools, live stores
+
+Candidate Plane
+  retrieved / observed / sampled / extracted candidate source instances
+
+Verified Context Plane
+  schemas, mappings, constraints, provenance, normalization, reconciliation
+
+Publication Plane
+  stable task-indexed context snapshots and Context Certificates
+
+Rendering Plane
+  prompt, JSON packet, dashboard, report, tool args, policy input, review packet
+
+Semantic Consumption Plane
+  consumer decision, action, approval, execution, ranking, inference, or audit
+```
+
+Rule:
+
+```text
+Operational stores own mutation.
+Verified context planes own semantic publication.
+```
+
+CQL and categorical databases are reference technologies for the verified context plane when schemas, mappings, constraints, integration, and provenance matter. Do not treat CQL as a default live-memory substrate. Pair it with operational stores when low-latency mutation, distributed writes, access control, or streaming are central.
+
+
+## Possibility Sheafification Doctrine
+
+Maxim:
+
+```text
+Do not merely abstract. Sheafify possibility.
+```
+
+A codebase already contains local evidence about what its abstractions mean: call sites, tests, controllers, serializers, database constraints, UI assumptions, policy checks, adapters, plugin hooks, event handlers, context schemas, and generated artifacts. Treat those local usages as a **site**. Treat each local meaning as a **section**. Treat shared identifiers, fields, traces, fixtures, and observations as **overlaps**.
+
+An architecture-level abstraction is correct when compatible local meanings glue to one global meaning, and do so uniquely up to intended equivalence.
+
+```text
+compatible local meanings glue uniquely to global meaning
+```
+
+Possibility Sheafification is the abstraction manipulator that turns a messy presheaf of local meanings into a sheaf-like exact abstraction:
+
+- local meanings agree on overlaps;
+- every compatible family has a global representation;
+- the global representation is unique up to intended quotient/canonicalization;
+- impossible global states are excluded;
+- missing valid global states become explicit obligations or extensions;
+- redundant global states are quotiented or normalized.
+
+Use Track G when the user wants the architecture to become inevitable: abstractions should admit exactly what is possible and no more. A codebase reaches **Abstraction Normal Form** when architecture-level abstractions behave like sheaves over their intended usage sites.
+
+### Four sheaf failures
+
+1. **Local inconsistency** — local meanings disagree on overlaps. Repair with split states, refined types, equalizers, pullbacks, observation coherence, or an obstruction report.
+2. **Missing global glue** — local meanings are compatible but no global artifact represents them. Repair with free syntax, lifted implementation, effect signature, realizer, obligation ledger, context schema, or generated IR.
+3. **Non-unique gluing** — multiple global representations produce the same local observations. Repair with quotient, normalization, canonical IR, coequalizer-like artifact, or single interpreter.
+4. **Hidden excess possibility** — the global abstraction admits states no local behavior can justify. Repair with refined types, sum types, state machines, behavioral coalgebras, or exact context constraints.
+
+New doctrine stack:
+
+```text
+Primitives compute.
+Boundaries compose.
+Presentations compress.
+Contexts prepare.
+Abstractions constrain possibility.
+Easy worlds solve.
+Witnesses certify.
+```
+
+## Easy-World Transfer / Category Pivot Doctrine
+
+Maxim:
+
+```text
+Do not force a hard operation to stay in the ordinary executable-program world when another world makes it explicit.
+```
+
+Use Track H when a problem is hard because it is represented in the wrong category/world. In Universalist language, **Hask** means the ordinary executable-program world of computer science: functions, callbacks, services, branches, effects, IO, runtime behavior, and code-as-executed. That world is computationally expressive but often opaque to agents.
+
+A category pivot asks:
+
+```text
+Current world: where are we trying to solve this?
+Hard operation: inspect, compare, serialize, prove, minimize, merge, diff, totalize, authorize, explain, or replay?
+Easy world: syntax, semantics, poset/lattice, relation, coalgebra, schema instance, resource model, presheaf/site, trace, or context schema?
+Transfer: how do we encode into the easy world and interpret back?
+Law: what observation is preserved?
+Falsifier: when does the transfer fail?
+```
+
+The most important pivot for coding agents is **syntax/semantics**:
+
+```text
+Syntax gives handles: plans, operations, policies, memory queries, workflow steps, patches, certificates.
+Semantics gives meaning: effects, traces, public behavior, policy outcomes, memory consequences.
+Interpreters connect them: handle, run, compile, lower, render, project.
+Laws certify them: accepted syntax denotes valid semantics; required semantic distinctions remain observable.
+```
+
+Use syntax when behavior needs inspection, replay, policy checks, serialization, diffing, total handling, simulation, provenance, or multiple interpreters. Use semantics when deciding what observations define correctness. Do not let agentic systems execute opaque intent; interpret certified syntax into observed semantics.
+
+## Composition Geometry Selector
+
+A universal artifact is not enough when the **geometry of composition** is itself the architectural decision. Before encoding a call graph, pipeline, service graph, effect runner, or subsystem assembly, select the weakest structure that makes legal composition explicit.
+
+Use this selector:
+
+| Composition pressure | Preferred structure | Architectural reading |
+| --- | --- | --- |
+| One transformation after another | Category | sequential typed composition |
+| Independent context or parallel composition with lawful interchange | Monoidal category | components compose side-by-side |
+| Pure values coexist with ordered call-by-value effects | Freyd / premonoidal category | pure transformations commute; effectful computations preserve sequencing |
+| Typed many-input, one-output hierarchical assembly | Colored operad | legal component wiring and substitution grammar |
+| Multiple inputs and outputs are fundamental | PROP or properad | network/process architecture without artificial product bundling |
+| Feedback, recursion, or cyclic signal flow is fundamental | Traced monoidal category, temporal wiring, or coalgebra | explicit feedback and ongoing behavior |
+| Inputs are consumable, affine, graded, permissioned, or costly | Linear / graded / resource-sensitive category | resource use and duplication are part of composition |
+
+Core distinction:
+
+```text
+Categories describe transformations.
+Operads describe legal hierarchical assembly.
+Freyd categories describe ordered effectful execution under call-by-value.
+Algebras/interpreters give these structures concrete semantics.
+```
+
+Use a **colored operad** when typed ports, hierarchical substitution, and several interpretations of the same wiring matter. Use a **nonsymmetric/planar operad** when order is semantic. Escalate to a PROP/properad for genuine multiple-output wiring, and to traced/coalgebraic structure for feedback.
+
+Use a **Freyd category** when values and computations share types, pure code should remain freely compositional, effects make evaluation order observable, and only certified-central operations may commute or parallelize. Distinguish this from **Freyd's adjoint functor theorem**: use `freyd-category` for effectful call-by-value mechanics and `freyd-aft` for free-builder existence diagnostics.
+
+Do not introduce these structures when ordinary composition is already exact, the grammar changes no code or tests, or a smaller sum/product/interface suffices.
+
+## Comonadic Spatiality Selector
+
+Use comonadic spatiality only when locality changes correctness, ownership, authority, evidence, or another required observation. Prefer an ordinary labelled graph or context object when it already makes the seam exact.
+
+Before selecting this mechanics family, require:
+
+- named points and local patches;
+- explicit local-to-global identity and provenance;
+- an effective finite, bounded, indexed, incremental, or queryable halo;
+- center/counit and nested-neighborhood coherence;
+- a basis/reconstruction witness or explicit non-basis status;
+- restriction/germ behavior, locality-preserving transport, and a resource law;
+- a falsifier where the point survives but required locality or labels do not.
+
+When those obligations change the artifact and proof, read `references/comonadic-spatiality-doctrine.md` and `references/mechanics/comonads-as-spaces.md`, then use `scripts/emit_comonadic_spatiality.sh` or the `comonad-space`, `density-comonad`, `halo`, and `continuous-comonad-map` topics in `scripts/emit_mechanics_report.sh`. Distinguish comonad coalgebras from behavioral coalgebras and ordinary comonad maps from continuous locality-preserving maps.
+
+## Do not trigger for
+
+- Work wholly internal to one established boundary that does not choose, change, preserve, validate, migrate, bypass, remove, or resolve boundary behavior.
+- Pure performance tuning, UI polish, formatting, or prose-only documentation that neither changes nor depends on a code boundary.
+- Category-theory exposition that does not change or adjudicate a concrete code seam, construction, boundary, or proof signal.
+
+Broad rewrites without a stable seam and domains with unstable rules still trigger the lens when boundaries are under consideration. Use Track A or Track A0 to name the obstruction and avoid freezing premature structure.
+
+## Step -1 — World and Boundary Inventory
+
+Use the compact boundary disposition from the **Trigger-to-evidence kernel** for every boundary-triggered implementation or resolution. For any non-trivial structural request, expand it into the full world and boundary inventory below. This prevents fake category labels and keeps the response anchored in repo reality.
+
+A **world** is a structured domain where some objects, transformations, invariants, observations, primitives, and composition rules make sense.
+
+A **boundary** is a map between worlds: embedding, projection, forgetful API, interpreter, compiler, serializer, view/query, handler, observer, migration, or adapter.
+
+For each candidate world, record:
 
 ```text
 World:
@@ -115,6 +578,8 @@ Composition rules:
 Equality/coherence notion:
 ```
 
+For each candidate boundary, record:
+
 ```text
 Boundary:
 Kind:
@@ -125,166 +590,575 @@ Forgotten:
 Generated:
 Observed:
 Unknown location:
-Ordinary candidate:
-Candidate universal artifact:
-Law:
+Candidate artifact:
+Law test:
 Falsifier:
 ```
 
-A proposed world is too weak when it has nouns but no transformations, no sanctioned observations, no equality/coherence notion, or no law capable of changing implementation or failure behavior.
+If this inventory cannot be filled for the seam, do not escalate to Track D, Track F, Track G, or Track H.
 
-## Ordinary construction ladder
+## Boundary Kind Taxonomy
 
-Prefer the smallest repository-native artifact first:
+Classify boundary maps before choosing canonical artifacts.
 
-| Pressure | Ordinary artifact | First proof signal |
+| Boundary kind | Software shape | Usually suggests |
 | --- | --- | --- |
-| independent fields | record / product | projections recover fields |
-| exclusive states | tagged union / coproduct | exhaustive handling; impossible mixtures rejected |
-| stable predicate | checked wrapper / refinement | valid accepted; invalid rejected |
-| shared observation agreement | owned compatibility object | mismatch rejected; projections preserved |
-| explicit source overlap | canonical integration object | overlap agreement; provenance preserved |
-| supplied behavior | strategy/function seam | parity with old branch fixtures |
-| inspectable behavior | explicit syntax/IR | interpreter agrees with old behavior |
-| ongoing behavior | transition system + observer | trace law; invalid transition rejected |
-| multiple runtimes | operation syntax + handlers | handlers agree on declared observations |
-| ordinary context | explicit parameter/adapter | same certified context reaches consumer |
-| same-index descriptions | pointwise combination | same-index interpretation agrees |
-| locality only | labelled graph / bounded context | required neighborhood preserved |
+| Embedding | old/core included in new/target | transported semantics, `Lan`, `Delta`, compatibility witness |
+| Projection | internals observed as public behavior | lifted implementation, residual obligations, Freyd/AFT diagnostic |
+| Forgetful map | rich structure erased to raw view | free builder / left adjoint question |
+| Interpreter | syntax/program/effect -> behavior | free syntax, algebra/handler/fold |
+| Compiler/lowering | source syntax/IR -> target IR/code | transported semantics, Coyoneda path, lowering law |
+| Serializer/codec | internal model -> wire/storage | adapter, projection law, round-trip/invariant preservation |
+| View/query | model -> read/report/client view | coherent observations, Yoneda observation vocabulary |
+| Handler | effect syntax -> runtime behavior | effect signature, handler laws, defunctionalized operations |
+| Pure/effect boundary | pure values enter ordered effectful call-by-value execution | Freyd/premonoidal category, centrality and order laws |
+| Component assembly | typed ports and hierarchical subsystem wiring | colored operad; PROP/properad for multiple outputs |
+| Observer | subject -> observation result | Yoneda vocabulary, law-test oracle |
+| Migration | old schema/world -> new schema/world | `Delta`, `Lan`/Sigma, `Ran`/Pi, provenance path |
+| Category pivot | hard operation in current world -> easier structured world | Syntax/Semantics Pivot, abstract domain, relation, coalgebra, schema, resource, presheaf |
+| Context compiler | source worlds -> task context schema | Exact Context, data exchange, chase/closure, observational core |
+| Semantic consumer | prepared context -> decision/action/inference | Context Certificate, rendering law, freshness law |
 
-Escalate only when the hidden universal shadow produces a concrete artifact, interpreter/projection/handler/lowering, stronger law, and material delta.
+Do not skip this taxonomy. It decides whether the seam is an extension, a lift, a free-builder question, a coalgebra, an effect handler, or just an adapter.
 
-## Composition geometry
+## World Quality Diagnostic
 
-A seam may carry three independent structural decisions. Do not collapse them into one concept menu.
+A module or domain deserves to be treated as a world only if it has enough structure to support boundary laws.
 
-### Stage 1 — Base composition
+A proposed world is too weak if:
 
-Select how values, effects, resources, components, contexts, or patches compose:
+- it has only nouns and no transformations;
+- it cannot say what counts as equality, compatibility, or coherence;
+- its invariants are unknown or still unstable;
+- its primitives and composition rules are mixed together;
+- it has no sanctioned observations;
+- no law test can observe the boundary;
+- calling it a world would not change code shape, tests, or failure modes.
 
-- sequential typed composition;
-- lawful side-by-side composition;
-- ordered pure/effectful composition;
-- typed hierarchical substitution;
-- many-input/many-output network composition;
-- explicit feedback or ongoing interaction;
-- resource-sensitive composition.
+When a world is too weak, use ordinary refactoring language and strengthen the model before applying universal architecture.
 
-### Stage 2 — Indexed-description product
+## Boundary Drift Smells
 
-When artifacts are descriptions indexed by the base world, separately select:
+Boundary drift means two worlds communicate through uncoordinated paths or hidden assumptions.
 
-- same-index pointwise combination;
-- all-decomposition combination;
-- witnessed partial/relational combination;
-- recursive typed substitution;
-- value-dependent sequencing.
+Common drift signals:
 
-Read `references/description-composition-doctrine.md` and `references/mechanics/day-convolution.md` only when an index world, tensor/kernel, legal decompositions, quotient/normal form, interpreter, and effectivity bound are concrete.
+- semantic drift: old/source semantics reimplemented differently in each target;
+- observation drift: duplicated selectors, reports, queries, or public projections disagree;
+- implementation drift: internals are invented without projecting to public behavior;
+- generation drift: generated artifacts lose source/provenance/path information;
+- control-flow drift: callbacks, closures, handlers, or continuations carry architecture semantics invisibly;
+- behavioral drift: protocols, state machines, or distributed traces are tested by snapshots but not boundary laws;
+- effect drift: operations are interpreted differently by test, production, audit, retry, or simulation handlers;
+- effect-order drift: computations are reordered, parallelized, duplicated, or discarded without a centrality/commutativity witness;
+- assembly drift: typed components are wired through arbitrary call graphs rather than an explicit hierarchical composition grammar;
+- context drift: raw retrieved chunks, stale memories, tool outputs, or summaries flow directly into a model/human/tool without schema, provenance, freshness, observables, or minimization;
+- category drift: a hard operation is being forced to remain in executable code when syntax, semantics, a poset, relation, coalgebra, schema, resource model, or presheaf would make the structure inspectable.
 
-### Stage 3 — Context action
-
-When one generalized capability must survive context extension, separately select:
-
-- ordinary parameter/adapter;
-- shared or mixed context framing;
-- explicit residual/optic IR;
-- generated all-frame closure;
-- all-context observation;
-- dependent typed context transport;
-- representability or obstruction.
-
-Read `references/contextual-morphism-doctrine.md` and `references/mechanics/tambara-modules.md` only when the ambient context world, endpoint actions, generalized capability, frame operation, coherence laws, effect owner, and effective representation are concrete.
-
-### Runtime semantics
-
-Description composition and context framing never grant effect commutativity, duplication, discard, parallelism, or resource independence. Execution order remains owned by explicit effect/resource/domain laws.
-
-## Exact Context
-
-A system reaches **Context Normal Form** when every semantic consumer receives a task-indexed, schema-shaped, provenance-preserving, freshness-valid, observationally minimal context instance through a certified publication boundary.
-
-Use Exact Context when a semantic consumer—model, human, policy engine, compiler pass, scheduler, controller, planner, dashboard, auditor, test harness, or runtime—depends on evidence quality.
+Map drift to artifacts:
 
 ```text
-candidate sources
-  -> task schema
-  -> mappings
-  -> deterministic constraint closure
-  -> provenance / freshness / missingness / contradiction
-  -> observational core
-  -> published snapshot
-  -> rendering
-  -> semantic consumer
+semantic drift        -> transported semantics / Lan-style artifact
+observation drift     -> coherent observations / Ran / Yoneda vocabulary
+implementation drift  -> lifted implementation / Freyd diagnostic
+creation drift        -> free builder behind projection or obstruction report
+generation drift      -> Coyoneda-style generation path vocabulary
+control-flow drift    -> defunctionalized explicit IR
+behavioral drift      -> behavioral coalgebra / protocol observation law
+effect drift          -> effect signature + handler laws
+effect-order drift    -> Freyd/premonoidal effect geometry
+assembly drift        -> colored operad / PROP / properad
+context drift         -> task-indexed context instance + Context Certificate
+category drift        -> Category Pivot / Easy-World Transfer Certificate
 ```
 
-Rules:
+## Boundary Law Catalogue
+
+Use these named law shapes when designing proof signals:
+
+| Boundary | Law shape |
+| --- | --- |
+| Embedding law | `new(embed(old)) == old(old)` |
+| Projection law | `observe(project(internal)) == expectedPublicBehavior` |
+| Forgetful law | `forget(combineRich(a,b)) == combineRaw(forget(a), forget(b))` |
+| Interpreter law | `interpret(translate(syntax)) == oldBehavior(syntax)` |
+| Serializer law | `decode(encode(internal))` preserves public invariants |
+| Migration law | `oldReport(old) == oldReport(restrict(migrate(old)))` |
+| Handler law | `run(handler(program))` satisfies operation observations |
+| Freyd effect-order law | pure embedding preserves identity/composition; reordering is allowed only with observational commutativity |
+| Operadic substitution law | `interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))` |
+| Coalgebra law | `observe(step(state,input))` satisfies protocol trace expectations |
+| Generation law | `lowerGenerated(payload,path) == directInterpret(path,payload)` |
+| Observation law | `runObservation(obs,repack(subject)) == runObservation(obs,subject)` |
+| Defunctionalization law | `apply(encodedCase,x) == oldFunction(x)` |
+| Context schema law | `Context(q)` satisfies task schema `T_q` |
+| Observable preservation law | every required observable is answered, missing, contradicted, or unsupported explicitly |
+| Provenance law | every evidence-bearing claim has a path to source or assumption marker |
+| Freshness law | sources satisfy task freshness requirements at semantic consumption time |
+| Rendering law | `render(Context(q))` preserves required observables under loss/token limits |
+
+Every Track D artifact should have one positive law test and one falsifier/negative witness.
+
+## Quick start: pick a track
+
+### Track A0 — Domain Algebra Discovery
+
+Use when the local world is not yet algebraically clear.
+
+Deliver:
+
+- domain;
+- carriers;
+- operations / constructors / eliminators;
+- observations / equality criteria;
+- laws;
+- non-laws / counterexamples;
+- interpreters / effect boundaries;
+- property tests / falsifiers;
+- architecture implications;
+- escalation candidates.
+
+### Track A — Diagnosis only
+
+Use when the user wants analysis, design review, refactor advice, or a structural reading of the current code.
+
+Deliver:
+
+- observed signal;
+- chosen construction;
+- why nearby alternatives are worse;
+- first seam to attack;
+- proof signal;
+- compatibility notes;
+- boundary disposition;
+- whether this is ordinary universalist structure or universal-architecture territory.
+
+### Track B — One-seam refactor
+
+Use when the user wants code changes, but the right move is narrow and reviewable.
+
+Deliver:
+
+- one seam only;
+- smallest honest construction;
+- canonical boundary artifact if needed;
+- adapter-first staging when a public boundary exists;
+- boundary disposition and owner;
+- fastest credible proof signal;
+- explicit stop point after the first verified seam.
+
+### Track C — Staged migration
+
+Use when the internal model should improve while API, JSON, DB row, or message shapes stay stable for now.
+
+Deliver:
+
+- boundary decoder or adapter;
+- internal stronger model;
+- parity or differential tests;
+- migration notes;
+- clear cut line between legacy shape and internal shape;
+- current ledger-addressed Universalist plan update.
+
+### Track D — Universal architecture boundary
+
+Use when the smell is no longer just “choose a better type” but “choose the canonical artifact at a boundary.”
+
+Deliver:
+
+- worlds involved;
+- boundary map, projection, embedding, interpreter, forgetful API, or observation map;
+- known side and unknown artifact;
+- canonical boundary artifact;
+- composition geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive;
+- presentation strategy: algebraic / codensity / mixed / primitive;
+- dense probe family and dual/observation bridge when applicable;
+- domain-specific theorem or assumption when reconstruction depends on it;
+- one executable law test;
+- one falsifier showing when the framing is overkill.
+
+Use Track D for:
+
+- duplicated projections or query/view sprawl;
+- generated artifacts losing provenance;
+- public contract determining internal implementation obligations;
+- plugin, workflow, effect, rule-engine, or DSL boundaries;
+- typed component/service/dataflow wiring where legal hierarchical assembly should replace an accidental call graph;
+- effectful call-by-value boundaries where sequencing, centrality, or claimed parallelism must be explicit;
+- protocols, state machines, streams, actors, schedulers, or distributed processes whose behavior is best specified by observations over time;
+- effect or workflow operations that need test, production, audit, explanation, simulation, and retry handlers;
+- callback/closure/handler behavior that should become explicit IR;
+- old semantics transported to a new target surface;
+- compatibility facades where several old observations must agree;
+- lifted-implementation refactors where `P : internals -> observable behavior` is vague, lossy, or intended to support a canonical implementation builder.
+
+## Universal Architecture Kernel
+
+Use this kernel for Track D decisions:
+
+1. **Worlds** — source, target, implementation, observable behavior, syntax, runtime, API, DB, UI, policy, tests.
+2. **Boundaries** — embedding `K`, projection `P`, interpreter, serializer, handler, report/view, compiler, observer.
+3. **Free syntax** — AST/IR/effect/workflow syntax before interpretation.
+4. **Coherent observations** — sanctioned observations/views that must agree.
+5. **Transported semantics** — old/source semantics carried to a new target surface.
+6. **Lifted implementations** — public behavior determines internal realizer/implementation.
+7. **Free builders behind projections** — a disciplined `P : B -> C` supports canonical construction back into `B`.
+8. **Obstruction reports** — a free/lifted implementation cannot exist because lost evidence, missing internal structure, or unbounded templates are named.
+9. **Behavioral coalgebras** — state/process behavior specified by transitions and observations over time.
+10. **Effect signatures and handlers** — operation syntax separated from runtime interpretation.
+11. **Freyd effect geometry** — pure values and ordered effectful computations share types without granting unjustified interchange.
+12. **Operadic composition grammar** — typed ports and hierarchical substitution define which subsystems can be assembled.
+13. **Explicit IR** — callbacks, handlers, continuations, predicates, mappers, and rules become data plus interpreter.
+14. **Exact context** — task-indexed context instances prepared before semantic consumption.
+15. **Context certificates** — schema, observables, provenance, freshness, missingness, contradiction, rendering, and falsifier for a context.
+16. **Law tests** — executable witnesses that the boundary artifact does what it claims.
+
+## Unknown-location artifact selector
+
+Choose by where the unknown lives:
+
+| Unknown lives... | Default artifact | First proof signal |
+| --- | --- | --- |
+| In independent fields | Product | projections round-trip |
+| In exclusive cases | Coproduct | exhaustive handling, invalid cases rejected |
+| In a stable predicate | Refined type / equalizer | constructor accepts valid and rejects invalid |
+| In shared projection agreement | Pullback witness | mismatches rejected, projections preserved |
+| In configurable supplied behavior | Exponential / strategy | fixture parity with old branch |
+| In structured syntax from generators | Free construction / initial algebra | interpreter agrees with old evaluator |
+| In ongoing behavior over time | Behavioral coalgebra | traces/unfolds satisfy observations |
+| In effectful operations with handlers | Effect signature / free effect syntax | test and production handlers agree on declared observations |
+| In pure/effectful call-by-value composition | Freyd / premonoidal effect boundary | pure embedding laws plus an order-sensitive counterexample |
+| In typed hierarchical component assembly | Colored operad / operadic wiring syntax | interpretation preserves substitution; illegal wiring rejected |
+| After a source-to-target boundary `K` | Transported semantics / Lan-style | identity or embedding path preserves behavior |
+| In coherent behavior under observations | Coherent observations / Ran/Yoneda-style | overlapping observations commute |
+| In coherent local context around points | Comonadic spatiality | center and nested-neighborhood laws; locality falsifier |
+| In patches intended to generate situated objects | Density comonad / basis | canonical reconstruction or explicit non-basis obstruction |
+| Across a locality-sensitive boundary | Continuous comonadic map / spatial boundary | required halos, restrictions, identities, and labels are preserved |
+| Behind a projection `P` | Lifted implementation / Kan-lift-style | `project(realize(case)) == required(case)` |
+| Behind `P`, but canonical construction is possible | Free builder behind projection | `project(free(required(case)))` satisfies required behavior |
+| Behind `P`, but construction is impossible | Obstruction report | named loss of evidence/template/constraint |
+| In internal checks implied by public behavior | Residual obligations | missing obligation fails projection |
+| In generated payloads and deferred maps | Generation path vocabulary / Coyoneda-style | lowering equals direct interpretation |
+| In duplicated selectors/projections | Observation vocabulary / Yoneda-style | representation change preserves observations |
+| In callbacks/functions crossing boundaries | Explicit first-order IR / defunctionalization | `apply(encodedCase, x) == oldCallback(x)` |
+| In data needed before semantic consumption | Task-indexed context instance / Context Certificate | schema constraints, observables, provenance, freshness, and rendering laws hold |
+| In heterogeneous mutable sources needing semantic publication | Verified Context Snapshot / Publication Boundary | source snapshot, mapping, constraints, provenance, and publication law hold |
+| In overlapping contexts from several systems | Pushout Reconciliation / explicit overlap | overlap identities are explicit, conflicts preserved, provenance survives |
+
+### Track E — Composition certification
+
+Use when the user wants to certify a boundary, audit uncertified composition, or move a codebase toward Boundary Normal Form one seam at a time.
+
+Deliver:
+
+- world inventory;
+- boundary inventory;
+- uncertified composition points;
+- one Composition Certificate;
+- canonical artifact and interpreter/projection/lowering;
+- positive law witness;
+- falsifier / negative witness;
+- bypass removal plan;
+- whether the seam is verified, obstructed, or still a primitive exception.
+
+Use Track E for:
+
+- architecture review where the question is “what boundary owns this composition?”;
+- agent-written code that introduced new glue paths;
+- APIs, handlers, migrations, plugins, tools, or policies that need certification;
+- bringing an existing codebase incrementally into Boundary Normal Form;
+- deciding whether a seam is genuinely universal-architecture territory or a justified primitive.
+
+### Track F — Exact Context / semantic consumption boundary
+
+Use when the main problem is whether a semantic consumer has exactly the right prepared data at exactly the right time. Semantic consumers include models, humans, policy engines, compilers, workflow schedulers, deployment controllers, planners, rankers, BI dashboards, auditors, test harnesses, approval gates, and agent runtimes.
+
+Deliver:
+
+- task `q` and consumer type;
+- operational source plane and candidate source instance;
+- verified context plane / context compilation mode;
+- publication boundary and published snapshot shape;
+- task-specific context schema `T_q`;
+- required observables `Obs_q`;
+- candidate source worlds and source instance `I_candidate`;
+- source-to-context mapping `M_q`;
+- deterministic closure/chase steps;
+- provenance graph requirements;
+- missingness, contradiction, ambiguity, and unsupported-claim representation;
+- freshness requirements and invalidation triggers;
+- observational-core/minimization plan;
+- rendering/serialization plan;
+- Context Certificate;
+- CQL/categorical-database fit assessment when schemas, mappings, constraints, integration, or provenance dominate;
+- Context Provenance Manifest when evidence lineage matters;
+- law witnesses and falsifiers.
+
+Use Track F for:
+
+- RAG prompt stuffing or raw tool-output dumping;
+- stale or temporally invalid context;
+- missing evidence or unsupported claims;
+- contradictions that are smoothed over;
+- over-summarization that erases required distinctions;
+- entity-resolution ambiguity;
+- human review packets, policy-evaluation inputs, deployment decisions, debugging packets, planning packets, model prompts, compiler-pass inputs, scheduler contexts, audit packets, dashboards, or agent-runtime contexts that need exact context.
+
+Do not frame this as only an inference problem. The general boundary is:
 
 ```text
-Operational stores own mutation.
-Verified context planes own semantic publication.
-No semantic consumption without a task-shaped context appropriate to consequence.
-No context claim without provenance, freshness, and explicit missingness.
+Prepared Context -> Semantic Consumer
 ```
 
-Use CQL/categorical data tooling only when schemas, mappings, constraints, integration, provenance, and canonical publication dominate. Do not use it as the default live mutable store.
+Inference is one semantic-consumption mode.
 
-## Locality and exact abstraction
+## Freyd/AFT boundary diagnostic for Track D
 
-Use comonadic spatiality only when locality changes correctness, ownership, authority, evidence, or another required observation. Require named points and patches, local/global identity, effective halos, restriction, coherence, continuity, labels/provenance, resource law, and a locality falsifier. Prefer an ordinary labelled graph when it is sufficient.
-
-Use Possibility Sheafification only for architecture-level abstractions whose local usage evidence shows:
-
-- disagreement on overlaps;
-- compatible locals with no global representation;
-- several global representations with the same observations;
-- global states unsupported by local behavior.
-
-Do not call examples a basis without a reconstruction witness, or a wrapper a comonad without the relevant laws.
-
-## Category pivots
-
-Move a hard operation into another representation only when the new world makes inspection, proof, serialization, replay, authorization, minimization, integration, composition, or certification materially easier.
-
-Typical pivots:
+Use this sub-practice only after a lift-shaped boundary appears:
 
 ```text
-opaque callback -> explicit syntax + interpreter
-branchy policy -> poset/lattice
-mutable protocol -> transitions + traces
-raw context -> schema-shaped context instance
-global dependency soup -> bounded locality model
-indexed loops -> explicit index/decomposition world
-repeated wrappers -> explicit context action
-local meanings -> usage site + gluing
+A --?--> B
+|        |
+F        P
+v        v
+C        C
 ```
 
-Every pivot requires an encoding, an interpretation back, a preservation law, information-loss statement, effectivity bound, and falsifier.
+Software reading:
 
-## Tracks
+- `A`: public cases, contract tests, workflows, requirements, or obligations.
+- `B`: internal implementation world.
+- `C`: observable behavior world.
+- `P : B -> C`: projection, serializer, public API runner, trace observer, report extractor, or forgetful/observational API.
+- `F : A -> C`: required public behavior.
+- `? : A -> B`: implementation realizer, implementation template, or residual obligation artifact.
 
-- **Track A0 — Domain Algebra Discovery:** clarify carriers, operations, observations, laws, and non-laws.
-- **Track A — Diagnosis:** analyze one seam without mutation.
-- **Track B — One-seam refactor:** implement the smallest reviewable artifact and stop.
-- **Track C — Staged migration:** strengthen internals behind stable API, wire, or storage shapes.
-- **Track D — Canonical boundary artifact:** select a universal artifact because the ordinary route is insufficient.
-- **Track E — Composition certification:** certify one boundary and remove or justify bypasses.
-- **Track F — Exact Context:** prepare and publish task-valid semantic context.
-- **Track G — Possibility Sheafification:** repair an inexact architecture-level abstraction.
-- **Track H — Category Pivot:** move a hard operation into an easier structured world and interpret back.
-- **Track I — Effective Universal Software Synthesis:** design a whole capability over an effective substrate with explicit primitives, effects, state, observations, resources, and one witness seam.
+The lift asks:
 
-## Consequential decision and plan
+```text
+Can we find L : A -> B such that P(L(a)) satisfies F(a)?
+```
 
-A route is consequential when it selects or preserves a construction for a changed seam by rejecting a nearby alternative. Ceremonial activation does not allocate a plan or receipt.
+The Freyd/AFT diagnostic asks:
 
-For Track B, C, D, F, G, H, or I with mutation, allocate one fresh plan before editing:
+```text
+Is P disciplined enough that required behavior in C has a canonical free builder Free : C -> B?
+```
+
+Use it to decide whether the seam needs:
+
+- a concrete projection `P`, not vague “observable behavior”;
+- internal constraint-combining structure in `B`;
+- preservation of those constraints by `P`;
+- a bounded solution-set-like family of implementation templates;
+- a `Free` builder, realizer, or obligation artifact;
+- an obstruction report when no exact/free lift exists.
+
+Do **not** teach Freyd’s theorem in full inside ordinary responses. Translate it to this operational question:
+
+> Does this observation boundary support a canonical implementation builder, or is it too lossy/ad hoc?
+
+
+## Freyd Category Diagnostic for Effectful Call-by-Value
+
+Use this mechanics only when the architectural pressure is pure/effectful composition, not free-builder existence.
+
+Model:
+
+```text
+C = pure values and pure transformations
+K = effectful computations with explicit sequencing
+J : C -> K = pure embedding, identity on shared objects/types
+```
+
+Require:
+
+- pure morphisms are central and may commute with surrounding effects;
+- effectful computations are not reordered unless an observational commutativity witness exists;
+- context/threading of values through computations is explicit;
+- claimed parallelism has an ordering, centrality, or commutation law;
+- higher-order effectful functions use a representable/closed or strong-monad-like presentation when needed.
+
+Certificate fields:
+
+```text
+pure world
+computation world
+pure embedding J
+central operations
+evaluation order
+context action
+noncommuting witness
+observational law
+```
+
+Do not confuse this with Freyd/AFT. The mechanics commands are intentionally separate: `freyd-aft` and `freyd-category`.
+
+
+### Track G — Possibility Sheafification / inevitable architecture
+
+Use when the codebase already has an abstraction, but the abstraction appears semantically inexact: too broad, too narrow, redundant, inconsistent, misplaced, callback-shaped, stringly typed, optional-field-heavy, or arbitrary.
+
+Deliver:
+
+- current abstraction and files;
+- usage site: local contexts that cover the abstraction;
+- local sections: what the abstraction means in each context;
+- overlaps: shared fields, IDs, tests, observations, traces, or invariants;
+- compatibility checks on overlaps;
+- gluing analysis: existence, uniqueness, failures, and obstructions;
+- possibility envelope: valid states, impossible states currently admitted, valid states currently omitted, redundant meanings;
+- canonical repair: refined type, coproduct, pullback, quotient, free syntax, coherent observations, Kan lift, effect signature, behavioral coalgebra, Exact Context artifact, defunctionalized IR, or obstruction report;
+- Sheafification Certificate;
+- one law test and one falsifier;
+- one witness-slice migration plan.
+
+Use Track G for:
+
+- `string`, `any`, `dict`, nullable/optional-field soup carrying domain state;
+- interfaces/classes that mean different things at different call sites;
+- callbacks that hide operation syntax;
+- duplicated status/state representations;
+- API DTOs whose observed meanings differ from domain meanings;
+- tests that imply a global abstraction missing from code;
+- context objects that are raw retrieved material rather than certified context;
+- generated artifacts with multiple encodings of the same meaning;
+- state/protocol objects that admit impossible traces.
+
+Do not use Track G for local helper abstractions whose possible states are intentionally broad and do not cross architecture boundaries.
+
+Track G question:
+
+```text
+Does this abstraction satisfy the sheaf condition over its real usage site?
+```
+
+Track G law shape:
+
+```text
+compatible local observations glue to a canonical global representation
+```
+
+Track G falsifiers:
+
+```text
+local disagreement, missing global representation, non-unique representation, or impossible global state.
+```
+
+### Track H — Category Pivot / Syntax-Semantics transfer
+
+Use when the problem is hard because the current representation hides the relevant structure. The dominant case is ordinary executable behavior that should be reified as syntax and certified by semantics.
+
+Deliver:
+
+- current world/category and why the operation is hard there;
+- candidate easy world/category and what becomes easy;
+- transfer/encoding from current world into easy world;
+- interpretation/transport back to executable behavior or required observations;
+- Syntax/Semantics Certificate when the pivot is from opaque execution/prose/prompt/callbacks into explicit syntax plus interpreter;
+- Category Pivot Certificate for other pivots;
+- preservation law and falsifier;
+- one witness extraction/refactor plan.
+
+Use Track H for:
+
+- agent/tool behavior represented as opaque `name + args`, callbacks, closures, or prose;
+- plans, policies, workflows, memory operations, context requests, or patches that need inspection before execution;
+- executable functions that need serialization, replay, diffing, validation, authorization, totality checks, simulation, or multiple interpreters;
+- hard equality, minimization, merge, provenance, freshness, reachability, resource, or policy analysis that becomes easier in a poset, relation, schema, coalgebra, resource category, or presheaf/site;
+- syntax present without certified semantics, or semantics claimed without observations.
+
+Track H question:
+
+```text
+What world makes the hard operation easy, and what law transports the result back?
+```
+
+Syntax/semantics law shape:
+
+```text
+accepted syntax denotes valid observed semantics, and required semantic distinctions remain representable or observable.
+```
+
+Track H falsifiers:
+
+```text
+syntax accepted but semantics invalid; semantic behavior needed but not representable; easy-world result loses required observation when transported back.
+```
+
+
+### Track I — Effective Universal Software Synthesis
+
+Use when the user wants to design, build, or substantially refactor a whole software capability so that category theory defines the architecture while an effective universal substrate and concrete primitives make it executable.
+
+Typical triggers:
+
+```text
+implement any computable software
+computationally universal categorical architecture
+design the whole system from first principles
+use the Universalist custom subagent team
+make composition/effects/state/observations/laws categorical end to end
+build a reusable substrate rather than a one-off feature
+```
+
+Deliver:
+
+1. **System and observables** — user-visible behavior, external environment, equivalence notion, and non-goals.
+2. **Effective substrate** — program representation, universal evaluator or equivalent, recursion/partiality, composition, state, interaction, and target runtime.
+3. **Concrete primitive register** — I/O, storage, clocks, randomness, network, foreign APIs, numeric kernels, humans, models, hardware, and their handlers.
+4. **World/boundary architecture** — categories/worlds, objects, transformations, boundaries, embeddings, projections, interpreters, migrations, and ownership.
+5. **Syntax/semantics architecture** — editable syntax/IR, semantic domains, interpreters/handlers, observation functors, and adequacy/soundness laws.
+6. **Effects/state/interaction** — effect signatures, handlers, state transitions, coalgebras/protocols, concurrency, failure, and compensation.
+7. **Canonical construction map** — products, coproducts, refinements, free objects, Kan extensions/lifts, adjunctions, Freyd/premonoidal effect geometry, operads/PROPs/properads, observations, quotients, sheafification, or obstruction reports.
+8. **Presentation/effectivity plan** — finite/effective representation, compilation/lowering, algorithms, termination/partiality boundary, and domain-specific assumptions.
+9. **Resource model** — complexity, latency, memory, throughput, capability/security, persistence, deployment, and operational observability.
+10. **Effective Universal Architecture Certificate** — laws, falsifiers, obstruction ledger, primitive exceptions, and proof commands.
+11. **One witness seam** — the smallest end-to-end slice that proves the substrate can express, execute, observe, and verify real behavior.
+12. **Accretive continuation** — next seam only after the witness is verified.
+
+In explicit team mode, synthesize specialist packets before choosing the witness. Do not ask parallel writers to implement competing architectures. The root selects one architecture and one seam.
+
+## Non-negotiables
+
+- One signal, one seam, one smallest honest construction.
+- Prefer products, coproducts, refined types, pullbacks, exponentials, and free constructions before advanced machinery.
+- Escalate to universal architecture only when the boundary artifact changes code shape or tests.
+- Allow arbitrary domain primitives; require explicit universal artifacts at architecture boundaries.
+- Allow arbitrary sources; forbid uncertified semantic consumption.
+- Do not feed raw retrieved chunks, memories, or tool outputs directly to semantic consumers when the decision/action/inference depends on evidence quality.
+- Keep wire and storage shapes stable behind adapters unless the user explicitly wants a breaking change.
+- Use the repo's current language, framework, and test stack before proposing new libraries.
+- Say what remains runtime-only in dynamic or weakly typed environments.
+- Stop after the first verified seam unless the user asked for a sweep.
+- For lift-shaped Track D work, make `P : B -> C` concrete before proposing implementation changes.
+- If proposing a free builder behind `P`, include a Freyd/AFT-style obstruction check: constraint structure, preservation, and bounded templates.
+- If proposing effects/handlers, include operation syntax, at least one handler, and a handler observation law.
+- If proposing Freyd/premonoidal structure, name pure and effectful worlds, the pure embedding, evaluation order, central operations, and one noncommuting witness.
+- If proposing an operad, name colors/ports, primitive operations, substitution rules, symmetry/order, semantic algebra, forbidden wiring, and the substitution law.
+- If proposing coalgebra/protocol structure, include transition, observation, trace law, and invalid-transition witness.
+
+## Step 0 — Allocate a ledger-addressed plan
+
+For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, create one fresh progress record through the `skills-zig` ledger CLI before mutation:
+
+Before allocation, load `$ledger` and complete `$ledger ensure` once. After
+readiness, invoke native `ledger` directly. Consequential plans and receipts require
+Ledger 0.10.4 or newer and Skills Seq 0.3.51 or newer.
 
 ```bash
 scripts/init_universalist_plan.sh [PROJECT_ROOT]
 ```
 
-Consequential runs require Ledger `0.10.4` or newer and Skills Seq `0.3.51` or newer. The initializer checks both tools.
+Equivalent direct form:
+
+```bash
+ledger create --source universalist \
+  --repo PROJECT_ROOT \
+  --template /path/to/universalist/templates/universalist-plan.md
+```
+
+Ledger owns plan identity, collision-safe creation, and address resolution. Universalist owns the Markdown fields and subsequent updates. The returned `universalist-plan-address/v1` receipt contains the exact `plan_id`, `created_at`, and absolute `path` for the run.
 
 Plans live at:
 
@@ -292,87 +1166,600 @@ Plans live at:
 .ledger/universalist/plan-{plan-id}.md
 ```
 
-Retain the exact plan ID. One changed seam admits one plan and one root decision receipt. Use `references/decision-contract.yaml` and native `ledger emit --source universalist ... --write-plan` before mutating a consequential seam. Workers reference the root decision ID and do not duplicate its receipt.
+The plan id is `YYYYMMDDTHHMMSSnnnnnnnnnZ-NNNN`: a lexicographically sortable UTC nanosecond timestamp plus an atomic collision ordinal. Every create invocation must allocate a new file and must never reuse, truncate, or overwrite an earlier plan. Existing `.ledger/universalist-plan-{plan-id}.md` files remain read-only legacy addresses; `path` and `latest` may resolve them, but new plans must use the namespaced path. Do not create or update the legacy project-root `.universalist-plan.md`.
 
-## Team mode
+Retain the returned plan id for the entire run. Resolve that exact address with:
 
-Spawn bundled subagents only when the current user explicitly requests subagents, parallel agents, team mode, or the categorical-substrate team.
-
-When authorized:
-
-```text
-2-6 read-only specialists
-  -> root synthesis
-  -> proof auditor
-  -> one root-selected witness seam
-  -> one writer
-  -> independent verifier
-  -> root integration and stop
+```bash
+ledger path --source universalist --repo PROJECT_ROOT --id PLAN_ID
 ```
 
-The root owns scope, comparison of the ordinary candidate and universal shadow, final architecture, mutation order, verification, and user-facing conclusions. Child agents never recursively delegate.
+Use `latest` only when no run-specific address survives:
+
+```bash
+ledger latest --source universalist --repo PROJECT_ROOT
+ledger latest --source universalist --repo PROJECT_ROOT --format path
+```
+
+`latest` scans valid plan ids and does not maintain a mutable pointer. Before resuming a recovered latest plan, verify that its Track, Signal, and Seam / files identify the current task; concurrent runs may have newer plans. If the required ledger source is unavailable, stop with the exact missing command/version rather than inventing an id or writing the file directly.
+
+Minimum fields:
+
+```md
+# Universalist Plan
+
+## Track:
+## Boundary disposition:
+## Signal and evidence:
+## Claim mode / claim scope:
+## Ordinary candidate:
+## Comparison universe:
+## Architectural axis:
+## Architectural hole / exact requirements:
+## Linked Universal Problem packets:
+## Candidate requirement witnesses:
+## Candidate proof profiles:
+## Alternatives considered / contradicted / rejected / unresolved:
+## Universal shadow nomination:
+## Material architectural delta:
+## Evidence debt:
+## Root adjudication / selected route:
+## Construction:
+## Canonical boundary artifact:
+## Universal witness / mediator:
+## Existence / nonexistence:
+## Commutation / preservation:
+## Competitor mediation:
+## Canonicality / uniqueness-up-to:
+## Falsifier / negative witness:
+## Obstruction counterexample / stability / reopening condition:
+## Effective presentation / resource bound:
+## Worlds / boundaries inventory:
+## Admissible alternatives / comparison maps:
+## Observations / equivalence:
+## Boundary kind:
+## Composition geometry:
+## Boundary law:
+## Freyd/AFT boundary diagnostic:
+## Composition Certificate:
+## Boundary Normal Form status:
+## Category pivot / Syntax-Semantics certificate:
+## Why this construction:
+## Seam / files:
+## Public boundaries touched:
+## Wire/storage compatibility plan:
+## Verification command(s):
+## Runtime-only leftovers:
+## Root decision receipt: pending / emitted
+## Status: planned / editing / verified / staged
+## Next seam:
+```
+
+If context compacts, resolve the retained plan id and read that file first. If the id was lost, resolve `latest`, verify its task identity, then resume from its status line.
+
+## Decision observability
+
+Use [references/decision-contract.yaml](references/decision-contract.yaml) as the route authority for consequential Universalist decisions. A decision is consequential when the root boundary pass selects or preserves a construction for one changed seam by rejecting a nearby route. Ceremonial activation does not require a receipt. A Universal Problem compiler certificate is nomination evidence only; it is never the route decision or the receipt.
+
+After the root adjudicates the nomination, selects the route, and before mutating the implementation seam, emit exactly one root-scoped receipt from the current ledger-addressed plan:
+
+```bash
+ledger emit --source universalist \
+  --plan "$UNIVERSALIST_PLAN" \
+  --contract /path/to/universalist/references/decision-contract.yaml \
+  --question "Which construction owns this seam?" \
+  --selected-route UNI-ORDINARY \
+  --rejected-route UNI-CANONICAL \
+  --expected-outcome "The owner boundary enforces one observable law." \
+  --disposition changed \
+  --construction "checked adapter at the owner boundary" \
+  --law "required observations are preserved" \
+  --falsifier "a mismatched source is accepted" \
+  --advanced-mechanics none \
+  --evidence-ref "code:path" \
+  --write-plan
+```
+
+Ledger 0.10.4 or newer with Skills Seq 0.3.51 or newer derives the decision id, skill version, contract fingerprint, repository HEAD, plan id, and plan path. It consumes Seq's parsed receipt-binding projection from one immutable snapshot and validates the receipt through Seq before writing. Universalist owns the decision policy and contract; Ledger owns receipt construction and atomic plan mutation. Emit the command's JSON output once as a root assistant message so Seq can observe the decision. Keep the same concrete receipt at the end of the plan. Do not paste a static schema example.
+
+One plan represents one changed seam and admits one receipt. Allocate a fresh plan for a distinct seam. In team mode, workers reference the root `decision_id`; they do not echo the receipt unless they own a genuinely distinct seam with its own plan. Keep route aliases empty and use exact route ids or structured receipts; generic prose aliases contaminate retrospective audits. Set `--advanced-mechanics` to `none` unless a named mechanics topic produces the concrete artifact, interpreter or projection, law, and falsifier.
 
 ## Operator loop
 
-1. Inspect repository reality: language, framework, ownership, tests, public/wire/storage boundaries, effects, resources.
-2. Record the compact boundary disposition.
-3. Produce the ordinary candidate.
-4. Define the comparison universe and architectural hole.
-5. Run the hidden theorem-card shadow.
-6. Apply the materiality gate.
-7. Allocate the plan and receipt when consequential mutation is in scope.
-8. Lower the selected result idiomatically.
-9. Verify existence, preservation, mediation/canonicality where claimed, falsifier, compatibility, and resources.
-10. Stop after the first verified seam unless the user requested a sweep.
+1. **Inspect repo reality**
+   - language and type features;
+   - framework conventions;
+   - serializer, ORM, and API boundaries;
+   - current test runner and proof tools.
+
+2. **Find candidate signals**
+
+   Start from code smells and pressure, not category labels:
+
+   - flag, enum string, boolean, or nullable field matrices;
+   - same predicate enforced in several places;
+   - repeated shared-id or shared-version agreement checks;
+   - branchy policy logic that really wants supplied behavior;
+   - syntax mixed with execution, logging, or explanation;
+   - duplicated projections or selectors;
+   - generated artifacts with no provenance;
+   - public contract/tests implying missing internal obligations;
+   - callbacks/handlers crossing boundaries without explicit IR;
+   - public behavior fixed while internals are underdetermined;
+   - a projection/serializer/view loses evidence needed by required behavior;
+   - protocols/state machines whose observations are duplicated or informal;
+   - effect/workflow operations with multiple implicit handlers;
+   - opaque executable behavior that should be syntax before semantics;
+   - plans, policies, tool calls, context requests, patches, or memory operations whose semantics are implied but not certified;
+   - hard analysis forced into runtime code when an abstract domain, relation, trace, schema, resource model, or presheaf would make it explicit.
+
+3. **Pick one seam**
+
+   Choose the smallest stable seam where the stronger shape can land with low blast radius.
+
+   Good first seams:
+
+   - DTO -> domain conversion;
+   - controller or handler boundary;
+   - constructor or factory;
+   - one central service or evaluator;
+   - one join helper or aggregate constructor;
+   - one projection/query/read-model boundary;
+   - one plugin or rule-family adapter;
+   - one public contract case;
+   - one observation/projection function `P` for a lift-shaped refactor;
+   - one state transition plus observer;
+   - one effect operation plus handler.
+
+4. **Choose the smallest honest construction**
+
+   Default ladder:
+
+   - independent fields -> product;
+   - exclusive states -> coproduct;
+   - repeated stable predicate -> refined type / equalizer;
+   - shared projection agreement -> pullback witness;
+   - configurable behavior -> exponential;
+   - syntax separate from execution -> free construction / initial algebra.
+
+5. **Escalate to canonical boundary artifacts only when needed**
+
+   Use the unknown-location selector and the canonical boundary artifact matrix. Escalate only when it produces:
+
+   - an explicit artifact;
+   - an interpreter/projection/handler/lowering function;
+   - a proof signal;
+   - a concrete reduction in drift, duplication, hidden behavior, or lossy projection.
+
+5a. **Run a category pivot check when the current world hides the structure**
+
+   Ask whether the hard part would be easier in another world:
+
+   - executable function -> syntax/IR plus interpreter;
+   - runtime state -> coalgebra/trace semantics;
+   - scattered predicates -> policy/order lattice;
+   - raw context/prompt -> schema-shaped context instance;
+   - local call sites -> presheaf/site with gluing;
+   - resource behavior -> capability/resource category;
+   - nondeterministic/partial spec -> relation/profunctor world.
+
+   If yes, create a Category Pivot or Syntax/Semantics Certificate before broad mutation.
+
+6. **Plan the boundary**
+
+   Decide whether the seam can change in place or needs:
+
+   - decoder;
+   - adapter;
+   - DTO / row mapping;
+   - persistence converter;
+   - legacy-to-new translation layer;
+   - observation vocabulary;
+   - generation path;
+   - explicit IR plus interpreter;
+   - projection from implementation to public behavior;
+   - state transition plus observer;
+   - effect operation plus handler;
+   - Freyd/AFT-style free-builder diagnostic for that projection.
+
+6a. **Create the Composition Certificate**
+
+   For Track D or Track E, write the certificate before broad edits:
+
+   - worlds and boundary kind;
+   - unknown location;
+   - canonical artifact;
+   - interpreter/projection/lowering/handler;
+   - positive law witness;
+   - falsifier;
+   - bypass policy;
+   - status: planned / implemented / verified / obstructed / primitive exception.
+
+   The certificate is the reviewable unit. Do not let a categorical name substitute for the certificate.
+
+7. **Run the Freyd/AFT diagnostic when appropriate**
+
+   For a lift-shaped Track D refactor, answer:
+
+   - What exactly is `P : B -> C` in code?
+   - What does `P` forget, observe, serialize, erase, or project?
+   - Can `B` express combined constraints, equalities, products, pullbacks, validations, or workflow composition?
+   - Does `P` preserve those constraints when observed in `C`?
+   - Is there a bounded family of implementation templates for each public behavior?
+   - What `Free : C -> B`, realizer, or obligation artifact is suggested?
+   - Is the unit/projection exact, covering, sound, or approximate?
+   - What obstruction prevents a free/lifted implementation?
+
+8. **Encode idiomatically**
+
+   Use the strongest encoding the repo can actually support:
+
+   - native ADT;
+   - sealed hierarchy / enum with payload;
+   - interface + tag;
+   - checked constructor or wrapper;
+   - witness type;
+   - closure or strategy;
+   - AST + interpreters;
+   - observation enum + `runObservation`;
+   - generated payload + path + `lowerGenerated`;
+   - realizer/obligation + `project`/`satisfy`;
+   - free-builder function + projection test;
+   - state transition + `observe`;
+   - operation signature + handlers.
+
+9. **Verify with the fastest credible proof signal**
+
+   Prefer:
+
+   - compile or typecheck;
+   - targeted unit tests;
+   - exhaustive handling checks;
+   - constructor-only entry;
+   - decode / encode round-trip;
+   - mismatch rejection;
+   - parity or differential tests during migration;
+   - observation coherence;
+   - projection/lift realization test;
+   - free-builder projection test;
+   - obstruction report fixture;
+   - defunctionalized interpreter equivalence;
+   - trace law for coalgebra/protocol behavior;
+   - handler parity/observation test for effects.
+
+10. **Stop or name the next seam**
+
+   Do not turn one structural insight into a repo-wide rewrite. Verify one seam, record it, and stop unless the user asked for a broader sweep.
+
+11. **Update the current ledger-addressed plan**
+
+   Record:
+
+   - what changed;
+   - which boundary stayed stable;
+   - which proof passed;
+   - what still remains runtime-only;
+   - whether a Freyd/AFT diagnostic found a builder or an obstruction;
+   - next seam, if any.
+
+## Practical decision guide
+
+| Repo smell | Default construction | Nearby alternative to reject first | First seam | Proof signal |
+| --- | --- | --- | --- | --- |
+| `status`, booleans, and nullable fields describe one lifecycle | Coproduct | Product with optional fields | Decoder + core state type | exhaustive handling + invalid legacy fixture tests |
+| Same input predicate repeated at controllers, services, serializers | Refined type / equalizer | Raw primitive plus helper validation | Parse / constructor boundary | accept valid, reject invalid, normalization idempotence |
+| `customer.accountId != subscription.accountId` appears repeatedly | Pullback witness | Plain pair + scattered assertions | checked constructor | mismatch rejection + preserved projections |
+| Large branch decides pricing, rendering, or policy | Exponential | Bigger state machine | function / strategy seam | fixture parity against old branch |
+| Rule syntax mixed with execute / explain / log | Free construction | More conditionals inside existing class | AST + one interpreter | interpreter consistency + differential tests |
+| Several fields always travel together and are consumed independently | Product | Coproduct | record / struct / object | constructor and projection consistency |
+| Several old views must agree on new internals | Coherent observations | Independent adapters | read-model/projection boundary | overlapping observation coherence |
+| Generated artifacts lose provenance | Generation path vocabulary | anonymous callbacks | generation/lowering boundary | lowering equals direct interpretation |
+| Public contract determines implementation | Lifted implementation | ad hoc service design | one contract case | projection matches required behavior |
+| Public contract determines implementation but projection loses evidence | Free builder or obstruction report | pretending a lift exists | one projection function | project(free(required)) passes or obstruction named |
+| Public policy implies internal checks | Residual obligations | ad hoc validators | one policy case | missing obligation fails projection |
+| Callbacks carry architecture behavior | Explicit IR | hidden closure registry | plugin/handler seam | apply/interpreter equivalence |
+| Stateful behavior is duplicated across handlers | Behavioral coalgebra | scattered mutation branches | one transition + observer | trace law and invalid transition rejection |
+| Operation syntax needs multiple runtimes | Effect signature + handlers | callbacks embedded in workflow | one operation + test handler | handler observation parity |
 
 ## Output contract
 
-For a non-trivial response use these headings, adapting them to the host workflow rather than duplicating it:
+For any non-trivial consequential response, produce these headings in order, embedding them inside the repository's host workflow when that workflow already owns closeout:
 
-1. **Track**
-2. **Signal**
+1. **Track and boundary disposition**
+2. **Signal and evidence**
 3. **Ordinary candidate**
-4. **Universal shadow**
-5. **Material architectural delta**
-6. **Construction**
-7. **Why this instead of nearby alternatives**
-8. **Seam / files**
-9. **Boundary and compatibility plan**
-10. **Before -> After**
-11. **Verification**
-12. **Runtime-only leftovers**
-13. **Next seam** (optional)
+4. **Comparison universe**
+5. **Architectural axis / typed hole / exact requirements**
+6. **Linked Universal Problem packets** (when the seam has independent axes)
+7. **Alternatives considered / contradicted / rejected / unresolved**
+8. **Universal shadow nomination**
+9. **Proof stack** — existence or nonexistence, commutation, mediation, canonicality, effectivity, falsifier, and obstruction reopening when applicable
+10. **Material architectural delta**
+11. **Evidence debt**
+12. **Root adjudication / selected route**
+13. **Construction**
+14. **Why this instead of nearby alternatives**
+15. **Seam / files**
+16. **Boundary and compatibility plan**
+17. **Before -> After**
+18. **Verification**
+19. **Runtime-only leftovers**
+20. **Next seam** (optional)
 
-Ordinary output uses plain engineering language. When the user requests the mathematical derivation, include the construction key, expert name, comparison universe, competitors, mediator, canonicality, hypotheses, and effective lowering.
+For every boundary-triggered implementation or resolution, use **Boundary and compatibility plan** to record the compact boundary receipt: boundary, disposition, owner, source/target, preserved/forgotten/generated/observed information, law, and falsifier. Activation may conclude that the existing boundary is preserved and no new abstraction is required.
 
-## Non-negotiables
+For Track D, also include:
 
-- One signal, one seam, one smallest honest construction.
-- Category theory must beat the boring architecture; otherwise discard the shadow.
-- Do not claim a universal construction without competitors, mediator/factorization, canonicality, and effectivity.
-- Prefer ordinary products, sums, refinements, checked agreement objects, adapters, explicit IRs, graphs, and pointwise operations first.
-- Preserve wire, storage, and public shapes behind adapters unless a breaking change is requested.
-- Do not grant symmetry, commutation, duplication, discard, feedback, parallelism, representability, reconstruction, or complete decomposition without witnesses.
-- Do not feed raw retrieved material directly to a consequence-bearing semantic consumer.
-- Do not hide external primitives, failure modes, authority, or resource costs behind abstract names.
-- Do not introduce a generic categorical library merely to encode a single seam.
-- Return obstruction instead of inventing missing evidence, policy, capability, or effective representation.
-- Stop after one verified seam unless asked for more.
+- **World / boundary inventory**
+- **Boundary kind**
+- **Canonical boundary artifact**
+- **Law / proof signal**
+- **Falsifier**
 
-## Progressive disclosure
+For Track E, also include:
 
-Primary references:
+- **Composition Certificate**
+- **Boundary Normal Form status**
+- **Bypass policy**
+- **Certification result**: verified / obstructed / primitive exception
+
+For lift-shaped Track D or Track E, also include:
+
+- **Projection `P : B -> C`**
+- **Freyd/AFT boundary diagnostic** when `P` is vague, lossy, or intended to support a free builder
+- **Builder or obstruction**
+
+For behavioral Track D, also include:
+
+- **State/transition shape**
+- **Observation function**
+- **Trace law**
+
+For effect-handler Track D, also include:
+
+- **Operation signature**
+- **Handler(s)**
+- **Handler observation law**
+
+For Track F, also include:
+
+- **Semantic consumer**
+- **Task schema `T_q`**
+- **Observables `Obs_q`**
+- **Context Certificate**
+- **Freshness / provenance / missingness / contradiction plan**
+- **Rendering law**
+
+
+For Track H, also include:
+
+- **Current world and hard operation**
+- **Easy world / category pivot**
+- **Syntax world and semantic world**, when applicable
+- **Interpreter / handler / compiler / renderer**
+- **Soundness / adequacy / preservation law**
+- **Category Pivot or Syntax/Semantics Certificate**
+- **Falsifier**
+
+
+For Track I, also include:
+
+- **Effective substrate and universality mechanism**
+- **Concrete Primitive Register**
+- **Universal evaluator / interpreter / compiler path**
+- **Recursion / partiality / interaction model**
+- **Effects / state / concurrency architecture**
+- **Observation and equivalence model**
+- **Resource model**
+- **Team roster and specialist packets**, when explicitly authorized
+- **Effective Universal Architecture Certificate**
+- **One witness seam and stop point**
+- **Obstruction ledger**
+
+For Track B, Track C, Track D, Track F, Track G, Track H, or Track I, also update the exact ledger-addressed plan allocated for the current run.
+
+## Guardrails
+
+- Prefer plain engineering language over category jargon when both say the same thing.
+- Do not claim a universal construction without naming the constructor, eliminator, comparison, or factorization behavior it buys.
+- Do not recommend HKT-heavy or typeclass-heavy patterns where the language cannot carry them cleanly.
+- Do not propose new validation or property-test libraries without user approval.
+- Do not widen the seam just because the larger design looks elegant.
+- Call out persistence, serialization, and public API breakage explicitly.
+- Say when a validator is only runtime protection.
+- Do not use Kan/Yoneda/Coyoneda/Freyd vocabulary unless it produces a concrete artifact and law test.
+- Defunctionalize only when higher-order behavior crosses a meaningful boundary.
+- Treat Freyd/AFT as a projection diagnostic, not as a theorem recital.
+- Treat opaque subsystems as primitives behind explicit observation/projection boundaries.
+- Do not sheafify merely to decorate an abstraction; sheafify only when local usage evidence shows inconsistency, missing glue, non-unique glue, or excess possibility.
+- Do not pivot categories merely to sound profound; pivot only when the easy world makes inspection, proof, synthesis, minimization, replay, or certification materially easier and the transfer law is stated.
+- Do not claim an abstraction is exact without a usage site, local sections, overlap checks, gluing law, and falsifier.
+- Do not claim syntax/semantics separation without constructors/formation rules, interpreter, observations, soundness/adequacy law, and falsifier.
+- Do not claim computational universality without naming the effective program representation, evaluator or equivalent, recursion/partiality mechanism, and concrete runtime.
+- Do not confuse categorical definability with implementability; require an effective presentation and executable lowering.
+- Do not hide external reality behind abstract morphisms; maintain a Concrete Primitive Register with handlers and failure modes.
+- Do not omit time/space/latency/concurrency/security/resource structure when it can change feasibility.
+- Do not spawn subagents unless the user explicitly asks for subagents, parallel agents, or team mode.
+- In team mode, parallelize read-heavy specialist analysis; use one root-selected writer only after synthesis and adversarial review.
+- Child agents must not recursively delegate; the root owns synthesis, write ordering, verification, and closure.
+
+## Internal mechanics and companion skills
+
+Use **this skill** as the only top-level Universal Architecture workflow. Do not hand off to a separate `kan` skill; the former Kan material is now an internal mechanics layer.
+
+Mechanics are used only after `universalist` has identified:
+
+```text
+attributed registry signal and repository evidence
+ordinary repository-native candidate with law, falsifier, and resource impact
+evidence-bound comparison universe
+one architectural axis, one typed hole, and exact requirements
+seam/worlds, boundary disposition, and boundary kind
+known side and unknown location
+typed prerequisite facts with exact epistemic state
+candidate requirement witnesses and complete proof profile
+evidence-bound contradiction or rejection for competing alternatives
+law/falsifier and effective presentation boundary
+root-owned certificate and decision boundary
+```
+
+Then read the relevant internal mechanics reference or run:
+
+```bash
+./scripts/emit_mechanics_report.sh <topic> <language>
+```
+
+Mechanics topics include Kan extensions/lifts, Freyd/AFT, Yoneda/Coyoneda, codensity presentations, comonadic spatiality, density comonads, halos, continuous comonadic maps, categorical-data/context compilation, CQL fit, pushout reconciliation, defunctionalization, possibility sheafification, category pivots, and syntax/semantics.
+
+
+For Track I and team mode, read:
+
+- `references/effective-universal-architecture-thesis.md`
+- `references/effective-computational-substrate.md`
+- `references/concrete-primitives.md`
+- `references/effective-categorical-normal-form.md`
+- `references/universal-software-synthesis-playbook.md`
+- `references/workflow/subagent-orchestration.md`
+- `references/workflow/team-routing.md`
+- `references/workflow/subagent-packet-contract.md`
+
+Use `scripts/emit_universalist_team_prompt.sh` to produce an explicit orchestration prompt and `scripts/emit_effective_universal_architecture.sh` or `scripts/emit_substrate_certificate.sh` for the central artifacts.
+
+- Use **`invariant-ace`** when the main job is discovering or pinning down invariants before choosing structure.
+- Use **`accretive-implementer`** after the construction is chosen and the task becomes ordinary implementation.
+- Use **`repeatedly-apply-skill`** when sweeping the repo for multiple seams or doing a multi-pass campaign.
+
+## References
+
+Core references:
+
+- `references/universalist-overview.md`
+- `references/discovery-signals.md`
+- `references/decision-contract.yaml`
+- `references/language-encoding-matrix.md`
+- `references/framework-boundaries.md`
+- `references/cost-model-and-false-positives.md`
+- `references/structures-and-laws.md`
+- `references/testing-playbook.md`
+- `references/migration-playbooks.md`
+- `references/case-studies.md`
+- `references/sources.md`
+
+Universal architecture references:
 
 - `references/universal-problem-ir.md`
 - `references/universal-construction-registry.yaml`
-- `references/decision-contract.yaml`
+- `references/universal-architecture-kernel.md`
 - `references/universal-architecture-ecosystem.md`
 - `references/artifact-selection-by-unknown-location.md`
 - `references/canonical-boundary-artifacts.md`
-- `references/composition-geometry.md`
-- `references/presentation-strategies.md`
-- `references/exact-context-doctrine.md`
-- `references/possibility-sheafification.md`
-- `references/category-pivot.md`
+- `references/kan-boundaries-for-universalist.md`
+- `references/freyd-aft-boundary-diagnostic.md`
+- `references/effects-and-coalgebras.md`
+- `references/yoneda-coyoneda-defunctionalization.md`
+- `references/universal-architecture-law-tests.md`
+- `references/universal-composition-doctrine.md`
+- `references/composition-certificates.md`
+- `references/comonadic-spatiality-doctrine.md`
+- `references/boundary-normal-form.md references/presentation-strategies.md references/dense-dual-presentation.md references/semantic-compression.md`
 
-Load detailed mechanics only after the ordinary candidate and materiality gate justify them. Use `scripts/emit_mechanics_report.sh <topic> <language>` for expert mechanics and `scripts/check_universal_problem.sh` for the hidden-optimizer contract.
+
+Sheafification / exact-abstraction references:
+
+- `references/possibility-sheafification.md`
+- `references/sheafification-certificates.md`
+- `references/abstraction-normal-form.md`
+- `references/abstraction-manipulator-playbook.md`
+
+Category pivot / syntax-semantics references:
+
+- `references/category-pivot.md`
+- `references/syntax-semantics-pivot.md`
+- `references/category-pivot-certificate.md`
+- `references/syntax-semantics-certificate.md`
+
+Effective substrate / workflow references:
+
+- `references/effective-universal-architecture-thesis.md`
+- `references/effective-computational-substrate.md`
+- `references/concrete-primitives.md`
+- `references/effective-categorical-normal-form.md`
+- `references/universal-software-synthesis-playbook.md`
+- `references/workflow/subagent-orchestration.md`
+- `references/workflow/team-routing.md`
+- `references/workflow/subagent-packet-contract.md`
+
+Internal mechanics references from former `kan` skill:
+
+- `references/mechanics/README.md`
+- `references/mechanics/foundations.md`
+- `references/mechanics/kan-lifts.md`
+- `references/mechanics/freyd-aft.md`
+- `references/mechanics/yoneda-coyoneda.md`
+- `references/mechanics/codensity-presentations.md`
+- `references/mechanics/comonads-as-spaces.md`
+- `references/mechanics/defunctionalization.md`
+- `references/mechanics/context-compilation.md`
+- `references/mechanics/cql-context-management.md`
+- `references/mechanics/possibility-sheafification-mechanics.md`
+- `references/mechanics/category-pivot-mechanics.md`
+- `references/mechanics/syntax-semantics-mechanics.md`
+
+## Scripts
+
+- `scripts/compile_universal_problem.py`
+- `scripts/compile_universal_problem.sh`
+- `scripts/doctor.py`
+- `scripts/check_universal_problem.sh`
+- `scripts/init_universalist_plan.sh`
+- `scripts/detect_signals.py`
+- `scripts/emit_scaffold.py`
+- `scripts/emit_boundary_adapter.py`
+- `scripts/emit_verification_plan.py`
+- `scripts/emit_law_test_stub.sh`
+- `scripts/emit_universal_artifact_matrix.sh`
+- `scripts/emit_canonical_artifact_plan.sh`
+- `scripts/emit_universal_architecture_prompt.sh`
+- `scripts/emit_freyd_boundary_diagnostic.sh`
+- `scripts/emit_composition_certificate.sh`
+- `scripts/emit_boundary_normal_form_plan.sh scripts/emit_presentation_diagnostic.sh`
+- `scripts/emit_context_certificate.sh`
+- `scripts/emit_context_compiler_plan.sh`
+- `scripts/emit_exact_context_prompt.sh`
+- `scripts/check_universalist.sh`
+
+
+- `scripts/emit_possibility_sheafifier.sh`
+- `scripts/emit_sheafification_certificate.sh`
+- `scripts/emit_abstraction_normal_form_plan.sh`
+- `scripts/emit_category_pivot.sh`
+- `scripts/emit_syntax_semantics_certificate.sh`
+- `scripts/emit_mechanics_report.sh`
+- `scripts/emit_comonadic_spatiality.sh`
+- `scripts/check_comonadic_spatiality.sh`
+- `scripts/emit_effective_universal_architecture.sh`
+- `scripts/emit_substrate_certificate.sh`
+- `scripts/emit_universalist_team_prompt.sh`
+- `scripts/emit_kan_stub.sh`
+- `scripts/emit_codensity_presentation.sh`
+- `scripts/emit_context_compilation_report.sh`
+- `scripts/emit_cql_context_report.sh`
+- `scripts/emit_sheafification_kan.sh`
+
+## Templates
+
+- `templates/universalist-plan.md`
+- `templates/universalist-report.md`
+- `templates/universal-architecture-report.md`
+- `templates/freyd-boundary-diagnostic.md`
+- `templates/composition-certificate.md`
+- `templates/boundary-normal-form-report.md`
+
+
+- `templates/sheafification-certificate.md`
+- `templates/abstraction-normal-form-report.md`
+- `templates/category-pivot-certificate.md`
+- `templates/effective-universal-architecture-certificate.md`
+- `templates/computational-substrate-certificate.md`
+- `templates/universal-synthesis-packet.md`
+- `templates/syntax-semantics-certificate.md`

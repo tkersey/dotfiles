@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v6
+    source_fingerprint: universalist-boundary-decision-v9
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -37,9 +37,9 @@ skill_decision_contract:
       trigger_refs: [UNI-BOUNDARY]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [boundary disposition and owner, source and target worlds, preserved forgotten generated and observed information, compatibility plan, law, falsifier]
-      success_signals: [the owning seam and observable law are explicit, preservation is representable without inventing structure]
-      failure_signals: [boundary language without an owner, compatibility or falsifier omitted, symptom-only downstream patch]
+      required_artifacts: [boundary disposition with attributed rationale and owner, source and target worlds, preserved forgotten generated and observed information, compatibility plan, law, falsifier]
+      success_signals: [the owning seam and observable law are explicit, preservation is representable without inventing structure, ordinary routing follows the declared disposition]
+      failure_signals: [boundary disposition without attributed rationale, boundary language without an owner, compatibility or falsifier omitted, symptom-only downstream patch, a newly introduced ordinary boundary mislabeled as preserve]
       rationale: Broad activation is useful only when every considered boundary receives an explicit disposition and executable falsifier.
     - clause_id: UNI-MINIMAL-001
       trigger_refs: [UNI-CONSEQUENTIAL]
@@ -49,28 +49,44 @@ skill_decision_contract:
       success_signals: [one signal one seam one smallest honest construction, rejected alternatives are decision relevant]
       failure_signals: [categorical label without a code or test delta, widened seam without a law requirement]
       rationale: The decision record must expose what changed because of Universalist rather than merely proving that the skill was present.
+    - clause_id: UNI-PACKET-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [universal-problem/v6 packet, claim mode and scope, one architectural axis, one typed architectural hole, verification target null in nomination or exact selectable card in verification, evidence-bound comparison universe, linked packet references for independent axes]
+      success_signals: [each packet admits only signals compatible with its axis and hole, independent axes compile as separate linked packets under one root seam]
+      failure_signals: [one global theorem-card winner silently drops an independent composition effect context locality transport or presentation obligation, cross-axis signal is ignored rather than rejected]
+      rationale: Universal constructions are often orthogonal. One-axis packets prevent an object construction from erasing a separate effect or composition decision.
     - clause_id: UNI-SHADOW-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [ordinary repository-native candidate, hidden universal shadow, admissible alternatives, observations and equivalence, material architectural delta or explicit none, effective presentation, law, falsifier]
-      success_signals: [the categorical shadow is retained only when it changes ownership states composition information interpretation proof resources existence or migration, expert names are hidden by default, obstruction replaces invented defaults]
-      failure_signals: [advanced route selected before a boring candidate, categorical vocabulary with no material delta, universal claim without competitor mediation or effectivity, hidden theory leaked into ordinary output without request]
-      rationale: Category theory is an optimizer. It must beat the boring architecture and compile back to repository-native artifacts.
+      required_artifacts: [ordinary repository-native candidate, attributed disposition rationale, evidence-bound comparison universe, attributed structural signals and typed prerequisite facts, exact requirement-level candidate witnesses, complete candidate proof profile, typed evidence-bound rejection basis or contradiction for every competing alternative, compiler nomination or explicit underdetermination conflict or evidence debt, root adjudication, material architectural delta derived from witnesses or explicit none, effective presentation, bounded approximation boundary and refinement condition when claimed, law, falsifier]
+      success_signals: [the compiler nominates rather than decides, verification mode proves one exact target without emitting a root route, exactly one complete card is nominated only after competing cards are contradicted or rejected, support-only cards never become artifacts, unknown or cross-axis signals fail closed, unmet unclassified holes and no-admissible-construction states nominate no route, missing or unknown evidence remains epistemic debt, obstruction requires nonexistence counterexample stability and reopening evidence, expert names are hidden by default]
+      failure_signals: [missing disposition rationale, verification mode without one exact target, bounded approximation without loss boundary or refinement condition, unmet hole silently routed to ordinary or preserve, untyped rejection prose, caller-supplied material delta, signal count evidence count or registry order manufactures a winner, truthy prose satisfies a prerequisite, unknown signal or fact fails open, unattributed comparison-universe policy, support-only card selected as an implementation route, incomplete proof profile treated as universal evidence, unresolved alternative silently ignored, missing evidence relabeled as obstruction, complete obstruction and constructive evidence resolved by priority, compiler output treated as the root decision or receipt]
+      rationale: Category theory is an evidence-bound nomination and proof-obligation optimizer. The root remains the sole architecture and decision-receipt authority.
     - clause_id: UNI-MECHANICS-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport locality representation description composition or context framing when mechanics are used, mechanics law and falsifier when mechanics are used]
-      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected, universal witness includes existence commutation competitor mediation canonicality effectivity and falsifier]
-      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout comonad density halo Day promonoidal Tambara optic codensity CQL or sheafification vocabulary, mechanics selected without evidenced preconditions, mechanics selected without an executable witness, static or contextual structure used to imply effect commutativity]
-      rationale: Deep mechanics remain available in the theorem library but are retained only when the universal shadow produces a material delta.
+      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport locality representation description composition or context framing when mechanics are used, existence or nonexistence evidence, commutation or preservation evidence, competitor mediation evidence, canonicality or uniqueness-up-to evidence, effective presentation evidence, mechanics falsifier]
+      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected, theorem cards link to retained doctrine and mechanics sources]
+      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout comonad density halo Day promonoidal Tambara optic codensity CQL or sheafification vocabulary, mechanics selected without evidenced preconditions, mechanics selected without a complete proof profile, static or contextual structure used to imply effect commutativity]
+      rationale: Deep mechanics remain available in the theorem library but are retained only when the universal shadow produces a material delta and complete proof obligations.
+    - clause_id: UNI-OBSTRUCTION-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-OBSTRUCT]
+      prohibited_routes: [UNI-PRESERVE]
+      required_artifacts: [witnessed nonexistence inconsistency nonrepresentability resource lower bound or canonical underdetermination, counterexample, obstruction stability, effective obstruction check, falsifier, reopening condition, resolution of every active constructive alternative]
+      success_signals: [missing evidence remains epistemic debt, a complete obstruction is selected only when no constructive alternative remains active]
+      failure_signals: [failed implementation attempt treated as nonexistence, missing evidence treated as obstruction, obstruction loses to a constructive card by diagnostic priority, constructive and obstruction evidence coexist without explicit conflict]
+      rationale: Obstruction is a proved architectural result rather than a fallback label for uncertainty or implementation failure.
     - clause_id: UNI-ROOT-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
       required_artifacts: [one ledger-addressed Universalist plan, one root SDR-v1 receipt, plan-bound artifact state, worker references to the root decision id]
-      success_signals: [exactly one root receipt per changed seam, a distinct seam allocates a distinct plan and decision id]
+      success_signals: [exactly one root receipt per changed seam, linked axis packets share the root seam decision unless they become genuinely distinct changed seams]
       failure_signals: [duplicate worker receipts, one receipt spans unrelated seams, receipt emitted from a static example]
       rationale: Root-scoped receipts preserve attribution without multiplying one architectural decision across collaborators.
   instrumentation:

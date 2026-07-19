@@ -1,9 +1,105 @@
+schema: universal-construction-fragment/v6
 constructions:
+- id: deferred_generation_path
+  expert_name: Coyoneda
+  public_name: payload with deferred lowering path
+  route: UNI-CANONICAL
+  moves:
+  - transport
+  signals:
+  - generated-provenance-loss
+  - early-mapping
+  requires:
+  - payload_and_path
+  emits:
+  - generated-payload-path-ir
+  laws:
+  - lowering equals direct interpretation
+  - path provenance survives
+  falsifiers:
+  - two paths with different observable provenance are collapsed
+  fallback: payload plus explicit converter
+  universal:
+    role: transport
+    competitors: every compatible path that extends, restricts, lowers, or repackages the source behavior
+    mediator: one observation-preserving comparison through the selected transport
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 24
+  hole_kinds:
+  - representation
+  - map
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - interpreter
+  - construction_paths
+  axes:
+  - presentation
+  - transport-realization
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - yoneda-coyoneda-defunctionalization.md
+  - mechanics/yoneda-coyoneda.md
+- id: first_order_behavior_ir
+  expert_name: Defunctionalization
+  public_name: first-order boundary behavior IR
+  route: UNI-ORDINARY
+  moves:
+  - generate
+  signals:
+  - callback-crosses-boundary
+  - opaque-function-boundary
+  requires:
+  - finite_or_effective_cases
+  emits:
+  - case-ir-and-apply
+  laws:
+  - encoded behavior agrees with the original callback
+  falsifiers:
+  - a callback case cannot be encoded
+  - captured authority is lost
+  fallback: named callback registry
+  universal:
+    role: transport
+    competitors: every compatible path that extends, restricts, lowers, or repackages the source behavior
+    mediator: one observation-preserving comparison through the selected transport
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 25
+  hole_kinds:
+  - representation
+  - interpreter
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - interpreter
+  - construction_paths
+  axes:
+  - syntax-semantics
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - yoneda-coyoneda-defunctionalization.md
+  - mechanics/defunctionalization.md
 - id: probe_presentation
   expert_name: Codensity / dense-dual presentation
   public_name: probe-based semantic presentation
   route: UNI-CANONICAL
-  priority: 42
   moves:
   - observe
   - normalize
@@ -25,15 +121,35 @@ constructions:
     role: presentation
     competitors: every semantic artifact satisfying the required observation family
     mediator: one effective representation/reconstruction path
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 26
+  hole_kinds:
+  - representation
+  - equivalence
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - interpreter
+  - proof
+  - resources
+  axes:
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - dense-dual-presentation.md
+  - mechanics/codensity-presentations.md
 - id: sequential_composition
   expert_name: Category
   public_name: sequential typed composition
   route: UNI-ORDINARY
-  priority: 8
   moves:
   - declare
   - compose
@@ -52,15 +168,31 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 27
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  axes:
+  - base-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - mechanics/foundations.md
 - id: side_by_side_composition
   expert_name: Monoidal category
   public_name: lawful side-by-side composition
   route: UNI-CANONICAL
-  priority: 30
   moves:
   - compose
   signals:
@@ -80,15 +212,32 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 28
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - resources
+  axes:
+  - base-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - mechanics/foundations.md
 - id: ordered_effect_boundary
   expert_name: Freyd / premonoidal category
   public_name: ordered pure/effect boundary
   route: UNI-CANONICAL
-  priority: 32
   moves:
   - compose
   signals:
@@ -110,15 +259,35 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 29
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - interpreter
+  - resources
+  - proof
+  - effect_semantics
+  axes:
+  - base-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - mechanics/freyd-categories.md
 - id: hierarchical_wiring_grammar
   expert_name: Colored operad
   public_name: typed hierarchical wiring grammar
   route: UNI-CANONICAL
-  priority: 34
   moves:
   - generate
   - compose
@@ -139,15 +308,35 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 30
+  hole_kinds:
+  - composition
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - representable_states
+  - interpreter
+  - proof
+  axes:
+  - base-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - mechanics/operads.md
 - id: multi_io_network
   expert_name: PROP / properad
   public_name: explicit multi-input multi-output network
   route: UNI-CANONICAL
-  priority: 38
   moves:
   - compose
   signals:
@@ -166,63 +355,26 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
-- id: explicit_feedback
-  expert_name: Traced monoidal category
-  public_name: explicit feedback architecture
-  route: UNI-CANONICAL
-  priority: 38
-  moves:
-  - compose
-  signals:
-  - feedback-or-cycles
-  requires:
-  - feedback_semantics
-  - guardedness_or_resource_bound
-  emits:
-  - feedback-or-loop-ir
-  laws:
-  - feedback laws preserve declared observations
-  falsifiers:
-  - unguarded feedback diverges or duplicates effects
-  fallback: explicit state loop
-  universal:
-    role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
-- id: resource_aware_composition
-  expert_name: Linear / graded / resource-sensitive category
-  public_name: resource-accounted composition
-  route: UNI-CANONICAL
-  priority: 34
-  moves:
-  - compose
-  - constrain
-  signals:
-  - consumable-resources
-  - graded-capabilities
-  requires:
-  - resource_accounting
-  - duplication_policy
-  emits:
-  - resource-witnessed-operation-ir
-  laws:
-  - resource use is conserved or explicitly transformed
-  falsifiers:
-  - a consumable capability is duplicated or discarded
-  fallback: explicit capability parameter
-  universal:
-    role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 31
+  hole_kinds:
+  - composition
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - representable_states
+  axes:
+  - base-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - sources.md

@@ -1,9 +1,116 @@
+schema: universal-construction-fragment/v6
 constructions:
+- id: task_local_comparison_universe
+  expert_name: Category / task-local world
+  public_name: task-local comparison universe
+  route: NONE
+  selection_mode: support_only
+  diagnostic_order: 1
+  hole_kinds:
+  - object
+  - map
+  - interpreter
+  - composition
+  - representation
+  - equivalence
+  - locality
+  - context-action
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees: []
+  moves:
+  - declare
+  signals:
+  - comparison-universe
+  requires: []
+  emits:
+  - evidence-bound competitor and comparison policy
+  laws:
+  - every admissible candidate and comparison map is stated relative to evidence-backed observations, effects, authority,
+    and resources
+  falsifiers:
+  - an unexamined implementation or transformation is silently admitted as a competitor
+  fallback: keep the ordinary repository model and state the missing comparison policy
+  universal:
+    role: support
+    competitors: the evidence-backed alternatives admitted for this seam
+    mediator: not applicable; this card defines the universe in which mediation is judged
+    canonicality: not an implementation artifact
+    effectivity: the universe is finite enough to inspect or has an explicit bounded representation
+  axes: &id001
+  - data-shape
+  - syntax-semantics
+  - behavior
+  - base-composition
+  - description-composition
+  - context-action
+  - locality
+  - schema-context
+  - transport-realization
+  - presentation
+  - proof
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: support
+  theory_refs:
+  - world-boundary-inventory.md
+  - mechanics/foundations.md
+- id: effectivity_hypothesis_guard
+  expert_name: Existence and effectivity hypotheses
+  public_name: construction precondition guard
+  route: NONE
+  selection_mode: support_only
+  diagnostic_order: 2
+  hole_kinds:
+  - object
+  - map
+  - interpreter
+  - composition
+  - representation
+  - equivalence
+  - locality
+  - context-action
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees: []
+  moves:
+  - obstruct
+  signals:
+  - effectivity-hypothesis
+  requires: []
+  emits:
+  - explicit hypothesis, approximation, or evidence debt
+  laws:
+  - no existence or universality claim is upgraded beyond the evidenced hypotheses
+  falsifiers:
+  - a formal construction is treated as executable without a representation and resource bound
+  fallback: downgrade to an ordinary or bounded construction
+  universal:
+    role: support
+    competitors: candidate constructions whose existence or execution depends on additional hypotheses
+    mediator: not applicable; this card guards theorem use
+    canonicality: not an implementation artifact
+    effectivity: every guarded hypothesis is evidenced, assumed explicitly, approximated, or left blocking
+  axes: *id001
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: support
+  theory_refs:
+  - effective-categorical-normal-form.md
+  - effective-computational-substrate.md
+  - sources.md
 - id: joint_aggregate
   expert_name: Product
   public_name: joint data aggregate
   route: UNI-ORDINARY
-  priority: 10
   moves:
   - constrain
   signals:
@@ -22,15 +129,34 @@ constructions:
     role: receiver
     competitors: every admissible producer satisfying the required equations
     mediator: one comparison path from each producer into the selected owner
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 10
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - information_flow
+  - construction_paths
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
 - id: exclusive_cases
   expert_name: Coproduct
   public_name: explicit exclusive-state model
   route: UNI-ORDINARY
-  priority: 10
   moves:
   - glue
   signals:
@@ -48,19 +174,36 @@ constructions:
   fallback: validated legacy flags
   universal:
     role: emitter
-    competitors: every admissible consumer or interpretation of the generated/integrated
-      artifact
-    mediator: one comparison path from the selected artifact into each compatible
-      consumer
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 11
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - construction_paths
+  - proof
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
 - id: validated_subtype
   expert_name: Equalizer / refined type
   public_name: validated value object
   route: UNI-ORDINARY
-  priority: 12
   moves:
   - constrain
   signals:
@@ -81,15 +224,34 @@ constructions:
     role: receiver
     competitors: every admissible producer satisfying the required equations
     mediator: one comparison path from each producer into the selected owner
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 12
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - construction_paths
+  - proof
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - canonical-boundary-artifacts.md
 - id: compatibility_object
   expert_name: Pullback
   public_name: owned compatibility object
   route: UNI-ORDINARY
-  priority: 14
   moves:
   - constrain
   signals:
@@ -113,14 +275,36 @@ constructions:
     role: receiver
     competitors: every compatible source pair satisfying the shared observation agreement
     mediator: one owner-controlled construction path from each compatible pair
-    canonicality: the path is unique up to owner normalization while both source projections
-      remain observable
+    canonicality: the path is unique up to owner normalization while both source projections remain observable
     effectivity: agreement is computable or supplied by a verifiable witness
+  selection_mode: selectable
+  diagnostic_order: 13
+  hole_kinds:
+  - object
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - owner
+  - representable_states
+  - information_flow
+  - construction_paths
+  - proof
+  - compatibility
+  axes:
+  - data-shape
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - mechanics/pullbacks-and-pushouts.md
 - id: canonical_quotient
   expert_name: Coequalizer / quotient
   public_name: canonical normalized representation
   route: UNI-ORDINARY
-  priority: 18
   moves:
   - normalize
   signals:
@@ -139,19 +323,39 @@ constructions:
   fallback: explicit normalization helper
   universal:
     role: emitter
-    competitors: every admissible consumer or interpretation of the generated/integrated
-      artifact
-    mediator: one comparison path from the selected artifact into each compatible
-      consumer
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 14
+  hole_kinds:
+  - object
+  - equivalence
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - information_flow
+  - construction_paths
+  - proof
+  axes:
+  - data-shape
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - possibility-sheafification.md
 - id: canonical_integration
   expert_name: Pushout
   public_name: canonical overlap-aware integration
   route: UNI-CANONICAL
-  priority: 30
   moves:
   - glue
   - normalize
@@ -174,71 +378,34 @@ constructions:
   fallback: named merge with provenance
   universal:
     role: emitter
-    competitors: every pair of sources and downstream consumers agreeing on the declared
-      overlap
-    mediator: source injections and one integrated artifact mediate all compatible
-      consumers
-    canonicality: only declared overlap is identified; canonical IDs or normalization
-      remove competing merge meanings
-    effectivity: conflict detection, provenance retention, and normalization fit the
-      integration budget
-- id: safe_graph_rewrite
-  expert_name: Pushout complement / double pushout
-  public_name: validated delete-preserve-add rewrite
-  route: UNI-CANONICAL
-  priority: 35
-  moves:
-  - glue
-  - obstruct
-  signals:
-  - delete-preserve-add-rewrite
-  - graph-rewrite
-  requires:
-  - preserved_interface
-  - match_is_typed
-  emits:
-  - rewrite-rule-and-trace
-  laws:
-  - preserved interface remains unchanged
-  - deletions and additions are exact
-  falsifiers:
-  - dangling reference
-  - forbidden identification
-  fallback: transactional rewrite with explicit checks
-  universal:
-    role: emitter
-    competitors: every admissible consumer or interpretation of the generated/integrated
-      artifact
-    mediator: one comparison path from the selected artifact into each compatible
-      consumer
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
-- id: supplied_behavior
-  expert_name: Exponential
-  public_name: supplied strategy boundary
-  route: UNI-ORDINARY
-  priority: 15
-  moves:
-  - declare
-  signals:
-  - branchy-policy
-  - supplied-behavior
-  requires:
-  - behavior_is_configurable
-  emits:
-  - strategy-or-function
-  laws:
-  - evaluation agrees with prior branch fixtures
-  falsifiers:
-  - strategy changes an undeclared observation
-  fallback: named strategy interface
-  universal:
-    role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    competitors: every pair of sources and downstream consumers agreeing on the declared overlap
+    mediator: source injections and one integrated artifact mediate all compatible consumers
+    canonicality: only declared overlap is identified; canonical IDs or normalization remove competing merge meanings
+    effectivity: conflict detection, provenance retention, and normalization fit the integration budget
+  selection_mode: selectable
+  diagnostic_order: 15
+  hole_kinds:
+  - object
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - owner
+  - information_flow
+  - construction_paths
+  - migration
+  - proof
+  - compatibility
+  axes:
+  - data-shape
+  - schema-context
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - structures-and-laws.md
+  - mechanics/pullbacks-and-pushouts.md
+  - pushout-reconciliation.md

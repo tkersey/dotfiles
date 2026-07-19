@@ -1,9 +1,103 @@
+schema: universal-construction-fragment/v6
 constructions:
+- id: explicit_feedback
+  expert_name: Traced monoidal category
+  public_name: explicit feedback architecture
+  route: UNI-CANONICAL
+  moves:
+  - compose
+  signals:
+  - feedback-or-cycles
+  requires:
+  - feedback_semantics
+  - guardedness_or_resource_bound
+  emits:
+  - feedback-or-loop-ir
+  laws:
+  - feedback laws preserve declared observations
+  falsifiers:
+  - unguarded feedback diverges or duplicates effects
+  fallback: explicit state loop
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 32
+  hole_kinds:
+  - composition
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - representable_states
+  - resources
+  axes:
+  - base-composition
+  - behavior
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - effects-and-coalgebras.md
+- id: resource_aware_composition
+  expert_name: Linear / graded / resource-sensitive category
+  public_name: resource-accounted composition
+  route: UNI-CANONICAL
+  moves:
+  - compose
+  - constrain
+  signals:
+  - consumable-resources
+  - graded-capabilities
+  requires:
+  - resource_accounting
+  - duplication_policy
+  emits:
+  - resource-witnessed-operation-ir
+  laws:
+  - resource use is conserved or explicitly transformed
+  falsifiers:
+  - a consumable capability is duplicated or discarded
+  fallback: explicit capability parameter
+  universal:
+    role: composition
+    competitors: every legal composite and every nearby illegal composition
+    mediator: one explicit composition path for each legal composite
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 33
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - resources
+  - information_flow
+  axes:
+  - base-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - effects-and-coalgebras.md
 - id: same_index_product
   expert_name: Pointwise / Hadamard product
   public_name: same-index description product
   route: UNI-ORDINARY
-  priority: 16
   moves:
   - compose
   signals:
@@ -22,15 +116,31 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 34
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  axes:
+  - description-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - description-composition-doctrine.md
+  - mechanics/day-convolution.md
 - id: decomposition_product
   expert_name: Day convolution
   public_name: all-decompositions description product
   route: UNI-CANONICAL
-  priority: 45
   moves:
   - compose
   - glue
@@ -58,19 +168,38 @@ constructions:
   fallback: explicit bounded decomposition loop
   universal:
     role: composition
-    competitors: every target description assembled from legal decompositions of the
-      target index
-    mediator: each legal decomposition contributes through the declared aggregation
-      and normalization path
-    canonicality: coherent reindexings identify exactly equivalent presentations and
-      preserve observable provenance
-    effectivity: decomposition enumeration, aggregation, quotienting, and invalidation
-      are bounded or explicitly approximated
+    competitors: every target description assembled from legal decompositions of the target index
+    mediator: each legal decomposition contributes through the declared aggregation and normalization path
+    canonicality: coherent reindexings identify exactly equivalent presentations and preserve observable provenance
+    effectivity: decomposition enumeration, aggregation, quotienting, and invalidation are bounded or explicitly approximated
+  selection_mode: selectable
+  diagnostic_order: 35
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - information_flow
+  - interpreter
+  - resources
+  - proof
+  axes:
+  - description-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - description-composition-doctrine.md
+  - mechanics/day-convolution.md
+  - sources.md
 - id: witnessed_partial_product
   expert_name: Promonoidal convolution
   public_name: witnessed partial description product
   route: UNI-CANONICAL
-  priority: 44
   moves:
   - compose
   - glue
@@ -92,17 +221,36 @@ constructions:
   fallback: checked partial combine
   universal:
     role: composition
-    competitors: every composite supported by an admissibility witness in the partial
-      composition kernel
+    competitors: every composite supported by an admissibility witness in the partial composition kernel
     mediator: the witness carries each legal pair into the composite representation
     canonicality: witnesses normalize only under the declared observational equivalence
-    effectivity: kernel queries and witness/provenance storage remain within the resource
-      bound
+    effectivity: kernel queries and witness/provenance storage remain within the resource bound
+  selection_mode: selectable
+  diagnostic_order: 36
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - information_flow
+  - resources
+  - proof
+  axes:
+  - description-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - description-composition-doctrine.md
+  - mechanics/day-convolution.md
 - id: recursive_substitution
   expert_name: Operadic substitution / plethysm
   public_name: recursive typed insertion
   route: UNI-CANONICAL
-  priority: 40
   moves:
   - compose
   signals:
@@ -121,15 +269,32 @@ constructions:
     role: composition
     competitors: every legal composite and every nearby illegal composition
     mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 37
+  hole_kinds:
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - interpreter
+  axes:
+  - description-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - composition-geometry.md
+  - mechanics/operads.md
 - id: context_stable_capability
   expert_name: Tambara module
   public_name: context-stable generalized capability
   route: UNI-CANONICAL
-  priority: 46
   moves:
   - frame
   signals:
@@ -157,15 +322,36 @@ constructions:
     role: framing
     competitors: every legal shared-context frame of the local generalized capability
     mediator: one frame operation transports the capability through each context action
-    canonicality: empty framing is identity and nested framing agrees with combined
-      framing up to observation
-    effectivity: the context family and residual representation are finite, generated,
-      indexed, or otherwise bounded
+    canonicality: empty framing is identity and nested framing agrees with combined framing up to observation
+    effectivity: the context family and residual representation are finite, generated, indexed, or otherwise bounded
+  selection_mode: selectable
+  diagnostic_order: 38
+  hole_kinds:
+  - context-action
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - information_flow
+  - interpreter
+  - resources
+  - proof
+  - authority
+  axes:
+  - context-action
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md
 - id: mixed_context_stable_capability
   expert_name: Mixed Tambara module
   public_name: mixed-endpoint context-stable capability
   route: UNI-CANONICAL
-  priority: 47
   moves:
   - frame
   signals:
@@ -186,74 +372,30 @@ constructions:
   universal:
     role: framing
     competitors: every legal context whose source and target actions may differ
-    mediator: one mixed frame operation transports the capability through both endpoint
-      actions
-    canonicality: source and target reindexing commute with framing under the declared
-      observations
+    mediator: one mixed frame operation transports the capability through both endpoint actions
+    canonicality: source and target reindexing commute with framing under the declared observations
     effectivity: both actions and their index transport have an executable typed representation
-- id: residual_focus_ir
-  expert_name: Optic / residual coend
-  public_name: explicit residual focus-and-rebuild IR
-  route: UNI-CANONICAL
-  priority: 42
-  moves:
-  - frame
-  - normalize
-  signals:
-  - focus-residual-rebuild
-  - optic-drift
-  requires:
-  - decompose
-  - rebuild
-  - residual_equivalence
-  emits:
-  - residual-ir
-  laws:
-  - equivalent residual presentations normalize together
-  - interpretation agrees with direct behavior
-  falsifiers:
-  - residual identity leaks into observations
-  - domain optic laws fail
-  fallback: explicit getter and updater
-  universal:
-    role: framing
-    competitors: every legal context extension of the local capability
-    mediator: one coherent frame path for each supported context
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
-- id: generated_context_closure
-  expert_name: Free Tambara construction
-  public_name: generated closure under legal contexts
-  route: UNI-CANONICAL
-  priority: 50
-  moves:
-  - generate
-  - frame
-  - normalize
-  signals:
-  - close-under-all-contexts
-  requires:
-  - context_basis
-  - frame_operation
-  - effective_context_representation
-  emits:
-  - context-closed-capability-ir
-  laws:
-  - every supported frame is generated
-  - equivalent frames normalize together
-  falsifiers:
-  - a legal frame is missing
-  - context closure is unbounded
-  fallback: generated wrappers for known contexts
-  universal:
-    role: emitter
-    competitors: every admissible consumer or interpretation of the generated/integrated
-      artifact
-    mediator: one comparison path from the selected artifact into each compatible
-      consumer
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+  selection_mode: selectable
+  diagnostic_order: 39
+  hole_kinds:
+  - context-action
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - information_flow
+  - interpreter
+  - resources
+  - proof
+  - authority
+  axes:
+  - context-action
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md

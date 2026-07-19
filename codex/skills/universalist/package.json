@@ -1,12 +1,26 @@
 {
   "name": "universalist",
-  "version": "17.0.0",
-  "description": "Boundary-triggered proof-carrying architecture compiler with a hidden categorical optimizer.",
+  "version": "17.1.0",
+  "description": "Boundary-triggered architecture workflow with an experimental evidence-bound categorical nomination compiler.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true,
-  "universal_problem_ir": true,
+  "universal_problem_ir": "universal-problem/v6",
+  "registry_schema": "universal-construction-registry/v6",
+  "compiler_authority": "nomination_only",
+  "packet_discipline": "one_axis_per_packet",
   "plain_output_default": true,
   "minimum_ledger_version": "0.10.4",
-  "minimum_seq_version": "0.3.51"
+  "minimum_seq_version": "0.3.51",
+  "claim_scopes": [
+    "literal",
+    "effective_realization",
+    "bounded_approximation"
+  ],
+  "verification_target_required": true,
+  "registry_cards": 55,
+  "derived_mechanics": true,
+  "compiler_status": "experimental",
+  "tests_shipped": false,
+  "validation_surface": "single-doctor"
 }

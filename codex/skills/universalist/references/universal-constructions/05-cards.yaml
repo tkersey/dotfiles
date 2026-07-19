@@ -1,9 +1,114 @@
+schema: universal-construction-fragment/v6
 constructions:
+- id: residual_focus_ir
+  expert_name: Optic / residual coend
+  public_name: explicit residual focus-and-rebuild IR
+  route: UNI-CANONICAL
+  moves:
+  - frame
+  - normalize
+  signals:
+  - focus-residual-rebuild
+  - optic-drift
+  requires:
+  - decompose
+  - rebuild
+  - residual_equivalence
+  emits:
+  - residual-ir
+  laws:
+  - equivalent residual presentations normalize together
+  - interpretation agrees with direct behavior
+  falsifiers:
+  - residual identity leaks into observations
+  - domain optic laws fail
+  fallback: explicit getter and updater
+  universal:
+    role: framing
+    competitors: every legal context extension of the local capability
+    mediator: one coherent frame path for each supported context
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 40
+  hole_kinds:
+  - context-action
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - interpreter
+  - construction_paths
+  - proof
+  axes:
+  - context-action
+  - presentation
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md
+- id: generated_context_closure
+  expert_name: Free Tambara construction
+  public_name: generated closure under legal contexts
+  route: UNI-CANONICAL
+  moves:
+  - generate
+  - frame
+  - normalize
+  signals:
+  - close-under-all-contexts
+  requires:
+  - context_basis
+  - frame_operation
+  - effective_context_representation
+  emits:
+  - context-closed-capability-ir
+  laws:
+  - every supported frame is generated
+  - equivalent frames normalize together
+  falsifiers:
+  - a legal frame is missing
+  - context closure is unbounded
+  fallback: generated wrappers for known contexts
+  universal:
+    role: emitter
+    competitors: every admissible consumer or interpretation of the generated/integrated artifact
+    mediator: one comparison path from the selected artifact into each compatible consumer
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 41
+  hole_kinds:
+  - context-action
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - legal_composition
+  - resources
+  - proof
+  axes:
+  - context-action
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md
 - id: all_context_observation
   expert_name: Cofree Tambara construction
   public_name: coherent all-context observation
   route: UNI-CANONICAL
-  priority: 50
   moves:
   - observe
   - frame
@@ -22,18 +127,36 @@ constructions:
   fallback: explicit context matrix
   universal:
     role: observation
-    competitors: every behavior distinguishable by the sanctioned observations or
-      traces
+    competitors: every behavior distinguishable by the sanctioned observations or traces
     mediator: one observation path through the selected vocabulary or observer
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 42
+  hole_kinds:
+  - context-action
+  - equivalence
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - proof
+  - resources
+  axes:
+  - context-action
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md
 - id: dependent_context_transport
   expert_name: Dependent Tambara / double-category action
   public_name: typed index-changing context transport
   route: UNI-CANONICAL
-  priority: 52
   moves:
   - frame
   - transport
@@ -55,15 +178,35 @@ constructions:
     role: framing
     competitors: every legal context extension of the local capability
     mediator: one coherent frame path for each supported context
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 43
+  hole_kinds:
+  - context-action
+  - map
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - information_flow
+  - proof
+  - authority
+  axes:
+  - context-action
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md
 - id: concrete_realizer_check
   expert_name: Representability / module-functor diagnostic
   public_name: concrete-realizer check
   route: UNI-CANONICAL
-  priority: 52
   moves:
   - realize
   - obstruct
@@ -82,18 +225,39 @@ constructions:
   fallback: explicit selection policy
   universal:
     role: realization
-    competitors: every admissible implementation satisfying the fixed projection or
-      observation boundary
+    competitors: every admissible implementation satisfying the fixed projection or observation boundary
     mediator: one comparison between the selected realizer and each admissible implementation
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 44
+  hole_kinds:
+  - map
+  - proof
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - existence
+  - interpreter
+  - proof
+  axes:
+  - context-action
+  - transport-realization
+  - proof
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - contextual-morphism-doctrine.md
+  - mechanics/tambara-modules.md
+  - freyd-aft-boundary-diagnostic.md
 - id: situated_context
   expert_name: Comonad as space / comonad coalgebra
   public_name: coherently situated value model
   route: UNI-CANONICAL
-  priority: 48
   moves:
   - localize
   signals:
@@ -117,15 +281,36 @@ constructions:
     role: locality
     competitors: every required local patch, restriction, and compatible local family
     mediator: one locality-preserving restriction or gluing path
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 45
+  hole_kinds:
+  - locality
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - representable_states
+  - resources
+  - proof
+  - locality
+  axes:
+  - locality
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - comonadic-spatiality-doctrine.md
+  - mechanics/comonads-as-spaces.md
 - id: generated_locality
   expert_name: Density comonad
   public_name: locality generated from patches
   route: UNI-CANONICAL
-  priority: 52
   moves:
   - generate
   - localize
@@ -145,18 +330,38 @@ constructions:
   fallback: bounded patch catalogue
   universal:
     role: locality
-    competitors: every situated object reconstructed from the declared local patch
-      vocabulary
+    competitors: every situated object reconstructed from the declared local patch vocabulary
     mediator: patch observations assemble through the density/reconstruction map
-    canonicality: reconstruction is canonical up to the declared local observations
-      or is marked subbasis-only
-    effectivity: the patch basis, reconstruction, halo maintenance, and invalidation
-      are finite or bounded
+    canonicality: reconstruction is canonical up to the declared local observations or is marked subbasis-only
+    effectivity: the patch basis, reconstruction, halo maintenance, and invalidation are finite or bounded
+  selection_mode: selectable
+  diagnostic_order: 46
+  hole_kinds:
+  - locality
+  - representation
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - representable_states
+  - information_flow
+  - resources
+  - proof
+  - locality
+  axes:
+  - locality
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - comonadic-spatiality-doctrine.md
+  - mechanics/comonads-as-spaces.md
 - id: effective_local_fact
   expert_name: Halo / germ
   public_name: effective local validity context
   route: UNI-ORDINARY
-  priority: 24
   moves:
   - localize
   signals:
@@ -177,69 +382,28 @@ constructions:
     role: locality
     competitors: every required local patch, restriction, and compatible local family
     mediator: one locality-preserving restriction or gluing path
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
-- id: locality_preserving_boundary
-  expert_name: Continuous comonadic map
-  public_name: locality-preserving boundary
-  route: UNI-CANONICAL
-  priority: 50
-  moves:
-  - localize
-  - transport
-  signals:
-  - locality-sensitive-boundary
-  requires:
-  - point_map
-  - halo_transport
-  - restriction_rules
-  - label_policy
-  emits:
-  - point-map-plus-context-transport
-  laws:
-  - required neighborhoods and labels are preserved
-  falsifiers:
-  - point value survives while authority evidence or provenance neighborhood is lost
-  fallback: point map plus explicit dependency copy
-  universal:
-    role: locality
-    competitors: every source point together with the neighborhood required by its
-      observations
-    mediator: the point map is accompanied by restriction- and label-preserving neighborhood
-      transport
-    canonicality: transport agrees with repeated restriction and preserves local/global
-      identity policy
-    effectivity: halo transport and invalidation stay within the declared fan-out
-      and freshness budget
-- id: usage_site
-  expert_name: Presheaf / site
-  public_name: explicit local-usage site
-  route: UNI-CANONICAL
-  priority: 44
-  moves:
-  - localize
-  - observe
-  signals:
-  - distributed-local-meanings
-  - usage-site
-  requires:
-  - patches
-  - restrictions
-  - overlaps
-  emits:
-  - usage-site-index
-  laws:
-  - restrictions compose and overlaps are explicit
-  falsifiers:
-  - a local meaning has no valid restriction path
-  fallback: call-site inventory
-  universal:
-    role: locality
-    competitors: every required local patch, restriction, and compatible local family
-    mediator: one locality-preserving restriction or gluing path
-    canonicality: the comparison is unique up to the declared observations, equations,
-      and normalization
-    effectivity: construction, comparison, interpretation, and validation fit the
-      declared resource model
+    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    effectivity: construction, comparison, interpretation, and validation fit the declared resource model
+  selection_mode: selectable
+  diagnostic_order: 47
+  hole_kinds:
+  - locality
+  - object
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - information_flow
+  - resources
+  - proof
+  - locality
+  axes:
+  - locality
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - comonadic-spatiality-doctrine.md
+  - exact-context-doctrine.md

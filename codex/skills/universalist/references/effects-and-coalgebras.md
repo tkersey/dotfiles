@@ -226,15 +226,9 @@ P : B -> S
 
 A subbasis generates a candidate spatial structure. A basis additionally permits canonical reconstruction of every situated object from basic patches. Example coverage alone is not density.
 
-When two such spatial description worlds have a meaningful product of patches, Day convolution may compose them:
+When two such spatial description worlds have a meaningful product of patches, first construct the external-product vocabulary on `B1 x B2`. Call the result a Day convolution only after naming one shared/product index world, its tensor/unit or promonoidal kernel, both reindexings, a density-Day comparison map, and an isomorphism, observational-equivalence, or bounded-approximation witness.
 
-```text
-<P1> star <P2>
-  ~=
-<(U,V) |-> P1(U) x P2(V)>
-```
-
-This is a description-level product of locality, not a replacement for center/coherence, halo, continuity, or resource laws.
+This is a description-level composition of locality descriptions, not a replacement for center/coherence, halo, continuity, or resource laws. External-product patches alone do not prove a Day equivalence.
 
 When a local generalized transformation must remain valid while its halo/context expands, a Tambara action may frame it:
 

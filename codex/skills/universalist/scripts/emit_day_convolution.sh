@@ -170,26 +170,34 @@ OUT
     emit_header
     cat <<'OUT'
 
-## Comonadic spatial convolution
+## Comonadic spatial composition
+
+The always-defined starting point is:
 
 ```text
-<P1> star <P2>
-  ~=
-<(U,V) |-> P1(U) x P2(V)>
+(P1 external-product P2)(U,V) = P1(U) x P2(V)
 ```
 
 - left spatial world/subbasis:
 - right spatial world/subbasis:
+- shared/product index world:
+- tensor/unit or promonoidal kernel:
+- reindexing of the left description:
+- reindexing of the right description:
 - external-product patch vocabulary:
+- density-Day comparison map:
+- comparison status: isomorphism / observational equivalence / bounded approximation / no Day claim
 - combined points:
 - combined halos:
 - labelled-halo translation:
 - continuous projections:
+- local/global identity policy:
 - effective/indexed product representation:
 
 ## Laws
 
-- external-product patches generate the selected product space;
+- external-product patches generate the selected density construction;
+- a Day claim is made only when the shared index and comparison witness are explicit;
 - projections preserve required locality;
 - combined halo labels are preserved/translated explicitly;
 - local/global identity remains traceable;
@@ -197,6 +205,7 @@ OUT
 
 ## Falsifier
 
+- external-product patches exist but no common Day index/category is supplied;
 - ordinary list concatenation produces the same observations;
 - product of point sets loses halo multiplicity or labels;
 - no effective halo product exists.
