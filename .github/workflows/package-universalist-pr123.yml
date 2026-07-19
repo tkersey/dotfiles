@@ -1,35 +1,59 @@
-name: Package Universalist PR123
+name: Apply Universalist 17.1.0
 
 on:
   push:
     branches:
       - universalist
-  pull_request:
-    branches:
-      - main
-    types:
-      - synchronize
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  package:
+  apply:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: universalist
-          fetch-depth: 1
-      - name: Build exact checkout archive
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Reconstruct patch
         run: |
-          git rev-parse 'HEAD^{tree}' > /tmp/tree-sha.txt
-          tar --exclude=.git -czf /tmp/pr123-checkout.tar.gz .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pr123-exact-checkout
-          path: |
-            /tmp/pr123-checkout.tar.gz
-            /tmp/tree-sha.txt
-          if-no-files-found: error
-          retention-days: 1
+          cat .github/universalist-17.1.0-bootstrap/part.* \
+            | tr -d '\n' \
+            | base64 --decode > /tmp/pr123-final-patch.tar.xz
+          echo "4a19d5db97092006b4017b1f28bbdd67faaf1ba895e276ca47f32f92dc9e7266  /tmp/pr123-final-patch.tar.xz" \
+            | sha256sum --check --strict
+          mkdir -p /tmp/pr123-final-patch
+          tar -xJf /tmp/pr123-final-patch.tar.xz -C /tmp/pr123-final-patch
+
+      - name: Apply replacement
+        run: |
+          cp -a /tmp/pr123-final-patch/files/. "$GITHUB_WORKSPACE/"
+          while IFS= read -r path; do
+            [ -z "$path" ] || rm -rf -- "$path"
+          done < /tmp/pr123-final-patch/DELETE.txt
+
+      - name: Validate
+        run: |
+          cd codex/skills/universalist
+          chmod +x scripts/*.sh scripts/*.py
+          ./scripts/check_universalist_replacement.sh
+
+      - name: Remove transport
+        run: |
+          rm -rf .github/universalist-17.1.0-bootstrap
+          rm -f .github/.pr123-tree-probe
+          rm -f .github/workflows/package-universalist-pr123.yml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "universalist: ship evidence-bound compiler 17.1.0"
+          git push origin HEAD:universalist
