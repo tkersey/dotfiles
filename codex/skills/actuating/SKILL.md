@@ -1,446 +1,140 @@
 ---
 name: actuating
-description: "Front door for authority-bound goal execution through the actuation kernel. Bare $actuating or /goal $actuating runs implement, then $ship, then review-closeout; explicit $actuating implement stops after implementation. Explicit triage, remediation-plan, and review-closeout retain their named behavior; never infer mutation from an unqualified review request."
+description: "Execute accepted implementation and review work through Actuating Artifact Kernel v1. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Bind artifact-kernel-v1 goals to Goal Contract v3, Counterexample Sets, Construction Contracts, and the Evidence Ledger; keep legacy-actuating-v1 goals on frozen legacy semantics and never mix protocols."
 ---
 
 # Actuating
 
-## Mission
+Turn accepted intent into a lawful construction, capability-admitted effects,
+independent falsification evidence, and derived closure.
 
-Turn accepted intent into conserved obligations, capability-admitted effects,
-independent observations, and a live kernel-derived closure decision.
+## Authority kernel
 
-~~~text
-bare $actuating:
-accepted source -> implementation generation -> $ship -> review generation -> final closure
+Use exactly four authoritative per-goal artifact families:
 
-explicit mode:
-accepted source -> named mode -> its terminal output
-~~~
+1. `goal-contract/v3` — accepted truth and authority, compiled by
+   `$goal-contract`.
+2. `counterexample-set/v1` — classified witnessed falsifications, authored by
+   `$review-fold`.
+3. `construction-contract/v1` — the one selected architecture and proof plan,
+   authored by `$actuating` using `$universalist`.
+4. `actuating-evidence-event/v1` — domain-owned observations in Ledger's
+   append-only envelope.
 
-`$actuating` routes and governs this workflow. `$goal-actuating` coordinates
-execution. `$goal-grind` executes one already-selected operation. `$ship` alone
-owns public PR effects.
+The Goal Contract is the sole semantic-authority artifact, the Counterexample
+Set is the sole classified-bug artifact, the Construction Contract is the sole
+architecture-selection artifact, and the Evidence Ledger is the sole mutable
+per-goal truth. Read [artifact-kernel.md](references/artifact-kernel.md) for the
+owner map and its exact downstream contracts.
 
-## Modes
+For an artifact-kernel goal, Ledger's Construction-bound handlers admit and
+execute projected operations; they never select architecture. `$ship` alone
+owns public effects. Plans, reviews, validators, and Construction Contracts do
+not independently grant mutation.
 
-Bare `/goal $actuating` and bare `$actuating` select `implement -> $ship ->
-review-closeout`. `$actuating implement` selects implementation only. Explicit
-`triage`, `remediation-plan`, and `review-closeout` select only the named mode.
+## Protocol boundary
 
-| Intent | Mode | Mutation | End |
+Bind each goal immutably to `artifact-kernel-v1` or `legacy-actuating-v1` in the
+canonical Evidence Ledger. Production remains at migration Phase 3: replay
+existing registered artifact-kernel goals, but keep new artifact-kernel goal
+admission build-disabled. Phase 4 remains blocked until an
+operator-authoritative inventory covers every historical custom legacy store.
+
+Never mix protocols, writers, artifacts, review credit, or closure rules in one
+goal. Use the repository-local Ledger admission boundary described in
+[artifact-kernel.md](references/artifact-kernel.md); never hand-write its
+binding or infer a protocol from nearby documents.
+
+For a Ledger-admitted legacy goal, use only the frozen
+[legacy-actuating-v1 owner workflow](references/legacy-actuating-v1.md). It
+owns the legacy coordinator, executor, policy, resolution, semantics, decision,
+and closure references. Those surfaces remain readable through their stated
+compatibility window and are never artifact-kernel inputs or authority.
+
+## Public modes
+
+| Intent | Route | Mutation | Terminal result |
 |---|---|---:|---|
-| Implement accepted work only | `implement` | Authority-bound | Local completion |
-| Review, audit, or classify | `triage` | No | Review report |
-| Produce a fix plan | `remediation-plan` | No | Resolution plan |
-| Fix or close review findings | `review-closeout` | Resolution-bound | Ship handoff or completion |
+| Bare `$actuating` or `/goal $actuating` | implement -> Ship -> review-closeout | Authority-bound | Derived `complete` |
+| `$actuating implement` | implementation only | Authority-bound | Local derived `complete` |
+| `$actuating triage` | acquire and classify review | Forbidden | Counterexample Set and report |
+| `$actuating remediation-plan` | propose successor construction | Forbidden | Non-executable Construction Contract |
+| `$actuating review-closeout` | repair, ablate, Ship when required, re-review | Resolution-bound | Derived `complete` |
 
-An unqualified review request means `triage`. Require explicit fix, resolve,
-address, implement, or closeout language before choosing `review-closeout`.
-Planning requests route to `$plan`; there is no planning mode here.
+An unqualified request to review, inspect, audit, or classify selects `triage`.
+Require explicit implement, fix, resolve, address, or closeout intent before
+mutation.
 
-## Executable authority
-
-`ledger --source actuation` is the only executable actuation gate. Do not invoke
-or recreate a second actuation gate.
-
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. After readiness, invoke `ledger` directly; the CLI
-owns command compatibility, integrity, and failures.
-
-The live objects are:
-
-1. `GC-v2`, the accepted source-bound GoalContract.
-2. `actuation-open/v1`, its executable projection into authority, path scope,
-   terminal route, and verifier-backed obligations.
-3. `actuation-operation/v1`, one selected effect with an idempotency key, owner,
-   exact paths, and cited obligations.
-4. The append-only `actuation-event/v1` chain, whose fold yields
-   `actuation-kernel-state/v1`.
-5. `closure-decision/v1`, projected by the kernel from that live fold.
-
-`actuation-review-policy/v2`, `owner-boundary-synthesis/v1`,
-`review-resolution/v1`, RF-v2, EF-v1, CAS receipts, and SHIP-v1 remain
-owner-specific evidence. Bind their current identities into the GoalContract
-and discharge their predicates through exact verifier commands; do not copy
-their policy logic into the kernel.
-
-Read [live-semantics.yaml](references/live-semantics.yaml) for canonical
-vocabulary and [closure.md](references/closure.md) for the terminal projection.
-The executable laws live in the event fold and its direct counterexample tests.
-
-## Recursion-scheme architecture
-
-`/goal` owns fixed-point iteration. The kernel performs at most one state
-transition per invocation:
+Bare mode preserves this lifecycle:
 
 ~~~text
-coalgebra: actuation-kernel-state -> next legal transition or terminal
-handler:   admitted capability -> process effect or external-edit reconciliation
-algebra:   prior state + actuation-event/v1 -> next state
-driver:    /goal observes and repeats, stops, or blocks
+Goal Contract -> Construction -> capability-bound realization -> ready-to-ship
+-> Ship -> concurrent 1+4 review -> Counterexamples/successor Construction
+-> fresh convergence -> five consecutive standard cleans -> complete
 ~~~
 
-The event fold is the catamorphism. `state` and `decide` are coalgebraic
-observations. The workflow is hylomorphic only because `/goal` repeatedly
-unfolds and folds; `ledger --source actuation` never owns that recursion or
-claims parent completion from one operation.
+`implement` stops before Ship and review. `triage` never mutates.
+`remediation-plan` proposes but cannot execute a successor Construction.
+`review-closeout` realizes accepted Counterexamples, retires residue, publishes
+when required, and obtains fresh review convergence.
 
-## Source and authority
+## Owner-directed procedure
 
-Open a material generation only from:
+1. Compile source semantics, scope, compatibility, laws, and accepted authority
+   with [$goal-contract](../goal-contract/SKILL.md). Do not select architecture
+   there.
+2. Select `K0`, or a review-derived immutable successor, under
+   [construction-contract.md](references/construction-contract.md). No finding
+   authorizes a patch directly.
+3. Before the first native Ledger command, load `$ledger` and complete
+   `$ledger ensure`. Follow the exact transient envelopes and one-operation
+   capability sequence in [kernel-commands.md](references/kernel-commands.md).
+4. Follow the one static [Review Contract](references/review-contract.md).
+   Route every finding through [$review-fold](../review-fold/SKILL.md) before
+   any successor Construction or mutation.
+5. Replay and derive state or closure under
+   [closure.md](references/closure.md). Never persist peer campaign, streak,
+   kernel-state, or closure truth.
 
-- a current accepted specification whose governance result is complete; or
-- a direct user goal with explicit execution authority.
+The executor may perform only the Construction-projected effect on admitted
+paths and report observations. It may not choose a repair, broaden scope,
+change proof strategy, publish, or claim parent completion. Any material
+review-subject change invalidates all review credit; no carry crosses subjects.
 
-A plan supplies scope and policy but not mutation authority. Review evidence
-supplies liabilities but not mutation authority. Preserve separate
-`source_ref`, `execution_authority_ref`, and `mutation_allowed` fields.
+## Publication
 
-Project every terminal GoalContract predicate into at least one obligation with
-an exact verifier command. The kernel conserves exactly the accepted
-`actuation-open/v1` obligation set; the source-to-open projection remains a
-human/GoalContract responsibility and must be inspected before `open`.
-
-~~~json
-{
-  "schema": "actuation-open/v1",
-  "run_id": "goal-17:g0",
-  "goal_id": "goal-17",
-  "goal_contract_digest": "sha256:...",
-  "resolution_digest": null,
-  "source_ref": "user:turn-42",
-  "execution_authority_ref": "user:turn-42",
-  "mutation_allowed": true,
-  "completion": "ready-to-ship",
-  "allowed_paths": ["src/kernel.zig"],
-  "obligations": [
-    {
-      "id": "tests",
-      "kind": "implementation",
-      "statement": "The accepted implementation proof lane passes.",
-      "verifier": ["zig", "build", "test"]
-    }
-  ]
-}
-~~~
-
-Use `completion: ready-to-ship` for a generation whose next owner is `$ship`.
-Use `completion: complete` for explicit local implementation or the final
-review generation. Supply the current `resolution_digest` for review-bound
-work. These values are immutable after `open`.
-
-## One-operation law
-
-From the repository root:
-
-1. Open the generation once:
-
-   ~~~bash
-   ledger open --source actuation --json ACTUATION_OPEN.json
-   ~~~
-
-   The store lock sidecar must already be Git-ignored. A repo-level
-   `.ledger/` ignore covers the default store.
-
-2. Inspect `ledger state --source actuation --run RUN_ID`. Select exactly the
-   operation named by `next_transition`; `/goal`, not the CLI, decides whether
-   to continue.
-3. Build one `actuation-operation/v1` from the selected owner boundary:
-
-   ~~~json
-   {
-     "schema": "actuation-operation/v1",
-     "step_id": "step-1",
-     "effect": "edit",
-     "idempotency_key": "goal-17:g0:step-1",
-     "owner_boundary": "actuation-kernel",
-     "paths": ["src/kernel.zig"],
-     "obligation_refs": ["tests"]
-   }
-   ~~~
-
-4. Prepare before any executable effect:
-
-   ~~~bash
-   ledger prepare --source actuation \
-     --run RUN_ID \
-     --json ACTUATION_OPERATION.json
-   ~~~
-
-   Hold the returned `AKC1-*` capability only in the active executor. Capture
-   the result without deliberately echoing or copying the raw value into a
-   durable run, evidence, or handoff artifact. The ledger persists only its
-   digest; transport confidentiality remains the caller/runtime boundary.
-5. For `edit`, perform only the admitted path mutation, then consume and
-   observe it:
-
-   ~~~bash
-   ledger record --source actuation --run RUN_ID --capability "$CAPABILITY"
-   ledger observe --source actuation --run RUN_ID --step STEP_ID
-   ~~~
-
-   For `inspect` or `verify`, use one kernel-owned execution:
-
-   ~~~bash
-   ledger execute --source actuation --run RUN_ID --capability "$CAPABILITY"
-   ~~~
-
-6. Fold tests, diffs, logs, and returned event digests through
-   `$evidence-fold`. A node may be done; it may not complete the parent goal.
-7. Re-read kernel state. A failed observation consumes the capability but
-   leaves its obligations outstanding; select a new step with a new
-   idempotency key or block.
-
-The kernel rejects post-hoc preparation, stale pre-state, capability replay,
-duplicate step or idempotency identities, verifier substitution, path escape,
-simultaneous out-of-scope mutation, unchanged declared edit paths, malformed or
-reordered events, verifier-side repository mutation, and closure with
-outstanding obligations.
-
-## Review law
-
-`$actuating` owns review selection, exact lens contract and instruction
-digests, standard and auxiliary roles, invalidation, repeated-review
-accounting, and closeout credit. Compile those decisions into
-`actuation-review-policy/v2` before the first run; read
-[review-policy.md](references/review-policy.md).
-
-Require a chain ending in at least five consecutive, distinct standard clean
-attempts and a clean standard attempt on the current tuple. Bind every
-registered auxiliary lens and have `$goal-actuating` launch all auxiliary
-requests concurrently with the first standard attempt. Treat those launched
-requests as a non-cancelling wave: every sibling continues to terminal evidence
-after any lens reports findings or a verdictless transport failure. Auxiliary
-clean results discharge only their own current request, and folded auxiliary
-findings complete their discovery request while entering RF-v2. A terminal
-`review_failed` fact with no structured tuple verdict terminates its dispatch
-handle, not its policy request: keep the fact in exhaustive CAS history, move
-only that request to `rerun-required`, grant the failed attempt no credit, and
-leave every sibling state and the standard clean suffix unchanged. Finish the
-initial dispatch wave, then rerun that exact request on the unchanged tuple with
-`--fresh-attempt <source-bound-reason>` before constructing a resolution. Do
-not call the whole wave zero-credit, cancel siblings, or replace it with a
-sequential campaign. Keep the wave's
-preflight-bound resolution identity stable until every policy request has a
-valid terminal review fact; only then update the resolution or admit mutation.
-No auxiliary attempt or tuple transition contributes to the standard clean
-suffix.
-
-Treat per-review completion reporting as an observation separate from review
-accounting. Report a review immediately and exactly once after its complete receipt
-JSON and recorded process exit status (`rc`) both exist. `.reviewVerdict` is the
-semantic authority; `rc` describes command or transport completion
-only. Use an independent artifact monitor when an executor buffers stdout, and
-do not wait for siblings before reporting a completed review. Reporting neither
-cancels siblings nor opens retry, RF-v2, adjudication, or mutation barriers.
-
-Preserve prior standard credit across a changed CAS tuple only through a
-policy-bound `auxiliary-remediation` carry that cites the accepted finding,
-resolution, correctness observations, actuation events, and SHIP receipt while
-keeping each attempt bound to its original request and tuple. Any standard
-finding, contract drift, base change, or unrelated mutation resets the chain.
-
-Require Ledger 0.7.0 or newer before executing a v2 preflight. Ledger retains
-v1 validation for historical same-tuple snapshots, but new campaigns never
-downgrade to v1 to avoid the chain law.
-
-Treat the policy as executable syntax owned by `$actuating`. Before CAS
-execution, require a passing policy validation decision:
-
-~~~bash
-ledger validate actuation-review-policy \
-  --phase preflight --input <policy.json>
-~~~
-
-Before closeout, run the same checker with `--phase closeout` against the
-current snapshot. Bind both exact commands as GoalContract review obligations.
-The checker enforces stable request, binding, attempt, and lane-accounting
-laws; it does not decide whether a source trigger makes a lens applicable or
-replace exhaustive CAS history acquisition.
-
-Fresh or closure-grade review uses `$cas` only to execute the opaque request
-and return tuple-bound attempt, verdict, failure, and finding facts. Project
-only the policy request's `request_id` and `request_fingerprint` into CAS
-`workflowBinding`. Join the returned binding and target tuple back to the
-pre-bound policy request; never derive lens meaning from CAS output.
-
-Review evidence passes through `$review-fold`, which classifies and quotients
-findings, then through `ledger validate review-fold` as a pure invariant
-check. `review-resolution/v1` then joins every current accepted class with the
-current goal's retained resolution history. Form stable structural components
-from source and target worlds, carriers, operations, observations, and
-governing laws; implementation-specific owner names are component members, not
-component identity. Generation, tuple, commit, publication, batch, and attempt
-identities must not create new components.
-
-Invoke `$universalist` once per cumulative structural component, not once
-independently per finding class, and compile one
-`owner-boundary-synthesis/v1`. Recurrence after an observed repair, multiple
-owners for one law, new semantic machinery, displacement of multiple
-abstractions, or a symptom repair after a replacement kernel creates structural
-pressure. Under pressure, choose a converged replacement kernel, prove a
-separation obstruction and reclassify, or block; another local repair is not a
-legal default. Read [review-resolution.md](references/review-resolution.md)
-before review-driven mutation.
-
-Then compile one `correctness_refinement` for every accepted RF-v2 equivalence
-class and bind it to its owner synthesis. Bind the class, discrepancy, law
-delta, synthesis-owned construction, preservation witness, and strict progress
-witness. Before mutation, require a passing refinement-and-synthesis validation
-decision from Ledger 0.9.0 or newer:
-
-~~~bash
-ledger validate review-resolution \
-  --phase preflight --input <resolution.json>
-~~~
-
-The checker enforces the structural class-to-synthesis-to-refinement join,
-derives strategy from synthesis disposition, and validates the single selected
-node at the canonical owner. It does not validate the entire resolution,
-dereference history or observation receipts, execute witness commands, grant
-authority, or move review semantics into CAS. `$goal-actuating` must bind the
-complete current resolution and observe every correctness and synthesis
-obligation.
-
-For a review edit:
-
-- refresh live review sources before selection;
-- bind the complete review policy and every selected request into the
-  GoalContract digest before CAS execution;
-- pass the policy preflight, verify the exact instruction bytes, and
-  project the exact CAS command into a review obligation;
-- launch the first standard request and all auxiliary requests as one
-  concurrent wave against the same artifact;
-- let every launched request reach terminal evidence; never treat one finding
-  or transport failure as a reason to cancel siblings, reset standard credit,
-  serialize a replacement wave, or mutate early;
-- on verdictless `review_failed`, keep the failure out of the credit projection,
-  set only its request to `rerun-required`, preserve sibling facts and the
-  standard suffix, and after the dispatch barrier rerun only that request on the
-  unchanged tuple with `--fresh-attempt <source-bound-reason>`; if that recovery
-  dispatch also ends verdictless, leave the request unresolved and block;
-- keep the preflight-bound resolution digest stable through the wave, then
-  fold and adjudicate all collected findings before selecting a repair;
-- join current accepted classes to retained resolution history through stable
-  boundary-law components, materialize one owner synthesis per component, and
-  reject generation-scoped identity as a structural reset;
-- allow `local-repair` only from `reuse-owner` with no structural pressure;
-  route pressure to `converge-kernel`, an evidenced `separate-laws` component
-  split with any necessary RF-v2 reclassification, or `blocked`;
-- after an auxiliary-driven repair, invalidate every current request and
-  preserve the standard suffix only by appending a certified non-credit carry;
-- bind the current resolution, publication epoch, and evidence identities into
-  the GoalContract digest;
-- pass the refinement-and-synthesis preflight and project both preservation
-  and progress witness commands into verifier-backed obligations;
-- project the synthesis-owned resolution node and its install, collapse,
-  delegation, and retirement obligations into the operation's owner, exact
-  paths, and verifier-backed obligations;
-- prepare the capability before mutation;
-- preserve cumulative finding semantics across adjacent repairs and reships;
-- require fresh closure-grade CAS evidence after the final published change;
-- pass the policy and refinement-and-synthesis closeout checks, with both
-  witness obligations and every synthesis structural obligation observed,
-  before granting review credit.
-
-The validation verdict grants no authority. Raw review prose, a fold receipt,
-a CAS record, or a suggested patch never grants mutation. `$ship` remains the
-only public-effect owner. The kernel may
-execute a verifier that observes those owner artifacts, but it never publishes,
-classifies review prose, or invents a repair strategy.
-
-## Lifecycle
-
-A material generation is immutable and closes once:
+Only [$ship](../ship/SKILL.md) may create, update, promote, or otherwise mutate
+a public PR or tracker. For `artifact-kernel-v1`, Actuating projects a current
+`ready-to-ship` closure receipt into SHIP-v1's exact opaque compatibility pair:
 
 ~~~text
-ready -> prepared -> effect_recorded -> ready -> ... -> closed
-          |                  |
-          +---- execute -----+
+actuation_binding.actuation_run_id = closure_receipt.receipt_id
+actuation_binding.state_fingerprint = closure_receipt.subject_digest
 ~~~
 
-For a bare invocation:
+Ship validates and copies the pair verbatim; it does not derive or revise the
+values. The pair is transient external-evidence binding, not a fifth artifact
+family or mutation authority. Actuating records the returned current `SHIP-v1`
+receipt as publication evidence.
 
-1. open generation `g0` with `completion: ready-to-ship`;
-2. discharge implementation obligations, close, and run `decide`;
-3. hand the kernel decision to `$ship`;
-4. open generation `g1` under the same `goal_id`, with a new GoalContract digest
-   that binds SHIP and review-closeout authority;
-5. discharge review/closure obligations, close, and run `decide` with
-   `completion: complete`.
+## Closure and learning
 
-An explicit implementation run uses `completion: complete` and never enters
-the ship branch. A review repair that must be republished closes a
-`ready-to-ship` generation; final post-publication review uses a fresh
-`complete` generation. Generations are append-only siblings under one goal,
-not mutable lifecycle labels.
+Use only `continue`, `ready-to-ship`, `complete`, or `blocked` from the current
+deterministic closure projection. `$proof-patch` may render a current terminal
+receipt but never grants closure.
 
-## Closure
+Complete delivery closure and handoff before the `$ledger` source-memory
+checkpoint. Optional learning or admission failure does not roll back code
+closure; a later tracked subject change re-enters the ordinary proof and review
+lifecycle.
 
-Read [closure.md](references/closure.md), then run:
+## Fail closed
 
-~~~bash
-ledger doctor --source actuation
-ledger state --source actuation --run RUN_ID
-ledger close --source actuation --run RUN_ID
-ledger decide --source actuation --run RUN_ID
-~~~
-
-`close` is legal only from `ready` with no pending step, no outstanding
-obligation, and an unchanged live artifact. `decide` recomputes the current
-artifact digest and returns:
-
-- `continue` plus `next-transition:*` before close;
-- `ready-to-ship` after a closed ship-bound generation; or
-- `complete` after a closed terminal generation.
-
-Only the latter two set implementation outcome to complete. Only terminal
-`complete` sets goal outcome to complete. The generated `closure-decision/v1`
-binds the repository fingerprint, folded run digest, obligation discharge
-basis, terminal route, and next owner.
-
-Before handing off `ready-to-ship` or reporting terminal `complete`, invoke the
-`$ledger` source-memory checkpoint and retain one current three-participant
-receipt. The checkpoint is not evidence that can satisfy an actuation
-obligation. If any canonical source append or transition changes the Git
-artifact evaluated by `decide`, that decision becomes stale: open and close a
-new generation whose allowed paths include the source store before handoff or
-completion. An ignored/local source-store write that leaves the evaluated
-artifact unchanged does not invalidate the decision.
-
-Use the JSON verdict, not prose or exit-code folklore, as the workflow result.
-Malformed input, invalid transitions, unavailable state, stale artifacts, and
-failed observations exit nonzero with `actuation-error/v1` or a failed
-transition result. Invalid CLI syntax uses the standard `ledger` usage failure.
-
-## Obstruction boundary
-
-A repo-local process cannot physically intercept Codex's in-app mutation
-primitive. For `edit`, the kernel therefore proves causal admission before the
-effect and independently reconciles exact path movement afterward. It is not an
-OS sandbox and cannot prove that an unrecorded external effect never happened.
-Loss of the raw capability blocks the prepared operation; the kernel does not
-reconstruct it from deterministic state. The capability is a causal replay
-guard, not a claim that process arguments or session transcripts are secret.
-
-## Stop rules
-
-Stop when authority is missing, the GoalContract projection is incomplete, the
-live artifact is stale, the selected effect does not match `next_transition`, a
-capability is unavailable, an obligation lacks an executable verifier, review
-resolution is open, evidence regresses, closure-grade review is stale, or a
-public effect would bypass `$ship`.
-
-## Resources
-
-- [live-semantics.yaml](references/live-semantics.yaml) — canonical worlds,
-  transitions, ownership, and laws.
-- [review-policy.md](references/review-policy.md) — lens selection, exact
-  request binding, lane accounting, and invalidation.
-- [review-resolution.md](references/review-resolution.md) — cumulative owner
-  synthesis, per-class refinement, strategy rules, and semantic balance.
-- [closure.md](references/closure.md) — kernel terminal projection and lifecycle
-  handoff.
-- [decision-contract.yaml](references/decision-contract.yaml) — trigger and
-  routing contract for audit tooling.
+Block on stale or missing source authority, protocol mixing, stale Goal,
+Construction, subject, or review identity, unresolved accepted or blocked
+Counterexamples, capability replay or substitution, scope escape, incomplete
+proof or retirement, unresolved review recovery, insufficient current-subject
+clean attempts, invalid or substituted publication evidence, a public effect
+outside Ship, or learning made delivery-critical. Missing or no-longer-current
+Ship evidence after complete publication-required proof projects
+`ready-to-ship`; it is not itself a blocker.

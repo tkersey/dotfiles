@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Goal Contract"
-  short_description: "Bind goals to source, scope, and proof"
-  default_prompt: "Use $goal-contract to bind this accepted goal to its authority, artifact scope, verifier, review policy, and stop conditions."
+  short_description: "Bind source authority in Goal Contract v3"
+  default_prompt: "Use $goal-contract to honor the Evidence-owned goal protocol and compile this accepted intent into a source-bound Goal Contract without granting mutation."

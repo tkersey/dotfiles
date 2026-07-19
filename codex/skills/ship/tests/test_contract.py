@@ -80,6 +80,59 @@ class ShipContractTests(unittest.TestCase):
         self.assertIn("Actuation input cannot publish a draft", READINESS)
         self.assertIn("incompatible-policy", SKILL)
 
+    def test_artifact_kernel_receipt_is_upstream_evidence(self) -> None:
+        for text in (
+            "protocol: artifact-kernel-v1 | legacy-actuating-v1",
+            "schema: actuating-closure-receipt/v1",
+            "receipt_id:",
+            "goal_id:",
+            "goal_contract_ref:",
+            "construction_ref:",
+            "subject_digest:",
+            "evidence_material_head:",
+            "evidence_head_at_projection:",
+            "review_contract_digest:",
+            "review_head_sha:",
+            "review_merge_base_sha:",
+            "publication_repository: null",
+            "publication_pr_url: null",
+            "publication_base_sha: null",
+            "publication_head_sha: null",
+            "verdict: ready-to-ship",
+            "blockers: []",
+        ):
+            self.assertIn(text, SKILL)
+        self.assertIn("does not rederive closure", SKILL)
+        self.assertIn("does not append the event", RECORD)
+
+    def test_ship_v1_binding_remains_exact_opaque_and_verbatim(self) -> None:
+        for text in (SKILL, RECORD):
+            self.assertIn("exact two-field", text)
+            self.assertIn("opaque", text)
+        self.assertIn("Preserve its exact two fields verbatim", SKILL)
+        self.assertIn("copied verbatim", RECORD)
+        self.assertIn(
+            "actuation_binding.actuation_run_id = closure_receipt.receipt_id",
+            SKILL,
+        )
+        self.assertIn(
+            "actuation_binding.state_fingerprint = closure_receipt.subject_digest",
+            SKILL,
+        )
+        self.assertIn("Actuating owns the compatibility projection", SKILL)
+        self.assertIn("MUST NOT synthesize, relabel, or revise", SKILL)
+        self.assertIn(
+            "copies it, and never synthesizes or relabels it",
+            " ".join(RECORD.split()),
+        )
+
+    def test_publication_observation_returns_to_actuating(self) -> None:
+        self.assertIn("sole public-effect owner", SKILL)
+        self.assertIn("complete immutable receipt back to `$actuating`", SKILL)
+        self.assertIn("current `publication_observed` event", SKILL)
+        self.assertIn("Never select or revise architecture", SKILL)
+        self.assertIn("count review credit", SKILL)
+
 
 if __name__ == "__main__":
     unittest.main()

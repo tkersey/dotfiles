@@ -1,3 +1,5 @@
+# Compatibility boundary: frozen legacy-actuating-v1 semantics only.
+# Never use as artifact-kernel-v1 authority, input, or review credit.
 live_semantics:
   schema_version: live-semantics/v1
   executable_authority: ledger --source actuation

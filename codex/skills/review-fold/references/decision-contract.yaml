@@ -3,48 +3,52 @@ skill_decision_contract:
   skill:
     name: review-fold
     kind: mixed
-    source_fingerprint: review-fold-rf-v2-classification-only
+    source_fingerprint: review-fold-counterexample-set-v1
   triggers:
     - trigger_id: RF-SOURCE
-      description: Review evidence needs source-bound classification.
-      cue_literals: [review finding, review thread, human review, CAS review, local audit]
+      description: Review or failure evidence needs source-bound classification.
+      cue_literals: [review finding, review thread, failing test, production incident, user-reported bug, migration failure, compatibility failure, local audit]
       cue_regexes: []
       exclusions: []
     - trigger_id: RF-MATERIAL
-      description: Material review pressure needs quotienting before resolution.
-      cue_literals: [blocks goal, regression risk, misuse hazard, invariant gap, complexity stall]
+      description: Material falsification pressure needs quotienting before construction selection.
+      cue_literals: [counterexample, invariant gap, misbinding, partiality, owner boundary]
       cue_regexes: []
       exclusions: []
   routes:
-    - route_id: RF-NO-CODE
-      description: Reject, prove, ask, or follow up without implementation.
-      aliases: [reject, proof-only, ask-human, follow-up]
+    - route_id: RF-COUNTEREXAMPLE-SET
+      description: Emit classified and quotiented Counterexample Set evidence.
+      aliases: [accepted, rejected, blocked, follow-up]
       terminal: "yes"
-    - route_id: RF-RESOLUTION-INPUT
-      description: Emit a classified owner-boundary input for review-resolution/v1.
-      aliases: [resolution-input]
-      terminal: "yes"
-    - route_id: RF-BLOCK
-      description: Block when source, validity, ownership, or artifact binding is unknown.
-      aliases: [blocked]
+    - route_id: RF-LEGACY-COMPAT
+      description: Read or author frozen RF-v2 only for an explicitly marked legacy goal during the compatibility window.
+      aliases: [legacy-actuating-v1]
       terminal: "yes"
   clauses:
     - clause_id: RF-CLASSIFY-001
       trigger_refs: [RF-SOURCE]
-      expected_routes: [RF-NO-CODE, RF-RESOLUTION-INPUT, RF-BLOCK]
+      expected_routes: [RF-COUNTEREXAMPLE-SET, RF-LEGACY-COMPAT]
       prohibited_routes: []
-      required_artifacts: [RF-v2 receipt, source identity, current artifact binding, disposition for every finding]
-      success_signals: [claim fact and suggested repair are separate, zero-finding clean source is representable]
-      failure_signals: [review prose directly selects work, unknown source is treated as current]
+      required_artifacts: [source identity, current subject binding, governing law, owner boundary, evidence-backed status]
+      success_signals: [claims facts and suggested repairs remain separate, rejected classes cite rejection evidence, zero-class clean source is representable]
+      failure_signals: [suggested repair is presented as fact, review prose selects work, unknown source is treated as current]
       rationale: Classification must remain evidence rather than authority.
     - clause_id: RF-QUOTIENT-001
       trigger_refs: [RF-MATERIAL]
-      expected_routes: [RF-NO-CODE, RF-RESOLUTION-INPUT, RF-BLOCK]
+      expected_routes: [RF-COUNTEREXAMPLE-SET]
       prohibited_routes: []
-      required_artifacts: [observed fact, quotient key, owner boundary, law family, falsifier, evidence references]
-      success_signals: [duplicates collapse into one equivalence class, specialized liabilities create routing obligations]
-      failure_signals: [one implementation distinction per comment, selected repair or clean counter emitted]
-      rationale: Resolution should receive owner-level classes, not a patch queue.
+      required_artifacts: [law reference, boundary key, discrepancy, applicability, witness, falsifier, quotient basis]
+      success_signals: [duplicates collapse into one stable class, class identity survives construction changes]
+      failure_signals: [class identity depends on filename commit attempt or proposed patch, one class is emitted per comment]
+      rationale: Construction selection consumes semantic counterexample classes rather than a patch queue.
+    - clause_id: RF-AUTHORITY-001
+      trigger_refs: [RF-SOURCE, RF-MATERIAL]
+      expected_routes: [RF-COUNTEREXAMPLE-SET, RF-LEGACY-COMPAT]
+      prohibited_routes: []
+      required_artifacts: [explicit non-authority disposition]
+      success_signals: [accepted classes route only as successor Construction Contract inputs]
+      failure_signals: [Counterexample Set selects repair, validation grants mutation or clean credit]
+      rationale: Review falsification never manufactures execution authority.
   instrumentation:
     decision_receipt: required
-    rationale: Finding dispositions and quotient classes determine whether pressure may enter review resolution.
+    rationale: Class statuses and quotient identity determine which falsification evidence may enter construction selection.

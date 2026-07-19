@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Govern work through the actuation kernel"
-  default_prompt: "Use bare $actuating to own review policy and exact lens requests while driving actuation-kernel generations through implementation, $ship, CAS transport, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."
+  short_description: "Execute through the four-artifact kernel"
+  default_prompt: "Use $actuating to honor the Evidence-owned immutable protocol, keep legacy goals on frozen semantics, and drive only an already registered artifact-kernel-v1 goal through its four artifacts, Ledger capabilities, Ship, review, and derived closure while new admission remains blocked in Phase 3."

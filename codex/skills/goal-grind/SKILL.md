@@ -1,9 +1,19 @@
 ---
 name: goal-grind
-description: "Execute exactly one lead-selected Zig actuation operation and return event-bound evidence to the coordinator. Use after $goal-actuating has prepared a capability; do not create authority, choose scope, recurse, resolve review findings, or claim goal completion."
+description: "Execute exactly one lead-selected Zig operation for an explicitly marked legacy-actuating-v1 goal and return event-bound evidence to the legacy coordinator. Use only after $goal-actuating has prepared a legacy capability; do not use for artifact-kernel-v1, create authority, choose scope, recurse, resolve review findings, or claim goal completion."
 ---
 
 # Goal Grind
+
+## Protocol guard
+
+Require a capability prepared by `$goal-actuating` for a Ledger-admitted
+`legacy-actuating-v1` goal. Resolve admission through the current
+[protocol owner map](../actuating/references/artifact-kernel.md) and execute only
+the [frozen legacy workflow](../actuating/references/legacy-actuating-v1.md).
+Never infer or write protocol admission. Block invalid or absent legacy
+evidence and every `artifact-kernel-v1` goal; those goals use Ledger's
+Construction-bound handlers directly.
 
 ## Mission
 

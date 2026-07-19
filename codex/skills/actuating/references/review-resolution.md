@@ -1,3 +1,9 @@
+> Compatibility boundary: use this frozen resolution contract only for a goal
+> whose immutable protocol marker is `legacy-actuating-v1`. It is historical
+> completion authority for that goal during the compatibility window; it is
+> never authority, input, review credit, or a migration source for
+> `artifact-kernel-v1`.
+
 # Review Resolution
 
 Use `review-resolution/v1` after `$review-fold` has classified a current review

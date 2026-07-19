@@ -1,9 +1,20 @@
 ---
 name: goal-actuating
-description: "Coordinate an accepted implementation goal or explicit review workflow through actuation-kernel generations. Select one bounded operation, delegate execution to $goal-grind, fold evidence, consume review-resolution/v1, acquire CAS review evidence when required, and request a kernel-derived closure-decision/v1 without owning publication."
+description: "Coordinate an explicitly marked legacy-actuating-v1 implementation goal or review workflow through frozen actuation-kernel generations. Select one bounded operation, delegate execution to $goal-grind, fold evidence, consume review-resolution/v1, acquire CAS review evidence when required, and request a legacy closure-decision/v1 without owning publication. Do not use for artifact-kernel-v1 goals."
 ---
 
 # Goal Actuating
+
+## Protocol guard
+
+Require Ledger to admit the goal as `legacy-actuating-v1` under the current
+[protocol owner map](../actuating/references/artifact-kernel.md), then follow the
+[frozen legacy workflow](../actuating/references/legacy-actuating-v1.md). Never
+infer or write protocol admission. Block invalid or absent legacy evidence and
+every `artifact-kernel-v1` goal; those goals use Ledger's Construction-bound
+handlers directly. Never project Goal Contract v3, Counterexample Sets,
+Construction Contracts, or artifact-kernel review credit through this
+coordinator.
 
 ## Mission
 

@@ -13,7 +13,9 @@ def normalized(path: Path) -> str:
     return " ".join(path.read_text(encoding="utf-8").split())
 
 
-ACTUATING = normalized(ACTUATING_ROOT / "SKILL.md")
+ACTUATING = normalized(
+    ACTUATING_ROOT / "references" / "legacy-actuating-v1.md"
+)
 GOAL_ACTUATING = normalized(SKILLS_ROOT / "goal-actuating" / "SKILL.md")
 GOAL_GRIND = normalized(SKILLS_ROOT / "goal-grind" / "SKILL.md")
 REVIEW_POLICY = normalized(ACTUATING_ROOT / "references" / "review-policy.md")
@@ -21,10 +23,10 @@ REVIEW_RESOLUTION = normalized(
     ACTUATING_ROOT / "references" / "review-resolution.md"
 )
 LIVE_SEMANTICS = normalized(
-    ACTUATING_ROOT / "references" / "live-semantics.yaml"
+    ACTUATING_ROOT / "references" / "legacy-live-semantics.yaml"
 )
 DECISION_CONTRACT = normalized(
-    ACTUATING_ROOT / "references" / "decision-contract.yaml"
+    ACTUATING_ROOT / "references" / "legacy-decision-contract.yaml"
 )
 
 

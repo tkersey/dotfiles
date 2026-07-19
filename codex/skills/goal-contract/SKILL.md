@@ -1,111 +1,91 @@
 ---
 name: goal-contract
-description: "Compile an accepted goal, implementation spec, review campaign, migration, or hard debugging loop into a compact source-bound GoalContract. Use before multi-step execution to bind outcome, verifier, authority source, artifact scope, constraints, review policy, stop conditions, and human-owned ambiguity."
+description: "Compile an accepted goal, implementation specification, review campaign, migration, or hard debugging loop into the sole source-bound Goal Contract. Use before multi-step execution to honor the immutable Evidence-owned goal protocol, emit goal-contract/v3 for an admitted artifact-kernel-v1 goal, preserve GC-v2 only for frozen legacy-actuating-v1 goals, and bind outcomes, laws, authority, scope, compatibility, and acceptance without selecting architecture or granting mutation."
 ---
 
 # Goal Contract
 
 ## Mission
 
-Compile intent into the smallest source-bound contract that can be projected
-into the actuation kernel's `actuation-open/v1` authority, path scope, terminal route,
-and verifier-backed obligations. This skill records authority; it does not
-grant, select, or execute mutation.
+Compile accepted intent into the only per-goal semantic-authority document. The
+accepted specification or direct user authority owns required semantics;
+`$goal-contract` records them without extending or reinterpreting them.
 
-## GC-v2
+The Goal Contract records whether mutation was authorized. It never grants
+mutation, selects a construction, records mutable progress, or performs an
+effect.
 
-~~~yaml
-goal_contract:
-  version: GC-v2
-  goal_id:
-  objective:
-    summary:
-    mode: direct | goal | review | debug | migration | hardening
-    non_goals: []
-  source:
-    kind: accepted-spec | direct-goal
-    source_ref:
-    source_digest:
-    execution_authority_ref:
-    authority_owner: spec-pipeline | user
-    current: true | false
-  artifact_scope:
-    repo:
-    base_sha:
-    branch:
-    head_sha:
-    state_fingerprint:
-    allowed_paths: []
-  done:
-    success_state: []
-    explicitly_not_done_when: []
-    stop_when: success | blocked | invalid-proof
-  verification:
-    primary_checks: []
-    secondary_checks: []
-    negative_checks: []
-    artifacts_to_inspect: []
-    unavailable_checks: []
-  constraints:
-    must_preserve: []
-    forbidden_changes: []
-    compatibility: []
-    public_behavior: preserve | may-change-with-proof | unspecified
-  review_policy:
-    active: true | false
-    relation_to_goal: in-scope-only | include-nearby-risk | adjudicate-all
-    default_disposition: classify-before-resolution
-    repair_policy: correctness-refinement
-    strategy_owner: review-resolution/v1
-    reabstraction_trigger:
-      - repeated-class
-      - ownership-boundary
-      - dominated-abstraction
-      - new-semantic-machinery
-  authority:
-    mutation_requested: true | false
-    dependency_changes_allowed: true | false
-    public_effects: forbidden | ship-only
-    unsupported_coordination_required: true | false
-  ambiguity:
-    discoverable_facts_to_research: []
-    human_owned_decisions: []
-    assumptions_allowed: []
-~~~
+## Select the protocol first
 
-## Procedure
+Read the goal's immutable protocol marker before compiling anything:
 
-Before inspecting or invoking the first native Ledger command for a material
-generation, load `$ledger` and complete `$ledger ensure`. After readiness,
-invoke `ledger` directly.
+- `artifact-kernel-v1` — read
+  [references/artifact-kernel-v1.md](references/artifact-kernel-v1.md) and emit
+  one canonical `goal-contract/v3` artifact.
+- `legacy-actuating-v1` — read
+  [references/legacy-gc-v2.md](references/legacy-gc-v2.md) and preserve the
+  frozen `GC-v2` contract and legacy projection.
 
-1. Bind the contract to an accepted source and current artifact.
-2. Separate the scope source from the execution authority reference.
-3. Name terminal predicates and proof surfaces before work decomposition.
-4. Preserve the accepted plan/spec without reinterpretation.
-5. Set review policy to classification before resolution; raw findings never
-   become work.
-6. For review-driven code changes, preserve already-valid observations and
-   require strict progress against the accepted counterexample class. Admit new
-   semantic machinery only when an accepted law requires it. Bind the full
-   resolution digest in `artifacts_to_inspect`; put the exact witness commands
-   in `primary_checks` as `correctness:<decision_id>:preservation` and
-   `correctness:<decision_id>:progress`.
-7. Mark unsupported durable coordination explicitly; local workflows may not
-   simulate claims or fencing.
-8. Hand the contract to `$goal-actuating`. Use `$goal-workgraph` only when
-   decomposition changes execution.
-9. Assign every success predicate to at least one exact verifier command and
-   `implementation`, `review`, `ship`, or `acceptance` proof kind before
-   opening a material kernel generation; an unobservable obligation blocks.
-10. Inspect the complete source-to-open projection before `ledger open --source
-    actuation`; the kernel conserves accepted obligations but cannot recover an
-    omitted predicate.
+Do not infer the protocol from nearby artifacts, convert an in-flight goal, or
+mix legacy and artifact-kernel semantics. Read it from the canonical Evidence
+Ledger. An existing `goal_contract_registered` event derives
+`artifact-kernel-v1`; `goal_protocol_registered` derives
+`legacy-actuating-v1`. Production Phase 3 blocks every new artifact-kernel goal
+until the historical custom-store inventory permits Phase 4. Legacy `open`
+validates its selected store and appends or confirms the legacy marker before
+`run_opened`; invalid history or a conflicting protocol blocks. Never
+hand-write or infer the marker. It is goal metadata; do not add it as an unknown
+Goal Contract field.
 
-## Guardrails
+## Artifact-kernel procedure
 
-- A plan handoff is scope and policy, not mutation authority.
-- A review source is evidence, not mutation authority.
-- A gate-only specification result is not an executable source.
-- Do not recreate or loosen an accepted contract inside an executor.
-- Ask the human only for choices that inspection cannot resolve.
+Before the first native Ledger command, load `$ledger` and complete `$ledger ensure`
+once.
+
+1. Set `semantic_author` to `goal-contract`, the compiling skill. Bind the
+   current accepted specification or direct user authority through
+   `authority.source_ref` and `authority.source_digest`; bind execution
+   authority separately.
+2. Copy required outcomes and non-goals without architectural elaboration.
+3. Bound repository scope with an exact base reference, allowed paths, and
+   prohibited paths.
+4. Preserve required compatibility contracts, permitted breaks, and migration
+   requirements exactly.
+5. Compile each required semantic predicate into one stable law with an
+   applicability rule and required observation. An unobservable law blocks.
+6. Select only the source-authorized terminal route, publication posture, and
+   proof kinds.
+7. Materialize canonical JSON through the current Ledger-owned
+   canonicalization and fingerprint boundary. Validate with `ledger validate
+   goal-contract-v3 --input FILE|-` when that contract is available. A missing
+   v3 writer or validator blocks; it never authorizes a GC-v2 fallback.
+8. Inspect the complete source-to-contract projection before handing the
+   immutable artifact to `$actuating` for Construction Contract selection.
+
+Ledger validation establishes only its declared structural claims. It does not
+make Ledger the semantic author and never grants mutation authority.
+
+## Source-authority laws
+
+- `$universalist` may elaborate only source-permitted, underdetermined
+  architecture choices, and records the selected result in a Construction
+  Contract rather than this artifact.
+- `$plan` may supply execution policy but never mutation authority.
+- A conflict with source-fixed semantics, non-goals, compatibility,
+  architecture constraints, proof requirements, authority, or publication
+  posture blocks or requests source revision.
+- A changed semantic decision produces an immutable successor with an explicit
+  predecessor reference; never edit a materialized contract in place.
+
+## Exclusions
+
+Do not put candidate constructions, implementation architecture, review request
+state, attempt history, evidence history, mutable progress, operations, closure
+state, or derived campaign state in a Goal Contract.
+
+## Legacy compatibility
+
+Use `GC-v2` only when the Evidence Ledger admits the existing goal as
+`legacy-actuating-v1`. Preserve its established `$goal-actuating` -> `actuation-open/v1`
+projection and validators exactly. Never write a GC-v2 contract for an
+`artifact-kernel-v1` goal.

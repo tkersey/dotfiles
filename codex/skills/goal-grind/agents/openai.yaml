@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Goal Grind"
   short_description: "Consume one prepared actuation capability"
-  default_prompt: "Use $goal-grind to consume this one prepared Zig actuation capability, return event-bound evidence, and stop without continuing the loop."
+  default_prompt: "Use $goal-grind only for this explicitly marked legacy-actuating-v1 goal: consume one prepared legacy Zig actuation capability, return event-bound evidence, and stop without continuing the loop."

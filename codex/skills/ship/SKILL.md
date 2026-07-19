@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Finalize validated work into a proof-backed pull request without merging. Use for `$ship`, ship/finalize a branch, prepare/open/update/promote a PR, publish validation proof, choose ready-vs-draft state, update a PR body, or produce PR handoff after proof. Default PR state is ready after full validation; draft PRs require an explicit warrant."
+description: "Finalize validated work into a proof-backed pull request without merging, and return immutable SHIP-v1 publication evidence to Actuating without taking architecture, review, or closure authority. Use for `$ship`, ship/finalize a branch, prepare/open/update/promote a PR, publish validation proof, choose ready-vs-draft state, update a PR body, or produce PR handoff after proof. Default PR state is ready after full validation; draft PRs require an explicit warrant."
 ---
 
 # Ship
@@ -10,6 +10,8 @@ description: "Finalize validated work into a proof-backed pull request without m
 Finalize deliverables after validation and publish a concise, non-destructive proof trail in a pull request.
 
 `$ship` opens, updates, or promotes a PR. It does not merge.
+Within Actuating, `$ship` is the sole public-effect owner. `SHIP-v1` is an
+external evidence attachment, not an architecture, review, or closure artifact.
 
 Core rule:
 
@@ -34,7 +36,7 @@ Do not use `$ship` when:
 - implementation is not done and the user did not ask for early visibility;
 - validation is failing and the user did not explicitly accept a caveated draft;
 - the user wants merge/landing; use `$land`;
-- the user wants only a local readiness report and no public PR effect; report readiness and stop. Use `$proof-patch` only when a current complete actuation closure decision exists;
+- the user wants only a local readiness report and no public PR effect; report readiness and stop. Use `$proof-patch` only when a current complete actuation closure receipt exists;
 - the current branch has unrelated or unstaged work that cannot be scoped.
 
 ## Inputs
@@ -69,26 +71,68 @@ ship_input:
     open:
   proof_summary:
   actuation:
-    closure_decision_id:
-    closure_verdict: ready-to-ship
-    actuation_run_id:
-    state_fingerprint:
+    protocol: artifact-kernel-v1 | legacy-actuating-v1
+    actuation_binding:
+      actuation_run_id:
+      state_fingerprint:
+    artifact_kernel:
+      closure_receipt:
+        schema: actuating-closure-receipt/v1
+        receipt_id:
+        goal_id:
+        goal_contract_ref:
+        construction_ref:
+        subject_digest:
+        evidence_material_head:
+        evidence_head_at_projection:
+        review_contract_digest:
+        review_head_sha: null | GIT_OBJECT_ID
+        review_merge_base_sha: null | GIT_OBJECT_ID
+        publication_repository: null
+        publication_pr_url: null
+        publication_base_sha: null
+        publication_head_sha: null
+        verdict: ready-to-ship
+        blockers: []
+        created_at:
+    legacy:
+      closure_decision_id:
+      closure_verdict: ready-to-ship
   user_requested_pr_mode: ready | draft | update-existing | promote-draft | none
   repo_policy_pr_mode: ready | draft | unknown
 ```
 
 If key state is unknown, inspect the repository and live PR state before creating or updating a PR.
 
-For `source: actuation`, require a current kernel-derived `closure-decision/v1`
-with `verdict: ready-to-ship`. That verdict may come from initial implementation
-or from a proved review-closeout repair that must be republished before more
-review. Each SHIP-v1 is immutable for its publication epoch: preserve the kernel
-run ID and state fingerprint in the exact two-field `actuation_binding`. Never
-add or relabel it with review-closeout state. Actuation input cannot use the
-early-draft path because draft publication has no valid closure re-entry. If
-repository policy requires a draft for an actuation input, block with an
-incompatible-policy reason rather than publishing an invalid lifecycle state. A
-direct ship input does not require the actuation object.
+For `source: actuation`, select exactly one protocol. `artifact-kernel-v1`
+requires a current deterministic `actuating-closure-receipt/v1` with
+`verdict: ready-to-ship`; confirm its subject digest identifies the current
+review subject being published. `legacy-actuating-v1` requires the current kernel-derived
+`closure-decision/v1` with the same verdict. Ship consumes either receipt as
+upstream readiness evidence; it does not rederive closure, inspect the selected
+architecture, classify findings, or decide review convergence.
+
+Each `SHIP-v1` is immutable for its publication epoch. Preserve the supplied
+`actuation_binding` verbatim as an opaque exact two-field object. For an
+Artifact Kernel input, Actuating owns the compatibility projection:
+
+~~~text
+actuation_binding.actuation_run_id = closure_receipt.receipt_id
+actuation_binding.state_fingerprint = closure_receipt.subject_digest
+~~~
+
+Ship SHALL require that exact match against the supplied closure receipt, but
+MUST NOT synthesize, relabel, or revise either value. The field names remain a
+SHIP-v1 compatibility surface, not Artifact Kernel semantic authority. The
+later `publication_observed` Evidence Ledger event binds Ship's owner-issued
+receipt reference to the deterministic closure receipt identity, Construction,
+and subject after Ship's live readback.
+
+Actuation input cannot use the early-draft path because draft publication has
+no valid closure re-entry. If repository policy requires a draft for an
+actuation input, block with an incompatible-policy reason rather than
+publishing an invalid lifecycle state. A direct ship input does not require the
+actuation object.
 
 ## PR readiness policy
 
@@ -226,13 +270,24 @@ preflight remains current.
 2. Inspect worktree status and ensure the intended head is committed and available on the remote branch.
 3. Inspect live PRs for the exact repository/base/head tuple and reject ambiguous or mismatched state.
 4. Confirm recent validation exists for the current change set; if not, run or request validation.
-5. For actuation input, validate the current implementation or review-repair closure decision and preserve its run and target binding.
+5. For actuation input, require the current protocol-specific readiness receipt,
+   confirm its subject digest identifies the review subject being published,
+   and preserve the supplied opaque two-field actuation binding.
 6. Determine `pr_decision`, including operation, final state, and compatibility mode.
 7. Build the managed proof block with proof, scope, risks, follow-ups, readiness, and caveats.
 8. Create or merge the managed block into the PR body without overwriting human-authored text.
 9. Execute the ordered operation: create; update; or update, then promote.
 10. Read back live PR metadata and body and require every publication postcondition.
-11. Emit SHIP-v1 for closure recomputation and report PR state. For the ordered actuation lifecycle, hand the complete immutable receipt back as both the implementation checkpoint's first publication receipt and `review.ship_receipt` before the same run enters review-closeout. The checkpoint copy never changes; `review.ship_receipt` tracks the current publication epoch. A proved review edit returns here before CAS; update the existing PR at the exact URL retained in the prior admission, replace the stale receipt with that fresh SHIP-v1, then resume the next admitted edit or final CAS closeout. Creating another PR is invalid for this handback.
+11. Emit `SHIP-v1` and report PR state. For `artifact-kernel-v1`, hand the
+    complete immutable receipt back to `$actuating`, which records the current
+    `publication_observed` event with the Ship receipt reference and closure
+    receipt identity. Ship must
+    not append that event or reinterpret the receipt as architecture, review,
+    or closure evidence. For
+    `legacy-actuating-v1`, preserve the existing implementation-checkpoint and
+    `review.ship_receipt` handback. A proved review edit returns here before
+    further review; update the existing PR at the exact retained URL and emit a
+    fresh immutable `SHIP-v1`. Creating another PR is invalid for this handback.
 
 ## PR body contract
 
@@ -316,14 +371,19 @@ may contain the ordered mutation and readback commands. A successful
 `action.result` means the live publication postconditions passed, not merely
 that the mutation command exited zero.
 
-`actuation_binding` is required for actuation ready/update/promote records and
-omitted for direct records. Its exact two-field pre-review shape must match the
-input ready-to-ship closure decision. Missing, extra, relabeled, or mismatched
-binding blocks actuation shipping. The record is never rewritten with later
-resolution or CAS values. Publication-bearing review-closeout embeds this
-complete first receipt unchanged in the implementation checkpoint and copies it
-to `review.ship_receipt`; a later repair handback updates that same PR URL,
-creates a new SHIP-v1, and replaces only the current review field.
+`actuation_binding` is required for every actuation ready/update/promote record
+and omitted for direct records. Preserve its exact two fields verbatim and
+opaque. Missing, extra, relabeled, or mismatched binding blocks actuation
+shipping. For `artifact-kernel-v1`, require the upstream Actuating projection
+`receipt_id -> actuation_run_id` and `subject_digest -> state_fingerprint`;
+Ship validates and copies that pair but never derives it. The record is never
+rewritten with later resolution or review values.
+
+For `artifact-kernel-v1`, return the complete immutable receipt to
+`$actuating`; the current `publication_observed` event binds its owner-issued
+reference to the closure receipt identity. For `legacy-actuating-v1`, preserve the
+existing implementation-checkpoint and `review.ship_receipt` behavior. A later
+repair handback updates the same PR URL and creates a fresh `SHIP-v1`.
 
 After publication, closure must independently query live PR metadata and match
 the repository, base ref and SHA, head ref and SHA, URL, open state, and ready
@@ -338,6 +398,8 @@ status; copied SHIP fields are not authoritative for those facts.
 - Never overwrite human-authored PR body content outside the managed proof block.
 - Never promote a draft before updating its current proof block.
 - Never claim publication success without a matching live readback.
+- Never select or revise architecture, classify findings, count review credit,
+  append `publication_observed`, or decide closure.
 - Never merge or land.
 - Never stage or commit unrelated work.
 - If PR creation/update is blocked by auth, remote, permissions, missing branch push, malformed body markers, or mismatched live state, state the exact blocker and next command.

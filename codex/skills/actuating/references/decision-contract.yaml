@@ -3,89 +3,96 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: mixed
-    source_fingerprint: actuating-kernel-v1
+    source_fingerprint: ACT-AK-v1
 
   triggers:
-    - trigger_id: ACT-IMPLEMENT
-      description: Bare invocation runs implementation generation, ship, review generation, and final closure; explicit implement stops after a complete local generation.
-      cue_literals: [$actuating, /goal $actuating, $actuating implement, implement accepted work, execute accepted plan]
+    - trigger_id: ACT-BARE
+      description: Bare Actuating implements, hands publication to Ship, and drives review to derived terminal closure.
+      cue_literals: [$actuating, /goal $actuating]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-REVIEW
-      description: Review defaults to no-code triage unless mutation is explicit.
-      cue_literals: [review, triage, remediation-plan, review-closeout]
+    - trigger_id: ACT-MODE
+      description: Explicit modes select only implement, triage, remediation-plan, or review-closeout.
+      cue_literals: [$actuating implement, $actuating triage, $actuating remediation-plan, $actuating review-closeout]
       cue_regexes: []
       exclusions: []
-    - trigger_id: ACT-CLOSE
-      description: Completion requires a live closed actuation-kernel generation and closure-decision/v1.
-      cue_literals: [ledger --source actuation, closure-decision/v1, complete, ready-to-ship]
+    - trigger_id: ACT-REVIEW-DEFAULT
+      description: Unqualified review, inspect, audit, or classify intent is non-mutating triage.
+      cue_literals: [review, inspect, audit, classify]
       cue_regexes: []
       exclusions: []
 
   routes:
     - route_id: ACT-OPEN
-      description: Project a current GoalContract into actuation-open/v1 and open one immutable generation.
-      aliases: [open, execute]
+      description: Register a source-authorized Goal Contract and selected K0 while Ledger injects its built-in static Review Contract under artifact-kernel-v1.
+      aliases: [open]
       terminal: "no"
-    - route_id: ACT-STEP
-      description: Prepare and consume one capability-bound operation selected from the current kernel projection.
-      aliases: [prepare, record, execute, observe]
+    - route_id: ACT-IMPLEMENT
+      description: Realize the current Construction through capability-before-effect operations and proof observations.
+      aliases: [implement]
       terminal: "no"
     - route_id: ACT-TRIAGE
-      description: Classify review evidence without mutation or a material kernel generation.
-      aliases: [triage, review-only]
+      description: Acquire review and author a Counterexample Set without mutation.
+      aliases: [triage]
       terminal: "yes"
     - route_id: ACT-REMEDIATION
-      description: Produce review-resolution/v1 without selecting executable mutation.
+      description: Propose a successor Construction Contract without execution authority or mutation.
       aliases: [remediation-plan]
       terminal: "yes"
     - route_id: ACT-REVIEW-CLOSEOUT
-      description: Refresh review evidence, select one resolution node, and execute it through a review-bound kernel generation.
+      description: Register and realize a successor Construction, complete ablation, publish through Ship when required, and obtain fresh convergence.
       aliases: [review-closeout]
       terminal: "no"
-    - route_id: ACT-CLOSURE
-      description: Close the generation and project closure-decision/v1 from the kernel fold.
-      aliases: [close, decide, complete]
-      terminal: "yes"
     - route_id: ACT-SHIP-HANDOFF
-      description: Hand a ready-to-ship kernel decision to ship, then continue the bare goal in a new review generation.
+      description: Hand a current ready-to-ship closure receipt to Ship, then append its successful receipt as evidence.
       aliases: [ship-handoff]
       terminal: "no"
+    - route_id: ACT-DERIVE
+      description: Replay the Evidence Ledger and derive state or closure without peer mutable truth.
+      aliases: [state, decide]
+      terminal: "yes"
     - route_id: ACT-BLOCK
-      description: Stop on missing authority, stale state, invalid capability, uncovered obligation, unresolved review, failed verifier, or unsupported coordination.
+      description: Fail closed on stale authority, construction, subject, capability, proof, retirement, review, publication, or mixed protocol.
       aliases: [blocked]
       terminal: "yes"
 
   clauses:
     - clause_id: ACT-KERNEL-001
-      trigger_refs: [ACT-IMPLEMENT]
-      expected_routes: [ACT-OPEN, ACT-STEP, ACT-CLOSURE, ACT-SHIP-HANDOFF, ACT-BLOCK]
+      trigger_refs: [ACT-BARE, ACT-MODE]
+      expected_routes: [ACT-OPEN, ACT-IMPLEMENT, ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-SHIP-HANDOFF, ACT-DERIVE, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [GC-v2, actuation-open/v1, actuation-event/v1, actuation-kernel-state/v1, closure-decision/v1]
-      success_signals: [source and execution authority remain distinct, every terminal predicate has an executable obligation, every effect is prepared before execution, the event fold conserves obligations, /goal alone repeats, a closed generation projects its immutable terminal route]
-      failure_signals: [plan grants mutation, post-hoc preparation, caller success flag, duplicate idempotency key, path escape, verifier substitution, operation claims parent completion, CLI owns a recursive loop, an alternate actuation gate participates]
-      rationale: The actuation kernel owns causal execution and live closure while /goal owns fixed-point iteration.
+      required_artifacts: [goal-contract/v3, counterexample-set/v1 when classified findings exist, construction-contract/v1, actuating-evidence-event/v1]
+      success_signals: [exactly four authoritative per-goal artifact families, static Review Contract rather than per-run policy, Construction Contract is the sole architecture selection, Evidence Ledger is the sole mutable per-goal truth, state and closure are deterministic projections]
+      failure_signals: [GC-v2 participates in artifact-kernel authority, RF-v2 participates in artifact-kernel authority, per-run review policy participates, owner synthesis or review resolution remains a peer authority, persisted mutable kernel state participates, protocols mix within one goal]
+      rationale: The four-artifact kernel preserves source, construction, falsification, and observation without duplicated mutable truth.
+
+    - clause_id: ACT-AUTHORITY-001
+      trigger_refs: [ACT-BARE, ACT-MODE]
+      expected_routes: [ACT-OPEN, ACT-IMPLEMENT, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [current Goal Contract, current Construction Contract, matching repository subject, Ledger-issued single-use capability before effect]
+      success_signals: [plan and review remain non-authorizing, executor projects rather than selects architecture, proof and retirement obligations come from the Construction, Ship alone owns public effects]
+      failure_signals: [finding selects a patch directly, Construction grants authority by itself, effect precedes capability admission, executor broadens scope or selects strategy, public effect bypasses Ship]
+      rationale: Mutation is the conjunction of source authority, selected construction, current subject, and causal capability admission.
 
     - clause_id: ACT-REVIEW-001
-      trigger_refs: [ACT-REVIEW]
-      expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-BLOCK]
+      trigger_refs: [ACT-BARE, ACT-MODE, ACT-REVIEW-DEFAULT]
+      expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-DERIVE, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [actuation-review-policy/v2 before fresh review execution, aggregate review-contract manifest, current review source, RF-v2 before resolution, owner-boundary-synthesis/v1 for each stable structural component before strategy selection, review-resolution/v1 with one correctness refinement per accepted class bound to its synthesis before mutation, passing refinement-and-synthesis validation decision, GoalContract observations for current review preservation progress synthesis and publication evidence, auxiliary-remediation carry for any preserved cross-tuple standard credit]
-      success_signals: [unqualified review selects triage, actuating projects only opaque request identity into CAS, every auxiliary request runs concurrently with the first standard attempt, every launched request reaches terminal evidence before review mutation, auxiliary findings enter RF-v2 without cancelling siblings or changing standard credit, verdictless review_failed changes only its request to rerun-required while preserving siblings and standard credit, same-tuple transport recovery reruns only the failed request once after the dispatch barrier, a second verdictless terminal fact blocks with that request unresolved, at least five distinct standard clean attempts form a certified chain ending clean on the current tuple, auxiliary attempts and carry edges never contribute to that suffix, every carry binds auxiliary finding resolution correctness actuation and SHIP evidence, current accepted classes join retained goal history by stable boundary-law identity, implementation owner names cannot create new structural components, each structural component has one owner synthesis, reuse-owner has no structural pressure, converge-kernel owns one replacement construction and its structural obligations, each accepted equivalence class binds one owner-level law delta plus preservation and progress witnesses to that synthesis, current resolution selects at most one synthesis-owned node and every repair-bearing mutation preflight selects exactly one, review mutation uses a prepared capability, final published artifact receives fresh closure-grade evidence]
-      failure_signals: [raw finding becomes a patch, accepted class lacks a correctness refinement, per-class construction selects repair without owner synthesis, generation tuple commit publication batch or attempt identity resets structural pressure, structural pressure receives another local repair, convergence closes with a duplicate or dominated implementation, symptom repair replaces class-level progress, preservation progress or synthesis witness is absent, stale review source authorizes mutation, an auxiliary lane is skipped or deferred behind the standard streak, an auxiliary finding or transport failure cancels sibling requests or resets standard credit, verdictless review_failed is treated as whole-wave zero credit, a same-tuple transport failure restarts or serializes the full wave, exact-request transport recovery retries indefinitely after a second verdictless terminal fact, resolution identity changes before the launched wave is terminal or while a request remains rerun-required, fewer than five standard cleans receive closeout credit, an auxiliary attempt or carry edge receives standard credit, an old attempt is relabeled to the current tuple, a standard finding or unrelated change crosses a carry, the chain lacks a final current-tuple standard clean, findings regress across reship, review mutation bypasses the kernel, public effects bypass ship]
-      rationale: Review evidence names liabilities; it never grants execution authority.
+      required_artifacts: [actuating-review-contract/v1 static law, five request bindings before initial dispatch, current Counterexample Set after findings, successor Construction before accepted-class mutation, review events in the Evidence Ledger]
+      success_signals: [unqualified review selects triage, first standard and four auxiliaries launch concurrently, every launched sibling reaches terminal transport evidence, verdictless failure earns no credit and changes only its request, same-subject transport recovery reruns only that request once, successful full-wave standard counts as clean one, four later standard clean attempts run serially, five consecutive standard cleans close the current subject, every material change resets all review credit]
+      failure_signals: [review prose grants mutation, a sibling is cancelled after finding or transport failure, a verdictless failure resets or relaunches the whole wave, a second verdictless attempt retries indefinitely, auxiliary evidence earns standard credit, any review credit crosses a material change, an auxiliary-remediation carry participates]
+      rationale: Review independently falsifies; it does not manufacture authority or survive a changed subject.
 
     - clause_id: ACT-CLOSURE-001
-      trigger_refs: [ACT-CLOSE]
-      expected_routes: [ACT-CLOSURE, ACT-SHIP-HANDOFF, ACT-BLOCK]
+      trigger_refs: [ACT-BARE, ACT-MODE]
+      expected_routes: [ACT-SHIP-HANDOFF, ACT-DERIVE, ACT-BLOCK]
       prohibited_routes: []
-      required_artifacts: [closed actuation-kernel-state/v1, current repository digest, closure-decision/v1]
-      success_signals: [outstanding obligations are empty, no operation is pending, live and folded artifacts match, ready-to-ship continues to ship, complete terminates the goal]
-      failure_signals: [open obligations, stale artifact, replayed decision, scalar proof count, proof-patch precedes a current complete decision]
-      rationale: Completion is a live projection of the append-only fold.
+      required_artifacts: [current Goal and Construction, current Counterexample dispositions, complete proof and retirement observations, current Ship evidence when required, current review convergence when required]
+      success_signals: [no pending operation or outstanding proof, every accepted Counterexample is excluded or rejected with evidence, every dominated construct is retired and independently observed, derived verdict is continue ready-to-ship complete or blocked, source-memory evaluation occurs after delivery closure]
+      failure_signals: [independently authored closure grants completion, Proof Patch precedes current closure, stale publication or review receives credit, memory checkpoint gates code closure]
+      rationale: Closure is a current fold of authority, construction, counterexamples, evidence, review law, and subject identity.
 
   instrumentation:
     decision_receipt: required
-    executable_authority: ledger --source actuation
-    implementation_language: Zig
-    rationale: Event digests and closure-decision/v1 make each transition and terminal claim auditable.
+    rationale: Content-addressed documents and an append-only Evidence Ledger make authority, effects, review, and closure replayable.

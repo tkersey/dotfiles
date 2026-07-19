@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Ship"
   short_description: "Publish validated work as a ready PR by default"
-  default_prompt: "Use $ship to open, update, or promote a proof-backed PR, preserving any current closure-decision/v1 actuation binding and using a draft only with an explicit warrant."
+  default_prompt: "Use $ship to open, update, or promote a proof-backed PR, preserve the exact opaque SHIP-v1 actuation binding, and return Artifact Kernel publication evidence without taking architecture, review, or closure authority."

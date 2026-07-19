@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Ensure a `ledger` command is available on PATH, coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation, address Universalist plans and receipts, route Hylo campaign/trial operations, and perform pure artifact validation without bypassing source authority. Use before a workflow's first Ledger command, at material validation or delivery checkpoints, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory-admission handoff, reconciliation, Universalist plan addressing or receipt emission, Hylo CRF/HCTP lifecycle work, or artifact validation."
+description: "Ensure a `ledger` command is available on PATH, validate and derive Actuating Artifact Kernel contracts without taking semantic authority, coordinate post-closure Learnings/Synesthesia/Negative Ledger evaluation and repo-local source-memory reconciliation, address Universalist plans and receipts, and route Hylo campaign/trial operations. Use before a workflow's first Ledger command, for artifact-kernel validation, fold/state/closure projection, source-memory lifecycle work, Ledger status or migration, Universalist plan addressing or receipt emission, or Hylo CRF/HCTP lifecycle work."
 ---
 
 # Ledger
@@ -9,7 +9,8 @@ description: "Ensure a `ledger` command is available on PATH, coordinate the sha
 
 Own the shared Ledger bootstrap and lifecycle-coordination boundaries,
 coordinate repo-local source-memory stores through native source APIs, and
-route pure validation of governance and review artifacts.
+route pure validation and deterministic derivation of governance, review, and
+Actuating Artifact Kernel artifacts.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
 
@@ -96,6 +97,57 @@ Operational, non-memory artifacts:
 
 - `.ledger/universalist/plan-{plan-id}.md`, addressed exclusively by
   `ledger --source universalist`; do not harvest these plans into memory.
+
+## Actuating Artifact Kernel v1 boundary
+
+After `$ledger ensure`, use the root validators for immutable documents, the
+static Review Contract, individual Evidence Ledger events, and derived closure
+receipts:
+
+```bash
+ledger validate goal-contract-v3 --input FILE|-
+ledger validate counterexample-set --input FILE|-
+ledger validate construction-contract --input FILE|-
+ledger validate actuating-review-contract --input FILE|-
+ledger validate actuating-evidence-event --input FILE|-
+ledger validate actuating-closure-receipt --input FILE|-
+ledger validate ship-v1 --input FILE|-
+```
+
+Together, these commands accept only canonical instances of:
+
+```text
+goal-contract/v3
+counterexample-set/v1
+construction-contract/v1
+actuating-review-contract/v1
+actuating-evidence-event/v1
+```
+
+An explicit `--goal` selects the Artifact Kernel Actuation source. Inspect that
+surface, replay the current Evidence Ledger, and derive closure with:
+
+```bash
+ledger --source actuation --goal GOAL_ID --help
+ledger --source actuation --goal GOAL_ID state
+ledger --source actuation --goal GOAL_ID decide
+```
+
+The static Review Contract is not mutable per-goal state. `state` is a
+discardable view. `decide` deterministically binds the Goal Contract, current
+Construction Contract, current subject digest, goal-local Evidence Ledger
+material and full heads, and Review Contract into an
+`actuating-closure-receipt/v1`. A serialized receipt is a cache, not an
+independently authored completion decision; discard and recompute it whenever
+any bound input changes.
+
+Ledger owns canonical envelopes, content identities, append integrity, replay,
+folds, and projections. It does not author Goal semantics, classify
+Counterexamples, select a Construction, grant mutation, choose review repairs,
+or perform public effects. Validation establishes only the claims named in the
+validator response. See
+[Actuating's Artifact Kernel owner map](../actuating/references/artifact-kernel.md)
+for ownership and protocol routing; Ledger does not duplicate that contract.
 
 ## Hylo CRF/HCTP authority
 
@@ -328,19 +380,26 @@ accountable lane run.
 
 Stateless, non-authorizing observations:
 
+- the Artifact Kernel validators listed in
+  [Actuating Artifact Kernel v1 boundary](#actuating-artifact-kernel-v1-boundary);
 - `ledger validate plan-source-contract --input FILE`
 - `ledger validate policy-synthesis-receipt --input FILE`
 - `ledger validate review-fold --input FILE`
+- `ledger validate source-memory-checkpoint --input FILE`
+
+Legacy read compatibility only:
+
 - `ledger validate actuation-review-policy --phase PHASE --input FILE`
 - `ledger validate review-resolution --phase PHASE --input FILE`
-- `ledger validate source-memory-checkpoint --input FILE`
 
 These commands accept canonical JSON and never read or write `.ledger`. General
 governance contracts emit `ledger-validate-decision/v1`; Actuating contracts
 emit their domain validation-decision schemas. Ledger 0.7.0 and newer preserve
 v1 same-tuple review-policy validation and enforce the v2 certified
-cross-tuple standard-clean chain. Source-memory checkpoint coordination requires
-Ledger 0.10.0 or newer; probe `ledger --version` before opening that checkpoint.
+cross-tuple standard-clean chain for historical goals. Artifact Kernel goals
+must not write either legacy artifact. Source-memory checkpoint coordination
+requires Ledger 0.10.0 or newer; probe `ledger --version` before opening that
+checkpoint.
 
 Source-store state model:
 
@@ -372,7 +431,10 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 
 At a decision-shaping validation transition, material strategy pivot, delivery
 boundary after implementation, pre-commit boundary, PR handoff, terminal
-implementation/review closeout, or explicit checkpoint request:
+implementation/review closeout, or explicit checkpoint request, use the
+repository's governing lifecycle. For `artifact-kernel-v1`, defer this
+checkpoint until a current `ready-to-ship` or `complete` closure projection and
+delivery handoff so source-memory processing remains outside code closure:
 
 1. Complete `$ledger ensure` once for the workflow and require Ledger 0.10.0 or
    newer. Participants consume that readiness; they do not bootstrap again.
@@ -450,8 +512,11 @@ never bulk-admit every learning or incomplete Negative Ledger projection.
 - why memories are not being captured;
 - doctor `.ledger`;
 - cross-store memory digest.
-- validate PSC-v1, PSR-v1, or RF-v2;
+- validate legacy PSC-v1, PSR-v1, or RF-v2;
 - `ledger validate`.
+- `goal-contract/v3`, `counterexample-set/v1`, or
+  `construction-contract/v1` validation;
+- Artifact Kernel fold, state, closure, Review Contract, or Evidence Ledger.
 - create or resolve a Universalist plan;
 - find the newest Universalist plan without overwriting an earlier run.
 - emit or atomically append a Universalist SDR-v1 decision receipt.
@@ -604,13 +669,15 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - Do not treat memory-source notes as the canonical store.
 - Do not persist checkpoint receipts or turn Ledger into a semantic source
   decision engine without evidence that the stateless protocol is insufficient.
+- For `artifact-kernel-v1`, do not run source-memory processing before closure
+  or make its outcome a code-closure prerequisite.
 - Do not reuse a checkpoint receipt after its subject or evidence fingerprint
   changes.
 - Do not admit every source-store event to memory.
 - Do not block a route from Negative Ledger memory without current ledger verification.
 - Do not turn Synesthesia decorative language into memory.
 - Do not migrate, compact, hand-edit, or harvest actuation events as source
-  memory; use the actuation source's `doctor`, `state`, and transition commands.
+  memory; use the actuation source's `state` and transition commands.
 - Do not invent Universalist plan ids, write a replacement latest pointer, or
   reuse an existing plan path; use the Universalist source commands.
 - Do not route stateless validation through `--source`; sources own state, while

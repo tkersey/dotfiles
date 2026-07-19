@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Proof Patch"
-  short_description: "Render proof from a live closure decision"
-  default_prompt: "Use $proof-patch to render a concise human proof from this current closure-decision/v1 without changing closure or publication state."
+  short_description: "Render proof from deterministic closure"
+  default_prompt: "Use $proof-patch to render a concise human proof from this current complete Artifact Kernel closure receipt or legacy closure-decision/v1 without changing closure or publication state."

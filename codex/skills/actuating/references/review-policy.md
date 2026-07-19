@@ -1,3 +1,8 @@
+> Compatibility boundary: use this frozen policy only for a goal whose immutable
+> protocol marker is `legacy-actuating-v1`. It is historical completion authority
+> for that goal during the compatibility window; it is never authority, input,
+> review credit, or a migration source for `artifact-kernel-v1`.
+
 # Actuating Review Policy
 
 `$actuating` owns review selection, pinned lens contracts, exact instructions,
