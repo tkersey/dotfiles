@@ -35,6 +35,30 @@ jobs:
           tar -xJf /tmp/universalist-v17-runtime.tar.xz \
             -C /tmp/universalist-v17-runtime
 
+      - name: Normalize patch quoting
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('/tmp/universalist-v17-runtime/patches/architectural-routing.patch')
+          lines = path.read_text(encoding='utf-8').splitlines()
+          normalized = []
+          index = 0
+          while index < len(lines):
+              line = lines[index]
+              if (
+                  index + 1 < len(lines)
+                  and line[:1] in {'+', '-'}
+                  and "printf '" in line
+                  and lines[index + 1].startswith(line[0] + "'")
+              ):
+                  normalized.append(line + r'\n' + lines[index + 1][1:])
+                  index += 2
+                  continue
+              normalized.append(line)
+              index += 1
+          path.write_text('\n'.join(normalized) + '\n', encoding='utf-8')
+          PY
+
       - name: Apply change set
         run: |
           set +e
