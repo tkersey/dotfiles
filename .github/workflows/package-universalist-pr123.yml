@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - universalist
-  pull_request:
-    branches:
-      - main
-    types:
-      - synchronize
 
 permissions:
   contents: read
@@ -23,10 +18,13 @@ jobs:
           fetch-depth: 1
       - name: Build exact checkout archive
         run: |
+          git rev-parse 'HEAD^{tree}' > /tmp/tree-sha.txt
           tar --exclude=.git -czf /tmp/pr123-checkout.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
           name: pr123-exact-checkout
-          path: /tmp/pr123-checkout.tar.gz
+          path: |
+            /tmp/pr123-checkout.tar.gz
+            /tmp/tree-sha.txt
           if-no-files-found: error
           retention-days: 1
