@@ -1,4 +1,4 @@
-name: Apply Universalist v17
+name: Package Universalist base tree
 
 on:
   pull_request:
@@ -10,229 +10,34 @@ on:
       - synchronize
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  apply:
-    if: github.actor != 'github-actions[bot]'
+  package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: agent/universalist-universal-problem-ir
-          fetch-depth: 0
-          persist-credentials: true
+          ref: 5581cbc948af79683c5cff9db2a447ecbc930d87
           show-progress: false
 
-      - uses: astral-sh/setup-uv@v6
-
-      - name: Install Universalist native proof tools
+      - name: Build complete base archive
         run: |
-          curl -fsSL -o /tmp/seq.tar.gz \
-            https://github.com/tkersey/skills-zig/releases/download/seq-v0.3.52/seq-v0.3.52-linux-x86_64.tar.gz
-          echo "d26822bbebba7c6a85018696d05c311378c70f6d5227f5d70afea6b3c5e259d4  /tmp/seq.tar.gz" \
-            | sha256sum --check --strict
-          mkdir -p /tmp/seq
-          tar -xzf /tmp/seq.tar.gz -C /tmp/seq
-          sudo install -m 0755 "$(find /tmp/seq -type f -name seq -print -quit)" \
-            /usr/local/bin/seq
+          mkdir -p /tmp/universalist-base
+          cp -R codex /tmp/universalist-base/
+          find /tmp/universalist-base/codex/agents \
+            -maxdepth 1 -type f ! -name 'universalist-*.toml' -delete
+          find /tmp/universalist-base/codex/agents \
+            -mindepth 1 -type d -exec rm -rf {} +
+          rm -rf /tmp/universalist-base/codex/skills/*
+          cp -R codex/skills/universalist \
+            /tmp/universalist-base/codex/skills/
+          cd /tmp/universalist-base
+          zip -qr /tmp/universalist-v16.3-base.zip codex
 
-          curl -fsSL -o /tmp/ledger.tar.gz \
-            https://github.com/tkersey/skills-zig/releases/download/ledger-v0.10.7/ledger-v0.10.7-linux-x86_64.tar.gz
-          echo "43e12593a9efc1340ed34ccdce8f699462aedf0febb05ac5ad381d77da2153df  /tmp/ledger.tar.gz" \
-            | sha256sum --check --strict
-          mkdir -p /tmp/ledger
-          tar -xzf /tmp/ledger.tar.gz -C /tmp/ledger
-          sudo install -m 0755 "$(find /tmp/ledger -type f -name ledger -print -quit)" \
-            /usr/local/bin/ledger
-
-          seq --version
-          ledger --version
-          uv --version
-
-      - name: Reconstruct runtime bundle
-        run: |
-          cat .github/universalist-v17-bootstrap/runtime2.part.* \
-            | tr -d '\n' \
-            | base64 --decode > /tmp/universalist-v17-runtime.tar.xz
-          echo "c864ef51ce1691e0a02f237545ff39036549c44abbfe62896a19b42004f66817  /tmp/universalist-v17-runtime.tar.xz" \
-            | sha256sum --check --strict
-          mkdir -p /tmp/universalist-v17-runtime
-          tar -xJf /tmp/universalist-v17-runtime.tar.xz \
-            -C /tmp/universalist-v17-runtime
-
-      - name: Normalize patch quoting
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('/tmp/universalist-v17-runtime/patches/architectural-routing.patch')
-          lines = path.read_text(encoding='utf-8').splitlines()
-          normalized = []
-          index = 0
-          while index < len(lines):
-              line = lines[index]
-              if (
-                  index + 1 < len(lines)
-                  and line[:1] in {'+', '-'}
-                  and "printf '" in line
-                  and lines[index + 1].startswith(line[0] + "'")
-              ):
-                  normalized.append(line + r'\n' + lines[index + 1][1:])
-                  index += 2
-                  continue
-              normalized.append(line)
-              index += 1
-          path.write_text('\n'.join(normalized) + '\n', encoding='utf-8')
-          PY
-
-      - name: Apply change set
-        run: |
-          set +e
-          python3 /tmp/universalist-v17-runtime/apply_universalist_v17.py \
-            "$GITHUB_WORKSPACE" > /tmp/universalist-v17-apply.log 2>&1
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            cp /tmp/universalist-v17-apply.log \
-              .github/universalist-v17-bootstrap/apply-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email \
-              "41898282+github-actions[bot]@users.noreply.github.com"
-            git add .github/universalist-v17-bootstrap/apply-error.txt
-            git commit -m "universalist: capture v17 bootstrap failure"
-            git push origin HEAD:agent/universalist-universal-problem-ir
-            cat /tmp/universalist-v17-apply.log
-            exit "$status"
-          fi
-          cat /tmp/universalist-v17-apply.log
-
-      - name: Preserve compatibility doctrine
-        run: |
-          set +e
-          python3 - <<'PY' > /tmp/universalist-v17-compatibility.log 2>&1
-          from pathlib import Path
-          import re
-
-          skill = Path('codex/skills/universalist/SKILL.md')
-          text = skill.read_text(encoding='utf-8')
-          if 'Context Normal Form' not in text:
-              addition = (
-                  '\nA system reaches **Context Normal Form** when every semantic consumer '
-                  'receives a task-indexed, schema-shaped, provenance-preserving, '
-                  'freshness-valid, observationally minimal context instance through a '
-                  'certified publication boundary.\n'
-              )
-              text, count = re.subn(
-                  r'^(## Exact Context[^\n]*)$',
-                  lambda match: match.group(1) + addition,
-                  text,
-                  count=1,
-                  flags=re.MULTILINE,
-              )
-              if count != 1:
-                  raise SystemExit('Exact Context heading missing while restoring Context Normal Form')
-              skill.write_text(text, encoding='utf-8')
-
-          semantic = Path('codex/agents/universalist-semanticist.toml')
-          text = semantic.read_text(encoding='utf-8')
-          if 'comonad coalgebras' not in text:
-              addition = (
-                  '\n- distinguish behavioral coalgebras for unfolding behavior from '
-                  'comonad coalgebras for coherently situated context;'
-              )
-              text, count = re.subn(
-                  r'(- state machines, behavioral coalgebras[^\n]*;)',
-                  lambda match: match.group(1) + addition,
-                  text,
-                  count=1,
-              )
-              if count != 1:
-                  raise SystemExit('semanticist behavioral-coalgebra line missing')
-              semantic.write_text(text, encoding='utf-8')
-
-          resource = Path('codex/agents/universalist-resource-realist.toml')
-          text = resource.read_text(encoding='utf-8')
-          if 'description composition' not in text:
-              text, count = re.subn(
-                  r'For indexed composition inspect',
-                  'For description composition inspect',
-                  text,
-                  count=1,
-              )
-              if count != 1:
-                  raise SystemExit('resource-realist indexed-composition phrase missing')
-              resource.write_text(text, encoding='utf-8')
-
-          cartographer = Path('codex/agents/universalist-world-cartographer.toml')
-          text = cartographer.read_text(encoding='utf-8')
-          if 'Tambara' not in text:
-              text, count = re.subn(
-                  r'a Reader/middleware/DI wrapper a context-action theorem',
-                  'a Reader/middleware/DI wrapper a Tambara module or context-action theorem',
-                  text,
-                  count=1,
-              )
-              if count != 1:
-                  raise SystemExit('cartographer context-action guardrail missing')
-              cartographer.write_text(text, encoding='utf-8')
-          PY
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            cp /tmp/universalist-v17-compatibility.log \
-              .github/universalist-v17-bootstrap/compatibility-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email \
-              "41898282+github-actions[bot]@users.noreply.github.com"
-            git add .github/universalist-v17-bootstrap/compatibility-error.txt
-            git commit -m "universalist: capture v17 compatibility failure"
-            git push origin HEAD:agent/universalist-universal-problem-ir
-            cat /tmp/universalist-v17-compatibility.log
-            exit "$status"
-          fi
-          cat /tmp/universalist-v17-compatibility.log
-
-      - name: Validate
-        run: |
-          set +e
-          (
-            cd codex/skills/universalist
-            chmod +x scripts/*.sh scripts/*.py
-            bash scripts/check_universal_problem.sh
-            bash scripts/check_universalist.sh
-            bash scripts/check_pullback_pushout_mechanics.sh
-            bash scripts/check_comonadic_spatiality.sh
-            bash scripts/check_day_convolution.sh
-            bash scripts/check_tambara_modules.sh
-            bash scripts/check_universalist_replacement.sh
-          ) > /tmp/universalist-v17-validation.log 2>&1
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ]; then
-            cp /tmp/universalist-v17-validation.log \
-              .github/universalist-v17-bootstrap/validation-error.txt
-            git config user.name "github-actions[bot]"
-            git config user.email \
-              "41898282+github-actions[bot]@users.noreply.github.com"
-            git add .github/universalist-v17-bootstrap/validation-error.txt
-            git commit -m "universalist: capture v17 validation failure"
-            git push origin HEAD:agent/universalist-universal-problem-ir
-            cat /tmp/universalist-v17-validation.log
-            exit "$status"
-          fi
-          cat /tmp/universalist-v17-validation.log
-
-      - name: Remove bootstrap artifacts
-        run: |
-          rm -rf .github/universalist-v17-bootstrap
-          rm -f .github/workflows/universalist-v17-bootstrap.yml
-
-      - name: Commit and push
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m \
-            "universalist: compile categorical mechanics through a universal problem IR"
-          git push origin HEAD:agent/universalist-universal-problem-ir
+      - uses: actions/upload-artifact@v4
+        with:
+          name: universalist-v16.3-base
+          path: /tmp/universalist-v16.3-base.zip
+          if-no-files-found: error
+          retention-days: 1
