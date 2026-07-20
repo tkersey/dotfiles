@@ -121,20 +121,21 @@ Exactly one review selector is required:
 This target capture belongs to CAS because CAS must bind the reviewed bytes to
 its receipt. It is not repository mutation or a general Git-subject service.
 
-Actuating binds each request before dispatch and passes only this opaque shape:
+Actuating binds each request before dispatch and passes this two-field object
+directly to `--workflow-binding-json`:
 
 ~~~json
 {
-  "workflowBinding": {
-    "requestId": "opaque-caller-id",
-    "requestFingerprint": "sha256:..."
-  }
+  "requestId": "opaque-caller-id",
+  "requestFingerprint": "sha256:..."
 }
 ~~~
 
 CAS requires both strings to be non-empty, binds the complete object into
-attempt identity, and returns it unchanged. It never infers a lens, role,
-campaign, clean credit, or repair from those bytes.
+attempt identity, and returns it unchanged under the owner receipt's
+`workflowBinding` field. The flag input is not wrapped in a `workflowBinding`
+object. CAS never infers a lens, role, campaign, clean credit, or repair from
+those bytes.
 
 ## Structured owner receipt
 

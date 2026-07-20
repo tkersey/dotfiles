@@ -20,16 +20,15 @@ mutation, and closure.
 
 ~~~json
 {
-  "workflowBinding": {
-    "requestId": "opaque-caller-id",
-    "requestFingerprint": "sha256:..."
-  }
+  "requestId": "opaque-caller-id",
+  "requestFingerprint": "sha256:..."
 }
 ~~~
 
-CAS requires two non-empty strings, includes the complete object in attempt
-identity, and returns it unchanged. It does not decode a lens, role, campaign,
-or credit rule from the binding.
+This is the direct `--workflow-binding-json` input, not a wrapper. CAS requires
+two non-empty strings, includes the complete object in attempt identity, and
+returns it unchanged under the receipt's `workflowBinding` field. It does not
+decode a lens, role, campaign, or credit rule from the binding.
 
 ## Attempt evidence
 

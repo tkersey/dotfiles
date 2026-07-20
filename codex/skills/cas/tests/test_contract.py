@@ -66,11 +66,13 @@ class CasContractTests(unittest.TestCase):
 
     def test_opaque_binding_is_preserved_without_semantic_decoding(self) -> None:
         required = [
+            "directly to `--workflow-binding-json`",
+            "The flag input is not wrapped in a `workflowBinding` object",
             "workflowBinding",
             "requestId",
             "requestFingerprint",
             "two non-empty strings",
-            "returns it unchanged",
+            "returns it unchanged under the owner receipt's",
             "does not decode a lens",
         ]
         for token in required:
