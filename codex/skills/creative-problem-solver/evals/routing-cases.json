@@ -1,93 +1,140 @@
 {
   "cases": [
     {
-      "activate": true,
       "id": "explicit-options",
-      "prompt": "Give me several materially different ways to reduce onboarding drop-off before we choose one."
+      "prompt": "Give me several materially different ways to reduce onboarding drop-off before we choose one.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
       "id": "tradeoff-portfolio",
-      "prompt": "Map the trade-offs between building, buying, and partnering, then include a credible moonshot."
+      "prompt": "Map the trade-offs between building, buying, and partnering, then include a credible moonshot.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
       "id": "stalled-repeated-failure",
-      "prompt": "We have tried tuning the query twice and are still stuck. What else could we try?"
+      "prompt": "We have tried tuning the query twice and are still stuck. What else could we try?",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
       "id": "reframe-migration",
-      "prompt": "Reframe this migration problem and show several distinct paths before execution."
+      "prompt": "Reframe this migration problem and show several distinct paths before execution.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
-      "id": "ordinary-brainstorm",
-      "prompt": "Brainstorm a strategy portfolio for entering this market; do not execute anything yet."
+      "id": "ordinary-strategy-brainstorm",
+      "prompt": "Brainstorm a strategy portfolio for entering this market; do not execute anything yet.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
       "id": "architecture-choice-set",
-      "prompt": "Show several architecture paths for multi-region failover and how we could learn before committing."
+      "prompt": "Show several architecture paths for multi-region failover and how we could learn before committing.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
       "id": "ambiguous-learning-moves",
-      "prompt": "The problem is still ambiguous; give me learning moves rather than a build plan."
+      "prompt": "The problem is still ambiguous; give me learning moves rather than a build plan.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": true,
-      "id": "explicit-skill",
-      "prompt": "Use $creative-problem-solver to generate a five-tier portfolio for this decision."
+      "id": "explicit-skill-imperative",
+      "prompt": "Use $creative-problem-solver to generate a five-tier portfolio for this decision.",
+      "route": "creative-problem-solver"
     },
     {
-      "activate": false,
+      "id": "selected-direction-rollout-options",
+      "prompt": "We selected event sourcing; show materially different rollout, containment, and proof strategies before execution.",
+      "route": "creative-problem-solver"
+    },
+    {
+      "id": "high-uncertainty-cross-domain-choice",
+      "prompt": "We need several distinct ways to redesign this partner integration across product, legal, and operations before choosing a path.",
+      "route": "creative-problem-solver"
+    },
+    {
+      "id": "bare-skill-name",
+      "prompt": "$creative-problem-solver",
+      "route": "direct"
+    },
+    {
+      "id": "imperative-skill-without-portfolio-object",
+      "prompt": "Use $creative-problem-solver.",
+      "route": "direct"
+    },
+    {
       "id": "direct-implementation",
-      "owner": "implementation",
-      "prompt": "Implement the selected cache design and run the tests."
+      "prompt": "Implement the selected cache design and run the tests.",
+      "route": "implementation"
     },
     {
-      "activate": false,
       "id": "single-factual-answer",
-      "owner": "direct",
-      "prompt": "What does this compiler error mean?"
+      "prompt": "What does this compiler error mean?",
+      "route": "direct"
     },
     {
-      "activate": false,
       "id": "repo-opportunity-mining",
-      "owner": "ideate",
-      "prompt": "Mine this repository for evidence-backed product and DX opportunities and rank what to plan next."
+      "prompt": "Mine this repository for evidence-backed product and DX opportunities and rank what to plan next.",
+      "route": "ideate"
     },
     {
-      "activate": false,
       "id": "selected-direction-plan",
-      "owner": "plan",
-      "prompt": "Turn the chosen event-sourcing direction into a detailed implementation plan."
+      "prompt": "Turn the chosen event-sourcing direction into a detailed implementation plan.",
+      "route": "plan"
     },
     {
-      "activate": false,
       "id": "architecture-onboarding",
-      "owner": "codebase-archaeology",
-      "prompt": "Explain this repository's architecture and data flow so I can get oriented."
+      "prompt": "Explain this repository's architecture and data flow so I can get oriented.",
+      "route": "codebase-archaeology"
     },
     {
-      "activate": false,
       "id": "pull-request-review",
-      "owner": "review",
-      "prompt": "Review this pull request for defects."
+      "prompt": "Review this pull request for defects.",
+      "route": "review"
     },
     {
-      "activate": false,
       "id": "chosen-tier-execution",
-      "owner": "implementation",
-      "prompt": "We chose the Quick Win. Build it now."
+      "prompt": "We chose the Quick Win. Build it now.",
+      "route": "implementation"
     },
     {
-      "activate": false,
       "id": "small-known-comparison",
-      "owner": "direct",
-      "prompt": "Compare these two already-selected retry policies and recommend one."
+      "prompt": "Compare these two already-selected retry policies and recommend one.",
+      "route": "direct"
+    },
+    {
+      "id": "skill-analysis-mention",
+      "prompt": "Do a deep analysis of my $creative-problem-solver skill.",
+      "route": "tune"
+    },
+    {
+      "id": "skill-edit-mention",
+      "prompt": "Patch $creative-problem-solver so it stops over-triggering.",
+      "route": "tune"
+    },
+    {
+      "id": "skill-refine-brief",
+      "prompt": "Apply this complete REFINE-SKILL-v3 brief to $creative-problem-solver and validate the package.",
+      "route": "refine"
+    },
+    {
+      "id": "keyword-bearing-debugging",
+      "prompt": "I am blocked by this compiler error. What else can I try?",
+      "route": "debugging"
+    },
+    {
+      "id": "ordinary-name-brainstorm",
+      "prompt": "Brainstorm twenty names for this command.",
+      "route": "direct"
+    },
+    {
+      "id": "mixed-options-and-implementation",
+      "prompt": "Give me several options, choose the best one, and implement it now.",
+      "route": "implementation"
+    },
+    {
+      "id": "explain-skill-concept",
+      "prompt": "What does $creative-problem-solver mean by Artifact Spine?",
+      "route": "direct"
     }
   ],
-  "schema": "creative-problem-solver-routing-cases/v1"
+  "schema": "creative-problem-solver-routing-cases/v2"
 }
