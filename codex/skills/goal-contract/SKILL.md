@@ -87,8 +87,10 @@ make Ledger the semantic author and never grants mutation authority.
 - A conflict with source-fixed semantics, non-goals, compatibility,
   architecture constraints, proof requirements, authority, or publication
   posture blocks or requests source revision.
-- A changed semantic decision produces an immutable successor with an explicit
-  predecessor reference; never edit a materialized contract in place.
+- A changed semantic decision produces an immutable successor under a fresh
+  Goal ID with exactly one explicit predecessor reference. Pair it with a fresh
+  initial Construction and hand both to Actuating `open`; never edit or reopen
+  the materialized predecessor in place.
 
 ## Exclusions
 

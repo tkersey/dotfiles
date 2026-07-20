@@ -95,6 +95,13 @@ boundary:
 class identity = governing law + semantic boundary + discrepancy + applicability
 ~~~
 
+Set `boundary_key` to the stable semantic boundary falsified by the witness and
+`owner_boundary` to the current Construction owner at that boundary when the
+witness was observed. The boundary key remains stable across successors; the
+owner may change only through Actuating's successor-Construction law. Review
+Fold records the predecessor owner and never predicts or selects its
+replacement.
+
 Use `quotient_basis` to state why the grouped findings witness that same class.
 Do not derive class identity from filenames, commits, attempt IDs, request IDs,
 publication epochs, or a proposed patch. A class may recur across construction
@@ -139,7 +146,8 @@ Before the first Ledger command in the workflow, load `$ledger` and complete
 8. Register the validated artifact in the Evidence Ledger when the current
    artifact-kernel workflow calls for it.
 9. Hand accepted classes to `$actuating` as successor Construction Contract
-   inputs. Never choose or authorize the repair.
+   inputs. Preserve the class boundary and predecessor-owner facts; never
+   choose or authorize the repair.
 
 Use
 [counterexample-set.valid.example.json](assets/counterexample-set.valid.example.json)

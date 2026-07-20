@@ -34,6 +34,7 @@ rejected. Frozen legacy commands without `--goal` retain their arbitrary
 | Register immutable successor Construction | `register-construction --json FILE` |
 | Register a classified Counterexample Set | `register-counterexamples --json FILE` |
 | Record review, publication, or closure-observation evidence | `append --json FILE` |
+| Dispatch one fully bound initial concurrent review wave | `dispatch-review` |
 | Admit one construction-projected operation | `prepare --json FILE` |
 | Consume an edit capability after exact delta reconciliation | `record --capability CAP` |
 | Consume inspect/verify capability and run its verifier | `execute --capability CAP` |
@@ -45,10 +46,11 @@ rejected. Frozen legacy commands without `--goal` retain their arbitrary
 
 ## Open envelope
 
-`open` is the only entry for a new goal. It validates and takes custody of the
-Goal Contract and selected initial Construction. Ledger injects and custodies
-its one built-in canonical static Review Contract; the caller supplies no Review
-Contract path, bytes, digest, or materialization command.
+`open` is the only entry for a new goal or source-revised successor goal. It
+validates and takes custody of the Goal Contract and selected initial
+Construction. Ledger injects and custodies its one built-in canonical static
+Review Contract; the caller supplies no Review Contract path, bytes, digest, or
+materialization command.
 
 Production is Phase 4 opt-in: an explicit `--goal GOAL_ID open` admits a new
 artifact-kernel goal, while the unqualified command surface remains frozen
@@ -81,8 +83,9 @@ ledger --source actuation --goal goal-1 open --json actuation-open.json
 
 The envelope authority fields must exactly match the Goal Contract. K0 must
 belong to that Goal, use `mode: initial`, reference it, and have no Construction
-predecessor. A source revision opens a fresh goal with a successor Goal Contract
-and a fresh K0; do not reopen or reinterpret the predecessor goal.
+predecessor. A source revision opens a fresh Goal with exactly one Goal
+predecessor and a fresh K0 through the current supersession route below; do not
+reopen or reinterpret the predecessor Goal.
 
 ## Registration envelopes
 
@@ -152,9 +155,15 @@ Project one operation exactly from the current Construction:
 ledger --source actuation --goal goal-1 prepare --json operation.json
 ~~~
 
-Ledger chooses the verifier from the cited Construction obligations and returns
-raw `AKC3-*` capability material once. Persist only its digest. Do not prepare
-after the effect or reuse a step, idempotency key, or capability.
+For an implementation or acceptance obligation, cite its base `obligation_id`
+to select the verifier or `<obligation_id>#falsifier` to select the falsifier.
+Ledger binds the exact argv for that role and rejects substitution. One
+operation cannot cite both roles for the same obligation; independent passing
+operations on the current subject are required to discharge both. Review and
+Ship obligations are external-owner projections and cannot be executed through
+this handler. Ledger returns raw `AKC3-*` capability material once. Persist only
+its digest. Do not prepare after the effect or reuse a step, idempotency key, or
+capability.
 
 For both `execute` and `observe`, Ledger validates the current subject and
 pending operation under exclusive custody, then appends
@@ -173,6 +182,15 @@ For `edit`:
 ledger --source actuation --goal goal-1 record --capability "$CAPABILITY"
 ledger --source actuation --goal goal-1 observe --step step-1
 ~~~
+
+Before `record` appends or consumes the capability, Ledger re-reads the
+post-effect manifest. It rejects any changed path that is itself a symlink or
+descends from a manifest symlink, even when the lexical path stayed inside Goal
+scope. Rejection appends no event, leaves the prepared capability unconsumed,
+and grants no proof; restore the workspace before aborting with that original
+capability. Replay applies the same symlink rule to current v3 manifest
+attachments before changing phase, capability, subject, or proof state. Frozen
+v1/v2 record attachments retain read-only historical semantics.
 
 For `inspect` or `verify`:
 
@@ -241,8 +259,8 @@ directly.
 
 ## Review dispatch barrier
 
-Append the current campaign start and all five request bindings before launching
-the concurrent 1+4 wave. For `review_request_bound`, add top-level
+Append the current campaign start and all five request bindings before invoking
+the concurrent 1+4 dispatcher. For `review_request_bound`, add top-level
 `instruction_path` to the append wrapper. Its body contains only `schema`,
 `campaign_id`, `initial_wave`, `lens`, `lens_contract_digest`, and `request_id`.
 Every `request_id` must begin with the exact `campaign_id` followed by `/` and
@@ -279,27 +297,51 @@ durable fields. `instruction_digest` identifies those packet bytes, the request
 fingerprint is their tagged `actuating-review-request/v1` digest, and the target
 fingerprint digest is tagged under `actuating-cas-target-fingerprint/v1`.
 
+Ledger also projects the current Goal scope and subject into canonical
+`CAS-REVIEW-SUBJECT-v1` bytes with exactly this shape:
+
+~~~json
+{"allowedPaths":["src"],"excludedPaths":[".ledger/actuation/artifact-kernel"],"repoRealpath":"/repo","schema":"CAS-REVIEW-SUBJECT-v1","subjectDigest":"sha256:..."}
+~~~
+
+Actuating owns the declared scope; Ledger retains the descriptor only as a
+content-addressed supporting attachment. It is transient CAS custody, not an
+authoritative artifact or peer review state.
+
 Ledger obtains the target from its read-only CAS-owner preflight:
 
 ~~~bash
 cas review_session target-identity \
   --cwd REPO --base BASE \
-  --custom-instructions @LEDGER-HELD-DISPATCH-PACKET --json
+  --custom-instructions @LEDGER-HELD-DISPATCH-PACKET \
+  --subject-descriptor @LEDGER-HELD-SUBJECT-DESCRIPTOR --json
 ~~~
 
 CAS returns only `schema: CAS-TARGET-IDENTITY-v1`, `repoRealpath`, and
-`targetFingerprint`. Use the Ledger-authored request fingerprint as CAS's
-opaque `workflowBinding.requestFingerprint`.
+`targetFingerprint`. CAS validates the descriptor's canonical bytes,
+repository, literal safe path sets, and live Goal-scoped subject, then binds its
+digest with the exact instruction bytes. Use the Ledger-authored request
+fingerprint as CAS's opaque `workflowBinding.requestFingerprint`.
 
-Append all five attempt-start events before accepting any initial terminal
-event, then append the exact terminal attempt or transport-failure receipt for
-each request. Before admission, Ledger recomputes the live CAS target from the
-Goal's base reference and the dispatch packet in Ledger custody, then
+After all five bindings exist, run:
+
+~~~bash
+ledger --source actuation --goal goal-1 dispatch-review
+~~~
+
+Ledger starts all five exact CAS children before waiting on any child and owns
+the five initial `review_attempt_started` events. Direct caller append of an
+initial start is rejected, and no initial terminal is admissible until all five
+starts exist. A child or receipt failure never cancels an already launched
+sibling; every launched sibling reaches terminal transport evidence.
+
+Then append the exact terminal attempt or transport-failure receipt for each
+request. Before admission, Ledger recomputes the live CAS target from the
+Goal's base reference, held dispatch packet, and held subject descriptor, then
 requires the live, stored, and receipt target digests plus the receipt's request
 ID and request fingerprint to agree. Historical replay verifies the durable
-joins without recomputing a live target. Let all launched siblings terminate.
-Only after the barrier may one failed request receive its single same-subject
-fresh recovery.
+joins without recomputing a live target. Only after the full initial transport
+barrier may one failed request receive its single same-subject fresh recovery.
 
 Terminal callers submit `review-attempt-completed/v2` or
 `review-transport-failed/v2` and omit
@@ -341,6 +383,18 @@ exact owner-issued `SHIP-v1` envelope; a partial fragment or mismatched
 result/readiness pair grants no publication credit. Do not create or update a
 public PR through Ledger or Actuating.
 
+Ship remains the sole owner of immutable `SHIP-v1`. Ledger retains only its
+owner receipt reference plus `branch`, `base_branch`, and `head_sha` in derived
+state, then recomputes publication freshness from live Git. Credit is current
+only when `HEAD^{commit}` equals `head_sha`, the current symbolic short branch
+equals `branch`, and the Goal's `scope.base_ref` resolves to the branch denoted
+by `base_branch`. Raw `refs/heads/X` and `refs/remotes/REMOTE/X` spellings
+normalize to `X`; no repository or base-SHA field is inferred. Detached HEAD,
+an unresolved base, any query failure, or any mismatch fails closed. Even a
+same-tree HEAD rewrite therefore invalidates publication, blocks review
+admission, and returns a publication-required complete local proof to
+`ready-to-ship` until fresh Ship evidence is observed.
+
 Current Artifact Kernel admission additionally requires the exact two-field
 binding with digest-shaped `actuation_run_id`. Frozen migration readers may
 accept a nonblank opaque historical run ID, but they retain every other exact
@@ -368,17 +422,39 @@ suppressed without rewriting Evidence. The projection never exposes raw
 capability material or a capability digest. A null next command means the named
 reason is terminal (`complete`) or blocked.
 
+When review dispatch is the next transition, the derived `cas_dispatch` view
+contains `cwd`, `base_ref`, `custom_instructions_path`,
+`subject_descriptor_path`, and the `workflow_binding` object. These are
+disposable paths and arguments into Ledger-held custody, not durable workflow
+state.
+
 Treat projections as disposable. Re-run them after any event for the goal or
 any material subject movement. Do not write a mutable state artifact or
 hand-author closure.
 
-## Frozen goal-supersession replay
+## Current goal supersession and frozen replay
 
-`goal_superseded` is read-only frozen Evidence, not an externally appendable
-current event. Replay accepts its exact `goal-superseded/v1` body only for a
-frozen lineage, verifies the predecessor Goal and Goal Contract, the successor
-Goal attachment, its single predecessor ref and source digest, and the paired
-pending step/capability invalidation when present. It then clears that exact
-invalidated pending operation and projects the predecessor goal blocked as
-`goal-superseded`. No current writer emits this event, and it grants the
-successor no mutation authority.
+For a current `artifact-kernel-v1` Goal whose `predecessor_refs` contains
+exactly one Goal Contract, `open` owns successor admission. Under one exclusive
+Evidence-store lock, Ledger resolves exactly one current predecessor binding,
+validates the successor Goal, fresh initial K0, source, authority, attachments,
+and current subject, and rejects unresolved accepted, blocked, or unclassified
+Counterexample debt. No raw caller-authored `goal_superseded` append is legal.
+
+Ledger appends `goal-superseded/v2` to the predecessor before registering the
+successor Goal and K0. The event binds predecessor Goal ID and Goal ref;
+successor Goal ID, Goal ref, bytes digest, and source digest; successor K0 ref
+and bytes digest; successor subject digest; and either one exact invalidated
+pending step/capability pair or paired nulls. Replay verifies those joins,
+clears the bound pending operation, invalidates predecessor proof, review, and
+publication credit, and projects predecessor mutation terminal as
+`goal-superseded`.
+
+The ordered appends are serialized under one lock but are not claimed to be one
+multi-record storage transaction. Because v2 is durable first, retry may join
+only the exact existing successor edge and complete missing successor Goal/K0
+registration; a mismatch, fork, or second predecessor binding fails closed.
+
+Frozen lineage replay still accepts exact `goal-superseded/v1` Evidence under
+its historical validation and pending-pair rules. V1 remains read-only and
+cannot authorize a current writer or successor mutation.

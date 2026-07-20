@@ -74,6 +74,18 @@ class ContractTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertIn(text, self.skill + self.kernel)
 
+    def test_semantic_successor_has_fresh_goal_lineage(self) -> None:
+        corpus = self.skill_flat + " " + " ".join(self.kernel.split())
+        for text in (
+            "fresh Goal ID",
+            "exactly one predecessor",
+            "fresh initial Construction",
+            "Actuating `open`",
+            "never edit or reopen",
+        ):
+            with self.subTest(text=text):
+                self.assertIn(text, corpus)
+
     def test_construction_and_mutable_state_are_excluded(self) -> None:
         for text in (
             "candidate constructions",

@@ -123,7 +123,7 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
     def test_construction_review_and_closure_link_to_their_owners(self) -> None:
         self.assertIn("sole architecture-selection artifact", CONSTRUCTION)
         self.assertIn("representation\n> total-transition", CONSTRUCTION)
-        self.assertIn("Launch standard plus four auxiliaries concurrently", REVIEW)
+        self.assertIn("starts standard plus four auxiliary CAS", REVIEW)
         self.assertIn("five", REVIEW)
         self.assertIn("Closure is a deterministic projection", CLOSURE)
         for link in ("construction-contract.md", "review-contract.md", "closure.md"):
@@ -154,6 +154,13 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "re-author a current Counterexample Set from the still-applicable witness evidence",
             "pending risk-authority debt",
             "blocks edits and closure",
+            "Construction's `boundary.boundary_key` must equal the class `boundary_key`",
+            "Moving that owner is legal only in `architecture-repair`",
+            "`realization-repair` and `ablation-repair` cannot relabel or move the owner",
+            "`<obligation_id>#falsifier`",
+            "independent passing operations for both exact argv roles",
+            "One operation cannot cite both roles",
+            "Frozen `legacy-actuating-v1` lineages retain their historical base-verifier fold",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, flat)
@@ -174,7 +181,8 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
         self.assertIn("artifact-kernel `--path` is rejected", FLAT_COMMANDS)
         for command in (
             "open", "register-construction", "register-counterexamples", "append",
-            "prepare", "record", "execute", "observe", "abort", "state", "decide",
+            "dispatch-review", "prepare", "record", "execute", "observe", "abort",
+            "state", "decide",
         ):
             self.assertIn(command, COMMANDS)
         self.assertNotIn("\nclose\n", COMMANDS)
@@ -198,6 +206,9 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "actuating-review-request/v1",
             "cas review_session target-identity",
             "CAS-TARGET-IDENTITY-v1",
+            "CAS-REVIEW-SUBJECT-v1",
+            '"excludedPaths":[".ledger/actuation/artifact-kernel"]',
+            "--subject-descriptor @LEDGER-HELD-SUBJECT-DESCRIPTOR",
             "Ledger-authored request fingerprint",
             "live, stored, and receipt target digests",
             "Historical replay verifies the durable joins without recomputing a live target",
@@ -207,6 +218,8 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "discharged and outstanding proof/retirement IDs",
             "one `next_transition` command/reason pair",
             "never exposes raw capability material or a capability digest",
+            "`subject_descriptor_path`",
+            "the `workflow_binding` object",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, FLAT_COMMANDS)
@@ -224,6 +237,10 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "review-campaign-started/v3",
             "using the same campaign ID",
             "fresh concurrent 1+4 binding",
+            "starts all five exact CAS children before waiting on any child",
+            "Direct caller append of an initial start is rejected",
+            "no initial terminal is admissible until all five starts exist",
+            "never cancels an already launched sibling",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, FLAT_COMMANDS)
@@ -231,17 +248,45 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
         self.assertIn("No prior auxiliary result or standard clean survives the restart", flat_review)
         self.assertIn("no review credit across a material subject change", flat_review)
 
-    def test_frozen_goal_supersession_is_read_only_and_blocks_predecessor(self) -> None:
+    def test_current_goal_supersession_and_frozen_replay_are_distinct(self) -> None:
         for phrase in (
-            "`goal_superseded` is read-only frozen Evidence",
+            "Current goal supersession and frozen replay",
+            "goal-superseded/v2",
+            "exactly one current predecessor binding",
+            "No raw caller-authored `goal_superseded` append is legal",
+            "invalidates predecessor proof, review, and publication credit",
+            "not claimed to be one multi-record storage transaction",
+            "retry may join only the exact existing successor edge",
             "goal-superseded/v1",
-            "single predecessor ref and source digest",
-            "paired pending step/capability invalidation",
-            "projects the predecessor goal blocked",
-            "No current writer emits this event",
+            "V1 remains read-only",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, FLAT_COMMANDS)
+
+    def test_post_edit_symlink_escape_is_rejected_live_and_on_replay(self) -> None:
+        for phrase in (
+            "post-effect manifest",
+            "itself a symlink or descends from a manifest symlink",
+            "leaves the prepared capability unconsumed",
+            "current v3 manifest attachments",
+            "Frozen v1/v2 record attachments retain read-only historical semantics",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, FLAT_COMMANDS)
+
+    def test_mode_aware_legacy_cutover_preserves_v3_full_closeout(self) -> None:
+        for phrase in (
+            "actuating-legacy-cutover-manifest/v3",
+            "all ten digest-bound legacy/candidate sources",
+            "all eight equivalence questions",
+            "V4 adds exact root `legacy_mode`",
+            "legacy-mode-not-applicable",
+            "intentional mode-aware qualification",
+            "v3 preserves that law unchanged",
+            "V2 remains invalid",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, FLAT_OWNERS)
 
     def test_ship_receipt_admission_is_complete_and_exact(self) -> None:
         self.assertIn("complete exact owner-issued `SHIP-v1` envelope", FLAT_COMMANDS)
@@ -250,6 +295,15 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
         self.assertIn("digest-shaped `actuation_run_id`", FLAT_COMMANDS)
         self.assertIn("nonblank opaque historical run ID", FLAT_COMMANDS)
         self.assertIn("Read compatibility never makes that historical identity admissible", FLAT_COMMANDS)
+        for phrase in (
+            "`HEAD^{commit}` equals `head_sha`",
+            "symbolic short branch equals `branch`",
+            "`scope.base_ref` resolves to the branch denoted by `base_branch`",
+            "no repository or base-SHA field is inferred",
+            "same-tree HEAD rewrite therefore invalidates publication",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, FLAT_COMMANDS)
 
     def test_ledger_validator_surface_is_owned_once(self) -> None:
         for command in (

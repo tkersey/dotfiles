@@ -93,17 +93,50 @@ Historical artifacts remain readable through deterministic adapters; adapters
 never authorize a new writer. Rollback changes only future admissions and never
 reinterprets an existing goal.
 
-Frozen lineage replay may consume exact `goal-superseded/v1` Evidence. Ledger
-verifies the predecessor, successor Goal attachment and source, and any paired
-pending-step/capability invalidation; it clears only the invalidated pending
-operation and blocks closure of the predecessor. The schema is read-only and
-is rejected as a current event.
+### Mode-aware legacy cutover projection
+
+`actuating-legacy-cutover-manifest/v3` remains frozen full-closeout
+compatibility: it implies the complete bare route, requires all ten
+digest-bound legacy/candidate sources, and answers all eight equivalence
+questions. V4 adds exact root `legacy_mode`: `bare`, `implement`, `triage`,
+`remediation-plan`, or `review-closeout`. Every one of the same ten source slots
+must be tagged either `present` with path and expected digest or
+`not-applicable`; missing input never implies non-applicability.
+
+Every v4 mode requires the legacy Goal Contract and candidate Evidence. Bare
+and review-closeout require every source and question. Implement additionally
+requires legacy state, closure decision, and events, and answers subject
+identity, implementation obligations, and closure verdict. Triage additionally
+requires legacy RF, review policy, and CAS receipt, and answers subject
+identity, review-request completeness, and standard clean count.
+Remediation-plan additionally requires legacy RF and review resolution, and
+answers subject identity, unresolved accepted findings, and retirement debt.
+All eight join rows remain present; an inapplicable row has explicit
+`legacy-mode-not-applicable` status, reason, and null observations.
+
+A required `not-applicable` source, forbidden `present` source, digest or join
+mismatch, or malformed source blocks. The v4 applicability refinement is an
+intentional mode-aware qualification of the original all-question cutover law;
+v3 preserves that law unchanged for full closeout. Neither version authorizes
+mutation, mixes protocols, or writes a new Artifact Kernel goal. V2 remains
+invalid.
+
+Current successor admission is an irreducible ordered transition rather than a
+new artifact family. Ledger-owned `open` appends exact `goal-superseded/v2` to
+the current predecessor before fresh successor Goal/K0 registration, invalidates
+that predecessor's pending operation and derived credit, and permits retry only
+against the exact durable edge. Frozen lineage replay may still consume exact
+read-only `goal-superseded/v1` Evidence; v1 cannot authorize a current event.
 
 Current Artifact Kernel publication admission validates the complete exact
 `SHIP-v1` owner envelope and requires a digest-shaped `actuation_run_id`.
 Frozen migration readers may relax only that identity to a nonblank opaque
 historical value. All validation, action/readiness, PR-state, URL, and subject
 joins remain exact, and read compatibility never authorizes a current write.
+Ledger projects publication currentness only while live HEAD, symbolic branch,
+and Goal-base branch identity still match the receipt's `head_sha`, `branch`,
+and `base_branch`; it does not infer a repository or base SHA absent from
+`SHIP-v1`.
 
 ## Bankruptcy gate
 

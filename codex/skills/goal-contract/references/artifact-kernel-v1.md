@@ -72,8 +72,10 @@ artifact:
   bytes preserves semantic identity.
 - Reject unknown fields unless an explicit schema version declares them as
   extensions.
-- Treat every materialized artifact as immutable. A semantic change creates a
-  successor and records the predecessor in `predecessor_refs`.
+- Treat every materialized artifact as immutable. An initial Goal has no
+  predecessor. A semantic change creates a successor under a fresh Goal ID with
+  exactly one predecessor in `predecessor_refs`; pair it with a fresh initial
+  Construction and admit it through Actuating `open`.
 - Record `goal-contract` as the compiling `semantic_author`. The accepted
   specification or direct user authority remains the owner of required
   semantics through `authority.source_ref` and `authority.source_digest`.

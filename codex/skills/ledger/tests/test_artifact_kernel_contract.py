@@ -38,15 +38,36 @@ class ArtifactKernelContractTests(unittest.TestCase):
             "actuating-evidence-event",
             "actuating-closure-receipt",
             "ship-v1",
+            "actuating-legacy-cutover",
         ):
             command = f"ledger validate {contract} --input FILE|-"
             self.assertEqual(1, SKILL.count(command), command)
 
     def test_exposes_discardable_projections(self) -> None:
+        normalized = " ".join(SKILL.split())
         for command in ("--help", "state", "decide"):
             self.assertIn(f"ledger --source actuation --goal GOAL_ID {command}", SKILL)
         self.assertNotIn("ledger --source actuation --goal GOAL_ID doctor", SKILL)
         self.assertIn("serialized receipt is a cache", SKILL)
+        for phrase in (
+            "`state` selects `dispatch-review`",
+            "`subject_descriptor_path`",
+            "`CAS-REVIEW-SUBJECT-v1` supporting custody",
+            "not another artifact family or mutable review state",
+        ):
+            self.assertIn(phrase, normalized)
+
+    def test_mode_aware_cutover_validator_is_pure_and_compatible(self) -> None:
+        normalized = " ".join(SKILL.split())
+        for phrase in (
+            "pure read-adapter validator",
+            "actuating-legacy-cutover-manifest/v3",
+            "all ten sources and all eight questions",
+            "V4 requires exact `legacy_mode`",
+            "explicit `present` or `not-applicable` source tags",
+            "grants no mutation, migration-write, or protocol-conversion authority",
+        ):
+            self.assertIn(phrase, normalized)
 
     def test_ledger_does_not_take_semantic_or_effect_authority(self) -> None:
         normalized = " ".join(SKILL.split())

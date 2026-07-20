@@ -96,6 +96,20 @@ Before dispatch, bind all five requests to:
 - a unique opaque request identity and fingerprint;
 - the Goal-owned compatibility authority.
 
+Actuating owns review scope. Ledger deterministically projects the current Goal
+scope and admitted subject into canonical `CAS-REVIEW-SUBJECT-v1` bytes with
+exactly `allowedPaths`, `excludedPaths`, `repoRealpath`, `schema`, and
+`subjectDigest`; `excludedPaths` is exactly
+`[".ledger/actuation/artifact-kernel"]`. Ledger retains those bytes only as a
+content-addressed supporting attachment. The descriptor is transient CAS
+custody, not a fifth authoritative artifact family or peer review state.
+
+CAS owns target identity. It validates the descriptor, repository, literal
+safe path sets, live Goal-scoped subject, and exact instruction bytes; rejects
+subject drift; and binds the descriptor digest into the target fingerprint.
+Legacy review without a descriptor retains its frozen whole-workspace identity
+and never mixes with this route.
+
 Ledger, not the caller, builds the exact `ACTUATING-REVIEW-DISPATCH/v1` packet
 from the canonical request bytes and the registry-pinned lens-contract bytes.
 Its owner directive makes the pinned lens governing and prevents supplemental
@@ -103,11 +117,15 @@ instructions from overriding, weakening, or replacing it. The packet, rather
 than either component alone, is the bytestring bound into CAS target identity
 and the request fingerprint.
 
-Launch standard plus four auxiliaries concurrently. Every launched sibling
-must reach terminal transport evidence after any finding or transport failure.
-Do not cancel siblings, serialize a replacement wave, mutate before the wave
-and classification barriers, or treat a single request failure as whole-wave
-zero credit.
+After all five exact bindings exist, invoke Ledger's transient
+`dispatch-review` operation. Ledger starts standard plus four auxiliary CAS
+children before waiting on any child and authors the five durable
+`review_attempt_started` events. A caller cannot append an initial start event,
+and no initial terminal event is admissible until all five starts exist. Every
+launched sibling must reach terminal transport evidence after any finding,
+start-collection failure, or later transport failure. Do not cancel siblings,
+serialize a replacement wave, mutate before the wave and classification
+barriers, or treat one request failure as whole-wave zero credit.
 
 Report a completed review exactly once after both its structured receipt and
 recorded process status exist. The semantic verdict, not process exit status,

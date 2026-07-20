@@ -140,6 +140,7 @@ ledger validate actuating-review-contract --input FILE|-
 ledger validate actuating-evidence-event --input FILE|-
 ledger validate actuating-closure-receipt --input FILE|-
 ledger validate ship-v1 --input FILE|-
+ledger validate actuating-legacy-cutover --input FILE|-
 ```
 
 Together, these commands accept only canonical instances of:
@@ -158,6 +159,14 @@ migration adapters may use Ledger's internal read-compatible validation, which
 relaxes only the historical run identity to a nonblank opaque value and grants
 no current write authority.
 
+`ledger validate actuating-legacy-cutover` is a pure read-adapter validator.
+Frozen `actuating-legacy-cutover-manifest/v3` retains full-closeout admission
+with all ten sources and all eight questions. V4 requires exact `legacy_mode`,
+explicit `present` or `not-applicable` source tags, and mode-specific question
+applicability; non-applicable rows remain explicit. It validates digest-bound
+historical and candidate evidence but grants no mutation, migration-write, or
+protocol-conversion authority.
+
 An explicit `--goal` selects the Artifact Kernel Actuation source. Inspect that
 surface, replay the current Evidence Ledger, and derive closure with:
 
@@ -166,6 +175,14 @@ ledger --source actuation --goal GOAL_ID --help
 ledger --source actuation --goal GOAL_ID state
 ledger --source actuation --goal GOAL_ID decide
 ```
+
+When the initial wave is fully bound, `state` selects `dispatch-review`; that
+transient command starts the concurrent wave. Each pending request's disposable
+`cas_dispatch` projection carries `cwd`, `base_ref`,
+`custom_instructions_path`, `subject_descriptor_path`, and
+`workflow_binding`. The descriptor path names Ledger-held
+`CAS-REVIEW-SUBJECT-v1` supporting custody, not another artifact family or
+mutable review state.
 
 The static Review Contract is not mutable per-goal state. `state` is a
 discardable view. `decide` deterministically binds the Goal Contract, current

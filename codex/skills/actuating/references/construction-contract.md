@@ -79,6 +79,30 @@ itself. `architecture.canonical_owner` and `execution.owner_boundary` must be
 identical; execution projects the selected owner and cannot introduce another
 one.
 
+For every cited accepted class, the Construction's `boundary.boundary_key`
+must equal the class `boundary_key`. The canonical owner may remain the class
+`owner_boundary`. Moving that owner is legal only in `architecture-repair`,
+with a retirement whose `dominated_construct` is the class owner and whose
+`replacement_ref` is the new canonical owner. `realization-repair` and
+`ablation-repair` cannot relabel or move the owner.
+
+## Proof observation roles
+
+For an implementation or acceptance obligation, the base `obligation_id` is
+the verifier observation reference and the derived
+`<obligation_id>#falsifier` reference selects its falsifier. Discharge requires
+independent passing operations for both exact argv roles on the current
+subject. One operation cannot cite both roles for the same obligation, and an
+argv selected for one role cannot substitute for the other. A material subject
+change invalidates both observations.
+
+Review and Ship obligations remain projections of their external owners; their
+Construction argv is never executable by the operation handler. A retirement
+has only its declared verifier and does not acquire a derived falsifier role.
+This dual-observation law applies only to `artifact-kernel-v1` implementation
+and acceptance obligations. Frozen `legacy-actuating-v1` lineages retain their
+historical base-verifier fold, and the two semantics never mix within a goal.
+
 ## Optional High/Critical example-proof exception
 
 Omit `extensions` for every ordinary Construction. Its absence preserves the

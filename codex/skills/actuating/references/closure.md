@@ -26,9 +26,13 @@ result.
 
 Derive a legal terminal route only when all are true:
 
-1. The current Construction references the current Goal.
+1. The current Goal has not been superseded, and the current Construction
+   references it.
 2. The Construction and repository subject are current.
-3. Every Goal law has a corresponding construction and proof obligation.
+3. Every Goal law has a corresponding construction and proof obligation. Each
+   implementation or acceptance obligation has independent passing verifier
+   and `<obligation_id>#falsifier` observations on the current subject; review
+   and Ship obligations retain their external-owner proof projections.
 4. Every applicable accepted Counterexample is excluded by the current
    Construction; every rejected class has evidence; every blocked class remains
    an explicit blocker.
@@ -42,8 +46,12 @@ Derive a legal terminal route only when all are true:
 10. No operation or capability is pending.
 11. No proof obligation is outstanding.
 12. When the Goal requires publication, a current successful Ship receipt is
-    observed for the exact Construction and subject. Ship alone owns its live
-    repository, base, head, and PR readback laws.
+    observed for the exact Construction and subject. Ship owns the immutable
+    owner receipt. Ledger grants currentness only while live `HEAD^{commit}` and
+    symbolic branch equal its `head_sha` and `branch`, and Goal
+    `scope.base_ref` resolves to the branch denoted by `base_branch`. A
+    mismatch, detached HEAD, unresolved base, or Git query failure returns a
+    complete local proof to `ready-to-ship` and blocks review admission.
 13. When final review is required, all auxiliaries are current, the trailing
     standard streak contains five consecutive fresh clean attempts on the
     current subject, no request-local recovery remains, and no accepted or

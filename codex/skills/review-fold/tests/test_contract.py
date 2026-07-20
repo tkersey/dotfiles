@@ -65,6 +65,17 @@ class ReviewFoldContractTests(unittest.TestCase):
                 self.assertIn(coordinate, SKILL)
         self.assertIn("A class may recur across construction", NORMALIZED_SKILL)
 
+    def test_boundary_and_owner_have_distinct_handoff_meanings(self) -> None:
+        for phrase in (
+            "stable semantic boundary falsified by the witness",
+            "current Construction owner at that boundary",
+            "boundary key remains stable across successors",
+            "never predicts or selects its replacement",
+            "Preserve the class boundary and predecessor-owner facts",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, NORMALIZED_SKILL)
+
     def test_rejected_classes_require_evidence(self) -> None:
         self.assertIn("A rejected class requires evidence", NORMALIZED_SKILL)
         self.assertIn("Do not omit rejection evidence", SKILL)
