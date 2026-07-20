@@ -46,6 +46,10 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertIn("--goal <goal-id>", SKILL)
         self.assertIn("append --input <counterexample-set.json>", SKILL)
 
+    def test_recurrent_class_preserves_set_lineage(self) -> None:
+        self.assertIn("new Set's `predecessor_refs`", SKILL)
+        self.assertIn("prior Set that most recently", SKILL)
+
     def test_non_review_falsifier_does_not_require_a_campaign(self) -> None:
         self.assertIn("non-review falsifier requires no review campaign", CONTRACT)
         self.assertIn("Never fabricate a campaign", CONTRACT)

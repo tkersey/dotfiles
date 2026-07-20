@@ -103,11 +103,14 @@ request_fingerprint = sha256(
 ~~~
 
 `instruction_digest` is `sha256:` plus the SHA-256 of the exact UTF-8
-`developerInstructions` bytes supplied to CAS, with no trimming or newline
-normalization. The retained CAS receipt must contain those exact
-`developerInstructions`. Before granting credit, Actuating hashes the receipt
-field and requires equality with the bound `instruction_digest`; the opaque
+`developerInstructions` bytes supplied to the credited CAS `start --wait` or
+terminal `wait` route, with no trimming or newline normalization. The retained
+terminal receipt contains those exact bytes and its `targetFingerprint` also
+binds them. Before granting credit, Actuating hashes the receipt field and
+requires equality with the bound `instruction_digest`; the opaque
 workflow-binding echo alone is insufficient proof of instruction fidelity.
+The generic `cas review run` envelope is not a credited Actuating attempt
+because its backend class is not `cas-start-wait`.
 
 CAS receives only `request_id` and `request_fingerprint` in its opaque
 `workflowBinding` and must echo both unchanged. Semantic credit requires that
@@ -195,9 +198,10 @@ current Construction and select a current successor or blocker before any
 mutation. Rejection requires evidence.
 
 Every entry in `finding_refs` is the `sha256:` digest of the exact canonical
-CAS finding-row bytes. CAS `findingId` and best-effort `findingFingerprint`
-values remain provenance; neither participates in Counterexample class
-identity.
+CAS compact finding-row bytes: `title`, `body`, `file`, `line`, and `priority`.
+The enclosing immutable receipt supplies attempt, tuple, request, and verdict
+provenance. Neither a row digest nor receipt identity participates in
+Counterexample class identity.
 A `follow-up` class remains recorded and routed to a successor goal but is
 nonblocking for the current Goal. Only applicable accepted debt and applicable
 blockers constrain current mutation or closure.

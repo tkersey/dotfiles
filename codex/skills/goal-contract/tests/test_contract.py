@@ -25,10 +25,11 @@ class ContractTests(unittest.TestCase):
 
     def test_goal_identity_is_stable_and_cli_safe(self) -> None:
         for phrase in (
-            "[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
+            "[a-z0-9][a-z0-9._-]{0,127}",
             "stable opaque identity",
             "Never derive it from mutable Goal content",
             "same `goal_id`",
+            "accepted or blocked Counterexample remains unresolved",
         ):
             self.assertIn(phrase, self.skill + self.contract)
 

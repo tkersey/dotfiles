@@ -104,6 +104,12 @@ Unknown or missing keys fail closed. The `body` must exactly match the selected
 kind's schema. Supplying this input asserts only that its named owner made the
 observation; it grants no authority.
 
+`proof_obligation_refs` contains exactly one locally executable role: an
+implementation or acceptance `obligation_id` selects its verifier,
+`obligation_id#falsifier` selects its independent falsifier, and a
+`retirement_id` selects the retirement verifier. Review and Ship obligations
+remain external-owner evidence and cannot be prepared as repository work.
+
 Use this complete owner-appendable body table. Braces name the exact key set;
 `digest` means `sha256:` plus 64 lowercase hexadecimal digits, `string` means
 nonblank UTF-8, and brackets mean a duplicate-free string array.
@@ -163,7 +169,10 @@ its tuple and `step_id` to match the prepared operation and live subject, and
 evaluates `exit_status` plus the referenced outputs. Missing or unresolvable
 attachment bytes block proof; an event's `status` string cannot substitute for
 them. Attachment location is transport metadata and never participates in
-identity.
+identity. The source owner must retain those immutable bytes in its existing
+durable evidence route before Actuating cites them. Ledger neither ingests nor
+owns CAS, Ship, or verifier attachments; adding a second Ledger attachment
+store would duplicate their custody boundary.
 
 ## Commands and capability law
 
@@ -190,8 +199,9 @@ recorded result subject. Missing, mismatched, reused, or unexpectedly supplied
 capability material fails closed.
 
 Immediately before an edit, inspection, or verifier, Actuating requires the
-executor to recompute the live subject with the Construction-selected
-repository-native procedure and exact-match `expected_subject_digest`. A
+executor to recompute the live subject with the exact repository-native
+procedure Actuating supplied for that operation and exact-match
+`expected_subject_digest`. A
 mismatch takes `operation_aborted` without performing the effect. The executor
 then echoes the subject it actually observed in the applicable owner event.
 Ledger compares opaque digests only: it never invokes Git, derives repository
@@ -203,6 +213,12 @@ nonblank reason, then terminate the pending operation and invalidate its stored
 capability digest. This permits recovery when `prepare` persisted admission but
 its one-time raw output was lost, without adding another command or granting an
 effect.
+
+When the observed live subject has drifted, the current goal remains blocked;
+`operation_aborted` does not pretend that an external change was an authorized
+effect. Recovery requires fresh accepted authority compiled as a Goal successor
+before a Construction may bind the new subject. No no-effect subject-refresh
+event is inferred by Ledger.
 
 `state` and `project` are discardable structural aids and must report
 `authority_granted:false` and `semantic_decision_established:false`. Ledger

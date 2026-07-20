@@ -54,12 +54,11 @@ findingCount
 failureClass
 failureCode
 failureHint
-findingId
-findingFingerprint
-reviewAttemptId
-titleHash
-bodyHash
-normalizedLocation
+title
+body
+file
+line
+priority
 ~~~
 
 Process exit status is transport evidence only. It never creates `clean`,

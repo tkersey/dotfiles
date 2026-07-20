@@ -42,6 +42,8 @@ class ShipContractTests(unittest.TestCase):
         ):
             self.assertIn(phrase, FLAT_SKILL)
         self.assertIn("actuating-closure-receipt/v1", AGENT)
+        self.assertIn("For source: actuation", AGENT)
+        self.assertIn("source: direct", AGENT)
         self.assertNotIn("closure-decision/v1", AGENT)
 
     def test_binding_is_exact_opaque_and_verbatim(self) -> None:

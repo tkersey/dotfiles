@@ -72,9 +72,10 @@ IDs, commits, publication epochs, filenames, and proposed patches are
 provenance, not class identity.
 
 For CAS evidence, each `finding_refs` entry is the `sha256:` digest of the
-exact canonical CAS finding-row bytes. Preserve CAS `findingId` and the
-best-effort `findingFingerprint` inside cited provenance; neither defines the
-Counterexample class or substitutes for the canonical-row digest.
+exact canonical compact CAS finding-row bytes. Preserve the enclosing CAS
+receipt as attempt, tuple, request, and verdict provenance; none of those
+transient identities defines the Counterexample class or substitutes for the
+canonical-row digest.
 
 ## Dispositions
 
@@ -110,7 +111,9 @@ verify that `ledger --source actuation --help` exposes only
 4. Identify the governing law, stable boundary, discrepancy, owner, witness,
    falsifier, applicability, and evidence.
 5. Quotient duplicate and same-class findings. One class may cite many finding
-   rows and may recur across Construction successors.
+   rows and may recur across Construction successors. When a class recurs, the
+   new Set's `predecessor_refs` must include the prior Set that most recently
+   carried that class.
 6. Assign exactly one disposition to every class.
 7. Materialize canonical JSON with the current six-command artifact adapter:
 

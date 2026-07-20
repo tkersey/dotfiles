@@ -119,29 +119,23 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, CONTRACT)
 
-    def test_per_finding_identity_fixture_carries_owner_join_keys(self) -> None:
+    def test_compact_finding_fixture_uses_enclosing_receipt_provenance(self) -> None:
         verdict = FINDING_IDENTITY["reviewVerdict"]
         self.assertEqual(verdict["backendClass"], "cas-start-wait")
         finding = verdict["findings"][0]
+        self.assertEqual(
+            set(finding),
+            {"title", "body", "file", "line", "priority"},
+        )
         for key in [
-            "findingId",
-            "findingFingerprint",
-            "reviewAttemptId",
             "reviewThreadId",
             "reviewTurnId",
             "baseSha",
             "headSha",
             "targetFingerprint",
-            "titleHash",
-            "bodyHash",
-            "normalizedLocation",
-            "verdictStatus",
         ]:
             with self.subTest(key=key):
-                self.assertIn(key, finding)
-        for key in ["lane", "laneRole", "contributesToStandardStreak"]:
-            with self.subTest(key=key):
-                self.assertNotIn(key, finding)
+                self.assertIn(key, verdict)
 
     def test_hctp_is_explicitly_separate_from_actuating(self) -> None:
         for token in [

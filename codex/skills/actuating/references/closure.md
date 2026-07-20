@@ -21,7 +21,8 @@ A terminal judgment is legal only when all applicable statements hold:
 
 1. `K` references the current `G`, is the current Construction for this
    realization, and its `base_artifact_digest` plus the Evidence transition
-   chain yields the live subject. The immutable base digest is not required to
+   chain yields the live subject. `K.execution.completion` equals
+   `G.acceptance.terminal_route`. The immutable base digest is not required to
    equal the post-effect subject.
 2. Every Goal law has a Construction and proof obligation.
 3. Every accepted Counterexample is excluded by `K`, rejected with evidence,

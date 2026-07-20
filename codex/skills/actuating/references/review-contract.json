@@ -72,7 +72,7 @@
   "review_contract": {
     "schema": "actuating-review-contract/v1",
     "contract_id": "actuating-review-contract-v1",
-    "contract_digest": "sha256:03d8a1866a0fe9ede9a80efee9570cdbea7789ec81a1c54d24b9254f46e0a4cc",
+    "contract_digest": "sha256:91cd9f6ee23ba5b9b2d4b0a63cc2faa376013fb05fdc591e33ec0a551076a536",
     "required_lenses": [
       {
         "name": "standard",
@@ -124,11 +124,19 @@
       "maximum_fresh_recovery_attempts": 1
     },
     "attempt_quality": {
+      "tuple_verdict_required": true,
       "strong_principal_required": true,
       "reduced_principal_forbidden": true,
       "fallback_forbidden": true,
       "context_match_required": true,
-      "exact_instruction_digest_required": true
+      "exact_instruction_digest_required": true,
+      "exact_workflow_binding_required": true,
+      "current_tuple_required": true,
+      "required_backend_class": "cas-start-wait",
+      "structured_statuses": [
+        "clean",
+        "findings"
+      ]
     }
   }
 }

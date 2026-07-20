@@ -106,6 +106,13 @@ interpreter or handler, proof strategy, scope, and retirements. Executors,
 review coordinators, Ship, and Ledger project that selection; none may
 reconsider it.
 
+A Counterexample class's `owner_boundary` records where its predecessor was
+falsified; it does not force the successor's `canonical_owner` to be identical.
+One successor may compose classes from multiple witnessed owners when its laws
+and obligations prove the join. Otherwise Actuating proves `separate-laws` and
+splits the construction or blocks. Ledger validates references, not semantic
+owner adequacy.
+
 A candidate `A` dominates candidate `B` only when `A` is no worse in every
 ACT-AK dimension:
 
@@ -160,13 +167,16 @@ Expected minimums by law family are:
 
 Every implementation or acceptance obligation names an exact verifier and an
 independent falsifier. Review and Ship obligations remain projections of their
-external owners; their argv is not executable repository authority.
+external owners; their argv is not executable repository authority. Every
+`law_ref` names a current Goal law. Each `argv` is an ordered, nonempty string
+sequence; repeated token values remain valid positional arguments.
 
 ## Successors
 
 Every material implementation has one current Construction. A successor must
 state:
 
+- exactly one `predecessor_refs` entry naming the current Construction;
 - which predecessor claims were falsified and preserved;
 - which accepted Counterexample classes it excludes;
 - whether the defect is realization, architecture, or ablation;
@@ -179,12 +189,17 @@ state:
 or bypass. `architecture-repair` changes the architecture. `ablation-repair`
 preserves the selected replacement while completing retirements.
 
+Every `preserved_observations` entry names an `obligation_id` in the same
+Construction. It is not free prose and cannot claim preservation without a
+corresponding executable proof obligation.
+
 ## Operation projection
 
 `execution.allowed_paths` is a duplicate-free canonical literal repository
-path set. The `.git` root and the Artifact Kernel control store, including
-slash descendants, are reserved under ASCII case-folding. A broader Goal scope
-does not authorize them.
+path set. `.` is valid Goal scope but never executable Construction or
+operation scope. The `.git` root and the Artifact Kernel control store,
+including slash descendants and any ancestor that contains them, are reserved
+under ASCII case-folding. A broader Goal scope does not authorize them.
 
 Actuating, not Ledger, selects the next exact operation from the current Goal,
 Construction, live subject, and evidence. The executor applies only that
@@ -193,9 +208,11 @@ validator pass supplies no mutation authority.
 
 Every selected operation carries the exact current `expected_subject_digest`.
 Immediately before the effect, the executor recomputes the live subject through
-the Construction-selected repository-native procedure and must abort without
-effect on mismatch. Ledger stores and compares that opaque identity but never
-derives it or invokes Git.
+the exact repository-native procedure selected and supplied by Actuating for
+that operation and must abort without effect on mismatch. The procedure is
+transient execution policy, not a fifth authoritative artifact field. Ledger
+stores and compares the opaque identity but never selects the procedure,
+derives the digest, or invokes Git.
 
 ## Ablation
 

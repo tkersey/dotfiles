@@ -108,8 +108,9 @@ mutation.
 5. For each repository effect, Actuating selects one exact operation projected
    by the current Goal, returned Construction, and live subject, including its
    `expected_subject_digest`. Immediately before the effect, the executor
-   recomputes that identity through the Construction-selected repository-native
-   procedure. A mismatch aborts without effect. The executor cannot choose
+   recomputes that identity through the exact repository-native procedure
+   selected and supplied by Actuating for the operation. A mismatch aborts
+   without effect. The executor cannot choose
    architecture, broaden scope, publish, or claim completion; Ledger only
    exact-matches the echoed opaque digest and never derives it or invokes Git.
 6. Run the Construction's exact verifier and falsifier observations. Record

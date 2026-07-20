@@ -121,6 +121,14 @@ class ArtifactKernelContractTests(unittest.TestCase):
             self.assertIn(phrase, FLAT_EVIDENCE)
         self.assertIn("A mismatch aborts without effect", FLAT_SKILL)
         self.assertIn("Every selected operation carries", FLAT_CONSTRUCTION)
+        self.assertIn("never executable Construction or", FLAT_CONSTRUCTION)
+        self.assertIn("contains exactly one locally executable role", FLAT_EVIDENCE)
+        self.assertIn("`obligation_id#falsifier`", EVIDENCE)
+        self.assertIn("repeated token values remain valid", FLAT_CONSTRUCTION)
+        self.assertIn("Every `law_ref` names a current Goal law", FLAT_CONSTRUCTION)
+        self.assertIn("subject_observation procedure", ONE_SEAM_OPERATOR)
+        self.assertIn("abort without effect on a", ONE_SEAM_OPERATOR)
+        self.assertIn("mismatch", ONE_SEAM_OPERATOR)
 
     def test_counterexample_successor_and_review_intent_remains(self) -> None:
         for phrase in (
@@ -132,6 +140,11 @@ class ArtifactKernelContractTests(unittest.TestCase):
         ):
             self.assertIn(phrase, SKILL)
         self.assertIn("Every material implementation has one current Construction", CONSTRUCTION)
+        self.assertIn(
+            "exactly one `predecessor_refs` entry naming the current Construction",
+            CONSTRUCTION,
+        )
+        self.assertIn("names an `obligation_id`", CONSTRUCTION)
 
     def test_review_topology_recovery_and_reset_are_exact(self) -> None:
         for phrase in (
@@ -152,6 +165,13 @@ class ArtifactKernelContractTests(unittest.TestCase):
             "must not select `--uncommitted` for a clean published checkout",
         ):
             self.assertIn(phrase, FLAT_REVIEW)
+
+        quality = REVIEW_CONTRACT["review_contract"]["attempt_quality"]
+        self.assertTrue(quality["tuple_verdict_required"])
+        self.assertTrue(quality["exact_workflow_binding_required"])
+        self.assertTrue(quality["current_tuple_required"])
+        self.assertEqual(quality["required_backend_class"], "cas-start-wait")
+        self.assertEqual(quality["structured_statuses"], ["clean", "findings"])
 
     def test_static_review_contract_and_campaign_identity_are_canonical(self) -> None:
         for phrase in (
@@ -257,7 +277,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
             "lens_contract_digest || 0x00 || instruction_digest",
             "must echo both unchanged",
             "`baseSha`, `headSha`, and `targetFingerprint`",
-            "exact UTF-8 `developerInstructions` bytes supplied to CAS",
+            "exact UTF-8 `developerInstructions` bytes supplied to the credited CAS",
             "workflow-binding echo alone is insufficient proof",
         ):
             self.assertIn(phrase, FLAT_REVIEW)
@@ -374,6 +394,10 @@ class ArtifactKernelContractTests(unittest.TestCase):
         self.assertIn("five consecutive distinct", CLOSURE)
         self.assertIn("Ledger validation, replay, `state`, or `project`", CLOSURE)
         self.assertIn("must not construct it, populate its verdict, or emit it", CLOSURE)
+        self.assertIn(
+            "`K.execution.completion` equals\n   `G.acceptance.terminal_route`",
+            CLOSURE,
+        )
 
     def test_closure_route_applicability_is_cross_owner_exact(self) -> None:
         for phrase in (

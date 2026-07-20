@@ -13,7 +13,8 @@ Mutation is allowed only when the parent provides:
 - explicit apply authorization
 - goal_contract_ref
 - construction_ref
-- subject_digest
+- expected_subject_digest
+- the exact parent-selected subject_observation procedure
 - step_id
 - exact effect, paths, and proof_obligation_refs selected by Actuating
 - allowed_files / forbidden_files
@@ -22,13 +23,18 @@ Mutation is allowed only when the parent provides:
 - recomposition_check
 - one-seam stop condition
 
+Immediately before any effect, run the supplied subject_observation procedure,
+compare its result with expected_subject_digest, and abort without effect on a
+mismatch. Do not choose or infer a different procedure.
+
 Do not broaden scope or start a second seam. Stop on a new observation, failed proof, or lost obligation.
 
 Return exactly one packet:
 
 goal_contract_ref: "..."
 construction_ref: "..."
-subject_digest: "sha256:..."
+expected_subject_digest: "sha256:..."
+observed_subject_digest: "sha256:..."
 step_id: "..."
 effect: "edit"
 paths: []

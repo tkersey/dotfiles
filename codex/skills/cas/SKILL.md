@@ -139,8 +139,8 @@ those bytes.
 
 ## Structured owner receipt
 
-`run`, waited `start`, and terminal `wait` return a current structured receipt
-whose `reviewVerdict` carries:
+Waited `start` and terminal `wait` return a current structured receipt whose
+`reviewVerdict` carries:
 
 ~~~text
 status
@@ -179,34 +179,23 @@ Report it as an owner failure fact and do not claim a clean or findings verdict.
 
 ## Finding provenance
 
-Each finding row carries enough owner provenance to cite the exact observation:
+Each canonical compact finding row is deliberately small:
 
 ~~~json
 {
-  "findingId": "cas-finding:<attempt>:<ordinal>",
-  "findingFingerprint": "best-effort-cross-attempt-hash",
-  "reviewAttemptId": "cas-review-attempt-id",
-  "reviewThreadId": "thread-id",
-  "reviewTurnId": "turn-id",
-  "baseSha": "base",
-  "headSha": "head",
-  "targetFingerprint": "diff-fingerprint",
-  "titleHash": "sha256:title",
-  "bodyHash": "sha256:body",
-  "normalizedLocation": {
-    "path": "src/file.ext",
-    "line": 1,
-    "side": "RIGHT|LEFT|unknown"
-  },
-  "severity": "info|low|medium|high|unknown",
-  "verdictStatus": "findings"
+  "title": "finding title",
+  "body": "finding body",
+  "file": "/absolute/or/repository/path",
+  "line": 1,
+  "priority": 1
 }
 ~~~
 
-`findingId` identifies one emitted row. `findingFingerprint` is only a
-best-effort cross-attempt comparison key. Neither is a Counterexample class,
-repair, or mutation authority; `$review-fold` performs stable law-and-boundary
-classification.
+The enclosing `reviewVerdict` supplies the attempt, tuple, request binding, and
+verdict status. `$review-fold` may digest the exact canonical row bytes and
+cite the enclosing receipt; it performs stable law-and-boundary classification.
+CAS does not manufacture a second per-finding identity or duplicate receipt
+provenance into every row.
 
 ## Concurrent reporting
 

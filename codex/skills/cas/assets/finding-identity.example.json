@@ -15,23 +15,11 @@
     "reviewTurnId": "turn-def",
     "findings": [
       {
-        "findingId": "cas-finding:attempt-001:0001",
-        "findingFingerprint": "sha256:cross-attempt-example",
-        "reviewAttemptId": "attempt-001",
-        "reviewThreadId": "thread-abc",
-        "reviewTurnId": "turn-def",
-        "baseSha": "base123",
-        "headSha": "head456",
-        "targetFingerprint": "diff:example",
-        "titleHash": "sha256:title",
-        "bodyHash": "sha256:body",
-        "normalizedLocation": {
-          "path": "codex/skills/example/SKILL.md",
-          "line": 42,
-          "side": "RIGHT"
-        },
-        "severity": "medium",
-        "verdictStatus": "findings"
+        "title": "Example finding",
+        "body": "Example body",
+        "file": "codex/skills/example/SKILL.md",
+        "line": 42,
+        "priority": 1
       }
     ]
   }

@@ -45,7 +45,7 @@ artifact:
 ## Envelope laws
 
 - Use canonical JSON and a content-addressed `artifact_id`.
-- `goal_id` matches `[A-Za-z0-9][A-Za-z0-9._-]{0,127}`. Reuse a valid
+- `goal_id` matches `[a-z0-9][a-z0-9._-]{0,127}`. Reuse a valid
   accepted-source goal identity; otherwise allocate one stable opaque identity
   once. Never derive it from mutable Goal content or substitute an
   `artifact_id` digest.
@@ -54,7 +54,8 @@ artifact:
 - Reject unknown fields.
 - Treat every materialized Goal as immutable. A semantic change creates a
   successor with the same `goal_id`, exactly one predecessor `artifact_id`,
-  and a new content-addressed `artifact_id`.
+  and a new content-addressed `artifact_id`. Do not replace the current Goal
+  while an accepted or blocked Counterexample remains unresolved.
 - Record `goal-contract` as the compiling `semantic_author`. The accepted
   source remains the owner of required semantics through `source_ref` and
   `source_digest`.
@@ -73,7 +74,7 @@ mutation, or decide closure.
 - `scope` may narrow but never broaden the accepted source.
 - `allowed_paths` and `prohibited_paths` are duplicate-free canonical literal
   repository-path sets. `.` is allowed; every other path is relative and has
-  no empty, `.` or `..` component, trailing slash, or backslash.
+  no empty, `.` or `..` component or trailing slash.
 - The `.git` root and the Artifact Kernel control store, including slash
   descendants, are reserved under ASCII case-folding. Root scope cannot
   re-admit them.
