@@ -3,10 +3,4 @@ policy:
 interface:
   display_name: "Creative Problem Solver"
   short_description: "Generate materially different strategy options before execution"
-  default_prompt: >-
-    Use $creative-problem-solver when the next task is choosing among materially
-    different paths, trade-offs, or reframings. A mention of the skill is not an
-    invocation. Produce the five-tier portfolio with an evidence-aware Aha and
-    materially different frame shifts, give conditional selection guidance, and
-    stop for human selection. Do not take over direct implementation, skill analysis
-    or tuning, repository opportunity mining ($ideate), or detailed planning ($plan).
+  default_prompt: "Use $creative-problem-solver to generate a five-tier portfolio for this decision."
