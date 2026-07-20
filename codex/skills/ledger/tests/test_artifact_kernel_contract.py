@@ -4,15 +4,31 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT.parent
+REPO = ROOT.parents[2]
 SKILL = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 OWNERS = (SKILLS / "actuating" / "references" / "artifact-kernel.md").read_text(
     encoding="utf-8"
 )
 FLAT_OWNERS = " ".join(OWNERS.split())
 AGENT = (ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+ROOT_AGENTS = (REPO / "AGENTS.md").read_text(encoding="utf-8")
+CODEX_AGENTS = (REPO / "codex" / "AGENTS.md").read_text(encoding="utf-8")
 
 
 class ArtifactKernelContractTests(unittest.TestCase):
+    def test_exposes_pure_materializer_once_per_semantic_document(self) -> None:
+        for contract in (
+            "goal-contract-v3",
+            "counterexample-set",
+            "construction-contract",
+        ):
+            command = f"ledger materialize {contract} --input DRAFT"
+            self.assertEqual(1, SKILL.count(command), command)
+        normalized = " ".join(SKILL.split())
+        self.assertIn("artifact_id` is JSON `null`", normalized)
+        self.assertIn("reads or writes no `.ledger` store and grants no authority", normalized)
+        self.assertIn("older partial CLI", normalized)
+
     def test_exposes_each_kernel_validator_once(self) -> None:
         for contract in (
             "goal-contract-v3",
@@ -67,8 +83,58 @@ class ArtifactKernelContractTests(unittest.TestCase):
     def test_legacy_and_post_closure_guards_remain(self) -> None:
         self.assertIn("Legacy read compatibility only", SKILL)
         self.assertIn("must not write either legacy artifact", SKILL)
-        self.assertIn("defer this checkpoint", " ".join(SKILL.split()))
+        self.assertIn("closure -> handoff/report -> source-memory evaluation", SKILL)
+        normalized = " ".join(SKILL.split())
+        self.assertIn("must not delay code closure, a commit, or a PR handoff", normalized)
+        self.assertIn("cannot gate, delay, invalidate, or roll back delivery", normalized)
         self.assertIn("without taking semantic authority", AGENT)
+
+    def test_source_memory_checkpoint_follows_handoff_and_never_gates_delivery(self) -> None:
+        for doctrine in (ROOT_AGENTS, CODEX_AGENTS):
+            normalized = " ".join(doctrine.split())
+            self.assertIn(
+                "After a terminal `complete` or `ready-to-ship` closure decision",
+                normalized,
+            )
+            self.assertIn(
+                "closure -> handoff/report -> source-memory evaluation",
+                normalized,
+            )
+            self.assertIn(
+                "not a prerequisite for and must not delay code closure, a Codex-made commit, or a PR handoff",
+                normalized,
+            )
+            self.assertIn(
+                "re-establish closure and complete the resulting handoff or report before reevaluating",
+                normalized,
+            )
+            self.assertIn(
+                "source-memory status cannot gate, delay, invalidate, or roll back delivery",
+                normalized,
+            )
+            self.assertIn(
+                "Negative Ledger pre-route gate may block a selected route before execution",
+                normalized,
+            )
+
+    def test_actuation_store_protocols_and_reserved_verifier_are_explicit(self) -> None:
+        normalized = " ".join(SKILL.split())
+        self.assertIn(
+            "`.ledger/actuation/events.jsonl` is the default frozen `legacy-actuating-v1` persistent adapter",
+            normalized,
+        )
+        self.assertIn(
+            "`.ledger/actuation/artifact-kernel/evidence.jsonl` is the fixed `artifact-kernel-v1` Evidence Ledger adapter",
+            normalized,
+        )
+        self.assertIn("`subject_digest`, and `verifier`", FLAT_OWNERS)
+
+    def test_current_ship_validation_is_stricter_than_frozen_read_compatibility(self) -> None:
+        normalized = " ".join(SKILL.split())
+        self.assertIn("`ledger validate ship-v1` is the current-write validator", normalized)
+        self.assertIn("digest-shaped Actuating identity", normalized)
+        self.assertIn("relaxes only the historical run identity", normalized)
+        self.assertIn("grants no current write authority", normalized)
 
 
 if __name__ == "__main__":

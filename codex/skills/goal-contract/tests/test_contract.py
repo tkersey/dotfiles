@@ -46,6 +46,22 @@ class ContractTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertIn(text, self.kernel)
 
+    def test_high_critical_example_risk_is_explicit_and_class_law_scoped(self) -> None:
+        corpus = self.skill_flat + " " + " ".join(self.kernel.split())
+        for text in (
+            "high-critical-example-proof-risk-authority/v1",
+            "counterexample_class_ref:",
+            "law_family:",
+            "law_ref:",
+            "no other family is eligible",
+            "Generic source identity",
+            "Construction prose never implies the grant",
+            "remains unused only while the current Construction carries a direct strong",
+            "pending risk-authority debt that blocks edits and closure",
+        ):
+            with self.subTest(text=text):
+                self.assertIn(text, corpus)
+
     def test_semantic_authority_does_not_become_execution_authority(self) -> None:
         for text in (
             "only per-goal semantic-authority document",
@@ -74,23 +90,32 @@ class ContractTests(unittest.TestCase):
         self.assertIn("version: GC-v2", self.legacy)
         self.assertIn("legacy-actuating-v1", self.legacy)
         self.assertIn("Never write a GC-v2", self.skill)
-        self.assertIn("do not add it as an unknown Goal Contract field", self.skill_flat)
+        self.assertIn("not an artifact, Goal field, durable marker", self.skill_flat)
 
-    def test_protocol_is_evidence_owned_and_phase_three_is_fail_closed(self) -> None:
+    def test_protocol_is_evidence_owned_and_phase_four_is_explicit(self) -> None:
         for text in (
             "canonical Evidence Ledger",
             "goal_contract_registered",
             "goal_protocol_registered",
-            "Production Phase 3 blocks every new artifact-kernel goal",
+            "For an existing Goal ID",
+            "For a new Goal ID with no canonical Evidence",
+            "accepted execution route",
+            "selector is transient control input",
+            "first durable artifact-kernel protocol fact",
+            "explicit `--goal GOAL_ID ... open` route selects `artifact-kernel-v1`",
+            "inventory gates retirement of legacy writers",
             "Legacy `open` validates its selected store",
-            "invalid history or a conflicting protocol blocks",
+            "Any conflicting Evidence or invalid history blocks",
+            "Never hand-write a marker or create a pre-registration peer artifact",
         ):
             with self.subTest(text=text):
                 self.assertIn(text, self.skill_flat)
-        self.assertIn("Evidence Ledger admits the existing goal", self.skill_flat)
+        self.assertIn("Evidence Ledger admits an existing goal", self.skill_flat)
 
     def test_native_ledger_use_declares_bootstrap(self) -> None:
         self.assertIn("$ledger ensure", self.skill)
+        self.assertIn("ledger materialize goal-contract-v3 --input DRAFT", self.skill)
+        self.assertIn("artifact_id` to JSON `null`", self.skill)
 
 
 if __name__ == "__main__":

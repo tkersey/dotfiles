@@ -1,7 +1,9 @@
 # Artifact-kernel Goal Contract v3
 
-Use this reference only for a goal whose immutable protocol marker is
-`artifact-kernel-v1`.
+Use this reference for an existing goal whose immutable Evidence marker is
+`artifact-kernel-v1`, or for a new goal whose accepted explicit `--goal` route
+selects that protocol. A new goal has no marker yet; `open` creates the first
+durable protocol fact only after validating the Goal and K0.
 
 ## Exact shape
 
@@ -54,6 +56,13 @@ artifact:
       terminal_route: complete | ready-to-ship
       publication_required: true | false
       required_proof_kinds: []
+
+    extensions: # omit unless the accepted source explicitly grants this risk
+      high-critical-example-proof-risk-authority/v1:
+        authorizations:
+          - counterexample_class_ref:
+            law_family: authority | state-machine | identity | persistence | concurrency
+            law_ref:
 ~~~
 
 ## Envelope laws
@@ -72,9 +81,11 @@ artifact:
   author the payload.
 - Preserve supporting provenance as references rather than copied authority.
 
-Use the current Ledger-owned writer or fingerprint implementation. If it is
-unavailable, block rather than inventing an identity algorithm or emitting an
-unvalidated artifact.
+Set the semantic-owner draft's `artifact_id` to JSON `null`, then materialize it
+through `ledger materialize goal-contract-v3 --input DRAFT`. Ledger emits the
+canonical content-addressed document without storing it or granting authority.
+If that current surface is unavailable, block rather than inventing an identity
+algorithm or emitting an unvalidated artifact.
 
 ## Field laws
 
@@ -89,6 +100,23 @@ unvalidated artifact.
 - Each `laws` entry is stable, source-derived, applicable, and observable.
 - `acceptance` records terminal route, publication requirement, and proof kinds;
   it does not record proof results or closure.
+
+Omit `extensions` for an ordinary Goal. The only current extension is
+`high-critical-example-proof-risk-authority/v1`. Its `authorizations` array is
+nonempty; every entry contains exactly one nonblank stable
+`counterexample_class_ref`, one eligible `law_family`, and one `law_ref` that
+names a law in this Goal. The exact `law_family` is `authority`,
+`state-machine`, `identity`, `persistence`, or `concurrency`; no other family is
+eligible. Class entries are unique. Presence of the exact class-family-law tuple
+is the accepted source's explicit grant for the narrow High/Critical
+example-proof exception; the Goal's content identity already binds that grant
+to `authority.source_ref` and `authority.source_digest`. Generic source
+identity, `mutation_allowed: true`, a supporting reference, or Construction
+prose never implies the grant. An authorization selects no proof or architecture
+and remains unused only while the current Construction carries a direct strong
+implementation or acceptance proof for its law. Otherwise Ledger derives
+pending risk-authority debt that blocks edits and closure until a current
+Counterexample and lawful successor exception consume the grant.
 
 ## Forbidden content
 

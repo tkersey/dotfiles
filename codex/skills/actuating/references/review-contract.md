@@ -66,6 +66,13 @@ attempt-quality rule, or material-change rule creates a new static Review
 Contract version. It does not require a Counterexample or Evidence schema
 change.
 
+Ledger resolves the Goal-bound digest through one append-only release registry.
+Each entry fixes the exact contract bytes, ordered lens names and roles, exact
+lens-contract bytes, clean threshold, and recovery bound. The v1 builder and
+its lens bytes are frozen; a future version appends a new registry entry rather
+than revising v1. A self-consistent caller-supplied contract is not an
+alternative registry entry and fails closed.
+
 ## Campaign identity
 
 Derive campaign identity from:
@@ -88,6 +95,13 @@ Before dispatch, bind all five requests to:
 - the exact source-bound review instruction bytes and digest;
 - a unique opaque request identity and fingerprint;
 - the Goal-owned compatibility authority.
+
+Ledger, not the caller, builds the exact `ACTUATING-REVIEW-DISPATCH/v1` packet
+from the canonical request bytes and the registry-pinned lens-contract bytes.
+Its owner directive makes the pinned lens governing and prevents supplemental
+instructions from overriding, weakening, or replacing it. The packet, rather
+than either component alone, is the bytestring bound into CAS target identity
+and the request fingerprint.
 
 Launch standard plus four auxiliaries concurrently. Every launched sibling
 must reach terminal transport evidence after any finding or transport failure.
@@ -126,6 +140,11 @@ Review transport and classification never select a repair or grant mutation.
 An accepted class requires a current successor Construction Contract. A
 blocked class blocks closure. Rejection requires evidence.
 
+For a completed CAS receipt, Ledger authors each durable `finding_ref` from the
+receipt digest, finding index, and exact canonical finding bytes. Callers and
+`$review-fold` must consume those references and must not invent, reorder, or
+substitute them.
+
 ## Full-wave success and convergence
 
 The full wave succeeds only when:
@@ -163,6 +182,24 @@ excludes only Ledger control storage and declared external evidence custody.
 There is no `auxiliary-remediation` carry and no review credit across a material
 subject change. Old attempts retain their historical tuples and never become
 current credit by relabeling.
+
+## Target drift during a launched wave
+
+Terminal append inputs use the v2 completion or transport schema. After CAS
+receipt admission, Ledger re-observes the live target under exclusive append
+custody. If it differs from the request-bound target, Ledger writes the exact
+v3 terminal schema with `observed_target_fingerprint_digest`. That terminal
+fact earns neither semantic nor recovery credit; it records only that the
+launched attempt ended against a stale target.
+
+Let every launched sibling reach terminal evidence. Then append
+`review-campaign-started/v3` with the existing campaign ID and one stale
+witness request. Ledger authors the observed target digest, clears only derived
+review state, preserves non-review Evidence and globally consumed request and
+attempt identities, and requires a fresh full 1+4 binding. No prior auxiliary
+result or standard clean survives the restart. A caller may not use v3 to
+rename a campaign, restart while an attempt is active, or turn stale terminal
+evidence into credit.
 
 ## Independence
 

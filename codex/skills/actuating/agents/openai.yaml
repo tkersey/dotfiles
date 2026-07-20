@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Actuating"
   short_description: "Execute through the four-artifact kernel"
-  default_prompt: "Use $actuating to honor the Evidence-owned immutable protocol, keep legacy goals on frozen semantics, and drive only an already registered artifact-kernel-v1 goal through its four artifacts, Ledger capabilities, Ship, review, and derived closure while new admission remains blocked in Phase 3."
+  default_prompt: "Use $actuating to honor the Evidence-owned immutable protocol, keep legacy goals on frozen semantics, and drive an explicitly selected artifact-kernel-v1 goal through its four artifacts, Ledger capabilities, Ship, review, and derived closure under Phase 4 opt-in admission."

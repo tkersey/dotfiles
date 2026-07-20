@@ -86,9 +86,16 @@ compatibility and explicit migration:
 
 Operational, non-memory stores:
 
-- `.ledger/actuation/events.jsonl` is the current actuation persistent adapter,
-  owned exclusively by `ledger --source actuation`; do not harvest it into
-  memory or route its writes through source-memory coordination.
+- `.ledger/actuation/events.jsonl` is the default frozen
+  `legacy-actuating-v1` persistent adapter. Historical legacy runs may select a
+  different explicit `--path`; no legacy store contains Artifact Kernel
+  Evidence.
+- `.ledger/actuation/artifact-kernel/evidence.jsonl` is the fixed
+  `artifact-kernel-v1` Evidence Ledger adapter selected by an explicit
+  `--goal`; it never contains legacy actuation events.
+- Both actuation stores are owned exclusively by `ledger --source actuation`;
+  do not harvest either into memory or route their writes through source-memory
+  coordination.
 - `.ledger/hylo/events.jsonl` is the current Hylo persistent adapter, owned
   exclusively by `ledger --source hylo`; do not harvest it into memory or
   route its writes through source-memory coordination.
@@ -100,9 +107,30 @@ Operational, non-memory artifacts:
 
 ## Actuating Artifact Kernel v1 boundary
 
-After `$ledger ensure`, use the root validators for immutable documents, the
-static Review Contract, individual Evidence Ledger events, and derived closure
-receipts:
+After `$ledger ensure`, probe the current Artifact Kernel surfaces before using
+them:
+
+```bash
+ledger materialize --help
+ledger validate --help
+ledger --source actuation --goal GOAL_ID --help
+```
+
+An older partial CLI that lacks any required surface blocks this protocol; do
+not fall back to GC-v2 or legacy actuation. Use the pure materializer for the
+three semantic-owner document drafts whose `artifact_id` is JSON `null`:
+
+```bash
+ledger materialize goal-contract-v3 --input DRAFT
+ledger materialize counterexample-set --input DRAFT
+ledger materialize construction-contract --input DRAFT
+```
+
+The materializer canonicalizes, injects the common content identity, validates,
+and emits the completed immutable document. It reads or writes no `.ledger`
+store and grants no authority. Use the root validators for immutable documents,
+the static Review Contract, individual Evidence Ledger events, and derived
+closure receipts:
 
 ```bash
 ledger validate goal-contract-v3 --input FILE|-
@@ -123,6 +151,12 @@ construction-contract/v1
 actuating-review-contract/v1
 actuating-evidence-event/v1
 ```
+
+`ledger validate ship-v1` is the current-write validator: it requires the
+complete exact `SHIP-v1` envelope and digest-shaped Actuating identity. Frozen
+migration adapters may use Ledger's internal read-compatible validation, which
+relaxes only the historical run identity to a nonblank opaque value and grants
+no current write authority.
 
 An explicit `--goal` selects the Artifact Kernel Actuation source. Inspect that
 surface, replay the current Evidence Ledger, and derive closure with:
@@ -430,11 +464,18 @@ Compiled Codex memory is still owned by Phase 2. Memory-source notes are admissi
 ## Source-memory lifecycle checkpoint
 
 At a decision-shaping validation transition, material strategy pivot, delivery
-boundary after implementation, pre-commit boundary, PR handoff, terminal
-implementation/review closeout, or explicit checkpoint request, use the
-repository's governing lifecycle. For `artifact-kernel-v1`, defer this
-checkpoint until a current `ready-to-ship` or `complete` closure projection and
-delivery handoff so source-memory processing remains outside code closure:
+boundary after implementation, terminal implementation/review closeout, or
+explicit checkpoint request, use the repository's governing lifecycle. For
+`artifact-kernel-v1`, run this checkpoint only after a terminal `complete` or
+`ready-to-ship` closure decision and its delivery handoff or report:
+
+```text
+closure -> handoff/report -> source-memory evaluation
+```
+
+Source-memory processing remains outside delivery. It is not a prerequisite
+for and must not delay code closure, a commit, or a PR handoff. Its failure
+cannot gate, invalidate, or roll back delivery:
 
 1. Complete `$ledger ensure` once for the workflow and require Ledger 0.10.0 or
    newer. Participants consume that readiness; they do not bootstrap again.
@@ -461,8 +502,9 @@ nor derived operation is blocked; use `degraded` when semantic evaluation and
 canonical writes completed but a note or digest stage failed; use `blocked` for
 a missing participant, stale/invalid evidence, or a required canonical failure.
 This status proves source-memory closeout only. It does not grant delivery
-authority, and the separate exact current Negative Ledger pre-route map remains
-the only source-memory route gate.
+authority and cannot gate, delay, invalidate, or roll back delivery. The
+separate exact current Negative Ledger pre-route map remains the only
+source-memory route gate.
 
 Evaluation is mandatory; writes and admissions are conditional. Keep ordinary
 all-no-op receipts internal. Report source writes, actionable Synesthesia
@@ -669,8 +711,9 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - Do not treat memory-source notes as the canonical store.
 - Do not persist checkpoint receipts or turn Ledger into a semantic source
   decision engine without evidence that the stateless protocol is insufficient.
-- For `artifact-kernel-v1`, do not run source-memory processing before closure
-  or make its outcome a code-closure prerequisite.
+- For `artifact-kernel-v1`, run source-memory processing only after closure and
+  handoff/report; never make it a prerequisite for or let it delay code closure,
+  a commit, a PR handoff, or delivery.
 - Do not reuse a checkpoint receipt after its subject or evidence fingerprint
   changes.
 - Do not admit every source-store event to memory.

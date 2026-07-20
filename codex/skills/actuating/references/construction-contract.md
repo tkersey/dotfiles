@@ -75,7 +75,82 @@ payload:
 The Construction must reference the current Goal, stay within its paths and
 compatibility authority, cover every Goal law and required proof kind, and
 bind every current accepted Counterexample class. It never grants mutation by
-itself.
+itself. `architecture.canonical_owner` and `execution.owner_boundary` must be
+identical; execution projects the selected owner and cannot introduce another
+one.
+
+## Optional High/Critical example-proof exception
+
+Omit `extensions` for every ordinary Construction. Its absence preserves the
+strict base `construction-contract/v1` shape. An empty extension object, an
+unknown extension name, or an extra field fails closed.
+
+Only a non-initial successor may carry this exact versioned extension when a
+Critical or High authority, state-machine, identity, persistence, or
+concurrency Counterexample cannot feasibly receive a stronger direct proof:
+
+~~~yaml
+payload:
+  extensions:
+    high-critical-example-proof-exception/v1:
+      exceptions:
+        - counterexample_class_ref:
+          example_obligation_ref:
+          compensating_obligation_ref:
+          stronger_proof_infeasibility_reason:
+~~~
+
+The extension is an exception binding, not a fifth artifact family, event,
+command, state machine, or mutation authority. Its shape is exact:
+
+- `exceptions` is nonempty and contains at most one entry for each named
+  `counterexample_class_ref`, which must also appear in the Construction's
+  `counterexample_class_refs`;
+- `example_obligation_ref` names a distinct `example-regression`
+  implementation or acceptance obligation whose ordinary `adequacy_reason`
+  remains nonblank and whose law appears in
+  `architecture.governing_law_refs`;
+- `compensating_obligation_ref` names an implementation or acceptance
+  obligation using `representation`, `total-transition`, `exhaustive-model`,
+  `static-refinement`, `property-law`, or `differential` proof;
+- the compensating obligation proves a different governing law from the
+  example obligation; and
+- `stronger_proof_infeasibility_reason` states why a stronger direct proof is
+  infeasible. If a direct strong implementation or acceptance proof already
+  exists for the example's law, the exception is redundant and invalid.
+
+Pure validation establishes only this exact shape and the internal obligation
+joins. It does not establish severity, infeasibility, semantic adequacy, or
+accepted-risk authority. Runtime admission requires an exact matching
+`counterexample_class_ref`, eligible `law_family`, and example-obligation
+`law_ref` in the current Goal's
+`high-critical-example-proof-risk-authority/v1` extension, then joins the same
+class and law to a current or inherited High/Critical Counterexample. The Goal
+authorization's exact family must be `authority`, `state-machine`, `identity`,
+`persistence`, or `concurrency`. The Construction cannot supply or copy
+authority. Its `goal_contract_ref` and the exception tuple consume the
+Goal-owned grant. Both named obligations must still be discharged before
+closure.
+
+Keep exceptions forbidden on an initial Construction. If explicit risk
+acceptance arrives after Goal creation, the immutable Goal cannot be amended:
+open a fresh Goal from the revised source and register K0, then re-author a
+current Counterexample Set from the still-applicable witness evidence before K1
+consumes the grant. Block when applicability to the fresh Goal, K0, and subject
+cannot be established. Review credit never carries.
+
+K0 may expose the authorized law through an example proof so that inspect and
+verify operations can establish the current witness, but that does not consume
+the grant. Ledger derives pending risk-authority debt from the Goal and current
+Construction and blocks edits and closure until either K0 carries a direct
+strong same-law proof or a current Counterexample plus K1 exception consumes
+the grant. This debt is derived state, not another artifact or event.
+
+Before registration, set the semantic-owner Construction draft's `artifact_id`
+to JSON `null`, run `ledger materialize construction-contract --input DRAFT`,
+persist the emitted canonical document, and validate it with `ledger validate
+construction-contract --input FILE|-`. Materialization stores nothing and
+grants no mutation authority.
 
 ## Initial construction
 
@@ -83,6 +158,9 @@ Create `K0` before material mutation. Use a compact Construction when the
 existing owner is exact, no competing material construction exists, no new
 boundary or mechanism is introduced, and no abstraction is displaced. Use a
 supporting Universalist plan for consequential selection.
+
+An initial Construction has no predecessor and both
+`falsified_predecessor_claims` and `preserved_predecessor_claims` are empty.
 
 Select the smallest non-dominated construction. Candidate `A` dominates `B`
 when it satisfies and preserves at least everything `B` does, excludes at
@@ -114,6 +192,22 @@ Choose the repair mode from evidence:
   Select a new lawful construction and retire the dominated predecessor.
 - `ablation-repair`: replacement architecture is valid but residue remains.
   Preserve the construction and complete its retirement obligations.
+
+Every successor names at least one falsified predecessor claim.
+`realization-repair` and `ablation-repair` also name at least one preserved
+predecessor claim so that a purported repair cannot silently discard the
+construction it claims to preserve.
+
+An inherited High/Critical exception and both referenced obligations remain
+byte-identical in every successor until a direct strong implementation or
+acceptance proof discharges the example's same law. The exception does not
+select the repair mode; choose that mode from the actual architecture delta.
+Removing the exception always requires one retirement whose
+`dominated_construct` is
+`high-critical-example-proof-exception/v1:<counterexample_class_ref>`, whose
+`disposition` is `retire`, and whose `replacement_ref` names that direct strong
+proof. Rewriting, silently dropping, or retaining the exception beside a direct
+strong same-law proof blocks registration.
 
 No new abstraction is justified solely by a finding. No example-level patch is
 legal when the witnessed class exposes a law, representation, transition,

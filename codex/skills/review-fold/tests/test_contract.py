@@ -22,6 +22,12 @@ LEGACY_EXAMPLE = json.loads(
         encoding="utf-8"
     )
 )
+EXAMPLE_RECEIPT_DIGEST = "sha256:" + "d" * 64
+EXAMPLE_RECEIPT_FINDING = {
+    "body": "The current transition accepts an input that bypasses the canonical state owner.",
+    "priority": 1,
+    "title": "Canonical state owner is bypassed",
+}
 
 
 class ReviewFoldContractTests(unittest.TestCase):
@@ -30,6 +36,7 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertIn("schema: counterexample-set/v1", SKILL)
         self.assertIn("semantic_author: review-fold", SKILL)
         self.assertIn("$ledger ensure", SKILL)
+        self.assertIn("ledger materialize counterexample-set --input DRAFT", NORMALIZED_SKILL)
         self.assertIn("ledger validate counterexample-set", SKILL)
         self.assertIn("Counterexample Set", AGENT)
 
@@ -62,6 +69,14 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertIn("A rejected class requires evidence", NORMALIZED_SKILL)
         self.assertIn("Do not omit rejection evidence", SKILL)
 
+    def test_cas_finding_references_are_consumed_not_invented(self) -> None:
+        for phrase in (
+            "finding_refs` that Ledger authored",
+            "receipt digest, finding index, and canonical finding bytes",
+            "Do not derive a replacement identity",
+        ):
+            self.assertIn(phrase, NORMALIZED_SKILL)
+
     def test_legacy_route_is_protocol_isolated(self) -> None:
         self.assertIn("Evidence Ledger admits the current goal as `legacy-actuating-v1`", NORMALIZED_SKILL)
         self.assertIn("Never mix legacy and artifact-kernel", NORMALIZED_SKILL)
@@ -70,7 +85,8 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertIn("do not", SKILL.split("## Legacy compatibility", 1)[1])
         self.assertEqual("RF-v2", LEGACY_EXAMPLE["review_fold"]["version"])
         self.assertIn("frozen legacy shape example", NORMALIZED_SKILL)
-        self.assertIn("Production Phase 3 blocks new artifact-kernel admission", NORMALIZED_SKILL)
+        self.assertIn("Production Phase 4 admits new artifact-kernel goals only through an explicit", NORMALIZED_SKILL)
+        self.assertIn("inventory still gates retirement of legacy writers", NORMALIZED_SKILL)
         self.assertIn("never infer protocol", NORMALIZED_SKILL)
 
     def test_example_has_exact_counterexample_shape(self) -> None:
@@ -124,6 +140,18 @@ class ReviewFoldContractTests(unittest.TestCase):
         ).encode()
         digest = hashlib.sha256(b"actuating-artifact/v1\n" + preimage).hexdigest()
         self.assertEqual(f"sha256:{digest}", claimed)
+
+    def test_example_finding_ref_is_ledger_authored(self) -> None:
+        finding_bytes = json.dumps(
+            EXAMPLE_RECEIPT_FINDING,
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode()
+        material = EXAMPLE_RECEIPT_DIGEST.encode() + b"\0" + b"0" + b"\0" + finding_bytes
+        digest = hashlib.sha256(b"actuating-review-finding/v1\0" + material).hexdigest()
+        finding_refs = EXAMPLE["artifact"]["payload"]["classes"][0]["finding_refs"]
+        self.assertEqual([f"sha256:{digest}"], finding_refs)
 
 
 if __name__ == "__main__":

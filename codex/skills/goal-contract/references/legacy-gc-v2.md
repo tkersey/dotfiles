@@ -1,8 +1,9 @@
 # Frozen legacy GC-v2
 
-Use this reference only for an existing goal whose immutable protocol marker is
-`legacy-actuating-v1`. Historical readers remain valid; do not reinterpret,
-upgrade in place, or mix this shape with artifact-kernel semantics.
+Use this reference for an existing goal whose immutable protocol marker is
+`legacy-actuating-v1`, or for a new goal whose accepted unqualified route
+selects frozen legacy semantics. Historical readers remain valid; do not
+reinterpret, upgrade in place, or mix this shape with artifact-kernel semantics.
 
 ~~~yaml
 goal_contract:
@@ -65,4 +66,5 @@ goal_contract:
 
 Continue to use the frozen legacy projection into `actuation-open/v1`, its
 existing verifier-backed obligations, and its established review and closure
-semantics. New goals and artifact-kernel goals must not select this format.
+semantics. A new explicit `--goal` route and every artifact-kernel goal must not
+select this format.

@@ -34,11 +34,15 @@ not independently grant mutation.
 
 ## Protocol boundary
 
-Bind each goal immutably to `artifact-kernel-v1` or `legacy-actuating-v1` in the
-canonical Evidence Ledger. Production remains at migration Phase 3: replay
-existing registered artifact-kernel goals, but keep new artifact-kernel goal
-admission build-disabled. Phase 4 remains blocked until an
-operator-authoritative inventory covers every historical custom legacy store.
+After registration, bind each goal immutably to `artifact-kernel-v1` or
+`legacy-actuating-v1` in the canonical Evidence Ledger. Existing goals read
+that Evidence. A new goal selects its protocol before Goal compilation only
+from the accepted execution route: in production Phase 4, explicit `--goal`
+selects artifact-kernel and the unqualified route selects frozen legacy. This
+pre-registration selector is transient and non-authorizing; `open` validates
+the complete input before persisting the first durable protocol fact. An
+operator-authoritative inventory of historical custom legacy stores remains
+required before retiring legacy writers or changing the default route.
 
 Never mix protocols, writers, artifacts, review credit, or closure rules in one
 goal. Use the repository-local Ledger admission boundary described in
@@ -87,8 +91,11 @@ when required, and obtains fresh review convergence.
    [construction-contract.md](references/construction-contract.md). No finding
    authorizes a patch directly.
 3. Before the first native Ledger command, load `$ledger` and complete
-   `$ledger ensure`. Follow the exact transient envelopes and one-operation
-   capability sequence in [kernel-commands.md](references/kernel-commands.md).
+   `$ledger ensure`. Probe the current materialize, validate, and Artifact
+   Kernel actuation command surfaces before proceeding; an older partial CLI
+   blocks rather than falling back to legacy semantics. Follow the exact
+   transient envelopes and one-operation capability sequence in
+   [kernel-commands.md](references/kernel-commands.md).
 4. Follow the one static [Review Contract](references/review-contract.md).
    Route every finding through [$review-fold](../review-fold/SKILL.md) before
    any successor Construction or mutation.
@@ -133,8 +140,9 @@ lifecycle.
 Block on stale or missing source authority, protocol mixing, stale Goal,
 Construction, subject, or review identity, unresolved accepted or blocked
 Counterexamples, capability replay or substitution, scope escape, incomplete
-proof or retirement, unresolved review recovery, insufficient current-subject
-clean attempts, invalid or substituted publication evidence, a public effect
-outside Ship, or learning made delivery-critical. Missing or no-longer-current
-Ship evidence after complete publication-required proof projects
-`ready-to-ship`; it is not itself a blocker.
+proof or retirement, pending example-proof risk authority, unresolved review
+recovery, insufficient current-subject clean attempts, invalid or substituted
+publication evidence, a public effect outside Ship, or learning made
+delivery-critical. Missing or no-longer-current Ship evidence after complete
+publication-required proof projects `ready-to-ship`; it is not itself a
+blocker.

@@ -80,6 +80,12 @@ allows them.
 A clean source may yield no classes. Review events, not this artifact, own
 attempt history and clean credit.
 
+For CAS review findings, copy only the ordered `finding_refs` that Ledger
+authored from the admitted owner receipt. Do not derive a replacement identity
+from review prose, request coordinates, or the suggested patch; the receipt
+digest, finding index, and canonical finding bytes already own that evidence
+reference.
+
 ## Class identity and statuses
 
 Define one class as one stable counterexample to one governing law at one owner
@@ -126,8 +132,10 @@ Before the first Ledger command in the workflow, load `$ledger` and complete
    than implementation coordinates.
 6. Require evidence for every accepted or rejected class. Leave uncertainty
    `blocked`.
-7. Materialize canonical `counterexample-set/v1` JSON and validate it with
-   `ledger validate counterexample-set --input <counterexample-set-json-file>`.
+7. Set the semantic-owner draft's `artifact_id` to JSON `null`, run `ledger
+   materialize counterexample-set --input DRAFT`, persist the emitted canonical
+   document, and validate it with `ledger validate counterexample-set --input
+   <counterexample-set-json-file>`.
 8. Register the validated artifact in the Evidence Ledger when the current
    artifact-kernel workflow calls for it.
 9. Hand accepted classes to `$actuating` as successor Construction Contract
@@ -141,12 +149,13 @@ as a shape example, not as reusable evidence or authority.
 
 Read or author RF-v2 only when the canonical Evidence Ledger admits the current
 goal as `legacy-actuating-v1` and it remains inside its compatibility window.
-Production Phase 3 blocks new artifact-kernel admission pending the complete
-historical custom-store inventory; never infer protocol from a nearby artifact
-or selected legacy path. Preserve the frozen legacy shape and validate it with
-`ledger validate review-fold`; do not convert an in-flight goal, attach a
-Counterexample Set to it, or emit RF-v2 for an artifact-kernel goal. Historical
-RF-v2 remains evidence, not Counterexample Set identity or authority.
+Production Phase 4 admits new artifact-kernel goals only through an explicit
+`--goal`; never infer protocol from a nearby artifact or selected legacy path.
+The historical custom-store inventory still gates retirement of legacy
+writers. Preserve the frozen legacy shape and validate it with `ledger validate
+review-fold`; do not convert an in-flight goal, attach a Counterexample Set to
+it, or emit RF-v2 for an artifact-kernel goal. Historical RF-v2 remains
+evidence, not Counterexample Set identity or authority.
 
 Use [review-fold.valid.example.json](assets/review-fold.valid.example.json) only
 as a frozen legacy shape example. It is not current evidence or authority.
