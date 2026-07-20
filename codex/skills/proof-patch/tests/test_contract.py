@@ -28,21 +28,38 @@ class ContractTests(unittest.TestCase):
             "evidence_head:",
             "review_contract_digest:",
             "closure_route: local-implementation | final-closeout",
+            "cited_premise_refs: []",
             "local_implementation:",
             "review_required: false",
             "final_closeout:",
             "auxiliaries_current: true",
             "clean_streak: 5",
+            "publication_required: false",
+            "ship_receipt: null",
+            "publication_required: true | false",
             "ship_receipt: {} | null",
         ):
             self.assertIn(phrase, self.skill_flat)
 
     def test_review_evidence_is_route_conditional(self) -> None:
         for phrase in (
-            "Require exactly one review variant and exact-match it to `closure_route`",
-            "render review as not required and do not manufacture convergence",
+            "Require exactly one review variant and one publication variant",
+            "exact-match both to `closure_route`",
+            "render review as not required, do not manufacture convergence",
             "Require five-clean review facts only for `final-closeout`",
             "Do not require review convergence for `local-implementation`",
+            "reject any supplied review-result or Ship-receipt payload",
+            "require current Ship evidence when true",
+        ):
+            self.assertIn(phrase, self.skill_flat)
+
+    def test_closure_receipt_is_complete_and_identity_checked(self) -> None:
+        for phrase in (
+            "complete canonical closure-receipt field set",
+            "replace only `receipt_id` with JSON `null`",
+            "recompute its SHA-256 identity",
+            "Missing or extra fields block",
+            "Do not accept a truncated, hand-edited",
         ):
             self.assertIn(phrase, self.skill_flat)
 

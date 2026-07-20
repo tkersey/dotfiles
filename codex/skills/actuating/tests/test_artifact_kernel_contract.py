@@ -23,6 +23,7 @@ CLOSURE = read(ROOT / "references" / "closure.md")
 DECISION = read(ROOT / "references" / "decision-contract.yaml")
 LEDGER = read(SKILLS / "ledger" / "SKILL.md")
 SHIP = read(SKILLS / "ship" / "SKILL.md")
+PROOF_PATCH = read(SKILLS / "proof-patch" / "SKILL.md")
 FLAT_SKILL = " ".join(SKILL.split())
 FLAT_OWNERS = " ".join(OWNERS.split())
 FLAT_CONSTRUCTION = " ".join(CONSTRUCTION.split())
@@ -319,10 +320,33 @@ class ArtifactKernelContractTests(unittest.TestCase):
         self.assertIn("authors the resulting\n`actuating-closure-receipt/v1`", CLOSURE)
         self.assertIn("continue | ready-to-ship | complete | blocked", CLOSURE)
         self.assertIn("closure_route: local-implementation | final-closeout", CLOSURE)
-        self.assertIn("must not infer review applicability from absent fields", CLOSURE)
+        self.assertIn("must not infer applicability\nfrom absent fields", CLOSURE)
+        self.assertIn("A `ready-to-ship` judgment deliberately omits this premise", CLOSURE)
+        self.assertIn("evidence that only Ship can produce from that handoff", CLOSURE)
         self.assertIn("five consecutive distinct", CLOSURE)
         self.assertIn("Ledger validation, replay, `state`, or `project`", CLOSURE)
         self.assertIn("must not construct it, populate its verdict, or emit it", CLOSURE)
+
+    def test_closure_route_applicability_is_cross_owner_exact(self) -> None:
+        for phrase in (
+            "A `ready-to-ship` judgment deliberately omits this premise",
+            "A `ready-to-ship` judgment also omits this premise",
+            "`ready-to-ship` is legal only on this route",
+        ):
+            self.assertIn(phrase, CLOSURE)
+        flat_ship = " ".join(SHIP.split())
+        flat_proof_patch = " ".join(PROOF_PATCH.split())
+        self.assertIn("closure_route: final-closeout", flat_ship)
+        self.assertIn("Reject `local-implementation` receipts", flat_ship)
+        self.assertIn(
+            "reject any supplied review-result or Ship-receipt payload",
+            flat_proof_patch,
+        )
+        self.assertIn("require current Ship evidence when true", flat_proof_patch)
+        self.assertIn(
+            "A `ready-to-ship` verdict requires neither publication nor review evidence",
+            FLAT_SKILL,
+        )
 
     def test_review_contract_is_input_not_hardcoded_ledger_policy(self) -> None:
         for phrase in (

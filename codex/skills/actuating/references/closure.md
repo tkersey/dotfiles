@@ -33,16 +33,20 @@ A terminal judgment is legal only when all applicable statements hold:
    `K`; Actuating has dereferenced their content-addressed evidence and verified
    the exact Construction-selected verifier provenance; no requested operation
    remains unresolved.
-7. Publication-required work has current Ship evidence for the exact subject;
-   Actuating has resolved `publication_observed.receipt_ref`, recomputed the
-   immutable `SHIP-v1` digest, and verified its repository, base/head tuple,
-   live readback, and complete `actuation_binding` against the exact
-   `ready-to-ship` receipt.
-8. Final closeout has current auxiliary results and five consecutive distinct
-   standard clean attempts whose cited CAS receipts Actuating has dereferenced
-   and matched to their exact request, attempt, instruction, lens, and current
-   subject tuple; it has no unresolved request-local recovery or unresolved
-   accepted Counterexample.
+7. For a `final-closeout` `complete` verdict when publication is required, the
+   work has current Ship evidence for the exact subject; Actuating has resolved
+   `publication_observed.receipt_ref`, recomputed the immutable `SHIP-v1`
+   digest, and verified its repository, base/head tuple, live readback, and
+   complete `actuation_binding` against the exact `ready-to-ship` receipt.
+   A `ready-to-ship` judgment deliberately omits this premise: that receipt is
+   Ship's required readiness input for producing the publication evidence.
+8. For a `final-closeout` `complete` verdict, the work has current auxiliary
+   results and five consecutive distinct standard clean attempts whose cited
+   CAS receipts Actuating has dereferenced and matched to their exact request,
+   attempt, instruction, lens, and current subject tuple; it has no unresolved
+   request-local recovery or unresolved accepted Counterexample.
+   A `ready-to-ship` judgment also omits this premise because Ship publication
+   precedes the independent review campaign.
 9. No later material event invalidates authority, subject, proof, publication,
    or review evidence.
 
@@ -60,7 +64,8 @@ handoff.
 - Bare mode and `review-closeout` require publication when selected and the
   full five-clean review theorem before `complete`.
 - Missing current publication evidence after otherwise complete
-  publication-required implementation yields `ready-to-ship`.
+  publication-required implementation yields `ready-to-ship`; it does not
+  block on evidence that only Ship can produce from that handoff.
 - Missing authority or an unresolved liability yields `blocked`.
 
 ## Receipt and rendering
@@ -89,9 +94,11 @@ closure_receipt:
 
 `local-implementation` is the explicit `$actuating implement` terminal route;
 review and Ship evidence are not applicable. `final-closeout` covers bare mode
-and `review-closeout`; its complete verdict requires the current publication
-and five-clean premises selected by the Goal and route. Proof renderers must use
-this discriminant and must not infer review applicability from absent fields.
+and `review-closeout`; `ready-to-ship` is legal only on this route and omits
+publication and review premises, while its `complete` verdict requires the
+current publication and five-clean premises selected by the Goal and route.
+Proof renderers must use this discriminant and must not infer applicability
+from absent fields.
 
 `receipt_id` is the content digest of canonical JSON with `receipt_id` set to
 JSON `null`. It is a freshness-bound semantic receipt authored only by

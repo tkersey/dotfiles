@@ -32,6 +32,7 @@ class ShipContractTests(unittest.TestCase):
             "construction_ref:",
             "subject_digest:",
             "review_contract_digest:",
+            "closure_route: final-closeout",
             "verdict: ready-to-ship",
             "cited_premise_refs: []",
             "does not rederive closure",
@@ -52,10 +53,12 @@ class ShipContractTests(unittest.TestCase):
             "subject_digest",
             "evidence_head",
             "review_contract_digest",
+            "closure_route",
             "copies these values verbatim",
         ):
             self.assertIn(phrase, SKILL)
         self.assertIn("copies every field verbatim", RECORD)
+        self.assertIn("requires `closure_route: final-closeout`", RECORD)
         for retired in ("actuation_run_id", "state_fingerprint"):
             self.assertNotIn(retired, SKILL + RECORD)
 

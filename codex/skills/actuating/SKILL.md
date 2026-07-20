@@ -166,9 +166,13 @@ or roll back delivery closure.
 
 ## Fail closed
 
-Block on stale or missing authority, stale Goal, Construction, subject, review,
-or publication identity, unresolved accepted or blocked Counterexamples,
-out-of-scope operations, incomplete proof or retirement, CAS receipt mismatch,
-unresolved request-local recovery, fewer than five current-subject standard
-clean attempts, a public effect outside Ship, or any attempt by Ledger or an
-executor to take Actuating's semantic authority.
+Always block on stale or missing authority, Goal, Construction, or subject;
+unresolved accepted or blocked Counterexamples; out-of-scope operations;
+incomplete proof or retirement; a public effect outside Ship; or any attempt by
+Ledger or an executor to take Actuating's semantic authority. For a
+`final-closeout` `complete` verdict, also block on stale or missing review
+identity, CAS receipt mismatch, unresolved request-local recovery, or fewer than
+five current-subject standard clean attempts, and—when the Goal requires
+publication—stale or missing Ship identity. A `ready-to-ship` verdict requires
+neither publication nor review evidence; `local-implementation` `complete`
+requires neither and rejects both as inapplicable.

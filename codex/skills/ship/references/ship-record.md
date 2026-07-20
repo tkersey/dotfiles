@@ -34,6 +34,7 @@ ship_record:
     subject_digest:
     evidence_head:
     review_contract_digest:
+    closure_route: final-closeout
 ~~~
 
 `pr_readiness.mode` reports the selected publication posture. The controlling
@@ -50,8 +51,9 @@ base and head identities, URL, open/draft state, and managed proof block.
 
 `actuation_binding` is required when `source=actuation` and omitted for direct
 shipping. Ship copies every field verbatim from Actuating's current readiness
-receipt. It does not reconstruct them from PR text or interpret them as
-architecture, review, or closure authority.
+receipt and requires `closure_route: final-closeout`. It does not reconstruct
+them from PR text or interpret them as architecture, review, or closure
+authority.
 
 `SHIP-v1` is immutable evidence for one publication epoch. Return the complete
 record to Actuating; only Actuating may evaluate publication currentness and

@@ -65,6 +65,7 @@ ship_input:
       subject_digest:
       evidence_head:
       review_contract_digest:
+      closure_route: final-closeout
       verdict: ready-to-ship
       cited_premise_refs: []
       blockers: []
@@ -75,14 +76,17 @@ ship_input:
       subject_digest:
       evidence_head:
       review_contract_digest:
+      closure_route: final-closeout
   user_requested_pr_mode: ready | draft | update-existing | promote-draft | none
   repo_policy_pr_mode: ready | draft | unknown
 ~~~
 
 Direct shipping omits `actuation`. For Actuating input, require the current
-owner-supplied readiness receipt and exact published subject. Ship does not
-rederive closure, inspect or revise the Construction, classify findings, count
-review credit, or choose Actuating's next action.
+owner-supplied readiness receipt, exact published subject, and
+`closure_route: final-closeout`. Reject `local-implementation` receipts: that
+route has no public-effect premise. Ship does not rederive closure, inspect or
+revise the Construction, classify findings, count review credit, or choose
+Actuating's next action.
 
 Before publication, canonicalize the complete `closure_receipt` with only
 `receipt_id` replaced by JSON `null`, recompute its SHA-256 identity, and require
@@ -99,6 +103,8 @@ actuation_binding.construction_ref = closure_receipt.construction_ref
 actuation_binding.subject_digest = closure_receipt.subject_digest
 actuation_binding.evidence_head = closure_receipt.evidence_head
 actuation_binding.review_contract_digest = closure_receipt.review_contract_digest
+actuation_binding.closure_route = closure_receipt.closure_route
+closure_receipt.closure_route = final-closeout
 ~~~
 
 Ship validates and copies these values verbatim. It never synthesizes,

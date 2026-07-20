@@ -34,6 +34,7 @@ proof_patch_input:
     review_contract_digest:
     closure_route: local-implementation | final-closeout
     verdict: complete
+    cited_premise_refs: []
     blockers: []
   goal_contract: {}
   construction_contract: {}
@@ -48,21 +49,36 @@ proof_patch_input:
       clean_streak: 5
       full_wave_complete: true
       recovery_pending: false
-  ship_receipt: {} | null
+  publication: # exactly one variant, matching closure_route
+    local_implementation:
+      publication_required: false
+      ship_receipt: null
+    # OR
+    final_closeout:
+      publication_required: true | false
+      ship_receipt: {} | null
   changed_paths: []
   diff_summary:
   validation_results: []
   residual_risks: []
 ~~~
 
-Recheck that every bound identity is current before rendering. Require exactly
-one review variant and exact-match it to `closure_route`. Render architecture
-only from the Construction Contract, classified bugs only from Counterexample
-Sets, observations only from cited Evidence, final-closeout review convergence
-only from Actuating's current evaluation of CAS owner receipts, and publication
-only from current Ship evidence. For local implementation closure, render
-review as not required and do not manufacture convergence. Identifiers alone
-are insufficient when a human claim requires source detail.
+Require the complete canonical closure-receipt field set, replace only
+`receipt_id` with JSON `null`, recompute its SHA-256 identity, and exact-match
+`receipt_id` before rendering. Missing or extra fields block. Recheck that every
+bound identity is current. Require exactly one review variant and one
+publication variant, and exact-match both to `closure_route`. Render
+architecture only from the Construction Contract,
+classified bugs only from Counterexample Sets, observations only from cited
+Evidence, final-closeout review convergence only from Actuating's current
+evaluation of CAS owner receipts, and publication only from current Ship
+evidence. For local implementation closure, require
+`publication_required:false`, `ship_receipt:null`, and the no-review variant;
+render review as not required, do not manufacture convergence, and reject any
+supplied review-result or Ship-receipt payload. For final closeout, exact-match
+`publication_required` to the Goal Contract and require current Ship evidence
+when true or `ship_receipt:null` when false. Identifiers alone are insufficient
+when a human claim requires source detail.
 
 ## Output
 
@@ -120,11 +136,13 @@ are insufficient when a human claim requires source detail.
 
 ## Procedure
 
-1. Require Actuating's current `complete` receipt and its explicit closure
-   route.
+1. Require Actuating's current complete canonical `complete` receipt, its exact
+   recomputed identity, and its explicit closure route.
 2. Exact-match the Goal, Construction, subject, Evidence head, static Review
-   Contract, route-selected review variant, and applicable publication
-   evidence. Require five-clean review facts only for `final-closeout`.
+   Contract, route-selected review and publication variants, and applicable
+   publication evidence. Require five-clean review facts only for
+   `final-closeout`; require Ship evidence only when that route's Goal requires
+   publication.
 3. Bind every human claim to current source detail.
 4. Summarize only goal-relevant changes, Counterexamples, proof observations,
    review convergence, and retirements.
@@ -133,9 +151,14 @@ are insufficient when a human claim requires source detail.
 ## Guardrails
 
 - Do not emit final proof before current complete closure.
-- Do not accept a hand-edited, replayed, stale, or cross-subject receipt.
+- Do not accept a truncated, hand-edited, replayed, stale, or cross-subject
+  receipt.
 - Do not require review convergence for `local-implementation` or omit it for
   `final-closeout`.
+- Do not accept a review-result or Ship-receipt payload for
+  `local-implementation`, omit current Ship evidence for publication-required
+  `final-closeout`, or manufacture Ship evidence when publication is not
+  required.
 - Do not treat the Proof Patch as authority or persist it as peer truth.
 - Do not hide failed or unavailable verification.
 - Do not publish, replace `$ship`, or perform public effects.
