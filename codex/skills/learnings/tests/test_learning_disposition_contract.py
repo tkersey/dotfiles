@@ -13,8 +13,8 @@ class LearningDispositionContractTests(unittest.TestCase):
         agents = (CODEX_ROOT / "AGENTS.md").read_text(encoding="utf-8")
         for required in (
             "Source-memory checkpoint mandate",
-            "Invoke `$ledger` after a decision-shaping validation transition",
-            "before every Codex-made commit, PR handoff, or terminal implementation/review closeout",
+            "closure -> handoff/report -> source-memory evaluation",
+            "must not delay code closure, a Codex-made commit, or a PR handoff",
             "evaluate Learnings, Synesthesia, and Negative Ledger",
             "checkpoint_context=source-memory-checkpoint/v1",
             "ledger validate source-memory-checkpoint",
@@ -56,14 +56,9 @@ class LearningDispositionContractTests(unittest.TestCase):
         closure = (
             CODEX_ROOT / "skills/actuating/references/closure.md"
         ).read_text(encoding="utf-8")
-        self.assertIn(
-            "Before handing off `ready-to-ship` or reporting terminal `complete`",
-            skill,
-        )
-        self.assertIn("## Source-memory checkpoint after decision", closure)
-        self.assertIn("`source-memory-checkpoint/v1`", closure)
-        self.assertIn("decision becomes stale", skill)
-        self.assertIn("decision becomes stale", closure)
+        self.assertIn("Complete the handoff or report", skill)
+        self.assertIn("Complete delivery handoff or reporting before", closure)
+        self.assertIn("admission cannot gate", closure)
 
 
 if __name__ == "__main__":

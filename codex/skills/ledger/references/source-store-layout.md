@@ -26,7 +26,7 @@ Optional source-memory adapter location:
 Operational, non-memory adapter locations:
 
 ```text
-.ledger/actuation/events.jsonl
+.ledger/actuation/<safe-goal-id>/evidence.jsonl
 .ledger/hylo/events.jsonl
 ```
 

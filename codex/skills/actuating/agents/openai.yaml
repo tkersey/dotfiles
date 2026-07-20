@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Govern work through the actuation kernel"
-  default_prompt: "Use bare $actuating to own review policy and exact lens requests while driving actuation-kernel generations through implementation, $ship, CAS transport, review-closeout, and final closure; honor explicit modes, including implementation-only $actuating implement."
+  short_description: "Construct, orchestrate, falsify, and close"
+  default_prompt: "Use $actuating to select a correct-by-construction architecture, orchestrate its realization and review, evaluate Counterexamples, and choose the next action while Ledger remains non-executing and Ship owns public effects."

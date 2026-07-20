@@ -1,84 +1,94 @@
-import json
 from pathlib import Path
-import subprocess
 import unittest
 
 
-SKILL_DIR = Path(__file__).resolve().parents[1]
-SKILL = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
-READINESS = (SKILL_DIR / "references" / "pr-readiness-policy.md").read_text(
-    encoding="utf-8"
-)
-BODY = (SKILL_DIR / "references" / "pr-body-proof.md").read_text(encoding="utf-8")
-RECORD = (SKILL_DIR / "references" / "ship-record.md").read_text(encoding="utf-8")
+ROOT = Path(__file__).resolve().parents[1]
+SKILL = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+READINESS = (ROOT / "references" / "pr-readiness-policy.md").read_text(encoding="utf-8")
+BODY = (ROOT / "references" / "pr-body-proof.md").read_text(encoding="utf-8")
+RECORD = (ROOT / "references" / "ship-record.md").read_text(encoding="utf-8")
+AGENT = (ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+FLAT_SKILL = " ".join(SKILL.split())
 
 
 class ShipContractTests(unittest.TestCase):
-    def test_decision_separates_operation_from_final_state(self) -> None:
-        for text in (SKILL, READINESS, RECORD):
-            self.assertIn("operation: create | update | update-and-promote | blocked", text)
-            self.assertIn("final_state: ready | draft | preserve", text)
-        self.assertIn("compatibility_mode", SKILL)
-        self.assertIn("update-and-promote` + `ready` -> `promote-draft`", RECORD)
+    def test_ship_alone_owns_public_effects(self) -> None:
+        self.assertIn("sole public-effect owner", SKILL)
+        self.assertIn("It never merges", SKILL)
+        for phrase in (
+            "Never select architecture",
+            "classify findings",
+            "count review credit",
+            "decide closure",
+            "choose Actuating's next action",
+        ):
+            self.assertIn(phrase, FLAT_SKILL)
 
-    def test_existing_body_updates_are_marker_scoped(self) -> None:
+    def test_actuating_readiness_is_upstream_evidence(self) -> None:
+        for phrase in (
+            "schema: actuating-closure-receipt/v1",
+            "receipt_id:",
+            "goal_contract_ref:",
+            "construction_ref:",
+            "subject_digest:",
+            "review_contract_digest:",
+            "closure_route: final-closeout",
+            "verdict: ready-to-ship",
+            "cited_premise_refs: []",
+            "does not rederive closure",
+            "Ship never appends Actuating Evidence",
+            "recompute its SHA-256 identity",
+            "must not validate a truncated projection",
+        ):
+            self.assertIn(phrase, FLAT_SKILL)
+        self.assertIn("actuating-closure-receipt/v1", AGENT)
+        self.assertIn("For source: actuation", AGENT)
+        self.assertIn("source: direct", AGENT)
+        self.assertNotIn("closure-decision/v1", AGENT)
+
+    def test_binding_is_exact_opaque_and_verbatim(self) -> None:
+        for phrase in (
+            "exact publication binding",
+            "closure_receipt_ref",
+            "goal_contract_ref",
+            "construction_ref",
+            "subject_digest",
+            "evidence_head",
+            "review_contract_digest",
+            "closure_route",
+            "copies these values verbatim",
+        ):
+            self.assertIn(phrase, SKILL)
+        self.assertIn("copies every field verbatim", RECORD)
+        self.assertIn("requires `closure_route: final-closeout`", RECORD)
+        for retired in ("actuation_run_id", "state_fingerprint"):
+            self.assertNotIn(retired, SKILL + RECORD)
+
+    def test_decision_separates_operation_from_final_state(self) -> None:
+        for phrase in (
+            "operation: create | update | update-and-promote | blocked",
+            "final_state: ready | draft | preserve",
+        ):
+            self.assertIn(phrase, SKILL)
+            self.assertIn(phrase, RECORD)
+        self.assertNotIn("compatibility_mode", SKILL + READINESS + RECORD)
+        self.assertNotIn("Compatibility projection", SKILL + READINESS + RECORD)
+
+    def test_body_updates_are_marker_scoped(self) -> None:
         for text in (SKILL, BODY):
             self.assertIn("<!-- ship-proof:start -->", text)
             self.assertIn("<!-- ship-proof:end -->", text)
-            self.assertIn("Preserve", text)
-        self.assertIn("Never overwrite human-authored PR body content", SKILL)
-        self.assertIn("unbalanced, duplicated, or ambiguous", BODY)
-
-    def test_body_acquisition_preserves_exact_bytes(self) -> None:
-        body = (
-            "Human-authored café context\n"
-            "<!-- ship-proof:start -->\nmanaged\n<!-- ship-proof:end -->\n"
-            "Human-authored suffix without a terminal newline"
-        )
-        payload = json.dumps({"body": body}, ensure_ascii=False).encode("utf-8")
-
-        result = subprocess.run(
-            ["jq", "-j", ".body"],
-            input=payload,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
-        )
-
-        self.assertEqual(body.encode("utf-8"), result.stdout)
-        self.assertIn(
-            "gh pr view <pr> --json body | jq -j .body > <current-body-file>",
-            SKILL,
-        )
-        self.assertNotIn("gh pr view <pr> --json body --jq .body", SKILL)
-
-    def test_promotion_updates_proof_before_ready_transition(self) -> None:
-        section = SKILL.split("Existing draft promotion must update proof first:", 1)[1]
-        section = section.split("After every create, update, or promotion", 1)[0]
-        edit = section.index("gh pr edit <pr> --body-file <merged-body-file>")
-        ready = section.index("gh pr ready <pr>")
-        self.assertLess(edit, ready)
-        self.assertIn("Never promote a draft before updating", SKILL)
+        self.assertIn("Preserve all human-authored content", SKILL)
 
     def test_publication_requires_live_readback(self) -> None:
-        for field in (
-            "number,url,state,isDraft,baseRefName,baseRefOid,headRefName,headRefOid,body",
-            "headRefOid",
-            "baseRefOid",
-            "exactly one managed block",
-        ):
-            self.assertIn(field, SKILL)
-        self.assertIn("failed readback must report `blocked`", RECORD)
-
-    def test_body_contract_surfaces_risks_and_followups(self) -> None:
-        for text in (SKILL, BODY):
-            self.assertIn("## Risks", text)
-            self.assertIn("## Follow-ups", text)
-            self.assertIn("not-run", text)
+        self.assertIn("A zero exit status is not publication proof", SKILL)
+        self.assertIn("action.result", RECORD)
+        self.assertIn("live PR readback", RECORD)
 
     def test_actuation_draft_conflict_blocks(self) -> None:
+        self.assertIn("Actuating input cannot", SKILL)
+        self.assertIn("conflicting repository policy blocks", SKILL)
         self.assertIn("Actuation input cannot publish a draft", READINESS)
-        self.assertIn("incompatible-policy", SKILL)
 
 
 if __name__ == "__main__":

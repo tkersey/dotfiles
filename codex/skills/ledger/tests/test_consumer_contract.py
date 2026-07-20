@@ -6,8 +6,8 @@ import unittest
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SKILLS_ROOT = REPO_ROOT / "codex" / "skills"
 COMMANDS = (
-    "--source|validate|open|prepare|record|execute|observe|state|close|decide|"
-    "doctor|path|create|latest|init|capture|query|map|status|reopen|export|"
+    "--source|validate|append|prepare|state|project|doctor|path|create|latest|"
+    "init|capture|query|map|status|reopen|export|"
     "compact|handoff|show|migrate|recent|recall|codify-candidates|"
     "quality-audit|value-report|memory-digest|datasets|dataset-schema"
 )
@@ -31,10 +31,6 @@ TEXT_SUFFIXES = {
 }
 
 EXPECTED_CONSUMERS = {
-    "actuating",
-    "goal-actuating",
-    "goal-contract",
-    "goal-grind",
     "learnings",
     "negative-ledger",
     "plan",
@@ -44,34 +40,6 @@ EXPECTED_CONSUMERS = {
 }
 
 DECLARATIVE_NATIVE_LINES = {
-    (
-        "codex/skills/actuating/SKILL.md",
-        "`ledger --source actuation` is the only executable actuation gate. Do not invoke",
-    ),
-    (
-        "codex/skills/actuating/SKILL.md",
-        "unfolds and folds; `ledger --source actuation` never owns that recursion or",
-    ),
-    (
-        "codex/skills/actuating/references/decision-contract.yaml",
-        "cue_literals: [ledger --source actuation, closure-decision/v1, complete, ready-to-ship]",
-    ),
-    (
-        "codex/skills/actuating/references/decision-contract.yaml",
-        "executable_authority: ledger --source actuation",
-    ),
-    (
-        "codex/skills/actuating/references/live-semantics.yaml",
-        "executable_authority: ledger --source actuation",
-    ),
-    (
-        "codex/skills/actuating/references/live-semantics.yaml",
-        "statement: Every actuation transition and closure decision is produced by ledger --source actuation; no second gate participates.",
-    ),
-    (
-        "codex/skills/goal-actuating/SKILL.md",
-        "Inspect the projection before opening it. `ledger --source actuation` conserves",
-    ),
     (
         "codex/skills/memory-source-notes/SKILL.md",
         "- `ledger --source learnings` owns `.ledger/learnings/events.jsonl` and the admission gate for learning snapshots.",

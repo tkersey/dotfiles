@@ -17,11 +17,17 @@
     "findingCount": 0,
     "findings": [],
     "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "principalStrength": "strong",
+    "accountFingerprintReducedProtection": false,
     "recordPath": "/tmp/thr_clean.json",
     "reviewThreadId": "thr_clean",
     "reviewTurnId": "turn_clean",
     "status": "clean",
-    "targetFingerprint": "sha256:start-wait-target"
+    "targetFingerprint": "sha256:start-wait-target",
+    "workflowBinding": {
+      "requestId": "request-clean",
+      "requestFingerprint": "sha256:request-clean"
+    }
   },
   "targetFingerprint": "sha256:start-wait-target"
 }

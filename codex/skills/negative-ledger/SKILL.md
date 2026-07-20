@@ -150,6 +150,9 @@ Fuzzy or lexical overlap is suggest-only.
 
 ## Query/Map Workflow
 
+For review-driven repair, apply the owner boundary in
+[counterexample-construction-integration.md](references/counterexample-construction-integration.md).
+
 1. Identify `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, declared scope, target signal, and changed surface.
 2. Run:
 
