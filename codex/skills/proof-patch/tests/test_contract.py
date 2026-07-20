@@ -27,9 +27,22 @@ class ContractTests(unittest.TestCase):
             "counterexample_sets: []",
             "evidence_head:",
             "review_contract_digest:",
+            "closure_route: local-implementation | final-closeout",
+            "local_implementation:",
+            "review_required: false",
+            "final_closeout:",
             "auxiliaries_current: true",
             "clean_streak: 5",
             "ship_receipt: {} | null",
+        ):
+            self.assertIn(phrase, self.skill_flat)
+
+    def test_review_evidence_is_route_conditional(self) -> None:
+        for phrase in (
+            "Require exactly one review variant and exact-match it to `closure_route`",
+            "render review as not required and do not manufacture convergence",
+            "Require five-clean review facts only for `final-closeout`",
+            "Do not require review convergence for `local-implementation`",
         ):
             self.assertIn(phrase, self.skill_flat)
 

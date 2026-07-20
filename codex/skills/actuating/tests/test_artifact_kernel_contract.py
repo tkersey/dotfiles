@@ -318,6 +318,8 @@ class ArtifactKernelContractTests(unittest.TestCase):
         self.assertIn("Actuating alone applies it", CLOSURE)
         self.assertIn("authors the resulting\n`actuating-closure-receipt/v1`", CLOSURE)
         self.assertIn("continue | ready-to-ship | complete | blocked", CLOSURE)
+        self.assertIn("closure_route: local-implementation | final-closeout", CLOSURE)
+        self.assertIn("must not infer review applicability from absent fields", CLOSURE)
         self.assertIn("five consecutive distinct", CLOSURE)
         self.assertIn("Ledger validation, replay, `state`, or `project`", CLOSURE)
         self.assertIn("must not construct it, populate its verdict, or emit it", CLOSURE)

@@ -66,11 +66,11 @@ handoff.
 ## Receipt and rendering
 
 Actuating authors one `actuating-closure-receipt/v1` binding the Goal,
-Construction, subject, Evidence head, Review Contract, semantic verdict, and
-cited premises. The receipt grants no new authority and becomes stale when any
-bound input changes. Ledger may validate its structure after authorship; it
-must not construct it, populate its verdict, or emit it from `state` or
-`project`.
+Construction, subject, Evidence head, Review Contract, closure route, semantic
+verdict, and cited premises. The receipt grants no new authority and becomes
+stale when any bound input changes. Ledger may validate its structure after
+authorship; it must not construct it, populate its verdict, or emit it from
+`state` or `project`.
 
 ~~~yaml
 closure_receipt:
@@ -81,10 +81,17 @@ closure_receipt:
   subject_digest:
   evidence_head:
   review_contract_digest:
+  closure_route: local-implementation | final-closeout
   verdict: continue | ready-to-ship | complete | blocked
   cited_premise_refs: []
   blockers: []
 ~~~
+
+`local-implementation` is the explicit `$actuating implement` terminal route;
+review and Ship evidence are not applicable. `final-closeout` covers bare mode
+and `review-closeout`; its complete verdict requires the current publication
+and five-clean premises selected by the Goal and route. Proof renderers must use
+this discriminant and must not infer review applicability from absent fields.
 
 `receipt_id` is the content digest of canonical JSON with `receipt_id` set to
 JSON `null`. It is a freshness-bound semantic receipt authored only by

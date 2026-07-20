@@ -1,6 +1,6 @@
 ---
 name: proof-patch
-description: "Render a concise human proof from Actuating's current complete closure receipt. Use after implementation or review closeout to bind the Goal, Construction, subject, Evidence Ledger head, Counterexample disposition, proof, retirements, review convergence, publication, residual risk, and human review focus without deciding closure or publishing."
+description: "Render a concise human proof from Actuating's current complete closure receipt. Use after implementation or review closeout to bind the Goal, Construction, subject, Evidence Ledger head, Counterexample disposition, proof, retirements, applicable review convergence, publication, residual risk, and human review focus without deciding closure or publishing."
 ---
 
 # Proof Patch
@@ -32,17 +32,22 @@ proof_patch_input:
     subject_digest:
     evidence_head:
     review_contract_digest:
+    closure_route: local-implementation | final-closeout
     verdict: complete
     blockers: []
   goal_contract: {}
   construction_contract: {}
   counterexample_sets: []
   evidence_refs: []
-  review:
-    auxiliaries_current: true
-    clean_streak: 5
-    full_wave_complete: true
-    recovery_pending: false
+  review: # exactly one variant, matching closure_route
+    local_implementation:
+      review_required: false
+    # OR
+    final_closeout:
+      auxiliaries_current: true
+      clean_streak: 5
+      full_wave_complete: true
+      recovery_pending: false
   ship_receipt: {} | null
   changed_paths: []
   diff_summary:
@@ -50,12 +55,14 @@ proof_patch_input:
   residual_risks: []
 ~~~
 
-Recheck that every bound identity is current before rendering. Render
-architecture only from the Construction Contract, classified bugs only from
-Counterexample Sets, observations only from cited Evidence, review convergence
+Recheck that every bound identity is current before rendering. Require exactly
+one review variant and exact-match it to `closure_route`. Render architecture
+only from the Construction Contract, classified bugs only from Counterexample
+Sets, observations only from cited Evidence, final-closeout review convergence
 only from Actuating's current evaluation of CAS owner receipts, and publication
-only from current Ship evidence. Identifiers alone are insufficient when a
-human claim requires source detail.
+only from current Ship evidence. For local implementation closure, render
+review as not required and do not manufacture convergence. Identifiers alone
+are insufficient when a human claim requires source detail.
 
 ## Output
 
@@ -87,9 +94,10 @@ human claim requires source detail.
 |---|---|---|
 
 ## Review convergence
-- Auxiliary lenses:
-- Standard clean streak:
-- Request-local recovery:
+- Applicability: Not required for local implementation closure | Final closeout
+- Auxiliary lenses: Not applicable | ...
+- Standard clean streak: Not applicable | ...
+- Request-local recovery: Not applicable | ...
 - Unresolved Counterexamples:
 
 ## Retirements
@@ -112,9 +120,11 @@ human claim requires source detail.
 
 ## Procedure
 
-1. Require Actuating's current `complete` receipt.
-2. Exact-match the Goal, Construction, subject, Evidence head, review facts,
-   static Review Contract, and applicable publication evidence.
+1. Require Actuating's current `complete` receipt and its explicit closure
+   route.
+2. Exact-match the Goal, Construction, subject, Evidence head, static Review
+   Contract, route-selected review variant, and applicable publication
+   evidence. Require five-clean review facts only for `final-closeout`.
 3. Bind every human claim to current source detail.
 4. Summarize only goal-relevant changes, Counterexamples, proof observations,
    review convergence, and retirements.
@@ -124,6 +134,8 @@ human claim requires source detail.
 
 - Do not emit final proof before current complete closure.
 - Do not accept a hand-edited, replayed, stale, or cross-subject receipt.
+- Do not require review convergence for `local-implementation` or omit it for
+  `final-closeout`.
 - Do not treat the Proof Patch as authority or persist it as peer truth.
 - Do not hide failed or unavailable verification.
 - Do not publish, replace `$ship`, or perform public effects.
