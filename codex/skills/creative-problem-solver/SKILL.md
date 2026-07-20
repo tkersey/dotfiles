@@ -47,7 +47,7 @@ Implicit invocation is enabled. The activation signal is an **unresolved strateg
 
 - Name the lane and Double Diamond stage.
 - State the problem, success criteria, and evidence posture: known facts versus assumptions or hypotheses.
-- Reframe once, then run a Frame Shift Check. Never promote an unsupported mechanism, bottleneck, or causal story to fact.
+- Reframe once, then run an Aha Check: name the restructuring insight and its evidence status. Never promote an unsupported mechanism, bottleneck, or causal story to fact.
 - Name the default solution basin and ensure at least two tiers use genuinely different conceptual frames.
 - Include all five tiers: Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
 - For every tier: accretive artifact, falsifiable expected signal with a timebox, and escape hatch.
@@ -61,7 +61,7 @@ Implicit invocation is enabled. The activation signal is an **unresolved strateg
 3. Define gate: one-line problem statement + success criteria; mark material unknowns.
 4. Evidence posture: separate facts from assumptions and hypotheses.
 5. Reframe using the stage default or the user's requested technique.
-6. Frame Shift Check. If there is no material shift, run one second and final pass with a different operator.
+6. Aha Check. State the restructuring insight, representational shift, and evidence status. If no material Aha appears, run one second and final pass with a different operator.
 7. Diversity gate: name the default basin and at least two distinct frames.
 8. Define an Artifact Spine of 1-3 durable assets that higher tiers can reuse.
 9. Generate the five-tier portfolio.
@@ -95,13 +95,15 @@ Implicit invocation is enabled. The activation signal is an **unresolved strateg
 - Honor a user-requested technique when it is usable; do not silently replace it with a "nearest supported" technique.
 - Chat disclosure: `Reframe used: <technique>` plus one line explaining why.
 
-## Frame Shift Check
+## Aha Check
 
-- State the baseline frame and the alternative frame in one line.
-- State evidence status: fact, supported inference, or hypothesis.
-- A frame shift is material only if it changes the candidate field, proof surface, ordering, or decision criteria.
+- **Aha is the restructuring insight**: the moment the problem is re-represented so a different candidate field becomes visible.
+- Make the representational change explicit: from the baseline frame to the alternative frame.
+- Output one compact line: `Aha: <restructuring insight> [evidence: fact | supported inference | hypothesis]`.
+- An Aha is material only if it changes the candidate field, proof surface, ordering, or decision criteria.
+- An Aha may be a hypothesis. Creative force does not upgrade its factual status.
 - If the mechanism is unverified, label it as a hypothesis and make validation part of the expected signal.
-- If no material shift appears after the second pass, state `No material reframe after second pass`, continue with the strongest grounded portfolio available, and mark same-basin honestly. Do not manufacture diversity.
+- If no material Aha appears after the second pass, state `Aha: N/A after second pass`, continue with the strongest grounded portfolio available, and mark same-basin honestly. Do not manufacture an Aha or diversity.
 
 ## Diversity guard
 
@@ -168,7 +170,7 @@ Moonshot — <move> [frame: <frame>]
 
 - Lane + stage.
 - Problem + success criteria + evidence posture.
-- Reframe used + Frame Shift Check + default basin.
+- Reframe used + Aha Check + default basin.
 - Compact Artifact Spine.
 - Five-tier portfolio.
 - Selection guidance + `Human Input Required`.
@@ -199,8 +201,8 @@ Evidence: latency and targets are known; the bottleneck is unknown.
 
 Reframe used: SCAMPER
 Why: mutate the existing request path before assuming a replacement is necessary.
-Frame shift: from "tune the query engine" to "allocate latency end-to-end; query, serialization, payload, cache, and transport are competing hypotheses."
-Evidence status: hypothesis; tracing decides which budget dominates.
+Aha: latency is a budget-allocation problem across the whole request path, not necessarily a query-engine problem. [evidence: hypothesis]
+Why it matters: query, serialization, payload, cache, and transport become competing hypotheses; tracing decides which budget dominates.
 Default basin: tune the query engine directly.
 Frames: proof surface, constraint budget, operating model, interface, substrate.
 
