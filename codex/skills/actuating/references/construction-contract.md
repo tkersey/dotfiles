@@ -79,6 +79,13 @@ itself. `architecture.canonical_owner` and `execution.owner_boundary` must be
 identical; execution projects the selected owner and cannot introduce another
 one.
 
+`execution.allowed_paths` is a duplicate-free canonical literal repository
+path set under the same grammar as the Goal scope. A broader Goal scope does
+not authorize a noncanonical operation path. The `.git` root and
+`.ledger/actuation/artifact-kernel` control root, including slash descendants,
+are reserved under ASCII case-folding; prefix-like siblings remain valid. A
+broader scope, including `.`, cannot re-admit either root.
+
 For every cited accepted class, the Construction's `boundary.boundary_key`
 must equal the class `boundary_key`. The canonical owner may remain the class
 `owner_boundary`. Moving that owner is legal only in `architecture-repair`,

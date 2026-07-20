@@ -85,8 +85,20 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "An unregistered Goal ID has no marker",
             "first durable `artifact-kernel-v1` fact",
             "validates the complete envelope, Goal, K0, subject, and authority before the first `goal_contract_registered` append",
+            "returns `VerifierSandboxUnavailable` before repository discovery, attachment custody, or Evidence creation",
+            "duplicate-free canonical literal path sets",
+            "reserved under ASCII case-folding",
+            "prefix-like siblings remain valid",
+            "including `.`, cannot re-admit either root",
         ):
             self.assertIn(phrase, " ".join((SKILL + OWNERS + COMMANDS).split()))
+        for phrase in (
+            "`.git` root",
+            "`.ledger/actuation/artifact-kernel` control root",
+            "reserved under ASCII case-folding",
+            "including `.`, cannot re-admit either root",
+        ):
+            self.assertIn(phrase, " ".join(CONSTRUCTION.split()))
         self.assertIn("already marked with that protocol", LEGACY)
         self.assertIn("never an input, authority source", LEGACY)
         for phrase in (
@@ -208,6 +220,10 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "CAS-TARGET-IDENTITY-v1",
             "CAS-REVIEW-SUBJECT-v1",
             '"excludedPaths":[".ledger/actuation/artifact-kernel"]',
+            'When `allowedPaths` is `["."]`',
+            "tracked, untracked, or ignored ASCII-case variants",
+            "from subject enumeration and `subjectDigest`",
+            "before capability issuance and leaves Evidence unchanged",
             "--subject-descriptor @LEDGER-HELD-SUBJECT-DESCRIPTOR",
             "Ledger-authored request fingerprint",
             "live, stored, and receipt target digests",
@@ -241,6 +257,20 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
             "Direct caller append of an initial start is rejected",
             "no initial terminal is admissible until all five starts exist",
             "never cancels an already launched sibling",
+            "Every Ledger-owned start is read-only, disables hooks",
+            "durable request ID as CAS thread scope",
+            "kills and reaps only that child",
+            "adopts that active start with the same attempt identity",
+            "creates no duplicate attempt and grants no verdict or review credit",
+            "Recovery alone carries an explicit fresh-attempt reason",
+            "legal recovery creates distinct attempt B",
+            "barrier-incomplete requests expose no actionable envelope",
+            "persists `fresh_attempt_required` in the durable session record",
+            "restores it in `wait`",
+            "carries it into the frozen terminal projection",
+            "legacy record without the field defaults to non-fresh",
+            "versioned frozen CAS projection for that event kind",
+            "failure identity and no semantic verdict or proof credit",
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, FLAT_COMMANDS)
@@ -265,6 +295,10 @@ class ArtifactKernelSkillContractTests(unittest.TestCase):
 
     def test_post_edit_symlink_escape_is_rejected_live_and_on_replay(self) -> None:
         for phrase in (
+            "Current v3 edit operations name exact leaf files",
+            "`prepare` rejects `.` and existing directories",
+            "every changed path must exactly equal one declared operation path",
+            "do not turn a directory into recursive edit authority",
             "post-effect manifest",
             "itself a symlink or descends from a manifest symlink",
             "leaves the prepared capability unconsumed",

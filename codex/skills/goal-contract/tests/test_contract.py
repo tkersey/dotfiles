@@ -31,6 +31,7 @@ class ContractTests(unittest.TestCase):
                 self.assertIn(text, self.skill + self.kernel)
 
     def test_v3_contains_only_the_authority_payload_sections(self) -> None:
+        kernel_flat = " ".join(self.kernel.split())
         for text in (
             "objective:",
             "authority:",
@@ -42,9 +43,15 @@ class ContractTests(unittest.TestCase):
             "execution_authority_digest:",
             "required_observation:",
             "required_proof_kinds:",
+            "duplicate-free",
+            "`.git` root",
+            "`.ledger/actuation/artifact-kernel` control root",
+            "reserved under ASCII case-folding",
+            "prefix-like siblings remain valid",
+            "including `.`, cannot re-admit either root",
         ):
             with self.subTest(text=text):
-                self.assertIn(text, self.kernel)
+                self.assertIn(text, kernel_flat)
 
     def test_high_critical_example_risk_is_explicit_and_class_law_scoped(self) -> None:
         corpus = self.skill_flat + " " + " ".join(self.kernel.split())

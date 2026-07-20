@@ -103,6 +103,9 @@ exactly `allowedPaths`, `excludedPaths`, `repoRealpath`, `schema`, and
 `[".ledger/actuation/artifact-kernel"]`. Ledger retains those bytes only as a
 content-addressed supporting attachment. The descriptor is transient CAS
 custody, not a fifth authoritative artifact family or peer review state.
+When `allowedPaths` is `["."]`, CAS still excludes tracked, untracked, or
+ignored ASCII-case variants of the Artifact Kernel control subtree from subject
+enumeration and `subjectDigest`.
 
 CAS owns target identity. It validates the descriptor, repository, literal
 safe path sets, live Goal-scoped subject, and exact instruction bytes; rejects
@@ -127,6 +130,15 @@ start-collection failure, or later transport failure. Do not cancel siblings,
 serialize a replacement wave, mutate before the wave and classification
 barriers, or treat one request failure as whole-wave zero credit.
 
+Ledger-owned starts run read-only with hooks off, fallback disabled, and the
+durable request ID as CAS thread scope. A pre-wait output or read failure kills
+and reaps only that child. These launch constraints grant no mutation path and
+do not weaken sibling non-cancellation.
+
+If an exact CAS start succeeded but its response was lost, retrying the same
+bound dispatch adopts the active attempt with its original identity. Adoption
+does not create a second attempt, a semantic verdict, or review credit.
+
 Report a completed review exactly once after both its structured receipt and
 recorded process status exist. The semantic verdict, not process exit status,
 owns `clean` or `findings`. Reporting does not mutate request state, grant
@@ -146,6 +158,24 @@ A terminal attempt without a structured semantic verdict:
 
 The failure remains in exhaustive transport history. Never rewrite it as a
 finding, a clean attempt, or a whole-wave reset.
+
+Expose an actionable recovery envelope only after the request-local recovery
+and initial barrier are legal. It preserves the exact request binding and safe
+launch policy and adds explicit fresh-attempt intent. An ordinary lost-output
+retry adopts attempt A; the admitted recovery creates distinct attempt B.
+Active, stale, exhausted, blocked, non-current, or barrier-incomplete requests
+expose no recovery command.
+
+For detached `start`/`wait`, CAS persists `fresh_attempt_required` in the
+durable session record, restores it in `wait`, and carries it into the frozen
+terminal projection. Clean and findings receipts from attempt B therefore
+preserve fresh-attempt provenance across process separation. A legacy record
+without the field defaults to non-fresh.
+
+Owner validation uses the frozen projection for the terminal kind. A completed
+receipt must project a semantic `clean|findings` verdict. A transport-failure
+receipt must project its failure identity without a semantic verdict or proof
+credit.
 
 ## Findings and Counterexamples
 

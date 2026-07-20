@@ -97,6 +97,13 @@ algorithm or emitting an unvalidated artifact.
   Contract still grants no capability. A plan-only or gate-only source without
   current execution authority requires `mutation_allowed: false`.
 - `scope` may narrow but never broaden the accepted source.
+- `scope.allowed_paths` and `scope.prohibited_paths` are duplicate-free
+  canonical literal repository-path sets. `.` is allowed; every other path is
+  relative, has no empty, `.` or `..` component, no trailing slash or
+  backslash. The `.git` root and `.ledger/actuation/artifact-kernel` control
+  root, including slash descendants, are reserved under ASCII case-folding;
+  prefix-like siblings remain valid. A broader scope, including `.`, cannot
+  re-admit either root.
 - `compatibility` preserves every source-fixed contract and names only
   source-permitted breaks and required migrations.
 - Each `laws` entry is stable, source-derived, applicable, and observable.

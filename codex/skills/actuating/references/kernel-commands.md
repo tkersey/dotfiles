@@ -57,6 +57,14 @@ artifact-kernel goal, while the unqualified command surface remains frozen
 legacy behavior. Historical-store inventory remains a prerequisite for
 retiring legacy writers, not for this explicit opt-in route.
 
+This Ledger adapter currently admits a new Artifact Kernel goal only on macOS,
+where its verifier handler can enforce read-only repository and no-network
+containment. On another host, `open` returns `VerifierSandboxUnavailable`
+before repository discovery, attachment custody, or Evidence creation. Pure
+materialization and validation, other Ledger sources, frozen readers, and
+read-only state/closure replay remain available. Broaden this context-relative
+domain only after an equivalent verifier handler passes adversarial proof.
+
 For a new goal, `protocol` repeats the accepted transient route selector; it is
 not a pre-registration marker or authority. Under the Evidence lock, `open`
 rejects conflicting history and validates the complete envelope, Goal, K0,
@@ -86,6 +94,18 @@ belong to that Goal, use `mode: initial`, reference it, and have no Construction
 predecessor. A source revision opens a fresh Goal with exactly one Goal
 predecessor and a fresh K0 through the current supersession route below; do not
 reopen or reinterpret the predecessor Goal.
+
+Goal `allowed_paths` and `prohibited_paths`, plus Construction
+`execution.allowed_paths`, are duplicate-free canonical literal path sets.
+`.` is the only dot-component form; every other path is relative, has no empty,
+`.` or `..` component, and has no trailing slash or backslash. The `.git` root
+and `.ledger/actuation/artifact-kernel` control root, including slash
+descendants, are reserved under ASCII case-folding; prefix-like siblings remain
+valid. A broader scope, including `.`, cannot re-admit either root. Current
+operations use the same predicate. `prepare` rejects an exact operation target
+under either reserved root before capability issuance and leaves Evidence
+unchanged. Frozen v1/v2 Evidence retains its historical path grammar for read
+compatibility.
 
 ## Registration envelopes
 
@@ -182,6 +202,12 @@ For `edit`:
 ledger --source actuation --goal goal-1 record --capability "$CAPABILITY"
 ledger --source actuation --goal goal-1 observe --step step-1
 ~~~
+
+Current v3 edit operations name exact leaf files. `prepare` rejects `.` and
+existing directories; after the effect, every changed path must exactly equal
+one declared operation path. Goal and Construction scopes may remain broader,
+but they do not turn a directory into recursive edit authority. Frozen v1/v2
+records retain their read-only descendant-coverage semantics.
 
 Before `record` appends or consumes the capability, Ledger re-reads the
 post-effect manifest. It rejects any changed path that is itself a symlink or
@@ -308,6 +334,10 @@ Actuating owns the declared scope; Ledger retains the descriptor only as a
 content-addressed supporting attachment. It is transient CAS custody, not an
 authoritative artifact or peer review state.
 
+When `allowedPaths` is `["."]`, CAS still excludes tracked, untracked, or
+ignored ASCII-case variants of the Artifact Kernel control subtree from subject
+enumeration and `subjectDigest`.
+
 Ledger obtains the target from its read-only CAS-owner preflight:
 
 ~~~bash
@@ -334,6 +364,13 @@ the five initial `review_attempt_started` events. Direct caller append of an
 initial start is rejected, and no initial terminal is admissible until all five
 starts exist. A child or receipt failure never cancels an already launched
 sibling; every launched sibling reaches terminal transport evidence.
+Every Ledger-owned start is read-only, disables hooks, uses the durable request
+ID as CAS thread scope, forbids fallback, and keeps multi-agent mode at
+`explicit-request-only`. A pre-wait read or output-bound failure kills and reaps
+only that child; it never cancels a sibling.
+If CAS started the exact bound request but its response was lost, retrying
+`dispatch-review` adopts that active start with the same attempt identity. The
+adoption creates no duplicate attempt and grants no verdict or review credit.
 
 Then append the exact terminal attempt or transport-failure receipt for each
 request. Before admission, Ledger recomputes the live CAS target from the
@@ -342,10 +379,24 @@ requires the live, stored, and receipt target digests plus the receipt's request
 ID and request fingerprint to agree. Historical replay verifies the durable
 joins without recomputing a live target. Only after the full initial transport
 barrier may one failed request receive its single same-subject fresh recovery.
+Derived `cas_dispatch` is null until a caller-owned serial start or the one
+request-local recovery is legal. Its actionable envelope fixes the same
+read-only, hook-free, request-scoped, no-fallback policy. Recovery alone carries
+an explicit fresh-attempt reason: retry without it adopts attempt A, while the
+legal recovery creates distinct attempt B. Active, stale, exhausted, blocked,
+non-current, and barrier-incomplete requests expose no actionable envelope.
+For detached `start`/`wait`, CAS persists `fresh_attempt_required` in the
+durable session record, restores it in `wait`, and carries it into the frozen
+terminal projection. Clean and findings receipts from attempt B therefore
+preserve fresh-attempt provenance across process separation. A legacy record
+without the field defaults to non-fresh.
 
 Terminal callers submit `review-attempt-completed/v2` or
 `review-transport-failed/v2` and omit
 `observed_target_fingerprint_digest`. After owner-receipt admission, Ledger
+requires the versioned frozen CAS projection for that event kind: completed
+receipts carry a semantic `clean|findings` verdict, while verdictless transport
+receipts carry failure identity and no semantic verdict or proof credit. Ledger
 re-observes the target under exclusive append custody. Drift causes Ledger to
 persist the corresponding v3 terminal body with the observed digest. The v3
 fact consumes no semantic or request-local recovery credit, but it does
