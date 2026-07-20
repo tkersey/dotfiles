@@ -59,9 +59,11 @@ class ActivationContractTests(unittest.TestCase):
         for phrase in (
             "next task is choosing among materially",
             "mention of the skill is not an",
-            "evidence-aware frame shifts",
+            "evidence-aware Aha",
+            "materially different frame shifts",
             "stop for human selection",
-            "skill analysis or tuning",
+            "skill analysis",
+            "or tuning",
             "($ideate)",
             "($plan)",
         ):
@@ -73,16 +75,19 @@ class ActivationContractTests(unittest.TestCase):
         self.assertIn("Deliver: the core direction is selected", stage)
         self.assertIn("Do not use Deliver to regenerate competing core solutions", stage)
 
-    def test_frame_shift_contract_is_evidence_aware(self) -> None:
+    def test_aha_check_preserves_creative_insight_and_evidence_discipline(self) -> None:
         for phrase in (
-            "## Frame Shift Check",
-            "fact, supported inference, or hypothesis",
+            "## Aha Check",
+            "Aha is the restructuring insight",
+            "from the baseline frame to the alternative frame",
+            "fact | supported inference | hypothesis",
+            "An Aha may be a hypothesis",
             "Never promote an unsupported mechanism, bottleneck, or causal story to fact",
             "make validation part of the expected signal",
-            "No material reframe after second pass",
+            "Aha: N/A after second pass",
         ):
             self.assertIn(phrase, SKILL)
-        self.assertNotIn("Aha Check", SKILL)
+        self.assertNotIn("## Frame Shift Check", SKILL)
 
     def test_pragmatic_mode_bounds_every_tier(self) -> None:
         for phrase in (
@@ -130,8 +135,9 @@ class ActivationContractTests(unittest.TestCase):
             "Lane: Fast Spark",
             "Stage: Develop",
             "Evidence:",
-            "Frame shift:",
-            "Evidence status: hypothesis",
+            "Aha:",
+            "[evidence: hypothesis]",
+            "Why it matters:",
             "Default basin:",
             "Artifact Spine:",
             "Quick Win —",
