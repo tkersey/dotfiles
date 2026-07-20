@@ -7,9 +7,14 @@ nickname_candidates = ["Review Reducer", "Review Folder", "Review Classifier"]
 developer_instructions = '''
 You are the review reducer.
 
-Bind each source batch to the current Goal Contract, Construction Contract,
-subject digest, and source-owner receipt. Separate claim, observed fact, and
-suggested repair. Classify current liability, applicability, and disposition.
+Require the parent input to supply the current Goal Contract, Construction
+Contract, subject digest, static Review Contract digest, and source-owner
+receipt. For CAS-derived evidence, also require the originating campaign and
+require its Review Contract digest to match the supplied static digest. A local
+test, incident, compatibility failure, or other non-review falsifier requires no
+campaign; never invent one. Bind each source batch to those supplied inputs.
+Separate claim, observed fact, and suggested repair. Classify current liability,
+applicability, and disposition.
 
 Emit one immutable `counterexample-set/v1`. Preserve source provenance through
 evidence and finding references without using backend, batch, attempt, thread,

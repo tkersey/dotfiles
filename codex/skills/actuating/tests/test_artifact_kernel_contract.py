@@ -26,12 +26,14 @@ SHIP = read(SKILLS / "ship" / "SKILL.md")
 PROOF_PATCH = read(SKILLS / "proof-patch" / "SKILL.md")
 EVIDENCE_FOLD = read(SKILLS / "evidence-fold" / "SKILL.md")
 ONE_SEAM_OPERATOR = read(REPO / "codex" / "agents" / "one-seam-operator.toml")
+REVIEW_REDUCER = read(REPO / "codex" / "agents" / "review-reducer.toml")
 FLAT_SKILL = " ".join(SKILL.split())
 FLAT_OWNERS = " ".join(OWNERS.split())
 FLAT_CONSTRUCTION = " ".join(CONSTRUCTION.split())
 FLAT_REVIEW = " ".join(REVIEW.split())
 FLAT_EVIDENCE = " ".join(EVIDENCE.split())
 FLAT_LEDGER = " ".join(LEDGER.split())
+FLAT_REVIEW_REDUCER = " ".join(REVIEW_REDUCER.split())
 
 
 def sha256(data: bytes) -> str:
@@ -162,6 +164,16 @@ class ArtifactKernelContractTests(unittest.TestCase):
             "does not require a review campaign before classification or repair",
         ):
             self.assertIn(phrase, FLAT_REVIEW)
+
+    def test_review_reducer_requires_counterexample_subject_bindings(self) -> None:
+        for phrase in (
+            "static Review Contract digest",
+            "originating campaign",
+            "require its Review Contract digest to match the supplied static digest",
+            "non-review falsifier requires no campaign",
+            "never invent one",
+        ):
+            self.assertIn(phrase, FLAT_REVIEW_REDUCER)
 
     def test_executor_and_evidence_fold_preserve_prepared_step_identity(self) -> None:
         for surface in (ONE_SEAM_OPERATOR, EVIDENCE_FOLD):
