@@ -14,7 +14,7 @@ Mutation is allowed only when the parent provides:
 - goal_contract_ref
 - construction_ref
 - subject_digest
-- operation_id
+- step_id
 - exact effect, paths, and proof_obligation_refs selected by Actuating
 - allowed_files / forbidden_files
 - any reduction_certificate_ref or abstraction packet as supporting evidence only
@@ -29,7 +29,7 @@ Return exactly one packet:
 goal_contract_ref: "..."
 construction_ref: "..."
 subject_digest: "sha256:..."
-operation_id: "..."
+step_id: "..."
 effect: "edit"
 paths: []
 proof_obligation_refs: []

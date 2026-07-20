@@ -65,11 +65,15 @@ campaign_id = sha256(
 )
 ~~~
 
-The `review_contract_digest` in every `counterexample-set/v1` subject must equal
-the digest used by its campaign. Ledger may validate that equality and the
-campaign tuple. Actuating decides whether the matched evidence earns credit.
-Any changed input creates a different campaign and admits no prior review
-credit.
+The `review_contract_digest` in every `counterexample-set/v1` subject binds the
+current static Review Contract. A Counterexample Set produced from a CAS finding
+must also bind that finding's campaign, whose digest must match. A failing test,
+incident, compatibility failure, or other non-review falsifier does not require
+a review campaign before classification or repair. Ledger validates the
+artifact's structural subject tuple and digest shape; Actuating evaluates source
+provenance and any campaign relationship. Actuating decides whether the matched
+evidence earns credit. Any changed campaign input creates a different campaign
+and admits no prior review credit.
 
 ## Required topology
 
@@ -145,6 +149,13 @@ Actuating launches standard plus four auxiliary CAS requests concurrently.
 All five starts must exist before it accepts an initial terminal result. A
 finding, clean result, start failure, or transport failure never cancels a
 launched sibling; every sibling reaches terminal transport evidence.
+
+On a publication-bearing route, Actuating maps the current published subject
+to CAS `--base <bound-base>` and requires every returned base, head, and target
+fingerprint to match that binding. It must not select `--uncommitted` for a
+clean published checkout: that selector covers only working-tree changes, not
+the published branch delta. `--commit HEAD` is sufficient only when that one
+commit is itself the complete bound review subject.
 
 Each `review_attempt_started` observation must cite the exact CAS start
 `receipt_ref`. Ledger checks only that the reference is a digest. Actuating

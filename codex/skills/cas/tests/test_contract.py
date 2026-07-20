@@ -88,6 +88,11 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, CONTRACT)
 
+    def test_actuating_concurrent_wave_keeps_the_published_subject(self) -> None:
+        self.assertIn("post-Ship Actuating wave", CONTRACT)
+        self.assertIn("normally this is `--base <bound-base>`", CONTRACT)
+        self.assertIn("Never substitute `--uncommitted`", CONTRACT)
+
     def test_real_review_wait_and_recovery_are_explicit(self) -> None:
         for token in [
             "--timeout-ms 2700000",

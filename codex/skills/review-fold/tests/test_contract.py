@@ -46,6 +46,11 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertIn("--goal <goal-id>", SKILL)
         self.assertIn("append --input <counterexample-set.json>", SKILL)
 
+    def test_non_review_falsifier_does_not_require_a_campaign(self) -> None:
+        self.assertIn("non-review falsifier requires no review campaign", CONTRACT)
+        self.assertIn("Never fabricate a campaign", CONTRACT)
+        self.assertIn("make `review_contract_digest` optional", CONTRACT)
+
     def test_example_uses_current_exact_shape(self) -> None:
         artifact = EXAMPLE["artifact"]
         self.assertEqual("counterexample-set/v1", artifact["schema"])

@@ -98,8 +98,13 @@ invoked standalone, require `ledger --version` to be at least `0.11.0` and
 verify that `ledger --source actuation --help` exposes only
 `append|prepare|state|project|doctor|path` before materialization.
 
-1. Bind the source to the current Goal, Construction, subject digest, and
-   source-owner receipt.
+1. Bind the source to the current Goal, Construction, subject digest, static
+   Review Contract digest, and source-owner receipt. A failing test, incident,
+   compatibility failure, or other non-review falsifier requires no review
+   campaign. A CAS-derived set additionally binds its originating campaign,
+   whose Review Contract digest must match the static digest in the
+   Counterexample subject. Never fabricate a campaign for local evidence or
+   make `review_contract_digest` optional.
 2. Separate each claim, observed fact, and suggested repair.
 3. Decide whether the fact is a current liability under an accepted Goal law.
 4. Identify the governing law, stable boundary, discrepancy, owner, witness,

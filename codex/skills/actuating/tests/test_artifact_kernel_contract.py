@@ -24,6 +24,8 @@ DECISION = read(ROOT / "references" / "decision-contract.yaml")
 LEDGER = read(SKILLS / "ledger" / "SKILL.md")
 SHIP = read(SKILLS / "ship" / "SKILL.md")
 PROOF_PATCH = read(SKILLS / "proof-patch" / "SKILL.md")
+EVIDENCE_FOLD = read(SKILLS / "evidence-fold" / "SKILL.md")
+ONE_SEAM_OPERATOR = read(REPO / "codex" / "agents" / "one-seam-operator.toml")
 FLAT_SKILL = " ".join(SKILL.split())
 FLAT_OWNERS = " ".join(OWNERS.split())
 FLAT_CONSTRUCTION = " ".join(CONSTRUCTION.split())
@@ -144,6 +146,8 @@ class ArtifactKernelContractTests(unittest.TestCase):
             'backendClass == "cas-start-wait"',
             "Any other subject-digest change is material",
             "new immutable Review Contract identity and digest",
+            "maps the current published subject to CAS `--base <bound-base>`",
+            "must not select `--uncommitted` for a clean published checkout",
         ):
             self.assertIn(phrase, FLAT_REVIEW)
 
@@ -154,9 +158,15 @@ class ArtifactKernelContractTests(unittest.TestCase):
             "goal_id || 0x00",
             "construction_ref || 0x00",
             "subject_digest || 0x00",
-            "`review_contract_digest` in every `counterexample-set/v1` subject must equal",
+            "`review_contract_digest` in every `counterexample-set/v1` subject binds",
+            "does not require a review campaign before classification or repair",
         ):
             self.assertIn(phrase, FLAT_REVIEW)
+
+    def test_executor_and_evidence_fold_preserve_prepared_step_identity(self) -> None:
+        for surface in (ONE_SEAM_OPERATOR, EVIDENCE_FOLD):
+            self.assertIn("step_id", surface)
+            self.assertNotIn("operation_id", surface)
 
     def test_checked_in_review_contract_and_lens_packages_recompute(self) -> None:
         self.assertEqual(

@@ -79,10 +79,16 @@ Use `start` only when the caller needs a detached handle or is launching an
 Actuating concurrent wave:
 
 ~~~bash
-cas review start --cwd <repo> --uncommitted \
+cas review start --cwd <repo> --base <bound-base> \
   --custom-instructions @<instructions> \
   --workflow-binding-json @<binding.json> --json
 ~~~
+
+For a post-Ship Actuating wave, pass the exact published-subject selector that
+Actuating bound; normally this is `--base <bound-base>`. Never substitute
+`--uncommitted` merely because the published checkout is clean. Use
+`--uncommitted` only when the bound review subject is the current uncommitted
+working tree, such as an explicitly local triage.
 
 Use `wait` to recover or finish that exact attempt:
 

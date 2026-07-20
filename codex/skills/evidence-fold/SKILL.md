@@ -29,7 +29,7 @@ evidence_fold:
   evidence_id:
   goal_id:
   construction_ref:
-  operation_id:
+  step_id:
   artifact_state:
     repo:
     subject_digest:
@@ -64,7 +64,7 @@ evidence_fold:
     reason:
 ```
 
-For Actuating, `construction_ref` and `operation_id` identify the exact current
+For Actuating, `construction_ref` and `step_id` identify the exact current
 Construction and Actuating-selected operation. `artifact_state` is the
 post-operation subject binding; `changed_paths` must equal the observed path
 set. A node-level `done` verdict requires `supports_done_claim=yes`, no proof
