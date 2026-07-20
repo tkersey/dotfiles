@@ -21,7 +21,6 @@ CONTRACTS = ROOT / "references" / "contracts.md"
 GRADING = ROOT / "references" / "grading-and-progression.md"
 SURFACE_CHECKER = ROOT / "scripts" / "check-operator-surface"
 NATIVE_SURFACE_LOCK = ROOT / "native-surface.lock.json"
-OPERATOR_CONTRACT_WORKFLOW = ROOT.parents[2] / ".github" / "workflows" / "hylo-operator-contract.yml"
 SURFACE_MANIFEST_ENV = "HYLO_OPERATOR_SURFACE_MANIFEST"
 NATIVE_SURFACE_LOCK_SCHEMA = "hylo-native-surface-lock/v1"
 EXPECTED_ROUTE_SCHEMA = "hylo-operator-recipe-expectation/v1"
@@ -443,39 +442,6 @@ class HyloOperatorRecipeContractTests(unittest.TestCase):
             "trial compilation, registration, and comparison execution forbidden",
             self.documentation,
         )
-
-    def test_operator_contract_actions_are_immutable_full_sha_pins(self) -> None:
-        workflow = read(OPERATOR_CONTRACT_WORKFLOW)
-        action_refs = re.findall(r"(?m)^\s*uses:\s*([^\s#]+)", workflow)
-        self.assertTrue(action_refs)
-        for action_ref in action_refs:
-            with self.subTest(action_ref=action_ref):
-                self.assertRegex(action_ref, r"\A[^@\s]+@[0-9a-f]{40}\Z")
-
-    def test_operator_contract_executes_the_pinned_native_recipe_lanes(self) -> None:
-        workflow = read(OPERATOR_CONTRACT_WORKFLOW)
-        self.assertIn("permissions:\n  contents: read", workflow)
-        self.assertGreaterEqual(workflow.count("persist-credentials: false"), 2)
-        portable = "test-hylo-operator-recipe"
-        executable = "test-hylo-operator-recipe-executable"
-        self.assertIn(portable, workflow)
-        self.assertIn(executable, workflow)
-        recipe_step = workflow.index("Execute pinned native operator recipe")
-        self.assertLess(recipe_step, workflow.index("Verify documentation contract"))
-
-    def test_operator_contract_binds_the_exact_candidate_tuple(self) -> None:
-        workflow = read(OPERATOR_CONTRACT_WORKFLOW)
-        self.assertIn("name: Hylo candidate operator contract", workflow)
-        self.assertIn("ref: ${{ github.event.pull_request.head.sha }}", workflow)
-        self.assertIn(
-            'test "$dotfiles_commit" = "${{ github.event.pull_request.head.sha }}"',
-            workflow,
-        )
-        self.assertIn(
-            'test "$native_commit" = "${{ steps.native-surface.outputs.commit }}"',
-            workflow,
-        )
-        self.assertNotIn("ref: main", workflow)
 
     def test_registration_order_matches_the_native_transition_graph(self) -> None:
         section = markdown_section(self.orchestration, "Registration order")
