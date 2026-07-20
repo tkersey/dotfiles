@@ -42,7 +42,8 @@ artifact:
   created_at:
   predecessor_refs: []
   supporting_refs:
-    - review-attempt-or-failure-evidence-ref
+    - review-campaign-started-event-ref
+    - review-attempt-or-failure-event-ref
   payload:
     subject:
       construction_ref:
@@ -65,6 +66,14 @@ artifact:
         applicability:
         quotient_basis:
 ~~~
+
+For CAS-derived evidence, `supporting_refs` cites the current
+`review_campaign_started` event and each exact terminal attempt or transport
+event used by the Set. Actuating resolves those Evidence Ledger events and
+requires their `campaign_id` and request identity to match the campaign derived
+from this Set's existing subject tuple. Do not duplicate that derived campaign
+identity as a fifth Counterexample subject field. A non-review falsifier needs
+no campaign reference.
 
 A current clean source may produce an empty `classes` list. One class represents
 one stable Counterexample to one governing law at one boundary. Review attempt

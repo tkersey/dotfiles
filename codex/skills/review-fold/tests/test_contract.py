@@ -50,6 +50,10 @@ class ReviewFoldContractTests(unittest.TestCase):
         self.assertIn("new Set's `predecessor_refs`", SKILL)
         self.assertIn("prior Set that most recently", SKILL)
 
+    def test_cas_campaign_uses_existing_supporting_refs_join(self) -> None:
+        self.assertIn("`review_campaign_started` event", SKILL)
+        self.assertIn("Do not duplicate that derived campaign", SKILL)
+
     def test_non_review_falsifier_does_not_require_a_campaign(self) -> None:
         self.assertIn("non-review falsifier requires no review campaign", CONTRACT)
         self.assertIn("Never fabricate a campaign", CONTRACT)

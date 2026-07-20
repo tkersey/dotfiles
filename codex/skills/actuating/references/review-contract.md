@@ -67,7 +67,11 @@ campaign_id = sha256(
 
 The `review_contract_digest` in every `counterexample-set/v1` subject binds the
 current static Review Contract. A Counterexample Set produced from a CAS finding
-must also bind that finding's campaign, whose digest must match. A failing test,
+must also cite the current `review_campaign_started` event and exact terminal
+attempt event in `supporting_refs`. Actuating resolves those events and requires
+their campaign identity to equal the digest derived from the Set's existing
+Goal, Construction, subject, and Review Contract tuple; no duplicate campaign
+field is added to the Counterexample subject. A failing test,
 incident, compatibility failure, or other non-review falsifier does not require
 a review campaign before classification or repair. Ledger validates the
 artifact's structural subject tuple and digest shape; Actuating evaluates source
