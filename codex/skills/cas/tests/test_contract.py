@@ -138,7 +138,7 @@ class CasContractTests(unittest.TestCase):
 
     def test_hctp_is_explicitly_separate_from_actuating(self) -> None:
         for token in [
-            "## Separate HCTP boundary",
+            "## HCTP trial execution",
             "does not participate in Actuating implementation, review, Construction, or closure",
             "hylo-trial/v2",
             "--materialization-fd",
