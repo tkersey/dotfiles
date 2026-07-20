@@ -81,6 +81,14 @@ Use canonical JSON, content-address `artifact_id`, reject unknown fields, and
 treat a materialized Construction as immutable. A changed decision creates an
 explicit successor.
 
+Before any projected operation, Actuating sets the selected draft's
+`artifact_id` to JSON `null` and requests the current Ledger structural adapter
+to append it. Only `actuating-append-result/v1` with a non-null top-level
+`artifact_id` equal to the returned `artifact.artifact_id` and the associated
+registration `event_digest` makes that exact canonical artifact current. Ledger
+identifies and registers the Actuating-authored selection; it never selects or
+revises the Construction.
+
 ## Selection law
 
 Before consequential mutation, Actuating applies `$universalist` to the
@@ -182,6 +190,12 @@ Actuating, not Ledger, selects the next exact operation from the current Goal,
 Construction, live subject, and evidence. The executor applies only that
 operation and reports observations. An operation envelope or structural
 validator pass supplies no mutation authority.
+
+Every selected operation carries the exact current `expected_subject_digest`.
+Immediately before the effect, the executor recomputes the live subject through
+the Construction-selected repository-native procedure and must abort without
+effect on mismatch. Ledger stores and compares that opaque identity but never
+derives it or invokes Git.
 
 ## Ablation
 

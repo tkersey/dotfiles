@@ -32,6 +32,20 @@ class ContractTests(unittest.TestCase):
         ):
             self.assertIn(phrase, self.skill + self.contract)
 
+    def test_goal_is_materialized_before_actuating_handoff(self) -> None:
+        for phrase in (
+            "append --input <goal-contract-draft.json>",
+            "Require `actuating-append-result/v1`",
+            "equal to `artifact.artifact_id`",
+            "registration `event_digest`",
+            "returned immutable artifact and exact identity",
+        ):
+            self.assertIn(phrase, self.skill_flat)
+        self.assertLess(
+            self.skill_flat.index("append --input <goal-contract-draft.json>"),
+            self.skill_flat.index("returned immutable artifact and exact identity"),
+        )
+
     def test_authority_scope_laws_and_acceptance_are_complete(self) -> None:
         for phrase in (
             "objective:",

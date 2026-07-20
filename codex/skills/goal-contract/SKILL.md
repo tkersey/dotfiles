@@ -36,10 +36,23 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
    the workflow's current Actuating adapter gate. When invoked standalone,
    require `ledger --version` to be at least `0.11.0` and verify that
    `ledger --source actuation --help` exposes only the current six-command
-   adapter before materialization. Ledger canonicalizes and validates
-   structure; it does not author semantics or grant authority.
-9. Inspect the complete source-to-Goal projection before handing the immutable
-   artifact to `$actuating` for Construction selection.
+   adapter.
+9. Materialize and register the authored draft through the existing structural
+   adapter before handoff:
+
+   ~~~bash
+   ledger --source actuation --repo <repo> --goal <goal-id> \
+     append --input <goal-contract-draft.json>
+   ~~~
+
+10. Require `actuating-append-result/v1`, a non-null top-level `artifact_id`
+    equal to `artifact.artifact_id`, the complete returned canonical artifact,
+    and its registration `event_digest`. Retain that returned artifact as the
+    current Goal Contract. Ledger canonicalizes, identifies, and registers its
+    structure; it does not author semantics or grant authority.
+11. Inspect the complete source-to-Goal projection before handing the returned
+    immutable artifact and exact identity to `$actuating` for Construction
+    selection.
 
 ## Source-authority laws
 
@@ -69,6 +82,7 @@ Return:
 
 ~~~text
 Goal Contract identity
+goal_contract_registered event identity
 accepted source identity
 execution-authority identity
 mutation posture

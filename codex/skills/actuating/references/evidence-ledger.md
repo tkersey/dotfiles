@@ -77,6 +77,7 @@ owner evidence; Ledger validates only its declared structural contract.
   "schema": "actuating-operation/v1",
   "goal_id": "<goal-id>",
   "construction_ref": "sha256:<64-lower-hex>",
+  "expected_subject_digest": "sha256:<64-lower-hex>",
   "step_id": "<step-id>",
   "effect": "inspect|edit|verify",
   "idempotency_key": "<unique-key>",
@@ -109,7 +110,7 @@ nonblank UTF-8, and brackets mean a duplicate-free string array.
 
 | `kind` | Exact `body` |
 |---|---|
-| `effect_recorded` | `{schema:"effect-recorded/v1", step_id:string, changed_paths:[string]}` |
+| `effect_recorded` | `{schema:"effect-recorded/v1", step_id:string, pre_effect_subject_digest:digest, changed_paths:[string]}` |
 | `operation_observed` | `{schema:"operation-observed/v1", step_id:string, status:string, discharged_refs:[string], evidence_refs:[digest]}` |
 | `operation_aborted` | `{schema:"operation-aborted/v1", step_id:string, reason:string}` |
 | `publication_observed` | `{schema:"publication-observed/v1", status:string, receipt_ref:digest}` |
@@ -177,12 +178,24 @@ ledger --source actuation --goal GOAL_ID path
 ~~~
 
 Place optional `--repo PATH` before `--goal`. `prepare` validates the exact
-current Goal, Construction, scope, effect, and obligation references; appends
-`operation_prepared`; returns the raw `AKC2-...` capability once; and persists
-only its digest. The capability is evidence-custody binding, not mutation
-authority. `effect_recorded` consumes it for edits; a successful
-`operation_observed` consumes it for inspect or verify. Missing, mismatched,
-reused, or unexpectedly supplied capability material fails closed.
+current Goal, Construction, caller-owned `expected_subject_digest`, scope,
+effect, and obligation references; appends `operation_prepared`; returns the raw
+`AKC2-...` capability once; and persists only its digest. The durable event
+envelope retains the expected subject. The capability is evidence-custody
+binding, not mutation authority. `effect_recorded` consumes it for edits only
+when `pre_effect_subject_digest` equals the current structural subject. A
+successful `operation_observed` consumes it for inspect or verify against the
+event envelope's current subject. Post-edit observation exact-matches the
+recorded result subject. Missing, mismatched, reused, or unexpectedly supplied
+capability material fails closed.
+
+Immediately before an edit, inspection, or verifier, Actuating requires the
+executor to recompute the live subject with the Construction-selected
+repository-native procedure and exact-match `expected_subject_digest`. A
+mismatch takes `operation_aborted` without performing the effect. The executor
+then echoes the subject it actually observed in the applicable owner event.
+Ledger compares opaque digests only: it never invokes Git, derives repository
+identity, or decides whether the subject procedure is semantically adequate.
 
 `operation_aborted` is the capabilityless recovery path: reject any raw
 capability, exact-match the current tuple and pending `step_id`, require a

@@ -92,6 +92,32 @@ class ArtifactKernelContractTests(unittest.TestCase):
         self.assertIn("Public API or CLI affordance", CONSTRUCTION)
         self.assertIn("Every retirement names an absence verifier", FLAT_CONSTRUCTION)
 
+    def test_goal_and_construction_are_registered_before_operations(self) -> None:
+        for phrase in (
+            "goal_contract_registered",
+            "append --input <construction-contract.json>",
+            "construction_contract_registered",
+            "Only the returned artifact is the current Construction",
+        ):
+            self.assertIn(phrase, FLAT_SKILL)
+        self.assertLess(
+            FLAT_SKILL.index("append --input <construction-contract.json>"),
+            FLAT_SKILL.index("For each repository effect"),
+        )
+        self.assertIn("Ledger identifies and registers", FLAT_CONSTRUCTION)
+        self.assertIn("it never selects or revises the Construction", FLAT_CONSTRUCTION)
+
+    def test_operation_subject_is_rechecked_before_effect(self) -> None:
+        for phrase in (
+            "expected_subject_digest",
+            "pre_effect_subject_digest",
+            "A mismatch takes `operation_aborted` without performing the effect",
+            "never invokes Git",
+        ):
+            self.assertIn(phrase, FLAT_EVIDENCE)
+        self.assertIn("A mismatch aborts without effect", FLAT_SKILL)
+        self.assertIn("Every selected operation carries", FLAT_CONSTRUCTION)
+
     def test_counterexample_successor_and_review_intent_remains(self) -> None:
         for phrase in (
             "passes through `$review-fold` before repair",

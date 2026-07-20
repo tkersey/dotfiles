@@ -83,7 +83,8 @@ mutation.
 
 1. Compile the accepted source with
    [$goal-contract](../goal-contract/SKILL.md). Do not select architecture in
-   the Goal Contract.
+   the Goal Contract. Require its returned canonical artifact, non-null
+   `artifact_id`, and `goal_contract_registered` event before continuing.
 2. Inspect the repository boundary, existing owner, host enforcement
    capabilities, and required observations. Apply `$universalist` at every
    changed or preserved boundary.
@@ -91,13 +92,30 @@ mutation.
    law, makes invalid states unrepresentable where feasible, and names exact
    proof and retirement obligations. Follow
    [construction-contract.md](references/construction-contract.md).
-4. For each repository effect, Actuating selects one exact operation projected
-   by the current Goal and Construction. The executor applies only that effect;
-   it cannot choose architecture, broaden scope, publish, or claim completion.
-5. Run the Construction's exact verifier and falsifier observations. Record
+4. Set the selected Construction draft's `artifact_id` to JSON `null`, then
+   materialize and register it before selecting any operation:
+
+   ~~~bash
+   ledger --source actuation --repo <repo> --goal <goal-id> \
+     append --input <construction-contract.json>
+   ~~~
+
+   Require `actuating-append-result/v1`, retain its complete canonical
+   `artifact`, exact-match its non-null `artifact_id` to
+   `artifact.artifact_id`, and retain `event_digest` as the
+   `construction_contract_registered` observation. Only the returned artifact
+   is the current Construction; Ledger does not select or revise it.
+5. For each repository effect, Actuating selects one exact operation projected
+   by the current Goal, returned Construction, and live subject, including its
+   `expected_subject_digest`. Immediately before the effect, the executor
+   recomputes that identity through the Construction-selected repository-native
+   procedure. A mismatch aborts without effect. The executor cannot choose
+   architecture, broaden scope, publish, or claim completion; Ledger only
+   exact-matches the echoed opaque digest and never derives it or invokes Git.
+6. Run the Construction's exact verifier and falsifier observations. Record
    their immutable outputs and the resulting subject identity in the Evidence
    Ledger using [evidence-ledger.md](references/evidence-ledger.md).
-6. Re-evaluate the current artifacts and observations. Actuating selects the
+7. Re-evaluate the current artifacts and observations. Actuating selects the
    next operation, review action, Ship handoff, closure judgment, or blocker.
 
 The one-operation law is `select -> prepare -> effect -> observe -> evaluate ->
