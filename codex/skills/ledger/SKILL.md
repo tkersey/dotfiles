@@ -1,6 +1,6 @@
 ---
 name: ledger
-description: "Ensure a `ledger` command is available on PATH, coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation, address Universalist plans and receipts, route Hylo campaign/trial operations, and perform pure artifact validation without bypassing source authority. Use before a workflow's first Ledger command, at material validation or delivery checkpoints, when the command is missing, or for ledger status, migration, doctor, harvest planning, memory-admission handoff, reconciliation, Universalist plan addressing or receipt emission, Hylo CRF/HCTP lifecycle work, or artifact validation."
+description: "Ensure a `ledger` command is available on PATH; materialize, validate, record, replay, and project requested Actuating artifacts without taking semantic or execution authority; coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation; address Universalist plans and receipts; route Hylo campaign/trial operations; and perform pure artifact validation."
 ---
 
 # Ledger
@@ -9,7 +9,8 @@ description: "Ensure a `ledger` command is available on PATH, coordinate the sha
 
 Own the shared Ledger bootstrap and lifecycle-coordination boundaries,
 coordinate repo-local source-memory stores through native source APIs, and
-route pure validation of governance and review artifacts.
+materialize, validate, record, replay, or project requested artifacts without
+taking their semantic owners' authority.
 
 Use `$ledger` for source-memory migration, cross-store doctor, harvest planning, and memory admission coordination. Do not use it to bypass source-specific authority.
 
@@ -53,8 +54,8 @@ If `ledger` does not resolve on `PATH`:
    implementation.
 
 On supported Homebrew environments the canonical formula is
-`tkersey/tap/ledger`. Bootstrap before opening an actuation generation; do not
-install during an open generation.
+`tkersey/tap/ledger`. Bootstrap before Actuating requests its first Ledger
+operation; do not install during an active repository effect.
 
 ~~~yaml
 ledger_bootstrap_ready:
@@ -85,9 +86,10 @@ compatibility and explicit migration:
 
 Operational, non-memory stores:
 
-- `.ledger/actuation/events.jsonl` is the current actuation persistent adapter,
-  owned exclusively by `ledger --source actuation`; do not harvest it into
-  memory or route its writes through source-memory coordination.
+- `.ledger/actuation/<safe-goal-id>/evidence.jsonl` is the current per-goal
+  actuation persistent adapter, owned exclusively by
+  `ledger --source actuation`; do not harvest it into memory or route its
+  writes through source-memory coordination.
 - `.ledger/hylo/events.jsonl` is the current Hylo persistent adapter, owned
   exclusively by `ledger --source hylo`; do not harvest it into memory or
   route its writes through source-memory coordination.
@@ -96,6 +98,62 @@ Operational, non-memory artifacts:
 
 - `.ledger/universalist/plan-{plan-id}.md`, addressed exclusively by
   `ledger --source universalist`; do not harvest these plans into memory.
+
+## Actuating Artifact Kernel boundary
+
+Actuating has four authoritative per-goal artifact families:
+
+```text
+goal-contract/v3
+counterexample-set/v1
+construction-contract/v1
+actuating-evidence-event/v1
+```
+
+Ledger may, when the semantic owner requests it:
+
+- materialize canonical content-addressed documents;
+- validate document, event, and supporting-receipt structure;
+- append immutable observations with sequence and integrity custody;
+- replay recorded observations;
+- project requested structural facts and discardable views.
+
+Ledger may use a generated implementation table for command routing, accepted
+artifact and event shapes, structural validators, and CLI help. That table does
+not own or duplicate Actuating's lifecycle, review, or closure laws. The current
+canonical Review Contract is an Actuating-owned input: Ledger may recompute its
+digest and validate campaign tuple consistency, but it must not select or
+reconstruct the contract from hardcoded policy.
+
+`state` and `project` emit disposable structural aids such as registered
+artifact references, the Evidence head, recorded event shapes, and unresolved
+structural custody. They do not emit semantic workflow state, review credit, a
+next action, or a closure verdict.
+
+Ledger never:
+
+- executes or edits repository work;
+- dispatches reviews or reads CAS verdict semantics;
+- classifies CAS owner facts as a semantic verdict or computes review credit;
+- interprets Ship receipts as publication truth;
+- classifies Counterexamples or selects a repair;
+- selects a Construction or proof strategy;
+- chooses Actuating's next action;
+- grants mutation authority;
+- emits `continue`, `ready-to-ship`, `complete`, or `blocked`;
+- authors an `actuating-closure-receipt/v1`.
+
+Actuating owns correct-by-construction implementation, Counterexample
+evaluation, Construction selection, orchestration, the next action, and the
+semantic closure judgment. `$review-fold` owns Counterexample classification.
+CAS owns its attempts and structured receipts. `$ship` alone owns public
+effects.
+
+Structural validation returns only named structural claims. It is not semantic
+truth, mutation authority, review credit, publication authority, or completion.
+A Ledger projection is supporting evidence until Actuating evaluates it with
+the current Goal, Construction, Counterexamples, owner receipts, and live
+subject.
 
 ## Hylo CRF/HCTP authority
 
@@ -331,16 +389,11 @@ Stateless, non-authorizing observations:
 - `ledger validate plan-source-contract --input FILE`
 - `ledger validate policy-synthesis-receipt --input FILE`
 - `ledger validate review-fold --input FILE`
-- `ledger validate actuation-review-policy --phase PHASE --input FILE`
-- `ledger validate review-resolution --phase PHASE --input FILE`
 - `ledger validate source-memory-checkpoint --input FILE`
 
-These commands accept canonical JSON and never read or write `.ledger`. General
-governance contracts emit `ledger-validate-decision/v1`; Actuating contracts
-emit their domain validation-decision schemas. Ledger 0.7.0 and newer preserve
-v1 same-tuple review-policy validation and enforce the v2 certified
-cross-tuple standard-clean chain. Source-memory checkpoint coordination requires
-Ledger 0.10.0 or newer; probe `ledger --version` before opening that checkpoint.
+These commands accept canonical JSON and never read or write `.ledger`.
+Source-memory checkpoint coordination requires Ledger 0.10.0 or newer; probe
+`ledger --version` before opening that checkpoint.
 
 Source-store state model:
 
@@ -450,7 +503,7 @@ never bulk-admit every learning or incomplete Negative Ledger projection.
 - why memories are not being captured;
 - doctor `.ledger`;
 - cross-store memory digest.
-- validate PSC-v1, PSR-v1, or RF-v2;
+- validate current governance or review artifacts;
 - `ledger validate`.
 - create or resolve a Universalist plan;
 - find the newest Universalist plan without overwriting an earlier run.
@@ -468,8 +521,9 @@ to source-specific skills and native source APIs:
   `.ledger/negative-ledger/events.jsonl`;
 - `$synesthesia` / `ledger --source synesthesia`; the current compatibility adapter is `.ledger/synesthesia/events.jsonl`, and current Synesthesia notes remain transition evidence;
 - `$memory-source-notes` / `memory-note` for immutable admission snapshots.
-- `$actuating` / `ledger --source actuation` for the operational actuation
-  event chain; this is not a memory-admission source.
+- `$actuating` owns Actuating semantics and orchestration;
+  `ledger --source actuation` records and projects requested supporting
+  artifacts and is not a memory-admission or execution source.
 - `$hylo` / `ledger --source hylo` for operational replay-campaign evidence;
   the current compatibility adapter is `.ledger/hylo/events.jsonl`, and this is
   not a memory-admission source.
@@ -599,7 +653,7 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - After readiness, invoke `ledger` directly and let the CLI own compatibility,
   integrity, and failures.
 - Do not install without current installation authority.
-- Do not install during an open actuation generation.
+- Do not install during an active Actuating repository effect.
 - Do not mutate a source store except through its owning CLI.
 - Do not treat memory-source notes as the canonical store.
 - Do not persist checkpoint receipts or turn Ledger into a semantic source
@@ -609,8 +663,9 @@ See [source-store-layout.md](references/source-store-layout.md), [migration-work
 - Do not admit every source-store event to memory.
 - Do not block a route from Negative Ledger memory without current ledger verification.
 - Do not turn Synesthesia decorative language into memory.
-- Do not migrate, compact, hand-edit, or harvest actuation events as source
-  memory; use the actuation source's `doctor`, `state`, and transition commands.
+- Do not migrate, compact, hand-edit, or harvest Actuating evidence as source
+  memory; use only Ledger's generated structural artifact surface at
+  Actuating's request.
 - Do not invent Universalist plan ids, write a replacement latest pointer, or
   reuse an existing plan path; use the Universalist source commands.
 - Do not route stateless validation through `--source`; sources own state, while

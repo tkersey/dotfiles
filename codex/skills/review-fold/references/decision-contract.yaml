@@ -3,48 +3,44 @@ skill_decision_contract:
   skill:
     name: review-fold
     kind: mixed
-    source_fingerprint: review-fold-rf-v2-classification-only
+    source_fingerprint: review-fold-counterexample-set-v1
   triggers:
     - trigger_id: RF-SOURCE
-      description: Review evidence needs source-bound classification.
-      cue_literals: [review finding, review thread, human review, CAS review, local audit]
+      description: Witnessed falsification evidence needs source-bound classification.
+      cue_literals: [review finding, failing test, incident, bug report, migration failure, compatibility failure]
       cue_regexes: []
       exclusions: []
-    - trigger_id: RF-MATERIAL
-      description: Material review pressure needs quotienting before resolution.
-      cue_literals: [blocks goal, regression risk, misuse hazard, invariant gap, complexity stall]
+    - trigger_id: RF-CLASS
+      description: Multiple finding rows may witness one stable law-and-boundary class.
+      cue_literals: [duplicate finding, same law, same boundary, recurrence]
       cue_regexes: []
       exclusions: []
   routes:
-    - route_id: RF-NO-CODE
-      description: Reject, prove, ask, or follow up without implementation.
-      aliases: [reject, proof-only, ask-human, follow-up]
-      terminal: "yes"
-    - route_id: RF-RESOLUTION-INPUT
-      description: Emit a classified owner-boundary input for review-resolution/v1.
-      aliases: [resolution-input]
+    - route_id: RF-COUNTEREXAMPLE
+      description: Author the current immutable counterexample-set/v1.
+      aliases: [accepted, rejected, follow-up]
       terminal: "yes"
     - route_id: RF-BLOCK
-      description: Block when source, validity, ownership, or artifact binding is unknown.
+      description: Block when source, validity, applicability, ownership, or subject identity is unknown.
       aliases: [blocked]
       terminal: "yes"
   clauses:
     - clause_id: RF-CLASSIFY-001
       trigger_refs: [RF-SOURCE]
-      expected_routes: [RF-NO-CODE, RF-RESOLUTION-INPUT, RF-BLOCK]
+      expected_routes: [RF-COUNTEREXAMPLE, RF-BLOCK]
       prohibited_routes: []
-      required_artifacts: [RF-v2 receipt, source identity, current artifact binding, disposition for every finding]
-      success_signals: [claim fact and suggested repair are separate, zero-finding clean source is representable]
-      failure_signals: [review prose directly selects work, unknown source is treated as current]
-      rationale: Classification must remain evidence rather than authority.
+      required_artifacts: [counterexample-set/v1, source-owner evidence, current Goal binding, current Construction binding, disposition for every class]
+      success_signals: [claims facts and suggested repairs are separate, a clean source is representable without invented findings]
+      failure_signals: [review prose directly selects work, unknown or stale evidence is treated as current]
+      rationale: Classification remains evidence and never becomes mutation authority.
     - clause_id: RF-QUOTIENT-001
-      trigger_refs: [RF-MATERIAL]
-      expected_routes: [RF-NO-CODE, RF-RESOLUTION-INPUT, RF-BLOCK]
+      trigger_refs: [RF-CLASS]
+      expected_routes: [RF-COUNTEREXAMPLE, RF-BLOCK]
       prohibited_routes: []
-      required_artifacts: [observed fact, quotient key, owner boundary, law family, falsifier, evidence references]
-      success_signals: [duplicates collapse into one equivalence class, specialized liabilities create routing obligations]
-      failure_signals: [one implementation distinction per comment, selected repair or clean counter emitted]
-      rationale: Resolution should receive owner-level classes, not a patch queue.
+      required_artifacts: [stable class identity, boundary key, governing law, discrepancy, owner boundary, witness, falsifier, applicability, quotient basis]
+      success_signals: [duplicates collapse into one class, recurrence across Constructions retains stable class identity]
+      failure_signals: [attempt commit publication epoch or patch proposal defines class identity, a repair or next action is selected]
+      rationale: Actuating evaluates stable falsifiers rather than a patch queue.
   instrumentation:
-    decision_receipt: required
-    rationale: Finding dispositions and quotient classes determine whether pressure may enter review resolution.
+    decision_receipt: not-needed
+    rationale: The immutable Counterexample Set already records every disposition and quotient class consumed by Actuating.

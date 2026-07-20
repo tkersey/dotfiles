@@ -222,11 +222,14 @@ Winnowing Bottom Line:
 
 When explicitly asked to implement:
 
-1. Implement exactly one certified reduction seam at a time.
-2. Prefer `one-seam-operator` or `goal-actuating` under the Reduction Certificate.
-3. Preserve the old surface until the selected proof relation passes, unless direct deletion is already proven safe.
-4. Run recomposition audit before proceeding to another seam.
-5. Stop on a new observation or lost obligation.
+1. Hand the Reduction Certificate to Actuating as supporting reasoning.
+2. Mutate only after Actuating encodes the selected reduction in the current
+   Construction and binds one exact operation to the current subject.
+3. Implement exactly that one reduction seam at a time through
+   `one-seam-operator` or `$actuating`.
+4. Preserve the old surface until the selected proof relation passes, unless direct deletion is already proven safe.
+5. Run recomposition audit before proceeding to another seam.
+6. Stop on a new observation or lost obligation.
 
 ## Resources
 

@@ -37,10 +37,11 @@ Handoff instead:
 
 - broad layer/framework/tooling tax -> `reduce`;
 - unclassified review distinctions -> `review-fold`;
-- classified owner-boundary pressure -> `review-resolution/v1` through the owning actuation workflow;
+- classified owner-boundary pressure -> `$actuating` after `$review-fold`
+  authors the current Counterexample Set;
 - illegal states / invariant ownership -> `invariant-ace`;
 - missing essential structural shape -> `universalist`;
-- implementation -> `goal-actuating` or the owning workflow.
+- implementation -> `$actuating` or the owning workflow.
 
 ## Modes
 
@@ -93,23 +94,26 @@ Use only when the slice crosses files, behavior is unclear, specification risk i
 8. State the recomposition rule: how the retained factors still explain the behavior.
 9. Name the smallest proof signal and handoff.
 
-## Review-resolution handoff
+## Review finding handoff
 
 When an actuation review profile selects this lens, return factorization
-evidence to `review-resolution/v1`. Do not choose the strategy or grant
-mutation.
+evidence to the review caller. `$review-fold` may cite it when classifying a
+`counterexample-set/v1`; `$actuating` alone evaluates that Counterexample
+against the current Construction and selects any successor. Do not choose the
+repair, architecture, work node, or mutation.
 
 ~~~yaml
-complexity_resolution_input:
+complexity_counterexample_evidence:
   owner_boundary:
+  governing_law:
   participating_abstractions:
     - abstraction:
       live_obligation:
       status: retain | retire | collapse | delegate | replace | validate-first
   dominated_factors: []
   smallest_local_repair:
-  replacement_kernel:
   local_repair_adds_semantic_machinery: true | false
+  structural_pressure: []
   proof_surface_before: []
   proof_surface_after: []
   falsifier:
@@ -118,7 +122,8 @@ complexity_resolution_input:
 
 If local repair adds a protocol, state, helper abstraction, repeated branch
 family, or wound-specific test family, mark it as semantically growing and
-present the replacement-kernel alternative. The resolution owner decides.
+record the structural pressure. Actuating decides whether the current
+Construction is a realization, architecture, or ablation defect.
 
 ## Factorization / Winnowing Receipt
 

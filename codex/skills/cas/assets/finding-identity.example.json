@@ -4,7 +4,7 @@
     "reviewAttemptPhase": "normalized_verdict",
     "reviewAttemptExists": true,
     "tupleVerdictExists": true,
-    "backendClass": "cas-review-session",
+    "backendClass": "cas-start-wait",
     "clean": false,
     "findingCount": 1,
     "failureCode": null,

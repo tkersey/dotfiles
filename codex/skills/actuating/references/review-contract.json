@@ -1,0 +1,134 @@
+{
+  "lens_contract_manifests": {
+    "standard": {
+      "resources": [
+        {
+          "path": "codex/skills/actuating/references/standard-review.md",
+          "digest": "sha256:b0d97329e0528e818f804888e02f6b9066053889c54ac0a88243b6f8b58a0c66"
+        }
+      ]
+    },
+    "footgun-finder": {
+      "resources": [
+        {
+          "path": "codex/skills/footgun-finder/SKILL.md",
+          "digest": "sha256:3700bee14061db88f0debde4a02c3b90c82dd9691d25d35aff3bb73a4835cc18"
+        }
+      ]
+    },
+    "invariant-ace": {
+      "resources": [
+        {
+          "path": "codex/skills/invariant-ace/SKILL.md",
+          "digest": "sha256:a7072ac6042ab937b3daae24427b6f5c03124ec0c01d5ef502cc9e279638fc17"
+        },
+        {
+          "path": "codex/skills/invariant-ace/evals/adversarial-eval-seeds.yaml",
+          "digest": "sha256:33ae7346fc8f60f945a060ddfe4b6629328efb2aa54db361b2c7b54672a2d1b0"
+        },
+        {
+          "path": "codex/skills/invariant-ace/references/CODEX_SUBAGENTS.md",
+          "digest": "sha256:48e4b31de98a62e9833fcc66608d6db98367b9ebe73b29fcc333455fd1496436"
+        },
+        {
+          "path": "codex/skills/invariant-ace/references/authority-fanout.md",
+          "digest": "sha256:d19c7cd3f8ce09efa1ff3113fa4c6ee928ddfcc2510a537d4f2a5a5a25356254"
+        },
+        {
+          "path": "codex/skills/invariant-ace/references/invariant-gate-contract.md",
+          "digest": "sha256:210457276c8e4109325fe53b180c76caef730e65d380bdef26fbffd4215dfb89"
+        },
+        {
+          "path": "codex/skills/invariant-ace/references/invariant-output-template.md",
+          "digest": "sha256:6ae20736390d15157d7936cd54429c83575550f1d9bed29fadc0f613fa96f944"
+        },
+        {
+          "path": "codex/skills/invariant-ace/references/minimum-behavioral-kernel.md",
+          "digest": "sha256:10b76137dc6bec78b561a5bc79c7703cbdd6356c3216d0c30126b7f8104d949a"
+        },
+        {
+          "path": "codex/skills/invariant-ace/tools/invariant_ace_gate.py",
+          "digest": "sha256:ec846cb93f86a6cbb6c4ab6f0e13204b4018c57a8ea0f4d82a29bb8d4445457a"
+        }
+      ]
+    },
+    "complexity-mitigator": {
+      "resources": [
+        {
+          "path": "codex/skills/complexity-mitigator/SKILL.md",
+          "digest": "sha256:e0c6681153bceaf5073ca58dbad282ed7e35285f6c1a39cbef190e44f971e112"
+        }
+      ]
+    },
+    "fresh-eyes": {
+      "resources": [
+        {
+          "path": "codex/skills/fresh-eyes/SKILL.md",
+          "digest": "sha256:39bea1ccabe30a3ef02b1ebdece4d75053a2fa82a9f2a2c960df515611441e59"
+        }
+      ]
+    }
+  },
+  "review_contract": {
+    "schema": "actuating-review-contract/v1",
+    "contract_id": "actuating-review-contract-v1",
+    "contract_digest": "sha256:03d8a1866a0fe9ede9a80efee9570cdbea7789ec81a1c54d24b9254f46e0a4cc",
+    "required_lenses": [
+      {
+        "name": "standard",
+        "role": "standard",
+        "contract_ref": "codex/skills/actuating/references/standard-review.md",
+        "contract_digest": "sha256:fd88f1bcccdd20ffb2999e1cc22ef021dab3fd837a6dd466b121dff6b33de5a5"
+      },
+      {
+        "name": "footgun-finder",
+        "role": "auxiliary",
+        "contract_ref": "codex/skills/footgun-finder/SKILL.md",
+        "contract_digest": "sha256:cbdfa336b9d2528f09e569616611e6d85ee3925129c74125904a9b11789457eb"
+      },
+      {
+        "name": "invariant-ace",
+        "role": "auxiliary",
+        "contract_ref": "codex/skills/invariant-ace/SKILL.md",
+        "contract_digest": "sha256:4e61fe65b55e1aa1db420b940c94bc44a27cd527ee0ce35f6dce23284057573c"
+      },
+      {
+        "name": "complexity-mitigator",
+        "role": "auxiliary",
+        "contract_ref": "codex/skills/complexity-mitigator/SKILL.md",
+        "contract_digest": "sha256:c1045397d7c0bc43138a1c72f8b963afb32acd3b952e032d447de961ddea5fbd"
+      },
+      {
+        "name": "fresh-eyes",
+        "role": "auxiliary",
+        "contract_ref": "codex/skills/fresh-eyes/SKILL.md",
+        "contract_digest": "sha256:7b52906ad696b71bae095a9f68f5233131861c16948bdbc93983b5a0d5c26187"
+      }
+    ],
+    "initial_wave": {
+      "concurrent": true,
+      "all_lenses_required": true,
+      "non_cancelling": true
+    },
+    "standard_convergence": {
+      "required_consecutive_clean_attempts": 5,
+      "first_wave_standard_counts": true,
+      "later_attempts_serial": true,
+      "findings_reset_streak": true
+    },
+    "material_change": {
+      "resets_all_review_credit": true
+    },
+    "transport_recovery": {
+      "request_local": true,
+      "maximum_fresh_recovery_attempts": 1
+    },
+    "attempt_quality": {
+      "strong_principal_required": true,
+      "reduced_principal_forbidden": true,
+      "fallback_forbidden": true,
+      "context_match_required": true,
+      "exact_instruction_digest_required": true
+    }
+  }
+}

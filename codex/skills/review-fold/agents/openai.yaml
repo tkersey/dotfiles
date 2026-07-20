@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Fold"
-  short_description: "Classify and quotient review findings"
-  default_prompt: "Use $review-fold to classify this current review source, quotient duplicate findings, validate RF-v2 through the pure Zig `ledger validate` command, and emit no-code dispositions or resolution inputs without selecting repairs or granting authority."
+  short_description: "Classify falsifiers into Counterexample Sets"
+  default_prompt: "Use $review-fold to separate observed facts from suggested repairs, quotient stable law-and-boundary classes, and author counterexample-set/v1 without selecting a Construction, granting mutation, counting review credit, or deciding closure."

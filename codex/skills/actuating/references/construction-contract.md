@@ -1,0 +1,191 @@
+# Construction Contract
+
+The Construction Contract is Actuating's sole architecture-selection artifact
+for one material construction. It answers:
+
+> What structure makes the Goal laws true, excludes accepted Counterexamples,
+> preserves valid behavior, and retires the construction it dominates?
+
+It never grants mutation by itself.
+
+Every accepted defect compiles through one law-level route:
+
+~~~text
+witnessed Counterexample -> intended law -> canonical owner -> selected Construction
+-> strongest feasible proof -> executable obligation -> retirement -> independent review
+~~~
+
+Passing only the witnessed example is insufficient unless the Construction
+proves that the class is genuinely instance-specific.
+
+## Shape
+
+~~~yaml
+artifact:
+  schema: construction-contract/v1
+  artifact_id:
+  goal_id:
+  semantic_author: actuating
+  created_at:
+  predecessor_refs: []
+  supporting_refs: []
+
+  payload:
+    goal_contract_ref:
+    mode: initial | realization-repair | architecture-repair | ablation-repair
+    subject:
+      repository:
+      base_artifact_digest:
+    boundary:
+      boundary_key:
+      source_worlds: []
+      target_worlds: []
+      carriers: []
+      operations: []
+      observations: []
+    architecture:
+      governing_law_refs: []
+      canonical_owner:
+      selected_construction:
+      representation_or_machine:
+      interpreter_or_handler:
+      residual_assumptions: []
+    falsified_predecessor_claims: []
+    preserved_predecessor_claims: []
+    invalid_states_eliminated: []
+    counterexample_class_refs: []
+    preserved_observations: []
+    proof_obligations:
+      - obligation_id:
+        law_ref:
+        statement:
+        proof_mode: representation | total-transition | exhaustive-model | static-refinement | property-law | differential | example-regression
+        adequacy_reason:
+        verifier: {argv: []}
+        falsifier: {argv: []}
+        proof_kind: implementation | review | acceptance | ship
+    retirements:
+      - retirement_id:
+        dominated_construct:
+        disposition: collapse | delegate | retire | replace
+        replacement_ref:
+        verifier: {argv: []}
+    execution:
+      allowed_paths: []
+      owner_boundary:
+      operation_effects: [inspect, edit, verify]
+      completion: complete | ready-to-ship
+~~~
+
+Use canonical JSON, content-address `artifact_id`, reject unknown fields, and
+treat a materialized Construction as immutable. A changed decision creates an
+explicit successor.
+
+## Selection law
+
+Before consequential mutation, Actuating applies `$universalist` to the
+affected boundary and records:
+
+- the current context and accepted laws;
+- the existing owner and host enforcement capabilities;
+- the smallest repository-native candidate;
+- materially distinct candidates and their falsifiers;
+- the selected non-dominated construction;
+- invalid states eliminated, residual obligations, and retirements.
+
+One Construction selects the canonical owner, representation or machine,
+interpreter or handler, proof strategy, scope, and retirements. Executors,
+review coordinators, Ship, and Ledger project that selection; none may
+reconsider it.
+
+A candidate `A` dominates candidate `B` only when `A` is no worse in every
+ACT-AK dimension:
+
+- satisfies every required law satisfied by `B`;
+- preserves every required observation preserved by `B`;
+- excludes every Counterexample excluded by `B`;
+- has no more independent law owners;
+- has no more parallel semantic representations;
+- has no more bypasses;
+- introduces no more semantic mechanisms;
+- leaves no more dominated residue; and
+- requires no greater resource burden.
+
+`A` must also be strictly better in at least one dimension. If two or more
+non-dominated minima remain incomparable, prove `separate-laws` from distinct
+accepted laws or block; preference, familiarity, and implementation momentum
+cannot manufacture a winner.
+
+## Correct-by-construction proof
+
+For each law, select the strongest feasible proof mode:
+
+~~~text
+representation
+> total transition
+> exhaustive finite model
+> static or refinement proof
+> property or algebraic law
+> differential proof
+> example or regression proof
+~~~
+
+A weaker mode requires an adequacy reason. High or Critical authority,
+state-machine, identity, persistence, or concurrency defects require more than
+an example unless the accepted source explicitly owns the residual risk and a
+compensating invariant proof exists.
+
+Expected minimums by law family are:
+
+| Law family | Expected minimum |
+|---|---|
+| State machine or lifecycle | representation and total-transition; bounded exhaustive model when feasible |
+| Authority, capability, or replay | representation or static contract plus adversarial transitions |
+| Identity or canonicalization | property law and corpus; differential proof when available |
+| Parser, serializer, or codec | round-trip property and malformed-input corpus |
+| Persistence or event fold | integrity replay and model or property proof |
+| Idempotency, ordering, or quotienting | repeated-operation or permutation property law |
+| Compatibility or migration | golden corpus and before/after differential proof |
+| Concurrency | explicit state and ownership model plus stress or model check |
+| Pure algorithm | property or differential proof |
+| Public API or CLI affordance | contract fixtures and footgun review |
+
+Every implementation or acceptance obligation names an exact verifier and an
+independent falsifier. Review and Ship obligations remain projections of their
+external owners; their argv is not executable repository authority.
+
+## Successors
+
+Every material implementation has one current Construction. A successor must
+state:
+
+- which predecessor claims were falsified and preserved;
+- which accepted Counterexample classes it excludes;
+- whether the defect is realization, architecture, or ablation;
+- what structure changes or remains;
+- which valid observations remain;
+- what proof becomes stronger;
+- what dominated residue must disappear.
+
+`realization-repair` preserves the architecture and corrects an implementation
+or bypass. `architecture-repair` changes the architecture. `ablation-repair`
+preserves the selected replacement while completing retirements.
+
+## Operation projection
+
+`execution.allowed_paths` is a duplicate-free canonical literal repository
+path set. The `.git` root and the Artifact Kernel control store, including
+slash descendants, are reserved under ASCII case-folding. A broader Goal scope
+does not authorize them.
+
+Actuating, not Ledger, selects the next exact operation from the current Goal,
+Construction, live subject, and evidence. The executor applies only that
+operation and reports observations. An operation envelope or structural
+validator pass supplies no mutation authority.
+
+## Ablation
+
+A replacement is incomplete while a dominated predecessor, duplicate owner,
+bypass, representation, validator, adapter, flag, or proof path remains live.
+Every retirement names an absence verifier and must be independently observed
+before closure.

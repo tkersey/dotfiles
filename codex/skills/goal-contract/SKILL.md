@@ -1,111 +1,82 @@
 ---
 name: goal-contract
-description: "Compile an accepted goal, implementation spec, review campaign, migration, or hard debugging loop into a compact source-bound GoalContract. Use before multi-step execution to bind outcome, verifier, authority source, artifact scope, constraints, review policy, stop conditions, and human-owned ambiguity."
+description: "Compile accepted intent into the sole source-bound goal-contract/v3 artifact. Use before multi-step implementation, review closeout, migration, or hard debugging to bind outcomes, laws, authority, scope, compatibility, and acceptance without selecting architecture, choosing operations, or granting mutation."
 ---
 
 # Goal Contract
 
 ## Mission
 
-Compile intent into the smallest source-bound contract that can be projected
-into the actuation kernel's `actuation-open/v1` authority, path scope, terminal route,
-and verifier-backed obligations. This skill records authority; it does not
-grant, select, or execute mutation.
+Compile accepted intent into the only per-goal semantic-authority document.
+The accepted specification or direct user authority owns required semantics;
+`$goal-contract` records them without extending or reinterpreting them.
 
-## GC-v2
+The Goal Contract records whether mutation was authorized. It never grants
+mutation, selects a Construction, chooses an operation, records mutable
+progress, or performs an effect.
 
-~~~yaml
-goal_contract:
-  version: GC-v2
-  goal_id:
-  objective:
-    summary:
-    mode: direct | goal | review | debug | migration | hardening
-    non_goals: []
-  source:
-    kind: accepted-spec | direct-goal
-    source_ref:
-    source_digest:
-    execution_authority_ref:
-    authority_owner: spec-pipeline | user
-    current: true | false
-  artifact_scope:
-    repo:
-    base_sha:
-    branch:
-    head_sha:
-    state_fingerprint:
-    allowed_paths: []
-  done:
-    success_state: []
-    explicitly_not_done_when: []
-    stop_when: success | blocked | invalid-proof
-  verification:
-    primary_checks: []
-    secondary_checks: []
-    negative_checks: []
-    artifacts_to_inspect: []
-    unavailable_checks: []
-  constraints:
-    must_preserve: []
-    forbidden_changes: []
-    compatibility: []
-    public_behavior: preserve | may-change-with-proof | unspecified
-  review_policy:
-    active: true | false
-    relation_to_goal: in-scope-only | include-nearby-risk | adjudicate-all
-    default_disposition: classify-before-resolution
-    repair_policy: correctness-refinement
-    strategy_owner: review-resolution/v1
-    reabstraction_trigger:
-      - repeated-class
-      - ownership-boundary
-      - dominated-abstraction
-      - new-semantic-machinery
-  authority:
-    mutation_requested: true | false
-    dependency_changes_allowed: true | false
-    public_effects: forbidden | ship-only
-    unsupported_coordination_required: true | false
-  ambiguity:
-    discoverable_facts_to_research: []
-    human_owned_decisions: []
-    assumptions_allowed: []
-~~~
+Read [the exact v3 contract](references/artifact-kernel-v1.md).
 
 ## Procedure
 
-Before inspecting or invoking the first native Ledger command for a material
-generation, load `$ledger` and complete `$ledger ensure`. After readiness,
-invoke `ledger` directly.
+1. Identify the accepted specification or direct user authority and preserve
+   its exact source reference and digest.
+2. Separate semantic source authority from execution authority. A plan, review,
+   gate, or validator pass never implies mutation permission.
+3. Copy required outcomes and non-goals without architectural elaboration.
+4. Bound repository scope with the exact repository, base reference, allowed
+   paths, and prohibited paths.
+5. Preserve required compatibility contracts, expressly permitted breaks, and
+   migration requirements.
+6. Compile every required predicate into one stable law with applicability and
+   a required observation. An unobservable required law blocks.
+7. Select only the source-authorized terminal route, publication posture, and
+   proof kinds.
+8. Set the draft `artifact_id` to JSON `null`. After `$ledger ensure`, request
+   the workflow's current Actuating adapter gate. When invoked standalone,
+   require `ledger --version` to be at least `0.11.0` and verify that
+   `ledger --source actuation --help` exposes only the current six-command
+   adapter before materialization. Ledger canonicalizes and validates
+   structure; it does not author semantics or grant authority.
+9. Inspect the complete source-to-Goal projection before handing the immutable
+   artifact to `$actuating` for Construction selection.
 
-1. Bind the contract to an accepted source and current artifact.
-2. Separate the scope source from the execution authority reference.
-3. Name terminal predicates and proof surfaces before work decomposition.
-4. Preserve the accepted plan/spec without reinterpretation.
-5. Set review policy to classification before resolution; raw findings never
-   become work.
-6. For review-driven code changes, preserve already-valid observations and
-   require strict progress against the accepted counterexample class. Admit new
-   semantic machinery only when an accepted law requires it. Bind the full
-   resolution digest in `artifacts_to_inspect`; put the exact witness commands
-   in `primary_checks` as `correctness:<decision_id>:preservation` and
-   `correctness:<decision_id>:progress`.
-7. Mark unsupported durable coordination explicitly; local workflows may not
-   simulate claims or fencing.
-8. Hand the contract to `$goal-actuating`. Use `$goal-workgraph` only when
-   decomposition changes execution.
-9. Assign every success predicate to at least one exact verifier command and
-   `implementation`, `review`, `ship`, or `acceptance` proof kind before
-   opening a material kernel generation; an unobservable obligation blocks.
-10. Inspect the complete source-to-open projection before `ledger open --source
-    actuation`; the kernel conserves accepted obligations but cannot recover an
-    omitted predicate.
+## Source-authority laws
 
-## Guardrails
+- `$universalist` may elaborate only source-permitted, underdetermined
+  architecture choices. The selected result belongs in a Construction
+  Contract, not the Goal Contract.
+- `$plan` may supply execution policy but never mutation authority.
+- Review evidence may falsify a Construction but cannot change accepted source
+  truth or authorize a repair.
+- A conflict with source-fixed semantics, non-goals, compatibility,
+  architecture constraints, proof requirements, authority, or publication
+  posture blocks or requests a source revision.
+- A changed semantic decision creates an immutable successor Goal with the
+  same `goal_id`, exactly one predecessor `artifact_id`, a new content-addressed
+  `artifact_id`, and a fresh initial Construction. Never edit the predecessor
+  in place.
 
-- A plan handoff is scope and policy, not mutation authority.
-- A review source is evidence, not mutation authority.
-- A gate-only specification result is not an executable source.
-- Do not recreate or loosen an accepted contract inside an executor.
-- Ask the human only for choices that inspection cannot resolve.
+## Exclusions
+
+Do not put candidate constructions, selected architecture, Counterexample
+classification, review bindings or attempts, operations, evidence events,
+mutable progress, campaign state, or closure state in a Goal Contract.
+
+## Handoff
+
+Return:
+
+~~~text
+Goal Contract identity
+accepted source identity
+execution-authority identity
+mutation posture
+scope
+laws and observations
+compatibility obligations
+acceptance route
+~~~
+
+The handoff is semantic input to Actuating. It is not an operation request or
+proof of completion.

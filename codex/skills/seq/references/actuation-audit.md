@@ -1,7 +1,8 @@
 # `$actuating` Audit
 
-Use `seq actuation-audit` to measure whether material work followed the live
-Zig kernel protocol.
+Use `seq actuation-audit` to locate candidate sessions for an Artifact Kernel
+audit. The current native command does not parse the new artifacts or establish
+kernel conformance by itself.
 
 ~~~bash
 seq actuation-audit \
@@ -14,41 +15,55 @@ seq actuation-audit \
   --format markdown
 ~~~
 
-Measure separately:
+Evaluate these questions separately with `report`, `skill-decision-audit`,
+`skill-evidence`, `tool-lifecycle`, and bounded `query` joins over the located
+sessions:
 
 ~~~text
-actuation-open/v1 source authority and obligation coverage
-actuation-event/v1 hash-chain and transition coverage
-current repository and artifact bindings
-prepared-operation-before-effect coverage
-idempotency and capability-consumption coverage
-operation-observation and evidence-fold joins
-review-fold classification coverage
-review-resolution/v1 strategy distribution
-local-repair versus replacement-kernel outcomes
-abstraction retirement and semantic-balance failures
-workflow-bound CAS record coverage
-non-cancelling initial review-wave completion
-distinct standard clean chain length and final current-tuple clean
-auxiliary-remediation carry evidence and non-credit accounting
-auxiliary lens coverage and invalid evidence
-Zig closure-decision/v1 live projection
+goal-contract/v3 authority and law coverage
+construction-contract/v1 selection before material effects
+one current Construction per material subject
+governing-law and proof-obligation coverage
+Actuating-selected operation scope before each repository effect
+actuating-evidence-event/v1 sequence and custody
+current subject identity at every proof or review observation
+counterexample-set/v1 source binding classification and quotient coverage
+accepted Counterexample exclusion rejection or blocker coverage
+falsified and preserved predecessor claims across Construction successors
+representation total-transition model property and differential proof strength
+dominated-construct retirement and independent absence observations
+CAS owner-receipt identity and non-cancelling initial 1+4 completion
+one request-local recovery maximum after verdictless terminal transport failure
+five consecutive distinct current-subject standard clean attempts
+all review credit reset after every material subject change
+Actuating-owned closure judgment after all current premises
 proof-patch-after-closure ordering
-ship-only public effects
+Ship-only public effects and current publication readback
 subagent selection and lead fan-in
 ~~~
 
-Treat scalar clean counts, old attempts relabeled to a new tuple, carry edges
-without auxiliary resolution/correctness/actuation/SHIP evidence, opaque proof
-references, raw review-to-patch transitions, any case where an auxiliary
-finding cancels an in-flight lane, missing prepared operations, and replayed
-closure decisions as control failures.
+Treat any of these as control failures:
 
-The installed `hylo`, `slices`, and `proof` modes remain historical dual-read
-surfaces for older sessions. Do not interpret their legacy receipt coverage as
-new-protocol success. Until the native command exposes the kernel fields,
-use `report` plus `skill-decision-audit`, `skill-evidence`,
-`tool-lifecycle`, and bounded `query` joins for missing dimensions.
+- a plan, finding, Ledger validation, executor, CAS receipt, Ship receipt, or
+  Proof Patch selects architecture or grants mutation;
+- an accepted Counterexample selects a patch directly or lacks a current
+  Construction disposition;
+- architecture, proof strategy, scope, or retirement is selected outside the
+  current Construction Contract;
+- Ledger launches or interprets CAS, interprets Ship, selects a next action, or
+  independently decides closure;
+- a material subject change preserves any review credit;
+- a finding or transport failure cancels a launched sibling;
+- a verdictless request receives semantic credit or more than one recovery;
+- a clean count substitutes for five distinct ordered current-subject attempts;
+- a dominated predecessor, bypass, validator, representation, or proof path
+  remains live at closure;
+- public effects occur outside Ship;
+- source-memory status gates or rolls back delivery closure.
 
+Historical artifact names may be reported as observed text, but they never
+count as Artifact Kernel conformance. Until a native Seq surface explicitly
+parses the current four artifact families and owner receipts, do not report any
+listed dimension as a direct `seq actuation-audit` measurement.
 Never call persistent goal context or internal context injection a successful
 downstream skill outcome.

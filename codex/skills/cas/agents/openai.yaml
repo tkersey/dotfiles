@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "cas"
-  short_description: "Zig CAS CLI for app-server checks, detached review control, fanout, and swarm conformance"
-  default_prompt: "Use $cas to drive tuple-bound review attempts, preserve opaque request identity and finding provenance, and report normalized transport outcomes."
+  short_description: "Zig CAS transport for app-server and exact review attempts"
+  default_prompt: "Use $cas to run, start, or wait for exact tuple-bound review attempts; preserve opaque request identity, principal quality, verdicts, failures, and finding provenance without deciding review policy, repairs, mutation, or closure."

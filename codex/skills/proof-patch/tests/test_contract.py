@@ -6,45 +6,53 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ContractTests(unittest.TestCase):
-    def test_proof_follows_closure(self) -> None:
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("after live closure has been derived", skill)
-        self.assertIn("closure-decision/v1", skill)
-        self.assertIn("verdict: complete", skill)
-        self.assertNotIn("ready-to-ship", skill)
-        self.assertIn("Do not emit final proof before closure", skill)
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        cls.skill_flat = " ".join(cls.skill.split())
 
-    def test_output_contains_review_and_semantic_balance(self) -> None:
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        for text in (
-            "Resolution digest",
-            "Selected lenses",
-            "Standard CAS record IDs",
-            "Added constructs and replacements",
-            "Dominated constructs remaining",
+    def test_proof_follows_actuating_closure(self) -> None:
+        for phrase in (
+            "after Actuating has applied its closure theorem",
+            "actuating-closure-receipt/v1",
+            "verdict: complete",
+            "Do not emit final proof before current complete closure",
         ):
-            self.assertIn(text, skill)
+            self.assertIn(phrase, self.skill_flat)
 
-    def test_detail_output_requires_bound_source_objects(self) -> None:
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        for text in (
-            "run_digest:",
-            "resolution_digest:",
-            "actuation_run: {}",
-            "review_resolution: {} | null",
-            "evidence_folds: []",
-            "cas_evidence: {} | null",
-            "ship_record: {} | null",
-            "basis IDs alone are not enough",
+    def test_binding_covers_all_four_families_and_external_evidence(self) -> None:
+        for phrase in (
+            "goal_contract_ref:",
+            "construction_ref:",
+            "counterexample_sets: []",
+            "evidence_head:",
+            "review_contract_digest:",
+            "auxiliaries_current: true",
+            "clean_streak: 5",
+            "ship_receipt: {} | null",
         ):
-            with self.subTest(text=text):
-                self.assertIn(text, skill)
+            self.assertIn(phrase, self.skill_flat)
 
-    def test_publication_remains_ship_owned(self) -> None:
-        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        agent = (ROOT / "agents/openai.yaml").read_text(encoding="utf-8")
-        self.assertIn("Do not publish", skill)
-        self.assertIn("without changing closure or publication state", agent)
+    def test_renderer_takes_no_semantic_or_public_authority(self) -> None:
+        for phrase in (
+            "does not decide completion",
+            "select architecture or repairs",
+            "classify Counterexamples",
+            "choose a next action",
+            "Do not publish",
+        ):
+            self.assertIn(phrase, self.skill_flat)
+
+    def test_output_keeps_falsification_proof_and_ablation_visible(self) -> None:
+        for phrase in (
+            "## Counterexamples and construction",
+            "## Evidence",
+            "## Review convergence",
+            "## Retirements",
+            "## Anti-gaming",
+            "## Residual risk",
+        ):
+            self.assertIn(phrase, self.skill)
 
 
 if __name__ == "__main__":

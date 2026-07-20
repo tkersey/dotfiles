@@ -7,20 +7,19 @@ description: "Fold tests, diffs, logs, benchmarks, screenshots, review results, 
 
 ## Mission
 
-Consume implementation and proof evidence into a node-level decision. For Zig
-actuation, the completed action must cite its pre-effect
-`actuation-operation-prepared/v1` event and terminal
-`actuation-operation-observed/v1` event. EF-v1 binds through the same run ID,
-step ID, artifact transition, and exact changed paths. Evidence cannot make an
-unadmitted terminal operation reachable.
+Consume implementation and proof evidence into a node-level decision. Within
+Actuating, EF-v1 is a discardable supporting view over the current Goal,
+Construction, subject, exact operation, and cited Evidence Ledger events. It
+does not create authority, select the next operation, or become peer state.
 
 ```text
 EvidenceTree -> Verdict
 ```
 
-This reducer decides whether the current node can stop, continue, revert, ask,
-or reframe. `done` closes the node; only `closure-decision/v1` may complete the
-parent goal.
+This reducer recommends whether the current node should stop, continue,
+revert, ask, or reframe. Its output grants no operation authority. `done`
+describes only the evaluated node; Actuating selects the next action and
+applies the closure theorem to the whole goal.
 
 ## Verdict schema
 
@@ -28,14 +27,12 @@ parent goal.
 evidence_fold:
   version: EF-v1
   evidence_id:
-  run_id:
-  step_id:
+  goal_id:
+  construction_ref:
+  operation_id:
   artifact_state:
     repo:
-    base_sha:
-    branch:
-    head_sha:
-    state_fingerprint:
+    subject_digest:
     changed_paths: []
   evidence:
     observed: []
@@ -67,17 +64,17 @@ evidence_fold:
     reason:
 ```
 
-For actuation, `run_id` and `step_id` are the exact Zig kernel generation and
-operation identities. `artifact_state` is the post-operation binding;
-`changed_paths` must equal the kernel-observed path set. A closure-eligible
-operation requires `progress.status=done`, `supports_done_claim=yes`, no proof
-gaps, `recommendation.action=stop`, and a passing kernel observation.
+For Actuating, `construction_ref` and `operation_id` identify the exact current
+Construction and Actuating-selected operation. `artifact_state` is the
+post-operation subject binding; `changed_paths` must equal the observed path
+set. A node-level `done` verdict requires `supports_done_claim=yes`, no proof
+gaps, `recommendation.action=stop`, and passing cited observations.
 
 ## Procedure
 
 1. Bind evidence to current branch/head/diff or mark proof invalid.
-2. Accept review evidence only after `$review-fold` classification and, for
-   material findings, `review-resolution/v1`. Raw review output is not EF input.
+2. Accept a review finding only after `$review-fold` has classified it in a
+   current Counterexample Set. Raw review prose is not EF input.
 3. Separate what passed, what failed, and what was not run.
 4. Compare the new result to the prior attempt when available.
 5. Check anti-gaming before accepting success.

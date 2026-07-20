@@ -12,73 +12,110 @@ BOUNDARY = (ROOT / "references" / "review-proof-boundary.md").read_text(
     encoding="utf-8"
 )
 AGENT = (ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
-NORMALIZED_CONTRACT = " ".join((SKILL + "\n" + BOUNDARY).split())
-NORMALIZED_AGENT = " ".join(AGENT.split())
-NORMALIZED_DOCUMENTATION = " ".join(
-    (
-        SKILL
-        + "\n"
-        + AGENT
-        + "\n"
-        + "\n".join(
-            path.read_text(encoding="utf-8")
-            for path in sorted((ROOT / "references").rglob("*.md"))
-        )
-    ).split()
-)
+CONTRACT = " ".join((SKILL + "\n" + BOUNDARY + "\n" + AGENT).split())
 FINDING_IDENTITY = json.loads(
     (ROOT / "assets" / "finding-identity.example.json").read_text(encoding="utf-8")
 )
 
 
 class CasContractTests(unittest.TestCase):
-    def test_per_finding_identity_fields_are_documented(self) -> None:
-        required = [
-            "## Per-finding identity projection",
-            "findingId",
-            "findingFingerprint",
-            "reviewAttemptId",
-            "reviewThreadId",
-            "reviewTurnId",
-            "baseSha",
-            "headSha",
-            "targetFingerprint",
-            "titleHash",
-            "bodyHash",
-            "normalizedLocation",
-            "verdictStatus",
-        ]
-        for token in required:
-            with self.subTest(token=token):
-                self.assertIn(token, SKILL)
+    def test_review_surface_is_run_start_wait_only(self) -> None:
+        self.assertIn("cas review <run|start|wait>", SKILL)
+        for command in [
+            "cas review run",
+            "cas review start",
+            "cas review wait",
+        ]:
+            with self.subTest(command=command):
+                self.assertIn(command, CONTRACT)
 
-    def test_cas_states_its_positive_transport_contract(self) -> None:
+        forbidden = [
+            "cas review current",
+            "cas review list",
+            "cas review import",
+            "cas review inspect",
+            "cas review validate-record",
+            "cas review status",
+            "cas review interrupt",
+            "cas review lane",
+            "cas review receipt",
+            "review_session",
+            "review-session",
+            "--fallback",
+            "native-review",
+            "CAS-LIST-v2",
+            "CAS-RER-v1",
+        ]
+        for token in forbidden:
+            with self.subTest(token=token):
+                self.assertNotIn(token, CONTRACT)
+
+    def test_cas_owns_attempt_facts_not_actuating_policy(self) -> None:
         required = [
-            "starts, waits for, recovers, normalizes, and reports review attempts",
+            "target capture",
             "attempt lifecycle",
-            "tuple identity",
-            "normalized verdict facts",
-            "stable finding provenance",
-        ]
-        for token in required:
-            with self.subTest(token=token):
-                self.assertIn(token, NORMALIZED_CONTRACT)
-
-    def test_agent_prompt_mentions_finding_identity_boundary(self) -> None:
-        required = [
-            "drive tuple-bound review attempts",
-            "opaque request identity",
+            "principal quality",
+            "structured tuple-bound verdicts",
             "finding provenance",
-            "normalized transport outcomes",
+            "does not own Actuating's review topology",
+            "CAS reports owner facts",
         ]
         for token in required:
             with self.subTest(token=token):
-                self.assertIn(token, NORMALIZED_AGENT)
+                self.assertIn(token, CONTRACT)
 
-    def test_finding_identity_fixture_carries_join_keys(self) -> None:
+    def test_opaque_binding_is_preserved_without_semantic_decoding(self) -> None:
+        required = [
+            "workflowBinding",
+            "requestId",
+            "requestFingerprint",
+            "two non-empty strings",
+            "returns it unchanged",
+            "does not decode a lens",
+        ]
+        for token in required:
+            with self.subTest(token=token):
+                self.assertIn(token, CONTRACT)
+
+    def test_review_target_capture_is_cas_local(self) -> None:
+        for token in [
+            "--base",
+            "--commit",
+            "--uncommitted",
+            "This target capture belongs to CAS",
+            "not repository mutation or a general Git-subject service",
+        ]:
+            with self.subTest(token=token):
+                self.assertIn(token, CONTRACT)
+
+    def test_real_review_wait_and_recovery_are_explicit(self) -> None:
+        for token in [
+            "--timeout-ms 2700000",
+            "recover with `wait`",
+            "--fresh-attempt <source-bound-reason>",
+            "zero semantic credit",
+        ]:
+            with self.subTest(token=token):
+                self.assertIn(token, CONTRACT)
+
+    def test_structured_verdict_cannot_be_inferred_from_exit_status(self) -> None:
+        for token in [
+            "reviewVerdict.tupleVerdictExists=true",
+            "principalStrength",
+            "accountFingerprintReducedProtection",
+            "backendClass",
+            'principalStrength == "strong"',
+            'backendClass == "cas-start-wait"',
+            "Process exit status is transport evidence only",
+            "Missing structured output is not clean",
+        ]:
+            with self.subTest(token=token):
+                self.assertIn(token, CONTRACT)
+
+    def test_per_finding_identity_fixture_carries_owner_join_keys(self) -> None:
         verdict = FINDING_IDENTITY["reviewVerdict"]
+        self.assertEqual(verdict["backendClass"], "cas-start-wait")
         finding = verdict["findings"][0]
-        self.assertEqual(verdict["status"], "findings")
         for key in [
             "findingId",
             "findingFingerprint",
@@ -99,91 +136,28 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(key=key):
                 self.assertNotIn(key, finding)
 
-    def test_optional_workflow_binding_is_opaque_request_identity(self) -> None:
-        required = [
-            "workflowBinding",
-            "requestId",
-            "requestFingerprint",
-            "non-empty strings",
-            "returns it unchanged",
-            "import-only historical evidence",
-            "cas_rer_opaque_request_binding_v1=true",
-            "cas_review_history_v2=true",
-            "cas_review_scoped_instructions_v1=true",
-        ]
-        for token in required:
+    def test_hctp_is_explicitly_separate_from_actuating(self) -> None:
+        for token in [
+            "## Separate HCTP boundary",
+            "does not participate in Actuating implementation, review, Construction, or closure",
+            "hylo-trial/v2",
+            "--materialization-fd",
+        ]:
             with self.subTest(token=token):
-                self.assertIn(token, NORMALIZED_CONTRACT)
+                self.assertIn(token, CONTRACT)
 
-    def test_active_cas_contract_contains_no_review_policy_vocabulary(self) -> None:
+    def test_review_contract_contains_no_retired_policy_or_kernel_artifacts(self) -> None:
         forbidden = [
-            "selectedLenses",
-            "reviewLane",
-            "lensContract",
-            "laneRole",
-            "contributesToStandardStreak",
-            "three-clean",
-            "clean-streak",
-            "footgun-finder",
-            "invariant-ace",
-            "complexity-mitigator",
-            "fresh-eyes",
-            "Repeated-review eligibility",
-            "closeout accounting",
-            "policy threshold",
-            "review-batch authority",
-            "Kernel review",
-            "Terminal holdout",
+            "RF-v2",
+            "review-resolution/v1",
+            "actuation-review-policy",
+            "auxiliary-remediation",
+            "closure-decision/v1",
+            "actuation-kernel-state",
         ]
         for token in forbidden:
             with self.subTest(token=token):
-                self.assertNotIn(token, NORMALIZED_DOCUMENTATION)
-
-    def test_exhaustive_list_surface_is_canonical_and_complete(self) -> None:
-        required = [
-            "cas review list --cwd <repo> --base <base> --codex-thread-id <id> --json",
-            "complete `CAS-LIST-v2`",
-            "`records` and `recordRefs`",
-            "`status --latest`",
-            "exact action is advertised",
-            "never falls back",
-        ]
-        for token in required:
-            with self.subTest(token=token):
-                self.assertIn(token, NORMALIZED_CONTRACT)
-
-    def test_real_review_wait_budget_is_explicit(self) -> None:
-        required = [
-            "### Review wait budget",
-            "--timeout-ms 2700000",
-            "45-minute real-review wait budget",
-            "review run",
-            "review_session run",
-            "start --wait",
-            "lane review",
-            "Keep lane smoke and smoke-suite waits at `300000`",
-            "never start a duplicate review for the tuple",
-        ]
-        for token in required:
-            with self.subTest(token=token):
-                self.assertIn(token, NORMALIZED_CONTRACT)
-        self.assertNotIn("--timeout-ms 1800000", NORMALIZED_CONTRACT)
-
-    def test_parallel_review_completion_reporting_is_immediate_and_observational(self) -> None:
-        required = [
-            "### Per-review terminal reporting",
-            "complete receipt JSON",
-            "recorded process exit status",
-            "use `rc` only to describe command or transport completion",
-            "Report it immediately and exactly once",
-            "do not wait for siblings",
-            "`.reviewVerdict`",
-            "independent artifact monitor",
-            "does not cancel siblings or open retry, RF-v2, adjudication, or mutation barriers",
-        ]
-        for token in required:
-            with self.subTest(token=token):
-                self.assertIn(token, NORMALIZED_CONTRACT)
+                self.assertNotIn(token, CONTRACT)
 
 
 if __name__ == "__main__":

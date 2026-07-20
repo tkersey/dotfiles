@@ -395,21 +395,23 @@ Readiness does not mean execution is safe.
 Execution still requires:
 
 ~~~text
-accepted actuation source and execution authority
-current actuation-kernel-state/v1 artifact binding
-one prepared actuation-operation/v1 before material mutation
-current evidence before continuation
-review-resolution/v1 when review drives work
-live Zig closure-decision/v1 before completion
+current goal-contract/v3 and accepted execution authority
+one current construction-contract/v1 selected by $actuating
+one exact Actuating-selected in-scope operation before material mutation
+current subject-bound evidence before continuation
+counterexample-set/v1 when witnessed review findings drive work
+Actuating's current closure judgment before completion
 ~~~
 
-The plan handoff must keep `mutation_allowed: no`. `$goal-actuating` creates
-the executable run only after current authority is established.
+The plan handoff must keep `mutation_allowed: no`. `$actuating` may use the
+plan as supporting reasoning only after current authority is established; the
+selected architecture enters the Construction Contract.
 
-Legacy policy selectors, checkpoints, transition receivers, and human-plan
-linters are not execution owners. Do not recreate or invoke their retired
-second-language tools. `$plan` produces policy; the Zig actuation kernel alone
-controls material execution.
+Policy selectors, checkpoints, transition receivers, and human-plan linters are
+not execution owners. `$plan` produces supporting execution policy;
+`$actuating` owns Construction selection, exact operation selection, evidence
+evaluation, and closure. Ledger may materialize or validate requested artifacts
+but never controls repository execution.
 
 ## Output
 

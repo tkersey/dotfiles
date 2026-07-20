@@ -1,137 +1,132 @@
 ---
 name: review-fold
-description: "Classify and quotient review findings from CAS, GitHub, human review, prior artifacts, or local audits against accepted intent and current artifact state. Use before any review resolution: separate claim, fact, and suggested repair; reject non-liabilities; route material findings as resolution inputs; never select repairs, count clean runs, or grant mutation."
+description: "Classify and quotient review findings, failing tests, incidents, bug reports, migration failures, and other witnessed falsifiers against accepted intent and the current Construction. Author counterexample-set/v1 without selecting repairs, counting review credit, or granting mutation."
 ---
 
 # Review Fold
 
 ## Mission
 
-Turn review pressure into pure classified evidence.
+Turn witnessed falsification pressure into one immutable classified-bug
+artifact.
 
 ~~~text
-review source + accepted intent + current artifact
--> RF-v2 classification and quotient
--> no-code disposition or resolution input
+review or failure source + Goal Contract + current Construction
+-> counterexample-set/v1
+-> no mutation authority
 ~~~
 
-`$review-fold` owns validity, liability, intent relation, disposition, and
-equivalence class. `review-resolution/v1` owns repair strategy, abstraction
-accounting, selected work, and semantic balance. The caller owns review
-backend, lens selection, clean-suffix accounting, and closure.
+`$review-fold` owns fact classification, disposition, and quotienting.
+`$actuating` owns evaluation against the current Construction, successor
+selection, orchestration, review credit, and closure. The source owner retains
+its own receipt semantics.
 
 ## Minimal law
 
 ~~~text
-claim != fact
-fact != liability
+claim != observed fact
+observed fact != liability
 liability != accepted scope
-accepted scope != code change
-review classification != mutation authority
+accepted scope != selected repair
+Counterexample Set != mutation authority
 ~~~
 
-## RF-v2
+## Counterexample Set
 
 ~~~yaml
-review_fold:
-  version: RF-v2
-  fold_id:
+artifact:
+  schema: counterexample-set/v1
+  artifact_id:
   goal_id:
-  source:
-    backend: cas | github-comments | human-review | prior-artifact | local-audit | other
-    source_batch_id:
-    source_state: clean | findings | invalid-proof | incomplete
-    artifact:
-      repo:
-      base_sha:
-      branch:
-      head_sha:
-      state_fingerprint:
-    source_ref:
-  intent_anchor:
-    original_goal:
-    accepted_scope: []
-    non_goals: []
-  findings:
-    - finding_id:
-      source_ref:
-      claim:
-      observed_fact:
-      suggested_repair:
-      validity: valid | invalid | unproven | needs-owner
-      liability: blocks-goal | regression-risk | proof-gap | misuse-hazard | invariant-gap | complexity-stall | style | new-requirement | out-of-scope
-      intent_relation: core | adjacent | unrelated | expands-scope
-      novelty: duplicate | same-class | new-class
-      disposition: reject | proof-only | ask-human | follow-up | resolution-input | blocked
-      quotient_key:
-      owner_boundary:
-      law_family:
-      falsifier:
-      evidence_refs: []
-      mutation_authority:
-        allowed: false
-        reason:
-  compression:
-    equivalence_classes:
-      - quotient_key:
-        finding_ids: []
+  semantic_author: review-fold
+  created_at:
+  predecessor_refs: []
+  supporting_refs:
+    - review-attempt-or-failure-evidence-ref
+  payload:
+    subject:
+      construction_ref:
+      repository:
+      artifact_digest:
+      review_contract_digest:
+    classes:
+      - class_id:
+        boundary_key:
+        law_ref:
+        discrepancy: excess | deficit | incoherence | partiality | misbinding
         owner_boundary:
-        law_family:
-  routing_obligations:
-    - trigger: misuse-hazard | invariant-gap | complexity-stall
-      finding_ids: []
-      owner_lens: footgun-finder | invariant-ace | complexity-mitigator
+        severity: critical | high | medium | low
+        status: accepted | rejected | blocked | follow-up
+        observed_facts: []
+        evidence_refs: []
+        finding_refs: []
+        witness:
+        falsifier_ref:
+        applicability:
+        quotient_basis:
 ~~~
 
-A current clean source may contain zero findings. That is valid classified
-evidence, not caller-owned clean-run credit.
+A current clean source may produce an empty `classes` list. One class represents
+one stable Counterexample to one governing law at one boundary. Review attempt
+IDs, commits, publication epochs, filenames, and proposed patches are
+provenance, not class identity.
+
+For CAS evidence, each `finding_refs` entry is the `sha256:` digest of the
+exact canonical CAS finding-row bytes. Preserve CAS `findingId` and the
+best-effort `findingFingerprint` inside cited provenance; neither defines the
+Counterexample class or substitutes for the canonical-row digest.
 
 ## Dispositions
 
-- `reject`: false, stale, duplicate without new evidence, unrelated, already
-  satisfied, or preference-only.
-- `proof-only`: likely satisfied; inspect or prove before editing.
-- `ask-human`: introduces a product, API, compatibility, UX, security,
-  performance, or scope choice.
-- `follow-up`: valid but outside the accepted goal.
-- `resolution-input`: valid, in-scope material pressure ready for owner-boundary
-  strategy selection.
-- `blocked`: validity, ownership, artifact binding, or evidence remains unknown.
+- `accepted`: current evidence establishes an in-scope falsification.
+- `rejected`: evidence shows the claim is false, stale, already satisfied,
+  preference-only, or not a liability.
+- `blocked`: validity, ownership, applicability, or current subject identity
+  remains unknown.
+- `follow-up`: valid evidence lies outside the accepted Goal.
 
-Only `resolution-input` may enter `review-resolution/v1`, and even then the
-finding grants no mutation. Every resolution input requires a nonblank observed
-fact distinct from its claim. If the observation is not established, keep the
-finding `unproven` and route it to `proof-only` or `blocked`; a proof gap still
-names the inspected proof surface and the missing obligation.
+Rejected classes require rejection evidence. Accepted classes require
+Actuating to evaluate the current Construction before mutation. A suggested
+repair remains source prose and never enters the selected construction merely
+because a reviewer proposed it.
 
 ## Procedure
 
-Before validating the first RF-v2 artifact in this workflow, load `$ledger` and
-complete `$ledger ensure`. After readiness, invoke native `ledger validate`
-directly.
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once. Reuse Actuating's current adapter gate. When
+invoked standalone, require `ledger --version` to be at least `0.11.0` and
+verify that `ledger --source actuation --help` exposes only
+`append|prepare|state|project|doctor|path` before materialization.
 
-1. Bind the source to accepted intent and current artifact state.
-2. Separate claim, observation, and suggested repair.
-3. Classify validity, liability, intent relation, and novelty.
-4. Assign every finding a no-code disposition or `resolution-input`.
-5. Give each material finding a quotient key, owner boundary, law family,
-   falsifier, and evidence references.
-6. Collapse duplicates and same-class findings into equivalence classes.
-7. Emit routing obligations for specialized liability classes.
-8. Materialize RF-v2 as canonical JSON and validate it with
-   `ledger validate review-fold --input <rf-v2-json-file>`.
-9. Hand only resolution inputs to the caller; never choose the patch.
+1. Bind the source to the current Goal, Construction, subject digest, and
+   source-owner receipt.
+2. Separate each claim, observed fact, and suggested repair.
+3. Decide whether the fact is a current liability under an accepted Goal law.
+4. Identify the governing law, stable boundary, discrepancy, owner, witness,
+   falsifier, applicability, and evidence.
+5. Quotient duplicate and same-class findings. One class may cite many finding
+   rows and may recur across Construction successors.
+6. Assign exactly one disposition to every class.
+7. Materialize canonical JSON with the current six-command artifact adapter:
 
-Use [review-fold.valid.example.json](assets/review-fold.valid.example.json) as a
-shape example, not as reusable evidence or authority.
+   ~~~bash
+   ledger --source actuation --repo <repo> --goal <goal-id> \
+     append --input <counterexample-set.json>
+   ~~~
+
+8. Return the materialized Counterexample Set to Actuating. Do not propose or
+   execute a repair.
+
+Use [review-fold.valid.example.json](assets/review-fold.valid.example.json) as
+a shape example, never as evidence or authority.
 
 ## Guardrails
 
-- Do not choose review backend or auxiliary lenses.
-- Do not emit a selected work node, repair strategy, clean count, or closure
-  verdict.
-- Do not turn style or speculation into code.
-- Do not accept scope expansion without user authority.
-- Preserve source identity and current artifact binding.
-- Treat `ledger validate` as pure receipt validation. Its pass verdict grants no
-  mutation, repair selection, clean-run credit, or closure authority.
+- Do not choose the review backend, lens, architecture, repair, work node, or
+  next action.
+- Do not count clean attempts or decide review convergence or closure.
+- Do not turn style, speculation, or suggested patches into code.
+- Do not accept scope expansion without source authority.
+- Do not define class identity from transient implementation or review IDs.
+- Treat Ledger materialization and validation as structural artifact work only.
+  A pass grants no mutation, repair selection, review credit, or completion.

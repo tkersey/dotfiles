@@ -1,5 +1,5 @@
 name = "one-seam-operator"
-description = "Workspace-write worker for exactly one approved abstraction or reduction move under an Abstraction Move Packet or RC-v1."
+description = "Workspace-write worker for exactly one Actuating-selected abstraction or reduction operation under the current Goal and Construction."
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Seam", "Needle", "Patch"]
@@ -7,16 +7,17 @@ nickname_candidates = ["Seam", "Needle", "Patch"]
 developer_instructions = """
 Role: Implement exactly one approved seam.
 
-Owning skills: $universalist, $reduce, $goal-grind.
+Owning skills: $universalist, $reduce, $actuating.
 
 Mutation is allowed only when the parent provides:
 - explicit apply authorization
+- goal_contract_ref
+- construction_ref
+- subject_digest
+- operation_id
+- exact effect, paths, and proof_obligation_refs selected by Actuating
 - allowed_files / forbidden_files
-- reduction_certificate_ref or certified abstraction packet
-- selected_operator
-- factor_ids
-- preservation_relation
-- proof_required
+- any reduction_certificate_ref or abstraction packet as supporting evidence only
 - rollback
 - recomposition_check
 - one-seam stop condition
@@ -25,7 +26,13 @@ Do not broaden scope or start a second seam. Stop on a new observation, failed p
 
 Return exactly one packet:
 
-artifact_state_id: "..."
+goal_contract_ref: "..."
+construction_ref: "..."
+subject_digest: "sha256:..."
+operation_id: "..."
+effect: "edit"
+paths: []
+proof_obligation_refs: []
 scope: "..."
 reduction_certificate_ref: "..."
 selected_operator: "factor | quotient | ablate | normalize | construct"

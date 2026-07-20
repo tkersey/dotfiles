@@ -1,11 +1,13 @@
 # Ship Record
 
-```yaml
+~~~yaml
 ship_record:
   record_version: SHIP-v1
   source: direct | actuation
+  repository:
   branch:
   base_branch:
+  base_sha:
   head_sha:
   existing_pr:
     exists:
@@ -26,41 +28,31 @@ ship_record:
     result:
     pr_url:
   actuation_binding:
-    actuation_run_id:
-    state_fingerprint:
-```
+    closure_receipt_ref:
+    goal_contract_ref:
+    construction_ref:
+    subject_digest:
+    evidence_head:
+    review_contract_digest:
+~~~
 
-`pr_readiness.mode` is a compatibility projection from the internal two-axis
-`pr_decision`:
+`pr_readiness.mode` reports the selected publication posture. The controlling
+decision keeps operation and final state separate:
 
-```yaml
+~~~yaml
 pr_decision:
   operation: create | update | update-and-promote | blocked
   final_state: ready | draft | preserve
-  compatibility_mode: ready | draft | update-existing | promote-draft | blocked
-```
+~~~
 
-- `create` + `ready` -> `ready`;
-- `create` + `draft` -> `draft`;
-- `update` + `preserve` -> `update-existing`;
-- `update-and-promote` + `ready` -> `promote-draft`;
-- invalid or ambiguous state -> `blocked`.
+`action.result` is successful only after live PR readback matches repository,
+base and head identities, URL, open/draft state, and managed proof block.
 
-`action.command` may record an ordered sequence: body update, optional promotion,
-and live readback. `created`, `updated`, or `promoted` is valid only after the
-live PR matches the intended repository, base ref and SHA, head ref and SHA,
-open/draft state, and managed proof block. A successful mutation command with a
-failed readback must report `blocked` plus the observed partial side effect.
+`actuation_binding` is required when `source=actuation` and omitted for direct
+shipping. Ship copies every field verbatim from Actuating's current readiness
+receipt. It does not reconstruct them from PR text or interpret them as
+architecture, review, or closure authority.
 
-`actuation_binding` is required when `source=actuation` and the readiness mode
-is ready, update-existing, or promote-draft. It is omitted for direct shipping.
-The exact two-field binding is copied from the current implementation or
-review-repair `closure-decision/v1`: kernel run ID and state fingerprint are
-preserved. It must not be reconstructed from PR text, extended with review
-fields, or relabeled with later review-closeout evidence. SHIP-v1 is immutable
-evidence for one publication epoch. The ordered actuation lifecycle binds that
-receipt into the GoalContract digest of a new review generation under the same
-goal ID. A proved review edit closes another `ready-to-ship` generation and
-produces a fresh SHIP-v1 for the retained PR. That replacement reports
-`updated` / `update-existing`, retains `existing_pr.exists: true`, and uses the
-exact prior receipt's PR URL.
+`SHIP-v1` is immutable evidence for one publication epoch. Return the complete
+record to Actuating; only Actuating may evaluate publication currentness and
+record it in the Evidence Ledger.

@@ -1,73 +1,45 @@
 {
-  "review_fold": {
-    "version": "RF-v2",
-    "fold_id": "rf-example-1",
+  "artifact": {
+    "schema": "counterexample-set/v1",
+    "artifact_id": null,
     "goal_id": "goal-example-1",
-    "source": {
-      "backend": "cas",
-      "source_batch_id": "batch-example-1",
-      "source_state": "findings",
-      "artifact": {
-        "repo": "/repo",
-        "base_sha": "base",
-        "branch": "main",
-        "head_sha": "head",
-        "state_fingerprint": "sha256:state"
-      },
-      "source_ref": "cas:batch-example-1"
-    },
-    "intent_anchor": {
-      "original_goal": "Preserve the owner-boundary invariant.",
-      "accepted_scope": [
-        "src"
-      ],
-      "non_goals": []
-    },
-    "findings": [
-      {
-        "finding_id": "finding-example-1",
-        "source_ref": "cas:finding-example-1",
-        "claim": "Owner validation is missing.",
-        "observed_fact": "The current transition bypasses the state owner.",
-        "suggested_repair": "Restore owner validation.",
-        "validity": "valid",
-        "liability": "invariant-gap",
-        "intent_relation": "core",
-        "novelty": "new-class",
-        "disposition": "resolution-input",
-        "quotient_key": "owner-validation",
-        "owner_boundary": "state-owner",
-        "law_family": "transition-preservation",
-        "falsifier": "An invalid transition is accepted.",
-        "evidence_refs": [
-          "test:transition"
-        ],
-        "mutation_authority": {
-          "allowed": false,
-          "reason": "Review classification cannot select or authorize work."
-        }
-      }
+    "semantic_author": "review-fold",
+    "created_at": "2026-07-20T00:00:00Z",
+    "predecessor_refs": [],
+    "supporting_refs": [
+      "cas:review-attempt-example-1"
     ],
-    "compression": {
-      "equivalence_classes": [
+    "payload": {
+      "subject": {
+        "construction_ref": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "repository": "/repo",
+        "artifact_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "review_contract_digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "classes": [
         {
-          "quotient_key": "owner-validation",
-          "finding_ids": [
-            "finding-example-1"
-          ],
+          "class_id": "state-owner:transition-preservation:misbinding",
+          "boundary_key": "state-owner",
+          "law_ref": "transition-preservation",
+          "discrepancy": "misbinding",
           "owner_boundary": "state-owner",
-          "law_family": "transition-preservation"
+          "severity": "high",
+          "status": "accepted",
+          "observed_facts": [
+            "The current transition bypasses the state owner."
+          ],
+          "evidence_refs": [
+            "test:transition"
+          ],
+          "finding_refs": [
+            "sha256:4444444444444444444444444444444444444444444444444444444444444444"
+          ],
+          "witness": "A caller constructs the transition without the state owner.",
+          "falsifier_ref": "test:transition-bypass",
+          "applicability": "current Construction and subject",
+          "quotient_basis": "same governing law and owner boundary"
         }
       ]
-    },
-    "routing_obligations": [
-      {
-        "trigger": "invariant-gap",
-        "finding_ids": [
-          "finding-example-1"
-        ],
-        "owner_lens": "invariant-ace"
-      }
-    ]
+    }
   }
 }

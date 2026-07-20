@@ -1,3 +1,0 @@
-{"failureCode": "lane_transport_lost", "lastHeadSha": null, "lastReviewThreadId": null, "reviewCount": 0, "reviewThreadId": null}
-{"reviewVerdict": {"backendClass": "cas-lane", "findingCount": 2, "reviewThreadId": "thr1", "status": "findings"}}
-{"failureCode": "review_failed", "rawErrorText": "usageLimitExceeded: Reviewer failed to output a response.", "reviewThreadId": "thr2"}

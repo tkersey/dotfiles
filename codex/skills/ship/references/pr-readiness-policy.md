@@ -6,7 +6,6 @@ Decide the GitHub operation separately from the desired final PR state.
 pr_decision:
   operation: create | update | update-and-promote | blocked
   final_state: ready | draft | preserve
-  compatibility_mode: ready | draft | update-existing | promote-draft | blocked
   reason:
   draft_allowed_reason:
 ```
@@ -25,15 +24,13 @@ Use `draft` only when:
 Actuation input cannot publish a draft. A repository policy that requires draft
 therefore blocks actuation shipping until the policy or lifecycle is resolved.
 
-Compatibility projection:
-
-| Condition | operation | final_state | compatibility_mode |
-|---|---|---|---|
-| No open PR; fully ready | `create` | `ready` | `ready` |
-| No open PR; warranted draft | `create` | `draft` | `draft` |
-| Open PR; preserve current state | `update` | `preserve` | `update-existing` |
-| Open draft; fully ready | `update-and-promote` | `ready` | `promote-draft` |
-| Invalid or ambiguous state | `blocked` | `preserve` | `blocked` |
+| Condition | operation | final_state |
+|---|---|---|
+| No open PR; fully ready | `create` | `ready` |
+| No open PR; warranted draft | `create` | `draft` |
+| Open PR; preserve current state | `update` | `preserve` |
+| Open draft; fully ready | `update-and-promote` | `ready` |
+| Invalid or ambiguous state | `blocked` | `preserve` |
 
 If work is complete and validation passes, create or promote to a ready PR by
 default. Do not pass `--draft` unless `final_state: draft` and
