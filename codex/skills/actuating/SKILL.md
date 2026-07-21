@@ -18,7 +18,8 @@ Use exactly four authoritative per-goal artifact families:
    `$review-fold`.
 3. `construction-contract/v1` — the selected architecture, proof obligations,
    preserved observations, and retirements, authored by `$actuating` using
-   `$universalist`.
+   `$universalist`; `$reduce` may supply non-authoritative minimization
+   evidence.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
    retain their domain owners.
 
@@ -48,7 +49,11 @@ Actuating owns:
 - application of the closure theorem and authorship of its semantic receipt.
 
 `$review-fold` must classify witnessed facts before Actuating selects any
-repair. Review prose and suggested patches never grant mutation.
+repair. `$reduce` may minimize admissible Constructions by factoring obligations,
+testing congruent quotients or ablations, and checking recomposition, but its
+Reduction Certificate is supporting evidence only. Neither review prose nor
+`$reduce` selects a Construction, Repair Disposition, operation, next action, or
+closure.
 
 Ledger may materialize, canonicalize, validate, append, replay, and emit
 requested disposable structural projections. Ledger never executes repository
@@ -163,14 +168,15 @@ already-valid observations. A witnessed example is not resolved until the
 Construction excludes its class or proves it instance-specific.
 
 Before dispatching fresh review after a repair, classify the production delta.
-If it introduces a new algorithm, compatibility branch, semantic helper
-family, or more than 50 net production lines, perform exactly one
-proof-preserving reduction pass. Collapse duplicate paths, return semantics to
-the canonical owner, or retire dominated residue where proof permits. If no
-reduction preserves the Goal laws and observations, record the specific
-compatibility or representation obstruction. The threshold triggers one pass;
-it is not a hard line budget, does not force deletion, and does not authorize a
-recursive reduction loop for the same delta.
+If it introduces a new algorithm, compatibility branch, semantic helper family,
+or more than 50 net production lines, invoke `$reduce` for exactly one
+proof-preserving reduction pass. It may collapse duplicate paths, return
+semantics to the canonical owner, or retire dominated residue where proof
+permits; its result is supporting evidence, and Actuating still selects the
+Construction and next operation. If no reduction preserves the Goal laws and
+observations, record the specific compatibility or representation obstruction.
+The threshold is not a hard line budget, does not force deletion, and does not
+authorize a recursive reduction loop for the same delta.
 
 ## Review convergence
 
