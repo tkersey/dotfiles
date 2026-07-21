@@ -22,11 +22,12 @@ external_migration = true
 goals = true
 terminal_resize_reflow = true
 mentions_v2 = true
-multi_agent_mode = true
 js_repl = false
 
 [features.multi_agent_v2]
 enabled = true
+
+[agents]
 max_concurrent_threads_per_session = 12
 
 [apps._default]

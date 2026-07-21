@@ -39,6 +39,29 @@ never review output. `cas conformance` probes helper compatibility. Session
 inquiry owns `$retrace` replay transport; see
 [retrace-session-inquiry.md](references/retrace-session-inquiry.md).
 
+## Codex 0.145 compatibility
+
+Codex 0.145 ignores request-scoped `multiAgentMode`. Do not pass
+`--multi-agent-mode` to `cas review` or `cas instance_runner`; current CAS
+rejects that retired option before any app-server request. Configure
+multi-agent V2 through `[features.multi_agent_v2]` and canonical concurrency,
+model, and reasoning settings through `[agents]`. Use current Codex reasoning
+effort when proactive delegation is required.
+
+Historical CAS records may still contain `requestedMultiAgentMode`,
+`effectiveMultiAgentMode`, `multiAgentModeSupport`, and
+`multiAgentModeMetricEligible`. Those fields preserve old receipt readability;
+they do not prove that a current Codex runtime applied the retired request
+field. New CAS-generated requests omit it and new receipts grant it no credit.
+
+CAS uses `excludeTurns:true` for metadata-only `thread/resume` calls on Codex
+0.145 and newer, and preserves the older request shape for earlier runtimes.
+This optimization changes neither review identity nor semantic credit.
+
+`cas session_inquiry` rejects a paginated source thread before `thread/fork`,
+because Codex 0.145 does not support forking paginated history. Use a
+legacy-history source thread or the verified `rollout_transcript` lineage.
+
 ## Review attempt law
 
 ~~~text
