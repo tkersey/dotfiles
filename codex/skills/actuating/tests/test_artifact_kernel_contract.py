@@ -146,6 +146,38 @@ class ArtifactKernelContractTests(unittest.TestCase):
         )
         self.assertIn("names an `obligation_id`", CONSTRUCTION)
 
+    def test_review_repairs_have_a_bounded_non_accumulation_gate(self) -> None:
+        for name, surface in (
+            ("skill", FLAT_SKILL),
+            ("construction", FLAT_CONSTRUCTION),
+        ):
+            with self.subTest(surface=name):
+                for phrase in (
+                    "Repair Disposition",
+                    "Law:",
+                    "Owner:",
+                    "Route: delete | consolidate | edit | add",
+                    "Why not smaller:",
+                    "Falsifier:",
+                    "A finding authorizes the invariant, not its suggested implementation.",
+                    "exactly one proof-preserving reduction pass",
+                    "new algorithm",
+                    "compatibility branch",
+                    "semantic helper family",
+                    "50 net production lines",
+                    "compatibility or representation obstruction",
+                    "not a hard line budget",
+                ):
+                    self.assertIn(phrase, surface)
+
+        self.assertLess(
+            FLAT_SKILL.index("Repair Disposition"),
+            FLAT_SKILL.index("For each repository effect"),
+        )
+        self.assertIn("does not authorize a recursive reduction loop", FLAT_SKILL)
+        self.assertIn("suggested implementation bypasses Construction selection", DECISION)
+        self.assertIn("one reduction pass or obstruction", DECISION)
+
     def test_review_topology_recovery_and_reset_are_exact(self) -> None:
         for phrase in (
             "standard plus four auxiliary CAS requests concurrently",

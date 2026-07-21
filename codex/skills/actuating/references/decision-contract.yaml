@@ -63,9 +63,9 @@ skill_decision_contract:
       expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-CLOSE]
       prohibited_routes: []
       required_artifacts: [Actuating-owned actuating-review-contract/v1, five request bindings before initial dispatch, exact CAS owner receipts, current Counterexample Set after findings, successor Construction before accepted-class mutation, review observations in the Evidence Ledger]
-      success_signals: [Actuating maps CAS owner facts to semantic credit, initial 1+4 launches concurrently, siblings are non-cancelling, verdictless failure earns no credit and recovers only its request once, full-wave standard clean counts as one, four later standard cleans run serially, five consecutive standard cleans close the current subject, material change resets all review credit]
-      failure_signals: [Ledger hardcodes the Review Contract, Ledger dispatches or interprets CAS, Ledger computes review credit, review prose grants mutation, sibling cancellation, whole-wave transport retry, indefinite retry, review credit crosses a material change]
-      rationale: Review independently falsifies while Actuating owns orchestration and repair selection.
+      success_signals: [Actuating maps CAS owner facts to semantic credit, accepted-class mutation follows a Law Owner Route Why-not-smaller Falsifier disposition, named additive deltas receive one proof-preserving reduction pass or a compatibility or representation obstruction before fresh review, initial 1+4 launches concurrently, siblings are non-cancelling, verdictless failure earns no credit and recovers only its request once, full-wave standard clean counts as one, four later standard cleans run serially, five consecutive standard cleans close the current subject, material change resets all review credit]
+      failure_signals: [Ledger hardcodes the Review Contract, Ledger dispatches or interprets CAS, Ledger computes review credit, review prose grants mutation, a suggested implementation bypasses Construction selection, a named additive delta reaches fresh review without its one reduction pass or obstruction, sibling cancellation, whole-wave transport retry, indefinite retry, review credit crosses a material change]
+      rationale: Review independently falsifies while Actuating owns orchestration, least-additive repair selection, and the bounded reduction check.
 
     - clause_id: ACT-CLOSURE-001
       trigger_refs: [ACT-BARE, ACT-MODE]

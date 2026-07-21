@@ -88,11 +88,27 @@ mutation.
 2. Inspect the repository boundary, existing owner, host enforcement
    capabilities, and required observations. Apply `$universalist` at every
    changed or preserved boundary.
-3. Select the smallest non-dominated Construction that satisfies every Goal
+3. When an accepted Counterexample class can lead to mutation, record this
+   compact view over the current Construction selection before choosing an
+   operation; it is not a fifth authority artifact:
+
+   ~~~text
+   Repair Disposition
+   Law:
+   Owner:
+   Route: delete | consolidate | edit | add
+   Why not smaller:
+   Falsifier:
+   ~~~
+
+   A finding authorizes the invariant, not its suggested implementation.
+   Choose the least additive route that satisfies the law; `add` must explain
+   why `delete`, `consolidate`, and `edit` are insufficient.
+4. Select the smallest non-dominated Construction that satisfies every Goal
    law, makes invalid states unrepresentable where feasible, and names exact
    proof and retirement obligations. Follow
    [construction-contract.md](references/construction-contract.md).
-4. Set the selected Construction draft's `artifact_id` to JSON `null`, then
+5. Set the selected Construction draft's `artifact_id` to JSON `null`, then
    materialize and register it before selecting any operation:
 
    ~~~bash
@@ -105,7 +121,7 @@ mutation.
    `artifact.artifact_id`, and retain `event_digest` as the
    `construction_contract_registered` observation. Only the returned artifact
    is the current Construction; Ledger does not select or revise it.
-5. For each repository effect, Actuating selects one exact operation projected
+6. For each repository effect, Actuating selects one exact operation projected
    by the current Goal, returned Construction, and live subject, including its
    `expected_subject_digest`. Immediately before the effect, the executor
    recomputes that identity through the exact repository-native procedure
@@ -113,10 +129,10 @@ mutation.
    without effect. The executor cannot choose
    architecture, broaden scope, publish, or claim completion; Ledger only
    exact-matches the echoed opaque digest and never derives it or invokes Git.
-6. Run the Construction's exact verifier and falsifier observations. Record
+7. Run the Construction's exact verifier and falsifier observations. Record
    their immutable outputs and the resulting subject identity in the Evidence
    Ledger using [evidence-ledger.md](references/evidence-ledger.md).
-7. Re-evaluate the current artifacts and observations. Actuating selects the
+8. Re-evaluate the current artifacts and observations. Actuating selects the
    next operation, review action, Ship handoff, closure judgment, or blocker.
 
 The one-operation law is `select -> prepare -> effect -> observe -> evaluate ->
@@ -145,6 +161,16 @@ The successor records falsified and preserved predecessor claims, excluded
 Counterexample classes, stronger proof, and retirements. It must preserve
 already-valid observations. A witnessed example is not resolved until the
 Construction excludes its class or proves it instance-specific.
+
+Before dispatching fresh review after a repair, classify the production delta.
+If it introduces a new algorithm, compatibility branch, semantic helper
+family, or more than 50 net production lines, perform exactly one
+proof-preserving reduction pass. Collapse duplicate paths, return semantics to
+the canonical owner, or retire dominated residue where proof permits. If no
+reduction preserves the Goal laws and observations, record the specific
+compatibility or representation obstruction. The threshold triggers one pass;
+it is not a hard line budget, does not force deletion, and does not authorize a
+recursive reduction loop for the same delta.
 
 ## Review convergence
 
