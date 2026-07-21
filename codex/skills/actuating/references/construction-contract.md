@@ -101,6 +101,22 @@ affected boundary and records:
 - the selected non-dominated construction;
 - invalid states eliminated, residual obligations, and retirements.
 
+For each accepted Counterexample class that can lead to mutation, Actuating
+also records a compact Repair Disposition while selecting this Construction:
+
+~~~text
+Law:
+Owner:
+Route: delete | consolidate | edit | add
+Why not smaller:
+Falsifier:
+~~~
+
+This is a view over the existing Construction decision, not another authority
+artifact. A finding authorizes the invariant, not its suggested implementation.
+The selected route is the least additive route that satisfies the law; an
+`add` route explains why `delete`, `consolidate`, and `edit` are insufficient.
+
 One Construction selects the canonical owner, representation or machine,
 interpreter or handler, proof strategy, scope, and retirements. Executors,
 review coordinators, Ship, and Ledger project that selection; none may
@@ -130,6 +146,19 @@ ACT-AK dimension:
 non-dominated minima remain incomparable, prove `separate-laws` from distinct
 accepted laws or block; preference, familiarity, and implementation momentum
 cannot manufacture a winner.
+
+## Review-repair reduction
+
+Before fresh review, classify the repair's production delta. A new algorithm,
+compatibility branch, semantic helper family, or more than 50 net production
+lines triggers exactly one proof-preserving reduction pass. The pass may
+collapse duplicate paths, return semantics to the canonical owner, or retire
+dominated residue. When no reduction preserves the Goal laws and observations,
+record the specific compatibility or representation obstruction instead.
+
+The trigger is not a hard line budget, does not force deletion, and does not
+repeat recursively for the same delta. Fresh review evaluates the reduced
+result or the recorded obstruction.
 
 ## Correct-by-construction proof
 
