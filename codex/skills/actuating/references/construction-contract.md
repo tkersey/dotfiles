@@ -92,13 +92,13 @@ revises the Construction.
 ## Selection law
 
 Before consequential mutation, Actuating applies `$universalist` to the
-affected boundary and records:
+affected boundary and records its nomination:
 
 - the current context and accepted laws;
 - the existing owner and host enforcement capabilities;
 - the smallest repository-native candidate;
 - materially distinct candidates and their falsifiers;
-- the selected non-dominated construction;
+- the nominated construction and materially distinct alternatives;
 - invalid states eliminated, residual obligations, and retirements.
 
 For each accepted Counterexample class that can lead to mutation, Actuating
@@ -107,6 +107,7 @@ also records a compact Repair Disposition while selecting this Construction:
 ~~~text
 Law:
 Owner:
+Reduction: not-required | minimal | dominated | incomparable | essential-shape-gap | blocked
 Route: delete | consolidate | edit | add
 Why not smaller:
 Falsifier:
@@ -116,10 +117,20 @@ This is a view over the existing Construction decision, not another authority
 artifact. A finding authorizes the invariant, not its suggested implementation.
 The selected route is the least additive route that satisfies the law; an
 `add` route explains why `delete`, `consolidate`, and `edit` are insufficient.
-`$reduce` may supply the evidence for `Why not smaller?` by factoring live
-obligations, testing congruent quotients or ablations, and checking
-recomposition. Its Reduction Certificate belongs only in `supporting_refs`;
-Actuating still selects the Construction and Repair Disposition.
+Before selection, `$reduce` challenges any materially disputable factor by
+factoring live obligations, testing congruent quotients or ablations, and
+checking recomposition. The order is `nominate -> challenge once -> adjudicate
+-> one Construction`: Universalist, Reduce, then Actuating. The compact challenge
+is sufficient in Actuating composition; an independently useful Reduction
+Certificate may appear only in `supporting_refs`. Neither supporting surface
+selects the Construction or Repair Disposition.
+
+A challenge is required when the nominee adds or preserves an independent
+semantic owner, parallel representation, bypass, compatibility branch,
+semantic mechanism, or apparently dominated residue. `dominated` requires the
+smaller admissible candidate. `minimal` permits the nominee. `incomparable`,
+`essential-shape-gap`, or `blocked` returns to Actuating for adjudication or
+obstruction; it never starts recursive Universalist/Reduce competition.
 
 One Construction selects the canonical owner, representation or machine,
 interpreter or handler, proof strategy, scope, and retirements. Executors,
@@ -151,20 +162,15 @@ non-dominated minima remain incomparable, prove `separate-laws` from distinct
 accepted laws or block; preference, familiarity, and implementation momentum
 cannot manufacture a winner.
 
-## Review-repair reduction
+## Implementation reclassification
 
-Before fresh review, classify the repair's production delta. Any new algorithm,
-compatibility branch, semantic helper family, or delta over 50 net production
-lines triggers `$reduce` for exactly one proof-preserving reduction pass. Reduce
-may collapse duplicate paths, return semantics to the canonical owner, or retire
-dominated residue. Its result remains supporting evidence; Actuating selects
-the Construction and next operation. When no reduction preserves the Goal laws
-and observations, record the specific compatibility or representation
-obstruction instead.
-
-The trigger is not a hard line budget, does not force deletion, and does not
-repeat recursively for the same delta. Fresh review evaluates the reduced
-result or the recorded obstruction.
+Before fresh review, compare the realized production delta with the challenged
+candidate. Diff size is evidence to inspect, not a reduction trigger. Run one
+new challenge only when implementation introduces or materially changes a
+disputable semantic factor. That challenge belongs to the successor candidate;
+the same candidate and evidence never repeat recursively. Otherwise retain the
+pre-mutation challenge. Fresh review evaluates the adjudicated result or the
+recorded obstruction.
 
 ## Correct-by-construction proof
 

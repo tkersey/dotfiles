@@ -2,6 +2,12 @@
 
 The Reduction Certificate separates **reduction operators** from the **preservation relation**.
 
+Use it for standalone audits or migrations, an explicitly requested
+certificate, or an independently durable handoff. In Actuating composition,
+the compact Reduction Challenge is sufficient and Actuating records the
+adjudicated result in the Construction Contract. `RC-v1` remains optional
+supporting evidence and never selects or reopens a Construction.
+
 Reduction operators answer what changes structurally:
 
 ```text

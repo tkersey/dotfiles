@@ -1,6 +1,6 @@
 ---
 name: reduce
-description: "Audit over-engineered codebases by factoring layers into live obligations, quotienting redundant distinctions, ablating unearned surface, and normalizing the survivors while preserving required behavior. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo/infra tooling, web stacks, or requests to remove layers. Produces evidence-backed Reduction Certificates, cuts, migration phases, proof signals, rollback, and an essential-abstraction check."
+description: "Audit over-engineered codebases by factoring layers into live obligations, quotienting redundant distinctions, ablating unearned surface, and normalizing the survivors while preserving required behavior. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo/infra tooling, web stacks, or requests to remove layers. In Actuating composition, return one compact non-authoritative minimization challenge before Construction selection; use RC-v1 for standalone audits, migrations, or independently durable handoffs."
 ---
 
 # Reduce
@@ -9,7 +9,10 @@ description: "Audit over-engineered codebases by factoring layers into live obli
 
 Act as the architecture **WINNOWING** reviewer. Find costly abstractions whose live obligation is unproven, expired, moved, duplicated, invalid, or outweighed by their change tax. Recommend lower-level normal forms while preserving essential truth.
 
-The default product is a decision package and `RC-v1`, not a patch. Implement only when the user explicitly asks.
+The default standalone product is a decision package and `RC-v1`, not a patch.
+Inside Actuating, return one compact challenge for the candidate version; the
+Construction carries the adjudicated decision. Implement only when the user
+explicitly asks.
 
 ## Doctrine
 
@@ -34,7 +37,8 @@ guard:
 
 ## Abstraction elevator
 
-`reduce` descends. `universalist` climbs. They share an altitude map.
+`reduce` descends. `universalist` climbs. They share an altitude map without
+sharing selection authority.
 
 Classify each move:
 
@@ -45,6 +49,11 @@ Classify each move:
 - `quotient`: collapse observationally indistinguishable factors.
 - `ablate`: remove a discharged factor.
 - `normalize`: recompose retained factors around one canonical owner.
+
+In Actuating composition, `climb` reports an `essential-shape-gap` to
+Actuating. It does not call Universalist, reopen a Construction, or begin a
+recursive elevator loop. Actuating alone adjudicates the existing nomination,
+requests a new candidate version, or blocks.
 
 ## When to use
 
@@ -173,9 +182,26 @@ validate-first
 climb
 ```
 
-### 9. Produce RC-v1
+### 9. Choose the output carrier
 
-Use [reduction-certificate.md](references/reduction-certificate.md).
+In Actuating composition, return exactly one compact challenge for the current
+candidate version:
+
+```text
+Reduction Challenge
+Candidate:
+Disputable factors:
+Verdict: minimal | dominated | incomparable | essential-shape-gap | blocked
+Smaller admissible candidate:
+Obligations preserved:
+Recomposition proof or falsifier:
+```
+
+This view is supporting analysis, not an artifact or selection. Use
+[reduction-certificate.md](references/reduction-certificate.md) only for a
+standalone audit or migration, an explicitly requested certificate, or a
+handoff that must remain independently durable outside the current Actuating
+Construction.
 
 For technical debt, default to `refinement-preserving`. Use `observationally-equivalent` only with an explicit observation set. Use `isomorphic` only with a witnessed reversible correspondence.
 
@@ -191,7 +217,7 @@ For each approved cut:
 - stop condition;
 - recomposition check.
 
-## Required output
+## Standalone output
 
 1. Scope and assumptions
 2. Altitude / boundary map
@@ -202,7 +228,7 @@ For each approved cut:
 7. Essential-abstraction check
 8. Prioritized winnowing decisions
 9. Target normal form
-10. Reduction Certificate
+10. Reduction Certificate when required by the output-carrier rule
 11. Migration plan
 12. Risks and unknowns
 13. Winnowing Bottom Line
@@ -222,7 +248,8 @@ Winnowing Bottom Line:
 
 When explicitly asked to implement:
 
-1. Hand the Reduction Certificate to Actuating as supporting reasoning.
+1. Hand the compact challenge, or `RC-v1` when independently required, to
+   Actuating as supporting reasoning.
 2. Mutate only after Actuating encodes the selected reduction in the current
    Construction and binds one exact operation to the current subject.
 3. Implement exactly that one reduction seam at a time through

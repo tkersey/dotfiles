@@ -1,6 +1,13 @@
 # Universalist Plan
 
+Use only when the Universalist decision must remain independently durable.
+When Actuating owns the current Construction, carry the nomination and
+adjudication there instead of allocating this plan.
+
 ## Track:
+## Composition context: standalone / Actuating-composed
+## Decision owner:
+## Decision carrier:
 ## Boundary disposition:
 ## Disposition rationale and evidence:
 ## Owner:
@@ -85,6 +92,6 @@
 ## Verification command(s):
 ## Runtime-only leftovers:
 ## Worker references to root decision id:
-## Root decision receipt: pending / emitted
+## Root decision receipt: pending / emitted / not-required
 ## Status: planned / editing / verified / staged
 ## Next seam:

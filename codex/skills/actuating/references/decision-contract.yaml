@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: actuating
     kind: mixed
-    source_fingerprint: ACT-AK-v1
+    source_fingerprint: ACT-AK-v2
 
   triggers:
     - trigger_id: ACT-BARE
@@ -54,8 +54,8 @@ skill_decision_contract:
       expected_routes: [ACT-IMPLEMENT, ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-SHIP-HANDOFF, ACT-CLOSE]
       prohibited_routes: []
       required_artifacts: [goal-contract/v3, counterexample-set/v1 when classified findings exist, construction-contract/v1, actuating-evidence-event/v1]
-      success_signals: [exactly four authoritative families, Actuating selects the Construction and next action, Reduce remains non-authoritative supporting evidence, Actuating owns the static Review Contract and semantic closure receipt, Ledger remains a structural artifact substrate, Ship alone owns public effects]
-      failure_signals: [a finding selects mutation directly, $reduce selects a Construction or Repair Disposition or operation or next action or closure, Ledger or an executor selects architecture or a next action, Ledger emits semantic workflow state or closure, peer policy or resolution state participates, a public effect bypasses Ship]
+      success_signals: [exactly four authoritative families, Universalist nominates and Reduce challenges once before Actuating alone adjudicates and selects the Construction and next action, compact composed analysis needs no independent SDR-v1 or RC-v1, Actuating owns the static Review Contract and semantic closure receipt, Ledger remains a structural artifact substrate, Ship alone owns public effects]
+      failure_signals: [a finding selects mutation directly, Universalist or $reduce selects a Construction or Repair Disposition or operation or next action or closure, a supporting plan certificate or receipt becomes required authority, Ledger or an executor selects architecture or a next action, Ledger emits semantic workflow state or closure, peer policy or resolution state participates, a public effect bypasses Ship]
       rationale: Source authority, construction, falsification, observation, and bounded minimization remain distinct without duplicated control truth.
 
     - clause_id: ACT-REVIEW-001
@@ -63,9 +63,9 @@ skill_decision_contract:
       expected_routes: [ACT-TRIAGE, ACT-REMEDIATION, ACT-REVIEW-CLOSEOUT, ACT-CLOSE]
       prohibited_routes: []
       required_artifacts: [Actuating-owned actuating-review-contract/v1, five request bindings before initial dispatch, exact CAS owner receipts, current Counterexample Set after findings, successor Construction before accepted-class mutation, review observations in the Evidence Ledger]
-      success_signals: [Actuating maps CAS owner facts to semantic credit, accepted-class mutation follows a Law Owner Route Why-not-smaller Falsifier disposition, named additive deltas route through $reduce as supporting evidence and receive one reduction pass or obstruction before fresh review, initial 1+4 launches concurrently, siblings are non-cancelling, verdictless failure earns no credit and recovers only its request once, full-wave standard clean counts as one, four later standard cleans run serially, five consecutive standard cleans close the current subject, material change resets all review credit]
-      failure_signals: [Ledger hardcodes the Review Contract, Ledger dispatches or interprets CAS, Ledger computes review credit, review prose grants mutation, a suggested implementation bypasses Construction selection, $reduce grants mutation or bypasses Actuating selection, a named additive delta reaches fresh review without its one reduction pass or obstruction, sibling cancellation, whole-wave transport retry, indefinite retry, review credit crosses a material change]
-      rationale: Review independently falsifies while Actuating owns orchestration, least-additive repair selection, the bounded Reduce check, and every successor decision.
+      success_signals: [Actuating maps CAS owner facts to semantic credit, accepted-class mutation follows a Law Owner Reduction Route Why-not-smaller Falsifier disposition, a nominee with a disputable semantic factor receives one pre-mutation Reduce challenge, implementation triggers a successor challenge only when the realized factorization materially changes, initial 1+4 launches concurrently, siblings are non-cancelling, verdictless failure earns no credit and recovers only its request once, full-wave standard clean counts as one, four later standard cleans run serially, five consecutive standard cleans close the current subject, material change resets all review credit]
+      failure_signals: [Ledger hardcodes the Review Contract, Ledger dispatches or interprets CAS, Ledger computes review credit, review prose grants mutation, a suggested implementation bypasses Construction selection, $reduce grants mutation or bypasses Actuating selection, a disputable factor reaches mutation without its challenge, line count alone triggers reduction, the same candidate and evidence enter recursive Universalist Reduce competition, sibling cancellation, whole-wave transport retry, indefinite retry, review credit crosses a material change]
+      rationale: Review independently falsifies while Actuating owns orchestration, pre-mutation minimization, least-additive repair selection, and every successor decision.
 
     - clause_id: ACT-CLOSURE-001
       trigger_refs: [ACT-BARE, ACT-MODE]

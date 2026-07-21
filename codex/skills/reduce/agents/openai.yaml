@@ -1,10 +1,7 @@
 interface:
   display_name: "reduce"
-  short_description: "Factor costly layers, quotient redundancy, ablate unearned surface, and normalize the survivors with a Reduction Certificate."
+  short_description: "Challenge costly factors without taking selection authority"
   brand_color: "#64748B"
-  default_prompt: >
-    Use $reduce. Build an evidence-backed factorization, score tax versus live value,
-    check quotient congruence and essential abstractions, select winnowing operators,
-    emit RC-v1, and propose reversible proof-bearing cuts. Do not implement unless asked.
+  default_prompt: "Use $reduce to factor the candidate, challenge redundant distinctions, and prove recomposition; in Actuating composition, return one compact non-authoritative challenge and reserve RC-v1 for standalone or independently durable work."
 policy:
   allow_implicit_invocation: false

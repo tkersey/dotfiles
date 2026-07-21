@@ -1,11 +1,13 @@
 ---
 name: universalist
-description: "Use whenever implementation, review, migration, or resolution creates, changes, preserves, validates, bypasses, or removes an owned code boundary. Universalist generates context-relative, correct-by-construction architecture: start with the smallest repository-native candidate, capture current requirements and host enforcement capabilities, consult construction cards only as evidence-bound theorem nominations, and synthesize the smallest effective artifact whose representation, constructors, eliminators, compositions, and interpretations enforce the contract. Make invalid states and illegal compositions unrepresentable where possible; centralize unavoidable runtime checks; preserve observations and compatibility; record residual obligations and invalidation triggers; return obstruction rather than invent correctness. Implicit invocation on; team mode only by explicit request."
+description: "Use whenever implementation, review, migration, or resolution creates, changes, preserves, validates, bypasses, or removes an owned code boundary. Universalist synthesizes the smallest context-relative, correct-by-construction boundary candidate from current requirements and host capabilities. In Actuating composition it nominates that candidate without selecting or reopening the Construction; standalone work may select a route under its root authority. Make invalid states and illegal compositions unrepresentable where possible, centralize residual checks, preserve observations and compatibility, record invalidation triggers, and return obstruction rather than invent correctness. Implicit invocation on; team mode only by explicit request."
 ---
 
 # Universalist
 
-Universalist generates **context-relative, correct-by-construction software architecture**.
+Universalist synthesizes **context-relative, correct-by-construction boundary
+architecture**. In Actuating composition it nominates a candidate; Actuating
+alone adjudicates and authors the Construction.
 
 It uses category theory as a hidden optimizer to derive the smallest effective boundary artifact whose representation, constructors, eliminators, compositions, and interpretations enforce the current context's requirements. It makes invalid states and illegal compositions unrepresentable where the host environment permits; centralizes unavoidable runtime validation at explicit owners; preserves required observations and compatibility; records residual obligations and invalidation triggers; and returns an obstruction rather than inventing correctness the context cannot justify.
 
@@ -53,12 +55,34 @@ Invalidation triggers:
 Then:
 
 1. Decide whether the route is consequential under **Decision observability**: at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations.
-2. For a consequential route, allocate one fresh ledger-addressed Universalist plan through **Step 0**, complete this gate before mutating the seam, and emit exactly one root `SDR-v1`.
-3. For a routine or uncontested seam, retain the compact disposition and continue the repository's ordinary workflow. Do not allocate a plan or emit `SDR-v1` solely because the skill activated.
+2. For a consequential route, complete the current-context, comparison,
+   Boundary Artifact Contract, enforcement, residual, invalidation, law, and
+   falsifier analysis before mutation. In Actuating composition, hand this
+   nomination directly to Actuating; the Construction is the decision carrier.
+3. Allocate a plan and emit one root `SDR-v1` only when **Decision durability**
+   requires an independently addressable Universalist decision.
+4. For a routine or uncontested seam, retain the compact disposition and
+   continue the repository's ordinary workflow.
+
+## Decision durability
+
+Materiality controls reasoning depth; durability controls whether that
+reasoning needs a separate plan and receipt. Independent durability exists when
+no current Actuating Construction will carry the complete decision and the user
+requests a durable record, or standalone, cross-session, multi-actor, migration,
+or supersession work must later address the Universalist decision directly.
+
+When an Actuating Construction carries the nomination, adjudication, proof, and
+retirement obligations, do not allocate a Universalist plan or emit `SDR-v1`
+merely because the boundary choice is consequential. Session evidence and the
+Construction remain inspectable without a duplicate decision artifact.
 
 ## Execution-time reclassification gate
 
-Treat both a compact disposition and a plan-bound decision as proof leases, not one-time classifications. Whenever new execution evidence appears, reclassify before the next mutation of the affected seam if that evidence may materially change:
+Treat a compact disposition, Actuating-bound nomination, or plan-bound decision
+as a proof lease, not a one-time classification. Whenever new execution
+evidence appears, reclassify before the next mutation of the affected seam if
+that evidence may materially change:
 
 ```text
 owner or source / target worlds
@@ -83,10 +107,17 @@ Interpret the outcomes as follows:
 
 - **retain** — the same owner, axis, law, falsifier, route, and obligations still govern; continue under the current compact disposition or plan without allocating a new one;
 - **split** — the evidence reveals independent owners or architectural axes; stop the shared route and create one packet per independently governed seam;
-- **escalate** — a routine seam has become consequential, or a consequential route materially changed; stop before mutation and complete **Step 0** for each affected successor;
+- **escalate** — a routine seam has become consequential, or a consequential route materially changed; stop before mutation, repeat the full analysis, and complete **Step 0** only for independently durable successors;
 - **obstruct** — no honest current route is representable or authorized; stop with the witnessed obstruction and reopening condition.
 
-For the same un-emitted seam, revise the current plan and re-adjudicate it. Once an `SDR-v1` exists, or when owner or axis changes, do not overwrite the old decision: name the invalidated artifact and allocate a fresh successor plan for every consequential packet. Evidence discovered only after an affected mutation is a proof failure; record it and re-establish the lease before further mutation rather than creating a retroactive plan.
+Before Actuating selects a Construction, revise the current nomination or
+durable plan in place. After Actuating materializes a Construction, return new
+evidence to Actuating for retain, successor, or obstruction; Universalist must
+not reopen it. Once an `SDR-v1` exists, do not overwrite it: name the
+invalidated artifact and allocate a fresh plan only for an independently
+durable successor. Evidence discovered only after an affected mutation is a
+proof failure; re-establish the lease before further mutation rather than
+creating a retroactive plan.
 
 Diff size, retry count, test count, elapsed time, and categorical vocabulary do not establish materiality by themselves. Reclassification is semantic: routine work remains lightweight unless a named decision dimension materially changes.
 
@@ -210,7 +241,13 @@ The registry's `universal.role: emitter` means that a selected artifact maps coh
 
 ## Boundary Artifact Contract
 
-A selected direction is not yet architecture. Lower it into one repository-native **Boundary Artifact Contract**. Complete every applicable field. When the artifact kind has no honest constructor, eliminator, composition, or interpreter surface, record `not applicable` with an artifact-specific rationale instead of inventing ceremonial structure:
+A nominated direction is not yet selected architecture. Lower it into one
+repository-native **Boundary Artifact Contract** candidate. In Actuating
+composition, hand that candidate to Actuating without selecting the
+Construction. Complete every applicable field. When the artifact kind has no
+honest constructor, eliminator, composition, or interpreter surface, record
+`not applicable` with an artifact-specific rationale instead of inventing
+ceremonial structure:
 
 ```text
 Context identifier / proof lease:
@@ -441,9 +478,10 @@ Typed hole:
 
 Do not escalate when this inventory cannot be grounded in repository evidence.
 
-## Step 0 — Allocate a ledger-addressed plan
+## Step 0 — Allocate an independently durable plan
 
-For a consequential decision, first load `$ledger` and complete `$ledger ensure` once. Then allocate a fresh plan:
+When **Decision durability** applies, first load `$ledger` and complete
+`$ledger ensure` once. Then allocate a fresh plan:
 
 ```bash
 ledger --source universalist create \
@@ -458,7 +496,11 @@ ledger --source universalist path --repo PROJECT_ROOT --id PLAN_ID
 ledger --source universalist latest --repo PROJECT_ROOT
 ```
 
-Before mutation, write the current-context contract, ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract with explicit applicability rationales, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, and falsifier into the plan.
+Before mutation, write the current-context contract, composition owner and
+decision carrier, ordinary candidate, comparison universe, axis and typed hole,
+relevant card dispositions, Boundary Artifact Contract with explicit
+applicability rationales, enforcement matrix, residual obligations, invalidation
+triggers, proof lease, law, and falsifier into the plan.
 
 After root adjudication emit exactly one receipt:
 
@@ -486,7 +528,10 @@ ledger --source universalist emit \
   --write-plan
 ```
 
-Pass every applicable clause explicitly so receipt coverage does not depend on Ledger's compatibility defaults. `UNI-PRESERVE`, `UNI-ORDINARY`, and `UNI-CANONICAL` use the seven clauses above. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`.
+Pass every applicable clause explicitly so receipt coverage does not depend on
+Ledger's compatibility defaults. Add `UNI-ROOT-001` only for independently
+durable decisions. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with
+`UNI-OBSTRUCTION-001`.
 
 When **Step 0** follows an execution-time reclassification, also pass `--trigger-ref UNI-RECLASSIFY` and `--clause-ref UNI-RECLASSIFY-001`, then complete the plan's reclassification checkpoint.
 
@@ -503,6 +548,7 @@ current-context contract
 ordinary candidate
 comparison universe
 one axis and typed hole
+composition context, decision owner, and decision carrier
 relevant cards and dispositions
 Boundary Artifact Contract with applicability rationales
 material delta
@@ -512,9 +558,11 @@ resource impact
 enforcement matrix
 residual obligations
 invalidation triggers / proof lease
-one root SDR-v1 receipt
-applicable SKDC clause refs
 ```
+
+An independently durable decision additionally requires one ledger-addressed
+plan, one root `SDR-v1`, and applicable SKDC clause refs. An Actuating-composed
+decision uses the current Construction instead.
 
 Routine seams, ceremonial activation, and uncontested implementation details use the compact boundary disposition only.
 
@@ -555,7 +603,7 @@ When authorized:
 5. have the proof auditor attack it;
 6. use one writer for one witness seam;
 7. use the verifier independently;
-8. emit one root receipt for the consequential seam.
+8. emit one root receipt only when the seam is independently durable.
 
 Child agents do not choose routes, authorize mutation, or recursively spawn agents.
 

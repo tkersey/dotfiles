@@ -17,9 +17,8 @@ Use exactly four authoritative per-goal artifact families:
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
 3. `construction-contract/v1` — the selected architecture, proof obligations,
-   preserved observations, and retirements, authored by `$actuating` using
-   `$universalist`; `$reduce` may supply non-authoritative minimization
-   evidence.
+   preserved observations, and retirements, authored by `$actuating` after a
+   `$universalist` nomination and, when required, one `$reduce` challenge.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
    retain their domain owners.
 
@@ -49,11 +48,12 @@ Actuating owns:
 - application of the closure theorem and authorship of its semantic receipt.
 
 `$review-fold` must classify witnessed facts before Actuating selects any
-repair. `$reduce` may minimize admissible Constructions by factoring obligations,
-testing congruent quotients or ablations, and checking recomposition, but its
-Reduction Certificate is supporting evidence only. Neither review prose nor
-`$reduce` selects a Construction, Repair Disposition, operation, next action, or
-closure.
+repair. `$universalist` nominates the essential boundary shape; `$reduce` may
+challenge its factors by testing congruent quotients, ablations, and
+recomposition. The composition order is `nominate -> challenge once ->
+adjudicate`; Actuating alone performs the adjudication. Neither supporting
+skill, review prose, nor an optional plan or Reduction Certificate selects a
+Construction, Repair Disposition, operation, next action, or closure.
 
 Ledger may materialize, canonicalize, validate, append, replay, and emit
 requested disposable structural projections. Ledger never executes repository
@@ -92,8 +92,14 @@ mutation.
    `artifact_id`, and `goal_contract_registered` event before continuing.
 2. Inspect the repository boundary, existing owner, host enforcement
    capabilities, and required observations. Apply `$universalist` at every
-   changed or preserved boundary.
-3. When an accepted Counterexample class can lead to mutation, record this
+   changed or preserved boundary and retain its compact nomination: candidate,
+   owner, laws, observations, residuals, invalidators, and falsifier.
+3. Before selecting a Construction, classify the nominated candidate's
+   factors. Invoke `$reduce` exactly once for that candidate version when it
+   adds or preserves an independent semantic owner, parallel representation,
+   bypass, compatibility branch, semantic mechanism, or apparently dominated
+   residue. Otherwise record `Reduction: not-required`. When an accepted
+   Counterexample class can lead to mutation, record this
    compact view over the current Construction selection before choosing an
    operation; it is not a fifth authority artifact:
 
@@ -101,6 +107,7 @@ mutation.
    Repair Disposition
    Law:
    Owner:
+   Reduction: not-required | minimal | dominated | incomparable | essential-shape-gap | blocked
    Route: delete | consolidate | edit | add
    Why not smaller:
    Falsifier:
@@ -109,9 +116,13 @@ mutation.
    A finding authorizes the invariant, not its suggested implementation.
    Choose the least additive route that satisfies the law; `add` must explain
    why `delete`, `consolidate`, and `edit` are insufficient.
-4. Select the smallest non-dominated Construction that satisfies every Goal
-   law, makes invalid states unrepresentable where feasible, and names exact
-   proof and retirement obligations. Follow
+4. Adjudicate the nomination and challenge. Select the smallest non-dominated
+   Construction that satisfies every Goal law, makes invalid states
+   unrepresentable where feasible, and names exact proof and retirement
+   obligations. A `dominated` challenge selects the smaller admissible
+   candidate; `incomparable`, `essential-shape-gap`, or `blocked` requires an
+   Actuating disposition or obstruction, never recursive skill ping-pong.
+   Follow
    [construction-contract.md](references/construction-contract.md).
 5. Set the selected Construction draft's `artifact_id` to JSON `null`, then
    materialize and register it before selecting any operation:
@@ -167,16 +178,14 @@ Counterexample classes, stronger proof, and retirements. It must preserve
 already-valid observations. A witnessed example is not resolved until the
 Construction excludes its class or proves it instance-specific.
 
-Before dispatching fresh review after a repair, classify the production delta.
-If it introduces a new algorithm, compatibility branch, semantic helper family,
-or more than 50 net production lines, invoke `$reduce` for exactly one
-proof-preserving reduction pass. It may collapse duplicate paths, return
-semantics to the canonical owner, or retire dominated residue where proof
-permits; its result is supporting evidence, and Actuating still selects the
-Construction and next operation. If no reduction preserves the Goal laws and
-observations, record the specific compatibility or representation obstruction.
-The threshold is not a hard line budget, does not force deletion, and does not
-authorize a recursive reduction loop for the same delta.
+Before dispatching fresh review after a repair, compare the realized production
+delta with the challenged candidate. Line count is only a reclassification
+signal. Reinvoke `$reduce` once for a successor candidate only when the delta
+introduces or materially changes an independent semantic owner, parallel
+representation, bypass, compatibility branch, semantic mechanism, or dominated
+residue. Otherwise retain the pre-mutation challenge. Actuating still selects
+the successor Construction and next operation; the same candidate and evidence
+never enter a recursive reduction loop.
 
 ## Review convergence
 

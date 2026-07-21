@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v12
+    source_fingerprint: universalist-boundary-decision-v13
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -20,6 +20,11 @@ skill_decision_contract:
       cue_literals: [reclassification checkpoint, prior disposition or decision, new evidence, material semantic delta, invalidated artifacts, successor packets]
       cue_regexes: []
       exclusions: [same owner axis law falsifier route and obligations under routine refinement, diff size retry count test count elapsed time or categorical vocabulary alone]
+    - trigger_id: UNI-DURABLE
+      description: A consequential Universalist decision must remain independently addressable outside a current Actuating Construction.
+      cue_literals: [independently durable, standalone decision, cross-session handoff, multi-actor handoff, migration decision, supersession]
+      cue_regexes: []
+      exclusions: [a current Actuating Construction carries the complete nomination adjudication proof and retirement decision, routine or uncontested seam, decision materiality without an independent durability need]
   routes:
     - route_id: UNI-PRESERVE
       description: Preserve an already exact boundary and continue without a new abstraction.
@@ -50,9 +55,9 @@ skill_decision_contract:
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [ordinary candidate, declared comparison universe, one architectural axis and typed hole, relevant construction cards and dispositions, selected construction, alternatives considered, rejected route, material architectural delta, expected outcome, resource impact]
-      success_signals: [one owned boundary one axis one typed hole one smallest effective artifact, every relevant card is selected rejected contradicted or unresolved, dominance is evidenced relative to the declared universe, incomparable minima remain underdetermined]
-      failure_signals: [comparison universe omitted, relevant card ignored, signal count evidence count diagnostic order registry order or categorical sophistication manufactures a winner, incomparable candidates forced into one route, widened seam without a law requirement]
+      required_artifacts: [composition context, decision owner, decision carrier, ordinary candidate, declared comparison universe, one architectural axis and typed hole, relevant construction cards and dispositions, nominated or standalone-selected construction, alternatives considered, rejected route, material architectural delta, expected outcome, resource impact]
+      success_signals: [one owned boundary one axis one typed hole one smallest effective artifact, Universalist nominates in Actuating composition and selects only under standalone root authority, every relevant card is selected rejected contradicted or unresolved, dominance is evidenced relative to the declared universe, incomparable minima remain underdetermined]
+      failure_signals: [composition owner or decision carrier omitted, Universalist selects or reopens an Actuating Construction, comparison universe omitted, relevant card ignored, signal count evidence count diagnostic order registry order or categorical sophistication manufactures a winner, incomparable candidates forced into one route, widened seam without a law requirement]
       rationale: The decision record must expose what changed because of Universalist rather than merely proving that the skill was present.
     - clause_id: UNI-CONTEXT-001
       trigger_refs: [UNI-CONSEQUENTIAL]
@@ -67,7 +72,7 @@ skill_decision_contract:
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL]
       prohibited_routes: []
       required_artifacts: [Boundary Artifact Contract, boundary owner and requirements discharged, representation or carrier, applicable constructors eliminators compositions and interpreter or projection or handler, required observations, compatibility and migration, bypass prevention, resource bound, claim strength, artifact-specific rationale for every inapplicable surface]
-      success_signals: [the selected direction lowers into one repository-native artifact, public construction composition and interpretation preserve the current requirements, inapplicable surfaces are explicit and justified]
+      success_signals: [the nominated or standalone-selected direction lowers into one repository-native artifact candidate, public construction composition and interpretation preserve the current requirements, inapplicable surfaces are explicit and justified]
       failure_signals: [theorem nomination treated as final architecture, ceremonial constructor eliminator composition or interpreter invented, inapplicable field left blank or unexplained, bypass path remains unowned, claim strength exceeds the effective lowering]
       rationale: A theorem card nominates a direction; architecture exists only after an honest repository-native lowering with applicable surfaces and bypass policy.
     - clause_id: UNI-ENFORCEMENT-001
@@ -99,17 +104,17 @@ skill_decision_contract:
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
       required_artifacts: [prior disposition or decision, new evidence, material semantic delta, reclassification outcome retain split escalate or obstruct, invalidated artifacts or none, successor packets or none]
-      success_signals: [retain preserves the same owner axis law falsifier route and obligations without allocating a plan, split creates one packet per independently governed owner or axis, a newly consequential seam stops before mutation and completes Step 0, an emitted stale decision is named as invalidated and each consequential successor receives a fresh plan]
-      failure_signals: [mutation continues under a materially stale disposition, independent owners or axes remain collapsed into one packet, diff size retries tests time or vocabulary alone trigger escalation, a prior receipt is overwritten instead of invalidated, a plan is created retroactively after the affected mutation]
+      success_signals: [retain preserves the same owner axis law falsifier route and obligations without allocating a plan, split creates one packet per independently governed owner or axis, a newly consequential seam stops before mutation and repeats the full analysis, Step 0 applies only to an independently durable successor, an Actuating-owned Construction receives later material evidence through Actuating]
+      failure_signals: [mutation continues under a materially stale disposition, independent owners or axes remain collapsed into one packet, diff size retries tests time or vocabulary alone trigger escalation, Universalist reopens an Actuating-owned Construction, a prior receipt is overwritten instead of invalidated, a plan is created retroactively after the affected mutation]
       rationale: Boundary decisions are freshness-bound proof leases and must be reclassified when execution evidence changes the semantic basis that authorized the next mutation.
     - clause_id: UNI-ROOT-001
-      trigger_refs: [UNI-CONSEQUENTIAL]
+      trigger_refs: [UNI-DURABLE]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
       required_artifacts: [one ledger-addressed Universalist plan, one root SDR-v1 receipt, applicable clause refs covering the selected route, current Seq contract fingerprint, plan-bound artifact state, worker references to the root decision id]
-      success_signals: [exactly one root receipt per consequential changed seam, receipt clause refs cover every applicable current policy clause, receipt fingerprint matches the validated contract snapshot, independent axis analysis shares the root seam decision unless it becomes a genuinely distinct changed seam]
+      success_signals: [exactly one root receipt per independently durable changed seam, receipt clause refs cover every applicable current policy clause, receipt fingerprint matches the validated contract snapshot, independent axis analysis shares the root seam decision unless it becomes a genuinely distinct changed seam]
       failure_signals: [duplicate worker receipts, applicable policy clause omitted, missing or stale contract fingerprint, one receipt spans unrelated seams, receipt emitted from a static example]
-      rationale: Root-scoped receipts preserve attribution without multiplying one architectural decision across collaborators.
+      rationale: Root-scoped receipts preserve independently durable attribution without duplicating an Actuating Construction decision.
   instrumentation:
-    decision_receipt: required
-    rationale: Consequential boundary-route choices need one plan-bound receipt so Seq can separate activation from decision influence.
+    decision_receipt: optional
+    rationale: Consequential reasoning is always inspectable; only independently durable decisions need a separate plan-bound receipt outside an Actuating Construction.

@@ -156,17 +156,18 @@ class ArtifactKernelContractTests(unittest.TestCase):
                     "Repair Disposition",
                     "Law:",
                     "Owner:",
+                    "Reduction: not-required | minimal | dominated | incomparable | essential-shape-gap | blocked",
                     "Route: delete | consolidate | edit | add",
                     "Why not smaller:",
                     "Falsifier:",
                     "A finding authorizes the invariant, not its suggested implementation.",
-                    "exactly one proof-preserving reduction pass",
-                    "new algorithm",
+                    "nominate -> challenge once -> adjudicate",
+                    "independent semantic owner",
+                    "parallel representation",
+                    "bypass",
                     "compatibility branch",
-                    "semantic helper family",
-                    "50 net production lines",
-                    "compatibility or representation obstruction",
-                    "not a hard line budget",
+                    "semantic mechanism",
+                    "dominated residue",
                 ):
                     self.assertIn(phrase, surface)
 
@@ -174,9 +175,10 @@ class ArtifactKernelContractTests(unittest.TestCase):
             FLAT_SKILL.index("Repair Disposition"),
             FLAT_SKILL.index("For each repository effect"),
         )
-        self.assertIn("does not authorize a recursive reduction loop", FLAT_SKILL)
+        self.assertIn("Line count is only a reclassification signal", FLAT_SKILL)
+        self.assertIn("never enter a recursive reduction loop", FLAT_SKILL)
         self.assertIn("suggested implementation bypasses Construction selection", DECISION)
-        self.assertIn("one reduction pass or obstruction", DECISION)
+        self.assertIn("one pre-mutation Reduce challenge", DECISION)
 
     def test_review_topology_recovery_and_reset_are_exact(self) -> None:
         for phrase in (

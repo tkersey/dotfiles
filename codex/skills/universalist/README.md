@@ -68,9 +68,16 @@ A selected universal construction needs evidence for existence, commutation or p
 
 The registry value `universal.role: emitter` describes the categorical direction from a selected artifact to admissible consumers. It does not describe a shell or Python program.
 
-## Consequential decision receipts
+## Independently durable decision receipts
 
 A decision is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations. Routine seams, ceremonial activation, and uncontested choices use the compact boundary disposition without a plan or receipt.
+
+Materiality controls the required reasoning, not the storage surface. In
+Actuating composition, return the complete candidate analysis to Actuating and
+let the Construction carry the adjudicated decision. Create a Universalist plan
+and `SDR-v1` only when no current Construction carries that decision and an
+explicit, standalone, cross-session, multi-actor, migration, or supersession
+handoff must address it independently.
 
 Before the first Ledger command, load `$ledger` and complete `$ledger ensure` once. Then use native Ledger directly. Universalist requires Ledger 0.10.6 or newer and Skills Seq 0.3.52 or newer.
 
@@ -135,7 +142,7 @@ Use the matching artifact under `templates/` when the selected track requires a 
 
 ## Custom agents
 
-The eight Universalist custom agents remain available for explicit categorical-substrate team mode. Do not spawn them unless the user explicitly requests subagents, parallel agents, or team mode. The root owns synthesis, the selected route, mutation authority, and the single consequential receipt.
+The eight Universalist custom agents remain available for explicit categorical-substrate team mode. Do not spawn them unless the user explicitly requests subagents, parallel agents, or team mode. The root owns synthesis, the standalone selected route, mutation authority, and the single receipt when independent durability requires one.
 
 ## Invocation metadata
 

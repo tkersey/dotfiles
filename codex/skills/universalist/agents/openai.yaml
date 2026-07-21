@@ -1,18 +1,7 @@
 interface:
-  display_name: Universalist
-  short_description: Apply Universalist at every code boundary.
-  brand_color: '#6D5EF6'
-  default_prompt: Use $universalist to inspect the owned boundary this implementation
-    or resolution creates, changes, preserves, repairs, removes, or bypasses. Record
-    the attributed current context and host capabilities, start with the ordinary
-    repository-native candidate, declare the comparison universe, and isolate one
-    architectural axis and typed hole. Treat construction cards only as evidence-bound
-    theorem nominations. Lower the selected direction into the applicable profile of
-    one Boundary Artifact Contract, with rationales for inapplicable surfaces. Give
-    every requirement one semantic owner and one primary disposition—enforced, retained
-    as a residual, or proved obstructed. Derived guards must preserve that authority
-    and carry a conformance or drift witness. Record residual obligations and proof
-    invalidators. Missing evidence remains unresolved, and the root alone selects
-    the route and authorizes mutation.
+  display_name: "Universalist"
+  short_description: "Nominate exact boundary architecture without taking selection"
+  brand_color: "#6D5EF6"
+  default_prompt: "Use $universalist to nominate the smallest exact boundary candidate, preserving observations and naming owners, laws, falsifiers, residuals, and invalidators; when Actuating is present, leave Construction selection to Actuating and create a separate plan only for independent durability."
 policy:
   allow_implicit_invocation: true
