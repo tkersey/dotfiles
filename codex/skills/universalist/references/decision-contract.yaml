@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v11
+    source_fingerprint: universalist-boundary-decision-v12
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -15,6 +15,11 @@ skill_decision_contract:
       cue_literals: [smallest effective artifact, current-context contract, comparison universe, one axis and typed hole, Boundary Artifact Contract, enforcement matrix, proof lease, invalidation triggers]
       cue_regexes: []
       exclusions: [routine seam with one plausible route, ceremonial activation with no route choice, static schema example, categorical label with no material delta]
+    - trigger_id: UNI-RECLASSIFY
+      description: New execution evidence may materially change the active boundary disposition or plan before the next affected seam mutation.
+      cue_literals: [reclassification checkpoint, prior disposition or decision, new evidence, material semantic delta, invalidated artifacts, successor packets]
+      cue_regexes: []
+      exclusions: [same owner axis law falsifier route and obligations under routine refinement, diff size retry count test count elapsed time or categorical vocabulary alone]
   routes:
     - route_id: UNI-PRESERVE
       description: Preserve an already exact boundary and continue without a new abstraction.
@@ -89,6 +94,14 @@ skill_decision_contract:
       success_signals: [missing evidence remains epistemic debt, a complete obstruction is selected only when no constructive alternative remains active]
       failure_signals: [failed implementation attempt treated as nonexistence, missing evidence treated as obstruction, obstruction loses to a constructive card by diagnostic priority, constructive and obstruction evidence coexist without explicit conflict]
       rationale: Obstruction is a proved architectural result rather than a fallback label for uncertainty or implementation failure.
+    - clause_id: UNI-RECLASSIFY-001
+      trigger_refs: [UNI-RECLASSIFY]
+      expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [prior disposition or decision, new evidence, material semantic delta, reclassification outcome retain split escalate or obstruct, invalidated artifacts or none, successor packets or none]
+      success_signals: [retain preserves the same owner axis law falsifier route and obligations without allocating a plan, split creates one packet per independently governed owner or axis, a newly consequential seam stops before mutation and completes Step 0, an emitted stale decision is named as invalidated and each consequential successor receives a fresh plan]
+      failure_signals: [mutation continues under a materially stale disposition, independent owners or axes remain collapsed into one packet, diff size retries tests time or vocabulary alone trigger escalation, a prior receipt is overwritten instead of invalidated, a plan is created retroactively after the affected mutation]
+      rationale: Boundary decisions are freshness-bound proof leases and must be reclassified when execution evidence changes the semantic basis that authorized the next mutation.
     - clause_id: UNI-ROOT-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]

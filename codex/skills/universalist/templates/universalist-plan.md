@@ -18,6 +18,14 @@
 ### Host enforcement capabilities:
 ### Freshness / validity horizon:
 
+## Reclassification checkpoint (complete only when this plan follows reclassification):
+### Prior disposition or decision:
+### New evidence:
+### Material semantic delta:
+### Outcome: retain / split / escalate / obstruct
+### Invalidated artifacts: receipt / plan / proof lease / none
+### Successor packets: owner + axis + seam / none
+
 ## Signal and evidence:
 ## Ordinary candidate:
 ## Comparison universe and dominance relation:

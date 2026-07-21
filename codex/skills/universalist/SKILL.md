@@ -56,6 +56,40 @@ Then:
 2. For a consequential route, allocate one fresh ledger-addressed Universalist plan through **Step 0**, complete this gate before mutating the seam, and emit exactly one root `SDR-v1`.
 3. For a routine or uncontested seam, retain the compact disposition and continue the repository's ordinary workflow. Do not allocate a plan or emit `SDR-v1` solely because the skill activated.
 
+## Execution-time reclassification gate
+
+Treat both a compact disposition and a plan-bound decision as proof leases, not one-time classifications. Whenever new execution evidence appears, reclassify before the next mutation of the affected seam if that evidence may materially change:
+
+```text
+owner or source / target worlds
+requirements, observations, compatibility, effects, or resources
+architectural axis or typed hole
+law, falsifier, enforcement, residuals, or invalidation triggers
+selected route or decomposition into independently governed seams
+```
+
+Record the compact checkpoint:
+
+```text
+Prior disposition or decision:
+New evidence:
+Material semantic delta:
+Outcome: retain / split / escalate / obstruct
+Invalidated artifacts: receipt, plan, proof lease, or none
+Successor packets: owner + axis + seam, or none
+```
+
+Interpret the outcomes as follows:
+
+- **retain** — the same owner, axis, law, falsifier, route, and obligations still govern; continue under the current compact disposition or plan without allocating a new one;
+- **split** — the evidence reveals independent owners or architectural axes; stop the shared route and create one packet per independently governed seam;
+- **escalate** — a routine seam has become consequential, or a consequential route materially changed; stop before mutation and complete **Step 0** for each affected successor;
+- **obstruct** — no honest current route is representable or authorized; stop with the witnessed obstruction and reopening condition.
+
+For the same un-emitted seam, revise the current plan and re-adjudicate it. Once an `SDR-v1` exists, or when owner or axis changes, do not overwrite the old decision: name the invalidated artifact and allocate a fresh successor plan for every consequential packet. Evidence discovered only after an affected mutation is a proof failure; record it and re-establish the lease before further mutation rather than creating a retroactive plan.
+
+Diff size, retry count, test count, elapsed time, and categorical vocabulary do not establish materiality by themselves. Reclassification is semantic: routine work remains lightweight unless a named decision dimension materially changes.
+
 ## Current-context contract
 
 Correctness is always relative to an attributed context `Γ`. Before claiming that an artifact is correct by construction, record:
@@ -454,11 +488,13 @@ ledger --source universalist emit \
 
 Pass every applicable clause explicitly so receipt coverage does not depend on Ledger's compatibility defaults. `UNI-PRESERVE`, `UNI-ORDINARY`, and `UNI-CANONICAL` use the seven clauses above. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`.
 
+When **Step 0** follows an execution-time reclassification, also pass `--trigger-ref UNI-RECLASSIFY` and `--clause-ref UNI-RECLASSIFY-001`, then complete the plan's reclassification checkpoint.
+
 Ledger owns plan identity, addressing, receipt construction, validation, and atomic append. Universalist owns architecture policy. `references/decision-contract.yaml` is the machine-readable authority for consequential triggers, routes, clauses, and required decision evidence; this file supplies their operational semantics. Change the skill, contract, and plan template together when that policy changes. Seq validates contract structure and fingerprinting, not prose-to-contract semantic equivalence. The root agent alone selects the route and authorizes mutation.
 
 ## Decision observability
 
-A route is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations.
+A route is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations. Apply this test initially and again whenever the execution-time reclassification gate observes new material evidence.
 
 Consequential decisions require:
 
