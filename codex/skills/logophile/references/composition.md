@@ -84,6 +84,22 @@ Use `$logophile` to sharpen:
 
 Keep the operating mode (`ADJUDICATIVE`) separate from an explicitly requested persona (`Arbiter`).
 
+## Before replacing doctrine, prompts, or activation wording
+
+Use [behavioral_upgrade.md](behavioral_upgrade.md) whenever new wording may displace an existing phrase that already steers behavior.
+
+- Treat the baseline as the incumbent, not as text that must be rewritten.
+- Map baseline and candidate roles before comparing vocabulary.
+- Classify the policy relation: `equivalent`, `refinement`, `specialization`, `generalization`, `intensity-shift`, `register-shift`, `orthogonal-shift`, `polarity-shift`, or `unknown`.
+- Preserve broad defaults when a candidate is only a specialist mode.
+- Keep formal doctrine separate from runtime activation; `AUDACIOUS` may be the operator while `Be bolder.` remains the better runtime phrase.
+- Treat familiarity, cadence, decoding cost, task coverage, median reliability, ceiling, and variance as first-class comparison axes.
+- Return `retain`, `replace`, `specialize`, `pair`, `sequence`, or `benchmark`.
+- Use [behavioral_upgrade_probe_cases.md](behavioral_upgrade_probe_cases.md) for acceptance boundaries.
+- Use `activation_upgrade_arbiter` for blinded A/B adjudication when matched outputs are available.
+
+Do not let semantic density, Greek or Latin register, novelty, or the generator's preference substitute for behavioral evidence.
+
 ## Naming skills, modes, and personas
 
 Prefer names that encode the job or success condition:
@@ -110,5 +126,7 @@ When another skill asks for a doctrine stack, return:
 3. cash-out artifacts;
 4. optional persona and core command when requested;
 5. final copy-paste block.
+
+When the stack replaces an incumbent, add a Behavioral Upgrade Verdict before finalizing it.
 
 Do not execute the operational workflow unless explicitly asked.
