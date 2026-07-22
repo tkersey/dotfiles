@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "glaze"
-  short_description: "Force an excavatory, aporetic, bolder creative pass"
+  short_description: "Force an excavatory, aporetic, audacious, poietic pass"
   default_prompt: "Use $glaze and preserve the original verbatim escalation text."
