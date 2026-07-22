@@ -2,11 +2,17 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Logophile"
-  short_description: "Precision wording, doctrine, activation phrases, and cognitive-depth vocabulary"
+  short_description: "Precision wording, doctrine, activation phrases, and behavioral upgrades"
   default_prompt: >
     Use $logophile for wording, naming, doctrine-word selection, terse activation-phrase selection,
-    persona naming, or human-facing language surfaces. For depth or deliberation wording, read
-    references/depth_deliberation_doctrine.md and preserve the distinctions among RUMINATIVE,
-    APORETIC, DELIBERATIVE, DIALECTICAL, INCUBATIVE, RECURSIVE, METACOGNITIVE, CIRCUMSPECTIVE,
-    ABDUCTIVE, SYNOPTIC, CONTEMPLATIVE, PERCOLATIVE, REFLECTIVE, EXCAVATORY, DEPTH-FIRST,
-    ETIOLOGICAL, STRATIGRAPHIC, and FOUNDATIONAL. Keep runtime activation phrases irreducibly short.
+    persona naming, old-versus-new wording comparison, or human-facing language surfaces. When a
+    candidate may replace existing wording, read references/behavioral_upgrade.md, treat the baseline
+    as the incumbent, classify the policy delta, and return retain, replace, specialize, pair, sequence,
+    or benchmark rather than assuming denser vocabulary is better. Read
+    references/behavioral_upgrade_probe_cases.md for acceptance boundaries. Use the read-only
+    activation_upgrade_arbiter for anonymized A/B outputs when independent adjudication is warranted.
+    For depth or deliberation wording, read references/depth_deliberation_doctrine.md and preserve the
+    distinctions among RUMINATIVE, APORETIC, DELIBERATIVE, DIALECTICAL, INCUBATIVE, RECURSIVE,
+    METACOGNITIVE, CIRCUMSPECTIVE, ABDUCTIVE, SYNOPTIC, CONTEMPLATIVE, PERCOLATIVE, REFLECTIVE,
+    EXCAVATORY, DEPTH-FIRST, ETIOLOGICAL, STRATIGRAPHIC, and FOUNDATIONAL. Keep runtime activation
+    phrases irreducibly short.
