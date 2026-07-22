@@ -43,11 +43,12 @@ inquiry owns `$retrace` replay transport; see
 
 Before every `cas review run` or `cas review start`, run
 `cas capabilities --json` and require
-`cas_capabilities.features.cas_codex_0145_structured_review_v2=true`. Stop
-before `review/start` when the feature is absent. CAS 0.2.87 through 0.2.90 do
+`cas_capabilities.features.cas_codex_0145_structured_review_v3=true`. Stop
+before `review/start` when the feature is absent. CAS 0.2.87 through 0.2.91 do
 not satisfy this gate: 0.2.87 through 0.2.89 can complete a Codex 0.145 review
 without a valid structured receipt, while 0.2.90 cannot preserve its structured
-timeout contract before an inline rollout materializes.
+timeout contract before an inline rollout materializes and 0.2.91 can mistake a
+partially materialized `completed` turn for terminal missing output.
 
 The compatible CAS route keeps the attempt isolated but runs Codex's native
 review inline within a fresh CAS-owned thread on Codex 0.145 and newer. Codex's
@@ -58,8 +59,10 @@ route: compatible CAS rejects parent reuse before `review/start` so the inline
 parent ID remains a unique persisted attempt handle. This transport choice
 changes neither tuple identity nor semantic credit. Before the inline rollout
 materializes, compatible CAS preserves a structured non-terminal state and
-still requires the exact review turn before accepting a terminal result;
-process completion and prose remain non-proof.
+still requires the exact review turn before accepting a terminal result. A
+partially materialized `completed` turn that entered review mode but has not
+emitted its structured exit also remains non-terminal; process completion and
+prose remain non-proof.
 
 Codex 0.145 ignores request-scoped `multiAgentMode`. Do not pass
 `--multi-agent-mode` to `cas review` or `cas instance_runner`; current CAS

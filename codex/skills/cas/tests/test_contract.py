@@ -122,14 +122,16 @@ class CasContractTests(unittest.TestCase):
     def test_codex_0145_review_requires_structured_compatibility_capability(self) -> None:
         for token in [
             "cas capabilities --json",
-            "cas_capabilities.features.cas_codex_0145_structured_review_v2=true",
-            "CAS 0.2.87 through 0.2.90",
+            "cas_capabilities.features.cas_codex_0145_structured_review_v3=true",
+            "CAS 0.2.87 through 0.2.91",
             "Stop before `review/start` when the feature is absent",
             "exited_review_mode.review_output",
             "Do not pass `--parent-thread-id` on the 0.145+ route",
             "unique persisted attempt handle",
             "structured non-terminal state",
             "exact review turn before accepting a terminal result",
+            "partially materialized `completed` turn",
+            "has not emitted its structured exit",
             "process completion and prose remain non-proof",
         ]:
             with self.subTest(token=token):
