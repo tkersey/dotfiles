@@ -52,6 +52,36 @@ Effective construction: validator / join / quotient / union-find / graph rewrite
 Pushout-complement or existence obstruction:
 Provenance and conflict policy:
 
+## Two-dimensional composition / double category, when applicable
+
+Applicable: yes / no
+Claim: strict double category / pseudo double category / virtual double category / equipment / monoidal double category / effective approximation
+Objects:
+Horizontal arrow family and architectural meaning:
+Vertical arrow family and architectural meaning:
+Why the arrow families are genuinely distinct:
+Horizontal identities and composition:
+Vertical identities and composition:
+Square/cell representation:
+Square boundary constructor and edge-matching policy:
+Horizontal square pasting:
+Vertical square pasting:
+Interchange law or coherent comparison:
+Coherence/normalization policy:
+Interpreter / double-functor lowering:
+Companions / conjoints / restrictions, if equipment:
+Base-change law, if equipment:
+Monoidal tensor, if independently justified:
+Required observations preserved by squares:
+Effect/order/authority/provenance guardrails:
+Canonical square normal form:
+Bypass prevention:
+Resource and invalidation bound:
+Proof-lease invalidators:
+Double-category law witness:
+Double-category falsifier:
+Smaller category / 2-category / adapter alternative rejected:
+
 ## Spatial geometry, when applicable
 
 Applicable: yes / no
@@ -154,13 +184,14 @@ Tambara/context-framing falsifier:
 
 ## Composition grammar
 
-Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive
+Geometry: category / monoidal / Freyd-premonoidal / operad / PROP-properad / traced-coalgebraic / resource-sensitive / double-category
 Colors / port types:
 Primitive operations / components:
 Substitution / wiring rules:
 Symmetry / ordering / centrality:
 Multiple-output or feedback requirements:
-Forbidden wiring / effect reorderings:
+Horizontal/vertical arrow distinction, if any:
+Forbidden wiring / effect reorderings / invalid squares:
 Semantic algebras / interpretations:
 
 ## Effect geometry
