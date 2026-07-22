@@ -28,6 +28,8 @@ Choose the artifact by asking where the unknown lives.
 | Capability must expose behavior under all frames | Cofree/end-based Tambara construction | symbolic/all-context observation surface | unit/coassociativity and finite/effective observation law |
 | Context changes type/index | Dependent Tambara / double-category action | indexed frame IR / horizontal natural transformation | index transport and dependent framing law |
 | Generalized morphism must be a real implementation map | Representability/module-functor diagnostic | concrete realizer or obstruction | representation round-trip/right-adjoint witness |
+| Two different arrow families both compose | Double category / pseudo double category | typed horizontal arrows, vertical arrows, squares, and pasting API | both category laws, square boundary soundness, pasting, interchange, double-functor interpretation |
+| Strict maps must induce generalized relations/profunctors/open-system arrows | Equipment / framed bicategory | companion/conjoint/restriction API | base change and companion/conjoint laws; unsupported strict map fails closed |
 | Operations with many runtimes | Effect signature + handlers | operation IR + handlers | handlers agree on declared observations |
 | Pure values with order-sensitive effects | Freyd / premonoidal category | pure/effect boundary + centrality registry | pure embedding laws and noncommuting witness |
 | Typed hierarchical component assembly | Colored operad | colors/ports + operations + semantic algebras | interpretation preserves substitution |
@@ -48,5 +50,7 @@ Use comonadic spatiality only when locality changes correctness, points/patches 
 Use Day convolution only when the artifacts are genuinely indexed descriptions, the index world has a tensor/unit, all lawful decompositions should contribute, and coherent reindexings should be quotiented. Use promonoidal convolution when composition is partial or relation-valued. Static/applicative description composition does not prove effect commutativity; runtime order remains a Freyd/resource obligation.
 
 Use Tambara mechanics only when a real context world acts on both endpoint worlds and a profunctorial capability must remain valid under several context extensions. A `Context<T>` wrapper, repeated middleware, reader argument, or dependency-injection container is not automatically a Tambara module. Tambara framing does not prove runtime commutativity or domain optic laws.
+
+Use a double category only when horizontal and vertical arrow families have independent architectural meaning and composition, squares are typed artifacts, both pasting operations matter, and interchange or coherent comparison changes proof or implementation. A single commutative square, two unrelated categories, a PROP diagram, or a double-pushout rewrite is not automatically a double category. Equipment structure additionally requires effective companions, conjoints, or restrictions.
 
 If the unknown location is unclear, do not escalate. First pick a smaller seam and a concrete witness.
