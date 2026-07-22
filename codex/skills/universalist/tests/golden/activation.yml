@@ -103,3 +103,12 @@ cases:
     expected: ["reject Tambara", "ordinary parameter", "no real action", "smallest honest construction"]
   - prompt: "Use this Tambara functor from equivariant homotopy theory to model transfer and norm maps."
     should_use_skill: false
+  - prompt: "Our service pipelines compose, migrations between versions also compose, and local migration witnesses must paste into one system-level compatibility proof."
+    should_use_skill: true
+    expected: ["double category", "horizontal arrows", "vertical arrows", "typed squares", "interchange", "double-functor interpreter"]
+  - prompt: "Schema functions must reindex relational queries without pretending relations are functions."
+    should_use_skill: true
+    expected: ["equipment", "strict maps", "generalized arrows", "companions or conjoints or restrictions", "base-change law"]
+  - prompt: "Draw one commuting square around this adapter and call it a double category."
+    should_use_skill: true
+    expected: ["reject double category", "ordinary compatibility witness", "no second compositional arrow family", "smallest honest construction"]
