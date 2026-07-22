@@ -119,6 +119,20 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(token=token):
                 self.assertIn(token, CONTRACT)
 
+    def test_codex_0145_review_requires_structured_compatibility_capability(self) -> None:
+        for token in [
+            "cas capabilities --json",
+            "cas_capabilities.features.cas_codex_0145_structured_review_v1=true",
+            "CAS 0.2.87 through 0.2.89",
+            "Stop before `review/start` when the feature is absent",
+            "exited_review_mode.review_output",
+            "Do not pass `--parent-thread-id` on the 0.145+ route",
+            "unique persisted attempt handle",
+            "process completion and prose remain non-proof",
+        ]:
+            with self.subTest(token=token):
+                self.assertIn(token, CONTRACT)
+
     def test_compact_finding_fixture_uses_enclosing_receipt_provenance(self) -> None:
         verdict = FINDING_IDENTITY["reviewVerdict"]
         self.assertEqual(verdict["backendClass"], "cas-start-wait")
