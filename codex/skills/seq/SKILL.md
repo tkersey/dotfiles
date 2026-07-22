@@ -2,7 +2,7 @@
 name: seq
 description: "Mine Codex session JSONL and memory artifacts with the Zig `seq` CLI. Use for explicit `$seq`, artifact/session/tool/memory/plan forensics, Hylo CRF extraction and governed HCTP source selection, skill activation and outcome audits, decision provenance, `$tune` evidence, `$retrace` source capsules, review-compiler provenance, watched-session deltas, worker attribution, or reproducible historical reports. Prefer the narrowest lifted command and preserve denominators, provenance, contamination, and uncertainty."
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
 ---
 # seq
 
@@ -42,6 +42,17 @@ seq capabilities --format json
 ```
 Use the installed lifted surface as source of truth.
 Do not recreate a newer native classifier with broad transcript searches when the installed binary is old.
+
+For session JSONL forensics, require:
+```text
+streaming_session_scanner_v1
+```
+This capability means aggregate session or corpus size is not a scanner limit;
+the shared scanner retains one protocol record at a time and each command owns
+its semantic fold. The per-record fail-closed guard remains separate. If the
+capability is absent, upgrade Seq rather than substituting broad `jq`, `rg`, or
+ad hoc whole-file scans. A genuinely bounded native query is acceptable only
+when that narrower denominator fully answers the question.
 
 ## Hylo CRF/HCTP product surface
 
@@ -286,6 +297,8 @@ co-occurrence only
 ```
 Do not collapse these into one “used” count.
 A receipt proves attribution structure, not a good outcome.
+`skill-decision-audit` uses the shared streaming scanner and retains only
+activation, decision, and outcome evidence needed by its output contract.
 
 ## Skill presence
 Use `skill-evidence` for one watched session and `skill-audit --mode activation` for cohorts.
@@ -300,6 +313,8 @@ outcome evidence
 raw mention
 ```
 Presence does not prove influence.
+`skill-evidence` uses the same scanner in a single pass for normalized messages,
+skill mentions, tool reads, outcomes, and session identity.
 
 ## Decision contracts and receipts
 Decision-oriented skills may carry:
@@ -526,6 +541,7 @@ seq decision-capsule --session-id <id> --mode candidates --format table
 ## Hard rules
 - Use the narrowest lifted command.
 - Prove the installed CLI surface first for post-change questions.
+- Require `streaming_session_scanner_v1` for session JSONL forensics; do not fall back to broad whole-file scans when it is absent.
 - State denominators and exclusions.
 - Preserve protocol and evidence provenance.
 - Aggregate counts do not authorize session-level claims.
