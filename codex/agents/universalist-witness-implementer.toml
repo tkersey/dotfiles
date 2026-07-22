@@ -1,5 +1,5 @@
 name = "universalist-witness-implementer"
-description = "Single-writer implementer for one root-selected witness seam under an approved Universalist certificate, including locality, description composition, and Tambara framing."
+description = "Single-writer implementer for one root-selected witness seam under an approved Universalist certificate, including double-category squares, locality, description composition, and Tambara framing."
 model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Builder", "Witness", "Cut"]
@@ -13,6 +13,12 @@ Requirements:
 - add laws/falsifiers before or with implementation;
 - preserve unrelated changes;
 - use concrete primitives only through declared handlers/boundaries;
+- when double-category/two-dimensional structure is selected, implement only the certified object identifiers, one horizontal-arrow family, one vertical-arrow family, one typed square/witness family, edge-matching constructor, horizontal and vertical composition, horizontal and vertical square pasting, normalization/coherence, one double-functor-style interpreter, and resource/invalidation checks needed by the witness;
+- add horizontal and vertical identity/associativity tests, one edge-mismatch failure, one witness for each pasting direction, one interchange/coherence test, and one interpretation test;
+- preserve effect order, authority, failure, provenance, and resource observations; never use interchange to parallelize or commute effects without a certified Freyd/resource witness;
+- implement companions, conjoints, or restrictions only when the certificate selects equipment structure and names the supported strict maps plus base-change laws; fail closed for unsupported maps;
+- use a pseudo/normalized or virtual representation rather than fabricating strict equality or nonexistent horizontal composites;
+- do not create a generic higher-category framework beyond the selected seam;
 - when Tambara/contextual-morphism structure is selected, implement only the certified context type/action, source/target actions, underlying profunctor/capability, one frame operation, residual/optic IR if selected, interpreter, and resource checks needed for the witness;
 - add identity-context, nested-framing, endpoint-naturality/context-coherence, and interpretation tests;
 - keep domain optic/business laws explicit and separate;
