@@ -52,6 +52,7 @@ adjudication there instead of allocating this plan.
 ### Public constructors:
 ### Public eliminators:
 ### Legal compositions:
+### Two-dimensional arrows / squares / pasting:
 ### Interpreter / projection / handler:
 ### Required observations:
 ### Compatibility / migration:
@@ -62,6 +63,23 @@ adjudication there instead of allocating this plan.
 ### Resource bound:
 ### Claim strength:
 ### Applicability rationales:
+
+## Two-dimensional composition (complete only when selected):
+### Claim: strict / pseudo / virtual / equipment / monoidal / effective approximation
+### Objects:
+### Horizontal arrow family, identities, and composition:
+### Vertical arrow family, identities, and composition:
+### Why the arrow families are semantically distinct:
+### Square representation and boundary constructor:
+### Horizontal square pasting:
+### Vertical square pasting:
+### Interchange or coherent comparison:
+### Coherence / normalization policy:
+### Double-functor interpretation:
+### Companions / conjoints / restrictions, if any:
+### Effect / authority / provenance guardrail:
+### Resource and invalidation policy:
+### Mismatch and interchange falsifiers:
 
 ## Enforcement matrix:
 ### Requirement:
