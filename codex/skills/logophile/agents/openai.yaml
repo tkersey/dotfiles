@@ -2,5 +2,12 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Logophile"
-  short_description: "Precision wording, naming, doctrine, and activation phrases"
-  default_prompt: "Use $logophile for wording, naming, doctrine-word selection, terse activation-phrase selection, or human-facing language surfaces. For activation phrases, optimize for behavioral leverage per token and keep the runtime phrase irreducibly short."
+  short_description: "Precision wording, doctrine, activation phrases, and cognitive-depth vocabulary"
+  default_prompt: >
+    Use $logophile for wording, naming, doctrine-word selection, terse activation-phrase selection,
+    persona naming, or human-facing language surfaces. When the task concerns rumination,
+    unresolved difficulty, perspective-taking, deep diagnosis, causal origin, historical layering,
+    or foundations, read references/deliberation_depth_doctrine.md and preserve the distinctions
+    among RUMINATIVE, APORETIC, DELIBERATIVE, DIALECTICAL, INCUBATIVE, RECURSIVE,
+    METACOGNITIVE, CIRCUMSPECTIVE, ABDUCTIVE, SYNOPTIC, CONTEMPLATIVE, PERCOLATIVE,
+    REFLECTIVE, EXCAVATORY, DEPTH-FIRST, ETIOLOGICAL, STRATIGRAPHIC, and FOUNDATIONAL.
