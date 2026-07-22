@@ -1,5 +1,12 @@
 # Depth and Deliberation Doctrine Probes
 
+## Contents
+
+- doctrine-mode triggers
+- operator distinctions and stacks
+- terse activation phrases
+- operational non-triggers
+
 ## Should trigger doctrine mode
 
 ```text
@@ -30,9 +37,17 @@ Expected candidates:
 
 - `aporetic`
 - `ruminative`
+- `deliberative`
 - `dialectical`
+- `incubative`
+- `recursive`
+- `metacognitive`
 - `circumspective`
+- `abductive`
 - `synoptic`
+- `contemplative`
+- `percolative`
+- `reflective`
 - explain that `aporetic` is the sharpest word when the unresolved difficulty itself must remain open
 
 ```text
@@ -86,6 +101,24 @@ Expected:
 
 - `ruminative` for sustained reconsideration in general
 - `aporetic` when a named contradiction or underdetermination must not be prematurely collapsed
+
+```text
+Give me a stack for a hard unresolved design choice.
+```
+
+Expected:
+
+- `APORETIC + DIALECTICAL + ADJUDICATIVE`
+- preserve the live contradiction before issuing a criteria-backed disposition
+
+```text
+Give me a stack for tracing a symptom to the layer that should own the fix.
+```
+
+Expected:
+
+- `EXCAVATORY + ETIOLOGICAL + DISPOSITIVE`
+- distinguish explanatory descent, causal origin, and the decisive owner layer
 
 ## Activation phrase probes
 

@@ -2,6 +2,15 @@
 
 Use this reference when a task needs more than generic `think harder` language.
 
+## Contents
+
+- governing `excavatory` and `aporetic` modes
+- deliberation operators
+- depth companions
+- adjacent-operator distinctions
+- strong stacks
+- activation and stopping rules
+
 The governing distinction is:
 
 ```text
@@ -32,6 +41,7 @@ Excavation Trace:
 - hidden assumption:
 - governing invariant:
 - owning boundary:
+- dispositive layer:
 - route delta:
 - stop reason:
 ```
@@ -78,6 +88,139 @@ Failure modes:
 - refusing a reversible decision despite sufficient evidence;
 - using ambiguity to avoid ownership.
 
+## Deliberation operators
+
+### `ruminative`
+
+Keep turning the material over rather than accepting the first synthesis.
+
+- Best for: dense evidence, ambiguous strategy, or a first answer that feels underprocessed.
+- Cash-out when needed: Frame Evolution Log.
+- Stop when: another pass produces no material frame, evidence, or route delta.
+- Shadow risk: elegant token burn.
+
+### `deliberative`
+
+Compare serious alternatives against explicit criteria before deciding.
+
+- Best for: route selection, design choice, policy choice, or high-stakes tradeoffs.
+- Cash-out: Deliberation Matrix.
+- Shadow risk: option theater after one answer already dominates.
+
+### `dialectical`
+
+Make competing frames confront one another so their conflict can be synthesized, narrowed, or adjudicated.
+
+- Best for: opposing architectures, policy tensions, review disagreements, or local-versus-systemic frames.
+- Cash-out: Thesis / Antithesis / Synthesis record.
+- Shadow risk: manufacturing a false binary.
+
+### `incubative`
+
+Delay scoring briefly so partial ideas, weak associations, and incomplete constructions can combine.
+
+- Best for: invention, naming, architecture search, or difficult synthesis.
+- Cash-out when needed: Incubation Set plus emergence delta.
+- Shadow risk: indefinite postponement or romanticizing unstructured thought.
+
+### `recursive`
+
+Feed the result of one reasoning pass back into another bounded pass.
+
+- Best for: iterative refinement, self-review, or multi-pass synthesis.
+- Cash-out: Pass Trace with a progress or contraction measure.
+- Shadow risk: recursion without a decreasing measure.
+
+### `metacognitive`
+
+Inspect the reasoning strategy itself: search order, assumptions, blind spots, stopping rule, and evidence use.
+
+- Best for: stalled reasoning, repeated route failures, or a process that generates plausible but weak answers.
+- Cash-out: Search Strategy Audit.
+- Shadow risk: analyzing the process instead of solving the task.
+
+### `circumspective`
+
+Inspect the problem from all relevant sides without pretending every perspective has equal weight.
+
+- Best for: multi-stakeholder systems, boundary decisions, second-order effects, and incomplete maps.
+- Cash-out: Perspective Matrix.
+- Shadow risk: indiscriminate breadth.
+
+### `abductive`
+
+Infer the explanation that best accounts for the evidence, then actively seek disconfirming evidence.
+
+- Best for: diagnosis under incomplete information.
+- Cash-out: Hypothesis Ledger with falsifiers.
+- Shadow risk: mistaking the best current explanation for proof.
+
+### `synoptic`
+
+Reassemble decomposed parts into a coherent view of the whole.
+
+- Best for: architecture synthesis, cross-agent fan-in, or reconciling multiple local analyses.
+- Cash-out: Synoptic Map.
+- Shadow risk: smoothing over real contradictions.
+
+### `contemplative`
+
+Sustain careful attention without prematurely converting observation into intervention.
+
+- Best for: subtle conceptual work, interpretation, or value-sensitive decisions.
+- Cash-out only when needed: clarified observation boundary or question.
+- Shadow risk: passive non-decision.
+
+### `percolative`
+
+Allow weak signals, partial observations, and low-confidence clues to accumulate until a stronger pattern emerges.
+
+- Best for: session archaeology, incident analysis, or diffuse evidence.
+- Cash-out: Weak-Signal Accumulation Map.
+- Shadow risk: pattern hallucination from correlated noise.
+
+### `reflective`
+
+Reconsider the initial position in light of evidence, consequences, and the reasoning path taken.
+
+- Best for: post-decision review, learning capture, or correction after action.
+- Cash-out: Reflection Delta.
+- Shadow risk: retrospective rationalization.
+
+## Depth companions
+
+### `depth-first`
+
+Follow the most consequential explanatory branch until it reaches a mechanism, contradiction, governing invariant, or dead end; then backtrack.
+
+- Best for: large search trees where one branch is disproportionately promising.
+- Cash-out: Search Stack and Backtrack Trace.
+- Shadow risk: missing a better branch because the initial ordering was wrong.
+
+### `etiological`
+
+Trace an observed failure or condition to its causal origin.
+
+- Best for: root-cause remediation, incident analysis, and recurring defects.
+- Cash-out: Causal Origin Chain.
+- Shadow risk: forcing one root cause onto a multi-causal system.
+
+### `stratigraphic`
+
+Read a system as historical layers: what was deposited, when, by which obligation, and whether that obligation remains live.
+
+- Best for: technical debt, compatibility sediment, migrations, policy accumulation, and legacy architecture.
+- Cash-out: Layer / Obligation Map.
+- Shadow risk: historical storytelling without current-state proof.
+
+### `foundational`
+
+Descend to the premises, axioms, definitions, primitives, or substrate on which the current answer depends.
+
+- Best for: specification disputes, formal models, architecture assumptions, and category errors.
+- Cash-out: Premise / Axiom Ledger.
+- Shadow risk: rebuilding foundations when the local premise is already settled.
+
 ## Adjacent operators
 
 | Word | Activated behavior | Distinction |
@@ -117,6 +260,30 @@ CIRCUMSPECTIVE + EXCAVATORY + CYBERNETIC + SYNOPTIC
 
 Inspect the whole system, descend into the governing mechanism, model feedback, and reconstruct the coherent whole.
 
+### Technical-debt archaeology
+
+```text
+STRATIGRAPHIC + EXCAVATORY + ABLATIVE
+```
+
+Map deposited layers and former obligations, find the governing mechanism, then remove residue that no longer earns retention.
+
+### Reasoning-process repair
+
+```text
+METACOGNITIVE + RECURSIVE + CONTRACTIVE
+```
+
+Improve the search strategy, run another bounded pass, and require the remaining gap to shrink.
+
+### Weak-signal investigation
+
+```text
+PERCOLATIVE + ABDUCTIVE + CALIBRATED
+```
+
+Accumulate weak signals, infer the best explanation, and keep confidence aligned with evidence.
+
 ### Thought-to-action
 
 ```text
@@ -140,6 +307,12 @@ Use the expanded artifacts only when the user asks for unpacking or when correct
 
 - `excavatory` is not synonymous with verbose, exhaustive, or speculative.
 - `aporetic` is not synonymous with confused, indecisive, or blocked.
+- `ruminative` revisits material; `aporetic` preserves a specific unresolved difficulty.
+- `deliberative` compares options; `dialectical` stages and resolves opposing frames.
+- `incubative` delays judgment for emergence; `contemplative` sustains attention.
+- `recursive` repeats reasoning; `metacognitive` changes the reasoning strategy.
+- `circumspective` gathers relevant sides; `synoptic` integrates them into a whole.
+- `depth-first` is a search order, not a claim that the chosen branch is correct.
 - `etiological` asks where the cause originates; `excavatory` may descend through causal, representational, historical, or ownership layers.
-- `ruminative` sustains reconsideration; `aporetic` names a specific unresolved difficulty that must not be prematurely collapsed.
+- `stratigraphic` explains deposited historical layers; `foundational` tests premises and primitives.
 - `dispositive` is a natural stopping companion: identify what actually decides the matter.
