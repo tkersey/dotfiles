@@ -8,6 +8,9 @@ interface:
     candidate, and consult only the construction cards relevant to the evidenced seam
     and architectural axis when the choice is consequential. Classify each relevant
     card as selected, rejected, contradicted, or unresolved; the root owns the route.
+    When processes and architecture changes form two independent composition directions,
+    test the double-category card and require typed squares, both pasting operations,
+    interchange/coherence, one effective interpreter, and an effect/resource falsifier.
     Missing evidence remains unresolved and never becomes an invented obstruction.
 policy:
   allow_implicit_invocation: true
