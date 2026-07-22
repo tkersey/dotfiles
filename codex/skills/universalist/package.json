@@ -1,7 +1,7 @@
 {
   "name": "universalist",
-  "version": "17.2.0",
-  "description": "Context-relative boundary-artifact workflow with 55 evidence-bound construction cards and native Seq/Ledger decision binding.",
+  "version": "17.3.0",
+  "description": "Context-relative boundary-artifact workflow with 56 evidence-bound construction cards, double-category square calculus, and native Seq/Ledger decision binding.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true,
@@ -9,10 +9,14 @@
   "plain_output_default": true,
   "minimum_ledger_version": "0.10.6",
   "minimum_seq_version": "0.3.52",
-  "registry_cards": 55,
+  "registry_cards": 56,
+  "architectural_axes": 12,
+  "double_category_mechanics": true,
   "derived_mechanics": true,
   "decision_receipts": "consequential_only",
+  "decision_observability": "actuating_or_independently_durable",
   "runtime_scripts": 0,
   "tests_shipped": false,
-  "validation_surface": "seq-skdc-and-ledger-receipt-binding"
+  "validation_surface": "seq-skdc-and-ledger-receipt-binding",
+  "artifacts": "context-relative-boundary-contract"
 }
