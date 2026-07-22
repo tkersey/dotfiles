@@ -2,7 +2,7 @@
 
 ## Core idea
 
-Universal Architecture should not force every hard operation to remain in the ordinary executable-program world. That world is expressive, but it often hides structure inside functions, callbacks, services, mutable state, prompts, middleware, wrappers, residual records, and runtime effects.
+Universal Architecture should not force every hard operation to remain in the ordinary executable-program world. That world is expressive, but it often hides structure inside functions, callbacks, services, mutable state, prompts, middleware, wrappers, residual records, migration scripts, and runtime effects.
 
 Use a **Category Pivot** when another world makes the hard part explicit:
 
@@ -13,7 +13,9 @@ current world -> easy world -> certified interpretation back
 Slogan:
 
 ```text
-Do not force a problem to stay in Hask when syntax, semantics, posets, relations, coalgebras, schemas, resources, presheaves, functor categories, profunctor/Tambara worlds, or comonadic spaces make the structure explicit.
+Do not force a problem to stay in Hask when syntax, semantics, posets, relations,
+coalgebras, schemas, resources, presheaves, functor categories,
+profunctor/Tambara worlds, double categories, or comonadic spaces make the structure explicit.
 ```
 
 Here `Hask` means the ordinary executable-program world of computer science, not literal Haskell.
@@ -32,6 +34,8 @@ Here `Hask` means the ordinary executable-program world of computer science, not
 | partial resource/interface composition | promonoidal description world | admissibility witnesses, separation, residuals, provenance |
 | repeated wrappers/middleware/residual threading around one operation | context-action / Tambara world | one lawful frame operation, mixed endpoint actions, residual optics, representation independence |
 | context changes the endpoint type/index | double-category action / dependent Tambara world | typed index transport and dependent framing without dynamic erasure |
+| runtime processes and architecture changes are interleaved in callbacks/scripts | double category / equipment | separate process composition, change composition, typed compatibility squares, pasting, interchange, lawful base change |
+| functions and relational/query behavior are mixed | double category of functions and relations | functional maps, generalized relations, and square witnesses coexist without erasing either |
 | resource/permission logic | resource category / separation model | ownership, disjointness, capability transfer |
 | partial/nondeterministic specs | relation / profunctor world | backward reasoning, compatibility, bidirectional views |
 | generated outputs | Coyoneda-like payload + path | provenance and lowering laws |
@@ -132,6 +136,89 @@ interpret(frame_m(p)) == frameSemantics(m, interpret(p))
 
 Do not infer effect commutativity, parallelism, duplication, discard, or domain optic laws from Tambara framing. Those remain separate Freyd/resource/domain obligations.
 
+## Two-dimensional architecture pivot
+
+Use this pivot when the hard operation is not one composition but the interaction between **composition of behavior** and **composition of change**.
+
+Signals:
+
+```text
+processes/pipelines/open systems compose
+migrations/refinements/interface maps also compose
+local compatibility proofs need system-level pasting
+functional maps must transport relational/profunctor/query behavior
+open-system maps must respect both interfaces
+architecture evolution and runtime behavior are tangled in scripts
+```
+
+Move to an explicit double-category world:
+
+```text
+Objects
+  systems, interfaces, schemas, states, versions
+
+Horizontal arrows
+  processes, open systems, generalized relations, queries, interactions
+
+Vertical arrows
+  migrations, refinements, strict maps, reindexings, deployments
+
+Squares
+  typed compatibility witnesses between a top and bottom horizontal arrow
+  with left and right vertical boundaries
+```
+
+What becomes easy:
+
+```text
+horizontal process composition
+vertical change composition
+edge-checked square construction
+horizontal square pasting
+vertical square pasting
+interchange / compositional local change
+multiple double-functor interpretations
+incremental square invalidation
+```
+
+Candidate structures:
+
+```text
+strict double category
+pseudo double category with explicit coherence/normal form
+virtual double category when loose composition is absent/partial
+equipment/framed bicategory when strict maps induce companions, conjoints, or restrictions
+monoidal double category when side-by-side tensor is independently meaningful
+```
+
+Transport back through a repository-native IR:
+
+```text
+HorizontalArrow
+VerticalArrow
+CompatibilitySquare
+composeH / composeV
+pasteH / pasteV
+normalizeSquare
+interpretSquare
+```
+
+Required laws:
+
+```text
+both arrow families satisfy identity and associativity
+square boundaries match
+both pasting operations preserve external boundaries
+normalize((a pasteH b) pasteV (c pasteH d))
+  ==
+normalize((a pasteV c) pasteH (b pasteV d))
+interpretation preserves arrows, squares, pasting, and coherence
+```
+
+Do not use interchange to infer effect commutativity. The square observation must retain required effect order, authority, failure, provenance, schema meaning, and resources.
+
+Prefer a category, 2-category, typed adapter plus one compatibility witness, PROP, or DPO rewrite when the second arrow family does not independently compose or square pasting is not architecture.
+
 ## Comonadic spatial pivot
 
 Use this pivot when the hard operation is:
@@ -163,6 +250,8 @@ When two spatial worlds compose, Day convolution may lift cartesian/product patc
 
 When a local transformation must survive halo/context extension, a Tambara action may be added as a third decision. The halo/context family must actually form an ordinary, promonoidal, or dependent action; a list of nearby nodes is not sufficient.
 
+When a locality-sensitive process and a migration of spatial worlds both compose, a linked two-dimensional-composition packet may use squares whose interpretation additionally preserves centers, restrictions, halo labels, continuity, and invalidation.
+
 ## Track H protocol
 
 1. Name the current world.
@@ -177,10 +266,11 @@ When a local transformation must survive halo/context extension, a Tambara actio
 10. When spatiality is used, add an effective halo/basis representation and a continuity/resource law.
 11. When convolution is used, add an index tensor/kernel, decomposition/quotient policy, representable law, and effectivity bound.
 12. When Tambara/contextual morphisms are used, add the ambient action, endpoint actions, profunctor, frame operation, unit/associativity/naturality/coherence, representability status, and effect/resource owner.
+13. When double categories are used, add both arrow families and category laws, typed square boundaries, both pasting operations, interchange/coherence, double-functor interpretation, normalization/invalidation, and an effect/resource falsifier.
 
 ## Certificate fields
 
-Use `templates/category-pivot-certificate.md` when the pivot is significant enough to guide code. For comonadic spatiality, attach or reference `templates/mechanics/comonadic-spatiality-report.md`. For Day/promonoidal composition, attach or reference `templates/mechanics/day-convolution-report.md`. For Tambara/contextual morphisms, attach or reference `templates/mechanics/tambara-module-report.md`.
+Use `templates/category-pivot-certificate.md` when the pivot is significant enough to guide code. For comonadic spatiality, attach or reference `templates/mechanics/comonadic-spatiality-report.md`. For Day/promonoidal composition, attach or reference `templates/mechanics/day-convolution-report.md`. For Tambara/contextual morphisms, attach or reference `templates/mechanics/tambara-module-report.md`. For two-dimensional composition, attach or reference `references/double-category-architecture.md` and `references/mechanics/double-categories.md`, and complete the double-category section of the Composition Certificate.
 
 ## Guardrail
 
@@ -191,3 +281,5 @@ Do not call a contextual wrapper a comonad, example coverage a basis, or value p
 Do not call a nested loop Day convolution without a real index category, tensor/kernel, unit, decomposition law, quotient/normal form, interpreter, and effective implementation. A pointwise product, operadic substitution, monadic sequence, pullback, pushout, or ordinary product may be the honest route.
 
 Do not call a Reader/environment parameter, dependency-injection container, repeated middleware call, `Context<T>` wrapper, or optic-shaped record a Tambara module without a context action on both endpoint worlds, an underlying profunctor, framing laws, an interpreter, and an effective witness. If the word Tambara refers to an equivariant Tambara functor, route to a different mechanics family.
+
+Do not call two categories, a commutative-square test, a PROP diagram, or a double-pushout rewrite a double category without two independently compositional arrow families, typed squares, both pasting operations, interchange/coherence, and an effective lowering. Use equipment terminology only with companions, conjoints, or restrictions and their laws.
