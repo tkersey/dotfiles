@@ -85,6 +85,7 @@ includes:
 - universal-constructions/05-cards.yaml
 - universal-constructions/06-cards.yaml
 - universal-constructions/07-cards.yaml
+- universal-constructions/08-cards.yaml
 claim_scopes:
 - literal
 - effective_realization
