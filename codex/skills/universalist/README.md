@@ -1,4 +1,4 @@
-# Universalist 17.1.0
+# Universalist 17.2.0
 
 Universalist is a boundary-triggered architecture workflow. It keeps one operating discipline:
 
@@ -46,7 +46,7 @@ Use ordinary repository-native types, adapters, handlers, interpreters, and test
 
 ## Construction cards
 
-The 55 YAML cards in `references/universal-constructions/` are the active architectural decision table. The registry at `references/universal-construction-registry.yaml` supplies their axes, signals, prerequisites, routes, laws, falsifiers, proof profiles, and theory references.
+The 56 YAML cards in `references/universal-constructions/` are the active architectural decision table. The registry at `references/universal-construction-registry.yaml` supplies their axes, signals, prerequisites, routes, laws, falsifiers, proof profiles, and theory references.
 
 For a consequential choice:
 
@@ -55,7 +55,8 @@ For a consequential choice:
 3. read only the cards matching the evidenced signals and axis;
 4. classify every relevant card as selected, rejected, contradicted, or unresolved;
 5. select a card only when repository evidence satisfies its prerequisites and proof obligations;
-6. let the root workflow choose the route and authorize mutation.
+6. lower the selected direction into a repository-native Boundary Artifact Contract;
+7. let the root workflow choose the route and authorize mutation.
 
 Do not use signal count, evidence count, `diagnostic_order`, or registry order to manufacture a winner. Missing evidence leaves a card unresolved; it is not an obstruction. Support-only cards guard reasoning and never become implementation artifacts.
 
@@ -63,9 +64,43 @@ A selected universal construction needs evidence for existence, commutation or p
 
 The registry value `universal.role: emitter` describes the categorical direction from a selected artifact to admissible consumers. It does not describe a shell or Python program.
 
+## Double-category architecture
+
+Universalist now has a dedicated `two_dimensional_composition` card and a `square` hole kind.
+
+Use it when:
+
+```text
+one arrow family models processes, interactions, queries, or open systems;
+a second arrow family models migrations, refinements, strict maps, or architecture changes;
+typed squares certify compatibility between the two directions;
+local squares must paste horizontally and vertically;
+interchange makes local change compositional.
+```
+
+The repository-native lowering is normally narrow:
+
+```text
+horizontal-arrow IR
+vertical-arrow IR
+compatibility-square witness
+horizontal and vertical pasting
+one double-functor-style interpreter
+interchange/coherence law
+resource and invalidation policy
+```
+
+Do not introduce a generic double-category framework for one commutative square. Prefer an ordinary adapter, migration object, 2-category, PROP, or DPO rewrite when it already closes the seam. Equipment structure additionally requires useful companions, conjoints, or restrictions.
+
+Read:
+
+- `references/double-category-architecture.md`
+- `references/mechanics/double-categories.md`
+- `references/composition-geometry.md`
+
 ## Consequential decision receipts
 
-A decision is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, or proof obligations. Routine seams, ceremonial activation, and uncontested choices use the compact boundary disposition without a plan or receipt.
+A decision is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations. Routine seams, ceremonial activation, and uncontested choices use the compact boundary disposition without a plan or receipt.
 
 Before the first Ledger command, load `$ledger` and complete `$ledger ensure` once. Then use native Ledger directly. Universalist requires Ledger 0.10.6 or newer and Skills Seq 0.3.52 or newer.
 
@@ -99,7 +134,7 @@ Ledger owns plan identity, address resolution, receipt construction, validation,
 - **Track B** — implement one narrow boundary refactor.
 - **Track C** — stage an internal migration behind a stable public or storage shape.
 - **Track D** — introduce a canonical boundary artifact with an interpreter or projection and law.
-- **Track E** — certify composition and move one seam toward Boundary Normal Form.
+- **Track E** — certify one-dimensional composition or a selected two-dimensional square/pasting calculus.
 - **Track F** — prepare exact context before semantic consumption.
 - **Track G** — repair an inexact abstraction through its real usage site.
 - **Track H** — pivot to a world where the hard operation becomes inspectable, then transport the result back.
@@ -112,6 +147,7 @@ The detailed doctrine remains under `references/`. Load only what the selected s
 - `references/structures-and-laws.md`
 - `references/canonical-boundary-artifacts.md`
 - `references/composition-geometry.md`
+- `references/double-category-architecture.md`
 - `references/comonadic-spatiality-doctrine.md`
 - `references/description-composition-doctrine.md`
 - `references/exact-context-doctrine.md`
