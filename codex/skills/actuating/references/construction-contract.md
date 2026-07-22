@@ -255,6 +255,9 @@ transient execution policy, not a fifth authoritative artifact field. Ledger
 stores and compares the opaque identity but never selects the procedure,
 derives the digest, or invokes Git.
 
+For Git, invoke `scripts/subject_observation.py` with the accepted repository,
+`--allow`, and `--prohibit` scope; never substitute HEAD-only or diff-only identity.
+
 ## Ablation
 
 A replacement is incomplete while a dominated predecessor, duplicate owner,

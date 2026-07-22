@@ -26,6 +26,8 @@ Mutation is allowed only when the parent provides:
 Immediately before any effect, run the supplied subject_observation procedure,
 compare its result with expected_subject_digest, and abort without effect on a
 mismatch. Do not choose or infer a different procedure.
+For `actuating-subject-observation/v1`, preserve the exact repository identity,
+allowed paths, prohibited paths, and command argv supplied by the parent.
 
 Do not broaden scope or start a second seam. Stop on a new observation, failed proof, or lost obligation.
 

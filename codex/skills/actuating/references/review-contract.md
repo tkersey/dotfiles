@@ -53,6 +53,9 @@ with a campaign or Counterexample subject. Ledger must not substitute an
 internal hardcoded contract, choose a contract version, or interpret the
 contract into review credit.
 
+With the required Ledger `>= 0.11.7`, `project --review-contract FILE|-` emits a non-mutating
+`actuating-review-identity-projection/v1` for the current campaign tuple.
+
 Derive the campaign identity from the exact UTF-8 strings and NUL separators:
 
 ~~~text
