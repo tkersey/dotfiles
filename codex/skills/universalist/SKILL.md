@@ -133,6 +133,7 @@ axes:
   syntax-semantics
   behavior
   base composition
+  two-dimensional composition
   description composition
   context action
   locality
@@ -150,10 +151,54 @@ holes:
   equivalence
   locality
   context action
+  square
   proof
 ```
 
-Independent pressures become linked packets. Day convolution, Tambara framing, effect ordering, locality, data shape, and context preparation may coexist; they do not compete as one global winner.
+Independent pressures become linked packets. Double-category squares, Day convolution, Tambara framing, effect ordering, locality, data shape, and context preparation may coexist; they do not compete as one global winner.
+
+## Double-category architecture
+
+Use the `two_dimensional_composition` card when two semantically different arrow families both compose and correctness depends on typed squares relating them.
+
+```text
+horizontal arrows
+  processes, open systems, queries, generalized interactions, executable behavior
+
+vertical arrows
+  migrations, refinements, strict maps, reindexings, deployments, architecture changes
+
+squares
+  compatibility witnesses whose four boundaries are explicit
+```
+
+The architectural maxim is:
+
+```text
+Processes compose horizontally.
+Changes compose vertically.
+Squares certify compatibility.
+Interchange makes local change compositional.
+```
+
+Require:
+
+```text
+horizontal identities and composition
+vertical identities and composition
+square boundary typing
+horizontal square pasting
+vertical square pasting
+interchange or explicit coherent comparison
+one interpreter / double-functor lowering
+effective normalization, resource, and invalidation policy
+```
+
+Select a pseudo double category when composition is coherent only up to a represented isomorphism or normal form. Select an equipment/framed bicategory only when strict maps admit effective companions, conjoints, or restrictions for generalized arrows. Select a virtual double category when generalized cells matter but horizontal composition is partial or intentionally unavailable.
+
+Do not call a commutative-square fixture, a pair of categories, a PROP diagram, or double-pushout rewriting a double category by itself. Interchange never proves effect commutativity; preserve effect, authority, failure, provenance, and resource observations.
+
+When selected, read `references/double-category-architecture.md` and `references/mechanics/double-categories.md`, then lower to the narrowest repository-native horizontal-arrow, vertical-arrow, square, pasting, and interpretation API needed by one witness seam.
 
 ## Construction card decision table
 
@@ -186,6 +231,7 @@ Representation / carrier:
 Public constructors:
 Public eliminators:
 Legal compositions:
+Two-dimensional arrows / squares / pasting, if selected:
 Interpreter / projection / handler:
 Required observations:
 Compatibility / migration:
@@ -201,6 +247,8 @@ Claim strength:
 
 Every public constructor must either make the invariant structurally unavoidable or perform the owner-controlled check before producing the artifact. Raw constructors and unchecked deserializers must not bypass the owner.
 
+For a double-category artifact, square construction must require four matching boundaries. A strongly typed host should make mismatched edges unrepresentable; a weaker host should return one structured mismatch owned by the square constructor.
+
 ### Elimination surface
 
 Eliminators must be total over representable cases, expose only sanctioned observations, and preserve information that compatibility or later interpretation requires. If elimination is intentionally partial, represent the partiality in the result type or named failure protocol.
@@ -209,9 +257,11 @@ Eliminators must be total over representable cases, expose only sanctioned obser
 
 Legal composition must be explicit and closed over valid artifacts. Illegal composition should be unrepresentable where the host permits; otherwise the owner-controlled combinator rejects it with a typed or structured failure.
 
+When two-dimensional composition is selected, expose separate horizontal and vertical composition plus horizontal and vertical square pasting. Internal shared boundaries may disappear only through an explicit equality, normalization, or compatibility witness. Require interchange up to the declared observations.
+
 ### Interpretation surface
 
-One explicit interpreter, projection, serializer, compiler, handler, or renderer owns semantic lowering. It must preserve the current context's required observations, effect order, compatibility, and resource obligations.
+One explicit interpreter, projection, serializer, compiler, handler, renderer, or double-functor lowering owns semantic lowering. It must preserve the current context's required observations, effect order, compatibility, resource obligations, and—when applicable—both arrow compositions, squares, pasting, and coherence.
 
 ## Enforcement allocation
 
@@ -221,6 +271,7 @@ Every requirement must be discharged exactly once at the strongest honest locus 
 representation / type
 opaque constructor
 composition API
+square constructor / pasting API
 interpreter / handler
 persistence or schema constraint
 runtime boundary validation
@@ -258,6 +309,7 @@ A context-relative boundary artifact must satisfy the laws applicable to its sea
 8. **Bypass exclusion** — unchecked construction, composition, or interpretation paths are absent or explicitly primitive.
 9. **Effectivity** — construction, checking, normalization, interpretation, and invalidation fit the resource model.
 10. **Context validity** — the proof lease remains valid under the recorded context and invalidation policy.
+11. **Two-dimensional coherence, when selected** — square boundaries match, both pasting operations close, interchange holds up to the declared equivalence, and interpretation preserves the entire square calculus.
 
 ## Universal witness contract
 
@@ -282,6 +334,8 @@ Effectivity:
 Falsifier:
   a nearby weaker or illegal construction fails observably.
 ```
+
+For a double-category claim, mediation additionally means that each admissible compatible change of a horizontal process is represented by a square and compatible local squares paste into a global square. Canonicality additionally requires the two pasting orders to agree by interchange up to the declared equivalence.
 
 Engineering realizations may approximate mediation and uniqueness through opaque constructors, canonical identifiers, normalized IR, one public interpreter, one sanctioned projection, generated code, removal of bypasses, or bounded search. State the claim strength:
 
@@ -309,6 +363,8 @@ discharge condition
 
 Residual obligations are first-class architecture, not TODO prose. They may become runtime validation, migration work, external authority checks, monitoring, or a later linked packet.
 
+For a double-category artifact, unsupported arrow cases, unavailable square witnesses, partial companions/conjoints, or unbounded pseudo-coherence normalization remain explicit residuals rather than being silently totalized.
+
 ## Invalidation triggers and proof leases
 
 A correct-by-construction claim is a **proof lease** over the current context, not an eternal property of source code.
@@ -326,9 +382,11 @@ effect ordering
 host-language or module guarantees
 resource budget
 freshness horizon
+horizontal or vertical arrow semantics
+square boundary / pasting / coherence policy
 ```
 
-When an invalidation trigger fires, the artifact may remain executable but its architectural proof is stale. Re-establish the lease before claiming continued correctness.
+When an invalidation trigger fires, the artifact may remain executable but its architectural proof is stale. Re-establish the lease before claiming continued correctness. Prefer incremental invalidation of squares whose boundaries changed over global recomputation.
 
 ## Evidence states and obstruction
 
@@ -344,7 +402,7 @@ witnessed obstruction
 
 Unknown or missing evidence means epistemically blocked. It does not prove nonexistence.
 
-A real obstruction requires attributed counterevidence, a reproducible counterexample, stability under the declared comparison maps, an effectivity account, a falsifier, and a reopening condition. Return obstruction rather than inventing evidence, authority, policy, representability, effect laws, host capability, or resource feasibility.
+A real obstruction requires attributed counterevidence, a reproducible counterexample, stability under the declared comparison maps, an effectivity account, a falsifier, and a reopening condition. Return obstruction rather than inventing evidence, authority, policy, representability, effect laws, host capability, resource feasibility, square pasting, or interchange.
 
 ## Doctrine index
 
@@ -355,6 +413,8 @@ The operational kernel above is authoritative. Load detailed references only whe
 - `references/canonical-boundary-artifacts.md`
 - `references/boundary-law-catalogue.md`
 - `references/composition-geometry.md`
+- `references/double-category-architecture.md`
+- `references/mechanics/double-categories.md`
 - `references/description-composition-doctrine.md`
 - `references/effects-and-coalgebras.md`
 - `references/comonadic-spatiality-doctrine.md`
@@ -401,6 +461,12 @@ Context:
 Typed hole:
   axis:
   kind:
+
+Two-dimensional structure, when relevant:
+  horizontal arrows and composition:
+  vertical arrows and composition:
+  square meaning:
+  pasting and interchange:
 ```
 
 Do not escalate when this inventory cannot be grounded in repository evidence.
@@ -422,7 +488,7 @@ ledger --source universalist path --repo PROJECT_ROOT --id PLAN_ID
 ledger --source universalist latest --repo PROJECT_ROOT
 ```
 
-Before mutation, write the ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, and falsifier into the plan.
+Before mutation, write the ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, falsifier, and any horizontal/vertical/square/pasting obligations into the plan.
 
 After root adjudication emit exactly one receipt:
 
@@ -484,7 +550,7 @@ A card's legacy route hint never determines this choice.
 - **Track B — One-seam refactor:** implement one narrow owner-controlled artifact.
 - **Track C — Staged migration:** strengthen internals behind stable wire, API, or storage shapes.
 - **Track D — Canonical boundary artifact:** use theorem cards to strengthen one typed hole.
-- **Track E — Composition certification:** make legal construction and composition paths explicit.
+- **Track E — Composition certification:** make legal construction, one-dimensional composition, and—when selected—two-dimensional square/pasting paths explicit.
 - **Track F — Exact Context:** prepare certified context before semantic consumption.
 - **Track G — Possibility Sheafification:** reconcile local meanings into an exact global abstraction.
 - **Track H — Category Pivot:** move one hard operation to a world where it is explicit, then transport it back.
@@ -499,7 +565,7 @@ Do not spawn Universalist subagents unless the user explicitly requests subagent
 When authorized:
 
 1. use the smallest sufficient read-only roster;
-2. give each agent one axis and typed hole;
+2. give each agent one axis and typed hole, including a `square` hole when two-dimensional composition is under review;
 3. require evidence, candidate dispositions, residuals, and invalidators;
 4. let the root synthesize one Boundary Artifact Contract;
 5. have the proof auditor attack it;
@@ -520,6 +586,16 @@ Make tenant mismatch unrepresentable after construction.
 Keep the external identity check at the authorization owner.
 Preserve both source projections.
 Invalidate the proof when tenant policy or identity semantics change.
+```
+
+For a double-category result, prefer language such as:
+
+```text
+Separate executable process composition from migration composition.
+Introduce one typed compatibility-square witness.
+Permit only boundary-matched horizontal and vertical pasting.
+Verify that local migration witnesses paste into the same global result in either order.
+Invalidate affected squares when an interface or process boundary changes.
 ```
 
 When expert explanation is requested, add the construction name, hypotheses, competitors, mediator, canonicality claim, effective lowering, claim strength, and obstruction boundary.
