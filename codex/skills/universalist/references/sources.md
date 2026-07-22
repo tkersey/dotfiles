@@ -6,6 +6,15 @@ Stable references:
 
 - Mac Lane, *Categories for the Working Mathematician*: adjunctions, products/coproducts, limits/colimits, pullbacks, pushouts, density, Yoneda, Kan extensions, monads, and comonads.
 - Riehl, *Category Theory in Context*: modern presentation of universal properties, limits/colimits, pullbacks/pushouts, adjunctions, density, and Kan extensions.
+- Charles Ehresmann's work on categories structured internally in categories: foundational source of double categories.
+- Marco Grandis and Robert Paré, “Limits in Double Categories,” *Cahiers de Topologie et Géométrie Différentielle Catégoriques* 40 (1999): double limits, tabulators/cotabulators, and two-dimensional universal properties.
+- Michael Shulman, “Framed Bicategories and Monoidal Fibrations,” *Theory and Applications of Categories* 20 (2008); arXiv:0706.1286: pseudo double categories, framed bicategories/equipments, base change, companions, and conjoints for spans, bimodules, distributors, and related generalized morphisms.
+- Thomas Fiore, Nicola Gambino, and Joachim Kock, “Monads in Double Categories,” *Journal of Pure and Applied Algebra* 215 (2011); arXiv:1006.0797, and “Double Adjunctions and Free Monads,” arXiv:1105.6206: formal category theory, double adjunctions, universal squares, free monads, and representability in double categories.
+- Kenny Courser, “Open Systems: A Double Categorical Perspective,” arXiv:2008.02394: symmetric monoidal double categories of structured/decorated cospans and applications to open circuits, Markov processes, and Petri nets.
+- Evan Patterson, “Structured and Decorated Cospans from the Viewpoint of Double Category Theory,” arXiv:2304.00447: double-categorical universal properties, equipments, and compositional open systems.
+- Michael Lambert and Evan Patterson, “Representing Knowledge and Querying Data using Double-Functorial Semantics,” arXiv:2403.19884: unifying functions and relations through double functors and relational-query semantics.
+- David Jaz Myers, “Double Categories of Open Dynamical Systems,” arXiv:2005.05956: indexed double categories, open dynamical systems, covariant/contravariant morphisms, and compositional behavior.
+- Sophie Libkind and David Jaz Myers, “Towards a Double Operadic Theory of Systems,” arXiv:2505.18329: systems as modules over symmetric monoidal double categories of interfaces and interactions.
 - Brian Day, “On closed categories of functors,” *Reports of the Midwest Category Seminar IV*, LNM 137 (1970): original closed functor-category/Day convolution construction.
 - Brian Day, “Promonoidal functor categories” (1977): convolution over promonoidal rather than necessarily representable monoidal composition kernels.
 - Edmund Robinson and Joshua Wrigley, “Day algebras,” *Mathematical Structures in Computer Science* 36 (2026), e6; arXiv:2504.06200: Day extension of algebraic and partial algebraic operations, with residuation and logic applications.
@@ -40,6 +49,8 @@ Stable references:
 
 Tambara-module results cited above are established categorical/programming-language results in their stated hypotheses. Treat mappings to middleware, tenant/evidence/capability framing, Exact Context, comonadic halos, repository architecture, and coding-agent workflows as engineering interpretations unless the code explicitly models the ambient action, profunctor, framing laws, and representation theorem assumptions.
 
+Double categories, equipments, structured cospans, and double-functorial semantics are established categorical constructions in their stated hypotheses. Treat mappings to repository refactors, migration proof leases, software-change calculus, query transport, and architecture-evolution squares as engineering interpretations unless the code explicitly models both arrow families, squares, pasting, interchange/coherence, and effective interpretation.
+
 Mark every nontrivial claim as one of:
 
 - mathematical;
@@ -56,6 +67,28 @@ engineering analogy only
 ```
 
 Do not call a join a pullback without a shared target and agreement equation. Do not call a merge a pushout without an explicit overlap object and maps into both sources. Do not call a textual or version-control rewrite a double-pushout rewrite unless the host category, rule span, match, pushout complement, and rewrite laws are modeled.
+
+For double-category claims, distinguish:
+
+```text
+literal strict/pseudo/virtual double category or equipment
+effective repository-native realization of the arrow/square/pasting laws
+two-dimensional diagram analogy only
+```
+
+Require:
+
+```text
+two semantically distinct arrow families
+identities and composition in both directions
+typed squares with four matching boundaries
+horizontal and vertical square pasting
+interchange or an explicit coherent comparison
+interpreter/double-functor preservation
+effective normalization, resource, and invalidation policy
+```
+
+Do not call two categories, a commutative square, a PROP diagram, or a DPO rewrite a double category by itself. Do not infer effect commutativity from interchange. Do not claim equipment structure without companions, conjoints, or restrictions and their laws.
 
 For comonadic spatiality claims, distinguish:
 
