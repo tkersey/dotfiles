@@ -28,6 +28,18 @@ invariants:
   - name: double_pushout_requires_complement_check
     when: "double pushout or graph rewrite"
     required: ["Preserved interface", "Pushout complement", "Dangling/identification conditions", "Obstruction report", "Rewrite trace"]
+  - name: double_category_requires_two_arrow_families
+    when: "double category or two-dimensional composition"
+    required: ["Horizontal arrow family", "Vertical arrow family", "Distinct architectural meanings", "Horizontal identities/composition", "Vertical identities/composition", "Ordinary/2-category alternative"]
+  - name: double_category_requires_square_pasting_and_interchange
+    when: "double category square calculus"
+    required: ["Typed square boundaries", "Square constructor", "Horizontal pasting", "Vertical pasting", "Interchange or coherent comparison", "Double-functor interpretation", "Mismatch falsifier"]
+  - name: double_category_interchange_does_not_imply_effect_commutativity
+    when: "double-category interchange touches effects authority failure provenance or resources"
+    required: ["Declared observation/equivalence", "Freyd/resource owner", "Effect order", "Authority/provenance preservation", "Interchange falsifier", "No implicit parallelism"]
+  - name: equipment_requires_base_change_structure
+    when: "equipment or framed bicategory"
+    required: ["Tight/vertical maps", "Loose/horizontal generalized arrows", "Companions/conjoints or restrictions", "Base-change law", "Unit/counit or triangle witness", "Unsupported-map obstruction"]
   - name: comonadic_spatiality_requires_locality_laws
     when: "comonadic spatiality or comonad as space"
     required: ["Points", "Local patches", "Center/counit law", "Neighborhood coherence", "Effective halo", "Restriction/germ law", "Labelled-halo fields", "Continuity law", "Resource law", "Locality falsifier"]
