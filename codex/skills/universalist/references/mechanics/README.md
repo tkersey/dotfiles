@@ -23,6 +23,7 @@ Kan extensions and lifts
 Freyd/AFT boundary diagnostics
 Freyd categories / premonoidal effect geometry
 Operads and typed composition grammars
+Double categories, equipments, compatibility squares, pasting, and interchange
 Pullbacks, pushouts, and double-pushout graph rewriting
 Comonads as spaces, density comonads, halos, and continuous locality-preserving maps
 Day convolution, promonoidal convolution, and indexed-description composition
@@ -36,6 +37,8 @@ possibility sheafification mechanics
 ```
 
 Use `pullback` when two source values or structures must agree through a shared observation. Use `pushout` when two sources must be glued along an explicit overlap. Use `double-pushout` for graph/model rewrites with delete-preserve-add structure and a potentially failing pushout complement.
+
+Use `double-categories.md` when two semantically different arrow families both compose and typed squares must paste horizontally and vertically with an interchange/coherence law. Use the equipment section only when strict maps induce effective companions, conjoints, or restrictions for generalized arrows. A commutative square or DPO rewrite alone is not a double category.
 
 Use `comonad-space` when locality is semantic and a world needs points with coherent neighborhoods. Use `density-comonad` when local patches should generate the spatial structure and a basis/reconstruction claim must be tested. Use `halo` for effective or labelled neighborhoods and germs. Use `continuous-comonad-map` when a boundary must preserve locality rather than only point values.
 
@@ -52,10 +55,13 @@ promonoidal convolution    partial/relational decompositions
 operadic substitution      recursive typed insertion
 monadic composition        value-dependent sequencing
 Tambara framing            generalized morphism stable under context action
+double-category square     compatibility between two compositional arrow directions
 Freyd composition          ordered runtime effects
 ```
 
 Do not conflate behavioral coalgebras with coalgebras of a comonad. The former model unfolding behavior; the latter model coherent situated/local structure.
+
+Do not conflate a double category with a 2-category, a PROP diagram, a commutative-square fixture, or double-pushout rewriting. Require two arrow families, square typing, both pasting operations, interchange/coherence, and effective interpretation.
 
 Do not conflate these Tambara modules with equivariant Tambara functors. A `Context<T>` wrapper, reader parameter, or repeated middleware call is not a Tambara module without a real context action, profunctor, and framing laws.
 
