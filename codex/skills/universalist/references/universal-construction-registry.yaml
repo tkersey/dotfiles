@@ -15,6 +15,7 @@ hole_kinds:
 - equivalence
 - locality
 - context-action
+- square
 - proof
 material_dimensions:
 - owner
@@ -58,7 +59,7 @@ moves:
   observe: Characterize an artifact by sanctioned observations, traces, probes, or contexts.
   transport: Extend, restrict, or migrate semantics coherently across a boundary.
   realize: Find a concrete implementation behind a fixed projection or return an obstruction.
-  compose: Make legal sequencing, parallel context, wiring, decomposition, or feedback explicit.
+  compose: Make legal sequencing, parallel context, wiring, decomposition, feedback, or two-dimensional pasting explicit.
   frame: Preserve a generalized capability when context is added around its endpoints.
   localize: Represent objects together with coherent neighborhoods, restrictions, and provenance.
   normalize: Identify equivalent presentations without collapsing observable distinctions.
@@ -93,6 +94,7 @@ axes:
 - syntax-semantics
 - behavior
 - base-composition
+- two-dimensional-composition
 - description-composition
 - context-action
 - locality
@@ -145,6 +147,31 @@ derived_mechanics:
     - generated_semantics_transport
     rule: Represent the hard operation in an easier world, then verify the attributed interpretation back;
       analyze each axis separately rather than selecting a new global winner.
+  two_dimensional_architecture:
+    axes:
+    - two-dimensional-composition
+    card_composition:
+    - two_dimensional_composition
+    rule: Separate horizontal process composition from vertical change composition; represent compatibility
+      by typed squares, require both pasting operations and interchange, and lower to one effective square API.
+  equipment_base_change:
+    axes:
+    - two-dimensional-composition
+    - transport-realization
+    card_composition:
+    - two_dimensional_composition
+    - concrete_realizer_check
+    rule: Use companions, conjoints, or restrictions only when strict maps induce effective generalized
+      boundaries with witnessed base-change laws; otherwise keep the generalized relation explicit.
+  double_categorical_rewrite:
+    axes:
+    - two-dimensional-composition
+    - transport-realization
+    card_composition:
+    - two_dimensional_composition
+    - safe_graph_rewrite
+    rule: Organize rewrite processes and maps of rewrites by squares and pasting, while retaining independent
+      pushout-complement, dangling, identification, adhesive, and effectivity obligations.
   spatial_description_product:
     axes:
     - locality
