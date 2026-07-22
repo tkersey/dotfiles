@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: universalist
     kind: mixed
-    source_fingerprint: universalist-boundary-decision-v10
+    source_fingerprint: universalist-boundary-decision-v11
   triggers:
     - trigger_id: UNI-BOUNDARY
       description: Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.
@@ -11,7 +11,7 @@ skill_decision_contract:
       cue_regexes: []
       exclusions: [work wholly internal to one unchanged boundary, category theory exposition without a concrete seam]
     - trigger_id: UNI-CONSEQUENTIAL
-      description: At least two plausible routes materially differ in persistent behavior authority compatibility migration or proof obligations.
+      description: At least two plausible routes materially differ in persistent behavior authority compatibility migration enforcement invalidation or proof obligations.
       cue_literals: [smallest honest construction, ordinary candidate, relevant construction cards, material architectural delta, obstruction report, advanced mechanics]
       cue_regexes: []
       exclusions: [routine seam with one plausible route, ceremonial activation with no route choice, static schema example, categorical label with no material delta]
@@ -53,10 +53,18 @@ skill_decision_contract:
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-PRESERVE, UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
       prohibited_routes: []
-      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport locality representation description composition or context framing when mechanics are used, existence or nonexistence evidence, commutation or preservation evidence, competitor mediation evidence, canonicality or uniqueness-up-to evidence, effective presentation evidence, mechanics falsifier]
-      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected, theorem cards link to retained doctrine and mechanics sources]
-      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout comonad density halo Day promonoidal Tambara optic codensity CQL or sheafification vocabulary, mechanics selected without evidenced preconditions, mechanics selected without a complete proof profile, static or contextual structure used to imply effect commutativity]
+      required_artifacts: [advanced mechanics disposition, concrete artifact or none, interpreter projection handler lowering context transport locality representation description composition context framing or two-dimensional square calculus when mechanics are used, existence or nonexistence evidence, commutation or preservation evidence, competitor mediation evidence, canonicality or uniqueness-up-to evidence, effective presentation evidence, mechanics falsifier]
+      success_signals: [none is explicit for ordinary seams, a named mechanics topic changes the artifact and proof when selected, theorem cards link to retained doctrine and mechanics sources, double-category selection names both arrow families square pasting interchange and one effective interpretation]
+      failure_signals: [decorative Kan Yoneda Coyoneda Freyd operad pullback pushout double-category equipment comonad density halo Day promonoidal Tambara optic codensity CQL or sheafification vocabulary, mechanics selected without evidenced preconditions, mechanics selected without a complete proof profile, static contextual or interchange structure used to imply effect commutativity, commutative square mislabeled as a double category]
       rationale: Deep mechanics remain available in the theorem library but are retained only when a relevant card produces a material delta and complete proof obligations.
+    - clause_id: UNI-DOUBLE-001
+      trigger_refs: [UNI-CONSEQUENTIAL]
+      expected_routes: [UNI-ORDINARY, UNI-CANONICAL, UNI-OBSTRUCT]
+      prohibited_routes: []
+      required_artifacts: [horizontal arrow family and composition, vertical arrow family and composition, typed square representation, horizontal square pasting, vertical square pasting, interchange or coherent comparison, double-functor interpretation, effect and resource guardrail, mismatch and interchange falsifiers]
+      success_signals: [the two arrow families have distinct repository meanings, local compatibility squares paste into one global witness, the two pasting orders agree under the declared observations]
+      failure_signals: [one arrow family does not compose, square boundaries are unchecked, interchange changes a required observation, a smaller category 2-category adapter or DPO artifact already suffices, equipment claimed without companions conjoints or restrictions]
+      rationale: Double categories add value only when composition of behavior and composition of change are both architecture and their compatibility is compositional.
     - clause_id: UNI-OBSTRUCTION-001
       trigger_refs: [UNI-CONSEQUENTIAL]
       expected_routes: [UNI-OBSTRUCT]
