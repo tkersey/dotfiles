@@ -7,7 +7,7 @@ In this repo, **doctrine** is compact language selected to induce a useful and r
 Doctrine can work through two distinct mechanisms:
 
 - **operator doctrine** specifies a bounded procedure: `ablative`, `actuating`, `adjudicative`, `forensic`;
-- **activation doctrine** evokes a capability state: `Be bolder.`, `Use fresh eyes.`, `Be Optimal.`, `Be like Mike.`
+- **activation doctrine** evokes a capability state: `Be bolder.`, `Use fresh eyes.`, `Be excavatory.`, `Be aporetic.`, `Be Optimal.`, `Be like Mike.`
 
 Operator doctrine compresses a rubric. Activation doctrine compresses permission, ambition, identity, attention, or search posture.
 
@@ -99,8 +99,8 @@ reset the frame -> widen the search -> select the best admissible move
 | `Be Optimal.` | reject merely sufficient and locally optimal answers; select the best available move under the real objective and constraints | competing routes, designs, plans, interventions | fake omniscience, hidden objective choice, overoptimization |
 | `Perform no smallness.` | raise the ambition floor and search for the compounding move | local polish when a governing move may dominate | grandeur mistaken for leverage |
 | `Be like Mike.` | activate elite standards, fundamentals, finishing, competitiveness, and ownership | execution quality, pressure, completion | persona theater or importing irrelevant traits |
-| `Dig deeper.` | move below the first plausible explanation | shallow diagnosis, symptom patches | analysis without route change |
-| `Ruminate harder.` | sustain competing frames long enough to find the stronger one | ambiguous high-judgment decisions | indecision or token burn |
+| `Be excavatory.` | descend below the first plausible explanation until the governing layer changes the model or route | shallow diagnosis, symptom patches, hidden ownership or invariant breaks | depth theater or endless regress |
+| `Be aporetic.` | preserve a genuine unresolved difficulty until its missing distinction or decisive evidence becomes explicit | contradictory evidence, underdetermined high-judgment decisions | indecision or token burn |
 | `Reject the obvious answer.` | treat the first fluent answer as a candidate | anchoring, consensus, rubber-stamping | novelty bias against a correct simple answer |
 | `Be reckless.` | expand the speculative search beyond convention and feasibility | read-only divergent exploration | operational recklessness or unsupported claims |
 | `Find the lever.` | identify the control point that changes system state | analysis that has not become action | activity mistaken for movement |
@@ -216,6 +216,38 @@ Suspend inherited conclusions as authority and reconstruct the problem from curr
 
 Discard anchoring, not verified facts.
 
+### Be excavatory
+
+**Runtime form:**
+
+```text
+Be excavatory.
+```
+
+**Intended shift:**
+
+Descend through causal, representational, historical, ownership, or invariant layers until the next layer no longer changes the explanatory model, route, owner, or proof burden.
+
+**Shadow risk:**
+
+Depth must change the model or route. Do not reward explanation length, speculative archaeology, or endless causal regress.
+
+### Be aporetic
+
+**Runtime form:**
+
+```text
+Be aporetic.
+```
+
+**Intended shift:**
+
+Keep a genuine contradiction or underdetermination open long enough to expose the missing distinction, decisive evidence, or honest decision-under-uncertainty boundary.
+
+**Shadow risk:**
+
+Aporia must sharpen the decision surface. Do not reward indefinite rumination, ambiguity theater, or refusal to make a reversible decision.
+
 ### Perform no smallness
 
 **Runtime form:**
@@ -256,6 +288,14 @@ Recklessness applies to search, not to facts, mutation, authority, publication, 
 Use fresh eyes. Be bolder.
 ```
 
+### Deepen without forcing closure
+
+```text
+Be excavatory. Be aporetic.
+```
+
+The first phrase descends below the obvious layer. The second prevents a real contradiction from being prematurely flattened.
+
 ### Find and select the strongest move
 
 ```text
@@ -292,6 +332,10 @@ Use **Be like Mike** when the gap is execution standard, fundamentals, competiti
 
 Use **Use fresh eyes** when prior framing may be suppressing the correct route.
 
+Use **Be excavatory** when the first explanation is too shallow or symptom-shaped.
+
+Use **Be aporetic** when a real contradiction or underdetermination is being prematurely collapsed.
+
 Use **Perform no smallness** when the problem has been framed below its true stakes.
 
 Use **Be reckless** only for speculative search that remains separated from action.
@@ -303,6 +347,8 @@ Reject or repair:
 - `Be smart.` — generic praise with weak activation specificity;
 - `Be Optimal.` used without a knowable objective when the ambiguity is material;
 - `Be like Mike.` when local context clearly points to a different Mike and no convention resolves it;
+- `Be excavatory.` used to reward verbosity rather than explanatory descent;
+- `Be aporetic.` used to avoid a reversible decision after sufficient evidence exists;
 - phrase stacks made entirely of synonyms;
 - a long explanation appended to a phrase whose value is brevity;
 - runtime ledgers produced only to prove that an activation phrase was used;

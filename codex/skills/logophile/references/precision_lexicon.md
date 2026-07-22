@@ -4,6 +4,8 @@ Use these as guarded phrase replacements. A replacement is valid only when it pr
 
 For formal computer-science terms, preserve the proof burden. A sharper term is invalid when the surrounding task cannot support its actual guarantee.
 
+For explanatory depth and productive non-closure, see [depth_deliberation_doctrine.md](depth_deliberation_doctrine.md) and [depth_deliberation_probe_cases.md](depth_deliberation_probe_cases.md).
+
 ## Generic -> sharper defaults
 
 - `improve` -> `tighten`, `harden`, `simplify`, `stabilize`, `clarify`, `validate`, `defuse`, `accelerate`, `actuate`, `normalize`, `converge`, or `incrementalize` when the local gain is clear.
@@ -19,6 +21,8 @@ For formal computer-science terms, preserve the proof burden. A sharper term is 
 - `decompose` -> `factorize`, `orthogonalize`, `partition`, or `kernelize` depending whether the task exposes factors, independent axes, distributed regions, or a smaller equivalent instance.
 - `reduce` / `remove what is unnecessary` -> `winnow`, `quotient`, `ablate`, `prune`, `deforest`, or `normalize` depending whether the task retains live obligations, collapses indistinguishable distinctions, removes unearned surface, eliminates search branches, removes intermediates, or reaches canonical form.
 - `account for` -> `reconcile`, `attribute`, `conserve`, or `amortize` depending whether the task balances surfaces, assigns causes/owners, proves nothing appeared/disappeared without a transition, or distributes cost across a sequence.
+- `dig deeper` -> `be excavatory` when the task should descend through causal, representational, historical, ownership, or invariant layers until the route changes.
+- `ruminate harder` -> `be aporetic` when a genuine contradiction or underdetermination must remain open long enough to expose the missing distinction or decisive evidence.
 
 ## Coding and review language
 
@@ -145,6 +149,8 @@ For formal computer-science terms, preserve the proof burden. A sharper term is 
 - `be rigorous` -> `reject unwitnessed claims and preserve named invariants`.
 - `be careful` -> `label uncertainty, preserve obligations, and check the failure surface`.
 - `think deeply` -> `derive the governing invariant and test the strongest countercase`.
+- `dig deeper` -> `be excavatory: descend until another layer no longer changes the model, owner, route, or proof burden`.
+- `ruminate harder` -> `be aporetic: preserve the genuine unresolved difficulty until the missing distinction, evidence, or decision condition is explicit`.
 - `take action` -> `actuate the lever and prove the system moved`.
 - `start over` -> `rebaseline to the current authoritative state and invalidate stale receipts`.
 - `systems thinking` -> `map cybernetic feedback loops, control points, signals, delays, and second-order effects`.
@@ -169,4 +175,6 @@ Do not replace if:
 - the phrase is code, an identifier, a flag, a path, a schema field, or machine-consumed syntax;
 - the new word would activate a workflow or proof obligation the task does not support;
 - the formal term would imply a guarantee that has not been checked;
+- `excavatory` would reward depth theater rather than a changed explanatory model;
+- `aporetic` would reward indefinite indecision rather than sharpening a real difficulty;
 - a lighter adjacent term is more honest.
