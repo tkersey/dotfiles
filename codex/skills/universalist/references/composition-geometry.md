@@ -1,6 +1,6 @@
 # Composition Geometry Selector
 
-Universal Architecture must select not only *what artifact exists*, but *how compositions are allowed to form*. Use the weakest structure that makes legal assembly, description composition, context action, and sequencing explicit.
+Universal Architecture must select not only *what artifact exists*, but *how compositions are allowed to form*. Use the weakest structure that makes legal assembly, description composition, context action, two-dimensional change compatibility, and sequencing explicit.
 
 ## Stage 1 — Base composition geometry
 
@@ -44,6 +44,21 @@ After the context world and endpoint worlds are known, decide whether a generali
 | generalized morphism must be an actual implementation map | representability/module-functor diagnostic | concrete realizer versus relation/specification only |
 | context is only an ordinary parameter | reader/environment/adapter | avoid decorative Tambara structure |
 
+## Stage 4 — Two-dimensional composition selector
+
+Use this stage when two semantically different arrow families both compose and a compatibility square between them is itself architecture.
+
+| Two-dimensional pressure | Structure | What becomes explicit |
+| --- | --- | --- |
+| processes compose while migrations/refinements also compose | double category | horizontal process arrows, vertical change arrows, squares, and interchange |
+| one composition is associative/unital only up to coherent isomorphism | pseudo double category | explicit coherence and normalization rather than fake strict equality |
+| strict maps induce generalized spans, relations, profunctors, or open-system arrows | equipment / framed bicategory | companions, conjoints, restrictions, and lawful base change |
+| generalized horizontal cells are meaningful but horizontal composition is partial or unavailable | virtual double category / virtual equipment | multi-source cells and restrictions without invented composites |
+| the two-dimensional calculus also has real side-by-side composition | monoidal double category | tensor compatible with both arrow directions and squares |
+| only one arrow family or one isolated compatibility check matters | category / 2-category / typed adapter plus witness | avoid decorative double-category structure |
+
+Double categories are a separate architectural axis, not a synonym for a PROP's horizontal/vertical diagram composition, a double-pushout rewrite, or a commutative square. Select them only when **process composition, change composition, square pasting, and interchange** all change the artifact or proof.
+
 Core distinction:
 
 ```text
@@ -56,15 +71,20 @@ Description product:
 Context action / contextual morphism:
   how a generalized transformation remains valid when context is added around its endpoints.
 
+Two-dimensional composition:
+  how one arrow family of processes and another arrow family of changes compose,
+  with squares certifying their compatibility and interchange making local change compositional.
+
 Runtime semantics:
   how the resulting description executes and which effects may reorder.
 ```
 
-Do not put Day convolution, Tambara modules, Freyd categories, and operads in one undifferentiated selector:
+Do not put Day convolution, Tambara modules, double categories, Freyd categories, and operads in one undifferentiated selector:
 
 ```text
 Day convolution    product on indexed descriptions
 Tambara module     profunctor stable under context action
+double category    two arrow directions plus compatibility squares and interchange
 Freyd category     ordered effectful runtime composition
 operad             grammar of hierarchical component substitution
 ```
@@ -106,6 +126,24 @@ effective context/residual representation
 
 Use Tambara mechanics only when the same local/generalized capability must survive several lawful context extensions. Use mixed Tambara when endpoint actions differ, dependent Tambara when indices change, and an ordinary adapter/profunctor/context parameter when no framing algebra is gained.
 
+## Double-category fit diagnostic
+
+Require:
+
+```text
+horizontal arrow family with identities and composition
+vertical arrow family with identities and composition
+distinct architectural meaning for the two families
+square/cell semantics with four typed boundaries
+horizontal square pasting
+vertical square pasting
+interchange or an explicit coherent comparison
+interpreter/double-functor lowering
+effective square representation, normalization, and invalidation
+```
+
+Use a pseudo double category when selected composites are canonical only up to coherent isomorphism. Use an equipment only when tight maps actually admit useful companions, conjoints, or restrictions. Use a virtual double category when loose/proarrow composition is partial or intentionally absent.
+
 ## Core law shapes
 
 ```text
@@ -136,16 +174,27 @@ frame_(m tensor n)(p)
 Tambara interpretation:
 interpret(frame_m(p))
   == frameSemantics(m, interpret(p))
+
+Double-category interchange:
+normalize((alpha pasteH beta) pasteV (gamma pasteH delta))
+  ==
+normalize((alpha pasteV gamma) pasteH (beta pasteV delta))
+
+Double-functor interpretation:
+interpret preserves both arrow compositions, squares, both pasting operations,
+and the declared coherence/interchange equivalence.
 ```
 
 ## Selection discipline
 
-Do not grant symmetry, commutation, duplication, discard, feedback, parallelism, decomposition completeness, quotient safety, context framing, or representability for free. Each is an architectural law with a witness.
+Do not grant symmetry, commutation, duplication, discard, feedback, parallelism, decomposition completeness, quotient safety, context framing, representability, square pasting, or interchange for free. Each is an architectural law with a witness.
 
-A static/applicative description shape does not prove effect commutativity. Tambara framing does not prove effect commutativity, resource duplication, or safe parallelism. Actual execution remains subject to Freyd/resource laws.
+A static/applicative description shape does not prove effect commutativity. Tambara framing does not prove effect commutativity, resource duplication, or safe parallelism. Double-category interchange does not prove that effectful operations commute; it must preserve the selected effect, authority, failure, provenance, and resource observations. Actual execution remains subject to Freyd/resource laws.
 
 ## Anti-overreach
 
-Use a plain function/interface when it already captures the exact composition. An operad, Freyd model, Day convolution, or Tambara module is justified only when it changes legal wiring, sequencing, indexed composition, context framing, tests, ownership, static validation, simulation, interpretation, or the set of representable states/programs.
+Use a plain function/interface when it already captures the exact composition. An operad, Freyd model, Day convolution, Tambara module, or double category is justified only when it changes legal wiring, sequencing, indexed composition, context framing, process/change compatibility, tests, ownership, static validation, simulation, interpretation, migration, invalidation, or the set of representable states/programs.
 
 Do not call a `Context<T>` wrapper, reader parameter, dependency-injection container, repeated middleware call, or ordinary optic record a Tambara module without the ambient action, profunctor, framing laws, and falsifier.
+
+Do not call two categories and a few commuting diagrams a double category without typed horizontal and vertical arrows, squares, both square-pasting operations, interchange/coherence, and an effective lowering. Prefer a 2-category or one explicit compatibility witness when the second arrow family is not independent.
