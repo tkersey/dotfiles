@@ -1,0 +1,75 @@
+schema: universal-construction-fragment/v6
+constructions:
+- id: two_dimensional_composition
+  expert_name: Double category / equipment
+  public_name: two-direction composition with certified compatibility squares
+  route: UNI-CANONICAL
+  selection_mode: selectable
+  diagnostic_order: 63
+  moves:
+  - compose
+  - transport
+  - constrain
+  signals:
+  - two-independent-compositions
+  - process-and-change-composition
+  - commuting-boundary-squares
+  - strict-maps-and-generalized-arrows
+  requires:
+  - horizontal_arrow_family
+  - vertical_arrow_family
+  - horizontal_identity_and_composition
+  - vertical_identity_and_composition
+  - square_semantics
+  - horizontal_and_vertical_pasting
+  - interchange_or_coherent_comparison
+  - effective_square_representation
+  emits:
+  - typed-horizontal-and-vertical-arrows
+  - compatibility-square-ir
+  - horizontal-and-vertical-pasting-api
+  - double-functor-interpreter
+  laws:
+  - horizontal and vertical identities and associativity hold under the declared equality or normalization
+  - every square has matching horizontal and vertical boundaries
+  - horizontal and vertical square pasting preserve external boundaries and required provenance
+  - interchange holds up to the declared observations and coherence policy
+  - interpretation preserves both arrow compositions squares and pasting
+  falsifiers:
+  - a square with mismatched boundaries is constructible
+  - local compatibility squares cannot be pasted into a global compatibility witness
+  - the two interchange orders differ in an observable effect authority failure provenance or resource cost
+  - one alleged arrow family has no meaningful independent composition
+  fallback: explicit process IR plus migration IR and one owner-controlled compatibility witness
+  universal:
+    role: composition
+    competitors: every admissible pair of horizontal processes and vertical changes whose boundaries are compatible in the declared two-dimensional comparison universe
+    mediator: one typed square represents each compatible change of process and horizontal or vertical pasting represents each compatible grid of local changes
+    canonicality: pasted squares are unique up to the declared normalization or observational equivalence and the two pasting orders agree by interchange
+    effectivity: arrow construction square validation pasting normalization interpretation and invalidation fit the declared resource model
+  hole_kinds:
+  - square
+  - composition
+  claim_modes:
+  - nomination
+  - verification
+  guarantees:
+  - legal_composition
+  - compatibility
+  - migration
+  - information_flow
+  - construction_paths
+  - proof
+  - resources
+  axes:
+  - two-dimensional-composition
+  claim_scopes:
+  - literal
+  - effective_realization
+  - bounded_approximation
+  proof_profile: universal
+  theory_refs:
+  - double-category-architecture.md
+  - mechanics/double-categories.md
+  - composition-geometry.md
+  - sources.md
