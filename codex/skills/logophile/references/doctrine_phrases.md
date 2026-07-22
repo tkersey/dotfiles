@@ -7,7 +7,7 @@ In this repo, **doctrine** is compact language selected to induce a useful and r
 Doctrine can work through two distinct mechanisms:
 
 - **operator doctrine** specifies a bounded procedure: `ablative`, `actuating`, `adjudicative`, `forensic`;
-- **activation doctrine** evokes a capability state: `Be bolder.`, `Use fresh eyes.`, `Be excavatory.`, `Be aporetic.`, `Be Optimal.`, `Be like Mike.`
+- **activation doctrine** evokes a capability state: `Be bolder.`, `Use fresh eyes.`, `Be excavatory.`, `Be aporetic.`, `Be saltatory.`, `Be Optimal.`, `Be like Mike.`
 
 Operator doctrine compresses a rubric. Activation doctrine compresses permission, ambition, identity, attention, or search posture.
 
@@ -101,6 +101,7 @@ reset the frame -> widen the search -> select the best admissible move
 | `Be like Mike.` | activate elite standards, fundamentals, finishing, competitiveness, and ownership | execution quality, pressure, completion | persona theater or importing irrelevant traits |
 | `Be excavatory.` | descend below the first plausible explanation until the governing layer changes the model or route | shallow diagnosis, symptom patches, hidden ownership or invariant breaks | depth theater or endless regress |
 | `Be aporetic.` | preserve a genuine unresolved difficulty until its missing distinction or decisive evidence becomes explicit | contradictory evidence, underdetermined high-judgment decisions | indecision or token burn |
+| `Be saltatory.` | seek a discontinuous advance beyond the incumbent frontier rather than another increment within the inherited basin | breakthrough search, capability leaps, problem-class changes, regime transitions | breakthrough theater, novelty bias, or scope inflation |
 | `Reject the obvious answer.` | treat the first fluent answer as a candidate | anchoring, consensus, rubber-stamping | novelty bias against a correct simple answer |
 | `Be reckless.` | expand the speculative search beyond convention and feasibility | read-only divergent exploration | operational recklessness or unsupported claims |
 | `Find the lever.` | identify the control point that changes system state | analysis that has not become action | activity mistaken for movement |
@@ -248,6 +249,36 @@ Keep a genuine contradiction or underdetermination open long enough to expose th
 
 Aporia must sharpen the decision surface. Do not reward indefinite rumination, ambiguity theater, or refusal to make a reversible decision.
 
+### Be saltatory
+
+**Runtime form:**
+
+```text
+Be saltatory.
+```
+
+Exact high-amplitude fragment when explicitly required:
+
+```text
+BE SALTATORY
+```
+
+**Intended shift:**
+
+Leave the inherited local basin and seek a representation, invariant, recombination, control point, or regime transition that creates a discontinuous advance relative to the incumbent frontier.
+
+**Internal decode:**
+
+```text
+incumbent frontier -> limiting assumption -> discontinuity mechanism -> newly reachable state
+```
+
+**Shadow risk:**
+
+Do not mistake novelty, magnitude, a large rewrite, or a visible metric jump for a breakthrough. The leap must be evidenced, not announced.
+
+See [breakthrough_doctrine.md](breakthrough_doctrine.md) for adjacent operators and [breakthrough_probe_cases.md](breakthrough_probe_cases.md) for acceptance boundaries.
+
 ### Perform no smallness
 
 **Runtime form:**
@@ -296,6 +327,18 @@ Be excavatory. Be aporetic.
 
 The first phrase descends below the obvious layer. The second prevents a real contradiction from being prematurely flattened.
 
+### Create a breakthrough candidate
+
+```text
+Be audacious. Operate poietically. Be saltatory.
+```
+
+```text
+admit the consequential possibility -> create the new form -> demand a discontinuous advance
+```
+
+The stack generates a candidate; it does not prove that the result is a breakthrough.
+
 ### Find and select the strongest move
 
 ```text
@@ -336,6 +379,8 @@ Use **Be excavatory** when the first explanation is too shallow or symptom-shape
 
 Use **Be aporetic** when a real contradiction or underdetermination is being prematurely collapsed.
 
+Use **Be saltatory** when the task seeks a discontinuous advance beyond an explicit incumbent frontier rather than another local increment.
+
 Use **Perform no smallness** when the problem has been framed below its true stakes.
 
 Use **Be reckless** only for speculative search that remains separated from action.
@@ -349,6 +394,7 @@ Reject or repair:
 - `Be like Mike.` when local context clearly points to a different Mike and no convention resolves it;
 - `Be excavatory.` used to reward verbosity rather than explanatory descent;
 - `Be aporetic.` used to avoid a reversible decision after sufficient evidence exists;
+- `Be saltatory.` used as praise for novelty, size, or a large rewrite without a demonstrated discontinuity;
 - phrase stacks made entirely of synonyms;
 - a long explanation appended to a phrase whose value is brevity;
 - runtime ledgers produced only to prove that an activation phrase was used;

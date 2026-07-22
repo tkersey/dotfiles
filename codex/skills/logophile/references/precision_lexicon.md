@@ -6,6 +6,8 @@ For formal computer-science terms, preserve the proof burden. A sharper term is 
 
 For explanatory depth and productive non-closure, see [depth_deliberation_doctrine.md](depth_deliberation_doctrine.md) and [depth_deliberation_probe_cases.md](depth_deliberation_probe_cases.md).
 
+For breakthrough, leap, and discontinuity language, see [breakthrough_doctrine.md](breakthrough_doctrine.md) and [breakthrough_probe_cases.md](breakthrough_probe_cases.md).
+
 ## Generic -> sharper defaults
 
 - `improve` -> `tighten`, `harden`, `simplify`, `stabilize`, `clarify`, `validate`, `defuse`, `accelerate`, `actuate`, `normalize`, `converge`, or `incrementalize` when the local gain is clear.
@@ -23,6 +25,9 @@ For explanatory depth and productive non-closure, see [depth_deliberation_doctri
 - `account for` -> `reconcile`, `attribute`, `conserve`, or `amortize` depending whether the task balances surfaces, assigns causes/owners, proves nothing appeared/disappeared without a transition, or distributes cost across a sequence.
 - `dig deeper` -> `be excavatory` when the task should descend through causal, representational, historical, ownership, or invariant layers until the route changes.
 - `ruminate harder` -> `be aporetic` when a genuine contradiction or underdetermination must remain open long enough to expose the missing distinction or decisive evidence.
+- `breakthrough` -> `saltatory advance` only when the result creates a discontinuity relative to an explicit incumbent frontier.
+- `big improvement` / `step-change` -> `catalytic`, `bifurcative`, `multiplicative`, or `saltatory` depending whether the mechanism is disproportionate leverage, regime transition, compounding interaction, or a newly reachable capability frontier.
+- `creative breakthrough` -> `poietic and saltatory` only when a new form is created and that form demonstrably changes what is reachable.
 
 ## Coding and review language
 
@@ -151,6 +156,8 @@ For explanatory depth and productive non-closure, see [depth_deliberation_doctri
 - `think deeply` -> `derive the governing invariant and test the strongest countercase`.
 - `dig deeper` -> `be excavatory: descend until another layer no longer changes the model, owner, route, or proof burden`.
 - `ruminate harder` -> `be aporetic: preserve the genuine unresolved difficulty until the missing distinction, evidence, or decision condition is explicit`.
+- `find a breakthrough` -> `be saltatory: seek a discontinuous advance beyond the incumbent frontier and name the newly reachable state`.
+- `change the game` -> `seek a saltatory or paradigmatic move` only when the result changes the capability frontier or governing frame.
 - `take action` -> `actuate the lever and prove the system moved`.
 - `start over` -> `rebaseline to the current authoritative state and invalidate stale receipts`.
 - `systems thinking` -> `map cybernetic feedback loops, control points, signals, delays, and second-order effects`.
@@ -177,4 +184,5 @@ Do not replace if:
 - the formal term would imply a guarantee that has not been checked;
 - `excavatory` would reward depth theater rather than a changed explanatory model;
 - `aporetic` would reward indefinite indecision rather than sharpening a real difficulty;
+- `saltatory` would reward novelty, magnitude, or a large rewrite without a discontinuity relative to an incumbent frontier;
 - a lighter adjacent term is more honest.
