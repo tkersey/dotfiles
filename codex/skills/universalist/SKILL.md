@@ -1,15 +1,13 @@
 ---
 name: universalist
-description: "Use whenever implementation, review, migration, or resolution creates, changes, preserves, validates, bypasses, or removes an owned code boundary. Universalist synthesizes the smallest context-relative, correct-by-construction boundary candidate from current requirements and host capabilities. In Actuating composition it nominates that candidate without selecting or reopening the Construction; standalone work may select a route under its root authority. Make invalid states and illegal compositions unrepresentable where possible, centralize residual checks, preserve observations and compatibility, record invalidation triggers, and return obstruction rather than invent correctness. Implicit invocation on; team mode only by explicit request."
+description: "Use whenever implementation, review, migration, or resolution creates, changes, preserves, validates, bypasses, or removes an owned code boundary. Universalist synthesizes the smallest context-relative, correct-by-construction boundary candidate from current requirements and host capabilities. In Actuating composition it nominates that candidate without selecting or reopening the Construction; standalone work may select a route under its root authority. Make invalid states and illegal compositions unrepresentable where possible, centralize residual checks, preserve observations and compatibility, record invalidation triggers, and return obstruction rather than invent correctness. Includes double-category square calculus when processes and architecture changes compose independently. Implicit invocation on; team mode only by explicit request."
 ---
 
 # Universalist
 
-Universalist synthesizes **context-relative, correct-by-construction boundary
-architecture**. In Actuating composition it nominates a candidate; Actuating
-alone adjudicates and authors the Construction.
+Universalist synthesizes **context-relative, correct-by-construction boundary architecture**. In Actuating composition it nominates a candidate; Actuating alone adjudicates and authors the Construction.
 
-It uses category theory as a hidden optimizer to derive the smallest effective boundary artifact whose representation, constructors, eliminators, compositions, and interpretations enforce the current context's requirements. It makes invalid states and illegal compositions unrepresentable where the host environment permits; centralizes unavoidable runtime validation at explicit owners; preserves required observations and compatibility; records residual obligations and invalidation triggers; and returns an obstruction rather than inventing correctness the context cannot justify.
+It uses category theory as a hidden optimizer to derive the smallest effective boundary artifact whose representation, constructors, eliminators, compositions, and interpretations enforce the current context's requirements. It makes invalid states and illegal compositions unrepresentable where the host permits; centralizes unavoidable runtime validation at explicit owners; preserves required observations and compatibility; records residual obligations and invalidation triggers; and returns an obstruction rather than inventing correctness the context cannot justify.
 
 Default discipline:
 
@@ -55,71 +53,41 @@ Invalidation triggers:
 Then:
 
 1. Decide whether the route is consequential under **Decision observability**: at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations.
-2. For a consequential route, complete the current-context, comparison,
-   Boundary Artifact Contract, enforcement, residual, invalidation, law, and
-   falsifier analysis before mutation. In Actuating composition, hand this
-   nomination directly to Actuating; the Construction is the decision carrier.
-3. Allocate a plan and emit one root `SDR-v1` only when **Decision durability**
-   requires an independently addressable Universalist decision.
-4. For a routine or uncontested seam, retain the compact disposition and
-   continue the repository's ordinary workflow.
+2. For a consequential route, complete the current-context, comparison, Boundary Artifact Contract, enforcement, residual, invalidation, law, and falsifier analysis before mutation. In Actuating composition, hand this nomination directly to Actuating; the Construction is the decision carrier.
+3. Allocate a plan and emit one root `SDR-v1` only when **Decision durability** requires an independently addressable Universalist decision.
+4. For a routine or uncontested seam, retain the compact disposition and continue the repository's ordinary workflow.
 
 ## Decision durability
 
-Materiality controls reasoning depth; durability controls whether that
-reasoning needs a separate plan and receipt. Independent durability exists when
-no current Actuating Construction will carry the complete decision and the user
-requests a durable record, or standalone, cross-session, multi-actor, migration,
-or supersession work must later address the Universalist decision directly.
+Materiality controls reasoning depth; durability controls whether that reasoning needs a separate plan and receipt.
 
-When an Actuating Construction carries the nomination, adjudication, proof, and
-retirement obligations, do not allocate a Universalist plan or emit `SDR-v1`
-merely because the boundary choice is consequential. Session evidence and the
-Construction remain inspectable without a duplicate decision artifact.
+Independent durability exists when no current Actuating Construction will carry the complete decision and the user requests a durable record, or standalone, cross-session, multi-actor, migration, or supersession work must later address the Universalist decision directly.
+
+When an Actuating Construction carries the nomination, adjudication, proof, and retirement obligations, do not allocate a Universalist plan or emit `SDR-v1` merely because the boundary choice is consequential. Session evidence and the Construction remain inspectable without a duplicate decision artifact.
 
 ## Execution-time reclassification gate
 
-Treat a compact disposition, Actuating-bound nomination, or plan-bound decision
-as a proof lease, not a one-time classification. Whenever new execution
-evidence appears, reclassify before the next mutation of the affected seam if
-that evidence may materially change:
+Treat a compact disposition, Actuating-bound nomination, or plan-bound decision as a proof lease. Whenever new execution evidence may materially change the owner, requirements, observations, compatibility, effects, resources, axis, typed hole, law, falsifier, enforcement, residuals, invalidators, route, or seam decomposition, reclassify before the next affected mutation.
 
-```text
-owner or source / target worlds
-requirements, observations, compatibility, effects, or resources
-architectural axis or typed hole
-law, falsifier, enforcement, residuals, or invalidation triggers
-selected route or decomposition into independently governed seams
-```
-
-Record the compact checkpoint:
+Record:
 
 ```text
 Prior disposition or decision:
 New evidence:
 Material semantic delta:
 Outcome: retain / split / escalate / obstruct
-Invalidated artifacts: receipt, plan, proof lease, or none
-Successor packets: owner + axis + seam, or none
+Invalidated artifacts: receipt / plan / proof lease / none
+Successor packets: owner + axis + seam / none
 ```
 
-Interpret the outcomes as follows:
+- **retain** — the same owner, axis, law, falsifier, route, and obligations still govern;
+- **split** — independent owners or axes have appeared; create one packet per independently governed seam;
+- **escalate** — the route materially changed; stop before mutation and repeat the full analysis;
+- **obstruct** — no honest current route is representable or authorized.
 
-- **retain** — the same owner, axis, law, falsifier, route, and obligations still govern; continue under the current compact disposition or plan without allocating a new one;
-- **split** — the evidence reveals independent owners or architectural axes; stop the shared route and create one packet per independently governed seam;
-- **escalate** — a routine seam has become consequential, or a consequential route materially changed; stop before mutation, repeat the full analysis, and complete **Step 0** only for independently durable successors;
-- **obstruct** — no honest current route is representable or authorized; stop with the witnessed obstruction and reopening condition.
+Before Actuating selects a Construction, revise the nomination in place. After Actuating materializes a Construction, return material evidence to Actuating for retain, successor, or obstruction; Universalist must not reopen it. Once an `SDR-v1` exists, do not overwrite it. Evidence discovered only after an affected mutation is a proof failure; re-establish the lease before further mutation.
 
-Before Actuating selects a Construction, revise the current nomination or
-durable plan in place. After Actuating materializes a Construction, return new
-evidence to Actuating for retain, successor, or obstruction; Universalist must
-not reopen it. Once an `SDR-v1` exists, do not overwrite it: name the
-invalidated artifact and allocate a fresh plan only for an independently
-durable successor. Evidence discovered only after an affected mutation is a
-proof failure; re-establish the lease before further mutation rather than
-creating a retroactive plan.
-
-Diff size, retry count, test count, elapsed time, and categorical vocabulary do not establish materiality by themselves. Reclassification is semantic: routine work remains lightweight unless a named decision dimension materially changes.
+Diff size, retry count, test count, elapsed time, and categorical vocabulary do not establish materiality by themselves.
 
 ## Current-context contract
 
@@ -155,7 +123,7 @@ Do not claim static enforcement where the language, module system, persistence l
 
 ## Smallest effective artifact
 
-State the **ordinary candidate** first: record, tagged union, checked constructor, adapter, explicit parameter, state machine, operation IR, handler, labelled graph, query, bounded loop, or canonical merge.
+State the **ordinary candidate** first: record, tagged union, checked constructor, adapter, explicit parameter, state machine, operation IR, handler, labelled graph, query, bounded loop, canonical merge, or one typed compatibility witness.
 
 Define the comparison universe before calling anything smallest or canonical:
 
@@ -171,20 +139,9 @@ resources
 host capabilities
 ```
 
-“Smallest” means minimal in this declared universe relative to the requirements and resource model. It does not mean shortest code or most elementary category-theory name.
+“Smallest” means minimal in this universe relative to requirements and resources. It does not mean shortest code or the simplest category-theory name.
 
-A candidate dominates another only with evidence that it preserves the required observations while reducing at least one of:
-
-```text
-invalid representable states
-illegal public compositions
-unchecked construction paths
-duplicated authority
-runtime proof burden
-information loss
-migration risk
-resource cost
-```
+A candidate dominates another only with evidence that it preserves required observations while reducing invalid representable states, illegal public compositions, unchecked construction paths, duplicated authority, runtime proof burden, information loss, migration risk, or resource cost.
 
 If several candidates are incomparable minima, the result is **underdetermined**. Do not manufacture a winner.
 
@@ -198,6 +155,7 @@ axes:
   syntax-semantics
   behavior
   base composition
+  two-dimensional composition
   description composition
   context action
   locality
@@ -215,39 +173,77 @@ holes:
   equivalence
   locality
   context action
+  square
   proof
 ```
 
-Independent pressures become linked packets. Day convolution, Tambara framing, effect ordering, locality, data shape, and context preparation may coexist; they do not compete as one global winner.
+Independent pressures become linked packets. Double-category squares, Day convolution, Tambara framing, effect ordering, locality, data shape, and context preparation may coexist; they do not compete as one global winner.
+
+## Double-category architecture
+
+Use the `two_dimensional_composition` card when two semantically different arrow families both compose and correctness depends on typed squares relating them.
+
+```text
+horizontal arrows
+  processes, open systems, queries, generalized interactions, executable behavior
+
+vertical arrows
+  migrations, refinements, strict maps, reindexings, deployments, architecture changes
+
+squares
+  compatibility witnesses whose four boundaries are explicit
+```
+
+The architectural maxim is:
+
+```text
+Processes compose horizontally.
+Changes compose vertically.
+Squares certify compatibility.
+Interchange makes local change compositional.
+```
+
+Require:
+
+```text
+horizontal identities and composition
+vertical identities and composition
+square boundary typing
+horizontal square pasting
+vertical square pasting
+interchange or explicit coherent comparison
+one interpreter / double-functor lowering
+effective normalization, resource, and invalidation policy
+```
+
+Select a pseudo double category when composition is coherent only up to a represented isomorphism or normal form. Select an equipment/framed bicategory only when strict maps admit effective companions, conjoints, or restrictions for generalized arrows. Select a virtual double category when generalized cells matter but horizontal composition is partial or intentionally unavailable.
+
+Do not call a commutative-square fixture, a pair of categories, a PROP diagram, or double-pushout rewriting a double category by itself. Interchange never proves effect commutativity; preserve effect, authority, failure, provenance, schema meaning, and resource observations.
+
+When selected, read `references/double-category-architecture.md` and `references/mechanics/double-categories.md`, then lower to the narrowest repository-native horizontal-arrow, vertical-arrow, square, pasting, and interpretation API needed by one witness seam.
 
 ## Construction card decision table
 
-For a consequential structural choice, state the **ordinary candidate** first, then consult `references/universal-construction-registry.yaml` and only the card fragments relevant to the evidenced axis, typed hole, and requirements.
+For a consequential structural choice, state the **ordinary candidate** first, then consult `references/universal-construction-registry.yaml` and only card fragments relevant to the evidenced axis, typed hole, and requirements.
 
-The construction cards are theorem nominations. They do not select a route or authorize mutation.
+Construction cards are theorem nominations. They do not select a route or authorize mutation.
 
-For each relevant card, record exactly one evidence-bound disposition: **selected**, **rejected**, **contradicted**, or **unresolved**.
+For each relevant card, record exactly one evidence-bound disposition:
 
-- **selected** — prerequisites are evidenced, the card closes a real requirement gap, and its lowering is effective;
-- **rejected** — it is admissible but a named alternative dominates it in the declared comparison universe;
+- **selected** — prerequisites are evidenced, the card closes a real requirement gap, and lowering is effective;
+- **rejected** — a named alternative dominates it in the declared comparison universe;
 - **contradicted** — an attributed prerequisite is false or a falsifier is witnessed;
-- **unresolved** — required evidence is unknown, alternatives remain incomparable, or effectivity is not established.
+- **unresolved** — evidence is unknown, alternatives remain incomparable, or effectivity is not established.
 
-The legacy card fields `route` and `diagnostic_order` are non-authoritative compatibility metadata. Never derive the final route from them. Signals are many-to-many pressure labels: one signal may nominate zero, one, or several cards, and a signal never proves a prerequisite.
+The legacy card fields `route` and `diagnostic_order` are non-authoritative compatibility metadata. Signals are many-to-many pressure labels and never prove prerequisites.
 
-Do not let signal count, evidence count, citation count, card order, categorical sophistication, or vocabulary manufacture a winner. Missing evidence remains unresolved; it is not an obstruction. Support-only cards may define or guard the comparison universe but never become implementation artifacts.
+Do not let signal count, evidence count, citation count, card order, categorical sophistication, or vocabulary manufacture a winner. Missing evidence remains unresolved; it is not obstruction. Support-only cards may guard the comparison universe but never become implementation artifacts.
 
-The registry's `universal.role: emitter` means that a selected artifact maps coherently into admissible consumers or interpretations. It never denotes an executable emitter.
+The registry's `universal.role: emitter` means a selected artifact maps coherently into admissible consumers or interpretations. It never denotes an executable emitter.
 
 ## Boundary Artifact Contract
 
-A nominated direction is not yet selected architecture. Lower it into one
-repository-native **Boundary Artifact Contract** candidate. In Actuating
-composition, hand that candidate to Actuating without selecting the
-Construction. Complete every applicable field. When the artifact kind has no
-honest constructor, eliminator, composition, or interpreter surface, record
-`not applicable` with an artifact-specific rationale instead of inventing
-ceremonial structure:
+A nominated direction is not yet selected architecture. Lower it into one repository-native **Boundary Artifact Contract** candidate. In Actuating composition, hand that candidate to Actuating without selecting the Construction. Complete every applicable field; use `not applicable` with an artifact-specific rationale rather than inventing ceremonial structure.
 
 ```text
 Context identifier / proof lease:
@@ -257,6 +253,7 @@ Representation / carrier:
 Public constructors:
 Public eliminators:
 Legal compositions:
+Two-dimensional arrows / squares / pasting, if selected:
 Interpreter / projection / handler:
 Required observations:
 Compatibility / migration:
@@ -266,32 +263,38 @@ Residual obligations:
 Invalidation triggers:
 Resource bound:
 Claim strength:
+Applicability rationales:
 ```
 
 ### Construction surface
 
-Every public constructor must either make the invariant structurally unavoidable or perform the owner-controlled check before producing the artifact. Raw constructors and unchecked deserializers must not bypass the owner.
+Every public constructor must make the invariant structurally unavoidable or perform the owner-controlled check before producing the artifact. Raw constructors and unchecked deserializers must not bypass the owner.
+
+For a double-category artifact, square construction requires four matching boundaries. A strongly typed host should make mismatched edges unrepresentable; a weaker host returns one structured mismatch owned by the square constructor.
 
 ### Elimination surface
 
-Eliminators must be total over representable cases, expose only sanctioned observations, and preserve information that compatibility or later interpretation requires. If elimination is intentionally partial, represent the partiality in the result type or named failure protocol.
+Eliminators must be total over representable cases, expose only sanctioned observations, and preserve information needed by compatibility or later interpretation. Represent intentional partiality in the result type or named failure protocol.
 
 ### Composition surface
 
-Legal composition must be explicit and closed over valid artifacts. Illegal composition should be unrepresentable where the host permits; otherwise the owner-controlled combinator rejects it with a typed or structured failure.
+Legal composition must be explicit and closed over valid artifacts. Illegal composition should be unrepresentable where possible; otherwise an owner-controlled combinator rejects it.
+
+When two-dimensional composition is selected, expose separate horizontal and vertical composition plus horizontal and vertical square pasting. Internal shared boundaries disappear only through an explicit equality, normalization, or compatibility witness. Require interchange up to declared observations.
 
 ### Interpretation surface
 
-One explicit interpreter, projection, serializer, compiler, handler, or renderer owns semantic lowering. It must preserve the current context's required observations, effect order, compatibility, and resource obligations.
+One explicit interpreter, projection, serializer, compiler, handler, renderer, or double-functor lowering owns semantics. It preserves required observations, effect order, compatibility, resources, and—when applicable—both arrow compositions, squares, pasting, and coherence.
 
 ## Enforcement allocation
 
-Every requirement must have exactly one semantic owner and one primary disposition at the strongest honest locus the host permits: enforced, retained as a residual, or proved obstructed.
+Every requirement has exactly one semantic owner and one primary disposition at the strongest honest locus the host permits: enforced, residual, or obstructed.
 
 ```text
 representation / type
 opaque constructor
 composition API
+square constructor / pasting API
 interpreter / handler
 persistence or schema constraint
 runtime boundary validation
@@ -300,13 +303,13 @@ residual obligation
 obstruction
 ```
 
-Prefer structural enforcement. Additional guards are allowed when they are explicitly derived from the same semantic authority, preserve the same acceptance rule, have named failure behavior, and carry a conformance or drift witness. They provide defense in depth; they do not become competing owners. When static enforcement is impossible, centralize the primary runtime decision at the earliest boundary that owns the evidence needed to decide it.
+Additional guards are permitted only when derived from the same authority, preserving the same rule, declaring failure behavior, and carrying a conformance or drift witness. They provide defense in depth rather than competing ownership.
 
-An enforcement matrix is complete only when every current requirement maps to:
+An enforcement matrix is complete only when every requirement maps to:
 
 ```text
 semantic owner / authority
-primary enforcement locus
+primary disposition and locus
 derived guard loci, if any
 positive witness
 failure behavior
@@ -319,18 +322,19 @@ An orphan requirement is a correctness defect.
 
 ## Correct-by-construction laws
 
-A context-relative boundary artifact must satisfy the laws applicable to its seam:
+A context-relative boundary artifact satisfies the applicable laws:
 
-1. **Construction soundness** — every publicly constructible artifact satisfies all requirements allocated to construction.
-2. **Representational adequacy** — every admissible state or operation required by the context is representable, residual, or explicitly obstructed.
-3. **Elimination totality** — every representable case is handled, and sanctioned observations are preserved.
-4. **Composition closure** — lawful composition stays inside the valid state space.
+1. **Construction soundness** — every public construction satisfies allocated requirements.
+2. **Representational adequacy** — every required admissible state is representable, residual, or obstructed.
+3. **Elimination totality** — every representable case is handled and sanctioned observations survive.
+4. **Composition closure** — lawful composition remains valid.
 5. **Composition admissibility** — no illegal composition enters through a public path.
 6. **Interpretation preservation** — lowering agrees with required semantics and observations.
-7. **Enforcement completeness** — every requirement has one semantic owner and one primary disposition—enforced, residual, or obstructed; any derived guards trace to that authority and preserve its rule.
-8. **Bypass exclusion** — unchecked construction, composition, or interpretation paths are absent or explicitly primitive.
+7. **Enforcement completeness** — every requirement has one semantic owner and primary disposition; derived guards conform.
+8. **Bypass exclusion** — unchecked construction, composition, and interpretation paths are absent or explicitly primitive.
 9. **Effectivity** — construction, checking, normalization, interpretation, and invalidation fit the resource model.
 10. **Context validity** — the proof lease remains valid under the recorded context and invalidation policy.
+11. **Two-dimensional coherence, when selected** — square boundaries match, both pasting operations close, interchange holds up to declared equivalence, and interpretation preserves the square calculus.
 
 ## Universal witness contract
 
@@ -356,7 +360,9 @@ Falsifier:
   a nearby weaker or illegal construction fails observably.
 ```
 
-Engineering realizations may approximate mediation and uniqueness through opaque constructors, canonical identifiers, normalized IR, one public interpreter, one sanctioned projection, generated code, removal of bypasses, or bounded search. State the claim strength:
+For a double-category claim, mediation means each admissible compatible change of a horizontal process is represented by a square and compatible local squares paste into a global square. Canonicality additionally requires the two pasting orders to agree by interchange up to declared equivalence.
+
+Engineering realizations may approximate mediation and uniqueness through opaque constructors, canonical identifiers, normalized IR, one public interpreter, one sanctioned projection, generated code, removal of bypasses, or bounded search. State claim strength:
 
 ```text
 literal
@@ -364,7 +370,7 @@ effective realization
 bounded approximation
 ```
 
-A bounded approximation must state what is included, excluded, possibly lost, and what evidence would refine it.
+A bounded approximation states what is included, excluded, possibly lost, and what evidence would refine it.
 
 ## Residual obligations
 
@@ -380,13 +386,13 @@ failure behavior
 discharge condition
 ```
 
-Residual obligations are first-class architecture, not TODO prose. They may become runtime validation, migration work, external authority checks, monitoring, or a later linked packet.
+Residual obligations are first-class architecture. For double categories, unsupported arrow cases, unavailable square witnesses, partial companions/conjoints, or unbounded pseudo-coherence normalization remain residual rather than being silently totalized.
 
 ## Invalidation triggers and proof leases
 
 A correct-by-construction claim is a **proof lease** over the current context, not an eternal property of source code.
 
-Record the context identifier or evidence fingerprint and every change that requires revalidation, reconstruction, migration, or obstruction review, including changes to:
+Record every change requiring revalidation, reconstruction, migration, or obstruction review:
 
 ```text
 requirements or policy
@@ -399,13 +405,15 @@ effect ordering
 host-language or module guarantees
 resource budget
 freshness horizon
+horizontal or vertical arrow semantics
+square boundary / pasting / coherence policy
 ```
 
-When an invalidation trigger fires, the artifact may remain executable but its architectural proof is stale. Re-establish the lease before claiming continued correctness.
+When an invalidator fires, the artifact may remain executable but its architectural proof is stale. Prefer incremental invalidation of squares whose boundaries changed over global recomputation.
 
 ## Evidence states and obstruction
 
-Keep these states distinct:
+Keep distinct:
 
 ```text
 evidenced true
@@ -415,19 +423,21 @@ underdetermined
 witnessed obstruction
 ```
 
-Unknown or missing evidence means epistemically blocked. It does not prove nonexistence.
+Unknown evidence is epistemic debt, not nonexistence. A real obstruction requires attributed counterevidence, a reproducible counterexample, stability under comparison maps, an effectivity account, a falsifier, and a reopening condition.
 
-A real obstruction requires attributed counterevidence, a reproducible counterexample, stability under the declared comparison maps, an effectivity account, a falsifier, and a reopening condition. Return obstruction rather than inventing evidence, authority, policy, representability, effect laws, host capability, or resource feasibility.
+Return obstruction rather than inventing evidence, authority, policy, representability, effect laws, host capability, resource feasibility, square pasting, or interchange.
 
 ## Doctrine index
 
-The operational kernel above is authoritative. Load detailed references only when the seam requires them:
+The operational kernel above is authoritative. Load detailed references only when needed:
 
 - `references/universal-construction-registry.yaml` and `references/universal-constructions/`
 - `references/structures-and-laws.md`
 - `references/canonical-boundary-artifacts.md`
 - `references/boundary-law-catalogue.md`
 - `references/composition-geometry.md`
+- `references/double-category-architecture.md`
+- `references/mechanics/double-categories.md`
 - `references/description-composition-doctrine.md`
 - `references/effects-and-coalgebras.md`
 - `references/comonadic-spatiality-doctrine.md`
@@ -474,14 +484,19 @@ Context:
 Typed hole:
   axis:
   kind:
+
+Two-dimensional structure, when relevant:
+  horizontal arrows and composition:
+  vertical arrows and composition:
+  square meaning:
+  pasting and interchange:
 ```
 
 Do not escalate when this inventory cannot be grounded in repository evidence.
 
 ## Step 0 — Allocate an independently durable plan
 
-When **Decision durability** applies, first load `$ledger` and complete
-`$ledger ensure` once. Then allocate a fresh plan:
+When **Decision durability** applies, first load `$ledger` and complete `$ledger ensure` once. Then allocate a fresh plan:
 
 ```bash
 ledger --source universalist create \
@@ -496,13 +511,9 @@ ledger --source universalist path --repo PROJECT_ROOT --id PLAN_ID
 ledger --source universalist latest --repo PROJECT_ROOT
 ```
 
-Before mutation, write the current-context contract, composition owner and
-decision carrier, ordinary candidate, comparison universe, axis and typed hole,
-relevant card dispositions, Boundary Artifact Contract with explicit
-applicability rationales, enforcement matrix, residual obligations, invalidation
-triggers, proof lease, law, and falsifier into the plan.
+Before mutation, write the current-context contract, composition owner and decision carrier, ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract with applicability rationales, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, falsifier, and any horizontal/vertical/square/pasting obligations into the plan.
 
-After root adjudication emit exactly one receipt:
+After standalone root adjudication emit exactly one receipt:
 
 ```bash
 ledger --source universalist emit \
@@ -514,32 +525,28 @@ ledger --source universalist emit \
   --clause-ref UNI-ARTIFACT-001 \
   --clause-ref UNI-ENFORCEMENT-001 \
   --clause-ref UNI-MECHANICS-001 \
+  --clause-ref UNI-DOUBLE-001 \
   --clause-ref UNI-ROOT-001 \
   --question "Which context-relative boundary artifact owns this seam?" \
-  --selected-route UNI-ORDINARY \
-  --rejected-route UNI-CANONICAL \
+  --selected-route UNI-CANONICAL \
+  --rejected-route UNI-ORDINARY \
   --expected-outcome "One owner enforces the current requirements." \
   --disposition changed \
-  --construction "checked owner-controlled boundary artifact" \
-  --law "all public construction and composition paths preserve the required observations" \
-  --falsifier "an invalid state or illegal composition crosses the owner boundary" \
-  --advanced-mechanics none \
+  --construction "typed process/change compatibility-square calculus" \
+  --law "boundary-matched local squares paste and satisfy interchange under required observations" \
+  --falsifier "a mismatched square or observation-changing interchange is accepted" \
+  --advanced-mechanics double-category \
   --evidence-ref "code:path" \
   --write-plan
 ```
 
-Pass every applicable clause explicitly so receipt coverage does not depend on
-Ledger's compatibility defaults. Add `UNI-ROOT-001` only for independently
-durable decisions. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with
-`UNI-OBSTRUCTION-001`.
+Pass only applicable clauses explicitly. Add `UNI-DOUBLE-001` only when two-dimensional composition is selected. Add `UNI-ROOT-001` only for independently durable decisions. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`. Reclassification adds `UNI-RECLASSIFY-001` and trigger `UNI-RECLASSIFY`.
 
-When **Step 0** follows an execution-time reclassification, also pass `--trigger-ref UNI-RECLASSIFY` and `--clause-ref UNI-RECLASSIFY-001`, then complete the plan's reclassification checkpoint.
-
-Ledger owns plan identity, addressing, receipt construction, validation, and atomic append. Universalist owns architecture policy. `references/decision-contract.yaml` is the machine-readable authority for consequential triggers, routes, clauses, and required decision evidence; this file supplies their operational semantics. Change the skill, contract, and plan template together when that policy changes. Seq validates contract structure and fingerprinting, not prose-to-contract semantic equivalence. The root agent alone selects the route and authorizes mutation.
+Ledger owns plan identity, addressing, receipt construction, validation, and atomic append. Universalist owns architecture policy. The contract is the machine-readable authority for triggers, routes, clauses, and required evidence; this file supplies operational semantics. Change the skill, contract, and plan template together. Seq validates structure and fingerprinting, not prose-to-contract equivalence.
 
 ## Decision observability
 
-A route is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations. Apply this test initially and again whenever the execution-time reclassification gate observes new material evidence.
+A route is consequential only when at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations. Apply this initially and whenever reclassification sees material evidence.
 
 Consequential decisions require:
 
@@ -548,7 +555,7 @@ current-context contract
 ordinary candidate
 comparison universe
 one axis and typed hole
-composition context, decision owner, and decision carrier
+composition context, decision owner, and carrier
 relevant cards and dispositions
 Boundary Artifact Contract with applicability rationales
 material delta
@@ -560,20 +567,16 @@ residual obligations
 invalidation triggers / proof lease
 ```
 
-An independently durable decision additionally requires one ledger-addressed
-plan, one root `SDR-v1`, and applicable SKDC clause refs. An Actuating-composed
-decision uses the current Construction instead.
+An independently durable decision additionally requires one ledger-addressed plan, one root `SDR-v1`, and applicable clause refs. An Actuating-composed decision uses the current Construction instead.
 
-Routine seams, ceremonial activation, and uncontested implementation details use the compact boundary disposition only.
-
-Routes are assigned after artifact lowering:
+Routes are assigned only after lowering:
 
 - `UNI-PRESERVE` — an already exact boundary remains unchanged.
-- `UNI-ORDINARY` — the smallest repository-native artifact closes the seam without a material advanced-construction delta.
+- `UNI-ORDINARY` — the smallest repository-native artifact closes the seam without material advanced-construction delta.
 - `UNI-CANONICAL` — a theorem-card direction materially strengthens the ordinary candidate and has a complete effective witness.
-- `UNI-OBSTRUCT` — no honest representable or effective artifact is currently justified, or a primitive bypass is explicitly contained.
+- `UNI-OBSTRUCT` — no honest representable or effective artifact is justified, or a primitive bypass is explicitly contained.
 
-A card's legacy route hint never determines this choice.
+A card's legacy route hint never determines the choice.
 
 ## Tracks
 
@@ -582,13 +585,13 @@ A card's legacy route hint never determines this choice.
 - **Track B — One-seam refactor:** implement one narrow owner-controlled artifact.
 - **Track C — Staged migration:** strengthen internals behind stable wire, API, or storage shapes.
 - **Track D — Canonical boundary artifact:** use theorem cards to strengthen one typed hole.
-- **Track E — Composition certification:** make legal construction and composition paths explicit.
+- **Track E — Composition certification:** make legal one-dimensional composition or a selected two-dimensional square/pasting calculus explicit.
 - **Track F — Exact Context:** prepare certified context before semantic consumption.
 - **Track G — Possibility Sheafification:** reconcile local meanings into an exact global abstraction.
 - **Track H — Category Pivot:** move one hard operation to a world where it is explicit, then transport it back.
 - **Track I — Effective universal substrate:** design a whole capability with concrete primitives, recursion/partiality, effects, state, observations, and resources.
 
-Every track lowers to the applicable profile of the same Boundary Artifact Contract where a code boundary is changed; inapplicable surfaces require a concrete rationale rather than placeholder architecture.
+Every track lowers to the applicable Boundary Artifact Contract profile; inapplicable surfaces require a concrete rationale.
 
 ## Team mode
 
@@ -597,13 +600,13 @@ Do not spawn Universalist subagents unless the user explicitly requests subagent
 When authorized:
 
 1. use the smallest sufficient read-only roster;
-2. give each agent one axis and typed hole;
-3. require evidence, candidate dispositions, residuals, and invalidators;
-4. let the root synthesize one Boundary Artifact Contract;
+2. give each agent one axis and typed hole, including `square` when two-dimensional composition is under review;
+3. require evidence, card dispositions, residuals, and invalidators;
+4. let the root synthesize one Boundary Artifact Contract candidate;
 5. have the proof auditor attack it;
 6. use one writer for one witness seam;
 7. use the verifier independently;
-8. emit one root receipt only when the seam is independently durable.
+8. emit a root receipt only when independently durable.
 
 Child agents do not choose routes, authorize mutation, or recursively spawn agents.
 
@@ -612,12 +615,11 @@ Child agents do not choose routes, authorize mutation, or recursively spawn agen
 Normal output uses repository and domain language:
 
 ```text
-Introduce one authorization-owned compatibility object.
-Expose only checked constructors.
-Make tenant mismatch unrepresentable after construction.
-Keep the external identity check at the authorization owner.
-Preserve both source projections.
-Invalidate the proof when tenant policy or identity semantics change.
+Separate executable process composition from migration composition.
+Introduce one typed compatibility-square witness.
+Permit only boundary-matched horizontal and vertical pasting.
+Verify that local migration witnesses paste into the same global result in either order.
+Invalidate affected squares when an interface or process boundary changes.
 ```
 
 When expert explanation is requested, add the construction name, hypotheses, competitors, mediator, canonicality claim, effective lowering, claim strength, and obstruction boundary.
