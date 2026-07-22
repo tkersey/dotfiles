@@ -60,7 +60,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
         expected = {
             "goal-contract/v3": "$goal-contract",
             "counterexample-set/v1": "$review-fold",
-            "construction-contract/v1": "$actuating",
+            "construction-contract/v2": "$actuating",
             "actuating-evidence-event/v1": "domain owner",
         }
         for family, owner in expected.items():

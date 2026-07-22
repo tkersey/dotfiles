@@ -7,7 +7,7 @@ compatibility peer state.
 |---|---|---|
 | `goal-contract/v3` | accepted source through `$goal-contract` | What must be true, remain true, and is authorized? |
 | `counterexample-set/v1` | `$review-fold` | What witnessed behavior falsifies the current Construction? |
-| `construction-contract/v1` | `$actuating` using `$universalist` | What structure realizes the laws, excludes Counterexamples, and retires residue? |
+| `construction-contract/v2` | `$actuating` using `$universalist` | What structure realizes the laws, excludes Counterexamples, and retires residue? |
 | `actuating-evidence-event/v1` | the event body's domain owner | What happened and what was independently observed? |
 
 The Goal Contract is the sole semantic-authority artifact; the Counterexample Set is the sole classified-bug artifact; the Construction Contract is the sole architecture-selection artifact; the Evidence Ledger is the sole mutable per-goal truth.

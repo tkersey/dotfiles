@@ -22,7 +22,7 @@ proves that the class is genuinely instance-specific.
 
 ~~~yaml
 artifact:
-  schema: construction-contract/v1
+  schema: construction-contract/v2
   artifact_id:
   goal_id:
   semantic_author: actuating
@@ -186,10 +186,12 @@ representation
 > example or regression proof
 ~~~
 
-A weaker mode requires an adequacy reason. High or Critical authority,
-state-machine, identity, persistence, or concurrency defects require more than
-an example unless the accepted source explicitly owns the residual risk and a
-compensating invariant proof exists.
+A weaker mode requires an adequacy reason. High or Critical authority, state-machine, identity, persistence,
+or concurrency defects require more than an example unless the accepted source explicitly owns the residual risk and a compensating invariant proof exists.
+
+For every accepted Counterexample class, v2 requires a law-matched `implementation` obligation; aggregate
+`acceptance` is not a substitute. Recurrent, High, and Critical classes require non-`example-regression`
+implementation proof. Ledger may replay an admitted v1 under its historical rule, but Actuating never authors or appends v1 after this cutover.
 
 Expected minimums by law family are:
 
@@ -206,11 +208,9 @@ Expected minimums by law family are:
 | Pure algorithm | property or differential proof |
 | Public API or CLI affordance | contract fixtures and footgun review |
 
-Every implementation or acceptance obligation names an exact verifier and an
-independent falsifier. Review and Ship obligations remain projections of their
-external owners; their argv is not executable repository authority. Every
-`law_ref` names a current Goal law. Each `argv` is an ordered, nonempty string
-sequence; repeated token values remain valid positional arguments.
+Every implementation or acceptance obligation names an exact verifier and an independent falsifier. Review and Ship
+obligations remain projections of their external owners; their argv is not executable repository authority. Every `law_ref`
+names a current Goal law. Each `argv` is an ordered, nonempty string sequence; repeated token values remain valid positional arguments.
 
 ## Successors
 

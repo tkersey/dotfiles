@@ -16,7 +16,7 @@ Use exactly four authoritative per-goal artifact families:
    laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
-3. `construction-contract/v1` — the selected architecture, proof obligations,
+3. `construction-contract/v2` — the selected architecture, proof obligations,
    preserved observations, and retirements, authored by `$actuating` after a
    `$universalist` nomination and, when required, one `$reduce` challenge.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies

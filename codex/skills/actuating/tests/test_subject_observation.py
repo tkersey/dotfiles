@@ -33,11 +33,11 @@ class SubjectObservationTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temp.cleanup()
-    def observe(self, prohibited: list[str] | None = None):
+    def observe(self, prohibited: list[str] | None = None, allowed: list[str] | None = None):
         return subject_observation.observe(
             self.repo,
             "example/repo",
-            ["scope"],
+            allowed or ["scope"],
             prohibited or [],
         )
     def test_capture_is_stable_and_structural(self) -> None:
@@ -51,6 +51,8 @@ class SubjectObservationTests(unittest.TestCase):
         before = self.observe()["subject_digest"]
         (self.repo / "scope" / "tracked.txt").write_text("two\n", encoding="utf-8")
         self.assertNotEqual(before, self.observe()["subject_digest"])
+        git(self.repo, "update-index", "--skip-worktree", "scope/tracked.txt")
+        with self.assertRaises(subject_observation.ObservationError): self.observe()
     def test_in_scope_untracked_change_changes_digest(self) -> None:
         before = self.observe()["subject_digest"]
         (self.repo / "scope" / "new.txt").write_text("new\n", encoding="utf-8")
@@ -116,6 +118,9 @@ class SubjectObservationTests(unittest.TestCase):
         before = self.observe()["subject_digest"]
         (self.repo / "scope" / "nested" / "tracked.txt").write_text("two\n", encoding="utf-8")
         self.assertNotEqual(before, self.observe()["subject_digest"])
+        before = self.observe(allowed=["scope/nested/tracked.txt"])["subject_digest"]
+        (self.repo / "scope" / "nested" / "tracked.txt").write_text("three\n", encoding="utf-8")
+        self.assertNotEqual(before, self.observe(allowed=["scope/nested/tracked.txt"])["subject_digest"])
 
     def test_unborn_head_has_explicit_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
