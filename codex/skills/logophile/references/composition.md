@@ -47,6 +47,32 @@ Use `$logophile` to sharpen the Actuation Bottom Line:
 
 Do not soften an executable next step into a vague recommendation.
 
+## After breakthrough or innovation workflows
+
+Use [breakthrough_doctrine.md](breakthrough_doctrine.md) when the output claims or seeks a breakthrough, leap, step-change, regime transition, or newly reachable capability.
+
+Preserve:
+
+- the incumbent frontier;
+- the limiting assumption;
+- the discontinuity mechanism;
+- the newly reachable state;
+- the evidence that the result is a leap rather than an increment;
+- the remaining uncertainty and falsifier.
+
+Keep the operator distinctions explicit:
+
+- `AUDACIOUS` admits consequential candidates;
+- `POIETIC` creates a new form;
+- `CATALYTIC` creates disproportionate downstream change;
+- `BIFURCATIVE` crosses into a different regime;
+- `PARADIGMATIC` replaces the governing frame;
+- `SALTATORY` creates a discontinuous advance beyond the incumbent frontier.
+
+Do not polish novelty, magnitude, a large rewrite, or a metric jump into a breakthrough claim. When the evidence is incomplete, say `saltatory candidate`, `speculative saltation`, or use a weaker adjacent term.
+
+For terse activation, prefer `Be saltatory.` or the caller's exact requested fragment. For behavioral replacement claims, route through [behavioral_upgrade.md](behavioral_upgrade.md) rather than assuming the formal term outperforms `Find the leap.` or another plain phrase.
+
 ## After $seq or $learnings
 
 Use `$logophile` to make forensic/cartographic/precedential outputs readable without losing provenance:
