@@ -18,6 +18,29 @@
 - Forgotten or approximated structure:
 - Quotiented presentation distinctions:
 
+## Two-dimensional composition, when applicable
+
+- Claim: strict double category / pseudo double category / virtual double category / equipment / monoidal double category / effective approximation
+- Objects:
+- Horizontal arrow family and meaning:
+- Vertical arrow family and meaning:
+- Why the arrow families are distinct:
+- Horizontal identities/composition:
+- Vertical identities/composition:
+- Square/cell representation:
+- Square boundary constructor:
+- Horizontal square pasting:
+- Vertical square pasting:
+- Interchange or coherent comparison:
+- Coherence/normalization policy:
+- Interpreter / double-functor lowering:
+- Companions/conjoints/restrictions, if any:
+- Base-change law, if any:
+- Effect/order/authority/provenance guardrails:
+- Effective representation/resource bound:
+- Invalidation policy:
+- Smaller category/2-category/adapter/PROP/DPO alternative rejected:
+
 ## Spatial transfer, when applicable
 
 - Points:
@@ -85,6 +108,17 @@
 <required observation after transport> == <expected observation>
 ```
 
+Two-dimensional law, if used:
+
+```text
+normalize((alpha pasteH beta) pasteV (gamma pasteH delta))
+  ==
+normalize((alpha pasteV gamma) pasteH (beta pasteV delta))
+
+interpret preserves both arrow compositions, squares, both pasting operations,
+and the declared coherence.
+```
+
 Spatial law, if used:
 
 ```text
@@ -96,17 +130,8 @@ Spatial law, if used:
 Description-composition law, if used:
 
 ```text
-interpret(F star G)
-  ==
-combine(interpret(F), interpret(G))
-```
-
-and:
-
-```text
-represent(a) star represent(b)
-  ~=
-represent(a tensor b)
+interpret(F star G) == combine(interpret(F), interpret(G))
+represent(a) star represent(b) ~= represent(a tensor b)
 ```
 
 Context-framing law, if used:
@@ -120,6 +145,12 @@ interpret(frame_m(p)) == frameSemantics(m, interpret(p))
 ## Falsifier
 
 - Case where the easy-world result fails after transport back:
+- Horizontal and vertical arrow families are not independently compositional:
+- Square with mismatched boundaries is accepted:
+- Horizontal or vertical local squares cannot paste:
+- Interchange changes effect trace, authority, failure, provenance, schema meaning, or resource cost:
+- Claimed equipment map lacks a companion, conjoint, or restriction:
+- A category, 2-category, adapter, PROP, or DPO artifact already suffices:
 - Point preserved but locality lost:
 - Example coverage mistaken for basis density:
 - Halo approximation omits an observation-changing dependency:

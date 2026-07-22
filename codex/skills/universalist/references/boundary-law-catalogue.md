@@ -16,6 +16,12 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 | Handler | `run(handler(program))` satisfies operation observations | handler omits or misinterprets operation case |
 | Freyd effect order | pure embedding preserves identity/composition; reordered effects agree observationally only when certified | accepted reordering changes state, trace, result, or failure |
 | Operadic substitution | `interpret(substitute(f,g1,...,gn)) == compose(interpret(f),interpret(g1),...,interpret(gn))` | legal wiring changes meaning under hierarchical substitution or forbidden wiring is admitted |
+| Double-category arrow laws | horizontal and vertical identities/associativity hold under declared equality or normalization | either arrow family changes observations when regrouped or composed with identity |
+| Double-category square boundary | every square has four matching typed boundaries and one owner-controlled constructor | a square with mismatched corners or edges is constructible |
+| Double-category pasting | horizontal and vertical pasting preserve external boundaries and required internal provenance | a compatible local square cannot paste or pasting loses an observable witness |
+| Double-category interchange | `normalize((a pasteH b) pasteV (c pasteH d)) == normalize((a pasteV c) pasteH (b pasteV d))` | pasting order changes effect trace, authority, failure, provenance, schema meaning, or resource cost |
+| Double-functor interpretation | interpretation preserves both arrow compositions, squares, both pastings, and coherence | lowering a pasted square disagrees with pasting the lowered squares |
+| Equipment base change | companions/conjoints/restrictions induced by strict maps satisfy unit/counit or triangle laws | a strict map claims generalized base change but no lawful companion, conjoint, or restriction exists |
 | Day representable | `represent(a) star represent(b) ~= represent(a tensor b)` | two atomic descriptions compose differently from their indices |
 | Day unit/associativity | `J star F ~= F ~= F star J`; `(F star G) star H ~= F star (G star H)` | normalization depends on grouping or the unit changes observations |
 | Day decomposition | every emitted composite has a legal decomposition witness and every supported legal decomposition contributes | illegal decomposition admitted or legal decomposition omitted |
@@ -46,10 +52,12 @@ These are practical proof signals, not formal proofs. Use one positive law and o
 | Free builder | `project(free(required(case)))` satisfies required behavior | projection loses evidence required by behavior |
 | Residual obligation | missing obligation fails; satisfying obligations passes | accepted implementation lacks required obligation |
 
-For pullbacks and pushouts, do not stop at square commutativity. The distinctive universal obligation is factorization through the selected artifact, with uniqueness approximated by an opaque canonical constructor, quotient/normal form, and no competing public construction path.
+For pullbacks and pushouts, do not stop at square commutativity. Require factorization through the selected artifact and an engineering approximation of uniqueness.
 
-For comonadic spatiality, do not stop at a type named `Context`, a dependency graph, or point preservation. Require center/coherence, effective halo or basis representation, restriction behavior, labelled locality, a continuity falsifier, and a resource law.
+For double categories, do not stop at a collection of commutative squares. Require two independently meaningful arrow families, identities and composition in both directions, typed square boundaries, horizontal and vertical square pasting, interchange or coherent comparison, one double-functor interpretation, effective normalization/invalidation, and a falsifier. Interchange never grants effect commutativity by itself.
 
-For Day convolution, do not stop at a nested loop or binary combination function. Require a real index tensor/kernel, representable preservation, unit/associativity, sound and complete decompositions, an explicit coend/normalization policy, interpretation law, effect-order guardrail, and effective implementation. Static/applicative structure never grants runtime commutativity by itself.
+For comonadic spatiality, require center/coherence, effective halo or basis representation, restriction behavior, labelled locality, continuity, and a resource law.
 
-For Tambara modules, do not stop at a context parameter, wrapper, reader environment, or optic-shaped record. Require a real context action on both endpoint worlds, an underlying profunctor, unit/associativity/naturality/coherence, an interpretation law, effective residual/context representation, representability status, and a falsifier. Framing never grants effect commutativity, duplication, or domain-specific optic lawfulness by itself.
+For Day convolution, require a real index tensor/kernel, representable preservation, unit/associativity, sound and complete decompositions, quotient policy, interpretation law, effect-order guardrail, and effective implementation.
+
+For Tambara modules, require a real context action on both endpoint worlds, a profunctor, unit/associativity/naturality/coherence, interpretation, effective residual/context representation, representability status, and a falsifier. Framing never grants effect commutativity or domain optic lawfulness.

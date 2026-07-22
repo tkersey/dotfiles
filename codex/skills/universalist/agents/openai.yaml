@@ -2,6 +2,6 @@ interface:
   display_name: "Universalist"
   short_description: "Nominate exact boundary architecture without taking selection"
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to nominate the smallest exact boundary candidate, preserving observations and naming owners, laws, falsifiers, residuals, and invalidators; when Actuating is present, leave Construction selection to Actuating and create a separate plan only for independent durability."
+  default_prompt: "Use $universalist to nominate the smallest exact boundary candidate, preserving observations and naming owners, laws, falsifiers, residuals, and invalidators; when Actuating is present, leave Construction selection to Actuating and create a separate plan only for independent durability. When processes and architecture changes form independent composition directions, test the double-category card and require typed horizontal and vertical arrows, compatibility squares, both pasting operations, interchange/coherence, one effective interpreter, and an effect/resource falsifier."
 policy:
   allow_implicit_invocation: true
