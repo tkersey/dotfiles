@@ -6,6 +6,7 @@
 ## Signal and evidence:
 ## Ordinary candidate:
 ## Architectural axis:
+## Typed hole:
 ## Relevant cards and dispositions:
 ## Alternatives considered:
 ## Material architectural delta:
@@ -13,11 +14,16 @@
 ## Selected route:
 ## Construction:
 ## Canonical boundary artifact:
+## Boundary Artifact Contract:
+## Enforcement allocation:
+## Residual obligations:
+## Invalidation triggers / proof lease:
 ## Worlds / boundaries inventory:
 ## Boundary kind:
 ## Pullback / pushout square:
 ## Spatial geometry / halo:
 ## Composition geometry:
+## Two-dimensional composition / double-category squares:
 ## Description composition:
 ## Context action / Tambara module:
 ## Boundary law:
