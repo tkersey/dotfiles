@@ -37,11 +37,11 @@ class ConstructionRegistryTest(unittest.TestCase):
     def test_registry_has_all_active_cards(self) -> None:
         registry, cards = load_registry()
         self.assertEqual(registry["schema"], "universal-construction-registry/v6")
-        self.assertEqual(len(registry["includes"]), 7)
-        self.assertEqual(len(cards), 55)
+        self.assertEqual(len(registry["includes"]), 8)
+        self.assertEqual(len(cards), 56)
 
         modes = [card["selection_mode"] for card in cards]
-        self.assertEqual(modes.count("selectable"), 53)
+        self.assertEqual(modes.count("selectable"), 54)
         self.assertEqual(modes.count("support_only"), 2)
 
         ids = [card["id"] for card in cards]
@@ -78,11 +78,13 @@ class ConstructionRegistryTest(unittest.TestCase):
         profiles = set(registry["proof_profiles"])
         axes = set(registry["axes"])
         roles = set(registry["universal_roles"])
+        hole_kinds = set(registry["hole_kinds"])
 
         for card in cards:
             self.assertTrue(required.issubset(card), card["id"])
             self.assertIn(card["route"], routes)
             self.assertTrue(set(card["axes"]).issubset(axes))
+            self.assertTrue(set(card["hole_kinds"]).issubset(hole_kinds))
             self.assertIn(card["proof_profile"], profiles)
             self.assertIn(card["universal"]["role"], roles)
             self.assertTrue(card["laws"])
@@ -99,6 +101,28 @@ class ConstructionRegistryTest(unittest.TestCase):
             else:
                 self.assertNotEqual(card["route"], "NONE")
                 self.assertNotEqual(card["proof_profile"], "support")
+
+    def test_double_category_card_is_an_effective_two_dimensional_theorem(self) -> None:
+        registry, cards = load_registry()
+        by_id = {card["id"]: card for card in cards}
+        card = by_id["two_dimensional_composition"]
+
+        self.assertEqual(card["expert_name"], "Double category / equipment")
+        self.assertEqual(card["axes"], ["two-dimensional-composition"])
+        self.assertIn("square", card["hole_kinds"])
+        self.assertIn("horizontal_arrow_family", card["requires"])
+        self.assertIn("vertical_arrow_family", card["requires"])
+        self.assertIn("horizontal_and_vertical_pasting", card["requires"])
+        self.assertIn("interchange_or_coherent_comparison", card["requires"])
+        self.assertIn("effective_square_representation", card["requires"])
+        self.assertIn("compatibility-square-ir", card["emits"])
+        self.assertIn("mechanics/double-categories.md", card["theory_refs"])
+        self.assertIn("two-dimensional-composition", registry["axes"])
+        self.assertIn("square", registry["hole_kinds"])
+        self.assertEqual(
+            registry["derived_mechanics"]["two_dimensional_architecture"]["card_composition"],
+            ["two_dimensional_composition"],
+        )
 
     def test_registry_compositions_reference_known_cards(self) -> None:
         registry, cards = load_registry()
@@ -143,6 +167,9 @@ class ConstructionRegistryTest(unittest.TestCase):
             "state the **ordinary candidate** first",
             "**selected**, **rejected**, **contradicted**, or **unresolved**",
             "universal.role: emitter",
+            "## Double-category architecture",
+            "two_dimensional_composition",
+            "Interchange makes local change compositional.",
         ):
             self.assertIn(required, skill)
 
@@ -151,8 +178,10 @@ class ConstructionRegistryTest(unittest.TestCase):
 
     def test_package_declares_the_resulting_surface(self) -> None:
         package = json.loads(PACKAGE_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(package["version"], "17.1.0")
-        self.assertEqual(package["registry_cards"], 55)
+        self.assertEqual(package["version"], "17.2.0")
+        self.assertEqual(package["registry_cards"], 56)
+        self.assertEqual(package["architectural_axes"], 12)
+        self.assertIs(package["double_category_mechanics"], True)
         self.assertEqual(package["runtime_scripts"], 0)
         self.assertEqual(package["decision_receipts"], "consequential_only")
         self.assertIs(package["tests_shipped"], True)
