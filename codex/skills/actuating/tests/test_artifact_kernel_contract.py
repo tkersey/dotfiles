@@ -121,6 +121,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
         self.assertIn("`obligation_id#falsifier`", EVIDENCE)
         self.assertIn("repeated token values remain valid", FLAT_CONSTRUCTION)
         self.assertIn("Every `law_ref` names a current Goal law", FLAT_CONSTRUCTION)
+        self.assertIn("only when both `law_ref` and `owner_boundary` match", FLAT_CONSTRUCTION)
         self.assertIn("subject_observation procedure", ONE_SEAM_OPERATOR)
         self.assertIn("abort without effect on a", ONE_SEAM_OPERATOR)
         self.assertIn("actuating-subject-observation/v1", FLAT_EVIDENCE)

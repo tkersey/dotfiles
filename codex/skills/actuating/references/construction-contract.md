@@ -58,6 +58,7 @@ artifact:
     proof_obligations:
       - obligation_id:
         law_ref:
+        owner_boundary:
         statement:
         proof_mode: representation | total-transition | exhaustive-model | static-refinement | property-law | differential | example-regression
         adequacy_reason:
@@ -139,10 +140,9 @@ reconsider it.
 
 A Counterexample class's `owner_boundary` records where its predecessor was
 falsified; it does not force the successor's `canonical_owner` to be identical.
-One successor may compose classes from multiple witnessed owners when its laws
-and obligations prove the join. Otherwise Actuating proves `separate-laws` and
-splits the construction or blocks. Ledger validates references, not semantic
-owner adequacy.
+Each v2 proof obligation carries `owner_boundary` and covers an accepted class only when both `law_ref` and `owner_boundary` match.
+One successor may compose multiple witnessed owners when matching obligations prove the join; otherwise Actuating
+proves `separate-laws` and splits or blocks. Ledger validates exact declared owner binding, not semantic owner adequacy.
 
 A candidate `A` dominates candidate `B` only when `A` is no worse in every
 ACT-AK dimension:
