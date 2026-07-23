@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Cybernetic"
   short_description: "Systems thinking, feedback, leverage, and intervention design"
-  default_prompt: "Use $cybernetic to classify the system, map feedback and leverage, select a route, and hand off to the appropriate downstream skill."
+  default_prompt: "Use $cybernetic to apply DART as the interaction layer, classify the system, map feedback and leverage, select a route, and hand off to the appropriate downstream skill."
