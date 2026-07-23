@@ -211,11 +211,11 @@ Resolve `<loaded-actuating-skill-root>` to the absolute directory containing
 the active `SKILL.md`, never the target repo. `--no-project` prevents pre-check
 environment or lockfile effects.
 
-`actuating-subject-observation/v1` binds repository, HEAD, scope, sorted index,
-worktree state, symlinks, recursive gitlinks, deletions, and nonignored untracked
-files; unborn HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`,
-ignored, prohibited, and out-of-scope paths; allowed control-root or
-symlink-traversing scopes and unequal captures fail.
+`actuating-subject-observation/v1` binds repository id and canonical-root digest, commit and symbolic HEAD, structural scope roots, sorted index, worktree state,
+recursive gitlinks, deletions, and selected ignored or unignored files; unborn
+HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
+out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
+index-flagged, platform-ambiguous, or unequal captures fail closed.
 
 `operation_aborted` is the capabilityless recovery path: reject any raw
 capability, exact-match the current tuple and pending `step_id`, require a

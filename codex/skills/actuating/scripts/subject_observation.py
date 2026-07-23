@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import ntpath
 import os
 import stat
 import subprocess
@@ -20,7 +21,8 @@ def digest_bytes(value: bytes) -> str:
     return f"sha256:{hashlib.sha256(value).hexdigest()}"
 def validate_path(value: str) -> str:
     if value == ".": return value
-    if not value or value.startswith("/") or value.endswith("/"):
+    drive, _ = ntpath.splitdrive(value)
+    if not value or value.startswith("/") or value.endswith("/") or "\\" in value or drive:
         raise ObservationError(f"invalid repository path: {value!r}")
     if any(part in {"", ".", ".."} for part in value.split("/")):
         raise ObservationError(f"invalid repository path: {value!r}")
@@ -38,18 +40,25 @@ def projected_scopes(path: bytes, scopes: list[bytes]) -> list[str]:
         if scope == b"." or within(path, scope): projected.add(".")
         elif within(scope, path): projected.add(os.fsdecode(scope[len(path) + 1:]))
     return sorted(projected)
-def validate_allowed_paths(repo: bytes, values: list[str]) -> None:
-    for value in values:
+def validate_scope_paths(repo: bytes, allowed: list[str], prohibited: list[str]) -> None:
+    for value in allowed:
         encoded = os.fsencode(value)
         if any(within(encoded.lower(), control) for control in CONTROL_ROOTS):
             raise ObservationError(f"allowed path enters control root: {value!r}")
+    for value in allowed + prohibited:
         current = repo
-        for part in [] if encoded == b"." else encoded.split(b"/"):
+        for part in [] if value == "." else os.fsencode(value).split(b"/"):
+            try: names = os.listdir(current)
+            except NotADirectoryError: raise ObservationError(f"scope path traverses non-directory: {value!r}") from None
+            if part not in names:
+                folded = os.fsdecode(part).casefold()
+                if any(os.fsdecode(name).casefold() == folded for name in names):
+                    raise ObservationError(f"scope path spelling mismatch: {value!r}")
+                break
             current = os.path.join(current, part)
             try: metadata = os.lstat(current)
             except FileNotFoundError: break
-            if stat.S_ISLNK(metadata.st_mode):
-                raise ObservationError(f"allowed path traverses symlink: {value!r}")
+            if stat.S_ISLNK(metadata.st_mode): raise ObservationError(f"scope path traverses symlink: {value!r}")
 def selected(path: bytes, allowed: list[bytes], prohibited: list[bytes]) -> bool:
     folded = path.lower()
     if any(within(folded, control) for control in CONTROL_ROOTS): return False
@@ -75,6 +84,9 @@ def head_identity(repo: bytes) -> str:
         return f"unborn:{symbolic.stdout.strip().decode('utf-8')}"
     message = result.stderr.decode("utf-8", "replace").strip()
     raise ObservationError(f"git command failed: {message}")
+def head_ref(repo: bytes) -> str | None:
+    symbolic = git_result(repo, b"symbolic-ref", b"-q", b"HEAD")
+    return symbolic.stdout.strip().decode("utf-8") if symbolic.returncode == 0 else None
 def file_digest(path: bytes) -> str:
     digest = hashlib.sha256()
     with open(path, "rb") as handle:
@@ -89,22 +101,39 @@ def worktree_state(repo: bytes, path: bytes, index_mode: str | None,
     if index_mode == "160000":
         if not stat.S_ISDIR(metadata.st_mode):
             raise ObservationError(f"unsupported gitlink worktree entry: {path.hex()}")
-        nested = capture(
-            Path(os.fsdecode(absolute)), f"gitlink:{path.hex()}",
-            projected_scopes(path, allowed), projected_scopes(path, prohibited),
-        )
+        nested = capture(Path(os.fsdecode(absolute)), f"gitlink:{path.hex()}",
+                         projected_scopes(path, allowed), projected_scopes(path, prohibited))
         return {
             "content_digest": digest_bytes(canonical_bytes(nested)),
-            "executable": False, "head": nested["head"], "kind": "gitlink",
+            "executable": False, "head": nested["head"], "head_ref": nested["head_ref"], "kind": "gitlink",
         }
     executable = bool(metadata.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
     if stat.S_ISREG(metadata.st_mode):
+        if metadata.st_nlink > 1: raise ObservationError(f"hard-linked worktree entry: {path.hex()}")
         return {"content_digest": file_digest(absolute), "executable": executable, "kind": "file"}
-    if stat.S_ISLNK(metadata.st_mode):
-        target = os.readlink(absolute)
-        target_bytes = target if isinstance(target, bytes) else os.fsencode(target)
-        return {"content_digest": digest_bytes(target_bytes), "executable": False, "kind": "symlink"}
+    if stat.S_ISLNK(metadata.st_mode): raise ObservationError(f"symlinked worktree entry: {path.hex()}")
     raise ObservationError(f"unsupported worktree entry: {path.hex()}")
+def scope_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
+    paths: set[bytes] = set()
+    for scope in allowed:
+        if scope == b".": paths.add(scope)
+        else:
+            parts = scope.split(b"/")
+            paths.update(b"/".join(parts[:index]) for index in range(1, len(parts) + 1))
+    entries: list[dict[str, Any]] = []
+    for path in sorted(paths):
+        if path != b"." and not relevant(path, allowed, prohibited): continue
+        absolute = repo if path == b"." else os.path.join(repo, path)
+        try: metadata = os.lstat(absolute)
+        except FileNotFoundError: kind = "missing"
+        else:
+            if stat.S_ISLNK(metadata.st_mode): raise ObservationError(f"symlinked scope entry: {path.hex()}")
+            if stat.S_ISREG(metadata.st_mode) and metadata.st_nlink > 1: raise ObservationError(f"hard-linked scope entry: {path.hex()}")
+            if stat.S_ISDIR(metadata.st_mode): kind = "directory"
+            elif stat.S_ISREG(metadata.st_mode): kind = "file"
+            else: raise ObservationError(f"unsupported scope entry: {path.hex()}")
+        entries.append({"index": None, "path_hex": path.hex(), "source": "scope", "worktree": {"kind": kind}})
+    return entries
 def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
     for record in run_git(repo, b"ls-files", b"-v", b"-z").split(b"\0"):
@@ -118,21 +147,17 @@ def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) 
         if len(fields) != 3: raise ObservationError("malformed git index header")
         mode, object_id, stage = (field.decode("ascii") for field in fields)
         if not relevant(path, allowed, prohibited): continue
-        entries.append({
-            "index": {"mode": mode, "object_id": object_id, "stage": int(stage)},
-            "path_hex": path.hex(), "source": "tracked",
-            "worktree": worktree_state(repo, path, mode, allowed, prohibited),
-        })
+        entries.append({"index": {"mode": mode, "object_id": object_id, "stage": int(stage)},
+                        "path_hex": path.hex(), "source": "tracked",
+                        "worktree": worktree_state(repo, path, mode, allowed, prohibited)})
     return entries
 def untracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
-    output = run_git(repo, b"ls-files", b"--others", b"--exclude-standard", b"-z")
+    output = run_git(repo, b"ls-files", b"--others", b"-z")
     for path in output.split(b"\0"):
         if not path or not selected(path, allowed, prohibited): continue
-        entries.append({
-            "index": None, "path_hex": path.hex(), "source": "untracked",
-            "worktree": worktree_state(repo, path, None, allowed, prohibited),
-        })
+        entries.append({"index": None, "path_hex": path.hex(), "source": "untracked",
+                        "worktree": worktree_state(repo, path, None, allowed, prohibited)})
     return entries
 def capture(repo: Path, repository_id: str, allowed_paths: list[str],
             prohibited_paths: list[str]) -> dict[str, Any]:
@@ -142,18 +167,17 @@ def capture(repo: Path, repository_id: str, allowed_paths: list[str],
     root_bytes = run_git(repo_bytes, b"rev-parse", b"--show-toplevel").strip()
     if Path(os.fsdecode(root_bytes)).resolve() != resolved_repo:
         raise ObservationError("--repo must name the repository root")
-    validate_allowed_paths(repo_bytes, allowed_paths)
+    validate_scope_paths(repo_bytes, allowed_paths, prohibited_paths)
     allowed = [os.fsencode(path) for path in allowed_paths]
     prohibited = [os.fsencode(path) for path in prohibited_paths]
-    entries = tracked_entries(repo_bytes, allowed, prohibited)
-    entries.extend(untracked_entries(repo_bytes, allowed, prohibited))
-    entries.sort(key=lambda entry: (
-        bytes.fromhex(entry["path_hex"]), entry["source"],
-        -1 if entry["index"] is None else entry["index"]["stage"],
-    ))
+    entries = scope_entries(repo_bytes, allowed, prohibited) + tracked_entries(repo_bytes, allowed, prohibited)
+    entries += untracked_entries(repo_bytes, allowed, prohibited)
+    entries.sort(key=lambda entry: (bytes.fromhex(entry["path_hex"]), entry["source"],
+                                    -1 if entry["index"] is None else entry["index"]["stage"]))
     return {
-        "entries": entries, "head": head_identity(repo_bytes),
+        "entries": entries, "head": head_identity(repo_bytes), "head_ref": head_ref(repo_bytes),
         "repository_id": repository_id, "schema": SCHEMA,
+        "repository_root_digest": digest_bytes(repo_bytes),
         "scope": {
             "allowed_paths": allowed_paths,
             "implicit_exclusions": [".git", ".ledger"],
