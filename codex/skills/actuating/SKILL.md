@@ -142,7 +142,7 @@ mutation.
    `expected_subject_digest`. For Git repositories, select the checked-in
    `scripts/subject_observation.py` command with the Goal's literal repository
    and path scope. Its `actuating-subject-observation/v1` requires two identical
-   captures of HEAD, index, scoped worktree, and nonignored untracked state.
+   captures of HEAD, index, scoped worktree, and selected ignored or unignored state.
    Before the effect the executor reruns that exact command. A mismatch aborts without effect.
    The executor cannot choose another observer or broaden scope, and Ledger
    compares only the opaque digest.

@@ -40,7 +40,14 @@ class SubjectObservationTests(unittest.TestCase):
         git(self.repo, "update-index", "--skip-worktree", "scope/tracked.txt"); self.reject()
         git(self.repo, "update-index", "--no-skip-worktree", "scope/tracked.txt")
         git(self.repo, "update-index", "--assume-unchanged", "scope/tracked.txt"); self.reject()
+        git(self.repo, "update-index", "--no-assume-unchanged", "scope/tracked.txt")
+        before_override = self.observe()["subject_digest"]
+        alternate = self.repo / "alternate-index"; alternate.write_bytes((self.repo / ".git/index").read_bytes())
+        tracked.write_text("three\n", encoding="utf-8"); git(self.repo, "add", "scope/tracked.txt"); tracked.write_text("two\n", encoding="utf-8")
+        with mock.patch.dict(os.environ, {"GIT_INDEX_FILE": str(alternate)}): self.assertNotEqual(before_override, self.observe()["subject_digest"])
     def test_untracked_ignored_and_structural_scope_changes_digest(self) -> None:
+        with mock.patch.object(subject_observation, "run_git", return_value=b"") as run:
+            subject_observation.untracked_entries(b"/repo", [b"scope"], [b"scope/private"]); run.assert_called_once_with(b"/repo", b"ls-files", b"--others", b"-z", b"--", b":(literal)scope", b":(exclude,literal)scope/private", b":(exclude,literal).git", b":(exclude,literal).ledger")
         new = self.repo / "scope/new.txt"; before = self.observe()["subject_digest"]
         new.write_text("new\n", encoding="utf-8"); self.assertNotEqual(before, self.observe()["subject_digest"])
         (self.repo / ".gitignore").write_text("ignored.txt\nscope/ignored.txt\n", encoding="utf-8")
@@ -100,7 +107,7 @@ class SubjectObservationTests(unittest.TestCase):
             self.assertTrue(observed["head_ref"].startswith("refs/heads/"))
     def test_scope_validation_is_canonical_and_exact(self) -> None:
         self.assertEqual(["a", "b"], subject_observation.canonical_scope(["b", "a", "b"], require_nonempty=True))
-        for path in ("../escape", r"..\escape", r"C:\escape"):
+        for path in ("../escape", r"..\escape", r"C:\escape", "cafe\u0301"):
             with self.subTest(path=path), self.assertRaises(subject_observation.ObservationError):
                 subject_observation.canonical_scope([path], require_nonempty=True)
         for path in ([".git"], ["SCOPE"]):

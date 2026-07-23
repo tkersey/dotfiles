@@ -8,7 +8,7 @@ import ntpath
 import os
 import stat
 import subprocess
-import sys
+import sys, unicodedata
 from pathlib import Path
 from typing import Any
 SCHEMA = "actuating-subject-observation/v1"
@@ -22,7 +22,8 @@ def digest_bytes(value: bytes) -> str:
 def validate_path(value: str) -> str:
     if value == ".": return value
     drive, _ = ntpath.splitdrive(value)
-    if not value or value.startswith("/") or value.endswith("/") or "\\" in value or drive:
+    if (not value or value.startswith("/") or value.endswith("/") or "\\" in value or drive or
+            unicodedata.normalize("NFC", value) != value):
         raise ObservationError(f"invalid repository path: {value!r}")
     if any(part in {"", ".", ".."} for part in value.split("/")):
         raise ObservationError(f"invalid repository path: {value!r}")
@@ -69,7 +70,8 @@ def relevant(path: bytes, allowed: list[bytes], prohibited: list[bytes]) -> bool
     return selected(path, allowed, prohibited) or (not blocked and bool(projected_scopes(path, allowed)))
 def git_result(repo: bytes, *args: bytes) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run([b"git", b"-C", repo, *args], check=False,
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                          env={key: value for key, value in os.environ.items() if not key.startswith("GIT_")})
 def run_git(repo: bytes, *args: bytes) -> bytes:
     process = git_result(repo, *args)
     if process.returncode != 0:
@@ -153,7 +155,8 @@ def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) 
     return entries
 def untracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
-    output = run_git(repo, b"ls-files", b"--others", b"-z")
+    pathspecs = [b":(literal)" + path for path in allowed] + [b":(exclude,literal)" + path for path in prohibited + list(CONTROL_ROOTS)]
+    output = run_git(repo, b"ls-files", b"--others", b"-z", b"--", *pathspecs)
     for path in output.split(b"\0"):
         if not path or not selected(path, allowed, prohibited): continue
         entries.append({"index": None, "path_hex": path.hex(), "source": "untracked",
