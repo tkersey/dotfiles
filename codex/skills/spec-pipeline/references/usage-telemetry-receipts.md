@@ -19,7 +19,6 @@ subagent_budget:
 subagent_receipt:
 invariant_challenge:
 fresh_eyes:
-lint_verdict:
 execution_handoff:
 ```
 

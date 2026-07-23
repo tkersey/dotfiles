@@ -380,7 +380,7 @@ Tuning goal:
 - Make <watched-session monitoring need> available as an efficient seq surface for \$shadow.
 
 Observed usage:
-- Evidence class: repeated_manual_workaround | clear_validation_failure | explicit_user_feedback | tooling_gap
+- Evidence class: repeated_manual_workaround | clear_observed_failure | explicit_user_feedback | tooling_gap
 - Source: \$shadow cycle for session $session
 - Finding: <sanitized missing/slow/awkward seq command shape>
 
@@ -391,7 +391,6 @@ Gap:
 Recommended \$refine action:
 - <smallest seq skill or CLI-surface update needed>
 
-Validation:
-- quick_validate seq
+Outcome observation:
 - representative seq command sample, if the command surface changed
 SHADOW_REPORT

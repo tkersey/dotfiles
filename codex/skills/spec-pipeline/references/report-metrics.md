@@ -12,12 +12,10 @@ spec_pipeline_quality:
   challenge_changed_route:
   fresh_eyes_changed_spec:
   returned_to_grill:
-  lint_changed_spec:
-  lint_blocked_handoff:
   pass_no_delta:
   plan_started_before_gate:
-  mutation_started_before_lint:
+  mutation_started_before_handoff:
   retro_triggers:
 ```
 
-Do not use standalone gate/challenge/lint activation counts as the main success metric.
+Do not use standalone gate or challenge activation counts as the main success metric.

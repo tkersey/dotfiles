@@ -1,6 +1,6 @@
 ---
 name: spec-pipeline
-description: "Canonical current-spec engine. Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs; operate narrowly in gate-only, challenge-only, lint-only, or repair mode; default full-mode plan-ready specs to lane=spec_to_plan; and tail-call `$plan` when SGR-v2 and execution handoff authorize planning. Never emit a proposed_plan block."
+description: "Canonical current-spec engine. Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs; operate narrowly in gate-only, challenge-only, or repair mode; default full-mode plan-ready specs to lane=spec_to_plan; and tail-call `$plan` when SGR-v2 and execution handoff authorize planning. Never emit a proposed_plan block."
 metadata:
   version: "2.2.0"
   activation_cost: adaptive
@@ -15,9 +15,8 @@ metadata:
 `$spec-pipeline` is the canonical current-spec workflow.
 
 It converts an accepted or clarified objective into a decision-complete
-implementation spec, proves that the spec is ready for downstream planning, and
-then hands planning authority to `$plan` when and only when the spec governance
-receipt authorizes that transition.
+implementation spec and hands planning authority to `$plan` when the spec
+governance receipt authorizes that transition.
 
 ```text
 profile + mode
@@ -28,9 +27,7 @@ profile + mode
 -> implementation spec
 -> strongest invariant challenge
 -> fresh-eyes pass
--> lint
 -> SGR-v2 governance receipt
--> final governance gate
 -> execution handoff
 -> mandatory same-turn $plan tail-call when eligible
 ```
@@ -48,9 +45,8 @@ Use `$spec-pipeline` for:
 - creating or materially reconstructing an implementation spec;
 - deciding whether a brief, decision packet, spec, or handoff is ready;
 - running one strongest invariant challenge;
-- linting an existing implementation spec;
-- repairing only sections implicated by a failed gate, challenge, fresh-eyes
-  pass, lint, or governance gate;
+- repairing only sections implicated by a blocked readiness decision,
+  challenge, fresh-eyes pass, or governance result;
 - handing a ready spec to `$plan` or implementation.
 
 Use `$grill-me` when unresolved user judgment is the primary task. Use
@@ -65,7 +61,7 @@ Choose exactly one mode before deep work:
 
 ```yaml
 spec_pipeline_mode:
-  mode: full | gate-only | challenge-only | lint-only | repair
+  mode: full | gate-only | challenge-only | repair
   reason: "..."
 ```
 
@@ -76,12 +72,9 @@ Modes:
   is ready. Do not generate a spec, plan, or mutation authority.
 - `challenge-only` — return one strongest critique or invariant pressure test.
   Do not authorize mutation.
-- `lint-only` — judge whether an existing spec is implementation-ready. Do not
-  rediscover the objective unless lint exposes a material missing decision. Do
-  not authorize mutation.
-- `repair` — change only sections implicated by a prior failed gate, challenge,
-  fresh-eyes pass, lint, or governance result; then rerun affected and
-  downstream phases.
+- `repair` — change only sections implicated by a prior blocked readiness
+  decision, challenge, fresh-eyes pass, or governance result; then rerun
+  affected and downstream phases.
 
 Choose one profile:
 
@@ -120,9 +113,9 @@ finishes complete and plan-ready, planning authority transfers to `$plan`
 through SGR-v2 and the Execution Handoff.
 
 Use `spec_only` only when a concrete blocker exists: explicit spec-only user
-request, gate-only/challenge-only/lint-only mode, blocked/drift/partial status,
-unresolved material user judgment, `plan_allowed=no`, failed/blocked lint,
-fresh-eyes drift, `ready_for_plan=no`, `next_owner != $plan`, non-empty
+request, gate-only/challenge-only mode, blocked/drift/partial status,
+unresolved material user judgment, `plan_allowed=no`, fresh-eyes drift,
+`ready_for_plan=no`, `next_owner != $plan`, non-empty
 `do_not_execute_before`, or same-turn `$plan` being unavailable. When `$plan`
 cannot load, emit `AUTO_PLAN_HANDOFF_REQUIRED`; do not silently convert to
 `spec_only`.
@@ -244,17 +237,7 @@ material_open_questions:
 defaults:
 deferrals:
 handoff_sentence:
-script_gate:
-script_gate_reason:
 ```
-
-When feasible, run:
-
-```bash
-uv run python codex/skills/spec-pipeline/tools/spec_gate.py --strict-receipts <handoff-file>
-```
-
-A script pass is structural evidence, not semantic proof.
 
 If the gate fails, do not produce a spec or plan. Ask at most 1-3 next material
 questions and set SGR-v2 status to `blocked`.
@@ -320,36 +303,6 @@ scaffold-only proof, rollback gaps, unmapped requirements, plan-shaped detail,
 and stale assumptions. If a material decision is missing, return to gate failure
 rather than handing off.
 
-## Lint phase
-
-Run structural and semantic lint after challenge/fresh-eyes revisions.
-
-When feasible:
-
-```bash
-uv run python codex/skills/spec-pipeline/tools/spec_lint.py   --phase pre-governance   --strict-receipts   <spec-file>
-```
-
-Emit:
-
-```text
-## Spec Lint Result
-SPEC_READY:
-script_lint:
-script_lint_reason:
-blocking_errors:
-material_risks:
-missing_sections:
-unmapped_requirements:
-rollback_gaps:
-proof_gaps:
-receipt_gaps:
-recommended_next_action:
-```
-
-The pre-governance lint must not require the governance receipt that has not yet
-been emitted.
-
 ## Spec Pipeline Receipt
 
 Every terminal output must include exactly one `## Spec Pipeline Receipt`
@@ -359,7 +312,7 @@ section followed by one YAML object:
 spec_governance_receipt:
   receipt_version: SGR-v2
   spec_id: "..."
-  mode: full | gate-only | challenge-only | lint-only | repair
+  mode: full | gate-only | challenge-only | repair
   profile: fast | balanced | strict | campaign
   lane: spec_only | spec_to_plan | repair | review_resolution | campaign_checkpoint
   status: complete | blocked | drift | audit-only | partial
@@ -373,13 +326,11 @@ spec_governance_receipt:
     implementation_spec: yes | no | not-required
     challenge: yes | no | not-required
     fresh_eyes: yes | no | not-required
-    lint: yes | no | not-required
     execution_handoff: yes | no | not-required
   gate:
     receipt_version: SGATE-v1
     plan_allowed: yes | no | not-assessed
     mutation_allowed_pre_spec: no
-    script_gate: passed | failed | skipped | not-run
     gate_changed_decision: yes | no | unknown
     gate_blocked_plan: yes | no | not-assessed
     gate_defaulted_decisions: []
@@ -399,18 +350,6 @@ spec_governance_receipt:
     returned_to_grill: yes | no | not-assessed
     drift_detected: yes | no | not-assessed
     pass_no_delta: yes | no | not-assessed
-  lint:
-    receipt_version: SLINT-v1
-    verdict: pass | fail | skipped | not-run
-    script_lint: passed | failed | skipped | not-run
-    semantic_lint: passed | failed | not-run
-    changed_spec: yes | no | not-assessed
-    blocked_handoff: yes | no | not-assessed
-    pass_no_delta: yes | no | not-assessed
-    proof_gaps_found: []
-    rollback_gaps_found: []
-    unmapped_requirements_found: []
-    receipt_gaps_found: []
   subagents:
     spawned: 0
     consumed: 0
@@ -425,7 +364,7 @@ spec_governance_receipt:
     mutation_allowed: yes | no
     execution_handoff: yes | no
     plan_started_after_gate: yes | no | unknown
-    mutation_started_after_lint: yes | no | unknown
+    mutation_started_after_handoff: yes | no | unknown
   execution_handoff:
     ready_for_plan: yes | no
     next_owner: $plan | implementation | grill-me | spec-pipeline | spec-retro | none
@@ -446,23 +385,6 @@ spec_governance_receipt:
 This single object is the machine-readable truth. Mode-specific human-readable
 sections remain required, but duplicated top-level receipt blocks are not.
 
-## Governance gate
-
-After emitting `spec_governance_receipt`, run when feasible:
-
-```bash
-uv run python codex/skills/spec-pipeline/tools/spec_lane_selection_gate.py <sgr-or-spec-file>
-uv run python codex/skills/spec-pipeline/tools/auto_plan_handoff_gate.py <sgr-or-spec-file>
-```
-
-For a final handoff, optionally run final lint:
-
-```bash
-uv run python codex/skills/spec-pipeline/tools/spec_lint.py   --phase handoff   --strict-receipts   <spec-file>
-```
-
-A complete handoff is invalid if the final governance gate fails.
-
 ## Execution handoff
 
 Only `full` or a fully repaired `repair` mode may authorize downstream planning
@@ -480,7 +402,7 @@ do_not_execute_before:
 auto_plan_handoff: eligible|not-eligible
 ```
 
-`gate-only`, `challenge-only`, and `lint-only` do not authorize mutation or
+`gate-only` and `challenge-only` do not authorize mutation or
 same-turn planning.
 
 ## Automatic `$plan` tail-call
@@ -498,13 +420,10 @@ phase_presence.gate = yes
 phase_presence.implementation_spec = yes
 phase_presence.challenge = yes
 phase_presence.fresh_eyes = yes
-phase_presence.lint = yes
 phase_presence.execution_handoff = yes
 gate.plan_allowed = yes
 gate.material_open_questions_remaining = no
 fresh_eyes.drift_detected = no
-lint.verdict = pass
-lint.blocked_handoff = no
 subagents.open_at_end = 0
 execution_control.plan_allowed = yes
 execution_control.execution_handoff = yes
@@ -539,12 +458,11 @@ Do not auto-run `$plan` when any of these are true:
 
 ```text
 user explicitly requested spec-only/no-plan output
-mode is gate-only, challenge-only, or lint-only
+mode is gate-only or challenge-only
 status is blocked, drift, audit-only, or partial
 lane is not spec_to_plan for a legal blocker recorded in the receipt
 gate did not allow planning
 material questions remain
-lint failed, was skipped when required, or blocked handoff
 fresh-eyes returned to grill or detected drift
 any subagent remains open
 next_owner is not $plan
@@ -588,7 +506,7 @@ Do not run historical retro inside every spec. Set `retro.trigger_required: yes`
 when:
 
 - five or more full pipeline sessions occurred since the last retro;
-- the same gate/challenge/lint failure recurred at least twice;
+- the same readiness or challenge failure recurred at least twice;
 - execution outran readiness;
 - plan churn recurred;
 - no-grill justifications are repeatedly generic;
@@ -604,11 +522,10 @@ Then set next owner to `$spec-retro`.
 - In `full` mode, default to `spec_to_plan` unless a legal blocker exists.
 - Explicit `$spec-pipeline` is not a `spec_only` request.
 - No planning before gate pass.
-- No mutation before full challenge, fresh-eyes, lint, and governance pass.
-- No execution handoff from gate-only, challenge-only, or lint-only mode.
+- No mutation before full challenge, fresh-eyes, governance receipt, and execution handoff.
+- No execution handoff from gate-only or challenge-only mode.
 - No broad multi-challenge review by default.
-- No script pass substituted for semantic judgment.
-- No separate gate/challenge/lint skill invocation required.
+- No separate readiness or challenge skill invocation required.
 - No retro ceremony in every spec.
 - No complete handoff without SGR-v2.
 - If SGR-v2 says auto-plan is eligible, same-turn `$plan` tail-call is mandatory.

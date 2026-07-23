@@ -6,7 +6,6 @@
 | “Optimize this skill” | propose | `$tune` | no edit |
 | “Tune from this session” | tune / shadow-diagnose | `$shadow` -> `$tune` | no edit |
 | “Fix the skill now” | apply | `$tune` -> complete `REFINE-SKILL-v3` -> `$refine` | explicit authority required |
-| “Validate this skill edit” | validate | `$refine validate` | no edit |
 | “Prevent that failure again” | regression | `$tune` -> `$refine regression` | explicit authority required |
 | “Keep working until improved” | goal-loop | `$cas` + `$opt` | each mutation separately gated |
 
@@ -15,7 +14,7 @@
 - Current user feedback: use current-turn evidence first; do not claim recurrence.
 - One watched session: use `$shadow`; do not inspect raw transcript files unless explicitly authorized.
 - Historical sessions: use `$seq` and `$tune`'s evidence hierarchy.
-- Worktree changes: inspect only the target skill package and named validation surfaces.
+- Worktree changes: inspect only the authorized target skill package.
 - Supplied brief: preserve its evidence limits and authorized boundary.
 
 ## Apply semantics

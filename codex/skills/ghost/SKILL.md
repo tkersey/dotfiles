@@ -61,7 +61,7 @@ It gets harder (but is still possible) when the contract depends on time, random
 - MUST treat a stateful workflow as incomplete if only isolated operation cases exist; add scenario coverage in `tests.yaml` and verification proof before calling extraction done.
 - MUST include trace-level invariants for agentic scenarios (for example permission boundaries, confirmation-before-side-effects, injection resistance, budget/step limits).
 - MUST prefer oracles that score behavior via state + trace (tool calls, side effects) over brittle final-text matching.
-- MUST produce a machine-checkable evidence bundle under `verification/evidence/` and fail extraction unless it passes `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`.
+- MUST produce an evidence bundle under `verification/evidence/` that accounts for the extracted public operations, workflows, and required cases.
 - MUST keep `verification/evidence/inventory.json` synchronized with `tests.yaml`: `public_operations` must match non-workflow operation ids and `primary_workflows` must match workflow/scenario ids (`coverage_mode` defaults to `exhaustive`; when `sampled`, include `sampled_case_ids`).
 - MUST ensure every required case id appears in `traceability.csv` and has at least one baseline (`mutated=false`) `pass` row in `adapter_results.jsonl` (all `tests.yaml` cases for `exhaustive`; `inventory.json.sampled_case_ids` for `sampled`).
 - MUST enforce fail-closed verification thresholds: 100% mapped public operations, 100% mapped primary workflows, and 100% mapped required case ids (all tests for `exhaustive`; sampled ids for `sampled`), plus mutation sensitivity and independent regeneration parity passes.
@@ -546,8 +546,6 @@ For `layered_agentic` suites, also harvest:
   - `parity.json` (independent regeneration parity verdict + diff count)
   - `interface_inventory.json` (`layered_agentic` only: `surfaces`, `boundary_invariants`, and `artifact_contracts`, each with `source_refs` and `required_case_ids`)
   - `contract_traceability.csv` (`layered_agentic` only: `target_type,target_id,case_id,proof_artifact,adapter_run_id`, where `target_type` is `surface|invariant|artifact`)
-- Run `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`; non-zero exit means extraction is incomplete.
-- Strict mode is default and fail-closed. Use `--legacy-allow --legacy-reason "<rationale>"` only for explicit manual break-glass migrations.
 - For stochastic agentic systems:
   - run scenarios in two modes:
     - deterministic debug mode (stable tool outputs; fixed seed when possible)

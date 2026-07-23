@@ -6,7 +6,7 @@ interpretation     skill active, rule misunderstood
 workflow           steps/order/handoff fail
 tooling            repeated manual workaround or missing CLI
 resource           missing reference/script/asset
-validation         no reliable check
+observability      no reliable outcome signal
 metadata           stale trigger/default prompt
 boundary           companion ownership confused
 source-scope       wrong evidence population

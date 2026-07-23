@@ -29,11 +29,7 @@ zig_semantic_route:
   selected_repair_boundary:
   forbidden_shortcuts: []
   required_proof: []
-  proof_epoch_required: yes | no
   family_contracts: {}
-  gate:
-    classified_before_first_edit: yes | no
-    mutation_allowed: yes | no
 ```
 
 ## Family cues

@@ -8,6 +8,6 @@ When `$tune` hands off a brief, require:
 - expected decision delta;
 - protected contracts;
 - smallest sufficient edit;
-- validation command.
+- outcome-observation query.
 
 Do not apply repeated proposal-only findings unless `$tune` reached a terminal state and the user explicitly requested file changes.

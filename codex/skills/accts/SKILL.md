@@ -85,17 +85,3 @@ python3 codex/skills/accts/scripts/accts.py next
 `reset-cycle start` reads CAS account status and queues the first eligible vaulted account. Activate the account shown by `next` before using it. After that account has had a real turn, run `reset-cycle advance --account <name>` to mark it touched and queue the next untouched account. The cycle completes after every enabled `reset_participates = true` vaulted account has been marked touched.
 
 If CAS is unavailable, do not invent reset timing. Use `reset-cycle status --state-only` to inspect local state, or ask the user before using an explicit offline `--resets-at` timestamp.
-
-## Validation
-
-Run the focused proof bundle after editing this skill:
-
-```bash
-python3 codex/skills/accts/scripts/accts.py --help
-python3 -m unittest discover -s codex/skills/accts/tests -p 'test_*.py'
-CODEX_HOME="$(mktemp -d)" ACCTS_HOME="$(mktemp -d)" python3 codex/skills/accts/scripts/accts.py init --dry-run
-uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/accts
-/Users/tk/workspace/tk/skills-zig/zig-out/bin/cas_account status --cwd /Users/tk/.dotfiles --json --usage --hooks off
-codex debug prompt-input
-git diff --check
-```

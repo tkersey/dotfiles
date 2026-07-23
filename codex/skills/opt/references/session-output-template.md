@@ -11,7 +11,7 @@ $opt result:
 - Subagent:
 - Files inspected:
 - Changes made:
-- Validation:
+- Outcome observation:
 - Remaining risk:
 - Suggested parent CAS status:
 - Next recommended action:
@@ -31,7 +31,7 @@ Do not let the subagent directly convert these suggestions into parent goal muta
 
 ```text
 Evidence source:
-- Kind: current-turn | shadow | tune | validation | worktree | provided | mixed
+- Kind: current-turn | shadow | tune | worktree | provided | mixed
 - Locator: <session id/path, brief path, command output, file list, current conversation>
 - Scope: <single turn, one watched session, recent history, explicit sessions, target package>
 - Access method: <$shadow report, $tune brief, file read, command output, user text>

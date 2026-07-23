@@ -10,4 +10,5 @@ spec_pipeline_quality:
   retro:
 ```
 
-Success is not companion mention count. Success is gate/challenge/lint/fresh-eyes changing or confirming readiness with visible receipts.
+Success is not companion mention count. Success is readiness, challenge, and
+fresh-eyes work changing or confirming the implementation direction.

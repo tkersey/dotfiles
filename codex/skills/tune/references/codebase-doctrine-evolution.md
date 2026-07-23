@@ -23,7 +23,7 @@ focused skill never independently activated
 success/failure signal not observable
 law no longer matches current code
 target law was mistaken for observed law
-knowledge should move to code/test/tooling
+knowledge should move to its executable owner when one exists
 ```
 
 Do not promote from mention counts or co-occurrence.

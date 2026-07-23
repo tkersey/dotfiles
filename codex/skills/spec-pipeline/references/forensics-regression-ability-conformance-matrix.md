@@ -18,13 +18,12 @@ When a brief already provides goal, target surfaces, non-goals, invariant/author
 5. Ask no questions unless a material contradiction remains.
 6. If no questions are asked, emit a concrete No-Grill Justification.
 7. Emit `spec_decision_packet`.
-8. Emit Gate Result with `plan_allowed`, `mutation_allowed`, and script status.
+8. Emit Gate Result with `plan_allowed` and `mutation_allowed`.
 9. Produce the implementation spec as plain markdown, not `<proposed_plan>`.
 10. Run exactly one invariant challenge.
 11. Run Fresh-Eyes Pass.
-12. Emit Spec Lint Result with script status or explicit skip reason.
-13. Account for all subagents.
-14. End with a short Execution Handoff to `$plan`.
+12. Account for all subagents.
+13. End with a short Execution Handoff to `$plan`.
 
 ## Forbidden regression
 
@@ -37,13 +36,3 @@ Do not produce:
 ```
 
 Do not include `$plan` convergence sections such as `Round Delta`, `Iteration Change Log`, `Decision Impact Map`, `Adversarial Findings`, or `Contract Signals` in a `spec-pipeline` artifact.
-
-## Mechanical checks
-
-A saved output for this scenario should pass:
-
-```bash
-uv run python codex/skills/spec-pipeline/scripts/check_spec_pipeline_output.py path/to/spec-output.md
-```
-
-The checker is mechanical. The model must still judge semantic completeness, proof adequacy, drift, receipts, and subagent accounting.

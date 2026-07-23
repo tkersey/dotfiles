@@ -20,11 +20,7 @@
       "resources": [
         {
           "path": "codex/skills/invariant-ace/SKILL.md",
-          "digest": "sha256:a7072ac6042ab937b3daae24427b6f5c03124ec0c01d5ef502cc9e279638fc17"
-        },
-        {
-          "path": "codex/skills/invariant-ace/evals/adversarial-eval-seeds.yaml",
-          "digest": "sha256:33ae7346fc8f60f945a060ddfe4b6629328efb2aa54db361b2c7b54672a2d1b0"
+          "digest": "sha256:06715ff6d287b95d20f326eab62e75b63a8aff64e9dff42d7e7e7d56b331b45d"
         },
         {
           "path": "codex/skills/invariant-ace/references/CODEX_SUBAGENTS.md",
@@ -35,20 +31,12 @@
           "digest": "sha256:d19c7cd3f8ce09efa1ff3113fa4c6ee928ddfcc2510a537d4f2a5a5a25356254"
         },
         {
-          "path": "codex/skills/invariant-ace/references/invariant-gate-contract.md",
-          "digest": "sha256:210457276c8e4109325fe53b180c76caef730e65d380bdef26fbffd4215dfb89"
-        },
-        {
           "path": "codex/skills/invariant-ace/references/invariant-output-template.md",
           "digest": "sha256:6ae20736390d15157d7936cd54429c83575550f1d9bed29fadc0f613fa96f944"
         },
         {
           "path": "codex/skills/invariant-ace/references/minimum-behavioral-kernel.md",
           "digest": "sha256:10b76137dc6bec78b561a5bc79c7703cbdd6356c3216d0c30126b7f8104d949a"
-        },
-        {
-          "path": "codex/skills/invariant-ace/tools/invariant_ace_gate.py",
-          "digest": "sha256:ec846cb93f86a6cbb6c4ab6f0e13204b4018c57a8ea0f4d82a29bb8d4445457a"
         }
       ]
     },
@@ -71,8 +59,8 @@
   },
   "review_contract": {
     "schema": "actuating-review-contract/v1",
-    "contract_id": "actuating-review-contract-v1",
-    "contract_digest": "sha256:91cd9f6ee23ba5b9b2d4b0a63cc2faa376013fb05fdc591e33ec0a551076a536",
+    "contract_id": "actuating-review-contract-v2",
+    "contract_digest": "sha256:2b41887264c98e6f14f95e1f9d6c4bd3f1ab79a0ca83f7c7c263bb9ce62be7bd",
     "required_lenses": [
       {
         "name": "standard",
@@ -90,7 +78,7 @@
         "name": "invariant-ace",
         "role": "auxiliary",
         "contract_ref": "codex/skills/invariant-ace/SKILL.md",
-        "contract_digest": "sha256:4e61fe65b55e1aa1db420b940c94bc44a27cd527ee0ce35f6dce23284057573c"
+        "contract_digest": "sha256:e16fcbdde731f1116872dc36b161826fdf7a7c859c6b89aa0e3c2cf05743f5f6"
       },
       {
         "name": "complexity-mitigator",

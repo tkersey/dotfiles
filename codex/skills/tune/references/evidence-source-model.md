@@ -12,12 +12,12 @@ Use for evidence from the current interaction:
 - current prompt wording,
 - visible assistant behavior in the active conversation,
 - current tool output,
-- current validation output,
+- current observed behavior,
 - current worktree or command results produced in this turn.
 
 Strengths:
 
-- Best for immediate routing, mode-selection, validation, and workflow gaps.
+- Best for immediate routing, mode selection, and workflow gaps.
 - Strong when the user explicitly identifies the problem.
 
 Limits:
@@ -50,7 +50,7 @@ Limits:
 
 ### `provided`
 
-Use for user-supplied evidence: refinement briefs, logs, transcripts, validation output, diffs, bug reports, screenshots, or artifacts.
+Use for user-supplied evidence: refinement briefs, logs, transcripts, observed output, diffs, bug reports, screenshots, or artifacts.
 
 Strengths:
 
@@ -65,11 +65,11 @@ Limits:
 
 ### `worktree`
 
-Use for repository-local evidence: target skill files, `agents/openai.yaml`, scripts/references/assets, validators, Git status, staged/unstaged changes, and commit/push context.
+Use for repository-local evidence: target skill files, `agents/openai.yaml`, scripts/references/assets, Git status, staged/unstaged changes, and commit/push context.
 
 Strengths:
 
-- Required for applied changes, validation, and publishing.
+- Required for applied changes and publishing.
 
 Limits:
 
@@ -90,7 +90,7 @@ Rules:
 ```text
 Evidence source:
 - Kind: in-flight | history | provided | worktree | mixed
-- Locator: current conversation | sessions root | session id | workdir | repo | file/artifact | validation output
+- Locator: current conversation | sessions root | session id | workdir | repo | file/artifact | observed output
 - Scope: current turn | current conversation | recent window | arbitrary history | explicit sessions | supplied evidence
 - Window: <duration/date range/all/none>
 - Access method: current context | $seq command | file read | tool output | user-provided text
@@ -103,7 +103,7 @@ Evidence source:
 - Use `in-flight` first when the user references the current conversation or live behavior.
 - Use `history` when the user asks about recurrence, trends, recent usage, old behavior, or arbitrary session history.
 - Use `provided` when the user supplies evidence and asks you to interpret or apply it.
-- Use `worktree` whenever files may be edited, validated, committed, or pushed.
+- Use `worktree` whenever files may be edited, committed, or pushed.
 - Use `mixed` when a current problem needs historical recurrence checks or when apply-mode combines usage evidence with worktree proof.
 
 ## Arbitrary History Rules
@@ -121,7 +121,7 @@ When the user requests arbitrary history:
 When tuning in flight:
 
 - Current user feedback can be strong evidence for a local correction.
-- Current validation or tool failure can be strong evidence for a validation or workflow gap.
+- Current observed behavior or tool failure can be strong evidence for a workflow gap.
 - Current routing behavior can indicate an activation or interpretation gap.
 - Do not claim recurrence unless history also supports it.
 - Keep raw conversation text out of reports unless the user explicitly asks and it is safe.

@@ -52,16 +52,8 @@ codebase_doctrine_packet:
   final_call: usable | partial | no_material_signal | blocked
 ```
 
-Validate with the assignment:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/packet_gate.py packet.yaml \
-  --assignment assignment.yaml
-```
-
-The gate enforces worker identity, artifact state, intent, scope, assigned
-questions, evidence lanes, allowed update keys, fact/inference separation, and
-wrapper-leakage rejection.
+The packet must match its assignment's worker identity, artifact state, intent,
+scope, assigned questions, evidence lanes, and allowed update keys. Preserve
+fact/inference separation and reject wrapper leakage during synthesis.
 
 Workers do not spawn children, edit files, create skills, or own final doctrine.

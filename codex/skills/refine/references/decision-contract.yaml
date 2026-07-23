@@ -51,13 +51,12 @@ skill_decision_contract:
         - workflow_refinement
       terminal: "no"
     - route_id: REFINE-SURFACE
-      description: Refine an artifact, tool, resource, metadata, validation, or observability surface.
+      description: Refine an artifact, tool, resource, metadata, or observability surface.
       aliases:
         - artifact_refinement
         - tooling_refinement
         - resource_refinement
         - metadata_refinement
-        - validation_refinement
         - observability_refinement
       terminal: "no"
     - route_id: REFINE-CONSOLIDATE
@@ -85,7 +84,7 @@ skill_decision_contract:
       required_artifacts:
         - expected delta
         - allowed files
-        - validation plan
+        - outcome observation
       success_signals:
         - one dominant intervention
         - SRR-v1
@@ -121,9 +120,9 @@ skill_decision_contract:
       prohibited_routes: []
       required_artifacts:
         - reproducible prior failure
-        - regression validation
+        - reproduction query
       success_signals:
-        - prior failure becomes detectable
+        - expected future behavior is observable
       failure_signals:
         - wording-only regression
       rationale: Regression work must bind to observable skill behavior.

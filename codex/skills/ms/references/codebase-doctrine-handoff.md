@@ -1,6 +1,6 @@
 # Codebase Doctrine Handoff
 
-Use `$ms` only after `$codebase-doctrine` produces a valid `CBSH-v2` and the
+Use `$ms` only after `$codebase-doctrine` produces `CBSH-v2` and the
 user explicitly authorizes the exact package creation.
 
 The handoff binds:
@@ -17,18 +17,8 @@ success and failure signals
 protected doctrine IDs
 allowed package
 explicit user authorization
-validation
 evaluation contract
 future empirical evaluation
-```
-
-Validate before authoring:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/handoff_gate.py \
-  handoff.yaml \
-  --doctrine doctrine.yaml
 ```
 
 Do not create rejected candidates.

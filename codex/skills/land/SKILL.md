@@ -246,15 +246,6 @@ remote cleanup, local cleanup, and per-worktree cleanup separate. Use
 - Never force-remove a dirty, locked, drifted, or unidentified worktree.
 - If blocked, preserve state and report the exact failed gate and next safe action.
 
-## Validation
-
-```bash
-uv run python3 -m unittest discover -s codex/skills/land/tests -p 'test_*.py'
-uv run --with pyyaml -- python3 \
-  codex/skills/tune/tools/decision_contract_lint.py \
-  codex/skills/land/references/decision-contract.yaml
-```
-
 ## Resources
 
 - [landing-protocol.md](references/landing-protocol.md)

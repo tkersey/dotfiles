@@ -49,7 +49,7 @@ Required:
 - allowed and forbidden files
 - protected contracts
 - intervention budget
-- validation commands and future behavioral query
+- future outcome-observation query
 
 The root integrates SRR-v1 and updates any parent goal. No custom agent writes the package.
 ```

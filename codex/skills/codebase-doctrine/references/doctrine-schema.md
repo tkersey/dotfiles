@@ -60,5 +60,5 @@ Relational requirements include:
 - zero skills is valid;
 - saturation is relationally proved.
 
-Use `schemas/cbd-v2.schema.json` for structure and `tools/doctrine_gate.py` for
-relational closure.
+Use `schemas/cbd-v2.schema.json` as the structural description. CBD-v2 must
+satisfy the relational closure requirements above.

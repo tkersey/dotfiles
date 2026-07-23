@@ -307,16 +307,6 @@ store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are
 read only during migration. Verify current applicability and promote
 qualifying evidence through `ledger capture`.
 
-## Activation Evaluation
-
-Use [activation-contract.md](references/activation-contract.md) and [activation.yml](tests/golden/activation.yml) to distinguish a routing check from a capture-worthy event. Run:
-
-```bash
-bash scripts/check_negative_ledger.sh
-```
-
-Raw activation count is not the success metric. Grade whether the skill appeared for decision-shaping failed-route episodes, avoided transient false positives, and changed route selection or durable evidence only when warranted.
-
 ## Guardrails
 
 - Do not record vibes as negative evidence.

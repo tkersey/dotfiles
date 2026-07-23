@@ -231,12 +231,6 @@ ideate_result:
   remaining_uncertainty: []
 ```
 
-Validate stored receipts when useful:
-
-```bash
-python3 codex/skills/ideate/tools/ideate_result_gate.py <idr.json>
-```
-
 ## Terminal states
 
 - `portfolio_ready` — evidence supports a ranked portfolio and seed.

@@ -86,19 +86,6 @@ Required files:
   - columns: `target_type,target_id,case_id,proof_artifact,adapter_run_id`
   - `target_type` must be `surface`, `invariant`, or `artifact`
 
-Verifier command:
-- from the ghost skill directory: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence`
-- non-zero exit means extraction quality gate failed
-- strict mode is default; legacy bypass is manual break-glass only:
-  - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle <ghost-repo>/verification/evidence --legacy-allow --legacy-reason "<rationale>"`
-  - bypass downgrades structure-contract errors only; evidence contract failures remain fail-closed
-
-Break-glass policy:
-- Use only for explicit migration windows.
-- Always record rationale and remediation date in `VERIFY.md`.
-- Do not treat bypass runs as final completion proof.
-- Break-glass never downgrades `interface_inventory.json`, `contract_traceability.csv`, or other contract-data failures.
-
 Notes for scenario suites:
 - Interpret `public_operations` as tool ids (what the agent can call).
 - Interpret `primary_workflows` as scenario ids (critical end-to-end loops).
@@ -159,8 +146,6 @@ If a full adapter runner is infeasible:
 - Executed: <n>
 - Skipped: <k>
 - Loop scenarios executed: <count>
-- Verifier command: `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence`
-- Verifier result: pass|fail
 - Result: pass|fail
 
 ## Regenerate (artifact production)

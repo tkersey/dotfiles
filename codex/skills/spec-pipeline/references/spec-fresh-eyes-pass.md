@@ -14,9 +14,9 @@ Look for:
 - stale defaults or assumptions that should be locked, deferred, or returned to `$grill-me`;
 - missing No-Grill Justification when `grill_rounds: 0`;
 - unaccounted subagents;
-- mutation allowed before gate/challenge/lint.
+- mutation allowed before challenge and execution handoff.
 
 Rules:
-- If any material issue is found, revise only the affected sections and rerun Spec Lint before handoff.
+- If any material issue is found, revise only the affected sections before handoff.
 - If the pass changes the spec, record changed sections and why the revision preserves the authoritative brief.
 - If no material issue is found, emit `fresh_eyes_delta: none`.

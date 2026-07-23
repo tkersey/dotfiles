@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Make Skill"
   short_description: "Create lean observable Codex skills"
-  default_prompt: "Use $ms for direct skill creation or surgery; classify the skill type, add decision instrumentation only when justified, and always validate."
+  default_prompt: "Use $ms for direct skill creation or surgery; classify the skill type and add decision instrumentation only when justified."
