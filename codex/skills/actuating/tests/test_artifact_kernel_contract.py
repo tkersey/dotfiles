@@ -41,12 +41,7 @@ def sha256(data: bytes) -> str:
 
 
 def canonical_json(value: object) -> bytes:
-    return json.dumps(
-        value,
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
 
 class ArtifactKernelContractTests(unittest.TestCase):
@@ -65,7 +60,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
         expected = {
             "goal-contract/v3": "$goal-contract",
             "counterexample-set/v1": "$review-fold",
-            "construction-contract/v1": "$actuating",
+            "construction-contract/v2": "$actuating",
             "actuating-evidence-event/v1": "domain owner",
         }
         for family, owner in expected.items():
@@ -126,8 +121,11 @@ class ArtifactKernelContractTests(unittest.TestCase):
         self.assertIn("`obligation_id#falsifier`", EVIDENCE)
         self.assertIn("repeated token values remain valid", FLAT_CONSTRUCTION)
         self.assertIn("Every `law_ref` names a current Goal law", FLAT_CONSTRUCTION)
+        self.assertIn("only when both `law_ref` and `owner_boundary` match", FLAT_CONSTRUCTION)
         self.assertIn("subject_observation procedure", ONE_SEAM_OPERATOR)
         self.assertIn("abort without effect on a", ONE_SEAM_OPERATOR)
+        self.assertIn("actuating-subject-observation/v1", FLAT_EVIDENCE)
+        self.assertTrue((ROOT / "scripts" / "subject_observation.py").is_file())
         self.assertIn("mismatch", ONE_SEAM_OPERATOR)
 
     def test_counterexample_successor_and_review_intent_remains(self) -> None:
@@ -218,6 +216,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
             "does not require a review campaign before classification or repair",
         ):
             self.assertIn(phrase, FLAT_REVIEW)
+        self.assertIn("actuating-review-identity-projection/v1", FLAT_REVIEW)
 
     def test_review_reducer_requires_counterexample_subject_bindings(self) -> None:
         for phrase in (
@@ -305,6 +304,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
 
     def test_request_identity_binds_every_semantic_input_and_exact_echo(self) -> None:
         for phrase in (
+            "required Ledger `>= 0.11.7`",
             '"actuating-review-request/v1" || 0x00',
             "goal_id || 0x00 || campaign_id || 0x00 || subject_digest || 0x00",
             "request_id || 0x00 || lens_name || 0x00 || role || 0x00",
@@ -318,7 +318,7 @@ class ArtifactKernelContractTests(unittest.TestCase):
 
     def test_evidence_adapter_shapes_capability_and_runtime_gate_are_exact(self) -> None:
         for phrase in (
-            "ledger --version >= 0.11.0",
+            "ledger --version >= 0.11.7",
             "append prepare state project doctor path",
             "cas --version >= 0.2.83",
             "exactly `run`, `start`, and `wait`",
@@ -504,13 +504,19 @@ class ArtifactKernelContractTests(unittest.TestCase):
             with self.subTest(retired=retired):
                 self.assertNotIn(retired, doctrine)
 
-    def test_actuating_package_stays_below_budget(self) -> None:
-        total = sum(
+    def test_actuating_package_stays_below_split_budgets(self) -> None:
+        doctrine_total = sum(
             len(path.read_text(encoding="utf-8").splitlines())
             for path in ROOT.rglob("*")
-            if path.is_file() and path.suffix in {".json", ".md", ".yaml", ".py"}
+            if path.is_file() and path.suffix in {".json", ".md", ".yaml"}
         )
-        self.assertLess(total, 1956, total)
+        python_total = sum(
+            len(path.read_text(encoding="utf-8").splitlines())
+            for path in ROOT.rglob("*.py")
+            if path.is_file()
+        )
+        self.assertLessEqual(doctrine_total, 1387, doctrine_total)
+        self.assertLess(python_total, 900, python_total)
 
 
 if __name__ == "__main__":

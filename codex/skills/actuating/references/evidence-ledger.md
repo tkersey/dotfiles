@@ -6,24 +6,19 @@ projection adapter. Event bodies retain their domain owners.
 
 ## Current runtime gate
 
-After completing `$ledger ensure` once for the workflow, require
-`ledger --version >= 0.11.0`. Inspect `ledger --source actuation --help` and
-require exactly these actions:
+After `$ledger ensure` once for the workflow, require `ledger --version >=
+0.11.7` and exactly these `ledger --source actuation --help` actions:
 
 ~~~text
 append prepare state project doctor path
 ~~~
 
-Reject the route when any action is missing, any other actuation action is
-advertised, or a retired `open`, `observe`, `close`, or `decide` action remains.
-The same gate is required when a standalone Goal Contract or Review Fold
-handoff enters Actuating.
+Reject missing or extra actions and retired `open`, `observe`, `close`, or
+`decide`; apply the same gate to standalone Goal Contract or Review Fold handoff.
 
-Before review dispatch, require `cas --version >= 0.2.83` and inspect
-`cas review --help`. Its action set must be exactly `run`, `start`, and `wait`;
-the `review_session` and `review-session` aliases and every retired review
-action must be absent. Compare semantic versions numerically, never
-lexicographically.
+Before review, require `cas --version >= 0.2.83` and exactly `run`, `start`, and
+`wait` in `cas review --help`, with no retired action or `review_session` or
+`review-session` alias. Compare semantic versions numerically.
 
 ## Event envelope
 
@@ -206,6 +201,21 @@ mismatch takes `operation_aborted` without performing the effect. The executor
 then echoes the subject it actually observed in the applicable owner event.
 Ledger compares opaque digests only: it never invokes Git, derives repository
 identity, or decides whether the subject procedure is semantically adequate.
+
+~~~bash
+uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_observation.py \
+  --repo REPO --repository-id ID --allow PATH [--allow PATH ...] [--prohibit PATH ...]
+~~~
+
+Resolve `<loaded-actuating-skill-root>` to the absolute directory containing
+the active `SKILL.md`, never the target repo. `--no-project` prevents pre-check
+environment or lockfile effects.
+
+`actuating-subject-observation/v1` binds repository id and canonical-root digest, commit and symbolic HEAD, structural scope roots, sorted index, worktree state,
+recursive gitlinks, deletions, and selected ignored or unignored files; unborn
+HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
+out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
+index-flagged, platform-ambiguous, or unequal captures fail closed.
 
 `operation_aborted` is the capabilityless recovery path: reject any raw
 capability, exact-match the current tuple and pending `step_id`, require a

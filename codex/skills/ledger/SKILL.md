@@ -106,7 +106,7 @@ Actuating has four authoritative per-goal artifact families:
 ```text
 goal-contract/v3
 counterexample-set/v1
-construction-contract/v1
+construction-contract/v2
 actuating-evidence-event/v1
 ```
 

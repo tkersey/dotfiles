@@ -16,7 +16,7 @@ Use exactly four authoritative per-goal artifact families:
    laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
-3. `construction-contract/v1` — the selected architecture, proof obligations,
+3. `construction-contract/v2` — the selected architecture, proof obligations,
    preserved observations, and retirements, authored by `$actuating` after a
    `$universalist` nomination and, when required, one `$reduce` challenge.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
@@ -139,12 +139,13 @@ mutation.
    is the current Construction; Ledger does not select or revise it.
 6. For each repository effect, Actuating selects one exact operation projected
    by the current Goal, returned Construction, and live subject, including its
-   `expected_subject_digest`. Immediately before the effect, the executor
-   recomputes that identity through the exact repository-native procedure
-   selected and supplied by Actuating for the operation. A mismatch aborts
-   without effect. The executor cannot choose
-   architecture, broaden scope, publish, or claim completion; Ledger only
-   exact-matches the echoed opaque digest and never derives it or invokes Git.
+   `expected_subject_digest`. For Git repositories, select the checked-in
+   `scripts/subject_observation.py` command with the Goal's literal repository
+   and path scope. Its `actuating-subject-observation/v1` requires two identical
+   captures of HEAD, index, scoped worktree, and selected ignored or unignored state.
+   Before the effect the executor reruns that exact command. A mismatch aborts without effect.
+   The executor cannot choose another observer or broaden scope, and Ledger
+   compares only the opaque digest.
 7. Run the Construction's exact verifier and falsifier observations. Record
    their immutable outputs and the resulting subject identity in the Evidence
    Ledger using [evidence-ledger.md](references/evidence-ledger.md).
