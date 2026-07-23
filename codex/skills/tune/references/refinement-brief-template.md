@@ -11,7 +11,7 @@ Mode:
 Evidence sources:
 - Source 1:
   - Kind: in-flight | history | provided | worktree | mixed
-  - Locator: <current conversation | sessions root | session id | workdir | repo | file/artifact | validation output>
+  - Locator: <current conversation | sessions root | session id | workdir | repo | file/artifact | observed output>
   - Scope: <current turn | current conversation | recent window | arbitrary history | explicit sessions | supplied evidence>
   - Window: <duration/date range/all/none>
   - Access method: <current context | $seq command | file read | tool output | user-provided text>
@@ -22,11 +22,11 @@ Apply gate:
 - pass | blocked: <reason>
 
 Commit/push policy:
-- Apply, edit, patch, or update authorizes local file changes and validation only.
+- Apply, edit, patch, or update authorizes local file changes only.
 - Commit only when the user explicitly asks to commit, publish, ship, or save changes to git.
 - Push only when the user explicitly asks to push or publish remotely, and only after the commit succeeds.
 - If publishing is not authorized, report commit/push as `blocked:not-requested`.
-- If publishing is authorized but validation, pre-commit, or worktree checks fail, report the specific blocked state.
+- If publishing is authorized but pre-commit or worktree checks fail, report the specific blocked state.
 
 Tuning goal:
 - <one-line goal>
@@ -37,7 +37,7 @@ Intended-use contract:
 - Anti-triggers / non-goals: <summary>
 - Workflow expectation: <summary>
 - Tool/resource expectation: <summary>
-- Validation expectation: <summary>
+- Outcome-observation expectation: <summary>
 - Companion-skill handoffs: <summary>
 - Upgrade boundaries: <summary>
 
@@ -49,7 +49,7 @@ Observed usage:
 Evidence ledger:
 - Entry 1:
   - Source kind: <in-flight | history | provided | worktree>
-  - Command, locator, or source: <seq command, session id, validation output, user feedback, file review>
+  - Command, locator, or source: <seq command, session id, observed output, user feedback, file review>
   - Why this source was chosen: <reason>
   - What it proves: <claim supported by the source>
   - What it does not prove: <limits>
@@ -63,7 +63,7 @@ Evidence ledger:
   - <repeat as needed>
 
 Gap:
-- Type: <activation | interpretation | workflow | tooling | resource | validation | metadata | boundary | source-scope>
+- Type: <activation | interpretation | workflow | tooling | resource | metadata | boundary | source-scope>
 - Diagnosis: <specific mismatch between intended and observed use>
 - Severity: high | medium | low
 - Risk if unchanged: <consequence>
@@ -73,7 +73,7 @@ Recommended `$refine` action:
 - <smallest sufficient edit or upgrade>
 
 Must not change:
-- <core behavior, companion boundary, trigger scope, data-source assumptions, or validation expectation to preserve>
+- <core behavior, companion boundary, trigger scope, or data-source assumptions to preserve>
 
 Files likely affected:
 - codex/skills/<skill>/SKILL.md
@@ -87,19 +87,16 @@ Success criteria:
 - <criterion 2>
 - <criterion 3>
 
-Validation:
-- uv run --with pyyaml -- python3 codex/skills/.system/skill-creator/scripts/quick_validate.py codex/skills/<skill>
-- <script sample command>, if scripts changed
-- codex/skills/tune/scripts/validate-changed-skills, if shared assumptions or multiple skills changed
-- If quick_validate.py is unavailable, report validation as blocked and do not claim a pass.
+Outcome observation:
+- <future or current query that can observe the intended decision delta, when applicable>
 
 Publishing, apply-with-refine only:
 - Authorization: <none | commit-only | commit-and-push>, with exact user intent source.
 - Atomic change boundary: <what this commit contains and why it is one coherent change>
 - Scoped files to stage: <files justified by the brief>
 - Unrelated worktree changes: <none | present and left unstaged | blocked because inseparable>
-- Commit command/result: <blocked:not-requested | blocked:validation-failed | blocked:pre-commit-failed | blocked:worktree-inseparable | git commit -m "Tune <skill>: <short gap/fix summary>" -> sha>
-- Push command/result: <blocked:not-requested | blocked:validation-failed | blocked:pre-commit-failed | blocked:worktree-inseparable | blocked:commit-failed | git push result>
+- Commit command/result: <blocked:not-requested | blocked:pre-commit-failed | blocked:worktree-inseparable | git commit -m "Tune <skill>: <short gap/fix summary>" -> sha>
+- Push command/result: <blocked:not-requested | blocked:pre-commit-failed | blocked:worktree-inseparable | blocked:commit-failed | git push result>
 - Do not create PRs, merge branches, or clean up branches unless the user separately invokes that workflow.
 
 Privacy / sanitization:

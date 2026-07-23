@@ -9,6 +9,6 @@ Required fields:
 - expected decision delta;
 - proposed action;
 - protected contracts;
-- validation plan.
+- outcome-observation plan.
 
 No expected decision delta means no full tuning cycle.

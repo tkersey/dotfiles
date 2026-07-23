@@ -10,8 +10,8 @@ It binds:
 - selected and rejected intervention routes;
 - files and clauses changed;
 - metadata disposition;
-- static, contract, script, and behavioral validation;
-- future validation query;
+- current outcome evidence;
+- future outcome-observation query;
 - residual uncertainty.
 
 It is not a claim that future production sessions have already improved.

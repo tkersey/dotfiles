@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Tune"
   short_description: "Tune skills from decision provenance"
-  default_prompt: "Use $tune to compare a target skill's decision contract with STE-v1 decision episodes and outcomes, then produce one bounded skill delta or terminal state. Treat commit and push as publishing steps that require explicit user intent and passed validation."
+  default_prompt: "Use $tune to compare a target skill's decision contract with STE-v1 decision episodes and outcomes, then produce one bounded skill delta or terminal state. Treat commit and push as publishing steps that require explicit user intent."

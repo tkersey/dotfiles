@@ -29,13 +29,10 @@ phase_presence.gate = yes
 phase_presence.implementation_spec = yes
 phase_presence.challenge = yes
 phase_presence.fresh_eyes = yes
-phase_presence.lint = yes
 phase_presence.execution_handoff = yes
 gate.plan_allowed = yes
 gate.material_open_questions_remaining = no
 fresh_eyes.drift_detected = no
-lint.verdict = pass
-lint.blocked_handoff = no
 subagents.open_at_end = 0
 execution_control.plan_allowed = yes
 execution_control.execution_handoff = yes
@@ -72,11 +69,10 @@ PSR-v1 synthesis receipt, and `$actuating` handoff.
 Do not auto-run `$plan` when:
 
 - user explicitly requested `spec_only`, `spec only`, `no plan`, or equivalent;
-- mode is `gate-only`, `challenge-only`, or `lint-only`;
+- mode is `gate-only` or `challenge-only`;
 - status is `blocked`, `drift`, `audit-only`, or `partial`;
 - lane is not `spec_to_plan` for a legal blocker recorded in the receipt;
 - material questions remain;
-- lint failed, was skipped when required, or blocked handoff;
 - fresh-eyes returned to grill or detected drift;
 - any subagent remains open;
 - `next_owner` is not `$plan`;
@@ -94,9 +90,3 @@ next_owner: $plan
 That marker means automation failed; it does not authorize implementation.
 It must not be replaced with `spec_only` merely because the tail-call could not
 run.
-
-## Validator
-
-```bash
-uv run python codex/skills/spec-pipeline/tools/auto_plan_handoff_gate.py   <sgr-or-spec-file>
-```

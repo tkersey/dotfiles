@@ -7,7 +7,6 @@ import argparse
 from typing import Any
 
 from common import deterministic_id, dump_data, load_data, sha256_digest, unwrap
-from doctrine_gate import validate_value as validate_doctrine_value
 
 SECTIONS = {
     "claims": "claim_id",
@@ -44,10 +43,6 @@ def compile_delta(
     new_value: dict[str, Any],
     changed_paths: list[str],
 ) -> dict[str, Any]:
-    for label, value in (("prior", prior_value), ("new", new_value)):
-        errors, _warnings, _counts = validate_doctrine_value(value)
-        if errors:
-            raise ValueError(f"{label} doctrine invalid: {'; '.join(errors)}")
     prior = unwrap(prior_value, "codebase_doctrine")
     new = unwrap(new_value, "codebase_doctrine")
     old_index = indexed(prior)

@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Prefer `seq skill-decision-audit --mode tune-packet`; use for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization for skill-refinement changes. Stop at audit/proposal unless apply or skill-refinement publication is explicit. Commit/push only with explicit publish intent after validation. `$seq` CLI changes require a separate special spec."
+description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Prefer `seq skill-decision-audit --mode tune-packet`; use for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization for skill-refinement changes. Stop at audit/proposal unless apply or skill-refinement publication is explicit. Commit/push only with explicit publish intent. `$seq` CLI changes require a separate special spec."
 ---
 
 # Tune
@@ -67,7 +67,7 @@ apply-with-refine
 
 `proposal-only`: default for "improve," "optimize," or "what should change?"; produce one bounded decision delta, terminal repeat state, or no-action decision; no edits.
 
-`apply-with-refine`: use only when the user explicitly asks to edit, apply, patch, update, or publish an already-applied validated skill refinement now. Produce the diagnosis first, then hand a bounded brief to `$refine` or report the publication-only state. Apply means local file changes plus validation; it does not authorize commit or push.
+`apply-with-refine`: use only when the user explicitly asks to edit, apply, patch, update, or publish an already-applied skill refinement now. Produce the diagnosis first, then hand a bounded brief to `$refine` or report the publication-only state. Apply means local file changes; it does not authorize commit or push.
 
 ## Target skill type
 
@@ -75,7 +75,7 @@ Classify the target before judging it:
 
 ```text
 decision       route selection/rejection/narrowing/blocking/escalation
-execution      handoff fidelity, surface budget, validation, rework
+execution      handoff fidelity, surface budget, observed behavior, rework
 evidence       coverage, precision, provenance, false positives/negatives
 orchestration  phase correctness, handoff completeness, terminal states, loops
 mixed          name the relevant dimensions; do not force route-change metrics
@@ -126,7 +126,7 @@ Ceremonial activation means the skill was loaded or declared but no clause was e
 Classify the smallest useful gap:
 
 ```text
-activation | interpretation | workflow | tooling | resource | validation
+activation | interpretation | workflow | tooling | resource
 metadata | boundary | source-scope | decision-contract | observability
 outcome | ceremony | overconstraint
 ```
@@ -165,12 +165,6 @@ For high-impact or ambiguous tuning, use `skill_decision_provenance_auditor` and
 
 Consume or emit `skill_tuning_evidence / STE-v1`. It must preserve target kind, contract authority, window, denominator, trigger quality, decision influence, clause compliance, outcomes, workarounds, exemplars, recurrent gaps, and limitations.
 
-Validate:
-
-```bash
-python3 codex/skills/tune/tools/ste_gate.py <packet.json>
-```
-
 ## Skill delta
 
 Produce at most one dominant `skill_delta_candidate / SDC-v2` per cycle.
@@ -186,7 +180,7 @@ evidence class/recurrence/confidence
 expected decision delta
 smallest change
 protected contracts
-validation query and plan
+outcome-observation query
 proposed action
 publish authorization and commit/push state, when apply-mode is requested
 ```
@@ -208,28 +202,28 @@ retired
 
 Apply-with-refine may edit files only when all hold:
 
-- explicit user request to edit, apply, patch, update, or publish an already-applied validated skill refinement now;
+- explicit user request to edit, apply, patch, update, or publish a skill refinement now;
 - target, evidence source, and intended contract are identified;
 - protected-skill restrictions are satisfied;
 - decision/outcome gap is sufficiently evidenced and smallest change is known;
 - stable clause IDs are preserved unless intentionally replaced;
-- validation query exists.
+- an outcome-observation query exists when the claimed effect requires later evidence.
 
 Publishing is separate:
 
-- commit only after validation passes and explicit commit, publish, ship, or save-to-git intent exists;
+- commit only after explicit commit, publish, ship, or save-to-git intent exists;
 - push only after commit succeeds and explicit push or remote-publish intent exists;
 - otherwise report commit/push as `blocked:not-requested`.
-- when publishing was requested but validation, pre-commit, or worktree checks fail,
+- when publishing was requested but pre-commit or worktree checks fail,
   report the specific blocked state instead of collapsing it to `blocked:not-requested`.
 
 If any required gate fails, stop at audit/proposal or report blocked publication.
 
 ## Handoffs
 
-`$refine` handoff: use `REFINE-SKILL-v3`. The brief must bind source packet, target kind, gap/clause refs, expected delta, optimization boundary, intervention budget, forbidden changes, smallest-change hint, static/contract/script/behavioral validation, and publish authorization when relevant. Do not hand `$refine` raw transcripts when STE-v1 is available.
+`$refine` handoff: use `REFINE-SKILL-v3`. The brief must bind source packet, target kind, gap/clause refs, expected delta, optimization boundary, intervention budget, forbidden changes, smallest-change hint, outcome-observation query, and publish authorization when relevant. Do not hand `$refine` raw transcripts when STE-v1 is available.
 
-`$seq` special-spec handoff: when a missing evidence surface blocks diagnosis, emit `SEQ-SPEC-HANDOFF-v1` with need, observed gap, desired command/packet fields, acceptance criteria, validation examples, and source evidence. Do not edit `$seq` inside ordinary skill refinement.
+`$seq` special-spec handoff: when a missing evidence surface blocks diagnosis, emit `SEQ-SPEC-HANDOFF-v1` with need, observed gap, desired command/packet fields, acceptance criteria, observation examples, and source evidence. Do not edit `$seq` inside ordinary skill refinement.
 
 ## Subagent policy
 
@@ -243,26 +237,11 @@ Use `skill_outcome_skeptic` when compliance/outcome correlation could be mistake
 
 `$refine` owns authorized package optimization after `$tune` produces a bounded packet or brief. Do not delegate this to a system-managed optimizer.
 
-## Validation
+## Outcome observation
 
-Static:
-
-```bash
-uv run --with pyyaml -- python3 \
-  codex/skills/.system/skill-creator/scripts/quick_validate.py \
-  codex/skills/<skill>
-```
-
-Contract:
-
-```bash
-python3 codex/skills/tune/tools/decision_contract_lint.py \
-  codex/skills/<skill>/references/decision-contract.yaml
-```
-
-Behavioral: rerun the exact `skill-decision-audit` query named by `validation_query`.
-
-A text edit is not validated merely because frontmatter parses.
+Rerun the exact `skill-decision-audit` query named by the tuning packet when
+current evidence can exist. Otherwise retain it as a future query. A text edit
+does not prove that behavior improved.
 
 ## Report
 
@@ -296,10 +275,9 @@ Handoff / action:
 - <no action | refine brief | seq spec | applied edit>
 - Publication: <authorization | commit | push>
 
-Validation:
-- Static:
-- Contract:
-- Behavioral:
+Outcome observation:
+- Current evidence:
+- Future query:
 
 Remaining uncertainty:
 ```
@@ -317,5 +295,5 @@ Remaining uncertainty:
 - No decision delta, no full cycle.
 - No repeated proposal without terminal state.
 - Apply/edit authority is not commit/push authority.
-- No commit or push without explicit publish intent and passed validation.
+- No commit or push without explicit publish intent.
 - No `$seq` CLI edit without a separate spec.

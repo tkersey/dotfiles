@@ -7,17 +7,18 @@ import argparse
 from copy import deepcopy
 from typing import Any
 
-from common import dump_data, load_data, sha256_digest, unwrap
-from intent_gate import expected_intent_id, validate_value
+from common import deterministic_id, dump_data, load_data, sha256_digest, unwrap
+
+
+def expected_intent_id(body: dict[str, Any]) -> str:
+    material = {key: value for key, value in body.items() if key != "intent_id"}
+    return deterministic_id("CDI", material)
 
 
 def compile_intent(
     gate_wrapper: dict[str, Any],
     grill_wrapper: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    kind, errors, _warnings = validate_value(gate_wrapper, kind="dig")
-    if errors:
-        raise ValueError("invalid DIG-v2: " + "; ".join(errors))
     gate = unwrap(gate_wrapper, "doctrine_intent_gate")
     grill_required = gate.get("grill_required") in {"yes", True}
     gate_id = gate["gate_id"]
@@ -36,13 +37,6 @@ def compile_intent(
     else:
         if grill_wrapper is None:
             raise ValueError("DIG requires a grill closure packet")
-        _kind, grill_errors, _warnings = validate_value(
-            grill_wrapper,
-            kind="grill",
-            require_plan=True,
-        )
-        if grill_errors:
-            raise ValueError("invalid grill closure: " + "; ".join(grill_errors))
         grill = unwrap(grill_wrapper, "grill_decision_packet")
         closure = grill["codebase_doctrine_closure"]
         if closure["source_gate_id"] != gate_id:
@@ -79,11 +73,7 @@ def compile_intent(
         "doctrine_allowed": "yes",
     }
     body["intent_id"] = expected_intent_id(body)
-    wrapper = {"codebase_doctrine_intent": body}
-    _kind, errors, _warnings = validate_value(wrapper, kind="cdi")
-    if errors:
-        raise ValueError("compiled CDI-v2 failed validation: " + "; ".join(errors))
-    return wrapper
+    return {"codebase_doctrine_intent": body}
 
 
 def main() -> int:

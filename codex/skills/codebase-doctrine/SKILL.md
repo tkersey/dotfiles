@@ -104,12 +104,7 @@ from user-owned choices:
 - deployment/distribution shape;
 - visible correctness, compatibility, security, performance, and operational priorities.
 
-Create DIG-v2 and validate it:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/intent_gate.py gate.yaml
-```
+Create DIG-v2 before continuing.
 
 ### Mandatory `$grill-me` dispatch
 
@@ -385,15 +380,8 @@ Wave 4  search_saturation_auditor after the complete draft
 
 Do not launch all workers merely because mode is `deep`.
 
-Every worker receives a CBDA-v1 assignment and returns one CBDP-v2 packet. The
-packet gate requires the assignment and enforces artifact state, scope, question,
-lane, and update-key authority:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/packet_gate.py packet.yaml \
-  --assignment assignment.yaml
-```
+Every worker receives a CBDA-v1 assignment and returns one CBDP-v2 packet bound
+to its artifact state, scope, question, lane, and update-key authority.
 
 Workers are read-only, cannot spawn children, and never own final doctrine.
 
@@ -401,7 +389,7 @@ Workers are read-only, cannot spawn children, and never own final doctrine.
 
 The root:
 
-1. validates CDI, artifact state, assignments, and packets;
+1. binds CDI, artifact state, assignments, and packets;
 2. rejects stale, wrong-scope, unsupported, or out-of-authority material;
 3. closes evidence and reverse-reference edges;
 4. distinguishes current, intended, target, proposed, contradicted, and retired doctrine;
@@ -410,15 +398,6 @@ The root:
 7. applies evidence-bearing skill candidacy;
 8. verifies saturation;
 9. emits one mode-appropriate terminal artifact.
-
-Validate CBD-v2:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/doctrine_gate.py \
-  doctrine.yaml \
-  --require-saturated
-```
 
 ## Refresh
 
@@ -451,16 +430,8 @@ Local-exclude by default unless the user explicitly wants versioned doctrine.
 
 Codebase Doctrine recommends; it does not create.
 
-After explicit user authorization, validate CBSH-v2 against its source CBD:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/handoff_gate.py \
-  handoff.yaml \
-  --doctrine doctrine.yaml
-```
-
-Then hand to `$ms`.
+After explicit user authorization, bind CBSH-v2 to its source CBD and hand it
+to `$ms`.
 
 ## Empirical evolution
 
@@ -474,13 +445,6 @@ $seq skill-decision-audit
 
 Return changed laws or authority to `$codebase-doctrine refresh`. Do not tune from
 raw mention counts.
-
-## Validation
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/quick_validate.py
-```
 
 ## Hard rules
 

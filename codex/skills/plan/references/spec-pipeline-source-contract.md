@@ -21,9 +21,6 @@ plan_source_contract:
       gate:
         plan_allowed: yes
         material_open_questions_remaining: no
-      lint:
-        verdict: pass
-        blocked_handoff: no
       execution_handoff:
         ready_for_plan: yes
         next_owner: $plan
@@ -51,7 +48,6 @@ fields are missing or contradictory, `$plan` returns to `$spec-pipeline` or
 ```text
 SGR-v2 complete
 -> PSC-v1
--> ledger validate plan-source-contract
 -> plan identity
 -> policy synthesis fixed point
 -> PSR-v1
@@ -63,7 +59,7 @@ SGR-v2 complete
 ```text
 planning from PSC-v1 when lane=spec_only
 planning from PSC-v1 when gate.plan_allowed=no
-planning from PSC-v1 when lint failed or blocked handoff
+planning from PSC-v1 when the governed handoff is blocked
 planning from PSC-v1 when next_owner != $plan
 planning from PSC-v1 when do_not_execute_before is non-empty
 silently repairing missing spec decisions inside $plan

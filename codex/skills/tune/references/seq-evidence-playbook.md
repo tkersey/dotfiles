@@ -10,7 +10,7 @@ Prefer specialized `$seq` commands before raw `seq query`. Build an evidence led
 - Declare the history scope before mining.
 - Use recent evidence by default only when the user did not request another scope.
 - Distinguish raw skill mentions from successful activations.
-- Prefer session-level, workflow-level, and validation-level proof over isolated text matches.
+- Prefer session-level, workflow-level, and outcome-level evidence over isolated text matches.
 - Search for counterevidence, not only confirming examples.
 - Sanitize user-facing summaries. Do not include raw transcript text unless explicitly requested and safe.
 - Use raw `seq query` only when no lifted command covers the evidence shape.
@@ -111,16 +111,6 @@ seq workdir-report --root <sessions-root> --contains "<path-fragment>" --mode se
 ```
 
 Use these when a skill behaves differently in a specific repo or workdir.
-
-## Validation Evidence
-
-```bash
-seq message-search --root <sessions-root> --contains "quick_validate" --roles assistant --limit 50 --format jsonl
-seq tool-search --root <sessions-root> --contains "quick_validate.py" --mode rows --format table
-seq tool-search --root <sessions-root> --contains "validate-changed-skills" --mode rows --format table
-```
-
-Use these for validation failures, omissions, or repeated blocked validation.
 
 ## Fallback
 

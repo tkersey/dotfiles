@@ -30,6 +30,5 @@ SPEC_PIPELINE_GATE_FAILURE
 <14 spec sections>
 ## Invariant Challenge
 ## Fresh-Eyes Pass
-## Spec Lint Result
 ## Execution Handoff
 ```

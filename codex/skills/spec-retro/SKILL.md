@@ -117,13 +117,9 @@ spec_retro_update:
     gate_contract: []
     challenge_contract: []
     fresh_eyes_contract: []
-    lint_contract: []
     governance_receipt: []
     output_templates: []
   tool_updates:
-    spec_gate: []
-    spec_lint: []
-    sgr_gate: []
     churn_detector: []
   subagent_policy_updates: []
   exemplar_updates: []

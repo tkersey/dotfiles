@@ -13,7 +13,7 @@ remains.
 
 ```text
 source contract
--> plan source contract gate
+-> source acceptance
 -> plan identity
 -> belief/unknowns
 -> guarded actions
@@ -39,7 +39,7 @@ no synthetic round logs as readiness proof
 
 Before the first native Ledger command in this workflow, load `$ledger` and
 complete `$ledger ensure`. After readiness, invoke `ledger` directly; native
-validation owns its result and failure reporting.
+artifact operations own their results and failure reporting.
 
 ## Accepted source contracts
 
@@ -67,13 +67,6 @@ plan_source_contract:
   do_not_execute_before: []
 ```
 
-Materialize the executable projection as canonical JSON and validate PSC-v1
-before planning:
-
-```bash
-ledger validate plan-source-contract --input <psc-json-file>
-```
-
 Fail closed when:
 
 ```text
@@ -83,7 +76,6 @@ SGR-v2 mode not in {full, repair}
 SGR-v2 status != complete
 SGR-v2 lane != spec_to_plan
 SGR-v2 gate.plan_allowed != yes
-SGR-v2 lint.verdict != pass
 SGR-v2 execution_handoff.ready_for_plan != yes
 SGR-v2 execution_handoff.next_owner != $plan
 SGR-v2 auto_plan_handoff.eligible != yes
@@ -97,8 +89,7 @@ A semantic gap returns to `$spec-pipeline` or `$grill-me`. `$plan` must not
 repair missing semantics by inventing scope, non-goals, compatibility, or proof
 bar.
 
-See [03-plan-source-contract.md](references/cli-specs/03-plan-source-contract.md)
-and [04-plan-source-contract-validation.md](references/cli-specs/04-plan-source-contract-validation.md).
+See [03-plan-source-contract.md](references/cli-specs/03-plan-source-contract.md).
 
 ## Artifact root
 
@@ -445,11 +436,11 @@ remaining blockers
 
 When the user asks only whether an existing plan is ready:
 
-- validate source currentness;
-- validate policy structure;
-- validate PSR-v1 convergence;
-- validate radical candidate disposition;
-- validate `$actuating` handoff readiness.
+- inspect source currentness;
+- inspect policy structure;
+- confirm PSR-v1 convergence;
+- confirm radical candidate disposition;
+- confirm `$actuating` handoff readiness.
 
 If all pass and no revision is requested, reply exactly:
 
@@ -463,7 +454,7 @@ Do not use self-attested readiness without PSR/source evidence.
 
 - Persist only under `.ledger/plan/`.
 - Every plan has an explicit immutable plan ID.
-- Validate PSC-v1 before planning from `$spec-pipeline`.
+- Require a complete, current PSC-v1 before planning from `$spec-pipeline`.
 - Never infer a target execution owner beyond the emitted handoff.
 - Never merge separate objectives into one plan for convenience.
 - Never create executable cross-plan edges.

@@ -1,6 +1,6 @@
 ---
 name: opt
-description: "Orchestrate evidence-backed optimization of user-owned Codex skills through $seq or $shadow evidence, $tune diagnosis, and $refine package editing and validation. Use for explicit skill audits, missed/false/ceremonial activation, decision-contract tuning, regression repair, or authorized skill edits. Not for application-code optimization or autonomous portfolio mutation."
+description: "Orchestrate evidence-backed optimization of user-owned Codex skills through $seq or $shadow evidence, $tune diagnosis, and $refine package editing and outcome observation. Use for explicit skill audits, missed/false/ceremonial activation, decision-contract tuning, regression repair, or authorized skill edits. Not for application-code optimization or autonomous portfolio mutation."
 ---
 
 # opt
@@ -13,8 +13,8 @@ Coordinate the user-owned skill-improvement loop without blurring authority:
 $seq      historical and session evidence
 $shadow   one watched-session delta
 $tune     diagnosis and expected decision delta
-$refine   sole skill-package writer and validator
-$opt      orchestration, gates, and final synthesis
+$refine   sole skill-package writer
+$opt      orchestration and final synthesis
 ```
 
 Core question:
@@ -40,7 +40,6 @@ propose
 tune
 shadow-diagnose
 apply
-validate
 regression
 goal-loop
 ```
@@ -119,7 +118,7 @@ skill_outcome_skeptic
 1. Produce or consume `STE-v1`.
 2. Invoke `$tune` in proposal mode.
 3. Select one dominant `SDC-v2` delta or a terminal no-action state.
-4. Include the exact validation query.
+4. Include the exact outcome-observation query.
 5. Stop without editing.
 
 ### Apply
@@ -133,40 +132,25 @@ target-package inspection
 one dominant intervention
 authorized edits
 stable contract preservation
-static validation
-script/fixture validation
-behavioral validation query
+outcome-observation query
 SRR-v1
 ```
 
 The root owns final synthesis. Custom agents do not write skill packages.
-
-### Validate
-
-Require:
-
-```text
-static package validation
-decision-contract validation when present
-changed script and fixture validation
-behavioral validation now or an exact future query
-```
-
-Historical behavior does not change retroactively. Distinguish current static/fixture success from future live behavioral evidence.
 
 ### Regression
 
 Bind the repair to:
 
 ```text
-observed episode or fixture
+observed episode
 trigger / clause / route
 prior bad behavior
 expected future behavior
-reproduction query or test
+reproduction query
 ```
 
-Install the smallest guard that detects the behavioral failure rather than changed wording.
+Apply the smallest intervention that addresses the behavioral failure rather than changed wording.
 
 ### Goal loop
 
@@ -176,7 +160,7 @@ When `$cas` owns continuation:
 new evidence
 -> tune delta
 -> refine action
--> validation
+-> outcome observation
 -> parent goal decision
 ```
 
@@ -200,7 +184,7 @@ refine_brief:
     intervention_budget:
     forbidden_changes: []
   smallest_change_hint:
-  validation:
+  outcome_observation:
 ```
 
 Rules:
@@ -222,9 +206,8 @@ Optimization is complete only when:
 - `$tune` selected one bounded route;
 - `$refine` stayed inside the authorized package surface;
 - stable contract IDs were preserved;
-- static and contract validation passed;
-- changed scripts/tests passed;
-- behavioral validation passed or its exact future query is retained;
+- the outcome claim is bounded by current evidence;
+- an exact future observation query is retained when current evidence cannot show the effect;
 - `SRR-v1` was emitted;
 - residual uncertainty is stated.
 
@@ -239,10 +222,7 @@ $opt result:
 - Tune delta:
 - Refine route:
 - Files changed:
-- Static validation:
-- Contract validation:
-- Script/test validation:
-- Behavioral validation:
+- Outcome observation:
 - SRR-v1:
 - Parent goal status:
 - Remaining uncertainty:

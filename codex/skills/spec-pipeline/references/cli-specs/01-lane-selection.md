@@ -26,11 +26,10 @@ Use `spec_only` only when at least one is true:
 
 ```text
 user explicitly requested spec-only/no-plan/no-handoff output
-mode is gate-only/challenge-only/lint-only
+mode is gate-only/challenge-only
 status is blocked, drift, audit-only, or partial
 material user judgment remains unresolved
 Gate Result has plan_allowed=no
-lint failed, was skipped when required, or blocked handoff
 fresh-eyes returned to grill or detected drift
 execution_handoff.ready_for_plan=no
 execution_handoff.next_owner is not $plan

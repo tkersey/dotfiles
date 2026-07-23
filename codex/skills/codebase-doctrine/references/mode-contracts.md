@@ -27,9 +27,4 @@ underlying doctrine is stale.
 A conformance report comparing current guidance, skills, and enforcement
 surfaces with doctrine. Audit is not an alias for refresh.
 
-Validate non-CBD modes with:
-
-```bash
-uv run --with pyyaml python \
-  codex/skills/codebase-doctrine/tools/mode_gate.py artifact.yaml
-```
+Each non-CBD artifact must carry the fields and semantics of its selected mode.

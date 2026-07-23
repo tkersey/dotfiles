@@ -92,9 +92,9 @@ skill_decision_contract:
       required_artifacts:
         - complete refine brief
         - allowed files
-        - validation
+        - outcome observation
       success_signals:
-        - minimal validated edit
+        - minimal bounded edit
       failure_signals:
         - edit without decision delta
       rationale: Authorized edits must remain bounded.

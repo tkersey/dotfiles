@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Refine"
   short_description: "User-owned evidence-backed skill optimizer"
-  default_prompt: "Use $refine as the user-owned skill optimizer: consume a complete tune brief, select one smallest intervention, edit only authorized files, preserve contract IDs, and validate static, contract, script, and behavioral surfaces."
+  default_prompt: "Use $refine as the user-owned skill optimizer: consume a complete tune brief, select one smallest intervention, edit only authorized files, preserve contract IDs, and retain the bounded outcome-observation query."

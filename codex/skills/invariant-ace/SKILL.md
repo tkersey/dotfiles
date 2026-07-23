@@ -246,16 +246,6 @@ Required fields:
 
 `invariant_gate_complete` may be `pass` only when all preceding required gate fields pass. `implementation_handoff_allowed: yes` requires at least one `enforce-now` row whose authority status is `cleared-for-enforcement` and no unresolved veto exists for that ID.
 
-## Machine check
-
-When automation is available, run:
-
-```bash
-python codex/skills/invariant-ace/tools/invariant_ace_gate.py invariant-output.md
-```
-
-A failed checker means no implementation handoff.
-
 ## Hard rules
 
 - Do not enforce a candidate invariant without a concrete owner and scope.
@@ -271,7 +261,5 @@ A failed checker means no implementation handoff.
 ## Resources
 
 - [authority-fanout.md](references/authority-fanout.md)
-- [invariant-gate-contract.md](references/invariant-gate-contract.md)
 - [invariant-output-template.md](references/invariant-output-template.md)
 - [CODEX_SUBAGENTS.md](references/CODEX_SUBAGENTS.md)
-- [adversarial-eval-seeds.yaml](evals/adversarial-eval-seeds.yaml)

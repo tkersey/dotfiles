@@ -5,7 +5,7 @@
 Trigger when:
 
 - 5+ spec-pipeline sessions since last retro;
-- 2+ repeated gate/lint/challenge gaps;
+- 2+ repeated readiness or challenge gaps;
 - companion phases are invisible in reports;
 - execution outran readiness;
 - plan churn/campaign triggers recur;

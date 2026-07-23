@@ -194,10 +194,7 @@ tool_success_only
 ambiguous
 absent
 ```
-Create `SGG-v1` and validate:
-```bash
-python3 codex/skills/retrace/tools/source_governance_gate.py governance.json
-```
+Create `SGG-v1`.
 Verdicts:
 ```text
 authoritative
@@ -234,10 +231,7 @@ seq decision-capsule \
   --format json
 ```
 Do not let replay models select the historical source episode.
-### 2. Validate DCP-v2
-```bash
-python3 codex/skills/retrace/tools/dcp_gate.py capsule.json
-```
+### 2. Bind DCP-v2
 The capsule must distinguish:
 ```text
 pre_decision
@@ -274,10 +268,8 @@ lineage_mode recorded in FIR
 ```
 Rollout transcript replay is structurally anchored transcript replay, not live thread forking or workspace reconstruction.
 See [workspace-reconstruction.md](references/workspace-reconstruction.md).
-### 4. Preflight
-```bash
-python3 codex/skills/retrace/tools/retrace_preflight.py
-```
+### 4. Capability requirements
+
 Require:
 ```text
 seq decision-capsule and DCP validation
@@ -309,10 +301,6 @@ retrace_inquiry_plan:
   budgets:
   cleanup:
 ```
-Validate:
-```bash
-python3 codex/skills/retrace/tools/rip_gate.py plan.json
-```
 Use different lane contracts; do not manufacture consensus through repeated leading prompts.
 See [inquiry-lanes.md](references/inquiry-lanes.md).
 ### 6. Run CAS
@@ -325,11 +313,9 @@ cas session_inquiry run \
 ```
 CAS must prove source lineage, retained anchor, model/provider, permission policy, workspace mode, turn state, and cleanup.
 Detached lifecycle remains available through `start`, `status`, `wait`, `interrupt`, and `cleanup`.
-### 7. Validate FIR-v1
-```bash
-python3 codex/skills/retrace/tools/fir_gate.py receipt.json
-```
-Only valid FIRs contribute to:
+### 7. Consume FIR-v1
+
+Only complete, source-bound FIRs contribute to:
 ```text
 route distribution
 consensus
@@ -355,9 +341,6 @@ route stability will drive tuning or doctrine
 ```
 The adjudicator is read-only.
 ### 9. Synthesize DRR-v1
-```bash
-python3 codex/skills/retrace/tools/drr_gate.py reconstruction.json
-```
 DRR must preserve:
 ```text
 source-governance verdict

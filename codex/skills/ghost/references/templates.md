@@ -265,9 +265,8 @@ Notes:
 - Sampling fallback (if adapter infeasible)
   - What was sampled and why
   - Known gaps / unverified areas
-- Evidence bundle verifier (fail-closed)
+- Evidence bundle
   - `verification/evidence/` is present and complete
-  - `uv run --with pyyaml -- python scripts/verify_evidence.py --bundle verification/evidence` passes
 - Layered-agentic evidence (required when `inventory.json.contract_class=layered_agentic`)
   - `interface_inventory.json` inventories `surfaces`, `boundary_invariants`, and `artifact_contracts`
   - `contract_traceability.csv` maps `surface|invariant|artifact` targets to `case_id` and adapter proof

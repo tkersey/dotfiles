@@ -34,15 +34,9 @@ ideate_result:
 - `blocked_for_user_input` — a material judgment is required.
 - `no_breakthrough_found` — useful ideas may exist, but none passed both escalation gates.
 
-## Validation rules
+## Receipt semantics
 
 - `portfolio_ready` requires evidence, candidates, Glaze, ASI, overlap check, chosen direction, and seed.
 - `evidence_too_thin` should not emit a seed by default.
 - `no_breakthrough_found` may emit a non-breakthrough portfolio but should not claim a breakthrough.
 - `audit-only` may skip Glaze/ASI if it is only reporting signals.
-
-Validate JSON receipts with:
-
-```bash
-python3 codex/skills/ideate/tools/ideate_result_gate.py <idr.json>
-```

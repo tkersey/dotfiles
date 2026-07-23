@@ -10,7 +10,6 @@ It contains:
 - gate impact;
 - challenge impact;
 - fresh-eyes impact;
-- lint impact;
 - subagent accounting;
 - plan/mutation authority;
 - retro trigger.

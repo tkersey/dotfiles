@@ -1,6 +1,6 @@
 ---
 name: refine
-description: "Own and apply bounded, evidence-backed optimization of an existing Codex skill. Use after `$tune` supplies STE-v1/SDC-v2 or a complete REFINE-SKILL-v3 brief; inspect the target package, select one smallest intervention, edit only authorized files, preserve stable decision-contract IDs, and validate static structure, contract consistency, and the named behavioral `$seq` query. Not for broad historical diagnosis or system-managed skill optimization."
+description: "Own and apply bounded, evidence-backed optimization of an existing Codex skill. Use after `$tune` supplies STE-v1/SDC-v2 or a complete REFINE-SKILL-v3 brief; inspect the target package, select one smallest intervention, edit only authorized files, preserve stable decision-contract IDs, and retain the named behavioral `$seq` observation query. Not for broad historical diagnosis or system-managed skill optimization."
 ---
 
 # Refine
@@ -12,7 +12,7 @@ description: "Own and apply bounded, evidence-backed optimization of an existing
 ```text
 $seq    gathers evidence
 $tune   diagnoses the gap and expected decision delta
-$refine owns package optimization, editing, and validation
+$refine owns package optimization and editing
 ```
 
 Do not delegate optimization to a system-managed `skill-optimizer`.
@@ -46,7 +46,6 @@ Choose exactly one:
 ```text
 inspect
 apply
-validate
 regression
 ```
 
@@ -54,7 +53,7 @@ regression
 
 Inspect the target package against an already supplied brief.
 
-Return the smallest viable intervention and validation plan.
+Return the smallest viable intervention and outcome-observation plan.
 
 No edits.
 
@@ -62,11 +61,7 @@ No edits.
 
 Default when explicit edit authority and a complete brief exist.
 
-Inspect, select one intervention, edit, and validate.
-
-### validate
-
-Run static, decision-contract, script/test, and behavioral validation without changing files.
+Inspect, select one intervention, edit, and retain the outcome-observation query.
 
 ### regression
 
@@ -89,11 +84,10 @@ refine_brief:
   mode:
     inspect |
     apply |
-    validate |
     regression
 
   source_evidence:
-    packet: STE-v1 | GSD-v2 | user-feedback | validation
+    packet: STE-v1 | GSD-v2 | user-feedback | observed-behavior
     refs: []
 
   gap:
@@ -119,12 +113,9 @@ refine_brief:
     forbidden_changes: []
 
   smallest_change_hint:
-  validation:
-    static: []
-    contract: []
-    scripts_or_tests: []
-    behavioral_query:
-    success_criteria: []
+  outcome_observation:
+    query:
+    evidence_limits: []
 ```
 
 Fail closed when the brief does not identify an expected delta and authorized surface.
@@ -140,10 +131,7 @@ references/decision-contract.yaml
 brief-authorized references/
 brief-authorized scripts/
 brief-authorized assets/
-brief-authorized tests/
 ```
-
-Also inspect repository-local skill conventions required for validation.
 
 Check the worktree before mutation.
 
@@ -165,7 +153,6 @@ handoff contract
 tooling surface
 reference/resource placement
 metadata/default prompt
-validation probe
 decision observability
 duplication/deletion
 ```
@@ -187,7 +174,6 @@ artifact_refinement
 tooling_refinement
 resource_refinement
 metadata_refinement
-validation_refinement
 observability_refinement
 consolidate_or_delete
 blocked
@@ -199,7 +185,6 @@ A route may touch several files only when they form one coherent intervention, s
 SKILL.md rule
 + matching decision-contract clause
 + matching agent prompt
-+ one regression fixture
 ```
 
 Do not combine unrelated improvements into one refinement.
@@ -214,15 +199,15 @@ Compare candidate interventions in this order:
 1. no edit
 2. delete or consolidate
 3. clarify existing trigger/rule/route
-4. repair an existing artifact or validation surface
-5. add one narrowly scoped reference/probe
-6. add a deterministic script
+4. repair an existing artifact or operational surface
+5. add one narrowly scoped reference
+6. add a substantive operation
 7. add a new decision-contract clause or receipt
 ```
 
 Do not add observability merely because it is possible.
 
-Do not add a script for behavior that clear prose plus existing validation can govern.
+Do not add a script that merely grades skill prose.
 
 ## Stable contract preservation
 
@@ -259,14 +244,14 @@ When no contract exists:
 For a known failure, bind:
 
 ```text
-observed episode or fixture
+observed episode
 trigger/clause/route involved
 prior bad behavior
 expected future behavior
-reproduction query or test
+reproduction query
 ```
 
-The regression guard should catch the skill failure, not merely detect changed wording.
+The intervention should address the observed skill failure, not merely change wording.
 
 Examples:
 
@@ -297,45 +282,12 @@ Add or require it only when:
 
 An SDR receipt is not proof of a good outcome.
 
-## Validation stack
-
-### Static package validation
-
-Always run after edits:
-
-```bash
-uv run --with pyyaml -- python3 \
-  codex/skills/.system/skill-creator/scripts/quick_validate.py \
-  codex/skills/<skill>
-```
-
-### Decision-contract validation
-
-When SKDC-v1 exists:
-
-```bash
-python3 codex/skills/tune/tools/decision_contract_lint.py \
-  codex/skills/<skill>/references/decision-contract.yaml
-```
-
-### Script/test validation
-
-Run every brief-authorized changed script or fixture.
-
-Use representative positive and negative cases.
-
-### Behavioral validation
+## Outcome observation
 
 Run the exact named `$seq` query when supported.
 
-Historical sessions do not retroactively change. Behavioral validation may therefore be:
-
-```text
-fixture validation now
-future live-query retained
-```
-
-Do not claim future behavior already improved.
+Historical sessions do not retroactively change. Retain the future live query
+and do not claim that a text edit has already improved behavior.
 
 ## Skill Refinement Receipt
 
@@ -361,26 +313,14 @@ skill_refinement_receipt:
     updated |
     verified_unchanged |
     not_present
-  validation:
-    static:
-    contract:
-    scripts_or_tests:
-    behavioral:
-  future_validation_query:
+  outcome_observation:
+    current_evidence:
+    future_query:
   residual_uncertainty: []
-  gate:
+  boundary:
     within_boundary: yes | no
     expected_delta_addressed: yes | no
-    validation_passed: yes | no
 ```
-
-Do not emit `validation_passed: yes` when future live evidence is still required. Use:
-
-```text
-static_and_fixture_passed; future_behavior_pending
-```
-
-in the validation detail and preserve the query.
 
 ## Optional read-only subagents
 
@@ -414,11 +354,8 @@ Changed:
 - Clauses:
 - Metadata:
 
-Validation:
-- Static:
-- Contract:
-- Scripts/tests:
-- Behavioral:
+Outcome observation:
+- Current evidence:
 - Future query:
 
 Receipt:
@@ -438,6 +375,5 @@ Residual uncertainty:
 - Preserve unrelated work.
 - Preserve stable contract IDs.
 - No observability artifact without a concrete need.
-- Static validation is mandatory.
 - Behavioral claims require behavioral evidence.
-- Future validation must be named, not implied.
+- Future observation must be named, not implied.

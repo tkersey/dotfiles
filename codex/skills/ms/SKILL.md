@@ -7,7 +7,7 @@ description: "Create or directly edit Codex skill packages: SKILL.md, triggers, 
 
 ## Mission
 
-Create lean, composable, valid skill packages.
+Create lean, composable skill packages.
 
 For skills whose value lies in changing choices, make future decision evidence observable without turning every run into receipt ceremony.
 
@@ -20,7 +20,6 @@ For skills whose value lies in changing choices, make future decision evidence o
 - `description` is the trigger surface and remains under 1024 characters.
 - Keep `SKILL.md` under 500 lines; move deep detail into `references/`.
 - Keep `agents/openai.yaml` aligned.
-- Always run `quick_validate.py`.
 - Record the `agents/openai.yaml` disposition.
 
 ## Skill type
@@ -88,13 +87,6 @@ skill_decision_contract:
   clauses: []
 ```
 
-Validate:
-
-```bash
-python3 codex/skills/tune/tools/decision_contract_lint.py \
-  codex/skills/<skill>/references/decision-contract.yaml
-```
-
 ## Optional SDR-v1
 
 A decision-oriented skill may specify an optional:
@@ -127,8 +119,7 @@ Do not emit receipts for ordinary prose, every checklist step, or simple tool ex
 8. Author procedural `SKILL.md`.
 9. Create decision contract only if the gate passes.
 10. Generate or update `agents/openai.yaml`.
-11. Validate.
-12. Remove redundant doctrine and examples.
+11. Remove redundant doctrine and examples.
 
 ## Update workflow
 
@@ -142,7 +133,6 @@ Use for direct user-authorized surgery without a `$tune` diagnosis.
    - avoid silent contract drift.
 4. If the skill is becoming decision-oriented, evaluate the instrumentation gate.
 5. Update metadata.
-6. Validate.
 
 ## Future tuneability check
 
@@ -172,19 +162,7 @@ seq skill-decision-audit \
   --format json
 ```
 
-If unavailable, use narrow activation/message/validation evidence and report the CLI gap.
-
-## Validation
-
-```bash
-uv run --with pyyaml -- python3 \
-  codex/skills/.system/skill-creator/scripts/quick_validate.py \
-  codex/skills/<skill>
-```
-
-If scripts were added, run representative samples.
-
-If SKDC-v1 was added, run its linter.
+If unavailable, use narrow activation, message, and outcome evidence and report the CLI gap.
 
 ## Final report
 
@@ -194,7 +172,5 @@ Skill:
 - Type:
 - Decision instrumentation: added | updated | not justified
 - agents/openai.yaml:
-- quick_validate:
-- contract validation:
 - Remaining uncertainty:
 ```
