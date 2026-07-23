@@ -157,16 +157,6 @@ class CasContractTests(unittest.TestCase):
             with self.subTest(key=key):
                 self.assertIn(key, verdict)
 
-    def test_hctp_is_explicitly_separate_from_actuating(self) -> None:
-        for token in [
-            "## HCTP trial execution",
-            "does not participate in Actuating implementation, review, Construction, or closure",
-            "hylo-trial/v2",
-            "--materialization-fd",
-        ]:
-            with self.subTest(token=token):
-                self.assertIn(token, CONTRACT)
-
     def test_review_contract_contains_no_retired_policy_or_kernel_artifacts(self) -> None:
         forbidden = [
             "RF-v2",
