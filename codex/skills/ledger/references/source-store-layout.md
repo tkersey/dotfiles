@@ -7,7 +7,6 @@ ledger --source learnings
 ledger
 ledger --source synesthesia
 ledger --source actuation
-ledger --source hylo
 ```
 
 Current source-memory persistent-adapter locations:
@@ -27,7 +26,6 @@ Operational, non-memory adapter locations:
 
 ```text
 .ledger/actuation/<safe-goal-id>/evidence.jsonl
-.ledger/hylo/events.jsonl
 ```
 
 Legacy stores:

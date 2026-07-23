@@ -1,6 +1,0 @@
-interface:
-  display_name: "Hylo"
-  short_description: "Evaluate source-bound trials and derive causal next steps"
-  default_prompt: "Use $hylo to evaluate an existing owner-applied candidate in a source-bound blinded trial, then derive RUN, OBSERVE, or STOP without treating the result as mutation authority."
-policy:
-  allow_implicit_invocation: false

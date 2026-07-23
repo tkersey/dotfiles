@@ -8,7 +8,7 @@ SKILL = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 OWNERS = (SKILLS / "actuating" / "references" / "artifact-kernel.md").read_text(encoding="utf-8")
 FLAT_SKILL = " ".join(SKILL.split())
 ACTUATION = SKILL.split("## Actuating Artifact Kernel boundary", 1)[1].split(
-    "## Hylo CRF/HCTP authority", 1
+    "## Source-memory lifecycle checkpoint", 1
 )[0]
 FLAT_ACTUATION = " ".join(ACTUATION.split())
 
@@ -82,7 +82,6 @@ class ArtifactKernelContractTests(unittest.TestCase):
 
     def test_unrelated_ledger_planes_remain_present(self) -> None:
         for heading in (
-            "## Hylo CRF/HCTP authority",
             "## Source-memory lifecycle checkpoint",
             "## Universalist Plan Workflow",
         ):
