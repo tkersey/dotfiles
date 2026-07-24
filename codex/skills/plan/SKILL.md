@@ -387,7 +387,7 @@ Execution still requires:
 
 ~~~text
 current goal-contract/v3 and accepted execution authority
-one current construction-contract/v2 selected by $actuating
+one current construction-contract/v3 selected by $actuating
 one exact Actuating-selected in-scope operation before material mutation
 current subject-bound evidence before continuation
 counterexample-set/v1 when witnessed review findings drive work
