@@ -102,9 +102,13 @@ Actuating has four authoritative per-goal artifact families:
 ```text
 goal-contract/v3
 counterexample-set/v1
-construction-contract/v2
+construction-contract/v3
 actuating-evidence-event/v1
 ```
+
+Actuating workflows require Ledger 0.13.0 or newer for Construction v3.
+Construction v1 and v2 stores are unsupported and are not migrated; start a
+fresh goal-local store and ignore the legacy data.
 
 Ledger may, when the semantic owner requests it:
 
