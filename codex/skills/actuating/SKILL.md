@@ -16,7 +16,8 @@ Use exactly four authoritative per-goal artifact families:
    laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
-3. `construction-contract/v2` — the selected architecture, proof obligations,
+3. `construction-contract/v3` — the selected architecture, four compared
+   candidate families, factor surfaces, supersession, proof obligations,
    preserved observations, and retirements, authored by `$actuating` after a
    `$universalist` nomination and, when required, one `$reduce` challenge.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
@@ -59,12 +60,16 @@ Ledger may materialize, canonicalize, validate, append, replay, and emit
 requested disposable structural projections. Ledger never executes repository
 changes; evaluates CAS facts or review credit; interprets Ship evidence; selects
 a repair, Construction, or next action; grants mutation; emits a semantic
-closure verdict; or authors the closure receipt. Before the first Ledger command
-in a workflow, load `$ledger` and complete `$ledger ensure` once.
-Then apply the current zero-legacy Ledger and CAS runtime gates and use the exact
-transient schemas and one-shot capability law in
+closure verdict; or authors the closure receipt. Before the first Ledger
+command in a workflow, load `$ledger` and complete `$ledger ensure` once. Then
+require Ledger 0.13.0 or newer and Seq 0.5.0 or newer, apply the current
+zero-legacy Ledger and CAS runtime gates, and use the exact transient schemas
+and one-shot capability law in
 [evidence-ledger.md](references/evidence-ledger.md). Apply the same Actuating
 gate when entering from a standalone Goal Contract or Review Fold handoff.
+Construction v1 and v2 are unsupported. Do not migrate, translate, replay, or
+consult their stored state as current authority; start a fresh goal-local
+Evidence store and ignore the legacy data.
 
 `$ship` is the sole owner of public PR or tracker effects. Actuating supplies a
 current `ready-to-ship` proof and records Ship's returned receipt as evidence;
@@ -94,8 +99,12 @@ mutation.
    capabilities, and required observations. Apply `$universalist` at every
    changed or preserved boundary and retain its compact nomination: candidate,
    owner, laws, observations, residuals, invalidators, and falsifier.
-3. Before selecting a Construction, classify the nominated candidate's
-   factors. Invoke `$reduce` exactly once for that candidate version when it
+3. Compile exactly four ordinary candidate families in canonical order:
+   `realization-preserve`, `admitted-domain-restriction`,
+   `representation-or-owner-strengthening`, and `ablation-normalization`.
+   Give each candidate an explicit factor inventory and falsifier, and mark
+   exactly one selected. Classify the nominated candidate's factors. Invoke
+   `$reduce` exactly once for that candidate version when it
    adds or preserves an independent semantic owner, parallel representation,
    bypass, compatibility branch, semantic mechanism, or apparently dominated
    residue. Otherwise record `Reduction: not-required`. When an accepted
@@ -119,9 +128,12 @@ mutation.
 4. Adjudicate the nomination and challenge. Select the smallest non-dominated
    Construction that satisfies every Goal law, makes invalid states
    unrepresentable where feasible, and names exact proof and retirement
-   obligations. A `dominated` challenge selects the smaller admissible
-   candidate; `incomparable`, `essential-shape-gap`, or `blocked` requires an
-   Actuating disposition or obstruction, never recursive skill ping-pong.
+   obligations. Record the predecessor and successor factor surfaces and a
+   total supersession partition: every factor is preserved, retired,
+   introduced, or explicitly replaced. A `dominated` challenge selects the
+   smaller admissible candidate; `incomparable`, `essential-shape-gap`, or
+   `blocked` requires an Actuating disposition or obstruction, never recursive
+   skill ping-pong.
    Follow
    [construction-contract.md](references/construction-contract.md).
 5. Set the selected Construction draft's `artifact_id` to JSON `null`, then
@@ -132,8 +144,8 @@ mutation.
      append --input <construction-contract.json>
    ~~~
 
-   Require `actuating-append-result/v1`, retain its complete canonical
-   `artifact`, exact-match its non-null `artifact_id` to
+   Require `construction-contract/v3` and `actuating-append-result/v1`, retain
+   its complete canonical `artifact`, exact-match its non-null `artifact_id` to
    `artifact.artifact_id`, and retain `event_digest` as the
    `construction_contract_registered` observation. Only the returned artifact
    is the current Construction; Ledger does not select or revise it.
@@ -178,6 +190,57 @@ The successor records falsified and preserved predecessor claims, excluded
 Counterexample classes, stronger proof, and retirements. It must preserve
 already-valid observations. A witnessed example is not resolved until the
 Construction excludes its class or proves it instance-specific.
+
+An accepted Review Fold makes the current Construction stale. Its successor
+uses `accepted-review-fold`, binds the latest Counterexample Set on the exact
+current subject, and records the same canonical accepted-class list in both
+`counterexample_class_refs` and `evaluated_class_refs`. A zero-class successor
+is legal only when it clears a nonempty predecessor debt set on that subject.
+Predecessor-factor proof refs resolve through the predecessor artifact;
+candidate, successor-factor, addition, and completeness refs resolve through
+the successor artifact.
+
+### Causal recurrence gate
+
+Before selecting an affected repair, fold the current and predecessor
+Counterexample Sets against the current and predecessor Constructions for this
+Goal. Trigger the gate when either:
+
+- one accepted class recurs after a repair; or
+- two accepted classes across subject revisions depend on the same missing
+  observation, authority, correlation, or Construction factor.
+
+Shared filenames, diff size, or similar wording do not establish a common
+cause. When the evidence does, record this compact view over the successor
+Construction decision:
+
+~~~text
+Causal Recurrence Disposition
+Evidence and class refs:
+Shared cause:
+Current Construction factor:
+Candidate comparison: realization preserve / admitted-domain restriction / representation strengthening / ablation normalization
+Disposition: instance-specific | architecture-repair | ablation-repair | blocked
+Why another local repair is sufficient or forbidden:
+Proof:
+Falsifier:
+~~~
+
+This is not a fifth authority artifact. The successor Construction carries the
+complete cluster in `counterexample_class_refs`, names the shared cause in
+`falsified_predecessor_claims`, and owns the selected proof and retirements.
+Do not select another affected repository mutation after the gate triggers.
+`instance-specific` is legal only when a non-example proof separates the
+cluster and establishes that the current representation remains sufficient.
+Otherwise select an architecture or ablation successor, or block.
+
+When the repeated route adds validators, correlations, caches, bypasses, or
+path-dependent recovery to recreate information the selected representation
+forgets, require the Reduction challenge to test the existence of that repair
+mechanism—not merely whether its newest implementation is locally minimal.
+Compare all four v3 candidate families before retaining residual validation
+authority. Ledger may replay the cited history but never computes shared cause
+or the disposition.
 
 Before dispatching fresh review after a repair, compare the realized production
 delta with the challenged candidate. Line count is only a reclassification

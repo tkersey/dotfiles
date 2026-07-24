@@ -7,7 +7,7 @@ projection adapter. Event bodies retain their domain owners.
 ## Current runtime gate
 
 After `$ledger ensure` once for the workflow, require `ledger --version >=
-0.11.7` and exactly these `ledger --source actuation --help` actions:
+0.13.0` and exactly these `ledger --source actuation --help` actions:
 
 ~~~text
 append prepare state project doctor path
@@ -15,6 +15,13 @@ append prepare state project doctor path
 
 Reject missing or extra actions and retired `open`, `observe`, `close`, or
 `decide`; apply the same gate to standalone Goal Contract or Review Fold handoff.
+Require `seq --version >= 0.5.0` before Actuation kernel audit, and require its
+JSON capabilities to report `actuation_artifact_kernel_audit_v1: true`. Seq
+consumes Ledger's checked Construction view; it does not interpret the
+Construction schema or grant authority.
+
+Construction v1 and v2 stores are unsupported and are not migrated. Start a
+fresh goal-local store and ignore the legacy data.
 
 Before review, require `cas --version >= 0.2.83` and exactly `run`, `start`, and
 `wait` in `cas review --help`, with no retired action or `review_session` or

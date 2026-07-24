@@ -7,7 +7,7 @@ compatibility peer state.
 |---|---|---|
 | `goal-contract/v3` | accepted source through `$goal-contract` | What must be true, remain true, and is authorized? |
 | `counterexample-set/v1` | `$review-fold` | What witnessed behavior falsifies the current Construction? |
-| `construction-contract/v2` | `$actuating` using `$universalist` | What structure realizes the laws, excludes Counterexamples, and retires residue? |
+| `construction-contract/v3` | `$actuating` using `$universalist` | What compared factorization realizes the laws, excludes Counterexamples, supersedes its predecessor, and retires residue? |
 | `actuating-evidence-event/v1` | the event body's domain owner | What happened and what was independently observed? |
 
 The Goal Contract is the sole semantic-authority artifact; the Counterexample Set is the sole classified-bug artifact; the Construction Contract is the sole architecture-selection artifact; the Evidence Ledger is the sole mutable per-goal truth.
@@ -34,6 +34,10 @@ Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain own
 an authoritative artifact family or Evidence event kind.
 
 Every immutable replayable event envelope proves sequence and custody, not semantic truth; Actuating evaluates it with the current Goal, Construction, Counterexamples, and subject.
+
+Construction v1 and v2 have no compatibility authority. Current tooling rejects
+them without migration; a v3 workflow starts a fresh goal-local Evidence store
+and ignores legacy data.
 
 ## Bankruptcy gate
 

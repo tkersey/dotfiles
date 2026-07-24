@@ -22,7 +22,7 @@ proves that the class is genuinely instance-specific.
 
 ~~~yaml
 artifact:
-  schema: construction-contract/v2
+  schema: construction-contract/v3
   artifact_id:
   goal_id:
   semantic_author: actuating
@@ -71,6 +71,52 @@ artifact:
         disposition: collapse | delegate | retire | replace
         replacement_ref:
         verifier: {argv: []}
+    recompilation:
+      trigger: initial | accepted-review-fold
+      counterexample_set_ref:
+      evaluated_class_refs: []
+      candidates:
+        - candidate_id:
+          family: realization-preserve | admitted-domain-restriction | representation-or-owner-strengthening | ablation-normalization
+          derivation: incumbent-relative | incumbent-independent
+          status: selected | dominated | incomparable | obstructed
+          summary:
+          law_refs: []
+          observation_refs: []
+          factors:
+            - factor_id:
+              kind: law-owner | authoritative-representation | semantic-mechanism | recovery-correlation | residual-validator | bypass | compatibility-branch | illegal-state-family | resource-obligation | proof-path
+              owner:
+              law_refs: []
+              observation_refs: []
+              description:
+          residual_obligations: []
+          falsifier:
+      selected_candidate_id:
+      adjudication:
+        selected_reason:
+        reduction_disposition: minimal | smaller-admissible | incomparable | obstructed
+        reduction_reason:
+        falsifier:
+    semantic_surface:
+      predecessor_factors: []
+      successor_factors: []
+    supersession:
+      disposition: initial | unchanged-realization | normalized | essential-expansion
+      preserved_factor_refs: []
+      retired_factor_refs: []
+      introduced_factor_refs: []
+      replacement_relations:
+        - relation_id:
+          predecessor_factor_refs: []
+          successor_factor_refs: []
+          rationale:
+      essential_additions:
+        - factor_ref:
+          law_refs: []
+          proof_refs: []
+          rationale:
+      surface_completeness_proof_ref:
     execution:
       allowed_paths: []
       owner_boundary:
@@ -80,7 +126,17 @@ artifact:
 
 Use canonical JSON, content-address `artifact_id`, reject unknown fields, and
 treat a materialized Construction as immutable. A changed decision creates an
-explicit successor.
+explicit successor. Arrays that represent sets are sorted and duplicate-free.
+The four candidate families above are a v3 schema constant in that exact order,
+not the incidental order of an implementation enum. Exactly one candidate is
+selected, its factor inventory exactly equals `successor_factors`, and at least
+one candidate is incumbent-independent.
+
+Supersession partitions every predecessor and successor factor exactly once.
+Preserved factors remain byte-semantically equal. `unchanged-realization`
+admits only identical factor inventories; `normalized` requires an actual
+factor delta and cannot encode an identity replacement; `essential-expansion`
+binds every introduced factor to an essential addition and proof.
 
 Before any projected operation, Actuating sets the selected draft's
 `artifact_id` to JSON `null` and requests the current Ledger structural adapter
@@ -101,6 +157,18 @@ affected boundary and records its nomination:
 - materially distinct candidates and their falsifiers;
 - the nominated construction and materially distinct alternatives;
 - invalid states eliminated, residual obligations, and retirements.
+
+Actuating then compiles exactly four comparable candidate families in canonical
+order:
+
+1. `realization-preserve`;
+2. `admitted-domain-restriction`;
+3. `representation-or-owner-strengthening`;
+4. `ablation-normalization`.
+
+Each candidate names its laws, observations, factors, residual obligations,
+and falsifier. Repository-native specializations live within these families;
+they do not replace or add a fifth family.
 
 For each accepted Counterexample class that can lead to mutation, Actuating
 also records a compact Repair Disposition while selecting this Construction:
@@ -140,9 +208,11 @@ reconsider it.
 
 A Counterexample class's `owner_boundary` records where its predecessor was
 falsified; it does not force the successor's `canonical_owner` to be identical.
-Each v2 proof obligation carries `owner_boundary` and covers an accepted class only when both `law_ref` and `owner_boundary` match.
-One successor may compose multiple witnessed owners when matching obligations prove the join; otherwise Actuating
-proves `separate-laws` and splits or blocks. Ledger validates exact declared owner binding, not semantic owner adequacy.
+Each v3 proof obligation carries `owner_boundary` and covers an accepted class
+only when both `law_ref` and `owner_boundary` match. One successor may compose
+multiple witnessed owners when matching obligations prove the join; otherwise
+Actuating proves `separate-laws` and splits or blocks. Ledger validates exact
+declared owner binding, not semantic owner adequacy.
 
 A candidate `A` dominates candidate `B` only when `A` is no worse in every
 ACT-AK dimension:
@@ -172,6 +242,56 @@ the same candidate and evidence never repeat recursively. Otherwise retain the
 pre-mutation challenge. Fresh review evaluates the adjudicated result or the
 recorded obstruction.
 
+## Causal recurrence gate
+
+Before another affected mutation, Actuating folds current and predecessor
+Counterexample Sets against current and predecessor Constructions for the same
+Goal. The gate triggers when one accepted class recurs after repair or when two
+accepted classes across subject revisions share an evidenced missing
+observation, authority, correlation, or Construction factor. Similar prose,
+files, or line counts are not sufficient evidence of shared cause.
+
+Actuating compares the four ordinary v3 candidate families before
+adjudication: realization preservation, admitted-domain restriction,
+representation or owner strengthening, and ablation or normalization.
+
+The candidate universe may contain a more specific repository-native
+equivalent, but it may not omit one of these semantic alternatives. The Reduce
+challenge tests the continued existence of the repair or validation mechanism,
+not only whether its latest implementation is locally minimal.
+
+Record one composed, non-authoritative view:
+
+~~~text
+Causal Recurrence Disposition
+Evidence and class refs:
+Shared cause:
+Current Construction factor:
+Candidate comparison:
+Disposition: instance-specific | architecture-repair | ablation-repair | blocked
+Why another local repair is sufficient or forbidden:
+Proof:
+Falsifier:
+~~~
+
+The current `construction-contract/v3` remains sufficient:
+
+- `counterexample_class_refs` contains the complete causal cluster;
+- `falsified_predecessor_claims` names the shared cause and the predecessor
+  belief it invalidates;
+- `mode` records `architecture-repair` or `ablation-repair`, unless an
+  instance-specific `realization-repair` is proved;
+- `proof_obligations` carries the separating or structural proof; and
+- `retirements` removes dominated validators, correlations, caches, bypasses,
+  compatibility branches, or path-dependent recovery.
+
+Instance-specific proof must be non-example evidence that separates the
+cluster and establishes the current representation as sufficient. Without that
+proof, Actuating must select an architecture or ablation successor or block.
+It must not select another local validator that reconstructs information the
+representation repeatedly forgets. This rule adds no artifact family and gives
+Ledger no causal-classification or Construction-selection authority.
+
 ## Correct-by-construction proof
 
 For each law, select the strongest feasible proof mode:
@@ -189,9 +309,12 @@ representation
 A weaker mode requires an adequacy reason. High or Critical authority, state-machine, identity, persistence,
 or concurrency defects require more than an example unless the accepted source explicitly owns the residual risk and a compensating invariant proof exists.
 
-For every accepted Counterexample class, v2 requires a law-matched `implementation` obligation; aggregate
-`acceptance` is not a substitute. Recurrent, High, and Critical classes require non-`example-regression`
-implementation proof. Ledger may replay an admitted v1 under its historical rule, but Actuating never authors or appends v1 after this cutover.
+For every accepted Counterexample class, v3 requires a law-matched
+`implementation` obligation; aggregate `acceptance` is not a substitute.
+Recurrent, High, and Critical classes require non-`example-regression`
+implementation proof. Ledger 0.13.0 and later reject Construction v1, v2, and
+mixed stores with `LegacyConstructionUnsupported`. There is no migration:
+start a fresh goal-local Evidence store and ignore the legacy data.
 
 Expected minimums by law family are:
 
@@ -225,6 +348,19 @@ state:
 - which valid observations remain;
 - what proof becomes stronger;
 - what dominated residue must disappear.
+
+An accepted Review Fold uses `accepted-review-fold`, names the latest
+Counterexample Set, and records the exact current accepted-class set in both
+`counterexample_class_refs` and `evaluated_class_refs`. The Set must evaluate
+the predecessor Construction on the exact current subject. An empty
+review-driven successor is legal only when it clears a nonempty predecessor
+debt set without an intervening subject change.
+
+Proof references are artifact-relative. Predecessor-factor observation refs
+resolve only through the predecessor Construction's proof obligations.
+Candidate, successor-factor, essential-addition, and surface-completeness refs
+resolve only through the successor. Reusing a local proof id cannot silently
+change the predecessor witness.
 
 `realization-repair` preserves the architecture and corrects an implementation
 or bypass. `architecture-repair` changes the architecture. `ablation-repair`
