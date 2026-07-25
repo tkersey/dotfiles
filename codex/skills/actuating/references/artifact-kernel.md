@@ -16,6 +16,9 @@ The Goal Contract is the sole semantic-authority artifact; the Counterexample Se
 
 - Goal shape and authority: `$goal-contract`.
 - Finding classification and quotienting: `$review-fold`.
+- Architectonic activation and abstraction-route adjudication: `$actuating`;
+  `$glaze` may expand the candidate frame, and `$universalist` alone lowers
+  material results into boundary nominations.
 - Construction, proof strategy, orchestration, Counterexample evaluation, and retirements: `$actuating`.
 - Static Review Contract construction, CAS-evidence evaluation, review credit, topology, and convergence: `$actuating`.
 - Semantic closure verdict and `actuating-closure-receipt/v1`: `$actuating`.

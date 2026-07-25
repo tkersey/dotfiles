@@ -66,9 +66,14 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
   architecture constraints, proof requirements, authority, or publication
   posture blocks or requests a source revision.
 - A changed semantic decision creates an immutable successor Goal with the
-  same `goal_id`, exactly one predecessor `artifact_id`, a new content-addressed
-  `artifact_id`, and a fresh initial Construction. Never edit the predecessor
-  in place.
+  same `goal_id`, exactly one predecessor `artifact_id`, and a new
+  content-addressed `artifact_id`. A subject-only rebind may likewise require a
+  successor Goal to refresh source-bound scope. Neither case resets
+  Construction or Counterexample lineage: return the current Construction
+  identity to Actuating, which selects a successor with exactly one predecessor.
+  Only the first Construction in the current authoritative v3 lineage for the
+  `goal_id` may be initial with no predecessor. Never edit a predecessor in
+  place.
 
 ## Exclusions
 

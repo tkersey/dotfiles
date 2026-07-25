@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Actuating"
   short_description: "Construct, orchestrate, falsify, and close"
-  default_prompt: "Use $actuating to select a correct-by-construction architecture, orchestrate its realization and review, evaluate Counterexamples, and choose the next action while Ledger remains non-executing and Ship owns public effects."
+  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY before architecture or abstraction selection, integrate one bounded $glaze pass with $universalist when findings make abstraction change live, and let Actuating alone adjudicate the Construction and next action."

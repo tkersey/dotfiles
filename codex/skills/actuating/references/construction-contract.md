@@ -148,8 +148,16 @@ revises the Construction.
 
 ## Selection law
 
-Before consequential mutation, Actuating applies `$universalist` to the
-affected boundary and records its nomination:
+At the beginning of architecture or abstraction selection, Actuating states
+exactly:
+
+~~~text
+OPERATE ARCHITECTONICALLY
+~~~
+
+This is an activation instruction, not an authority artifact or proof.
+Actuating then applies `$universalist` to the affected boundary and records its
+nomination:
 
 - the current context and accepted laws;
 - the existing owner and host enforcement capabilities;
@@ -157,6 +165,23 @@ affected boundary and records its nomination:
 - materially distinct candidates and their falsifiers;
 - the nominated construction and materially distinct alternatives;
 - invalid states eliminated, residual obligations, and retirements.
+
+When an accepted Counterexample makes an abstraction change live by
+challenging the representation, owner, admitted domain, equivalence,
+normalization, or information retained—or when the Causal recurrence gate
+triggers—Actuating invokes `$glaze` exactly once after the initial nomination
+and before adjudication. Glaze must seek a materially new frame, invariant,
+mechanism, artifact, or breakthrough candidate rather than a rhetorical
+variant of the incumbent.
+
+Universalist reclassifies and lowers any material Glaze result into its
+repository-native nomination before candidate compilation. A useful result
+must change at least one candidate's owner, factor inventory, admitted domain,
+equivalence or normalization, retirement surface, proof surface, or falsifier.
+Otherwise record `Glaze result: no-material-reframe`; renamed summaries do not
+constitute distinct candidates. Glaze does not classify Counterexamples,
+select a Construction or Repair Disposition, grant mutation, or create another
+artifact family.
 
 Actuating then compiles exactly four comparable candidate families in canonical
 order:
@@ -189,10 +214,13 @@ The selected route is the least additive route that satisfies the law; an
 Before selection, `$reduce` challenges any materially disputable factor by
 factoring live obligations, testing congruent quotients or ablations, and
 checking recomposition. The order is `nominate -> challenge once -> adjudicate
--> one Construction`: Universalist, Reduce, then Actuating. The compact challenge
-is sufficient in Actuating composition; an independently useful Reduction
-Certificate may appear only in `supporting_refs`. Neither supporting surface
-selects the Construction or Repair Disposition.
+-> one Construction` when Glaze is not triggered. When abstraction change is
+live, the order is `activate -> Universalist nomination -> Glaze once ->
+Universalist reclassification and lowering -> Reduce challenge once ->
+Actuating adjudication -> one Construction`. The compact challenge is
+sufficient in Actuating composition; an independently useful Reduction
+Certificate may appear only in `supporting_refs`. No supporting surface selects
+the Construction or Repair Disposition.
 
 A challenge is required when the nominee adds or preserves an independent
 semantic owner, parallel representation, bypass, compatibility branch,
@@ -251,6 +279,10 @@ accepted classes across subject revisions share an evidenced missing
 observation, authority, correlation, or Construction factor. Similar prose,
 files, or line counts are not sufficient evidence of shared cause.
 
+The fold crosses subject revisions. A new subject digest changes freshness, not
+causal identity; a stable class recurring after rebinding must remain visible
+to this gate.
+
 Actuating compares the four ordinary v3 candidate families before
 adjudication: realization preservation, admitted-domain restriction,
 representation or owner strengthening, and ablation or normalization.
@@ -259,6 +291,11 @@ The candidate universe may contain a more specific repository-native
 equivalent, but it may not omit one of these semantic alternatives. The Reduce
 challenge tests the continued existence of the repair or validation mechanism,
 not only whether its latest implementation is locally minimal.
+
+Causal recurrence automatically makes abstraction change live. Complete the
+single Glaze pass and Universalist reclassification before comparing the four
+families. A `no-material-reframe` result does not weaken the required
+instance-specific non-example proof.
 
 Record one composed, non-authoritative view:
 
@@ -349,12 +386,32 @@ state:
 - what proof becomes stronger;
 - what dominated residue must disappear.
 
+For one `goal_id`, only the first Construction in the current authoritative v3
+lineage may use `mode: initial` with empty `predecessor_refs`. A successor Goal
+Contract, commit, publication, or other subject rebind does not restart
+Construction lineage. Every later Construction names the exact current
+Construction as its sole predecessor, even when all subject-bound proof and
+review evidence must be re-established.
+
+Subject identity and causal lineage are independent. Subject change invalidates
+proof, operations, review bindings, and review credit for the old subject; it
+does not erase predecessor decisions or stable Counterexample classes. The
+Causal recurrence gate scans the complete goal-local predecessor chain across
+subject revisions. If changed laws or applicability make prior evidence
+irrelevant, the successor must record that rejection, separation, or
+supersession explicitly rather than omitting the lineage.
+
 An accepted Review Fold uses `accepted-review-fold`, names the latest
 Counterexample Set, and records the exact current accepted-class set in both
 `counterexample_class_refs` and `evaluated_class_refs`. The Set must evaluate
 the predecessor Construction on the exact current subject. An empty
 review-driven successor is legal only when it clears a nonempty predecessor
 debt set without an intervening subject change.
+
+When a stable class recurs, the new Counterexample Set must name in
+`predecessor_refs` the most recent Set carrying that class. Actuating rejects a
+Set that omits this required Review Fold lineage and must not treat the class as
+novel.
 
 Proof references are artifact-relative. Predecessor-factor observation refs
 resolve only through the predecessor Construction's proof obligations.
