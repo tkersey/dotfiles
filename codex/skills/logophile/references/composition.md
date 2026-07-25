@@ -47,6 +47,39 @@ Use `$logophile` to sharpen the Actuation Bottom Line:
 
 Do not soften an executable next step into a vague recommendation.
 
+## After architecture or abstraction-selection workflows
+
+Use [architectonic_doctrine.md](architectonic_doctrine.md) when the output selects, compares, explains, or names a governing abstraction, owner boundary, representation, factorization, composition law, or reconstitution route.
+
+Preserve:
+
+- live obligations and required observations;
+- the incumbent abstraction and owner map;
+- abstraction leaks, accidental distinctions, and shadow truth;
+- candidate organizing principles and governing factors;
+- constructors, eliminators, and lawful compositions;
+- canonical owners and unavoidable validation owners;
+- conceptual compression;
+- the reconstitution path;
+- the preservation or refinement relation;
+- the proof path, falsifier, and obstruction.
+
+Keep the operator distinctions explicit:
+
+- `ARCHITECTONIC` discovers the governing organization of the whole relevant system or boundary;
+- `PRINCIPAL` finds the most general solution under constraints;
+- `FACTORIZING` exposes factors and recomposition;
+- `REPRESENTATION-SHIFTING` changes the representation;
+- `CANONICALIZING` selects one owner or normal form;
+- `UNIVERSALIZING` requires a real factorization-and-uniqueness property;
+- `MORPHOGENETIC` generates a new organizing form;
+- `RECONSTITUTIVE` rebuilds around the selected form;
+- `REIFYING` turns hidden behavior into explicit data.
+
+When `$actuating` is the consumer, preserve the exact activation `OPERATE ARCHITECTONICALLY` and sharpen its existing `Architectonic Escalation` and Construction Contract surfaces. Do not create a competing authority artifact. `$universalist` may nominate, `$reduce` may challenge, and `$actuating` adjudicates; `$logophile` owns terminology and human-facing articulation only.
+
+Do not polish a file reshuffle, layer count increase, or abstraction proliferation into an architectonic claim. A local owner-local correction remains valid when the governing organization is not actually in dispute.
+
 ## After breakthrough or innovation workflows
 
 Use [breakthrough_doctrine.md](breakthrough_doctrine.md) when the output claims or seeks a breakthrough, leap, step-change, regime transition, or newly reachable capability.
