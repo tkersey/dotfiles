@@ -33,7 +33,10 @@ Rules:
   increasing justification and proof strength.
 - Do not repeat every JSON field.
 - Do not include internal iteration history.
-- Treat compilation success as the only machine claim that the EPG is executable.
+- Report `Plan synthesized.` after synthesis. Report `Plan compiles.` only when a
+  compatible compiler accepts the exact emitted EPG under its named structural
+  contract.
+- Compiler absence prevents only the compilation claim, not the Plan result.
 - Do not emit a synthesis receipt, readiness gate, execution handoff, or Plan-owned
   runtime artifact.
 - `Execution Policy Graph` contains exactly one fenced JSON EPG object.

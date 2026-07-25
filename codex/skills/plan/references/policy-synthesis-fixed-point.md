@@ -2,13 +2,14 @@
 
 `$plan` must exhaustively refine the complete candidate before emission.
 
-The candidate is the pair:
+The candidate is:
 
 ```text
-C = (A, P)
+C = (A0, delta_A, P)
 
-A = architecture and abstraction state
-P = execution policy
+A0      = source-owned architecture and abstraction state
+delta_A = source-bounded or explicitly plan-local architectonic refinement
+P       = execution policy
 ```
 
 This preserves the strongest feature of the earlier `$plan`: repeated improvement
@@ -35,7 +36,7 @@ proof_and_terminal_state
 simplicity_and_compilability
 ```
 
-Each lens evaluates the whole `(A, P)` candidate:
+Each lens evaluates the whole `(A0, delta_A, P)` candidate:
 
 - `source_fidelity` — preserve source-fixed architectonic seams, required
   observations, compatibility, non-goals, and prohibited organizations;
@@ -63,7 +64,7 @@ These identifiers are an internal synthesis order, not a persisted pass log.
 ## Loop
 
 ```text
-compile initial architecture-policy candidate
+synthesize initial architecture-policy candidate
 run lenses in order
 if a lens finds material improvement:
   apply the minimal source-preserving improvement
@@ -197,22 +198,32 @@ readiness gate
 execution handoff
 ```
 
-## Compiler invariant
+## Emission and optional compilation
 
 ```text
-policy executable
+plan synthesized
 =
 all consequential seams dispositioned
 + no dominated architectonic factor remains
 + actions realize and retire the declared factors
-+ required architecture-policy squares commute or block honestly
++ any admitted architecture-policy squares commute or block honestly
 + complete clean nine-lens sweep
 + clean fresh-eyes pass
 + radical candidate evaluated
 + no unresolved blockers
-+ opaque policy compilation succeeds
 ```
 
-The first eight terms are synthesis discipline. The compiler enforces the final
-structural and operational boundary. No receipt or self-reported gate stands between
-the EPG and that result.
+These terms are private synthesis discipline, not machine-certified history. The
+resulting EPG is the complete Plan truth surface.
+
+When a compatible compiler is available, it may additionally establish:
+
+```text
+plan compiles
+=
+exact emitted EPG lowers under the named structural compiler contract
+```
+
+Compiler absence does not block Plan emission. Compilation does not establish that
+the private synthesis process occurred, that architecture is semantically correct,
+that source state is current, or that execution is authorized.

@@ -3,18 +3,36 @@
 `$plan` refines one joint candidate:
 
 ```text
-C = (A, P)
+C = (A0, delta_A, P)
 
-A = architecture and abstraction state
-P = execution policy
+A0      = architecture and abstraction owned by the accepted source
+delta_A = source-bounded or explicitly plan-local architectonic refinement
+P       = execution policy
 ```
 
 Architecture is not a detached review section. It is part of the state over which
 the existing policy-synthesis fixed point converges.
 
+## Proportional admission
+
+Every EPG chooses exactly one mode:
+
+```text
+not_required
+  no consequential architecture or abstraction decision exists;
+  emit only the mode, one reason, and an empty seams list
+
+explicit
+  at least one consequential seam exists;
+  compile the complete architectonic state below
+```
+
+Do not invent a preserved seam or empty factor/composition scaffolding for one
+bounded operation inside an unchanged exact boundary.
+
 ## Architectonic state
 
-For every consequential seam, record:
+In `explicit` mode, for every consequential seam record:
 
 ```yaml
 architectonic_seam:
@@ -97,8 +115,8 @@ independent unless an evidenced composition law relates them.
 - `source_fixed` — preserve or return to the source owner. Plan may not replace it.
 - `source_bounded` — Plan may iteratively select and improve architecture inside the
   source's required observations, compatibility, authority, scope, and proof bar.
-- `plan_local` — Plan may preserve, restrict, strengthen, factor, quotient, ablate,
-  normalize, or replace the organization as part of policy synthesis.
+- `plan_local` — Plan may refine architecture only when the accepted source
+  explicitly leaves the seam to Plan.
 
 An architecture change does not by itself require `return_to_spec`. Return only when
 it contradicts source-fixed semantics or exceeds a source-bounded envelope.
@@ -167,6 +185,9 @@ An action is incomplete when it assumes an unnamed representation or owner,
 reintroduces an ablated factor, bypasses a canonical owner, or depends on an
 unresolved architectural choice without an observation-conditioned route.
 
+A factor reference is qualified by its owning seam. An action may realize or retire
+that factor only when the same seam appears in the action's architectonic refs.
+
 ## Double-category transport
 
 Use two-dimensional composition when policy processes and architecture changes form
@@ -217,7 +238,7 @@ horizontal and vertical pasting matter.
 ## Lift the existing nine lenses
 
 Do not create a second architectonic loop. Lift every existing fixed-point lens over
-`(A, P)`:
+`(A0, delta_A, P)`:
 
 - `source_fidelity` — preserve source-fixed seams and prohibited organizations;
 - `semantic_authority` — classify source-fixed, source-bounded, and plan-local
@@ -247,7 +268,8 @@ proof, and realizability without exceeding source authority.
 
 An adopted architectonic candidate transports the affected policy and restarts the
 existing fixed point. Creativity remains mandatory; architectural accretion does
-not.
+not. The final EPG records the resulting architecture-policy state, not the private
+candidate or its rejected alternatives.
 
 ## Stopping rule
 

@@ -27,8 +27,7 @@
       },
       "locked_decision_refs": [
         "SPEC-DEC-public-api"
-      ],
-      "current": "yes"
+      ]
     },
     "goal": {
       "objective": "Select and deliver the smallest cache strategy that meets latency and correctness requirements without public API growth.",
@@ -100,6 +99,8 @@
       ]
     },
     "architectonic": {
+      "mode": "explicit",
+      "reason": "Cache representation and ownership are evidence-conditioned consequential decisions.",
       "seams": [
         {
           "seam_id": "SEAM-CACHE-REPRESENTATION",
@@ -1018,32 +1019,28 @@
           "dimension_id": "safety_violations",
           "statement": "Violated safety invariants.",
           "direction": "minimize",
-          "current_value": 0,
           "terminal_threshold": 0
         },
         {
           "dimension_id": "critical_unknowns",
           "statement": "Unresolved critical unknowns.",
           "direction": "minimize",
-          "current_value": 1,
           "terminal_threshold": 0
         },
         {
           "dimension_id": "unsatisfied_obligations",
           "statement": "Open source obligations.",
           "direction": "minimize",
-          "current_value": 2,
           "terminal_threshold": 0
         },
         {
           "dimension_id": "hard_semantic_surface",
           "statement": "Hard production semantic surface.",
           "direction": "minimize",
-          "current_value": 1,
           "terminal_threshold": 1
         }
       ],
-      "initial": {
+      "baseline_expectation": {
         "safety_violations": 0,
         "critical_unknowns": 1,
         "unsatisfied_obligations": 2,
@@ -1098,24 +1095,6 @@
       "mutation_actions_max": 1,
       "evidence_actions_max": 3,
       "delivery_transitions_max": 1
-    },
-    "initial_state": {
-      "state_id": "STATE-0",
-      "satisfied_atoms": [
-        "fact:FACT-SOURCE-CURRENT",
-        "fact:FACT-API-LOCKED"
-      ],
-      "completed_actions": [],
-      "failed_actions": [],
-      "resolved_unknowns": [],
-      "closed_obligations": [],
-      "current_potential": {
-        "safety_violations": 0,
-        "critical_unknowns": 1,
-        "unsatisfied_obligations": 2,
-        "hard_semantic_surface": 1
-      },
-      "active_action_id": null
     },
     "terminal_states": {
       "success": {
@@ -1188,37 +1167,6 @@
           "ACTION-FINAL-PROOF"
         ]
       }
-    ],
-    "challenge": {
-      "candidate": "Implement both strategies and choose at runtime.",
-      "disposition": "reject",
-      "reason": "It doubles semantic surface and violates the source requirement to select one route from evidence.",
-      "affected_refs": [
-        "OBL-IMPL",
-        "FORBID-BOTH"
-      ],
-      "source_change_required": false
-    },
-    "revision_summary": {
-      "parent_diff_ref": null,
-      "policy_changes": [
-        "initial evidence-conditioned strategy"
-      ],
-      "semantic_changes": [],
-      "source_changes": [],
-      "architectonic_changes": [],
-      "plan_transport": {
-        "preserved_action_refs": [],
-        "revised_action_refs": [],
-        "retired_action_refs": [],
-        "introduced_action_refs": [
-          "ACTION-PROBE",
-          "ACTION-IMPLEMENT-A",
-          "ACTION-IMPLEMENT-B",
-          "ACTION-FINAL-PROOF"
-        ]
-      },
-      "square_results": []
-    }
+    ]
   }
 }

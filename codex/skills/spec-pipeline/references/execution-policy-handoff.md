@@ -20,18 +20,18 @@ locked user decisions
 known facts and unresolved semantic questions
 ```
 
-`$plan` compiles those semantics into EPG-v1. It does not require any implementation
-or actuation workflow to do so.
+`$plan` synthesizes those semantics into EPG-v1. It does not require a compiler,
+implementation workflow, or actuation workflow to do so.
 
 It may add:
 
 ```text
-plan-local architectonic seams
+explicitly delegated plan-local architectonic refinements
 source-bounded architecture refinements
 belief state and execution unknowns
 observations and probes
 guarded actions
-execution owners/boundaries/lock roots
+action owners and bounded paths/symbols/lock roots
 proof and rollback actions
 policy branches
 safety shield

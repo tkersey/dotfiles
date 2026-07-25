@@ -1,29 +1,31 @@
 ---
 name: plan
-description: "Compile accepted intent or a `$spec-pipeline` PSC-v1 source contract into one source-bound, architecture-aware EPG-v1 execution policy with an immutable `plan_id`. Exhaustively refine architecture and policy together, then emit only a policy that passes the execution-policy compiler. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve source authority; never mutate implementation state, require another architecture or execution skill, or silently select an existing plan."
+description: "Synthesize accepted intent or a `$spec-pipeline` PSC-v1 source contract into one source-bound, architecture-aware EPG-v1 plan with an immutable `plan_id`. Exhaustively refine source-owned architecture, delegated architectonic change, and policy together; emit the plan whether or not a compatible optional compiler is installed. Use for `$plan`, spec-to-plan lowering, adaptive probes, stabilization plans, or plan revision. Preserve source authority; never author runtime state, mutate implementation state, require another architecture or execution skill, or silently select an existing plan."
 ---
 
 # Plan
 
 ## Mission
 
-Compile accepted intent into one executable policy.
+Synthesize accepted intent into one canonical architecture-aware EPG-v1 source
+plan. A compatible neutral compiler may validate and privately lower that source;
+compiler availability is not a planning prerequisite.
 
 ```text
 source contract
 -> architecture-policy synthesis
 -> EPG-v1 source
--> execution-policy compiler
--> opaque compiled policy
+-> optional execution-policy compiler
 ```
 
 The candidate is:
 
 ```text
-C = (A, P)
+C = (A0, delta_A, P)
 
-A = architecture and abstraction state
-P = execution policy
+A0      = source-owned architecture and abstraction state
+delta_A = source-bounded or explicitly plan-local architectonic refinement
+P       = execution policy
 ```
 
 Architecture is not a prose review after actions are chosen. It is part of the
@@ -45,10 +47,10 @@ no separate execution handoff
 no Plan-owned runtime state, decision, or transition receipt
 ```
 
-`$plan` performs its own architectonic reasoning. It does not require another
-architecture skill or any execution controller. A consumer may later compile this
-EPG and use the resulting policy under its own authority; that relationship is
-outside Plan.
+`$plan` performs its own architectonic reasoning inside the source-authorized
+envelope. It does not require another architecture skill, compiler, or execution
+controller. A consumer may later compile this EPG and use the resulting policy
+under its own authority; that relationship is outside Plan.
 
 ## Accepted source contracts
 
@@ -105,7 +107,7 @@ See [03-plan-source-contract.md](references/cli-specs/03-plan-source-contract.md
 
 ## One artifact
 
-When persistence is useful, Plan owns exactly one artifact:
+When persistence is useful, Plan's sole authoritative artifact is:
 
 ```text
 .ledger/plan/<plan-id>/policy.json
@@ -148,9 +150,9 @@ accepted source or $spec-pipeline
   semantics, scope, non-goals, source-fixed architecture, compatibility, proof bar
 
 $plan
-  source-bounded and plan-local architecture,
+  source-bound architecture plus source-bounded or explicitly plan-local refinement,
   observations, guarded actions, proof, rollback,
-  exhaustive refinement, and EPG compilation
+  exhaustive refinement, and canonical EPG emission
 
 policy consumer
   runtime state, observations, mutation authority, execution, and completion
@@ -169,8 +171,7 @@ source_bounded
   envelope
 
 plan_local
-  preserve, restrict, strengthen, factor, quotient, ablate, normalize, or replace
-  as needed to make the policy coherent
+  refine only when the source contract explicitly leaves the seam to Plan
 ```
 
 Return upstream only when a candidate contradicts source-fixed semantics or exceeds
@@ -197,7 +198,7 @@ The authoritative policy includes:
 
 ```text
 policy and plan identity
-source and artifact state
+source and expected artifact binding
 terminal predicates and safety invariants
 architectonic seams, authority, factors, laws, and falsifiers
 facts, unknowns, and observable evidence
@@ -206,7 +207,7 @@ proof obligations and rollback
 selection rules and progress potential
 commitment horizon
 architecture-policy transport
-invalidators and radical-candidate disposition
+invalidators
 ```
 
 Every mutation action predicts resources with:
@@ -226,7 +227,21 @@ Read [execution-policy-graph.md](references/execution-policy-graph.md).
 
 ## Architectonic policy state
 
-For every consequential seam:
+First classify architectonic admission:
+
+```text
+not_required
+  no consequential architecture or abstraction decision exists;
+  only mode, reason, and empty seams are required
+
+explicit
+  at least one consequential seam exists
+```
+
+Do not invent a preserved seam or emit empty composition/factor scaffolding for
+local work inside an unchanged exact boundary.
+
+For every consequential seam in `explicit` mode:
 
 1. classify authority as `source_fixed`, `source_bounded`, or `plan_local`;
 2. record one architectural axis and one typed hole;
@@ -282,7 +297,8 @@ horizontal and vertical pasting matters.
 
 ## Internal fixed point
 
-Before emission, refine the complete `(A, P)` candidate with these lenses in order:
+Before emission, refine the complete `(A0, delta_A, P)` candidate with these lenses
+in order:
 
 ```text
 source_fidelity
@@ -319,7 +335,7 @@ After apparent convergence, generate the strongest non-obvious improvement to th
 governing organization, admitted domain, representation, ownership, factorization,
 evidence strategy, or policy.
 
-Disposition it inside `EPG.challenge` as:
+Disposition it privately as:
 
 ```text
 adopt
@@ -329,12 +345,13 @@ return_to_spec
 none
 ```
 
-If adopted, transport the affected policy and restart synthesis. Creativity is
-mandatory; architectural accretion is not.
+If adopted, transport the affected policy and restart synthesis. The final EPG
+contains the resulting architecture-policy state, not the private candidate or its
+rejected alternatives. Creativity is mandatory; architectural accretion is not.
 
 ## Compilation boundary
 
-The source EPG is not executable.
+The source EPG is not executable and does not certify planning convergence.
 
 ```text
 EPG-v1 JSON
@@ -344,20 +361,34 @@ EPG-v1 JSON
 -> opaque CompiledPolicy
 ```
 
-Only `CompiledPolicy` may reach selection or transition. The private normalized form
-is an in-memory compiler representation, not a second artifact.
+Only `CompiledPolicy` may reach selection or transition in a compatible consumer.
+The private normalized form is an in-memory compiler representation, not a second
+Plan artifact.
 
-Compile the candidate with:
+Compiler validation is optional proof. First inspect `seq capabilities --format
+json`; invoke the compiler only when it advertises
+`execution_policy_compiler_contract_v1`.
+
+When compatible, compile the exact emitted candidate with:
 
 ```bash
 seq execution-policy-compile --file <epg.json> --format json
 ```
 
 When the EPG is not being persisted, stage it only in a temporary file for this
-command and remove the file afterward. Accept only `compiled: true`; bind the
-reported `policy_digest` to the emitted EPG. The command output is a compiler
-result, not a Plan artifact. If this compiler command is unavailable, return an
-obstruction rather than claiming the policy compiles.
+command and remove the file afterward. Accept only `compiled: true`; require
+`compiler_contract = execution-policy-compiler/v1` and bind the reported
+`source_policy_digest` to the emitted EPG. The command output is structural proof,
+not a Plan artifact.
+
+If a compatible compiler is unavailable, emit the EPG and report:
+
+```text
+Compilation not run: compatible compiler unavailable.
+```
+
+Compiler absence prevents only a compilation claim. It does not prevent a planning
+result.
 
 Compilation success is the only machine claim Plan needs. Do not embed or persist:
 
@@ -369,13 +400,15 @@ downstream_runtime_ready
 self-reported lens results
 ```
 
-If the compiler rejects the EPG, revise the source at the reported owner boundary or
-return the obstruction. Do not override the compiler with prose.
+If the compiler rejects the EPG, revise only a structural encoding defect within
+Plan authority or report the compiler obstruction. A compiler rejection cannot
+expand source authority or select different semantics.
 
-The compiler proves structural validity and that the private normalized policy is
-executable by the runtime. It does not prove that a human-authored law is true or
-that the architecture is semantically complete; the fixed-point and fresh-eyes
-passes remain responsible for semantic adequacy.
+The compiler proves that the source parses, its references and architectonic
+bindings are structurally coherent, and it lowers under the named compiler
+contract. It does not prove that architecture is semantically correct, that Plan's
+private fixed-point process occurred, that source state remains current, that
+execution is authorized, or that completion occurred.
 
 ## Revision
 
@@ -388,27 +421,12 @@ load current EPG
 -> change only affected architecture-policy state
 -> transport affected actions
 -> rerun fixed point and fresh eyes
--> compile
+-> optionally compile
 -> increment revision
 ```
 
 The canonical digest identifies the complete revised EPG. Do not emit a separate
 synthesis or revision artifact.
-
-## Cross-plan relationships
-
-Plan may propose, but not create, a qualified relationship:
-
-```yaml
-proposed_cross_plan_dependency:
-  from:
-  to:
-  type:
-  reason:
-```
-
-The consuming workspace decides whether to accept it. Do not flatten foreign work
-into the current policy.
 
 ## Output
 
@@ -428,15 +446,20 @@ Execution Policy Graph
 an on-demand projection of that object. Do not emit a receipt, gate, handoff, runtime
 state, decision, or transition artifact.
 
-If the user asks whether an existing plan is ready, compile its current EPG. On
-success, say:
+After successful synthesis and emission, say:
+
+```text
+Plan synthesized.
+```
+
+If a compatible compiler accepts the exact emitted EPG, also say:
 
 ```text
 Plan compiles.
 ```
 
-That statement means the policy is executable by a compatible consumer. It does not
-authorize execution.
+That statement means the source lowered under the reported structural compiler
+contract. It does not prove semantic completeness or authorize execution.
 
 ## Hard rules
 
@@ -445,11 +468,12 @@ authorize execution.
 - Require a complete current PSC-v1 when planning from `$spec-pipeline`.
 - Never infer or name a downstream execution owner.
 - Never merge separate objectives for convenience.
-- Never create executable cross-plan edges.
 - Never grant mutation authority.
+- Never author runtime currentness or initial execution state.
 - Unknown scope means exclusive scope.
-- Exhaustive joint synthesis is mandatory before compilation.
+- Exhaustive joint synthesis is mandatory before emission.
 - No fixed iteration cap.
 - No public iteration history or convergence receipt.
 - Mandatory radical candidate; optional adoption.
-- Compilation, not self-certification, determines executability.
+- Compiler absence never blocks Plan emission.
+- Compilation is structural evidence, not readiness, authority, or completion.

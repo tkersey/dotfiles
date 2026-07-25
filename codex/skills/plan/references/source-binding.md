@@ -1,6 +1,6 @@
 # Source Binding
 
-A policy is compiled for a specific intent and artifact state.
+A plan is synthesized against a specific intent and artifact state.
 
 Required when spec-governed:
 
@@ -22,7 +22,9 @@ dirty fingerprint
 created-at timestamp
 ```
 
-A policy becomes stale when any declared invalidator fires.
+The recorded binding is provenance, not a claim that the state remains current.
+At consumption time, an observed invalidator makes that binding stale. Plan may
+declare invalidators; the consumer establishes whether they have fired.
 
 Common invalidators:
 

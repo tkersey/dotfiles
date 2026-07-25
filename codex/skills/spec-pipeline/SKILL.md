@@ -38,7 +38,7 @@ profile + mode
 `$spec-pipeline` owns accepted semantics and specification-local architectonic
 decisions. `$plan` owns execution-policy synthesis, source-bounded and plan-local
 architectonic refinement, task/wave ordering, policy fixed-point refinement, and
-its downstream handoff. This skill does not require `$plan`, `$actuating`,
+its canonical EPG-v1 output. This skill does not require `$plan`, `$actuating`,
 `$universalist`, or `$reduce` to make a complete specification. It never mutates
 repository product files and never emits `<proposed_plan>`.
 
@@ -555,9 +555,10 @@ The Architectonic Thread travels inside `implementation_spec` and
 `decision_packet`; no second handoff artifact is created.
 
 `$spec-pipeline` still must not emit `<proposed_plan>`. `$plan` performs its
-fixed-point synthesis, emits one EPG-v1 policy in `<proposed_plan>`, and requires
-that policy to compile. `$plan` emits no synthesis receipt or execution handoff and
-does not grant mutation authority.
+fixed-point synthesis and emits one EPG-v1 policy in `<proposed_plan>`. When a
+compatible compiler is available, `$plan` may validate the exact emitted EPG;
+compiler absence does not block the same-turn Plan result. `$plan` emits no
+synthesis receipt or execution handoff and does not grant mutation authority.
 
 Do not auto-run `$plan` when any of these are true:
 

@@ -34,10 +34,6 @@ execution_policy_graph:
       head:
       dirty_fingerprint:
     locked_decision_refs: []
-    current:
-      yes |
-      no |
-      unknown
 
   goal:
     objective:
@@ -63,6 +59,10 @@ execution_policy_graph:
         response_terminal:
 
   architectonic:
+    mode:
+      not_required |
+      explicit
+    reason:
     seams:
       - seam_id:
         authority:
@@ -302,9 +302,8 @@ execution_policy_graph:
         direction:
           minimize |
           maximize
-        current_value:
         terminal_threshold:
-    initial: {}
+    baseline_expectation: {}
 
   safety_shield:
     rules:
@@ -326,16 +325,6 @@ execution_policy_graph:
     mutation_actions_max:
     evidence_actions_max:
     delivery_transitions_max:
-
-  initial_state:
-    state_id:
-    satisfied_atoms: []
-    completed_actions: []
-    failed_actions: []
-    resolved_unknowns: []
-    closed_obligations: []
-    current_potential: {}
-    active_action_id:
 
   terminal_states:
     success:
@@ -366,18 +355,13 @@ execution_policy_graph:
       required_action:
       affected_refs: []
 
-  challenge:
-    candidate:
-    disposition:
-    reason:
-    affected_refs: []
-    source_change_required:
-
+  # Omit on initial plans. Include only when revising an existing EPG.
   revision_summary:
     parent_diff_ref:
     policy_changes: []
     semantic_changes: []
     source_changes: []
+    # The remaining fields exist only when architecture changed.
     architectonic_changes:
       - seam_ref:
         prior_organization:
@@ -412,8 +396,17 @@ execution_policy_graph:
 
 ## Architectonic laws
 
+- `architectonic.mode = not_required` is legal only when the plan makes no
+  consequential architecture or abstraction decision. `reason` explains why
+  escalation is unnecessary. `seams` must be empty; composition,
+  conceptual-compression, and action architectonic fields may be omitted. If
+  present, they must be empty.
+- `architectonic.mode = explicit` requires at least one consequential seam and
+  complete action binding for every affected seam.
 - A consequential action must reference the seam it realizes, migrates, preserves,
   or retires.
+- An action may realize or retire a factor only when the factor's owning seam appears
+  in the action's `architectonic_seam_refs`.
 - An action must not realize a factor whose disposition is `quotient`, `ablate`, or
   a superseded `normalize` predecessor.
 - A `source_fixed` seam may be preserved or returned to source authority; it may not
@@ -428,13 +421,38 @@ execution_policy_graph:
   observation-conditioned route or blocker.
 - `gate` and `handoff` are not EPG fields. The policy may not certify its own
   readiness or select its eventual consumer.
-- EPG-v1 becomes executable only after the execution-policy compiler returns an
-  opaque compiled policy.
-- Validate emission with
+- EPG-v1 is a source plan, not runtime state or execution authority. A compatible
+  execution-policy compiler may privately lower it to an opaque compiled policy.
+- Optional validation uses
   `seq execution-policy-compile --file <epg.json> --format json`; accept only
-  `compiled: true` and bind its `policy_digest` to the emitted source.
+  `compiled: true`, require `execution-policy-compiler/v1`, and bind its
+  `source_policy_digest` to the emitted source. Compiler absence does not block Plan
+  emission.
 - The compiler's private normalized representation is transient and must not be
   persisted as another Plan artifact.
+
+For a bounded local action inside an unchanged exact boundary, the architectonic
+surface is only:
+
+```yaml
+architectonic:
+  mode: not_required
+  reason: "One bounded documentation edit inside an unchanged exact boundary."
+  seams: []
+
+actions:
+  - action_id: ACTION-DOC-FIX
+```
+
+## Runtime ownership
+
+`source.artifact_state` records the repository state against which Plan synthesized
+the EPG. It does not claim that state remains current.
+
+Plan may declare facts needed by policy conditions, but it never marks runtime facts
+as satisfied. Runtime currentness, completed or failed actions, resolved unknowns,
+closed obligations, observed potential, active work, decisions, and transition
+receipts belong to the policy consumer.
 
 ## Atom namespace
 

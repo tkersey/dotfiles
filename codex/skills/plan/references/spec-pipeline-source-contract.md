@@ -86,5 +86,5 @@ silently replacing a source_fixed architectonic seam
 accepting a downstream_open seam without its admissible space and deciding observation
 ```
 
-The executable projection is canonical JSON even when prose documents display the
+The canonical source projection is JSON even when prose documents display the
 schema in YAML for readability.
