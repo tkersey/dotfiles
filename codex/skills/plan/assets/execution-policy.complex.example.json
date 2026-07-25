@@ -2,6 +2,7 @@
   "execution_policy_graph": {
     "policy_version": "EPG-v1",
     "policy_id": "POLICY-cache-strategy",
+    "plan_id": "PLAN-cache-strategy",
     "revision": 1,
     "parent": null,
     "created_at": "2026-06-24T12:00:00-07:00",
@@ -97,6 +98,121 @@
           "response_terminal": "rollback"
         }
       ]
+    },
+    "architectonic": {
+      "seams": [
+        {
+          "seam_id": "SEAM-CACHE-REPRESENTATION",
+          "authority": "source_bounded",
+          "boundary": {
+            "owner": "Cache",
+            "source": "source-locked cache API and representative workload evidence",
+            "target": "one selected internal cache representation"
+          },
+          "axis": "representation",
+          "typed_hole": "representation",
+          "live_obligation_refs": [
+            "OBL-IMPL",
+            "OBL-FINAL"
+          ],
+          "required_observation_refs": [
+            "OBS-ROUTE",
+            "OBS-IMPLEMENT-A",
+            "OBS-IMPLEMENT-B",
+            "OBS-FINAL"
+          ],
+          "compatibility_and_migration": [
+            "preserve the source-locked public API",
+            "ship exactly one internal representation"
+          ],
+          "host_capabilities": [
+            "bounded Zig benchmark",
+            "focused invalidation tests",
+            "final-tree repository check"
+          ],
+          "incumbent": {
+            "organization": "two candidate representations with no selected production owner",
+            "factor_refs": [
+              "FACTOR-DUAL-STRATEGY"
+            ]
+          },
+          "candidate_movements": {
+            "preserve": "reject; it leaves the production representation undecided",
+            "restrict_admitted_domain": "admit only the route selected by OBS-ROUTE",
+            "strengthen_representation_or_owner": "one Cache-owned internal representation",
+            "ablate_or_normalize": "ablate the losing route and any runtime strategy switch"
+          },
+          "disposition": "evidence_conditioned",
+          "selected_organization": "OBS-ROUTE selects exactly one Cache-owned representation; the other route is absent from production",
+          "decision_observation_refs": [
+            "OBS-ROUTE"
+          ],
+          "factors": [
+            {
+              "factor_id": "FACTOR-PUBLIC-API",
+              "owner": "Cache",
+              "live_obligation_refs": [
+                "OBL-IMPL",
+                "OBL-FINAL"
+              ],
+              "obligation_status": "live",
+              "disposition": "preserve"
+            },
+            {
+              "factor_id": "FACTOR-CACHE-REPRESENTATION",
+              "owner": "Cache",
+              "live_obligation_refs": [
+                "OBL-IMPL",
+                "OBL-FINAL"
+              ],
+              "obligation_status": "live",
+              "disposition": "introduce"
+            },
+            {
+              "factor_id": "FACTOR-DUAL-STRATEGY",
+              "owner": "none",
+              "live_obligation_refs": [],
+              "obligation_status": "invalid",
+              "disposition": "ablate"
+            }
+          ],
+          "law": "Exactly one evidence-selected internal cache representation owns production behavior without public API growth.",
+          "falsifier": "Both strategies remain live, a runtime strategy switch exists, or callers observe a new cache API.",
+          "residual_obligations": [
+            "OBS-ROUTE must bind both candidates to one workload digest",
+            "OBS-FINAL must bind proof to the realized final tree"
+          ],
+          "invalidators": [
+            "INV-SOURCE",
+            "INV-TREE"
+          ]
+        }
+      ],
+      "composition": {
+        "seam_dependency_edges": [],
+        "independent_seam_sets": [
+          [
+            "SEAM-CACHE-REPRESENTATION"
+          ]
+        ]
+      },
+      "conceptual_compression": {
+        "live_obligation_refs": [
+          "OBL-IMPL",
+          "OBL-FINAL"
+        ],
+        "independent_factor_refs": [
+          "FACTOR-PUBLIC-API",
+          "FACTOR-CACHE-REPRESENTATION"
+        ],
+        "independent_owner_refs": [
+          "Cache"
+        ],
+        "exceptional_path_refs": [],
+        "dominated_factor_refs": [
+          "FACTOR-DUAL-STRATEGY"
+        ]
+      }
     },
     "regime": {
       "kind": "complex",
@@ -262,6 +378,14 @@
           ]
         },
         "requires_actions": [],
+        "architectonic_seam_refs": [
+          "SEAM-CACHE-REPRESENTATION"
+        ],
+        "realizes_factor_refs": [],
+        "retires_factor_refs": [],
+        "preservation_observation_refs": [
+          "OBS-ROUTE"
+        ],
         "mutation_boundary": {
           "kind": "repository",
           "paths": [
@@ -337,6 +461,18 @@
         },
         "requires_actions": [
           "ACTION-PROBE"
+        ],
+        "architectonic_seam_refs": [
+          "SEAM-CACHE-REPRESENTATION"
+        ],
+        "realizes_factor_refs": [
+          "FACTOR-CACHE-REPRESENTATION"
+        ],
+        "retires_factor_refs": [
+          "FACTOR-DUAL-STRATEGY"
+        ],
+        "preservation_observation_refs": [
+          "OBS-IMPLEMENT-A"
         ],
         "mutation_boundary": {
           "kind": "repository",
@@ -416,6 +552,18 @@
         "requires_actions": [
           "ACTION-PROBE"
         ],
+        "architectonic_seam_refs": [
+          "SEAM-CACHE-REPRESENTATION"
+        ],
+        "realizes_factor_refs": [
+          "FACTOR-CACHE-REPRESENTATION"
+        ],
+        "retires_factor_refs": [
+          "FACTOR-DUAL-STRATEGY"
+        ],
+        "preservation_observation_refs": [
+          "OBS-IMPLEMENT-B"
+        ],
         "mutation_boundary": {
           "kind": "repository",
           "paths": [
@@ -493,6 +641,14 @@
           ]
         },
         "requires_actions": [],
+        "architectonic_seam_refs": [
+          "SEAM-CACHE-REPRESENTATION"
+        ],
+        "realizes_factor_refs": [],
+        "retires_factor_refs": [],
+        "preservation_observation_refs": [
+          "OBS-FINAL"
+        ],
         "mutation_boundary": {
           "kind": "none",
           "paths": [],
@@ -944,7 +1100,6 @@
       "delivery_transitions_max": 1
     },
     "initial_state": {
-      "state_version": "EPS-v1",
       "state_id": "STATE-0",
       "satisfied_atoms": [
         "fact:FACT-SOURCE-CURRENT",
@@ -1050,29 +1205,20 @@
         "initial evidence-conditioned strategy"
       ],
       "semantic_changes": [],
-      "source_changes": []
-    },
-    "handoff": {
-      "next_owner": "actuating",
-      "runtime_ready": "yes",
-      "mutation_allowed": "no",
-      "gate_result": "pass",
-      "reason": "The policy is source-current, closed over modeled outcomes, and ready for short-horizon materialization."
-    },
-    "gate": {
-      "source_current": "yes",
-      "semantic_drift": "none",
-      "obligations_covered": "yes",
-      "critical_unknowns_observable_or_blocked": "yes",
-      "actions_bounded": "yes",
-      "policy_references_valid": "yes",
-      "policy_closed": "yes",
-      "safety_shield_complete": "yes",
-      "potential_complete": "yes",
-      "terminal_states_complete": "yes",
-      "downstream_runtime_ready": "yes",
-      "fresh_eyes_blockers": 0,
-      "policy_ready": "yes"
+      "source_changes": [],
+      "architectonic_changes": [],
+      "plan_transport": {
+        "preserved_action_refs": [],
+        "revised_action_refs": [],
+        "retired_action_refs": [],
+        "introduced_action_refs": [
+          "ACTION-PROBE",
+          "ACTION-IMPLEMENT-A",
+          "ACTION-IMPLEMENT-B",
+          "ACTION-FINAL-PROOF"
+        ]
+      },
+      "square_results": []
     }
   }
 }

@@ -4,6 +4,7 @@
 execution_policy_graph:
   policy_version: EPG-v1
   policy_id:
+  plan_id:
   revision:
   parent:
     policy_id:
@@ -327,7 +328,6 @@ execution_policy_graph:
     delivery_transitions_max:
 
   initial_state:
-    state_version: EPS-v1
     state_id:
     satisfied_atoms: []
     completed_actions: []
@@ -408,46 +408,6 @@ execution_policy_graph:
           underdetermined
         falsifier:
 
-  handoff:
-    next_owner:
-      actuating |
-      executor |
-      spec-pipeline |
-      grill-me |
-      blocked
-    consumer:
-    runtime_ready:
-    mutation_allowed: no
-    gate_result:
-      pass |
-      stale |
-      return_to_spec |
-      return_to_grill |
-      blocked
-    reason:
-
-  gate:
-    source_current:
-    semantic_drift:
-      none |
-      authorized |
-      unauthorized
-    architectonic_seams_complete:
-    source_fixed_architecture_preserved:
-    factors_earned_or_retired:
-    action_architecture_bindings_complete:
-    required_squares_commute_or_block:
-    obligations_covered:
-    critical_unknowns_observable_or_blocked:
-    actions_bounded:
-    policy_references_valid:
-    policy_closed:
-    safety_shield_complete:
-    potential_complete:
-    terminal_states_complete:
-    downstream_runtime_ready:
-    fresh_eyes_blockers:
-    policy_ready:
 ```
 
 ## Architectonic laws
@@ -466,6 +426,15 @@ execution_policy_graph:
   and introduced sets.
 - A square result of `fails` blocks convergence. `underdetermined` requires an
   observation-conditioned route or blocker.
+- `gate` and `handoff` are not EPG fields. The policy may not certify its own
+  readiness or select its eventual consumer.
+- EPG-v1 becomes executable only after the execution-policy compiler returns an
+  opaque compiled policy.
+- Validate emission with
+  `seq execution-policy-compile --file <epg.json> --format json`; accept only
+  `compiled: true` and bind its `policy_digest` to the emitted source.
+- The compiler's private normalized representation is transient and must not be
+  persisted as another Plan artifact.
 
 ## Atom namespace
 

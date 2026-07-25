@@ -554,9 +554,10 @@ plan_source_contract:
 The Architectonic Thread travels inside `implementation_spec` and
 `decision_packet`; no second handoff artifact is created.
 
-`$spec-pipeline` still must not emit `<proposed_plan>`. `$plan` emits the
-`<proposed_plan>` block and performs its fixed-point planning loop with PSR-v1.
-`$plan` does not grant mutation authority.
+`$spec-pipeline` still must not emit `<proposed_plan>`. `$plan` performs its
+fixed-point synthesis, emits one EPG-v1 policy in `<proposed_plan>`, and requires
+that policy to compile. `$plan` emits no synthesis receipt or execution handoff and
+does not grant mutation authority.
 
 Do not auto-run `$plan` when any of these are true:
 

@@ -1,6 +1,6 @@
 # Execution Policy Fresh-Eyes Pass
 
-Treat prior readiness as untrusted.
+Reread the final EPG from source. Do not trust the synthesis path that produced it.
 
 Check:
 
@@ -15,31 +15,9 @@ Check:
 - potential cannot reward gaming the metric while violating the goal;
 - commitment horizon is short enough to remain evidence-responsive;
 - success terminal proves the source contract;
-- human projection does not contradict EPG.
+- human projection does not contradict EPG;
+- `seq execution-policy-compile --file <epg.json> --format json` returns
+  `compiled: true` for the exact emitted EPG.
 
-Return:
-
-```yaml
-execution_policy_audit:
-  audit_version: EPA-v1
-  source_current:
-  semantic_drift:
-  regime_findings: []
-  belief_findings: []
-  action_findings: []
-  policy_findings: []
-  shield_findings: []
-  potential_findings: []
-  terminal_findings: []
-  downstream_findings: []
-  blockers: []
-  final_call:
-    ready |
-    revise_policy |
-    return_to_spec |
-    return_to_grill |
-    stale |
-    blocked
-```
-
-No mandatory innovation addition.
+If a material issue remains, revise or return it and restart the affected synthesis
+lens. Otherwise emit the EPG. Do not create an audit artifact or readiness gate.

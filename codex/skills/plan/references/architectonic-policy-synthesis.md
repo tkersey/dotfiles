@@ -232,11 +232,11 @@ Do not create a second architectonic loop. Lift every existing fixed-point lens 
   files;
 - `proof_and_terminal_state` — prove laws, preservation, migration, retirement, and
   falsifiers;
-- `simplicity_and_actuation_readiness` — reject dominated factors, duplicate truth,
+- `simplicity_and_compilability` — reject dominated factors, duplicate truth,
   needless owners, bypasses, and semantic-surface growth.
 
-The final PSR-v1 suffix remains these nine lens identifiers in this order. Each pass
-evaluates the complete architecture-policy candidate digest.
+These nine identifiers remain the internal synthesis order. No pass log or
+convergence receipt is emitted.
 
 ## Radical candidate
 

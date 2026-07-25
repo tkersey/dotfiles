@@ -32,7 +32,7 @@ action_completeness
 policy_closure
 safety_and_rollback
 proof_and_terminal_state
-simplicity_and_actuation_readiness
+simplicity_and_compilability
 ```
 
 Each lens evaluates the whole `(A, P)` candidate:
@@ -54,12 +54,11 @@ Each lens evaluates the whole `(A, P)` candidate:
   than merely old files;
 - `proof_and_terminal_state` — prove laws, preservation, migration, retirement,
   falsifiers, and terminal predicates;
-- `simplicity_and_actuation_readiness` — reject dominated factors, accidental
+- `simplicity_and_compilability` — reject dominated factors, accidental
   distinctions, duplicate owners, bypasses, reconstruction paths, and needless
-  semantic surface while keeping the plan realizable by an authorized consumer.
+  semantic surface while keeping the policy structurally executable.
 
-The final PSR-v1 suffix remains these nine identifiers in this exact order. No
-second architectonic loop or receipt is introduced.
+These identifiers are an internal synthesis order, not a persisted pass log.
 
 ## Loop
 
@@ -183,55 +182,9 @@ worse than current architecture-policy pair
 needs evidence outside the horizon
 ```
 
-## PSR-v1 receipt
-
-```yaml
-policy_synthesis_receipt:
-  receipt_version: PSR-v1
-  plan_id:
-  revision:
-  source_digest:
-  initial_policy_digest:
-  final_policy_digest:
-  passes:
-    - pass_id:
-      lens:
-      candidate_digest_before:
-      candidate_digest_after:
-      findings: []
-      material_changes: []
-      disposition:
-        changed |
-        clean |
-        blocked |
-        return_to_spec |
-        return_to_grill
-  radical_candidate:
-    candidate:
-    disposition:
-      adopt |
-      reject |
-      defer |
-      return_to_spec |
-      none
-    reason:
-    affected_refs: []
-  convergence:
-    complete_clean_sweep:
-    independent_press_pass_clean:
-    unresolved_errors:
-    untreated_material_risks:
-    improvements_exhausted:
-```
-
-`initial_policy_digest`, `final_policy_digest`, and every pass candidate digest bind
-the complete EPG candidate, including architectonic seams, factor dispositions,
-action bindings, transport, and square results. The receipt proves synthesis
-occurred; it does not expose private reasoning or draft iteration logs.
-
 ## Final output policy
 
-The final plan may summarize PSR-v1. It should not include:
+The final Plan output is an on-demand projection plus one EPG. It should not include:
 
 ```text
 draft-by-draft logs
@@ -239,12 +192,15 @@ Iteration: N footers
 rewrite-ratio self claims
 fabricated no-op rows
 mandatory architectural addition just to show creativity
+synthesis receipt
+readiness gate
+execution handoff
 ```
 
-## Readiness invariant
+## Compiler invariant
 
 ```text
-policy ready
+policy executable
 =
 all consequential seams dispositioned
 + no dominated architectonic factor remains
@@ -254,5 +210,9 @@ all consequential seams dispositioned
 + clean fresh-eyes pass
 + radical candidate evaluated
 + no unresolved blockers
-+ source-current handoff
++ opaque policy compilation succeeds
 ```
+
+The first eight terms are synthesis discipline. The compiler enforces the final
+structural and operational boundary. No receipt or self-reported gate stands between
+the EPG and that result.

@@ -3,7 +3,7 @@ skill_decision_contract:
   skill:
     name: plan
     kind: mixed
-    source_fingerprint: plan-v4.2-architectonic-policy-fixed-point
+    source_fingerprint: plan-v5-compiled-architectonic-epg
   triggers:
     - trigger_id: PLAN-COMPILE
       description: Accepted intent needs a named execution policy.
@@ -27,7 +27,7 @@ skill_decision_contract:
       exclusions: []
   routes:
     - route_id: PLAN-EMIT
-      description: Emit one named architecture-aware plan policy and execution handoff.
+      description: Emit one named architecture-aware EPG that passes compilation.
       aliases: [emit]
       terminal: "yes"
     - route_id: PLAN-REFINE
@@ -51,15 +51,15 @@ skill_decision_contract:
       trigger_refs: [PLAN-COMPILE]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [immutable plan_id, source digest, target branch]
-      success_signals: [explicit consumer-neutral execution handoff]
+      required_artifacts: [EPG-v1 with immutable plan_id, source digest, target branch]
+      success_signals: [opaque policy compilation succeeds]
       failure_signals: [plan inferred from current execution state]
       rationale: Plan identity is the unit of namespace isolation.
     - clause_id: PLAN-CROSS-001
       trigger_refs: [PLAN-RELATION]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [proposed qualified cross-plan edge]
+      required_artifacts: [EPG-v1]
       success_signals: [edge remains a proposal until accepted by a downstream controller]
       failure_signals: [foreign work copied into current plan]
       rationale: Cross-plan authority belongs to the consuming workspace or controller.
@@ -67,48 +67,25 @@ skill_decision_contract:
       trigger_refs: [PLAN-COMPILE, PLAN-ARCHITECTONIC]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - architectonic seams for every consequential boundary
-        - source-fixed/source-bounded/plan-local authority classification
-        - ordinary and selected or evidence-conditioned organization
-        - factor dispositions with live obligations
-        - law, falsifier, residuals, and invalidators
-        - action-to-seam and action-to-factor bindings
-      success_signals:
-        - no consequential seam lacks a lawful disposition
-        - no retained factor is dominated by a simpler organization with equal or stronger proof
-        - no action realizes an ablated or superseded factor
-      failure_signals:
-        - architecture exists only as prose outside EPG state
-        - current files or layers are accepted as semantic factors without evidence
-        - validators, caches, correlation, or bypasses reconstruct forgotten truth
+      required_artifacts: [architectonic seams, authority classes, factor obligations, action bindings]
+      success_signals: [all seams dispositioned, no dominated retained factor, no action realizes a retired factor]
+      failure_signals: [architecture only in prose, file-shaped factors, reconstructed truth]
       rationale: Architecture and abstraction are state over which policy synthesis converges, not a detached review section.
     - clause_id: PLAN-TRANSPORT-001
       trigger_refs: [PLAN-SYNTHESIS, PLAN-ARCHITECTONIC]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts:
-        - architectonic change relation
-        - preserved/revised/retired/introduced action partition
-        - compatibility-square results and falsifiers
-      success_signals:
-        - architecture changes transport affected policy rather than append around the incumbent
-        - horizontal and vertical composition preserve declared observations where interchange is claimed
-      failure_signals:
-        - stale actions survive after their factors are retired
-        - rollback restores files but not architectural coherence
-        - double-category language is used without two compositional arrow families and square transport
+      required_artifacts: [architectonic change relation, action partition, square results and falsifiers]
+      success_signals: [changed architecture transports policy, claimed interchange preserves observations]
+      failure_signals: [stale actions survive retired factors, incoherent rollback, unevidenced double-category claim]
       rationale: Plan revisions must remain coherent across architecture and policy change.
     - clause_id: PLAN-SYNTHESIS-001
       trigger_refs: [PLAN-COMPILE, PLAN-SYNTHESIS]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [PSR-v1, complete clean nine-lens sweep over the architecture-policy pair, independent press pass]
-      success_signals:
-        - final policy digest binds architectonic and policy state
-        - material improvements may strengthen proof while deleting actions or abstractions
-        - no public iteration log is needed for readiness
-      failure_signals: [one-shot plan emitted without synthesis receipt, policy converged only inside an unquestioned inherited decomposition]
+      required_artifacts: [EPG-v1]
+      success_signals: [canonical digest binds complete EPG, opaque compilation succeeds, stronger proof may delete surface]
+      failure_signals: [uncompiled EPG emitted, policy converged only inside an unquestioned inherited decomposition]
       rationale: Planning quality depends on exhaustive joint refinement, not just schema presence.
     - clause_id: PLAN-CREATIVITY-001
       trigger_refs: [PLAN-SYNTHESIS]
@@ -119,5 +96,5 @@ skill_decision_contract:
       failure_signals: [arbitrary architectural addition after convergence, no radical candidate attempted, architecture change returned upstream despite remaining inside plan authority]
       rationale: Creativity is mandatory; architectural or policy accretion is optional.
   instrumentation:
-    decision_receipt: required
-    rationale: Plan identity, architectonic state, cross-plan relationships, synthesis convergence, transport, and radical-candidate disposition shape execution.
+    decision_receipt: not-needed
+    rationale: The canonical EPG and compiler result are the complete Plan evidence surface.

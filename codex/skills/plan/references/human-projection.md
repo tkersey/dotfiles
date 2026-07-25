@@ -14,8 +14,6 @@ Commitment Horizon
 Policy Branches
 Proof, Rollback, and Terminal States
 Policy Delta and Architectonic Transport
-Policy Synthesis Receipt
-Execution Handoff
 Execution Policy Graph
 ```
 
@@ -35,5 +33,10 @@ Rules:
   increasing justification and proof strength.
 - Do not repeat every JSON field.
 - Do not include internal iteration history.
-- Do not claim readiness outside the derived EPG gate and PSR-v1 convergence.
+- Treat compilation success as the only machine claim that the EPG is executable.
+- Do not emit a synthesis receipt, readiness gate, execution handoff, or Plan-owned
+  runtime artifact.
 - `Execution Policy Graph` contains exactly one fenced JSON EPG object.
+
+The projection is generated on demand from the EPG. It is explanatory, not a second
+authoritative artifact.

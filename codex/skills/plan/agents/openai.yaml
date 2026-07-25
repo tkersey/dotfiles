@@ -2,17 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Plan"
-  short_description: "Jointly refine architecture and execution policy to a fixed point"
-  default_prompt: >-
-    Use $plan to compile accepted intent or a PSC-v1 source contract from
-    $spec-pipeline into a source-bound execution policy with an immutable plan_id,
-    explicit architecture and abstraction seams, resource predictions, proof,
-    rollback, and a consumer-neutral execution handoff. Treat the candidate as the
-    pair (architecture, policy). Preserve source-fixed decisions; iteratively refine
-    source-bounded and plan-local organization together with actions, observations,
-    proof, rollback, and terminals. Bind actions to factors they realize or retire,
-    transport the plan through adopted architecture changes with compatibility
-    squares, and accrete justification while ablating dominated surface. Keep the
-    existing unbounded nine-lens fixed point, independent fresh-eyes pass, mandatory
-    radical candidate, and PSR-v1 receipt. Do not require $universalist, $reduce, or
-    $actuating; never infer an existing plan or grant mutation authority.
+  short_description: "Compile architecture-aware execution policies"
+  default_prompt: "Use $plan to compile accepted intent into one source-bound, architecture-aware EPG-v1 policy that passes the execution-policy compiler."

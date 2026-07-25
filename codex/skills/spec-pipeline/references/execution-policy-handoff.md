@@ -60,6 +60,6 @@ source-bounded or downstream-open seam is a normal planning refinement when the
 resulting architecture-policy square commutes.
 
 A planning-discovered contradiction with source-fixed semantics returns to
-`$spec-pipeline` and invalidates downstream policy/runtime artifacts. A plan-local or
-source-bounded improvement revises the plan and restarts its existing fixed-point
-synthesis from the earliest affected lens.
+`$spec-pipeline` and invalidates the affected EPG and any consumer state derived
+from it. A plan-local or source-bounded improvement revises the policy and restarts
+its fixed-point synthesis from the earliest affected lens.
