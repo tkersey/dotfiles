@@ -1,8 +1,8 @@
 ---
 name: spec-pipeline
-description: "Canonical current-spec engine. Turn ambiguous project, architecture, implementation, or product requests into decision-complete implementation specs; operate narrowly in gate-only, challenge-only, or repair mode; default full-mode plan-ready specs to lane=spec_to_plan; and tail-call `$plan` when SGR-v2 and execution handoff authorize planning. Never emit a proposed_plan block."
+description: "Canonical architectonic current-spec engine. Turn ambiguous project, architecture, implementation, or product requests into decision-complete specs whose architecture and abstractions are explicit, authority-bound, and proof-linked; operate narrowly in gate-only, challenge-only, or repair mode; default full-mode plan-ready specs to lane=spec_to_plan; and tail-call `$plan` when SGR-v2 and execution handoff authorize planning. Never emit a proposed_plan block."
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   activation_cost: adaptive
   default_depth: balanced
   requires_explicit_invocation: false
@@ -15,8 +15,10 @@ metadata:
 `$spec-pipeline` is the canonical current-spec workflow.
 
 It converts an accepted or clarified objective into a decision-complete
-implementation spec and hands planning authority to `$plan` when the spec
-governance receipt authorizes that transition.
+implementation spec whose consequential architecture and abstractions are explicit,
+authority-bound, and derivationally connected to implementation, proof, migration,
+and rollback. It hands planning authority to `$plan` when the spec governance
+receipt authorizes that transition.
 
 ```text
 profile + mode
@@ -24,6 +26,7 @@ profile + mode
 -> grill or no-grill justification
 -> decision packet
 -> pre-spec gate
+-> architectonic thread
 -> implementation spec
 -> strongest invariant challenge
 -> fresh-eyes pass
@@ -32,21 +35,25 @@ profile + mode
 -> mandatory same-turn $plan tail-call when eligible
 ```
 
-`$spec-pipeline` owns accepted semantics. `$plan` owns execution-policy
-synthesis, task/wave ordering, policy fixed-point refinement, and `$actuating`
-handoff. `$actuating` owns source-bound local execution governance; it does not
-claim fencing or durable coordination. This skill never mutates repository
-product files and never emits `<proposed_plan>`.
+`$spec-pipeline` owns accepted semantics and specification-local architectonic
+decisions. `$plan` owns execution-policy synthesis, source-bounded and plan-local
+architectonic refinement, task/wave ordering, policy fixed-point refinement, and
+its downstream handoff. This skill does not require `$plan`, `$actuating`,
+`$universalist`, or `$reduce` to make a complete specification. It never mutates
+repository product files and never emits `<proposed_plan>`.
 
 ## Public boundary
 
 Use `$spec-pipeline` for:
 
 - creating or materially reconstructing an implementation spec;
-- deciding whether a brief, decision packet, spec, or handoff is ready;
+- deciding whether a brief, decision packet, architectonic thread, spec, or handoff
+  is ready;
+- making consequential architecture and abstraction explicit before implementation
+  planning;
 - running one strongest invariant challenge;
-- repairing only sections implicated by a blocked readiness decision,
-  challenge, fresh-eyes pass, or governance result;
+- repairing only sections implicated by a blocked readiness decision, architectonic
+  invalidation, challenge, fresh-eyes pass, or governance result;
 - handing a ready spec to `$plan` or implementation.
 
 Use `$grill-me` when unresolved user judgment is the primary task. Use
@@ -68,21 +75,21 @@ spec_pipeline_mode:
 Modes:
 
 - `full` — create or materially reconstruct a complete implementation spec.
-- `gate-only` — decide whether an existing brief, decision packet, or handoff
-  is ready. Do not generate a spec, plan, or mutation authority.
+- `gate-only` — decide whether an existing brief, decision packet, architectonic
+  thread, or handoff is ready. Do not generate a spec, plan, or mutation authority.
 - `challenge-only` — return one strongest critique or invariant pressure test.
   Do not authorize mutation.
-- `repair` — change only sections implicated by a prior blocked readiness
-  decision, challenge, fresh-eyes pass, or governance result; then rerun
-  affected and downstream phases.
+- `repair` — change only sections implicated by a prior blocked readiness decision,
+  architectonic invalidation, challenge, fresh-eyes pass, or governance result;
+  then rerun affected and downstream phases.
 
 Choose one profile:
 
 | profile | Use when | Default subagent pattern |
 |---|---|---|
-| `fast` | Narrow local change, obvious proof, low ambiguity. | root only |
+| `fast` | Narrow local change, obvious proof, low ambiguity, no consequential seam. | root only |
 | `balanced` | Normal implementation spec. | evidence synthesizer, invariant challenger, governance auditor as needed |
-| `strict` | Public API, migration, security, performance, compatibility, architecture, or multi-wave work. | evidence synthesizer, decision auditor, invariant challenger, governance auditor |
+| `strict` | Public API, migration, security, performance, compatibility, architecture, abstraction, or multi-wave work. | evidence synthesizer, decision auditor, invariant challenger, governance auditor |
 | `campaign` | Multi-session, repeated replanning, large artifact volume, or high fanout. | strict set plus checkpoint/retro-miner only when historically warranted |
 
 Choose one lane:
@@ -106,19 +113,18 @@ spec_to_plan
 unless the user explicitly requests spec-only/no-plan output or a material gate
 blocks downstream planning.
 
-Explicit `$spec-pipeline` invocation is **not** a request for `spec_only`. A
-user saying `$spec-pipeline`, `make a spec`, `write the spec`, `produce the
-governed spec`, or equivalent asks the spec workflow to run. If the workflow
-finishes complete and plan-ready, planning authority transfers to `$plan`
-through SGR-v2 and the Execution Handoff.
+Explicit `$spec-pipeline` invocation is **not** a request for `spec_only`. A user
+saying `$spec-pipeline`, `make a spec`, `write the spec`, `produce the governed
+spec`, or equivalent asks the spec workflow to run. If the workflow finishes
+complete and plan-ready, planning authority transfers to `$plan` through SGR-v2 and
+the Execution Handoff.
 
 Use `spec_only` only when a concrete blocker exists: explicit spec-only user
-request, gate-only/challenge-only mode, blocked/drift/partial status,
-unresolved material user judgment, `plan_allowed=no`, fresh-eyes drift,
-`ready_for_plan=no`, `next_owner != $plan`, non-empty
-`do_not_execute_before`, or same-turn `$plan` being unavailable. When `$plan`
-cannot load, emit `AUTO_PLAN_HANDOFF_REQUIRED`; do not silently convert to
-`spec_only`.
+request, gate-only/challenge-only mode, blocked/drift/partial status, unresolved
+material user judgment, `plan_allowed=no`, fresh-eyes drift, `ready_for_plan=no`,
+`next_owner != $plan`, non-empty `do_not_execute_before`, or same-turn `$plan` being
+unavailable. When `$plan` cannot load, emit `AUTO_PLAN_HANDOFF_REQUIRED`; do not
+silently convert to `spec_only`.
 
 See [01-lane-selection.md](references/cli-specs/01-lane-selection.md).
 
@@ -127,6 +133,11 @@ See [01-lane-selection.md](references/cli-specs/01-lane-selection.md).
 Inspect available artifacts before asking questions: code, docs, specs, plans,
 tests, tickets, logs, diagrams, schemas, config, session history, and supplied
 reports.
+
+For consequential architecture or abstraction, inspect real owner, representation,
+construction, composition, interpretation, validation, migration, and proof paths.
+Do not accept current files, classes, packages, services, or layers as the semantic
+factorization without evidence.
 
 Do not ask the user for discoverable facts. Ask only for judgment, unavailable
 context, explicit authority, irreversible approval, private constraints, or
@@ -153,8 +164,8 @@ Use `none` only after considering the field.
 ## Grilling
 
 Ask 1-3 bounded questions per round only when material decisions remain. Each
-question must be atomic, have a stable `snake_case` id, put the recommended
-option first when justified, and avoid asking for discoverable facts.
+question must be atomic, have a stable `snake_case` id, put the recommended option
+first when justified, and avoid asking for discoverable facts.
 
 If no question is needed, emit:
 
@@ -167,8 +178,8 @@ no_grill_justification:
 
 ## Anti-drift checkpoint
 
-Before asking more questions, compiling a spec, or handing off, compare the
-candidate against the authoritative brief:
+Before asking more questions, compiling architectonic seams, compiling a spec, or
+handing off, compare the candidate against the authoritative brief:
 
 ```text
 target
@@ -179,6 +190,7 @@ compatibility posture
 proof bar
 rollout/rollback posture
 public behavior boundary
+source-fixed architecture and abstraction constraints
 ```
 
 If any changed without explicit approval, stop with:
@@ -207,6 +219,17 @@ spec_decision_packet:
   proof_bar:
   compatibility_posture:
   rollout_rollback_posture:
+  architectonic_authority:
+    source_fixed_decision_refs: []
+    source_bounded_seam_refs: []
+    specification_local_seam_refs: []
+  architectonic_seams: []
+  conceptual_compression_target:
+    live_obligations: []
+    maximum_independent_owners:
+    prohibited_parallel_truth: []
+    prohibited_reconstruction_paths: []
+  downstream_open_decisions: []
   open_questions:
   deferred_questions:
   default_assumptions:
@@ -215,16 +238,22 @@ spec_decision_packet:
     no_grill_justification:
 ```
 
-Open questions need owner, default, consequence, and non-blocking reason.
-Defaults must be distinguishable from locked user decisions. Implementation
-choices must not be smuggled in without authority or evidence.
+Open questions need owner, default, consequence, and non-blocking reason. Defaults
+must be distinguishable from locked user decisions. Implementation and
+architectonic choices must not be smuggled in without authority or evidence.
+
+A downstream-open architectonic decision must name its admissible candidate space,
+required deciding observations, forbidden outcomes, safe default or blocker, and
+invalidators. It is not an excuse for an unspecified design.
+
+See [grill-decision-packet-template.md](references/grill-decision-packet-template.md).
 
 ## Gate phase
 
 Before compiling a spec, complete this sentence:
 
 ```text
-We are building X, for Y, by changing Z, while explicitly not doing A/B/C, and success means P/Q/R proofs pass.
+We are building X, for Y, by changing Z, while explicitly not doing A/B/C, under architectonic constraints D/E, and success means P/Q/R proofs pass.
 ```
 
 Emit:
@@ -242,6 +271,50 @@ handoff_sentence:
 If the gate fails, do not produce a spec or plan. Ask at most 1-3 next material
 questions and set SGR-v2 status to `blocked`.
 
+## Architectonic specification
+
+Before compiling the implementation spec, recover an **Architectonic Thread** for
+every consequential seam. This is a bounded specification phase, not an unbounded
+architecture search and not a dependency on another skill.
+
+Read [architectonic-specification.md](references/architectonic-specification.md).
+
+A seam is consequential when at least two plausible organizations materially differ
+in persistent behavior, ownership, compatibility, migration, enforcement,
+information retention, resources, or proof obligations. Otherwise preserve the
+incumbent with one law and falsifier or record `not consequential`.
+
+For each consequential seam:
+
+1. classify authority as `source_fixed`, `source_bounded`, or
+   `specification_local`;
+2. record one architectural axis and one typed hole;
+3. recover live obligations, required observations, incumbent factors, owners,
+   compatibility, effects, resources, and host capabilities;
+4. state the ordinary repository-native candidate first;
+5. compare preservation, admitted-domain restriction, representation/owner
+   strengthening, and ablation/normalization;
+6. classify factor obligations as `live`, `moved`, `expired`, `duplicated`,
+   `invalid`, or `unknown`;
+7. factor, quotient, ablate, normalize, preserve, or introduce factors only with a
+   recomposition and proof account;
+8. choose `selected`, `evidence_conditioned`, `downstream_open`,
+   `underdetermined`, or `obstructed`;
+9. record law, falsifier, residual obligations, and invalidators.
+
+Prefer conceptual compression: explain more live obligations and observations with
+fewer independent concepts, owners, exceptions, and reconstruction paths. Raw file,
+layer, or line count never proves dominance.
+
+When the specification process and architecture change form two genuinely distinct
+compositional directions, require the specification square to preserve observations,
+authority, compatibility, effects, resources, and proof. Sequential derivations
+paste horizontally; successive architecture changes paste vertically; interchange
+requires changing-then-deriving to agree with deriving-then-transporting up to the
+declared equivalence.
+
+A plan-ready spec has no consequential seam without a lawful disposition.
+
 ## Implementation spec contract
 
 A complete implementation spec uses these sections in order:
@@ -252,22 +325,47 @@ A complete implementation spec uses these sections in order:
 4. Scope
 5. Non-Goals
 6. Requirements
-7. Design / Implementation Approach
-8. Dependency-Ordered Implementation Sequence
-9. Requirement-to-Test Traceability
-10. Proof Commands
-11. Risks and Edge Cases
-12. Rollback / Abort Criteria
-13. Binary Done-State
-14. Open / Deferred Items
+7. Architecture and Abstraction
+8. Design / Implementation Approach
+9. Dependency-Ordered Implementation Sequence
+10. Requirement-Owner-Enforcement-Proof Traceability
+11. Proof Commands
+12. Risks and Edge Cases
+13. Rollback / Abort Criteria
+14. Binary Done-State
+15. Open / Deferred Items
+
+`Architecture and Abstraction` carries the Architectonic Thread: seam authority,
+incumbent organization, ordinary and alternative candidates, selected or conditioned
+organization, canonical owners, factor dispositions, laws, falsifiers, residuals,
+and invalidators.
+
+Every downstream section must be derived from that thread:
+
+```text
+requirement
+-> semantic owner
+-> architectural factor
+-> enforcement locus
+-> implementation surface
+-> proof
+-> invalidator
+```
+
+Every implementation-sequence item identifies whether it establishes, transports,
+migrates, retires, proves, or removes a bypass for an architectonic factor. A
+sequence that realizes a quotiented, ablated, normalized, or superseded factor is
+inconsistent and must be regenerated.
 
 Keep the implementation sequence at spec level. Do not create task rows,
 iterations, execution waves, or `<proposed_plan>`.
 
 ## Challenge phase
 
-Run exactly one strongest project-specific challenge tied to the primary
-invariant.
+Run exactly one strongest project-specific challenge tied to the primary invariant.
+When architecture or abstraction is consequential, attack the governing organization
+rather than merely a local implementation choice. Read
+[challenge-contract.md](references/challenge-contract.md).
 
 Emit:
 
@@ -281,13 +379,15 @@ required_change:
 regenerate_spec: yes|no
 ```
 
-If the challenge changes architecture, proof, scope, or risk, revise only
-affected sections and rerun affected downstream phases.
+If the challenge changes architecture, proof, scope, or risk, revise only affected
+sections and rerun affected downstream phases. A `changed_architecture` result names
+the affected seam and regenerates every implementation-spec section derived from it.
 
 ## Fresh-Eyes phase
 
 Reread the final candidate against the authoritative brief, Evidence Brief, Gate
-Result, and decision packet.
+Result, decision packet, and Architectonic Thread. Read
+[spec-fresh-eyes-pass.md](references/spec-fresh-eyes-pass.md).
 
 Emit:
 
@@ -298,15 +398,17 @@ changed_sections:
 why_preserves_authoritative_brief:
 ```
 
-Look for drift, missing non-goals, smuggled implementation choices, vague proof,
-scaffold-only proof, rollback gaps, unmapped requirements, plan-shaped detail,
-and stale assumptions. If a material decision is missing, return to gate failure
-rather than handing off.
+Look for drift, missing non-goals, hidden consequential architecture, smuggled
+implementation choices, file-shaped factorization, abstraction proliferation,
+duplicated truth, reconstruction paths, superseded factors still in the sequence,
+missing square witnesses, vague proof, scaffold-only proof, rollback gaps, unmapped
+requirements, plan-shaped detail, and stale assumptions. If a material decision is
+missing, return to gate failure rather than handing off.
 
 ## Spec Pipeline Receipt
 
-Every terminal output must include exactly one `## Spec Pipeline Receipt`
-section followed by one YAML object:
+Every terminal output must include exactly one `## Spec Pipeline Receipt` section
+followed by one YAML object:
 
 ```yaml
 spec_governance_receipt:
@@ -387,8 +489,8 @@ sections remain required, but duplicated top-level receipt blocks are not.
 
 ## Execution handoff
 
-Only `full` or a fully repaired `repair` mode may authorize downstream planning
-or mutation.
+Only `full` or a fully repaired `repair` mode may authorize downstream planning or
+mutation.
 
 Emit:
 
@@ -402,8 +504,7 @@ do_not_execute_before:
 auto_plan_handoff: eligible|not-eligible
 ```
 
-`gate-only` and `challenge-only` do not authorize mutation or
-same-turn planning.
+`gate-only` and `challenge-only` do not authorize mutation or same-turn planning.
 
 ## Automatic `$plan` tail-call
 
@@ -450,6 +551,9 @@ plan_source_contract:
   do_not_execute_before: []
 ```
 
+The Architectonic Thread travels inside `implementation_spec` and
+`decision_packet`; no second handoff artifact is created.
+
 `$spec-pipeline` still must not emit `<proposed_plan>`. `$plan` emits the
 `<proposed_plan>` block and performs its fixed-point planning loop with PSR-v1.
 `$plan` does not grant mutation authority.
@@ -463,6 +567,7 @@ status is blocked, drift, audit-only, or partial
 lane is not spec_to_plan for a legal blocker recorded in the receipt
 gate did not allow planning
 material questions remain
+a consequential architectonic seam lacks a lawful disposition
 fresh-eyes returned to grill or detected drift
 any subagent remains open
 next_owner is not $plan
@@ -478,8 +583,8 @@ reason: same-turn tail-call unavailable in this runtime
 next_owner: $plan
 ```
 
-This marker is a failure of automation, not a failure of the spec. It must not
-be replaced with `spec_only` merely because the tail-call could not run.
+This marker is a failure of automation, not a failure of the spec. It must not be
+replaced with `spec_only` merely because the tail-call could not run.
 
 See [02-auto-plan-tail-call.md](references/cli-specs/02-auto-plan-tail-call.md).
 
@@ -496,9 +601,8 @@ spec_governance_auditor
 spec_retro_miner
 ```
 
-A positive packet must change a decision, add a material finding, change proof,
-retire a risk, or block a bad handoff. Otherwise it is neutral. No passing
-handoff with open subagents.
+A positive packet must change a decision, architectonic seam, proof, risk, or
+handoff. Otherwise it is neutral. No passing handoff with open subagents.
 
 ## Retro trigger
 
@@ -506,7 +610,7 @@ Do not run historical retro inside every spec. Set `retro.trigger_required: yes`
 when:
 
 - five or more full pipeline sessions occurred since the last retro;
-- the same readiness or challenge failure recurred at least twice;
+- the same readiness, architectonic, or challenge failure recurred at least twice;
 - execution outran readiness;
 - plan churn recurred;
 - no-grill justifications are repeatedly generic;
@@ -522,7 +626,13 @@ Then set next owner to `$spec-retro`.
 - In `full` mode, default to `spec_to_plan` unless a legal blocker exists.
 - Explicit `$spec-pipeline` is not a `spec_only` request.
 - No planning before gate pass.
-- No mutation before full challenge, fresh-eyes, governance receipt, and execution handoff.
+- No plan-ready handoff with an undispositioned consequential architectonic seam.
+- Architecture and abstraction must derive implementation, migration, proof,
+  rollback, and done-state; they are not an isolated prose section.
+- Do not require `$universalist`, `$reduce`, or `$actuating` to make the spec
+  architectonically complete.
+- No mutation before full challenge, fresh-eyes, governance receipt, and execution
+  handoff.
 - No execution handoff from gate-only or challenge-only mode.
 - No broad multi-challenge review by default.
 - No separate readiness or challenge skill invocation required.
