@@ -2,16 +2,22 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Logophile"
-  short_description: "Precision wording, doctrine, activation phrases, behavioral upgrades, and breakthrough language"
+  short_description: "Precision wording, doctrine, behavioral upgrades, architecture, and breakthrough language"
   default_prompt: >
     Use $logophile for wording, naming, doctrine-word selection, terse activation-phrase selection,
-    persona naming, old-versus-new wording comparison, breakthrough language, or human-facing language
-    surfaces. When a candidate may replace existing wording, read references/behavioral_upgrade.md,
-    treat the baseline as the incumbent, classify the policy delta, and return retain, replace,
-    specialize, pair, sequence, or benchmark rather than assuming denser vocabulary is better. Read
-    references/behavioral_upgrade_probe_cases.md for acceptance boundaries. Use the read-only
-    activation_upgrade_arbiter for anonymized A/B outputs when independent adjudication is warranted.
-    For breakthrough, leap, step-change, or discontinuity wording, read
+    persona naming, old-versus-new wording comparison, architecture/abstraction language, breakthrough
+    language, or human-facing language surfaces. When a candidate may replace existing wording, read
+    references/behavioral_upgrade.md, treat the baseline as the incumbent, classify the policy delta,
+    and return retain, replace, specialize, pair, sequence, or benchmark rather than assuming denser
+    vocabulary is better. Read references/behavioral_upgrade_probe_cases.md for acceptance boundaries.
+    Use the read-only activation_upgrade_arbiter for anonymized A/B outputs when independent
+    adjudication is warranted. For rearchitecture, better-abstraction, organizing-boundary,
+    canonical-owner, or composition-law wording, read references/architectonic_doctrine.md and
+    references/architectonic_probe_cases.md. Preserve the distinctions among ARCHITECTONIC, PRINCIPAL,
+    FACTORIZING, REPRESENTATION-SHIFTING, CANONICALIZING, RECONSTITUTIVE, MORPHOGENETIC,
+    UNIVERSALIZING, ALGEBRAIC, and REIFYING. Preserve exact `OPERATE ARCHITECTONICALLY` when an
+    established consumer contract requires it, but do not let $logophile nominate, select, implement,
+    or verify architecture. For breakthrough, leap, step-change, or discontinuity wording, read
     references/breakthrough_doctrine.md and references/breakthrough_probe_cases.md. Preserve the
     distinctions among SALTATORY, AUDACIOUS, POIETIC, CATALYTIC, BIFURCATIVE, PARADIGMATIC,
     EXAPTIVE, RECOMBINATIVE, EMERGENT, and MULTIPLICATIVE; do not call novelty, magnitude, or a large
