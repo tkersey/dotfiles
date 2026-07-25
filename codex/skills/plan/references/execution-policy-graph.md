@@ -61,6 +61,90 @@ execution_policy_graph:
         atom:
         response_terminal:
 
+  architectonic:
+    seams:
+      - seam_id:
+        authority:
+          source_fixed |
+          source_bounded |
+          plan_local
+        boundary:
+          owner:
+          source:
+          target:
+        axis:
+          data_shape |
+          behavior |
+          syntax_semantics |
+          composition |
+          representation |
+          ownership |
+          context |
+          transport |
+          proof
+        typed_hole:
+          object |
+          map |
+          representation |
+          interpreter |
+          composition |
+          equivalence |
+          owner |
+          proof
+        live_obligation_refs: []
+        required_observation_refs: []
+        compatibility_and_migration: []
+        host_capabilities: []
+        incumbent:
+          organization:
+          factor_refs: []
+        candidate_movements:
+          preserve:
+          restrict_admitted_domain:
+          strengthen_representation_or_owner:
+          ablate_or_normalize:
+        disposition:
+          selected |
+          evidence_conditioned |
+          underdetermined |
+          obstructed
+        selected_organization:
+        decision_observation_refs: []
+        factors:
+          - factor_id:
+            owner:
+            live_obligation_refs: []
+            obligation_status:
+              live |
+              moved |
+              expired |
+              duplicated |
+              invalid |
+              unknown
+            disposition:
+              preserve |
+              factor |
+              quotient |
+              ablate |
+              normalize |
+              introduce
+        law:
+        falsifier:
+        residual_obligations: []
+        invalidators: []
+    composition:
+      seam_dependency_edges:
+        - from_seam_ref:
+          to_seam_ref:
+          relation:
+      independent_seam_sets: []
+    conceptual_compression:
+      live_obligation_refs: []
+      independent_factor_refs: []
+      independent_owner_refs: []
+      exceptional_path_refs: []
+      dominated_factor_refs: []
+
   regime:
     kind:
       clear |
@@ -137,6 +221,10 @@ execution_policy_graph:
         any: []
         none: []
       requires_actions: []
+      architectonic_seam_refs: []
+      realizes_factor_refs: []
+      retires_factor_refs: []
+      preservation_observation_refs: []
       mutation_boundary:
         kind:
           repository |
@@ -290,13 +378,44 @@ execution_policy_graph:
     policy_changes: []
     semantic_changes: []
     source_changes: []
+    architectonic_changes:
+      - seam_ref:
+        prior_organization:
+        successor_organization:
+        relation:
+          preserve |
+          restrict |
+          strengthen |
+          factor |
+          quotient |
+          ablate |
+          normalize |
+          replace
+    plan_transport:
+      preserved_action_refs: []
+      revised_action_refs: []
+      retired_action_refs: []
+      introduced_action_refs: []
+    square_results:
+      - seam_ref:
+        horizontal_before_refs: []
+        vertical_change_refs: []
+        horizontal_after_refs: []
+        preserved_observation_refs: []
+        result:
+          commutes |
+          fails |
+          underdetermined
+        falsifier:
 
   handoff:
     next_owner:
       actuating |
+      executor |
       spec-pipeline |
       grill-me |
       blocked
+    consumer:
     runtime_ready:
     mutation_allowed: no
     gate_result:
@@ -313,6 +432,11 @@ execution_policy_graph:
       none |
       authorized |
       unauthorized
+    architectonic_seams_complete:
+    source_fixed_architecture_preserved:
+    factors_earned_or_retired:
+    action_architecture_bindings_complete:
+    required_squares_commute_or_block:
     obligations_covered:
     critical_unknowns_observable_or_blocked:
     actions_bounded:
@@ -325,6 +449,23 @@ execution_policy_graph:
     fresh_eyes_blockers:
     policy_ready:
 ```
+
+## Architectonic laws
+
+- A consequential action must reference the seam it realizes, migrates, preserves,
+  or retires.
+- An action must not realize a factor whose disposition is `quotient`, `ablate`, or
+  a superseded `normalize` predecessor.
+- A `source_fixed` seam may be preserved or returned to source authority; it may not
+  be silently replaced.
+- A `source_bounded` or `plan_local` seam may change during synthesis when the
+  resulting plan transport preserves required observations and authority.
+- Raw counts in `conceptual_compression` are comparison evidence, not a scalar
+  optimization objective.
+- Architecture changes partition affected actions into preserved, revised, retired,
+  and introduced sets.
+- A square result of `fails` blocks convergence. `underdetermined` requires an
+  observation-conditioned route or blocker.
 
 ## Atom namespace
 
@@ -342,11 +483,13 @@ terminal:<name>
 custom:<stable-id>
 ```
 
-Every condition atom must be declared by a fact, observation outcome, action, unknown, obligation, terminal state, or explicit custom atom declaration.
+Every condition atom must be declared by a fact, observation outcome, action,
+unknown, obligation, terminal state, or explicit custom atom declaration.
 
 ## Closure law
 
-Every action outcome used by the model must lead to at least one:
+Every action outcome and architectonic decision observation used by the model must
+lead to at least one:
 
 ```text
 later policy rule
@@ -355,4 +498,5 @@ shield response
 explicit replan/authority return
 ```
 
-An action whose success or failure leaves the policy with no lawful successor is incomplete.
+An action or architectural outcome whose success or failure leaves the policy with
+no lawful successor is incomplete.
