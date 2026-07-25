@@ -2,13 +2,17 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Plan"
-  short_description: "Compile and exhaustively refine a named execution policy"
+  short_description: "Jointly refine architecture and execution policy to a fixed point"
   default_prompt: >-
     Use $plan to compile accepted intent or a PSC-v1 source contract from
     $spec-pipeline into a source-bound execution policy with an immutable plan_id,
-    explicit resource predictions, proof, rollback, and a handoff to the
-    $actuating handoff. Preserve
-    $spec-pipeline's semantic authority, internally iterate the policy to a fixed
-    point, run the mandatory radical creativity candidate, emit and structurally
-    check a compact PSR-v1 synthesis receipt, and never infer an existing plan or
-    grant mutation authority.
+    explicit architecture and abstraction seams, resource predictions, proof,
+    rollback, and a consumer-neutral execution handoff. Treat the candidate as the
+    pair (architecture, policy). Preserve source-fixed decisions; iteratively refine
+    source-bounded and plan-local organization together with actions, observations,
+    proof, rollback, and terminals. Bind actions to factors they realize or retire,
+    transport the plan through adopted architecture changes with compatibility
+    squares, and accrete justification while ablating dominated surface. Keep the
+    existing unbounded nine-lens fixed point, independent fresh-eyes pass, mandatory
+    radical candidate, and PSR-v1 receipt. Do not require $universalist, $reduce, or
+    $actuating; never infer an existing plan or grant mutation authority.
