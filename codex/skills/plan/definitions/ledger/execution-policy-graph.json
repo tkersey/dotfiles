@@ -1,0 +1,3915 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "plan/execution-policy-graph",
+  "owner": "plan",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-object",
+      "bounded-string",
+      "declared-field-values",
+      "digest",
+      "enum",
+      "exact-object",
+      "field-absent",
+      "implies",
+      "keyed-unique",
+      "one-of",
+      "object-values",
+      "optional-field",
+      "path-format",
+      "reference-exists",
+      "regex",
+      "required-field",
+      "safe-identifier",
+      "scalar-type",
+      "tagged-union",
+      "timestamp",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "policy": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 16777216
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "",
+        "keys": [
+          "execution_policy_graph"
+        ]
+      },
+      {
+        "op": "tagged-union",
+        "input": "policy",
+        "path": "/execution_policy_graph",
+        "tag": "/architectonic/mode",
+        "variants": [
+          {
+            "value": "explicit",
+            "rules": [
+              {
+                "op": "all",
+                "path": "/actions",
+                "rules": [
+                  {
+                    "op": "required-field",
+                    "path": "/architectonic_seam_refs"
+                  },
+                  {
+                    "op": "required-field",
+                    "path": "/realizes_factor_refs"
+                  },
+                  {
+                    "op": "required-field",
+                    "path": "/retires_factor_refs"
+                  },
+                  {
+                    "op": "required-field",
+                    "path": "/preservation_observation_refs"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "value": "not_required",
+            "rules": [
+              {
+                "op": "all",
+                "path": "/actions",
+                "rules": [
+                  {
+                    "op": "optional-field",
+                    "path": "/architectonic_seam_refs",
+                    "rules": [
+                      {
+                        "op": "bounded-array",
+                        "path": "",
+                        "max": 0
+                      }
+                    ]
+                  },
+                  {
+                    "op": "optional-field",
+                    "path": "/realizes_factor_refs",
+                    "rules": [
+                      {
+                        "op": "bounded-array",
+                        "path": "",
+                        "max": 0
+                      }
+                    ]
+                  },
+                  {
+                    "op": "optional-field",
+                    "path": "/retires_factor_refs",
+                    "rules": [
+                      {
+                        "op": "bounded-array",
+                        "path": "",
+                        "max": 0
+                      }
+                    ]
+                  },
+                  {
+                    "op": "optional-field",
+                    "path": "/preservation_observation_refs",
+                    "rules": [
+                      {
+                        "op": "bounded-array",
+                        "path": "",
+                        "max": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph",
+        "required_keys": [
+          "actions",
+          "architectonic",
+          "belief",
+          "goal",
+          "horizon",
+          "invalidators",
+          "observations",
+          "plan_id",
+          "policy",
+          "policy_id",
+          "policy_version",
+          "potential",
+          "regime",
+          "revision",
+        "source",
+        "terminal_states"
+      ],
+        "optional_keys": [
+        "created_at",
+        "parent",
+        "profile",
+        "revision_summary",
+        "safety_shield"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "enum",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy_version",
+        "values": [
+          "EPG-v1"
+        ]
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/gate"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/handoff"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/initial_state"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy_ready"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/downstream_runtime_ready"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/mutation_allowed"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/execution_authorized"
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/challenge"
+      },
+      {
+        "op": "safe-identifier",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy_id",
+        "min": 1,
+        "max": 256
+      },
+      {
+        "op": "safe-identifier",
+        "input": "policy",
+        "path": "/execution_policy_graph/plan_id",
+        "min": 1,
+        "max": 256
+      },
+      {
+        "op": "scalar-type",
+        "input": "policy",
+        "path": "/execution_policy_graph/revision",
+        "type": "integer"
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/revision_summary",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "policy_changes",
+              "semantic_changes",
+              "source_changes"
+            ],
+            "optional_keys": [
+              "architectonic_changes",
+              "parent_diff_ref",
+              "plan_transport",
+              "square_results"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "all",
+            "path": "/policy_changes",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "path": "/semantic_changes",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "path": "/source_changes",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/architectonic_changes",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/parent_diff_ref",
+            "rules": [
+              {
+                "op": "tagged-union",
+                "path": "",
+                "variants": [
+                  {
+                    "kind": "null",
+                    "rules": []
+                  },
+                  {
+                    "kind": "string",
+                    "rules": [
+                      {
+                        "op": "bounded-string",
+                        "path": "",
+                        "trimmed_min": 1,
+                        "max": 1048576
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/plan_transport",
+            "allow_null": true,
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "introduced_action_refs",
+                  "preserved_action_refs",
+                  "retired_action_refs",
+                  "revised_action_refs"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "all",
+                "path": "/preserved_action_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "all",
+                "path": "/revised_action_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "all",
+                "path": "/retired_action_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "all",
+                "path": "/introduced_action_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/square_results",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/parent",
+        "rules": [
+          {
+            "op": "tagged-union",
+            "path": "",
+            "variants": [
+              {
+                "kind": "null",
+                "rules": []
+              },
+              {
+                "kind": "object",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "keys": [
+                      "digest",
+                      "policy_id"
+                    ],
+                    "allow_additional": true
+                  },
+                  {
+                    "op": "safe-identifier",
+                    "path": "/policy_id",
+                    "min": 1,
+                    "max": 256
+                  },
+                  {
+                    "op": "digest",
+                    "path": "/digest"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/created_at",
+        "rules": [
+          {
+            "op": "timestamp",
+            "path": ""
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/profile",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "",
+            "values": [
+              "balanced",
+              "campaign",
+              "fast",
+              "strict"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/source",
+        "required_keys": [
+          "artifact_state",
+          "authority",
+          "locked_decision_refs",
+          "mode",
+          "source_digest",
+          "source_refs"
+        ],
+        "optional_keys": [
+          "spec_governance_ref",
+          "spec_id"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "enum",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/mode",
+        "values": [
+          "direct_brief",
+          "existing_policy_revision",
+          "spec_handoff"
+        ]
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/current"
+      },
+      {
+        "op": "bounded-string",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/authority",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/source_refs",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/source_refs",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "digest",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/source_digest"
+      },
+      {
+        "op": "tagged-union",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/artifact_state",
+        "tag": "/repo_bound",
+        "variants": [
+          {
+            "value": "yes",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "base",
+                  "branch",
+                  "dirty_fingerprint",
+                  "head",
+                  "repo_bound",
+                  "repository"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "bounded-string",
+                "path": "/repository",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/branch",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/base",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/head",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/dirty_fingerprint",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "no",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "repo_bound"
+                ],
+                "allow_additional": true
+              }
+            ]
+          },
+          {
+            "value": "unknown",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "repo_bound"
+                ],
+                "allow_additional": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/locked_decision_refs",
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/source/locked_decision_refs",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal",
+        "required_keys": [
+          "obligations"
+        ],
+        "optional_keys": [
+          "forbidden_states",
+          "objective",
+          "safety_invariants",
+          "terminal_predicates"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/objective",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 1048576
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/obligations",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/obligations",
+        "key": "/obligation_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/obligations",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "obligation_id"
+            ],
+            "optional_keys": [
+              "proof_refs",
+              "source_refs",
+              "statement",
+              "terminal_predicate_refs"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/obligation_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "optional-field",
+            "path": "/statement",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/source_refs",
+            "rules": [
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/terminal_predicate_refs",
+            "rules": [
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "trimmed_min": 1,
+                    "max": 256
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/proof_refs",
+            "rules": [
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "trimmed_min": 1,
+                    "max": 256
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/terminal_predicates",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "tagged-union",
+            "path": "",
+            "variants": [
+              {
+                "kind": "array",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "",
+                    "rules": [
+                      {
+                        "op": "tagged-union",
+                        "path": "",
+                        "variants": [
+                          {
+                            "kind": "object",
+                            "rules": [
+                              {
+                                "op": "optional-field",
+                                "path": "/atom",
+                                "allow_null": true,
+                                "rules": [
+                                  {
+                                    "op": "tagged-union",
+                                    "path": "",
+                                    "variants": [
+                                      {
+                                        "kind": "string",
+                                        "rules": [
+                                          {
+                                            "op": "regex",
+                                            "path": "",
+                                            "patterns": [
+                                              "^fact:[A-Za-z0-9_.-]+$",
+                                              "^obs:[A-Za-z0-9_.-]+=[A-Za-z0-9_.-]+$",
+                                              "^action:[A-Za-z0-9_.-]+=success$",
+                                              "^action:[A-Za-z0-9_.-]+=failure$",
+                                              "^unknown:[A-Za-z0-9_.-]+=resolved$",
+                                              "^unknown:[A-Za-z0-9_.-]+=blocked$",
+                                              "^obligation:[A-Za-z0-9_.-]+=closed$",
+                                              "^terminal:[A-Za-z0-9_.-]+$",
+                                              "^custom:[A-Za-z0-9_.-]+$"
+                                            ],
+                                            "max": 256
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "kind": "number",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "boolean",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "array",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "object",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "null",
+                                        "rules": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "kind": "string",
+                            "rules": []
+                          },
+                          {
+                            "kind": "number",
+                            "rules": []
+                          },
+                          {
+                            "kind": "boolean",
+                            "rules": []
+                          },
+                          {
+                            "kind": "array",
+                            "rules": []
+                          },
+                          {
+                            "kind": "null",
+                            "rules": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "string",
+                "rules": []
+              },
+              {
+                "kind": "number",
+                "rules": []
+              },
+              {
+                "kind": "boolean",
+                "rules": []
+              },
+              {
+                "kind": "object",
+                "rules": []
+              },
+              {
+                "kind": "null",
+                "rules": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/safety_invariants",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "tagged-union",
+            "path": "",
+            "variants": [
+              {
+                "kind": "array",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "",
+                    "rules": [
+                      {
+                        "op": "tagged-union",
+                        "path": "",
+                        "variants": [
+                          {
+                            "kind": "object",
+                            "rules": [
+                              {
+                                "op": "optional-field",
+                                "path": "/violation_atom",
+                                "allow_null": true,
+                                "rules": [
+                                  {
+                                    "op": "tagged-union",
+                                    "path": "",
+                                    "variants": [
+                                      {
+                                        "kind": "string",
+                                        "rules": [
+                                          {
+                                            "op": "regex",
+                                            "path": "",
+                                            "patterns": [
+                                              "^fact:[A-Za-z0-9_.-]+$",
+                                              "^obs:[A-Za-z0-9_.-]+=[A-Za-z0-9_.-]+$",
+                                              "^action:[A-Za-z0-9_.-]+=success$",
+                                              "^action:[A-Za-z0-9_.-]+=failure$",
+                                              "^unknown:[A-Za-z0-9_.-]+=resolved$",
+                                              "^unknown:[A-Za-z0-9_.-]+=blocked$",
+                                              "^obligation:[A-Za-z0-9_.-]+=closed$",
+                                              "^terminal:[A-Za-z0-9_.-]+$",
+                                              "^custom:[A-Za-z0-9_.-]+$"
+                                            ],
+                                            "max": 256
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "kind": "number",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "boolean",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "array",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "object",
+                                        "rules": []
+                                      },
+                                      {
+                                        "kind": "null",
+                                        "rules": []
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "kind": "string",
+                            "rules": []
+                          },
+                          {
+                            "kind": "number",
+                            "rules": []
+                          },
+                          {
+                            "kind": "boolean",
+                            "rules": []
+                          },
+                          {
+                            "kind": "array",
+                            "rules": []
+                          },
+                          {
+                            "kind": "null",
+                            "rules": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "string",
+                "rules": []
+              },
+              {
+                "kind": "number",
+                "rules": []
+              },
+              {
+                "kind": "boolean",
+                "rules": []
+              },
+              {
+                "kind": "object",
+                "rules": []
+              },
+              {
+                "kind": "null",
+                "rules": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/goal/forbidden_states",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "tagged-union",
+            "path": "",
+            "variants": [
+              {
+                "kind": "array",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "",
+                    "rules": [
+                      {
+                        "op": "tagged-union",
+                        "path": "",
+                        "variants": [
+                          {
+                            "kind": "object",
+                            "rules": [
+                              {
+                                "op": "required-field",
+                                "path": "/atom"
+                              },
+                              {
+                                "op": "scalar-type",
+                                "path": "/atom",
+                                "type": "string"
+                              },
+                              {
+                                "op": "regex",
+                                "path": "/atom",
+                                "patterns": [
+                                  "^fact:[A-Za-z0-9_.-]+$",
+                                  "^obs:[A-Za-z0-9_.-]+=[A-Za-z0-9_.-]+$",
+                                  "^action:[A-Za-z0-9_.-]+=success$",
+                                  "^action:[A-Za-z0-9_.-]+=failure$",
+                                  "^unknown:[A-Za-z0-9_.-]+=resolved$",
+                                  "^unknown:[A-Za-z0-9_.-]+=blocked$",
+                                  "^obligation:[A-Za-z0-9_.-]+=closed$",
+                                  "^terminal:[A-Za-z0-9_.-]+$",
+                                  "^custom:[A-Za-z0-9_.-]+$"
+                                ],
+                                "max": 256
+                              },
+                              {
+                                "op": "required-field",
+                                "path": "/response_terminal"
+                              },
+                              {
+                                "op": "scalar-type",
+                                "path": "/response_terminal",
+                                "type": "string"
+                              }
+                            ]
+                          },
+                          {
+                            "kind": "string",
+                            "rules": []
+                          },
+                          {
+                            "kind": "number",
+                            "rules": []
+                          },
+                          {
+                            "kind": "boolean",
+                            "rules": []
+                          },
+                          {
+                            "kind": "array",
+                            "rules": []
+                          },
+                          {
+                            "kind": "null",
+                            "rules": []
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "string",
+                "rules": []
+              },
+              {
+                "kind": "number",
+                "rules": []
+              },
+              {
+                "kind": "boolean",
+                "rules": []
+              },
+              {
+                "kind": "object",
+                "rules": []
+              },
+              {
+                "kind": "null",
+                "rules": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "tagged-union",
+        "input": "policy",
+        "path": "/execution_policy_graph/architectonic",
+        "tag": "/mode",
+        "variants": [
+          {
+            "value": "not_required",
+            "rules": [
+              {
+                "op": "exact-object",
+                "required_keys": [
+                  "mode",
+                  "reason",
+                  "seams"
+                ],
+                "optional_keys": [
+                  "composition",
+                  "conceptual_compression"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "bounded-string",
+                "path": "/reason",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-array",
+                "path": "/seams",
+                "max": 0
+              }
+            ]
+          },
+          {
+            "value": "explicit",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "composition",
+                  "conceptual_compression",
+                  "mode",
+                  "reason",
+                  "seams"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "bounded-string",
+                "path": "/reason",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-array",
+                "path": "/seams",
+                "min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "keyed-unique",
+                "path": "/seams",
+                "key": "/seam_id"
+              },
+              {
+                "op": "all",
+                "path": "/seams",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "keys": [
+                      "authority",
+                      "axis",
+                      "boundary",
+                      "candidate_movements",
+                      "compatibility_and_migration",
+                      "decision_observation_refs",
+                      "disposition",
+                      "factors",
+                      "falsifier",
+                      "host_capabilities",
+                      "incumbent",
+                      "invalidators",
+                      "law",
+                      "live_obligation_refs",
+                      "required_observation_refs",
+                      "residual_obligations",
+                      "seam_id",
+                      "selected_organization",
+                      "typed_hole"
+                    ],
+                    "allow_additional": true
+                  },
+                  {
+                    "op": "safe-identifier",
+                    "path": "/seam_id",
+                    "min": 1,
+                    "max": 256
+                  },
+                  {
+                    "op": "enum",
+                    "path": "/authority",
+                    "values": [
+                      "plan_local",
+                      "source_bounded",
+                      "source_fixed"
+                    ]
+                  },
+                  {
+                    "op": "enum",
+                    "path": "/axis",
+                    "values": [
+                      "behavior",
+                      "composition",
+                      "context",
+                      "data_shape",
+                      "ownership",
+                      "proof",
+                      "representation",
+                      "syntax_semantics",
+                      "transport"
+                    ]
+                  },
+                  {
+                    "op": "enum",
+                    "path": "/typed_hole",
+                    "values": [
+                      "composition",
+                      "equivalence",
+                      "interpreter",
+                      "map",
+                      "object",
+                      "owner",
+                      "proof",
+                      "representation"
+                    ]
+                  },
+                  {
+                    "op": "enum",
+                    "path": "/disposition",
+                    "values": [
+                      "evidence_conditioned",
+                      "obstructed",
+                      "selected",
+                      "underdetermined"
+                    ]
+                  },
+                  {
+                    "op": "bounded-object",
+                    "path": "/boundary",
+                    "min": 3
+                  },
+                  {
+                    "op": "bounded-object",
+                    "path": "/incumbent",
+                    "min": 2
+                  },
+                  {
+                    "op": "bounded-object",
+                    "path": "/candidate_movements",
+                    "min": 4
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/boundary/owner",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/boundary/source",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/boundary/target",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/incumbent/organization",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/incumbent/factor_refs",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/incumbent/factor_refs",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/candidate_movements/preserve",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/candidate_movements/restrict_admitted_domain",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/candidate_movements/strengthen_representation_or_owner",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/candidate_movements/ablate_or_normalize",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/live_obligation_refs",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/live_obligation_refs",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/required_observation_refs",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/required_observation_refs",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/decision_observation_refs",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/decision_observation_refs",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "implies",
+                    "if": "/disposition",
+                    "equals": "evidence_conditioned",
+                    "then": "/decision_observation_refs",
+                    "then_nonempty": true
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/compatibility_and_migration",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/compatibility_and_migration",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/host_capabilities",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/host_capabilities",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/residual_obligations",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/residual_obligations",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/invalidators",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/invalidators",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/factors",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "keyed-unique",
+                    "path": "/factors",
+                    "key": "/factor_id"
+                  },
+                  {
+                    "op": "all",
+                    "path": "/factors",
+                    "rules": [
+                      {
+                        "op": "exact-object",
+                        "keys": [
+                          "disposition",
+                          "factor_id",
+                          "live_obligation_refs",
+                          "obligation_status",
+                          "owner"
+                        ],
+                        "allow_additional": true
+                      },
+                      {
+                        "op": "safe-identifier",
+                        "path": "/factor_id",
+                        "min": 1,
+                        "max": 256
+                      },
+                      {
+                        "op": "bounded-string",
+                        "path": "/owner",
+                        "trimmed_min": 1,
+                        "max": 1048576
+                      },
+                      {
+                        "op": "enum",
+                        "path": "/obligation_status",
+                        "values": [
+                          "duplicated",
+                          "expired",
+                          "invalid",
+                          "live",
+                          "moved",
+                          "unknown"
+                        ]
+                      },
+                      {
+                        "op": "enum",
+                        "path": "/disposition",
+                        "values": [
+                          "ablate",
+                          "factor",
+                          "introduce",
+                          "normalize",
+                          "preserve",
+                          "quotient"
+                        ]
+                      },
+                      {
+                        "op": "bounded-array",
+                        "path": "/live_obligation_refs",
+                        "max": 1048576
+                      },
+                      {
+                        "op": "all",
+                        "path": "/live_obligation_refs",
+                        "rules": [
+                          {
+                            "op": "scalar-type",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "implies",
+                        "if": "/disposition",
+                        "equals": "preserve",
+                        "then": "/live_obligation_refs",
+                        "then_nonempty": true
+                      },
+                      {
+                        "op": "implies",
+                        "if": "/disposition",
+                        "equals": "factor",
+                        "then": "/live_obligation_refs",
+                        "then_nonempty": true
+                      },
+                      {
+                        "op": "implies",
+                        "if": "/disposition",
+                        "equals": "introduce",
+                        "then": "/live_obligation_refs",
+                        "then_nonempty": true
+                      }
+                    ]
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/selected_organization",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/law",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/falsifier",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "op": "bounded-object",
+                "path": "/composition",
+                "min": 2
+              },
+              {
+                "op": "bounded-array",
+                "path": "/composition/seam_dependency_edges",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/composition/seam_dependency_edges",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "keys": [
+                      "from_seam_ref",
+                      "relation",
+                      "to_seam_ref"
+                    ],
+                    "allow_additional": true
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/relation",
+                    "min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/composition/independent_seam_sets",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/composition/independent_seam_sets",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "",
+                    "rules": [
+                      {
+                        "op": "scalar-type",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "bounded-object",
+                "path": "/conceptual_compression",
+                "min": 5
+              },
+              {
+                "op": "bounded-array",
+                "path": "/conceptual_compression/live_obligation_refs",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/conceptual_compression/live_obligation_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/conceptual_compression/independent_factor_refs",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/conceptual_compression/independent_factor_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/conceptual_compression/independent_owner_refs",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/conceptual_compression/independent_owner_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/conceptual_compression/exceptional_path_refs",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/conceptual_compression/exceptional_path_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/conceptual_compression/dominated_factor_refs",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/conceptual_compression/dominated_factor_refs",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/regime",
+        "keys": [
+          "confidence",
+          "kind",
+          "rationale",
+          "reclassify_on_observation_refs"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "enum",
+        "input": "policy",
+        "path": "/execution_policy_graph/regime/kind",
+        "values": [
+          "chaotic",
+          "clear",
+          "complicated",
+          "complex"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "policy",
+        "path": "/execution_policy_graph/regime/confidence",
+        "values": [
+          "high",
+          "low",
+          "medium"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "policy",
+        "path": "/execution_policy_graph/regime/rationale",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief",
+        "keys": [
+          "facts",
+          "unknowns"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "scalar-type",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/baseline_expectation",
+        "type": "object"
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief/facts",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief/facts",
+        "key": "/fact_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief/facts",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "atom",
+              "fact_id"
+            ],
+            "optional_keys": [
+              "confidence",
+              "evidence_refs",
+              "invalidators",
+              "statement"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/fact_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "bounded-string",
+            "path": "/atom",
+            "trimmed_min": 1,
+            "max": 256
+          },
+          {
+            "op": "regex",
+            "path": "/atom",
+            "patterns": [
+              "^fact:[A-Za-z0-9_.-]+$"
+            ],
+            "max": 256
+          },
+          {
+            "op": "optional-field",
+            "path": "/statement",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/confidence",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "high",
+                  "low",
+                  "medium"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief/unknowns",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief/unknowns",
+        "key": "/unknown_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/belief/unknowns",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "observation_refs",
+              "status",
+              "unknown_id",
+              "urgency"
+            ],
+            "optional_keys": [
+              "consequence_if_wrong",
+              "decision_relevance",
+              "evidence_required",
+              "statement"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/unknown_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "optional-field",
+            "path": "/statement",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "op": "enum",
+            "path": "/status",
+            "values": [
+              "blocked",
+              "open",
+              "resolved"
+            ]
+          },
+          {
+            "op": "enum",
+            "path": "/urgency",
+            "values": [
+              "critical",
+              "high",
+              "low",
+              "medium"
+            ]
+          },
+          {
+            "op": "tagged-union",
+            "path": "",
+            "tag": "/urgency",
+            "variants": [
+              {
+                "value": "critical",
+                "rules": [
+                  {
+                    "op": "tagged-union",
+                    "path": "",
+                    "tag": "/status",
+                    "variants": [
+                      {
+                        "value": "blocked",
+                        "rules": []
+                      },
+                      {
+                        "value": "open",
+                        "rules": [
+                          {
+                            "op": "bounded-array",
+                            "path": "/observation_refs",
+                            "min": 1,
+                            "max": 1048576
+                          }
+                        ]
+                      },
+                      {
+                        "value": "resolved",
+                        "rules": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "value": "high",
+                "rules": [
+                  {
+                    "op": "tagged-union",
+                    "path": "",
+                    "tag": "/status",
+                    "variants": [
+                      {
+                        "value": "blocked",
+                        "rules": []
+                      },
+                      {
+                        "value": "open",
+                        "rules": [
+                          {
+                            "op": "bounded-array",
+                            "path": "/observation_refs",
+                            "min": 1,
+                            "max": 1048576
+                          }
+                        ]
+                      },
+                      {
+                        "value": "resolved",
+                        "rules": []
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "value": "low",
+                "rules": []
+              },
+              {
+                "value": "medium",
+                "rules": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/observations",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/observations",
+        "key": "/observation_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/observations",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "observation_id",
+              "outcomes"
+            ],
+            "optional_keys": [
+              "command_or_evidence",
+              "evidence_schema",
+              "freshness",
+              "predicate",
+              "resolves_unknown_refs",
+              "source_kind"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/observation_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "optional-field",
+            "path": "/source_kind",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "command",
+                  "external_event",
+                  "inspection",
+                  "metric",
+                  "test",
+                  "user_decision"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/outcomes",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "all",
+            "path": "/outcomes",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "atom",
+                  "outcome"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "safe-identifier",
+                "path": "/outcome",
+                "min": 1,
+                "max": 256
+              },
+              {
+                "op": "bounded-string",
+                "path": "/atom",
+                "trimmed_min": 1,
+                "max": 256
+              },
+              {
+                "op": "regex",
+                "path": "/atom",
+                "patterns": [
+                  "^obs:[A-Za-z0-9_.-]+=[A-Za-z0-9_.-]+$"
+                ],
+                "max": 256
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/actions",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/actions",
+        "key": "/action_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/actions",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "action_id",
+              "expected_effects",
+              "expected_observation_refs",
+              "failure_observation_refs",
+              "kind",
+              "preconditions",
+              "proof_obligations",
+              "repeatable",
+              "requires_actions",
+              "utility"
+            ],
+            "optional_keys": [
+              "architectonic_seam_refs",
+              "lock_roots",
+              "mutation_boundary",
+              "owner",
+              "preservation_observation_refs",
+              "realizes_factor_refs",
+              "retires_factor_refs",
+              "rollback"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/action_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "enum",
+            "path": "/kind",
+            "values": [
+              "decide",
+              "deploy",
+              "inspect",
+              "mutate",
+              "probe",
+              "prove",
+              "rollback",
+              "stabilize"
+            ]
+          },
+          {
+            "op": "tagged-union",
+            "path": "",
+            "tag": "/kind",
+            "variants": [
+              {
+                "value": "decide",
+                "rules": []
+              },
+              {
+                "value": "deploy",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "/proof_obligations",
+                    "min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "value": "inspect",
+                "rules": []
+              },
+              {
+                "value": "mutate",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "/proof_obligations",
+                    "min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "value": "probe",
+                "rules": []
+              },
+              {
+                "value": "prove",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "/proof_obligations",
+                    "min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "value": "rollback",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "/proof_obligations",
+                    "min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "value": "stabilize",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "/proof_obligations",
+                    "min": 1,
+                    "max": 1048576
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/owner",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/proof_obligations",
+            "max": 1048576
+          },
+          {
+            "op": "keyed-unique",
+            "path": "/proof_obligations",
+            "key": "/proof_id"
+          },
+          {
+            "op": "all",
+            "path": "/proof_obligations",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "artifact_binding",
+                  "command_or_evidence",
+                  "evidence_kind",
+                  "proof_id",
+                  "statement"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "safe-identifier",
+                "path": "/proof_id",
+                "min": 1,
+                "max": 256
+              },
+              {
+                "op": "bounded-string",
+                "path": "/statement",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/evidence_kind",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/command_or_evidence",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/artifact_binding",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "op": "exact-object",
+            "path": "/preconditions",
+            "keys": [
+              "all",
+              "any",
+              "none"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "bounded-object",
+            "path": "/expected_effects",
+            "min": 3
+          },
+          {
+            "op": "optional-field",
+            "path": "/mutation_boundary",
+            "rules": [
+              {
+                "op": "bounded-object",
+                "path": "",
+                "min": 3
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/rollback",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "",
+                "required_keys": [
+                  "action_id",
+                  "trigger_atoms"
+                ],
+                "optional_keys": [
+                  "instructions"
+                ],
+                "allow_additional": true
+              },
+              {
+                "op": "tagged-union",
+                "path": "/action_id",
+                "variants": [
+                  {
+                    "kind": "null",
+                    "rules": []
+                  },
+                  {
+                    "kind": "string",
+                    "rules": [
+                      {
+                        "op": "safe-identifier",
+                        "path": "",
+                        "min": 1,
+                        "max": 256
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/trigger_atoms",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/trigger_atoms",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "op": "optional-field",
+                "path": "/instructions",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "bounded-object",
+            "path": "/utility",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "scalar-type",
+            "path": "/repeatable",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy",
+        "required_keys": [
+          "rules",
+          "selection",
+          "utility_order"
+        ],
+        "optional_keys": [
+          "tie_breakers"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "enum",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/selection",
+        "values": [
+          "lexicographic_utility"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/utility_order",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/utility_order"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/utility_order",
+        "rules": [
+          {
+            "op": "one-of",
+            "path": "",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "maximize"
+                ]
+              },
+              {
+                "op": "exact-object",
+                "keys": [
+                  "minimize"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "one-of",
+            "path": "",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "/maximize",
+                "min": 1,
+                "max": 16777216
+              },
+              {
+                "op": "bounded-string",
+                "path": "/minimize",
+                "min": 1,
+                "max": 16777216
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "declared-field-values",
+        "input": "policy",
+        "path": "/execution_policy_graph/actions",
+        "object": "/utility",
+        "declarations": "/execution_policy_graph/policy/utility_order",
+        "declaration_paths": [
+          "/maximize",
+          "/minimize"
+        ],
+        "type": "integer",
+        "min": 0,
+        "max": 100
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/rules",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/rules",
+        "key": "/rule_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/policy/rules",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "candidate_action_ids",
+              "priority",
+              "rule_id",
+              "terminal",
+              "when"
+            ],
+            "optional_keys": [
+              "evidence_refs",
+              "obligation_refs",
+              "rationale",
+              "replan_if_atoms",
+              "unknown_refs"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/rule_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "scalar-type",
+            "path": "/priority",
+            "type": "integer"
+          },
+          {
+            "op": "exact-object",
+            "path": "/when",
+            "keys": [
+              "all",
+              "any",
+              "none"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "tagged-union",
+            "path": "/terminal",
+            "variants": [
+              {
+                "kind": "null",
+                "rules": []
+              },
+              {
+                "kind": "string",
+                "rules": [
+                  {
+                    "op": "enum",
+                    "values": [
+                      "blocked",
+                      "return_to_spec",
+                      "rollback",
+                      "success"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "one-of",
+            "path": "",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/candidate_action_ids",
+                "min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "enum",
+                "path": "/terminal",
+                "values": [
+                  "blocked",
+                  "return_to_spec",
+                  "rollback",
+                  "success"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/rationale",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "field-absent",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/initial"
+      },
+      {
+        "op": "bounded-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential",
+        "min": 3
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential",
+        "keys": [
+          "baseline_expectation",
+          "dimensions",
+          "lexicographic_order"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/lexicographic_order",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/lexicographic_order"
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/dimensions",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/dimensions",
+        "key": "/dimension_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/potential/dimensions",
+        "rules": [
+          {
+            "op": "exact-object",
+            "required_keys": [
+              "dimension_id",
+              "direction"
+            ],
+            "optional_keys": [
+              "statement",
+              "terminal_threshold"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "field-absent",
+            "path": "/current_value"
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/dimension_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "enum",
+            "path": "/direction",
+            "values": [
+              "maximize",
+              "minimize"
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/statement",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "policy",
+        "path": "/execution_policy_graph/safety_shield",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "tagged-union",
+            "path": "",
+            "variants": [
+              {
+                "kind": "object",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "path": "",
+                    "required_keys": [
+                      "rules"
+                    ],
+                    "allow_additional": true
+                  },
+                  {
+                    "op": "bounded-array",
+                    "path": "/rules",
+                    "max": 1048576
+                  },
+                  {
+                    "op": "all",
+                    "path": "/rules",
+                    "rules": [
+                      {
+                        "op": "exact-object",
+                        "required_keys": [
+                          "forbids_action_ids",
+                          "forbids_action_kinds",
+                          "response",
+                          "when"
+                        ],
+                        "allow_additional": true
+                      },
+                      {
+                        "op": "exact-object",
+                        "path": "/when",
+                        "keys": [
+                          "all",
+                          "any",
+                          "none"
+                        ],
+                        "allow_additional": true
+                      },
+                      {
+                        "op": "bounded-array",
+                        "path": "/when/all",
+                        "max": 1048576
+                      },
+                      {
+                        "op": "bounded-array",
+                        "path": "/when/any",
+                        "max": 1048576
+                      },
+                      {
+                        "op": "bounded-array",
+                        "path": "/when/none",
+                        "max": 1048576
+                      },
+                      {
+                        "op": "all",
+                        "path": "/when/all",
+                        "rules": [
+                          {
+                            "op": "scalar-type",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "all",
+                        "path": "/when/any",
+                        "rules": [
+                          {
+                            "op": "scalar-type",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "all",
+                        "path": "/when/none",
+                        "rules": [
+                          {
+                            "op": "scalar-type",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "enum",
+                        "path": "/response",
+                        "values": [
+                          "block",
+                          "return_to_spec",
+                          "rollback"
+                        ]
+                      },
+                      {
+                        "op": "bounded-array",
+                        "path": "/forbids_action_kinds",
+                        "max": 1048576
+                      },
+                      {
+                        "op": "all",
+                        "path": "/forbids_action_kinds",
+                        "rules": [
+                          {
+                            "op": "enum",
+                            "values": [
+                              "decide",
+                              "deploy",
+                              "inspect",
+                              "mutate",
+                              "probe",
+                              "prove",
+                              "rollback",
+                              "stabilize"
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "op": "bounded-array",
+                        "path": "/forbids_action_ids",
+                        "max": 1048576
+                      },
+                      {
+                        "op": "all",
+                        "path": "/forbids_action_ids",
+                        "rules": [
+                          {
+                            "op": "scalar-type",
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      {
+                        "op": "optional-field",
+                        "path": "/requires_atoms",
+                        "rules": [
+                          {
+                            "op": "tagged-union",
+                            "path": "",
+                            "variants": [
+                              {
+                                "kind": "array",
+                                "rules": [
+                                  {
+                                    "op": "bounded-array",
+                                    "path": "",
+                                    "max": 1048576
+                                  }
+                                ]
+                              },
+                              {
+                                "kind": "string",
+                                "rules": []
+                              },
+                              {
+                                "kind": "number",
+                                "rules": []
+                              },
+                              {
+                                "kind": "boolean",
+                                "rules": []
+                              },
+                              {
+                                "kind": "object",
+                                "rules": []
+                              },
+                              {
+                                "kind": "null",
+                                "rules": []
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "string",
+                "rules": []
+              },
+              {
+                "kind": "number",
+                "rules": []
+              },
+              {
+                "kind": "boolean",
+                "rules": []
+              },
+              {
+                "kind": "array",
+                "rules": []
+              },
+              {
+                "kind": "null",
+                "rules": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon",
+        "keys": [
+          "delivery_transitions_max",
+          "evidence_actions_max",
+          "mutation_actions_max"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "scalar-type",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon/mutation_actions_max",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon/mutation_actions_max",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon/evidence_actions_max",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon/evidence_actions_max",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon/delivery_transitions_max",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "policy",
+        "path": "/execution_policy_graph/horizon/delivery_transitions_max",
+        "min": 0
+      },
+      {
+        "op": "bounded-object",
+        "input": "policy",
+        "path": "/execution_policy_graph/terminal_states",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "object-values",
+        "input": "policy",
+        "path": "/execution_policy_graph/terminal_states",
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "required_keys": [
+              "when"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "exact-object",
+            "path": "/when",
+            "keys": [
+              "all",
+              "any",
+              "none"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "bounded-array",
+            "path": "/when/all",
+            "max": 1048576
+          },
+          {
+            "op": "bounded-array",
+            "path": "/when/any",
+            "max": 1048576
+          },
+          {
+            "op": "bounded-array",
+            "path": "/when/none",
+            "max": 1048576
+          },
+          {
+            "op": "all",
+            "path": "/when/all",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "path": "/when/any",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "op": "all",
+            "path": "/when/none",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "type": "string"
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/proof_refs",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "scalar-type",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "policy",
+        "path": "/execution_policy_graph/invalidators",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "policy",
+        "path": "/execution_policy_graph/invalidators",
+        "key": "/invalidator_id"
+      },
+      {
+        "op": "all",
+        "input": "policy",
+        "path": "/execution_policy_graph/invalidators",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "affected_refs",
+              "condition",
+              "invalidator_id",
+              "required_action"
+            ],
+            "allow_additional": true
+          },
+          {
+            "op": "safe-identifier",
+            "path": "/invalidator_id",
+            "min": 1,
+            "max": 256
+          },
+          {
+            "op": "bounded-string",
+            "path": "/condition",
+            "trimmed_min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "bounded-string",
+            "path": "/required_action",
+            "trimmed_min": 1,
+            "max": 1048576
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [
+    {
+      "op": "implies",
+      "input": "policy",
+      "if": "/execution_policy_graph/revision_summary/architectonic_changes",
+      "nonempty": true,
+      "then": "/execution_policy_graph/revision_summary/plan_transport"
+    },
+    {
+      "op": "path-format",
+      "input": "policy",
+      "path": "/execution_policy_graph/observations",
+      "items": "/outcomes",
+      "target": "/atom",
+      "fragments": [
+        {
+          "literal": "obs:"
+        },
+        {
+          "parent": "/observation_id"
+        },
+        {
+          "literal": "="
+        },
+        {
+          "item": "/outcome"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/actions",
+          "reference": "/preconditions/all"
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "reference": "/preconditions/any"
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "reference": "/preconditions/none"
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "reference": "/rollback/trigger_atoms"
+        },
+        {
+          "path": "/execution_policy_graph/policy/rules",
+          "reference": "/when/all"
+        },
+        {
+          "path": "/execution_policy_graph/policy/rules",
+          "reference": "/when/any"
+        },
+        {
+          "path": "/execution_policy_graph/policy/rules",
+          "reference": "/when/none"
+        },
+        {
+          "path": "/execution_policy_graph/policy/rules",
+          "reference": "/replan_if_atoms"
+        },
+        {
+          "path": "/execution_policy_graph/terminal_states/success/when/all",
+          "reference": ""
+        },
+        {
+          "path": "/execution_policy_graph/terminal_states/success/when/any",
+          "reference": ""
+        },
+        {
+          "path": "/execution_policy_graph/terminal_states/success/when/none",
+          "reference": ""
+        },
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/when/all",
+          "optional": true
+        },
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/when/any",
+          "optional": true
+        },
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/when/none",
+          "optional": true
+        },
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/requires_atoms",
+          "optional": true
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/goal/terminal_predicates",
+          "key": "/atom",
+          "optional": true,
+          "rules": [
+            {
+              "op": "scalar-type",
+              "path": "/atom",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/goal/safety_invariants",
+          "key": "/violation_atom",
+          "optional": true,
+          "rules": [
+            {
+              "op": "scalar-type",
+              "path": "/violation_atom",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/goal/forbidden_states",
+          "key": "/atom",
+          "optional": true,
+          "rules": [
+            {
+              "op": "scalar-type",
+              "path": "/atom",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/belief/facts",
+          "key": "/atom"
+        },
+        {
+          "path": "/execution_policy_graph/observations",
+          "items": "/outcomes",
+          "key": "/atom"
+        },
+        {
+          "path": "/execution_policy_graph/goal/obligations",
+          "fragments": [
+            {
+              "literal": "obligation:"
+            },
+            {
+              "item": "/obligation_id"
+            },
+            {
+              "literal": "=closed"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/belief/unknowns",
+          "fragments": [
+            {
+              "literal": "unknown:"
+            },
+            {
+              "item": "/unknown_id"
+            },
+            {
+              "literal": "=resolved"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/belief/unknowns",
+          "fragments": [
+            {
+              "literal": "unknown:"
+            },
+            {
+              "item": "/unknown_id"
+            },
+            {
+              "literal": "=blocked"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "fragments": [
+            {
+              "literal": "action:"
+            },
+            {
+              "item": "/action_id"
+            },
+            {
+              "literal": "=success"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "fragments": [
+            {
+              "literal": "action:"
+            },
+            {
+              "item": "/action_id"
+            },
+            {
+              "literal": "=failure"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/architectonic/composition/seam_dependency_edges",
+          "reference": "/from_seam_ref",
+          "optional": true
+        },
+        {
+          "path": "/execution_policy_graph/architectonic/composition/seam_dependency_edges",
+          "reference": "/to_seam_ref",
+          "optional": true
+        },
+        {
+          "path": "/execution_policy_graph/architectonic/composition/independent_seam_sets",
+          "reference": "",
+          "optional": true
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/architectonic/seams",
+          "key": "/seam_id"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/architectonic/conceptual_compression/live_obligation_refs",
+          "reference": "",
+          "optional": true
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/goal/obligations",
+          "key": "/obligation_id"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/architectonic/conceptual_compression/independent_factor_refs",
+          "reference": "",
+          "optional": true
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/architectonic/seams",
+          "items": "/factors",
+          "key": "/factor_id",
+          "rules": [
+            {
+              "op": "enum",
+              "path": "/disposition",
+              "values": [
+                "factor",
+                "introduce",
+                "preserve"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/regime/reclassify_on_observation_refs",
+      "reference": "",
+      "target": "/execution_policy_graph/observations",
+      "key": "/observation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/belief/unknowns",
+      "reference": "/observation_refs",
+      "target": "/execution_policy_graph/observations",
+      "key": "/observation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/requires_actions",
+      "target": "/execution_policy_graph/actions",
+      "key": "/action_id",
+      "self_reference": "reject"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/architectonic_seam_refs",
+      "target": "/execution_policy_graph/architectonic/seams",
+      "key": "/seam_id",
+      "coverage": "all-targets"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/architectonic/seams",
+      "reference": "/live_obligation_refs",
+      "target": "/execution_policy_graph/goal/obligations",
+      "key": "/obligation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/architectonic/seams",
+          "reference": "/required_observation_refs"
+        },
+        {
+          "path": "/execution_policy_graph/architectonic/seams",
+          "reference": "/decision_observation_refs"
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/observations",
+          "key": "/observation_id"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/architectonic/seams",
+          "items": "/factors",
+          "reference": "/live_obligation_refs"
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/goal/obligations",
+          "key": "/obligation_id"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/architectonic/seams",
+      "reference": "/incumbent/factor_refs",
+      "target": "/execution_policy_graph/architectonic/seams",
+      "target_items": "/factors",
+      "key": "/factor_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/realizes_factor_refs",
+      "target": "/execution_policy_graph/architectonic/seams",
+      "target_items": "/factors",
+      "target_rules": [
+        {
+          "op": "enum",
+          "path": "/disposition",
+          "values": [
+            "factor",
+            "introduce",
+            "preserve"
+          ]
+        }
+      ],
+      "coverage_rules": [
+        {
+          "op": "enum",
+          "path": "/disposition",
+          "values": [
+            "factor",
+            "introduce"
+          ]
+        }
+      ],
+      "key": "/factor_id",
+      "coverage": "all-targets"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/retires_factor_refs",
+      "target": "/execution_policy_graph/architectonic/seams",
+      "target_items": "/factors",
+      "target_rules": [
+        {
+          "op": "enum",
+          "path": "/disposition",
+          "values": [
+            "ablate",
+            "normalize",
+            "quotient"
+          ]
+        }
+      ],
+      "key": "/factor_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/expected_observation_refs",
+      "target": "/execution_policy_graph/observations",
+      "key": "/observation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/preservation_observation_refs",
+      "target": "/execution_policy_graph/observations",
+      "key": "/observation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/expected_effects/facts_added",
+      "target": "/execution_policy_graph/belief/facts",
+      "key": "/fact_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/expected_effects/unknowns_resolved",
+      "target": "/execution_policy_graph/belief/unknowns",
+      "coverage_rules": [
+        {
+          "op": "enum",
+          "path": "/status",
+          "values": [
+            "open"
+          ]
+        },
+        {
+          "op": "enum",
+          "path": "/urgency",
+          "values": [
+            "critical",
+            "high"
+          ]
+        }
+      ],
+      "key": "/unknown_id",
+      "coverage": "all-targets"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/expected_effects/obligations_closed",
+      "target": "/execution_policy_graph/goal/obligations",
+      "key": "/obligation_id",
+      "coverage": "all-targets"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/rollback/action_id",
+      "target": "/execution_policy_graph/actions",
+      "target_rules": [
+        {
+          "op": "enum",
+          "path": "/kind",
+          "values": [
+            "rollback"
+          ]
+        }
+      ],
+      "key": "/action_id",
+      "self_reference": "reject",
+      "ignore_null": true
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/actions",
+      "reference": "/failure_observation_refs",
+      "target": "/execution_policy_graph/observations",
+      "key": "/observation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/policy/rules",
+      "reference": "/candidate_action_ids",
+      "target": "/execution_policy_graph/actions",
+      "key": "/action_id",
+      "coverage": "all-targets"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/policy/rules",
+      "reference": "/obligation_refs",
+      "target": "/execution_policy_graph/goal/obligations",
+      "key": "/obligation_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/policy/rules",
+      "reference": "/unknown_refs",
+      "target": "/execution_policy_graph/belief/unknowns",
+      "key": "/unknown_id"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/terminal_states/success/proof_refs",
+          "reference": "",
+          "optional": true
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/actions",
+          "items": "/proof_obligations",
+          "key": "/proof_id"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/forbids_action_ids",
+          "optional": true,
+          "fragments": [
+            {
+              "literal": "id:"
+            },
+            {
+              "value": true
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/forbids_action_kinds",
+          "optional": true,
+          "fragments": [
+            {
+              "literal": "kind:"
+            },
+            {
+              "value": true
+            }
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/actions",
+          "coverage_key": "/action_id",
+          "coverage_rules": [
+            {
+              "op": "enum",
+              "path": "/kind",
+              "values": [
+                "deploy",
+                "mutate",
+                "rollback",
+                "stabilize"
+              ]
+            }
+          ],
+          "fragments": [
+            {
+              "literal": "id:"
+            },
+            {
+              "item": "/action_id"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "coverage_key": "/action_id",
+          "coverage_rules": [
+            {
+              "op": "enum",
+              "path": "/kind",
+              "values": [
+                "deploy",
+                "mutate",
+                "rollback",
+                "stabilize"
+              ]
+            }
+          ],
+          "fragments": [
+            {
+              "literal": "kind:"
+            },
+            {
+              "item": "/kind"
+            }
+          ]
+        }
+      ],
+      "coverage": "all-targets"
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "sources": [
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/forbids_action_ids",
+          "optional": true,
+          "rules": [
+            {
+              "op": "enum",
+              "path": "/response",
+              "values": [
+                "rollback"
+              ]
+            }
+          ],
+          "fragments": [
+            {
+              "literal": "id:"
+            },
+            {
+              "value": true
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/safety_shield/rules",
+          "reference": "/forbids_action_kinds",
+          "optional": true,
+          "rules": [
+            {
+              "op": "enum",
+              "path": "/response",
+              "values": [
+                "rollback"
+              ]
+            }
+          ],
+          "fragments": [
+            {
+              "literal": "kind:"
+            },
+            {
+              "value": true
+            }
+          ]
+        }
+      ],
+      "targets": [
+        {
+          "path": "/execution_policy_graph/actions",
+          "match_rules": [
+            {
+              "op": "tagged-union",
+              "path": "/rollback/action_id",
+              "variants": [
+                {
+                  "kind": "string",
+                  "rules": []
+                }
+              ]
+            }
+          ],
+          "fragments": [
+            {
+              "literal": "id:"
+            },
+            {
+              "item": "/action_id"
+            }
+          ]
+        },
+        {
+          "path": "/execution_policy_graph/actions",
+          "match_rules": [
+            {
+              "op": "tagged-union",
+              "path": "/rollback/action_id",
+              "variants": [
+                {
+                  "kind": "string",
+                  "rules": []
+                }
+              ]
+            }
+          ],
+          "fragments": [
+            {
+              "literal": "kind:"
+            },
+            {
+              "item": "/kind"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "policy",
+      "path": "/execution_policy_graph/potential/lexicographic_order",
+      "reference": "",
+      "target": "/execution_policy_graph/potential/dimensions",
+      "key": "/dimension_id",
+      "coverage": "all-targets"
+    }
+  ],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 16777216,
+    "max_store_bytes": 16777216,
+    "max_records": 1048576,
+    "max_output_bytes": 16777216,
+    "max_diagnostics": 256,
+    "max_reducer_states": 1
+  }
+}

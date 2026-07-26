@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "plan",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "plan/execution-policy-graph",
+      "path": "ledger/execution-policy-graph.json"
+    }
+  ]
+}
