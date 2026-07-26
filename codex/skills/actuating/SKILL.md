@@ -145,23 +145,42 @@ Falsifier:
 
 The basis is a proof lease over exact Goal, fact, constraint, and host-capability
 inputs, not a fifth authority artifact or a new `construction-contract/v3`
-field. Compile its material content into the existing Goal and observation
-references, `architecture.residual_assumptions`, candidate derivations and
-factor inventories, residual obligations, predecessor claims, retirements, and
-falsifiers. A candidate may use `derivation: incumbent-independent` only when
-it traces to the frozen derivation and `$universalist` has lowered it into one
-of the four canonical candidate families.
+field. The compact view is session-local until Actuating compiles one replayable
+basis projection into the current Construction Contract:
+
+- `goal_contract_ref` and `architecture.governing_law_refs` bind the Goal axioms;
+- candidate `observation_refs` bind observed facts and host capabilities;
+- canonically tagged `architecture.residual_assumptions` bind necessary
+  constraints, chosen objectives, irreducible postulates, definitions, and
+  invalidators;
+- the incumbent-independent candidate's summary, factors, residual obligations,
+  and falsifier bind the derived claims, rejected inherited premises, governing
+  mechanisms, frozen derivation, comparison, status, and falsifier; and
+- `supporting_refs` contains
+  `axiomatic-basis/v1:sha256:<canonical-projection-digest>`.
+
+Before materialization, reconstruct that ordered projection from the named
+fields and require its digest to match the supporting reference. A later run may
+retain the basis only when it can repeat the reconstruction from the immutable
+current Construction and its referenced inputs; missing material, an unresolved
+reference, or a digest mismatch requires re-axiomatization. A candidate may use
+`derivation: incumbent-independent` only after `$universalist` lowers the
+reconstructed frozen derivation into one of the four canonical candidate
+families.
 
 `$first-principles` may expose an inconsistent Goal projection or missing
 authority, but it must return that as `inconsistent` or `blocked`; it may not
 rewrite the Goal. `underdetermined` preserves every materially incomparable
-derivation for later comparison and blocks only if Actuating cannot distinguish
-them by law, observation, dominance, or explicit source authority. Neither
+derivation for later comparison and blocks if Actuating cannot distinguish them
+by current Goal law, observation, or dominance. A new explicit source
+preference has no effect until `$goal-contract` compiles it into a successor
+Goal Contract; Actuating then re-axiomatizes before nomination. Neither
 `$first-principles` nor its basis classifies Counterexamples, nominates or
 selects a Construction, grants mutation, or authors a durable decision.
 
-Retain the basis across a pure realization repair only while every bound input
-and invalidator remains current. Re-axiomatize before nomination when a
+Retain the basis across a pure realization repair only while its durable
+projection replays with a matching digest and every bound input and invalidator
+remains current. Re-axiomatize before nomination when a
 successor Goal changes semantics, compatibility, authority, or proof posture;
 new evidence changes an observed fact, necessary constraint, or host
 capability; an accepted finding falsifies a premise; architecture or ablation

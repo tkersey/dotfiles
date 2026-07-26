@@ -194,20 +194,40 @@ Falsifier:
 
 This is a compact non-authoritative view and proof lease over its exact Goal,
 fact, constraint, and host-capability inputs. It creates no artifact family and
-adds no field to `construction-contract/v3`. Compile its material claims into
-the existing `goal_contract_ref`, `governing_law_refs`, observation refs,
-`architecture.residual_assumptions`, candidate derivations and factors,
-residual obligations, predecessor claims, retirements, and falsifiers.
+adds no field to `construction-contract/v3`. Before materialization, compile a
+replayable basis projection into the existing family:
+
+- bind Goal axioms through `goal_contract_ref` and `governing_law_refs`;
+- bind observed facts and host capabilities through candidate
+  `observation_refs`;
+- encode necessary constraints, chosen objectives, irreducible postulates,
+  definitions, and invalidators as canonically tagged
+  `architecture.residual_assumptions`;
+- encode derived claims, rejected inherited premises, governing mechanisms,
+  the frozen derivation, incumbent comparison, basis status, and falsifier in
+  the incumbent-independent candidate's summary, factors, residual obligations,
+  and falsifier; and
+- add `axiomatic-basis/v1:sha256:<canonical-projection-digest>` to
+  `supporting_refs`.
+
+Reconstruct the ordered projection from those fields and require the digest to
+match before appending the Construction. Retention in a later run requires the
+same reconstruction from the immutable current Construction and its referenced
+inputs; missing material, an unresolved reference, or a digest mismatch makes
+the basis stale and requires re-axiomatization.
 
 A `sufficient` basis admits nomination. An `underdetermined` basis carries every
-materially incomparable derivation into candidate comparison and blocks if law,
-observation, dominance, or source authority cannot distinguish them.
+materially incomparable derivation into candidate comparison and blocks if
+current Goal law, observation, or dominance cannot distinguish them. A new
+explicit source preference must first become a successor Goal Contract; only
+then may Actuating re-axiomatize and compare the successor candidate universe.
 `inconsistent` or `blocked` stops selection. `$first-principles` may expose a
 Goal conflict or missing authority, but it cannot revise the Goal, classify a
 Counterexample, nominate or select a Construction, grant mutation, or author a
 durable decision.
 
-Retain the basis only while its inputs and invalidators remain current.
+Retain the basis only while its durable projection replays with a matching
+digest and its inputs and invalidators remain current.
 Re-axiomatize before nomination when a successor Goal changes semantics,
 compatibility, authority, or proof posture; evidence changes an observed fact,
 necessary constraint, or host capability; an accepted finding falsifies a
