@@ -64,22 +64,29 @@ revision request for an existing plan_id
 
 A `$spec-pipeline` tail-call passes:
 
-```yaml
-plan_source_contract:
-  contract_version: PSC-v1
-  source_owner: spec-pipeline
-  spec_id:
-  implementation_spec:
-  decision_packet:
-  sgr_v2:
-  proof_bar:
-  non_goals: []
-  target_branch:
-  do_not_execute_before: []
+```json
+{
+  "plan_source_contract": {
+    "contract_version": "PSC-v1",
+    "source_owner": "spec-pipeline",
+    "spec_id": "<spec-id>",
+    "implementation_spec": {},
+    "decision_packet": {},
+    "sgr_v2": {
+      "spec_governance_receipt": {}
+    },
+    "proof_bar": {},
+    "non_goals": [],
+    "target_branch": "<target-branch>",
+    "do_not_execute_before": []
+  }
+}
 ```
 
 The Architectonic Thread travels inside `implementation_spec` and
-`decision_packet`; do not create a second architecture packet.
+`decision_packet`; do not create a second architecture packet. Require the exact
+packet to be structurally valid under
+`spec-pipeline/plan-source-contract@<definition-digest>` before consuming it.
 
 Fail closed when:
 

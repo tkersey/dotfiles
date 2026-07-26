@@ -17,7 +17,9 @@ interface:
     Do not treat explicit $spec-pipeline invocation as spec-only. Default
     lane=spec_to_plan unless the user explicitly requests spec-only/no-plan output
     or a material gate blocks planning. When SGR-v2 and the Execution Handoff say
-    the spec is complete and plan-ready, immediately tail-call $plan in the same
-    turn using the final implementation spec and SGR-v2 as the source contract. If
+    the spec is complete and plan-ready, emit final SGR-v2 and PSC-v1 as JSON,
+    validate each exact object through its passive Ledger definition, then
+    immediately tail-call $plan in the same turn using that structurally valid
+    source contract. Ledger validation grants no handoff or mutation authority. If
     the runtime cannot load $plan, emit AUTO_PLAN_HANDOFF_REQUIRED with the reason;
     do not silently convert to spec_only.

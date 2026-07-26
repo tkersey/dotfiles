@@ -256,6 +256,16 @@ if rg --files codex | grep -q '/decision-contract\.ya\?ml$'; then
   echo "machine-consumed decision-contract YAML remains" >&2
   exit 1
 fi
+if rg \
+  --glob '*.md' \
+  --glob '*.yaml' \
+  --glob '*.yml' \
+  '^[[:space:]]*(plan_source_contract|spec_governance_receipt):' \
+  codex >/dev/null
+then
+  echo "machine-consumed PSC-v1 or SGR-v2 YAML example remains" >&2
+  exit 1
+fi
 
 printf \
   'definition conformance passed: manifests=%d seq=%d ledger=%d fixtures=%d materializations=%d transactions=%d contracts=%d\n' \

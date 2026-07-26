@@ -57,27 +57,36 @@ SGR-v2 says the spec is complete and plan-ready, the correct lane is
 
 When choosing `spec_only`, record the concrete blocker in both places:
 
-```yaml
-spec_governance_receipt:
-  lane: spec_only
-  gate:
-    reason: "..."
-  execution_handoff:
-    ready_for_plan: no
-    next_owner: spec-pipeline | grill-me | spec-retro | none
-  auto_plan_handoff:
-    eligible: no
-    reason: "specific blocker, not merely explicit spec-pipeline invocation"
+```json
+{
+  "spec_governance_receipt": {
+    "lane": "spec_only",
+    "gate": {
+      "reason": "<specific blocker>"
+    },
+    "execution_handoff": {
+      "ready_for_plan": "no",
+      "next_owner": "<spec-pipeline|grill-me|spec-retro|none>"
+    },
+    "auto_plan_handoff": {
+      "eligible": "no",
+      "reason": "specific blocker, not merely explicit spec-pipeline invocation"
+    }
+  }
+}
 ```
 
 When the only reason would be "the user did not ask for `$plan` separately,"
 set:
 
-```yaml
-lane: spec_to_plan
-auto_plan_handoff:
-  eligible: yes
-  invocation: same_turn_tail_call
+```json
+{
+  "lane": "spec_to_plan",
+  "auto_plan_handoff": {
+    "eligible": "yes",
+    "invocation": "same_turn_tail_call"
+  }
+}
 ```
 
 or, if the runtime cannot load `$plan`:

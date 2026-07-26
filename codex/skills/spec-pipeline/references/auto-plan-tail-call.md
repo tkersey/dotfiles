@@ -18,7 +18,9 @@ runs.
 
 ## Predicate
 
-Run `$plan` immediately after the final SGR-v2 only when every predicate holds:
+First validate the exact final SGR-v2 under
+`spec-pipeline/spec-governance-receipt`. Then run `$plan` only when every semantic
+predicate holds:
 
 ```text
 mode in {full, repair}
@@ -45,21 +47,30 @@ auto_plan_handoff.invocation = same_turn_tail_call
 
 ## Tail-call packet
 
-Pass this compact source contract to `$plan`:
+Pass this compact JSON source contract to `$plan`:
 
-```yaml
-plan_source_contract:
-  contract_version: PSC-v1
-  source_owner: spec-pipeline
-  spec_id:
-  implementation_spec:
-  decision_packet:
-  sgr_v2:
-  proof_bar:
-  non_goals: []
-  target_branch:
-  do_not_execute_before: []
+```json
+{
+  "plan_source_contract": {
+    "contract_version": "PSC-v1",
+    "source_owner": "spec-pipeline",
+    "spec_id": "<spec-id>",
+    "implementation_spec": {},
+    "decision_packet": {},
+    "sgr_v2": {
+      "spec_governance_receipt": {}
+    },
+    "proof_bar": {},
+    "non_goals": [],
+    "target_branch": "<target-branch>",
+    "do_not_execute_before": []
+  }
+}
 ```
+
+Embed the exact SGR-v2 object and validate the completed packet through
+`spec-pipeline/plan-source-contract` before tail-calling Plan. Ledger structural
+validity does not grant the tail-call; Spec Pipeline's semantic receipt values do.
 
 `$plan` synthesizes that source contract into one EPG-v1 policy and validates the
 exact result through Plan's passive Ledger definition. Plan emits no synthesis

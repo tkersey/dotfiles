@@ -5,34 +5,29 @@ is complete and plan-ready.
 
 ## Schema
 
-```yaml
-plan_source_contract:
-  contract_version: PSC-v1
-  source_owner: spec-pipeline
-  spec_id:
-  implementation_spec:
-  decision_packet:
-  sgr_v2:
-    spec_governance_receipt:
-      receipt_version: SGR-v2
-      mode: full | repair
-      lane: spec_to_plan
-      status: complete
-      gate:
-        plan_allowed: yes
-        material_open_questions_remaining: no
-      execution_handoff:
-        ready_for_plan: yes
-        next_owner: $plan
-        do_not_execute_before: []
-      auto_plan_handoff:
-        eligible: yes
-        invocation: same_turn_tail_call
-  proof_bar:
-  non_goals: []
-  target_branch:
-  do_not_execute_before: []
+```json
+{
+  "plan_source_contract": {
+    "contract_version": "PSC-v1",
+    "source_owner": "spec-pipeline",
+    "spec_id": "<spec-id>",
+    "implementation_spec": {},
+    "decision_packet": {},
+    "sgr_v2": {
+      "spec_governance_receipt": {}
+    },
+    "proof_bar": {},
+    "non_goals": [],
+    "target_branch": "<target-branch>",
+    "do_not_execute_before": []
+  }
+}
 ```
+
+The final `sgr_v2.spec_governance_receipt` is the complete exact SGR-v2 object, not
+the empty skeleton above. Require the entire PSC-v1 to be structurally valid under
+`spec-pipeline/plan-source-contract@<definition-digest>` before Plan interprets its
+semantic authority.
 
 The Architectonic Thread is carried inside `implementation_spec` and
 `decision_packet`; PSC-v1 adds no second architecture artifact.
@@ -99,5 +94,4 @@ mapping a settled specification_local seam to plan_local
 dropping a downstream_open bound during EPG translation
 ```
 
-The canonical source projection is JSON even when prose documents display the
-schema in YAML for readability.
+The canonical source projection and every machine-consumed example are JSON.
