@@ -484,10 +484,11 @@ re-axiomatization. If changed laws or applicability make prior evidence
 irrelevant, the successor records that rejection, separation, or supersession
 explicitly rather than omitting the lineage.
 
-The basis requirements are prospective selection laws. Non-mutating triage may
-classify findings against a valid pre-feature `construction-contract/v3` that
-lacks basis provenance; it records the provenance as unavailable and awards no
-basis or selection proof. Before any resulting mutation, Actuating
+The basis requirements are prospective selection laws. Every non-selecting
+route—including triage, Ship handoff or publication, and closure—may consume a
+valid pre-feature `construction-contract/v3` that lacks basis provenance; it
+records the provenance as unavailable and awards no basis or selection proof.
+Before any resulting mutation or new Construction selection, Actuating
 re-axiomatizes and selects a successor Construction.
 
 An accepted Review Fold uses `accepted-review-fold`, names the latest

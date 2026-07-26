@@ -75,9 +75,11 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
   `goal_id` may be initial with no predecessor. When an explicit source revision
   occurs while accepted or blocked Counterexamples remain unresolved, use the
   carry-forward transition: cite every current Set in the successor Goal's
-  `supporting_refs`; require a successor Set to cite that Goal, evaluate the
-  predecessor Construction, preserve Set lineage, and assign every carried
-  class a disposition; then re-axiomatize before Actuating selects a successor
+  `supporting_refs` as `counterexample-set:<artifact_id>`; require a successor
+  Set to cite that exact Goal as `goal-contract:<artifact_id>` and each carried
+  Set as `counterexample-set:<artifact_id>`, evaluate the predecessor
+  Construction, preserve Set lineage, and assign every carried class a
+  disposition; then re-axiomatize before Actuating selects a successor
   Construction or permits an affected mutation. Never edit a predecessor in
   place or use source revision to erase review debt.
 

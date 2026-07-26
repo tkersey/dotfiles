@@ -471,19 +471,19 @@ render a complete result but cannot decide it. Complete the handoff or report
 before the source-memory checkpoint; learning status cannot delay, invalidate,
 or roll back delivery closure.
 
-The Axiomatic Construction gate applies prospectively when `implement`,
-`remediation-plan`, or `review-closeout` selects a new or successor
-Construction. Non-mutating `triage` may classify findings against a valid
-pre-feature `construction-contract/v3` that lacks basis provenance; record that
-provenance as unavailable, award it no basis or selection proof, and preserve
-the artifact for review. Any transition from that triage to mutation requires
-fresh axiomatization and a successor Construction.
+The Axiomatic Construction gate applies prospectively only when a route selects
+a new or successor Construction. Every non-selecting route—including `triage`,
+Ship handoff or publication, and `ACT-CLOSE`—may consume a valid pre-feature
+`construction-contract/v3` that lacks basis provenance; record that provenance
+as unavailable, award it no basis or selection proof, and preserve the artifact
+for review or closure. Any transition to mutation or new Construction selection
+requires fresh axiomatization and a successor Construction.
 
 ## Fail closed
 
 Always block on stale or missing authority, Goal, Construction, or subject; a
-missing, stale, inconsistent, blocked, or unresolvedly underdetermined
-Axiomatic Construction Basis for a prospective material selection; an
+prospective material selection with a missing, stale, inconsistent, blocked, or
+unresolvedly underdetermined Axiomatic Construction Basis or an
 `incumbent-independent` marker without a traceable frozen derivation and
 Universalist lowering; unresolved accepted or blocked Counterexamples;
 out-of-scope operations; incomplete proof or retirement; missing Construction

@@ -57,10 +57,12 @@ artifact:
   and a new content-addressed `artifact_id`. Do not replace the current Goal
   while an accepted or blocked Counterexample remains unresolved unless an
   explicit source revision uses the carry-forward transition: the successor
-  Goal's `supporting_refs` names every current unresolved Counterexample Set;
-  the next Counterexample Set cites that successor Goal, evaluates the current
-  predecessor Construction, preserves the latest Set in `predecessor_refs`, and
-  assigns every carried class a disposition; and no affected mutation or
+  Goal's `supporting_refs` names every current unresolved Counterexample Set as
+  `counterexample-set:<artifact_id>`; the next Counterexample Set cites the
+  exact successor as `goal-contract:<artifact_id>` and each carried Set as
+  `counterexample-set:<artifact_id>`, evaluates the current predecessor
+  Construction, preserves the latest Set for each class in `predecessor_refs`,
+  and assigns every carried class a disposition; and no affected mutation or
   successor Construction selection occurs before that classification is
   materialized.
   Missing Set identity, incomplete carry-forward, or lineage drift blocks the
