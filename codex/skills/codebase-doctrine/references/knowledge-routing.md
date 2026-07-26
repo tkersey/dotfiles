@@ -1,45 +1,75 @@
 # Knowledge Routing
 
-Every durable active claim receives exactly one primary destination:
+Route knowledge only after doctrine induction. Premature routing biases inquiry
+toward the available destination, especially skill creation.
 
-```text
-code
-type_or_representation
-test_or_property
-static_tool_or_linter
-CI_gate
-AGENTS_or_repository_guidance
-ADR_or_reference
-negative_ledger
-repository_root_skill
-focused_skill
-retain_in_doctrine
-reject
-```
+## Strongest-destination order
 
-Routing hierarchy:
+Prefer, when semantics permit:
 
-1. prevent invalid state in representation or code;
-2. enforce mechanical rules in tools or CI;
-3. prove behavior with tests/properties/models;
-4. place universal conventions in concise repository guidance;
-5. preserve rationale in ADRs/references;
-6. place witnessed failed routes in the canonical negative ledger;
-7. use skills for recurring context-sensitive judgment;
-8. retain unresolved material in doctrine;
-9. reject noise.
-
-```yaml
-knowledge_route:
-  knowledge_id:
-  statement:
-  source_claim_ids: []
-  primary_destination:
-  secondary_destinations: []
-  reason:
-  enforcement_strength:
-  owner:
-  status:
-```
+1. **Representation or code** — make an invalid state or illegal transition
+   unrepresentable or unreachable.
+2. **Test, property, model, static tooling, or CI** — mechanically establish a
+   stable rule or proof obligation.
+3. **Repository guidance** — state universal operating rules that every future
+   agent needs.
+4. **ADR or reference** — preserve durable rationale, alternatives, and
+   invalidators that do not need active routing.
+5. **Canonical negative ledger** — preserve witnessed failed routes with current
+   applicability and reopening criteria.
+6. **Repository-specific skill** — guide recurring, consequential,
+   context-sensitive judgment that cannot be more strongly enforced elsewhere.
+7. **Retain in doctrine** — preserve material context that must remain visible but
+   has no stronger current owner.
+8. **Reject** — discard noise, unstable speculation, local trivia, or duplicate
+   context.
 
 Important does not imply skill-worthy.
+
+## Routing questions
+
+For each durable doctrine item ask:
+
+```text
+Can the repository prevent the violation directly?
+Can a mechanical proof detect it?
+Does every contributor or agent need the rule?
+Is the value mainly rationale and invalidation history?
+Is this a witnessed failed route with current applicability?
+Does correct use require recurring contextual judgment?
+Will the doctrine itself be durably available to the future consumer?
+```
+
+Choose one primary owner. Secondary references may aid discovery but may not
+create competing semantic authorities.
+
+## Retain-in-doctrine boundary
+
+`retain in doctrine` is meaningful only when the doctrine is expected to be
+available to the relevant future consumer. If the result will remain only in one
+conversation, either persist it with explicit authorization or route the
+knowledge elsewhere.
+
+## Negative evidence
+
+Only a current canonical Negative Ledger projection may prohibit a route.
+Historical failures, review comments, and recollections may:
+
+- motivate inquiry;
+- supply a counterexample;
+- lower confidence;
+- suggest a reopening test.
+
+They may not silently become durable exclusions.
+
+## Routing drift
+
+Revisit the route when:
+
+- a rule becomes mechanically enforceable;
+- a skill's judgment becomes stable enough for tooling;
+- a law becomes local rather than repository-wide;
+- doctrine changes jurisdiction or owner;
+- an ADR becomes stale;
+- a negative route's reopening criterion is satisfied;
+- the doctrine is no longer durably available.
