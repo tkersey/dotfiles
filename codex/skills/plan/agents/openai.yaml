@@ -2,13 +2,16 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Plan"
-  short_description: "Compile and exhaustively refine a named execution policy"
+  short_description: "Synthesize proportional architectonic plans"
   default_prompt: >-
-    Use $plan to compile accepted intent or a PSC-v1 source contract from
-    $spec-pipeline into a source-bound execution policy with an immutable plan_id,
-    explicit resource predictions, proof, rollback, and a handoff to the
-    $actuating handoff. Preserve
-    $spec-pipeline's semantic authority, internally iterate the policy to a fixed
-    point, run the mandatory radical creativity candidate, emit and structurally
-    check a compact PSR-v1 synthesis receipt, and never infer an existing plan or
-    grant mutation authority.
+    Use $plan to synthesize accepted intent into one canonical, source-bound,
+    architecture-aware EPG-v1 plan. Refine source-owned architecture, only the
+    architectonic change delegated to Plan, and execution policy until material
+    improvements are exhausted; run fresh eyes and one private radical candidate.
+    Emit no Plan-owned runtime state, decision, transition, readiness, or execution
+    handoff artifact. Do not invent an architectonic seam for work inside an
+    unchanged exact boundary. When a compatible execution-policy compiler is
+    available, validate the exact emitted EPG and report its contract and source
+    digest. Compiler absence prevents only the compilation claim, not Plan emission.
+    Never grant mutation authority, select an execution owner, require $actuating,
+    $universalist, or $reduce, or silently infer an existing plan.

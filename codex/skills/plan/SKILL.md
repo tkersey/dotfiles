@@ -1,57 +1,68 @@
 ---
 name: plan
-description: "Compile accepted intent or a `$spec-pipeline` PSC-v1 source contract into a source-bound execution policy and immutable `plan_id`, then exhaustively refine it to a policy-synthesis fixed point before handoff to `$actuating`. Use for `$plan`, spec-to-execution lowering, adaptive probes, stabilization plans, or plan revision. Preserve semantic authority; never mutate the repository or silently select an execution plan."
+description: "Synthesize accepted intent or a `$spec-pipeline` PSC-v1 source contract into one source-bound, architecture-aware EPG-v1 plan with an immutable `plan_id`. Exhaustively refine source-owned architecture, delegated architectonic change, and policy together; emit the plan whether or not a compatible optional compiler is installed. Use for `$plan`, spec-to-plan lowering, adaptive probes, stabilization plans, or plan revision. Preserve source authority; never author runtime state, mutate implementation state, require another architecture or execution skill, or silently select an existing plan."
 ---
 
 # Plan
 
 ## Mission
 
-Compile accepted intent into an execution policy that can be handed to
-`$actuating`, then refine that policy until no material execution improvement
-remains.
+Synthesize accepted intent into one canonical architecture-aware EPG-v1 source
+plan. A compatible neutral compiler may validate and privately lower that source;
+compiler availability is not a planning prerequisite.
 
 ```text
 source contract
--> source acceptance
--> plan identity
--> belief/unknowns
--> guarded actions
--> proof and rollback
--> policy synthesis fixed point
--> execution policy
--> `$actuating` handoff
+-> architecture-policy synthesis
+-> EPG-v1 source
+-> optional execution-policy compiler
 ```
 
-The best old `$plan` behavior is still mandatory:
+The candidate is:
+
+```text
+C = (A0, delta_A, P)
+
+A0      = source-owned architecture and abstraction state
+delta_A = source-bounded or explicitly plan-local architectonic refinement
+P       = execution policy
+```
+
+Architecture is not a prose review after actions are chosen. It is part of the
+policy being compiled.
+
+Keep the strongest old behavior:
 
 ```text
 iterate until exhausted
 ```
 
-The bad old artifact ceremony is not:
+Do not restore artifact ceremony:
 
 ```text
-no public iteration footers
-no self-reported rewrite ratios
-no synthetic round logs as readiness proof
+no public iteration logs
+no synthesis receipt
+no stored readiness gate
+no separate execution handoff
+no Plan-owned runtime state, decision, or transition receipt
 ```
 
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. After readiness, invoke `ledger` directly; native
-artifact operations own their results and failure reporting.
+`$plan` performs its own architectonic reasoning inside the source-authorized
+envelope. It does not require another architecture skill, compiler, or execution
+controller. A consumer may later compile this EPG and use the resulting policy
+under its own authority; that relationship is outside Plan.
 
 ## Accepted source contracts
 
-`$plan` may start from one of:
+`$plan` may start from:
 
 ```text
 direct user-authorized execution objective
-plan_source_contract / PSC-v1 from `$spec-pipeline`
+plan_source_contract / PSC-v1 from $spec-pipeline
 revision request for an existing plan_id
 ```
 
-A `$spec-pipeline` tail-call must pass:
+A `$spec-pipeline` tail-call passes:
 
 ```yaml
 plan_source_contract:
@@ -66,6 +77,9 @@ plan_source_contract:
   target_branch:
   do_not_execute_before: []
 ```
+
+The Architectonic Thread travels inside `implementation_spec` and
+`decision_packet`; do not create a second architecture packet.
 
 Fail closed when:
 
@@ -85,34 +99,33 @@ proof_bar missing
 target_branch missing
 ```
 
-A semantic gap returns to `$spec-pipeline` or `$grill-me`. `$plan` must not
-repair missing semantics by inventing scope, non-goals, compatibility, or proof
-bar.
+A semantic or source-fixed architectonic gap returns to `$spec-pipeline` or
+`$grill-me`. Plan must not invent scope, non-goals, compatibility, proof bars, or
+source-fixed architecture.
 
 See [03-plan-source-contract.md](references/cli-specs/03-plan-source-contract.md).
 
-## Artifact root
+## One artifact
 
-All persisted planning artifacts use:
-
-```text
-.ledger/plan/<plan-id>/
-```
-
-Recommended:
+When persistence is useful, Plan's sole authoritative artifact is:
 
 ```text
 .ledger/plan/<plan-id>/policy.json
-.ledger/plan/<plan-id>/projection.md
-.ledger/plan/<plan-id>/synthesis-receipt.json
-.ledger/plan/<plan-id>/revisions/
 ```
+
+That file contains the canonical EPG-v1 source. Revisions replace the same policy
+artifact under the same `plan_id`; repository history provides archival lineage.
+They do not introduce another artifact family.
+
+A human projection is generated on demand from EPG-v1. It is not authoritative and
+need not be persisted. Runtime state, decisions, observations, and transition
+receipts belong to the eventual consumer, not Plan.
 
 Do not write new planning artifacts under `.step/`.
 
 ## Plan identity
 
-Every plan has:
+Every policy carries:
 
 ```yaml
 plan_identity:
@@ -122,71 +135,82 @@ plan_identity:
   source_digest:
   target_repository:
   target_branch:
-  target_execution_owner: $actuating
 ```
 
-`plan_id` is stable across revisions of one objective.
+`plan_id` is stable across revisions of one objective. A materially different
+objective receives a new ID.
 
-A materially different objective receives a new plan ID.
-
-Do not choose an existing plan merely because it is active or recently used. PSC
-source digest and objective identity participate in plan identity selection.
+Do not select an existing plan merely because it is active or recent. Source digest
+and objective identity participate in plan identity.
 
 ## Authority boundary
 
 ```text
-$spec-pipeline
-  semantics, scope, non-goals, architecture, compatibility, proof bar
+accepted source or $spec-pipeline
+  semantics, scope, non-goals, source-fixed architecture, compatibility, proof bar
 
 $plan
-  execution policy, evidence gates, bounded actions, rollback, plan identity,
-  exhaustive policy refinement
+  source-bound architecture plus source-bounded or explicitly plan-local refinement,
+  observations, guarded actions, proof, rollback,
+  exhaustive refinement, and canonical EPG emission
 
-$actuating
-  execution control, loop governance, review/proof closure, mutation authority
+policy consumer
+  runtime state, observations, mutation authority, execution, and completion
 ```
 
-A semantic gap returns to `$spec-pipeline` or `$grill-me`.
+Plan never grants mutation authority and never chooses a consumer.
+
+Architectonic authority classes:
+
+```text
+source_fixed
+  preserve or return to source authority
+
+source_bounded
+  improve only inside the declared observation, compatibility, scope, and proof
+  envelope
+
+plan_local
+  refine only when the source contract explicitly leaves the seam to Plan
+```
+
+Return upstream only when a candidate contradicts source-fixed semantics or exceeds
+a source-bounded envelope.
 
 ## Planning regimes
 
 ```text
 deterministic
-  compile known actions
+  compile known architecture and actions
 
 adaptive
-  compile probes and evidence-conditioned decision routes
+  compile probes and evidence-conditioned architecture
 
 stabilization
   compile containment and observability before normal work
 ```
 
-Regime classification is revisited during synthesis. If a lens proves the chosen
-regime is wrong, revise the policy or return to the source authority.
+Reclassify when evidence shows the current regime is wrong.
 
-## Execution policy
+## EPG-v1 source language
 
-The authoritative plan artifact should identify:
+The authoritative policy includes:
 
 ```text
-policy ID/revision
-plan ID
-source and artifact state
-terminal predicates
-safety invariants
-facts and unknowns
-observable evidence
-bounded actions
-resource predictions
-proof obligations
-rollback
-policy rules
-progress potential
+policy and plan identity
+source and expected artifact binding
+terminal predicates and safety invariants
+architectonic seams, authority, factors, laws, and falsifiers
+facts, unknowns, and observable evidence
+bounded actions bound to seams and factors
+proof obligations and rollback
+selection rules and progress potential
 commitment horizon
+architecture-policy transport
 invalidators
 ```
 
-Every mutation action predicts resources using this grammar:
+Every mutation action predicts resources with:
 
 ```text
 path:
@@ -199,269 +223,257 @@ repo:all
 
 Unknown scope becomes `repo:all / exclusive`.
 
-## Policy synthesis fixed point
+Read [execution-policy-graph.md](references/execution-policy-graph.md).
 
-Before emitting a plan, run an internal exhaustive refinement loop.
+## Architectonic policy state
 
-A complete sweep evaluates these lenses:
+First classify architectonic admission:
 
 ```text
-source fidelity
-semantic authority and non-goals
-system regime classification
-facts, unknowns, and observation coverage
-action and resource-boundary completeness
-policy closure over reachable states
-safety, rollback, and irreversible-risk control
-proof and terminal-state sufficiency
-simplicity, surface minimization, and actuation readiness
+not_required
+  no consequential architecture or abstraction decision exists;
+  only mode, reason, and empty seams are required
+
+explicit
+  at least one consequential seam exists
+```
+
+Do not invent a preserved seam or emit empty composition/factor scaffolding for
+local work inside an unchanged exact boundary.
+
+For every consequential seam in `explicit` mode:
+
+1. classify authority as `source_fixed`, `source_bounded`, or `plan_local`;
+2. record one architectural axis and one typed hole;
+3. recover live obligations, observations, compatibility, effects, resources, and
+   host capabilities;
+4. state the ordinary repository-native candidate first;
+5. compare preservation, admitted-domain restriction, representation or owner
+   strengthening, and ablation or normalization;
+6. classify factor obligations as `live`, `moved`, `expired`, `duplicated`,
+   `invalid`, or `unknown`;
+7. select, evidence-condition, or return an honest obstruction;
+8. record the law, falsifier, residual obligations, and invalidators.
+
+Every consequential action references the seams and factors it realizes, preserves,
+or retires. Reject actions that assume an unnamed owner, reintroduce an ablated
+factor, bypass a canonical owner, or depend on an unresolved architecture choice
+without an observation-conditioned route.
+
+Prefer conceptual compression: explain more obligations and observations with fewer
+independent concepts, owners, exceptions, and reconstruction paths. Counts are
+comparison evidence, not an objective.
+
+Read
+[architectonic-policy-synthesis.md](references/architectonic-policy-synthesis.md).
+
+## Transport
+
+When policy sequencing and architecture change are genuinely independent
+compositional directions, record compatibility squares:
+
+```text
+A_before ---- action_before ----> B_before
+   |                                  |
+   | architecture change              | architecture change
+   v                                  v
+A_after  ----- action_after ---->  B_after
+```
+
+An adopted architecture change:
+
+```text
+identifies affected seams and factors
+-> preserves unaffected actions
+-> revises actions bound to changed factors
+-> retires actions bound to retired factors
+-> introduces realization and proof for new factors
+-> records square results and falsifiers
+-> restarts synthesis from the earliest affected lens
+```
+
+Do not claim double-category structure for an isolated compatibility check when no
+horizontal and vertical pasting matters.
+
+## Internal fixed point
+
+Before emission, refine the complete `(A0, delta_A, P)` candidate with these lenses
+in order:
+
+```text
+source_fidelity
+semantic_authority
+system_regime
+belief_and_observation
+action_completeness
+policy_closure
+safety_and_rollback
+proof_and_terminal_state
+simplicity_and_compilability
 ```
 
 Rules:
 
 - No fixed iteration cap.
-- A material improvement restarts the sweep from the earliest affected lens.
-- A material blocker routes to `return_to_spec`, `return_to_grill`, or `blocked`.
+- A material improvement restarts at the earliest affected lens.
+- An architecture change transports affected policy before restart.
+- A source-authority blocker routes to `return_to_spec`, `return_to_grill`, or
+  `blocked`.
 - Stop only after one complete zero-material-delta sweep.
-- Then run an independent fresh-eyes pass.
-- Emit only the final plan, not the draft history.
+- Run one independent fresh-eyes pass.
+- Emit only the final EPG, not the draft history.
 
-## Mandatory radical candidate
+The loop is monotone in explained obligations, evidenced decisions, preserved
+observations, excluded invalid states, proof strength, and retired uncertainty. It
+need not be monotone in actions, factors, owners, branches, files, or prose.
 
-Before finalization, run one radical creativity pass.
+Read [policy-synthesis-fixed-point.md](references/policy-synthesis-fixed-point.md).
 
-Question:
+## Radical candidate
 
-```text
-What is the single smartest, most radically innovative, accretive, useful,
-compelling, and execution-improving change available to this plan?
-```
+After apparent convergence, generate the strongest non-obvious improvement to the
+governing organization, admitted domain, representation, ownership, factorization,
+evidence strategy, or policy.
 
-The pass must produce a candidate or explicitly say `none`.
-
-Then classify the candidate:
+Disposition it privately as:
 
 ```text
 adopt
-  improves execution without violating source authority or minimality
-
 reject
-  clever but unsafe, unnecessary, source-expanding, or surface-increasing
-
 defer
-  promising but outside the current execution horizon; record trigger
-
 return_to_spec
-  changes semantics, scope, architecture, compatibility, authority, or proof bar
-
 none
-  no non-obvious candidate survived generation
 ```
 
-Creativity is mandatory. Accretion is not.
+If adopted, transport the affected policy and restart synthesis. The final EPG
+contains the resulting architecture-policy state, not the private candidate or its
+rejected alternatives. Creativity is mandatory; architectural accretion is not.
 
-Never add content merely because finalization is near. A rejected radical
-candidate is a successful creativity pass when the rejection is evidence-based.
+## Compilation boundary
 
-## Policy synthesis receipt
-
-Emit or persist one compact `PSR-v1` receipt:
-
-```yaml
-policy_synthesis_receipt:
-  receipt_version: PSR-v1
-  plan_id:
-  revision:
-  source_digest:
-  source_contract:
-    kind: direct | PSC-v1 | revision
-    source_owner:
-    spec_id:
-    sgr_digest:
-  initial_policy_digest:
-  final_policy_digest:
-  passes:
-    - pass_id:
-      lens:
-      candidate_digest_before:
-      candidate_digest_after:
-      findings: []
-      material_changes: []
-      disposition:
-        changed |
-        clean |
-        blocked |
-        return_to_spec |
-        return_to_grill
-  radical_candidate:
-    candidate:
-    disposition:
-      adopt |
-      reject |
-      defer |
-      return_to_spec |
-      none
-    reason:
-    affected_refs: []
-  convergence:
-    complete_clean_sweep:
-    independent_press_pass_clean:
-    unresolved_errors:
-    untreated_material_risks:
-    improvements_exhausted:
-```
-
-The receipt proves synthesis happened; it does not expose private reasoning.
-Its final nine passes must be one ordered, zero-material-delta sweep across the
-required lenses. Earlier changed passes may precede that clean suffix.
-
-The final `<proposed_plan>` should include a concise `Policy Synthesis Receipt`
-section or a reference to the persisted receipt.
-
-Validate:
-
-```bash
-ledger validate policy-synthesis-receipt \
-  --input .ledger/plan/<plan-id>/synthesis-receipt.json
-```
-
-See [05-policy-synthesis-receipt.md](references/cli-specs/05-policy-synthesis-receipt.md).
-
-## Execution handoff
-
-The handoff records:
-
-```yaml
-actuating_handoff:
-  plan_id:
-  policy_ref:
-  policy_digest:
-  synthesis_receipt_ref:
-  synthesis_receipt_digest:
-  target_branch:
-  proposed_resources: []
-  mutation_allowed: no
-```
-
-`$plan` never emits mutation authority.
-
-## Cross-plan relationships
-
-A plan may propose, but not create, cross-plan relations:
-
-```yaml
-proposed_cross_plan_dependency:
-  from:
-  to:
-  type:
-  reason:
-```
-
-`$plan` may only propose the relation. A downstream controller must accept or
-reject it before execution.
-
-Do not flatten another plan's tasks into the current plan merely to express a
-dependency.
-
-## Readiness
-
-A plan is ready for `$actuating` when:
+The source EPG is not executable and does not certify planning convergence.
 
 ```text
-source current
-plan ID stable
-terminal conditions testable
-every mutation action has resource predictions
-unknowns are gated
-proof/rollback complete
-no semantic drift
-target branch explicit
-policy synthesis fixed point reached
-radical candidate evaluated
-independent press pass clean
+EPG-v1 JSON
+-> parse
+-> structural and architectonic validation
+-> private normalization
+-> opaque CompiledPolicy
 ```
 
-Readiness does not mean execution is safe.
+Only `CompiledPolicy` may reach selection or transition in a compatible consumer.
+The private normalized form is an in-memory compiler representation, not a second
+Plan artifact.
 
-Execution still requires:
+Compiler validation is optional proof. First inspect `seq capabilities --format
+json`; invoke the compiler only when it advertises
+`execution_policy_compiler_contract_v1`.
 
-~~~text
-current goal-contract/v3 and accepted execution authority
-one current construction-contract/v3 selected by $actuating
-one exact Actuating-selected in-scope operation before material mutation
-current subject-bound evidence before continuation
-counterexample-set/v1 when witnessed review findings drive work
-Actuating's current closure judgment before completion
-~~~
+When compatible, compile the exact emitted candidate with:
 
-The plan handoff must keep `mutation_allowed: no`. `$actuating` may use the
-plan as supporting reasoning only after current authority is established; the
-selected architecture enters the Construction Contract.
+```bash
+seq execution-policy-compile --file <epg.json> --format json
+```
 
-Policy selectors, checkpoints, transition receivers, and human-plan linters are
-not execution owners. `$plan` produces supporting execution policy;
-`$actuating` owns Construction selection, exact operation selection, evidence
-evaluation, and closure. Ledger may materialize or validate requested artifacts
-but never controls repository execution.
+When the EPG is not being persisted, stage it only in a temporary file for this
+command and remove the file afterward. Accept only `compiled: true`; require
+`compiler_contract = execution-policy-compiler/v1` and bind the reported
+`source_policy_digest` to the emitted EPG. The command output is structural proof,
+not a Plan artifact.
+
+If a compatible compiler is unavailable, emit the EPG and report:
+
+```text
+Compilation not run: compatible compiler unavailable.
+```
+
+Compiler absence prevents only a compilation claim. It does not prevent a planning
+result.
+
+Compilation success is the only machine claim Plan needs. Do not embed or persist:
+
+```text
+gate
+handoff
+policy_ready
+downstream_runtime_ready
+self-reported lens results
+```
+
+If the compiler rejects the EPG, revise only a structural encoding defect within
+Plan authority or report the compiler obstruction. A compiler rejection cannot
+expand source authority or select different semantics.
+
+The compiler proves that the source parses, its references and architectonic
+bindings are structurally coherent, and it lowers under the named compiler
+contract. It does not prove that architecture is semantically correct, that Plan's
+private fixed-point process occurred, that source state remains current, that
+execution is authorized, or that completion occurred.
+
+## Revision
+
+Revise when source, repository identity, observations, architecture, or proof
+assumptions change.
+
+```text
+load current EPG
+-> verify plan_id and source binding
+-> change only affected architecture-policy state
+-> transport affected actions
+-> rerun fixed point and fresh eyes
+-> optionally compile
+-> increment revision
+```
+
+The canonical digest identifies the complete revised EPG. Do not emit a separate
+synthesis or revision artifact.
 
 ## Output
 
-When emitting a plan, include one `<proposed_plan>` block with:
+Emit one `<proposed_plan>` block containing:
 
 ```text
 Plan Identity
-Source and Terminal Contract
-Policy State and Unknowns
-Actions and Resource Predictions
-Decision/Observation Rules
-Proof, Rollback, and Invalidators
-Policy Synthesis Receipt
-`$actuating` Handoff
+Strategy and Source
+Architecture and Abstraction
+Belief, Unknowns, and Observations
+Actions and Policy Branches
+Proof, Rollback, and Terminals
+Execution Policy Graph
 ```
 
-Do not include internal iteration logs.
+`Execution Policy Graph` contains exactly one fenced JSON EPG-v1 object. The prose is
+an on-demand projection of that object. Do not emit a receipt, gate, handoff, runtime
+state, decision, or transition artifact.
 
-The synthesis receipt should summarize the fixed point in compact form:
+After successful synthesis and emission, say:
 
 ```text
-lenses swept
-material changes accepted
-radical candidate disposition
-clean sweep result
-fresh-eyes result
-remaining blockers
+Plan synthesized.
 ```
 
-## Fast readiness response
-
-When the user asks only whether an existing plan is ready:
-
-- inspect source currentness;
-- inspect policy structure;
-- confirm PSR-v1 convergence;
-- confirm radical candidate disposition;
-- confirm `$actuating` handoff readiness.
-
-If all pass and no revision is requested, reply exactly:
+If a compatible compiler accepts the exact emitted EPG, also say:
 
 ```text
-Plan is ready.
+Plan compiles.
 ```
 
-Do not use self-attested readiness without PSR/source evidence.
+That statement means the source lowered under the reported structural compiler
+contract. It does not prove semantic completeness or authorize execution.
 
 ## Hard rules
 
-- Persist only under `.ledger/plan/`.
-- Every plan has an explicit immutable plan ID.
-- Require a complete, current PSC-v1 before planning from `$spec-pipeline`.
-- Never infer a target execution owner beyond the emitted handoff.
-- Never merge separate objectives into one plan for convenience.
-- Never create executable cross-plan edges.
+- EPG-v1 is Plan's only authoritative artifact.
+- Every EPG has an immutable plan ID and current source digest.
+- Require a complete current PSC-v1 when planning from `$spec-pipeline`.
+- Never infer or name a downstream execution owner.
+- Never merge separate objectives for convenience.
 - Never grant mutation authority.
+- Never author runtime currentness or initial execution state.
 - Unknown scope means exclusive scope.
-- Exhaustive policy synthesis is mandatory before emission.
+- Exhaustive joint synthesis is mandatory before emission.
 - No fixed iteration cap.
-- Do not expose full internal iteration logs.
-- Mandatory radical creativity candidate; optional adoption.
-- No arbitrary addition after convergence.
+- No public iteration history or convergence receipt.
+- Mandatory radical candidate; optional adoption.
+- Compiler absence never blocks Plan emission.
+- Compilation is structural evidence, not readiness, authority, or completion.

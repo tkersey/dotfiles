@@ -3,34 +3,34 @@ skill_decision_contract:
   skill:
     name: plan
     kind: mixed
-    source_fingerprint: plan-v4.1-policy-synthesis-fixed-point
+    source_fingerprint: plan-v6-proportional-architectonic-epg
   triggers:
     - trigger_id: PLAN-COMPILE
       description: Accepted intent needs a named execution policy.
       cue_literals: [$plan, ready_for_plan, execution policy]
       cue_regexes: []
       exclusions: []
-    - trigger_id: PLAN-RELATION
-      description: A dependency on another plan is discovered.
-      cue_literals: [cross-plan dependency, another plan]
+    - trigger_id: PLAN-SYNTHESIS
+      description: The architecture-policy candidate must be refined to a fixed point.
+      cue_literals: [iterate, improve the plan, exhaustive refinement, creativity pass]
       cue_regexes: []
       exclusions: []
-    - trigger_id: PLAN-SYNTHESIS
-      description: The execution policy must be refined to a fixed point.
-      cue_literals: [iterate, improve the plan, exhaustive refinement, creativity pass]
+    - trigger_id: PLAN-ARCHITECTONIC
+      description: Plan actions depend on a consequential architecture, representation, owner, composition law, or abstraction factorization.
+      cue_literals: [architecture, abstraction, representation, owner, rearchitecture, migration, normalize, ablate]
       cue_regexes: []
       exclusions: []
   routes:
     - route_id: PLAN-EMIT
-      description: Emit one named plan policy and `$actuating` handoff.
+      description: Emit one named, proportional architecture-aware EPG; optionally validate it with a compatible compiler.
       aliases: [emit]
       terminal: "yes"
     - route_id: PLAN-REFINE
-      description: Continue internal policy synthesis because a material improvement remains.
+      description: Continue internal synthesis because a material architecture-policy improvement remains.
       aliases: [refine]
       terminal: "no"
     - route_id: PLAN-RETURN-SPEC
-      description: Return a semantic gap.
+      description: Return a source-fixed semantic or architectonic contradiction.
       aliases: [return-to-spec]
       terminal: "yes"
     - route_id: PLAN-RETURN-GRILL
@@ -38,7 +38,7 @@ skill_decision_contract:
       aliases: [return-to-grill]
       terminal: "yes"
     - route_id: PLAN-BLOCK
-      description: Block because identity, authority, convergence, or evidence is unavailable.
+      description: Block because identity, authority, convergence, architecture, or evidence is unavailable.
       aliases: [blocked]
       terminal: "yes"
   clauses:
@@ -46,34 +46,42 @@ skill_decision_contract:
       trigger_refs: [PLAN-COMPILE]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [immutable plan_id, source digest, target branch]
-      success_signals: [explicit `$actuating` handoff]
+      required_artifacts: [EPG-v1 with immutable plan_id, source digest, target branch]
+      success_signals: [canonical EPG synthesized and emitted, compatible compilation reported when available]
       failure_signals: [plan inferred from current execution state]
       rationale: Plan identity is the unit of namespace isolation.
-    - clause_id: PLAN-CROSS-001
-      trigger_refs: [PLAN-RELATION]
+    - clause_id: PLAN-ARCHITECTONIC-001
+      trigger_refs: [PLAN-COMPILE, PLAN-ARCHITECTONIC]
       expected_routes: [PLAN-EMIT, PLAN-REFINE, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [proposed qualified cross-plan edge]
-      success_signals: [edge remains a proposal until accepted by a downstream controller]
-      failure_signals: [foreign work copied into current plan]
-      rationale: Cross-plan authority belongs to the workspace.
+      required_artifacts: [architectonic admission, authority classes for consequential seams, factor obligations, action bindings]
+      success_signals: [not_required plans contain no fabricated seams, explicit seams are dispositioned, no dominated retained factor, no action realizes a foreign or retired factor]
+      failure_signals: [architecture only in prose, file-shaped factors, reconstructed truth]
+      rationale: Architecture and abstraction are state over which policy synthesis converges, not a detached review section.
+    - clause_id: PLAN-TRANSPORT-001
+      trigger_refs: [PLAN-SYNTHESIS, PLAN-ARCHITECTONIC]
+      expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-BLOCK]
+      prohibited_routes: []
+      required_artifacts: [when architecture changes and two-dimensional transport is admitted - architectonic change relation, action partition, square results and falsifiers]
+      success_signals: [changed architecture transports policy, claimed interchange preserves observations, unchanged architecture emits no square ceremony]
+      failure_signals: [stale actions survive retired factors, incoherent rollback, unevidenced double-category claim]
+      rationale: Plan revisions must remain coherent across architecture and policy change.
     - clause_id: PLAN-SYNTHESIS-001
       trigger_refs: [PLAN-COMPILE, PLAN-SYNTHESIS]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-RETURN-GRILL, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [PSR-v1, complete clean sweep, independent press pass]
-      success_signals: [final policy digest differs only when material improvements were adopted, no public iteration log is needed for readiness]
-      failure_signals: [one-shot plan emitted without synthesis receipt]
-      rationale: Planning quality depends on exhaustive refinement, not just schema presence.
+      required_artifacts: [EPG-v1]
+      success_signals: [canonical digest binds complete EPG, optional compiler result binds the exact source when available, stronger proof may delete surface]
+      failure_signals: [compiler absence blocks Plan emission, policy converged only inside an unquestioned inherited decomposition]
+      rationale: Planning quality depends on exhaustive joint refinement, not just schema presence.
     - clause_id: PLAN-CREATIVITY-001
       trigger_refs: [PLAN-SYNTHESIS]
       expected_routes: [PLAN-REFINE, PLAN-EMIT, PLAN-RETURN-SPEC, PLAN-BLOCK]
       prohibited_routes: []
-      required_artifacts: [radical candidate disposition]
-      success_signals: [candidate generated and adopted/rejected/deferred/routed with evidence]
-      failure_signals: [arbitrary addition after convergence, no radical candidate attempted]
-      rationale: Creativity is mandatory; accretion is optional.
+      required_artifacts: [EPG-v1]
+      success_signals: [private candidate may improve organization, admitted domain, representation, ownership, factorization, evidence, or policy; adopted changes appear in the final EPG]
+      failure_signals: [arbitrary architectural addition after convergence, no radical candidate attempted, architecture change returned upstream despite remaining inside plan authority]
+      rationale: Creativity is mandatory; architectural or policy accretion is optional.
   instrumentation:
-    decision_receipt: required
-    rationale: Plan identity, cross-plan relationships, synthesis convergence, and radical-candidate disposition shape execution.
+    decision_receipt: not-needed
+    rationale: The canonical EPG is Plan's authoritative surface; an optional compiler result is structural evidence only.

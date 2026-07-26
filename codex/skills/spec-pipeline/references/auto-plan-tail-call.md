@@ -61,8 +61,10 @@ plan_source_contract:
   do_not_execute_before: []
 ```
 
-`$plan` compiles that source contract into a plan identity, execution policy,
-PSR-v1 synthesis receipt, and `$actuating` handoff.
+`$plan` synthesizes that source contract into one EPG-v1 policy. When a compatible
+execution-policy compiler is available, Plan validates the exact emitted EPG;
+compiler absence does not block emission. Plan emits no synthesis receipt or
+execution handoff.
 
 ## Fail-closed cases
 

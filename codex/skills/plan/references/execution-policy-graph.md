@@ -4,6 +4,7 @@
 execution_policy_graph:
   policy_version: EPG-v1
   policy_id:
+  plan_id:
   revision:
   parent:
     policy_id:
@@ -33,10 +34,6 @@ execution_policy_graph:
       head:
       dirty_fingerprint:
     locked_decision_refs: []
-    current:
-      yes |
-      no |
-      unknown
 
   goal:
     objective:
@@ -60,6 +57,94 @@ execution_policy_graph:
         statement:
         atom:
         response_terminal:
+
+  architectonic:
+    mode:
+      not_required |
+      explicit
+    reason:
+    seams:
+      - seam_id:
+        authority:
+          source_fixed |
+          source_bounded |
+          plan_local
+        boundary:
+          owner:
+          source:
+          target:
+        axis:
+          data_shape |
+          behavior |
+          syntax_semantics |
+          composition |
+          representation |
+          ownership |
+          context |
+          transport |
+          proof
+        typed_hole:
+          object |
+          map |
+          representation |
+          interpreter |
+          composition |
+          equivalence |
+          owner |
+          proof
+        live_obligation_refs: []
+        required_observation_refs: []
+        compatibility_and_migration: []
+        host_capabilities: []
+        incumbent:
+          organization:
+          factor_refs: []
+        candidate_movements:
+          preserve:
+          restrict_admitted_domain:
+          strengthen_representation_or_owner:
+          ablate_or_normalize:
+        disposition:
+          selected |
+          evidence_conditioned |
+          underdetermined |
+          obstructed
+        selected_organization:
+        decision_observation_refs: []
+        factors:
+          - factor_id:
+            owner:
+            live_obligation_refs: []
+            obligation_status:
+              live |
+              moved |
+              expired |
+              duplicated |
+              invalid |
+              unknown
+            disposition:
+              preserve |
+              factor |
+              quotient |
+              ablate |
+              normalize |
+              introduce
+        law:
+        falsifier:
+        residual_obligations: []
+        invalidators: []
+    composition:
+      seam_dependency_edges:
+        - from_seam_ref:
+          to_seam_ref:
+          relation:
+      independent_seam_sets: []
+    conceptual_compression:
+      live_obligation_refs: []
+      independent_factor_refs: []
+      independent_owner_refs: []
+      exceptional_path_refs: []
+      dominated_factor_refs: []
 
   regime:
     kind:
@@ -137,6 +222,10 @@ execution_policy_graph:
         any: []
         none: []
       requires_actions: []
+      architectonic_seam_refs: []
+      realizes_factor_refs: []
+      retires_factor_refs: []
+      preservation_observation_refs: []
       mutation_boundary:
         kind:
           repository |
@@ -213,9 +302,8 @@ execution_policy_graph:
         direction:
           minimize |
           maximize
-        current_value:
         terminal_threshold:
-    initial: {}
+    baseline_expectation: {}
 
   safety_shield:
     rules:
@@ -237,17 +325,6 @@ execution_policy_graph:
     mutation_actions_max:
     evidence_actions_max:
     delivery_transitions_max:
-
-  initial_state:
-    state_version: EPS-v1
-    state_id:
-    satisfied_atoms: []
-    completed_actions: []
-    failed_actions: []
-    resolved_unknowns: []
-    closed_obligations: []
-    current_potential: {}
-    active_action_id:
 
   terminal_states:
     success:
@@ -278,53 +355,106 @@ execution_policy_graph:
       required_action:
       affected_refs: []
 
-  challenge:
-    candidate:
-    disposition:
-    reason:
-    affected_refs: []
-    source_change_required:
-
+  # Omit on initial plans. Include only when revising an existing EPG.
   revision_summary:
     parent_diff_ref:
     policy_changes: []
     semantic_changes: []
     source_changes: []
+    # The remaining fields exist only when architecture changed.
+    architectonic_changes:
+      - seam_ref:
+        prior_organization:
+        successor_organization:
+        relation:
+          preserve |
+          restrict |
+          strengthen |
+          factor |
+          quotient |
+          ablate |
+          normalize |
+          replace
+    plan_transport:
+      preserved_action_refs: []
+      revised_action_refs: []
+      retired_action_refs: []
+      introduced_action_refs: []
+    square_results:
+      - seam_ref:
+        horizontal_before_refs: []
+        vertical_change_refs: []
+        horizontal_after_refs: []
+        preserved_observation_refs: []
+        result:
+          commutes |
+          fails |
+          underdetermined
+        falsifier:
 
-  handoff:
-    next_owner:
-      actuating |
-      spec-pipeline |
-      grill-me |
-      blocked
-    runtime_ready:
-    mutation_allowed: no
-    gate_result:
-      pass |
-      stale |
-      return_to_spec |
-      return_to_grill |
-      blocked
-    reason:
-
-  gate:
-    source_current:
-    semantic_drift:
-      none |
-      authorized |
-      unauthorized
-    obligations_covered:
-    critical_unknowns_observable_or_blocked:
-    actions_bounded:
-    policy_references_valid:
-    policy_closed:
-    safety_shield_complete:
-    potential_complete:
-    terminal_states_complete:
-    downstream_runtime_ready:
-    fresh_eyes_blockers:
-    policy_ready:
 ```
+
+## Architectonic laws
+
+- `architectonic.mode = not_required` is legal only when the plan makes no
+  consequential architecture or abstraction decision. `reason` explains why
+  escalation is unnecessary. `seams` must be empty; composition,
+  conceptual-compression, and action architectonic fields may be omitted. If
+  present, they must be empty.
+- `architectonic.mode = explicit` requires at least one consequential seam and
+  complete action binding for every affected seam.
+- A consequential action must reference the seam it realizes, migrates, preserves,
+  or retires.
+- Every `factor_id` is globally unique across the EPG. Seam ownership scopes factor
+  meaning and action authority; factor identifiers are not seam-local aliases.
+- An action may realize or retire a factor only when the factor's owning seam appears
+  in the action's `architectonic_seam_refs`.
+- An action must not realize a factor whose disposition is `quotient`, `ablate`, or
+  a superseded `normalize` predecessor.
+- A `source_fixed` seam may be preserved or returned to source authority; it may not
+  be silently replaced.
+- A `source_bounded` or `plan_local` seam may change during synthesis when the
+  resulting plan transport preserves required observations and authority.
+- Raw counts in `conceptual_compression` are comparison evidence, not a scalar
+  optimization objective.
+- Architecture changes partition affected actions into preserved, revised, retired,
+  and introduced sets.
+- A square result of `fails` blocks convergence. `underdetermined` requires an
+  observation-conditioned route or blocker.
+- `gate` and `handoff` are not EPG fields. The policy may not certify its own
+  readiness or select its eventual consumer.
+- EPG-v1 is a source plan, not runtime state or execution authority. A compatible
+  execution-policy compiler may privately lower it to an opaque compiled policy.
+- Optional validation uses
+  `seq execution-policy-compile --file <epg.json> --format json`; accept only
+  `compiled: true`, require `execution-policy-compiler/v1`, and bind its
+  `source_policy_digest` to the emitted source. Compiler absence does not block Plan
+  emission.
+- The compiler's private normalized representation is transient and must not be
+  persisted as another Plan artifact.
+
+For a bounded local action inside an unchanged exact boundary, the architectonic
+surface is only:
+
+```yaml
+architectonic:
+  mode: not_required
+  reason: "One bounded documentation edit inside an unchanged exact boundary."
+  seams: []
+
+actions:
+  - action_id: ACTION-DOC-FIX
+```
+
+## Runtime ownership
+
+`source.artifact_state` records the repository state against which Plan synthesized
+the EPG. It does not claim that state remains current.
+
+Plan may declare facts needed by policy conditions, but it never marks runtime facts
+as satisfied. Runtime currentness, completed or failed actions, resolved unknowns,
+closed obligations, observed potential, active work, decisions, and transition
+receipts belong to the policy consumer.
 
 ## Atom namespace
 
@@ -342,11 +472,13 @@ terminal:<name>
 custom:<stable-id>
 ```
 
-Every condition atom must be declared by a fact, observation outcome, action, unknown, obligation, terminal state, or explicit custom atom declaration.
+Every condition atom must be declared by a fact, observation outcome, action,
+unknown, obligation, terminal state, or explicit custom atom declaration.
 
 ## Closure law
 
-Every action outcome used by the model must lead to at least one:
+Every action outcome and architectonic decision observation used by the model must
+lead to at least one:
 
 ```text
 later policy rule
@@ -355,4 +487,5 @@ shield response
 explicit replan/authority return
 ```
 
-An action whose success or failure leaves the policy with no lawful successor is incomplete.
+An action or architectural outcome whose success or failure leaves the policy with
+no lawful successor is incomplete.

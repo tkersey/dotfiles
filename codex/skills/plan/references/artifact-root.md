@@ -1,26 +1,14 @@
 # Planning Artifact Root
 
-New planning artifacts:
-
-```text
-.ledger/plan/<plan-id>/
-```
-
-The canonical plan artifact remains:
-
-```text
-.ledger/plan/<plan-id>/
-```
-
-Recommended plan artifact layout:
+When Plan persistence is useful, the sole authoritative artifact is:
 
 ```text
 .ledger/plan/<plan-id>/policy.json
-.ledger/plan/<plan-id>/projection.md
-.ledger/plan/<plan-id>/synthesis-receipt.json
-.ledger/plan/<plan-id>/revisions/
 ```
 
-The planning source may be tracked or local according to repository policy.
+It contains canonical EPG-v1 source. A revision updates the same policy identity; a
+materially different objective receives another `plan_id`.
 
-Runtime claims and projections never belong under `.ledger/plan/`.
+Human projections are generated on demand. Compiler normalization and
+consumer-owned runtime state, decisions, observations, and receipts are not Plan
+artifacts and never belong under `.ledger/plan/`.
