@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Review Fold"
   short_description: "Classify falsifiers into Counterexample Sets"
-  default_prompt: "Use $review-fold to bind the exact current Goal, separate observed facts from suggested repairs, quotient stable law-and-boundary classes, carry unresolved classes across source revisions, and author counterexample-set/v1 without selecting a Construction, granting mutation, counting review credit, or deciding closure."
+  default_prompt: "Use $review-fold to bind the exact current Goal, separate observed facts from suggested repairs, quotient stable law-and-boundary classes, carry unresolved accepted and blocked classes plus follow-up classes brought into scope across source revisions, and author counterexample-set/v1 without selecting a Construction, granting mutation, counting review credit, or deciding closure."

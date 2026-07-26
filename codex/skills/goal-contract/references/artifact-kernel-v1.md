@@ -55,9 +55,10 @@ artifact:
 - Treat every materialized Goal as immutable. A semantic change creates a
   successor with the same `goal_id`, exactly one predecessor `artifact_id`,
   and a new content-addressed `artifact_id`. Do not replace the current Goal
-  while an accepted or blocked Counterexample remains unresolved unless an
-  explicit source revision uses the carry-forward transition: the successor
-  Goal's `supporting_refs` names every current unresolved Counterexample Set as
+  while an accepted or blocked Counterexample remains unresolved, or while a
+  `follow-up` class is being brought within the successor Goal's scope, unless
+  the explicit source revision uses the carry-forward transition: the
+  successor Goal's `supporting_refs` names every Set carrying those classes as
   `counterexample-set:<artifact_id>`; the next Counterexample Set cites the
   exact successor as `goal-contract:<artifact_id>` and each carried Set as
   `counterexample-set:<artifact_id>`, evaluates the current predecessor

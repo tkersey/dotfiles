@@ -194,35 +194,41 @@ Falsifier:
 
 This is a compact non-authoritative view and an ephemeral proof lease over its
 exact Goal, fact, constraint, and host-capability inputs. It creates no artifact
-family and adds no field to `construction-contract/v3`. It expires at session,
-compaction, or subject handoff and is never reconstructed from a materialized
-Construction. Any later run re-axiomatizes before nomination or affected
-mutation. Within one uninterrupted run, compile its material conclusions into
-the existing `goal_contract_ref`, `governing_law_refs`, observation refs,
-`architecture.residual_assumptions`, candidate factors, residual obligations,
-predecessor claims, retirements, and falsifiers.
+family and adds no field to `construction-contract/v3`. It expires at session
+end, compaction, or execution-context handoff and is never reconstructed from a
+materialized Construction. A subject digest change alone does not expire it:
+within one uninterrupted run, a premise-neutral realization repair may retain
+the lease while every bound input and invalidator remains current. Any later
+run, or any subject change that alters a bound input or invalidator,
+re-axiomatizes before nomination or affected mutation. Compile its material
+conclusions into the existing `goal_contract_ref`, `governing_law_refs`,
+observation refs, `architecture.residual_assumptions`, candidate factors,
+residual obligations, predecessor claims, retirements, and falsifiers.
 
 A `sufficient` basis admits nomination. An `underdetermined` basis carries every
 materially incomparable derivation into candidate comparison and blocks if
 current Goal law, observation, or dominance cannot distinguish them. A new
 explicit source preference must first become a successor Goal Contract; only
 then may Actuating compare the successor candidate universe. When accepted or
-blocked Counterexamples remain unresolved, the successor Goal cites every
-current Set and `$review-fold` authors a successor Set that cites the successor
-Goal, preserves predecessor lineage, evaluates the predecessor Construction,
-and assigns every carried class a disposition. No affected mutation or successor
-Construction selection is legal until that carry-forward is complete.
+blocked Counterexamples remain unresolved, or when the revision brings a
+`follow-up` class within the successor Goal's scope, the successor Goal cites
+every Set carrying those classes and `$review-fold` authors a successor Set
+that cites the successor Goal, preserves predecessor lineage, evaluates the
+predecessor Construction, and assigns every carried class a disposition. No
+affected mutation or successor Construction selection is legal until that
+carry-forward is complete.
 `inconsistent` or `blocked` stops selection. `$first-principles` may expose a
 Goal conflict or missing authority, but it cannot revise the Goal, classify a
 Counterexample, nominate or select a Construction, grant mutation, or author a
 durable decision.
 
-Retain the basis only within the same uninterrupted run and while its inputs
-and invalidators remain current. Re-axiomatize before nomination after any
-handoff; when a successor Goal changes semantics, compatibility, authority, or
-proof posture; when evidence changes an observed fact, necessary constraint, or
-host capability; when an accepted finding falsifies a premise; when architecture
-or ablation repair becomes live; or when causal recurrence triggers.
+Retain the basis across premise-neutral subject changes only within the same
+uninterrupted run and while its inputs and invalidators remain current.
+Re-axiomatize before nomination after any execution-context handoff; when a
+successor Goal changes semantics, compatibility, authority, or proof posture;
+when evidence changes an observed fact, necessary constraint, or host
+capability; when an accepted finding falsifies a premise; when architecture or
+ablation repair becomes live; or when causal recurrence triggers.
 
 With a current basis, Actuating applies `$universalist` to the affected boundary
 and records its nomination:
@@ -346,9 +352,10 @@ challenge only when implementation introduces or materially changes a
 disputable semantic factor. That challenge belongs to the successor candidate;
 the same basis, candidate, and evidence never repeat recursively. Otherwise
 retain the pre-mutation basis and challenge only within the same uninterrupted
-run. A session, compaction, or subject handoff requires re-axiomatization before
-another nomination or affected mutation. Fresh review evaluates the adjudicated
-result or the recorded obstruction.
+run. A session end, compaction, or execution-context handoff requires
+re-axiomatization before another nomination or affected mutation; a
+premise-neutral subject digest change does not. Fresh review evaluates the
+adjudicated result or the recorded obstruction.
 
 ## Causal recurrence gate
 

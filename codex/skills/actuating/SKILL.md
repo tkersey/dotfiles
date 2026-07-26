@@ -5,15 +5,13 @@ description: "Turn accepted intent and review evidence into correct-by-construct
 
 # Actuating
 
-Turn accepted intent into a lawful construction, directly orchestrated effects,
-independent falsification, and an evidence-backed closure judgment.
+Turn accepted intent into a lawful construction, directly orchestrated effects, independent falsification, and an evidence-backed closure judgment.
 
 ## Authority kernel
 
 Use exactly four authoritative per-goal artifact families:
 
-1. `goal-contract/v3` — accepted semantics, authority, scope, compatibility,
-   laws, and acceptance, compiled by `$goal-contract`.
+1. `goal-contract/v3` — accepted semantics, authority, scope, compatibility, laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
 3. `construction-contract/v3` — the selected architecture, four compared
@@ -145,14 +143,17 @@ Falsifier:
 
 The basis is an ephemeral proof lease over exact Goal, fact, constraint, and
 host-capability inputs, not a fifth authority artifact or a new
-`construction-contract/v3` field. It expires at session, compaction, or subject
-handoff and is never reconstructed from a materialized Construction. Any later
-run must re-axiomatize before nomination or affected mutation. Within one
-uninterrupted run, compile its material conclusions into the existing Goal and
-observation references, residual assumptions, candidate factors, obligations,
-retirements, and falsifiers. A candidate may use
-`derivation: incumbent-independent` only after `$universalist` lowers the
-frozen derivation into one of the four canonical candidate families.
+`construction-contract/v3` field. It expires at session end, compaction, or
+execution-context handoff and is never reconstructed from a materialized
+Construction. A subject digest change alone does not expire it: within one
+uninterrupted run, a premise-neutral realization repair may retain the lease
+while every bound input and invalidator remains current. Any later run or subject
+change that alters a bound input or invalidator must re-axiomatize before
+nomination or affected mutation. Compile its material conclusions into the
+existing Goal and observation references, residual assumptions, candidate
+factors, obligations, retirements, and falsifiers. A candidate may use
+`derivation: incumbent-independent` only after `$universalist` lowers the frozen
+derivation into one of the four canonical candidate families.
 
 `$first-principles` may expose an inconsistent Goal projection or missing
 authority, but it must return that as `inconsistent` or `blocked`; it may not
@@ -160,26 +161,27 @@ rewrite the Goal. `underdetermined` preserves every materially incomparable
 derivation for later comparison and blocks if Actuating cannot distinguish them
 by current Goal law, observation, or dominance. A new explicit source
 preference has no effect until `$goal-contract` compiles it into a successor
-Goal Contract. When accepted or blocked Counterexamples remain unresolved, the
-successor Goal must cite every current Set, and `$review-fold` must author a
-successor Set that cites the successor Goal, preserves predecessor lineage,
-evaluates the predecessor Construction, and assigns every carried class a
-disposition.
+Goal Contract. When accepted or blocked Counterexamples remain unresolved, or
+when the revision brings a `follow-up` class within the successor Goal's scope,
+the successor Goal must cite every Set carrying those classes, and
+`$review-fold` must author a successor Set that cites the successor Goal,
+preserves predecessor lineage, evaluates the predecessor Construction, and
+assigns every carried class a disposition.
 Actuating re-axiomatizes only after that complete carry-forward and permits no
 affected mutation before successor Construction selection. Neither
 `$first-principles` nor its basis classifies Counterexamples, nominates or
 selects a Construction, grants mutation, or authors a durable decision.
 
-Retain the basis across a pure realization repair only within the same
+Retain the basis across premise-neutral subject changes only within the same
 uninterrupted run and while every bound input and invalidator remains current.
-Re-axiomatize before nomination after any handoff; when a successor Goal changes
-semantics, compatibility, authority, or proof posture; when new evidence changes
-an observed fact, necessary constraint, or host capability; when an accepted
-finding falsifies a premise; when architecture or ablation repair becomes live;
-or when the Causal recurrence gate triggers. A Glaze result may supply a new
-derivation under the current basis. If it requires a new premise, admit that
-premise only through fresh source authority or evidence and re-axiomatize before
-lowering; Glaze cannot manufacture axioms.
+Re-axiomatize before nomination after any execution-context handoff; when a
+successor Goal changes semantics, compatibility, authority, or proof posture;
+when new evidence changes an observed fact, necessary constraint, or host
+capability; when an accepted finding falsifies a premise; when architecture or
+ablation repair becomes live; or when the Causal recurrence gate triggers. A
+Glaze result may supply a new derivation under the current basis. If it requires
+a new premise, admit that premise only through fresh source authority or
+evidence and re-axiomatize before lowering; Glaze cannot manufacture axioms.
 
 After `$review-fold` has classified any findings, invoke `$glaze` exactly once
 after the first `$universalist` nomination and before candidate adjudication

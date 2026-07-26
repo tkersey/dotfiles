@@ -77,15 +77,17 @@ no campaign reference.
 
 Every newly materialized Set binds the exact current Goal Contract through
 `supporting_refs` as `goal-contract:<artifact_id>`. For an explicit source
-revision with unresolved classes, use the carry-forward transition:
+revision with unresolved accepted or blocked classes, or one that brings a
+`follow-up` class within the successor Goal's scope, use the carry-forward
+transition:
 
-- the successor Goal cites every current unresolved Set as
+- the successor Goal cites every Set carrying an unresolved accepted or blocked
+  class, or a `follow-up` class brought into scope, as
   `counterexample-set:<artifact_id>`;
 - the successor Set's `supporting_refs` contains
   `goal-contract:<successor-artifact-id>` and
   `counterexample-set:<artifact_id>` for every carried Set;
-- `predecessor_refs` includes the most recent Set carrying each unresolved
-  class;
+- `predecessor_refs` includes the most recent Set carrying each carried class;
 - `subject.construction_ref` remains the exact predecessor Construction being
   evaluated; and
 - every carried stable `class_id` appears exactly once with a current
@@ -145,9 +147,10 @@ verify that `ledger --source actuation --help` exposes only
    rows and may recur across Construction successors. When a class recurs, the
    new Set's `predecessor_refs` must include the prior Set that most recently
    carried that class.
-6. For source-revision carry-forward, verify the successor Goal and carried-Set
-   reference symmetry, preserve the predecessor Construction, and require
-   total stable-class coverage.
+6. For source-revision carry-forward, include unresolved accepted and blocked
+   classes plus each `follow-up` class brought within the successor Goal's
+   scope; verify successor Goal and carried-Set reference symmetry, preserve the
+   predecessor Construction, and require total stable-class coverage.
 7. Assign exactly one disposition to every class.
 8. Materialize canonical JSON with the current six-command artifact adapter:
 
