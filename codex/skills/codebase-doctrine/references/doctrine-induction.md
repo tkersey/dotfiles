@@ -85,7 +85,10 @@ unresolved
 ```
 
 Selection pressure explains what must survive without canonizing the current
-implementation.
+implementation. Never invent pressure or historical rationale to complete an
+explanation. When available evidence cannot establish it, record the pressure as
+unknown, retain the viable rivals, and lower explanatory or prescriptive
+confidence without denying directly observed law.
 
 ### 5. Rival-model formation
 
