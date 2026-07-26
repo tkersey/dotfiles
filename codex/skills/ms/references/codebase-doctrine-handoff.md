@@ -1,40 +1,42 @@
 # Codebase Doctrine Handoff
 
-Use `$ms` only after `$codebase-doctrine` produces `CBSH-v2` and the
-user explicitly authorizes the exact package creation.
+Use `$ms` only after `$codebase-doctrine` recommends a repository-specific skill
+and the user explicitly authorizes creation of the exact package.
 
-The handoff binds:
+The handoff is a compact doctrine projection, not a protocol artifact. It must
+include:
 
 ```text
-CBD-v2 doctrine, CDI-v2 intent, and artifact-state IDs
-candidate ID, status, and proposed name
-governing law IDs
-triggers and non-triggers
+candidate mission and jurisdiction
+governing doctrine and permitted variation
+recurring triggers and non-triggers
 consequential decisions
-canonical prohibited route IDs
-required artifacts
+required context and expected outputs
 success and failure signals
-protected doctrine IDs
-allowed package
-explicit user authorization
-evaluation contract
-future empirical evaluation
+narrowing and retirement conditions
+currently applicable canonical prohibited routes
+allowed package boundary
 ```
 
-Do not create rejected candidates.
+Do not create rejected candidates. A repository may validly have no root skill
+and no focused skills. Do not create a root skill merely because the repository
+has a root.
 
-A repository may validly have no root skill and no focused skills. Do not create
-a root skill merely because it is the repository root.
+A new candidate normally begins as a trial. Preserve the doctrine distinctions
+that justified it, but do not copy the entire repository doctrine into the
+runtime package.
 
-A `recommended_for_trial` candidate may be created only under explicit user
-authorization and must retain its trial status until empirical decision episodes
-justify acceptance.
+The creating workflow must independently verify current user authority for the
+package and path. A model-authored claim that authorization exists is not itself
+authority.
 
-The `evaluation_contract` tells `$ms` how the generated skill will be graded,
-updated, or retired after real use. It must include quality criteria, pass/fail
-signals, update triggers, retirement criteria, evaluation evidence, cadence,
-evaluator, decision-record expectations, and a policy that prevents tuning from
-raw mention counts.
+The package should state how real decision episodes will reveal:
 
-Preserve governing law IDs and the evaluation contract in the package decision
-contract without requiring the full CBD artifact at runtime.
+- useful, false, missed, and ceremonial activation;
+- correct and incorrect decision influence;
+- doctrine drift;
+- when knowledge should move to code, tests, tooling, CI, guidance, an ADR, or
+  the negative ledger;
+- when the package should be narrowed or retired.
+
+Do not evaluate value from raw mention counts.
