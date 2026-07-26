@@ -14,9 +14,11 @@ interface:
     decision, then render exact Markdown context for the requested consumer. For
     every consequential law state its jurisdiction, selection pressure, evidence,
     counterexample, permitted variation, operational consequence, proof burden,
-    and invalidators. Distinguish current behavior, documented intent, explicit
-    target, proposal, and aporia. Do not emit protocol artifacts, synthetic IDs,
-    graph-closure bookkeeping, schemas, validators, compilers, or generic
-    validation claims. Route durable knowledge only after doctrine; use skills
-    only for recurring judgment; require explicit authority for persistence or
-    creation.
+    and invalidators. Never invent selection pressure or historical rationale;
+    when evidence cannot establish it, preserve it as unknown and lower the
+    explanatory or prescriptive confidence. Distinguish current behavior,
+    documented intent, explicit target, proposal, and aporia. Do not emit protocol
+    artifacts, synthetic IDs, graph-closure bookkeeping, schemas, validators,
+    compilers, or generic validation claims. Route durable knowledge only after
+    doctrine; use skills only for recurring judgment; require explicit authority
+    for persistence or creation.
