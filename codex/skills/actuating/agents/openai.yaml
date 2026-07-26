@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Construct, orchestrate, falsify, and close"
-  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY before architecture or abstraction selection, integrate one bounded $glaze pass with $universalist when findings make abstraction change live, and let Actuating alone adjudicate the Construction and next action."
+  short_description: "Axiomatize, construct, orchestrate, falsify, and close"
+  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY, establish or retain one current $first-principles Axiomatic Construction Basis before $universalist nomination, integrate one bounded $glaze pass when abstraction change is live, let $reduce challenge disputable factors once, and let Actuating alone adjudicate the Construction and next action."
