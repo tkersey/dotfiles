@@ -1,6 +1,7 @@
 # Codebase Doctrine Evolution
 
-Repository-specific skills created from CBD-v2 should later be evaluated with:
+Repository-specific skills derived from Codebase Doctrine should later be
+evaluated from real decision episodes:
 
 ```bash
 seq skill-decision-audit \
@@ -10,30 +11,29 @@ seq skill-decision-audit \
   --format json
 ```
 
-Preserve:
+Preserve enough provenance to identify:
 
 ```text
-CBD-v2 doctrine ID
-CDI-v2 intent ID
-artifact-state ID
-candidate ID and trial/accepted status
-governing law IDs and doctrine status
-skill contract fingerprint
-trigger quality
-decision effects
-clause compliance
-outcome association
+the governing doctrine and jurisdiction
+the candidate's trial or accepted posture
+the expected triggers and non-triggers
+the consequential decisions it should improve
+actual decision effects
+success and failure signals
 missed and ceremonial activation
+outcome association
+narrowing and retirement conditions
 ```
 
-Use real decision episodes to decide whether a `recommended_for_trial` candidate
-should be accepted, narrowed, retired, or routed to stronger code/test/tooling.
+Use decision episodes to decide whether the skill should be accepted, narrowed,
+retired, or replaced by stronger code, tests, tooling, CI, guidance, an ADR, or
+negative-ledger ownership.
 
-When repository law, authority, boundary, or target status changed, route to:
+When repository law, authority, boundary, permitted variation, proof burden,
+governed aporia, or target posture changes, route to:
 
 ```text
 $codebase-doctrine refresh
 ```
 
-Use existing decision-audit surfaces; no dedicated Codebase Doctrine CLI is
-required for empirical evolution.
+Do not infer value from raw activation, mention, or co-occurrence counts.
