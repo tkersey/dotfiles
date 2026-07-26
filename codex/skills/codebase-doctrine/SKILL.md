@@ -395,7 +395,7 @@ Recommended sequence:
 2. behavioral_law_miner / failure_forensics_analyst /
    codebase_doctrine_proof_mapper for identified seams
 3. doctrine_portfolio_skeptic only when a portfolio is requested
-4. search_saturation_auditor after a complete draft
+4. doctrine_adequacy_auditor after a complete draft
 ```
 
 Assignments must be discriminating questions or bounded seam excavations, not
