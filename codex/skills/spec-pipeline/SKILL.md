@@ -24,9 +24,9 @@ receipt authorizes that transition.
 profile + mode
 -> evidence brief
 -> grill or no-grill justification
+-> architectonic thread
 -> decision packet
 -> pre-spec gate
--> architectonic thread
 -> implementation spec
 -> strongest invariant challenge
 -> fresh-eyes pass
@@ -201,9 +201,66 @@ SPEC_PIPELINE_DRIFT_WARNING
 
 and set SGR-v2 status to `drift`.
 
+## Architectonic specification
+
+Before finalizing the decision packet or running the pre-spec gate, recover an
+**Architectonic Thread** for every consequential seam. This is a bounded
+specification phase, not an unbounded architecture search and not a dependency on
+another skill.
+
+Read [architectonic-specification.md](references/architectonic-specification.md).
+
+A seam is consequential when at least two plausible organizations materially differ
+in persistent behavior, ownership, compatibility, migration, enforcement,
+information retention, resources, or proof obligations. Otherwise preserve the
+incumbent with one law and falsifier or record `not consequential`.
+
+For each consequential seam:
+
+1. classify authority as `source_fixed`, `source_bounded`, or
+   `specification_local`;
+2. record one architectural axis and one typed hole;
+3. recover live obligations, required observations, incumbent factors, owners,
+   compatibility, effects, resources, and host capabilities;
+4. state the ordinary repository-native candidate first;
+5. compare preservation, admitted-domain restriction, representation/owner
+   strengthening, and ablation/normalization;
+6. classify factor obligations as `live`, `moved`, `expired`, `duplicated`,
+   `invalid`, or `unknown`;
+7. factor, quotient, ablate, normalize, preserve, or introduce factors only with a
+   recomposition and proof account;
+8. choose `selected`, `evidence_conditioned`, `downstream_open`,
+   `underdetermined`, or `obstructed`;
+9. record law, falsifier, residual obligations, and invalidators.
+
+Prefer conceptual compression: explain more live obligations and observations with
+fewer independent concepts, owners, exceptions, and reconstruction paths. Raw file,
+layer, or line count never proves dominance.
+
+When the specification process and architecture change form two genuinely distinct
+compositional directions, require the specification square to preserve observations,
+authority, compatibility, effects, resources, and proof. Sequential derivations
+paste horizontally; successive architecture changes paste vertically; interchange
+requires changing-then-deriving to agree with deriving-then-transporting up to the
+declared equivalence.
+
+A governance-complete spec has no consequential seam without a lawful disposition.
+An `obstructed` seam is lawful documentation of a blocker, not planning readiness.
+It forces:
+
+```text
+SGR-v2 status = blocked
+gate.plan_allowed = no
+execution_handoff.ready_for_plan = no
+auto_plan_handoff.eligible = no
+```
+
+The receipt names the obstructed seam and blocker. Do not emit PSC-v1 or tail-call
+`$plan` until a later governed revision clears the obstruction.
+
 ## Decision packet
 
-Before the pre-spec gate, emit:
+After recovering the Architectonic Thread and before the pre-spec gate, emit:
 
 ```yaml
 spec_decision_packet:
@@ -250,7 +307,8 @@ See [grill-decision-packet-template.md](references/grill-decision-packet-templat
 
 ## Gate phase
 
-Before compiling a spec, complete this sentence:
+After the decision packet contains the recovered Architectonic Thread and before
+compiling a spec, complete this sentence:
 
 ```text
 We are building X, for Y, by changing Z, while explicitly not doing A/B/C, under architectonic constraints D/E, and success means P/Q/R proofs pass.
@@ -270,50 +328,6 @@ handoff_sentence:
 
 If the gate fails, do not produce a spec or plan. Ask at most 1-3 next material
 questions and set SGR-v2 status to `blocked`.
-
-## Architectonic specification
-
-Before compiling the implementation spec, recover an **Architectonic Thread** for
-every consequential seam. This is a bounded specification phase, not an unbounded
-architecture search and not a dependency on another skill.
-
-Read [architectonic-specification.md](references/architectonic-specification.md).
-
-A seam is consequential when at least two plausible organizations materially differ
-in persistent behavior, ownership, compatibility, migration, enforcement,
-information retention, resources, or proof obligations. Otherwise preserve the
-incumbent with one law and falsifier or record `not consequential`.
-
-For each consequential seam:
-
-1. classify authority as `source_fixed`, `source_bounded`, or
-   `specification_local`;
-2. record one architectural axis and one typed hole;
-3. recover live obligations, required observations, incumbent factors, owners,
-   compatibility, effects, resources, and host capabilities;
-4. state the ordinary repository-native candidate first;
-5. compare preservation, admitted-domain restriction, representation/owner
-   strengthening, and ablation/normalization;
-6. classify factor obligations as `live`, `moved`, `expired`, `duplicated`,
-   `invalid`, or `unknown`;
-7. factor, quotient, ablate, normalize, preserve, or introduce factors only with a
-   recomposition and proof account;
-8. choose `selected`, `evidence_conditioned`, `downstream_open`,
-   `underdetermined`, or `obstructed`;
-9. record law, falsifier, residual obligations, and invalidators.
-
-Prefer conceptual compression: explain more live obligations and observations with
-fewer independent concepts, owners, exceptions, and reconstruction paths. Raw file,
-layer, or line count never proves dominance.
-
-When the specification process and architecture change form two genuinely distinct
-compositional directions, require the specification square to preserve observations,
-authority, compatibility, effects, resources, and proof. Sequential derivations
-paste horizontally; successive architecture changes paste vertically; interchange
-requires changing-then-deriving to agree with deriving-then-transporting up to the
-declared equivalence.
-
-A plan-ready spec has no consequential seam without a lawful disposition.
 
 ## Implementation spec contract
 
@@ -570,6 +584,7 @@ lane is not spec_to_plan for a legal blocker recorded in the receipt
 gate did not allow planning
 material questions remain
 a consequential architectonic seam lacks a lawful disposition
+a consequential architectonic seam is obstructed
 fresh-eyes returned to grill or detected drift
 any subagent remains open
 next_owner is not $plan

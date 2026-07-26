@@ -405,6 +405,8 @@ execution_policy_graph:
   complete action binding for every affected seam.
 - A consequential action must reference the seam it realizes, migrates, preserves,
   or retires.
+- Every `factor_id` is globally unique across the EPG. Seam ownership scopes factor
+  meaning and action authority; factor identifiers are not seam-local aliases.
 - An action may realize or retire a factor only when the factor's owning seam appears
   in the action's `architectonic_seam_refs`.
 - An action must not realize a factor whose disposition is `quotient`, `ablate`, or
