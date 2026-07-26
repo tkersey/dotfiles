@@ -61,10 +61,9 @@ plan_source_contract:
   do_not_execute_before: []
 ```
 
-`$plan` synthesizes that source contract into one EPG-v1 policy. When a compatible
-execution-policy compiler is available, Plan validates the exact emitted EPG;
-compiler absence does not block emission. Plan emits no synthesis receipt or
-execution handoff.
+`$plan` synthesizes that source contract into one EPG-v1 policy and validates the
+exact result through Plan's passive Ledger definition. Plan emits no synthesis
+receipt or execution handoff.
 
 ## Fail-closed cases
 

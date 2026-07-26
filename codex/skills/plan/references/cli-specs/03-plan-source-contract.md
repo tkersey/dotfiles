@@ -80,7 +80,7 @@ SGR-v2 complete
 -> plan identity
 -> joint architecture-policy synthesis fixed point
 -> canonical EPG-v1 emission
--> optional compatible compiler validation
+-> Ledger validation under plan/execution-policy-graph
 -> <proposed_plan>
 ```
 

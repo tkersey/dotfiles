@@ -33,10 +33,10 @@ Rules:
   increasing justification and proof strength.
 - Do not repeat every JSON field.
 - Do not include internal iteration history.
-- Report `Plan synthesized.` after synthesis. Report `Plan compiles.` only when a
-  compatible compiler accepts the exact emitted EPG under its named structural
-  contract.
-- Compiler absence prevents only the compilation claim, not the Plan result.
+- Report `Plan synthesized.` after synthesis. After Ledger accepts the exact emitted
+  EPG, report `EPG structurally valid under
+  <definition-id>@<definition-digest>.`
+- Do not convert structural validity into readiness, authority, or completion.
 - Do not emit a synthesis receipt, readiness gate, execution handoff, or Plan-owned
   runtime artifact.
 - `Execution Policy Graph` contains exactly one fenced JSON EPG object.

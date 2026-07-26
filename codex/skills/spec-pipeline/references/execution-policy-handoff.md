@@ -20,8 +20,9 @@ locked user decisions
 known facts and unresolved semantic questions
 ```
 
-`$plan` synthesizes those semantics into EPG-v1. It does not require a compiler,
-implementation workflow, or actuation workflow to do so.
+`$plan` synthesizes those semantics into EPG-v1 and validates the result through
+its passive Ledger definition. It does not require an implementation or actuation
+workflow to do so.
 
 It may add:
 

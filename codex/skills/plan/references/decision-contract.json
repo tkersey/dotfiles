@@ -4,11 +4,11 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v6-proportional-architectonic-epg"
+      "source_fingerprint": "plan-v7-passive-ledger-validation"
     },
     "triggers": [
       {
-        "trigger_id": "PLAN-COMPILE",
+        "trigger_id": "PLAN-SYNTHESIZE",
         "description": "Accepted intent needs a named execution policy.",
         "cue_literals": [
           "$plan",
@@ -50,7 +50,7 @@
     "routes": [
       {
         "route_id": "PLAN-EMIT",
-        "description": "Emit one named, proportional architecture-aware EPG; optionally validate it with a compatible compiler.",
+        "description": "Emit one named, proportional architecture-aware EPG after validating it through Plan's passive Ledger definition.",
         "aliases": [
           "emit"
         ],
@@ -93,7 +93,7 @@
       {
         "clause_id": "PLAN-ID-001",
         "trigger_refs": [
-          "PLAN-COMPILE"
+          "PLAN-SYNTHESIZE"
         ],
         "expected_routes": [
           "PLAN-EMIT",
@@ -110,7 +110,7 @@
         ],
         "success_signals": [
           "canonical EPG synthesized and emitted",
-          "compatible compilation reported when available"
+          "structural validity bound to the passive Ledger definition digest"
         ],
         "failure_signals": [
           "plan inferred from current execution state"
@@ -120,7 +120,7 @@
       {
         "clause_id": "PLAN-ARCHITECTONIC-001",
         "trigger_refs": [
-          "PLAN-COMPILE",
+          "PLAN-SYNTHESIZE",
           "PLAN-ARCHITECTONIC"
         ],
         "expected_routes": [
@@ -183,7 +183,7 @@
       {
         "clause_id": "PLAN-SYNTHESIS-001",
         "trigger_refs": [
-          "PLAN-COMPILE",
+          "PLAN-SYNTHESIZE",
           "PLAN-SYNTHESIS"
         ],
         "expected_routes": [
@@ -199,11 +199,11 @@
         ],
         "success_signals": [
           "canonical digest binds complete EPG",
-          "optional compiler result binds the exact source when available",
+          "Ledger validation binds the exact source to the passive definition digest",
           "stronger proof may delete surface"
         ],
         "failure_signals": [
-          "compiler absence blocks Plan emission",
+          "structural validation is missing, stale, or described as authority",
           "policy converged only inside an unquestioned inherited decomposition"
         ],
         "rationale": "Planning quality depends on exhaustive joint refinement, not just schema presence."
@@ -242,7 +242,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The canonical EPG is Plan's authoritative surface; an optional compiler result is structural evidence only."
+      "rationale": "The canonical EPG is Plan's authoritative surface; Ledger validation is structural evidence only."
     }
   }
 }

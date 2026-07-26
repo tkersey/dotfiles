@@ -23,6 +23,7 @@ ledger_count=0
 fixture_count=0
 materialization_count=0
 contract_count=0
+transaction_count=0
 
 for manifest in $manifests; do
   manifest_count=$((manifest_count + 1))
@@ -140,6 +141,100 @@ for manifest in $manifests; do
   done < <(jq -r '.seq[], .ledger[] | [.id, .path] | @tsv' "$manifest")
 done
 
+plan_policy_definition=codex/skills/plan/definitions/ledger/plan-policy-document.json
+plan_policy_fixture=codex/skills/plan/definitions/fixtures/ledger/execution-policy-graph/valid/complete.json
+plan_id=$(jq -r '.execution_policy_graph.plan_id' "$plan_policy_fixture")
+plan_tmp=$(mktemp -d)
+plan_repo=$(cd "$plan_tmp" && pwd -P)
+create_result=$(
+  "$ledger_bin" transact \
+    --definition "$plan_policy_definition" \
+    --operation create \
+    --repo "$plan_repo" \
+    --input "policy=$plan_policy_fixture" \
+    --param "plan_id=$plan_id" \
+    --format json
+)
+transaction_count=$((transaction_count + 1))
+jq -e \
+  --arg plan_id "$plan_id" \
+  '.schema == "ledger-transaction-result/v1" and
+   .definition.id == "plan/plan-policy-document" and
+   .definition.abi == "ledger-artifact-abi/v1" and
+   .operation == "create" and
+   .effects[0].logical_ref == ("plan/" + $plan_id + "/policy.json") and
+   (.returned_content | fromjson |
+     .execution_policy_graph.plan_id == $plan_id) and
+   .semantic_authority_granted == false and
+   .storage_mutated == true' \
+  <<<"$create_result" >/dev/null
+created_revision=$(jq -r '.effects[0].revision_after' <<<"$create_result")
+
+project_result=$(
+  "$ledger_bin" project \
+    --definition "$plan_policy_definition" \
+    --projection show \
+    --repo "$plan_repo" \
+    --param "plan_id=$plan_id" \
+    --format json
+)
+jq -e \
+  --arg plan_id "$plan_id" \
+  --arg revision "$created_revision" \
+  '.schema == "ledger-projection-result/v1" and
+   .definition.id == "plan/plan-policy-document" and
+   .projection == "show" and
+   .store.logical_ref == ("plan/" + $plan_id + "/policy.json") and
+   .store.revision == $revision and
+   .data.execution_policy_graph.plan_id == $plan_id and
+   .authority_granted == false and
+   .storage_mutated == false' \
+  <<<"$project_result" >/dev/null
+
+set +e
+missing_revision_result=$(
+  "$ledger_bin" transact \
+    --definition "$plan_policy_definition" \
+    --operation revise \
+    --repo "$plan_repo" \
+    --input "policy=$plan_policy_fixture" \
+    --param "plan_id=$plan_id" \
+    --param request_id=revision-smoke \
+    --format json
+)
+missing_revision_status=$?
+set -e
+[[ "$missing_revision_status" -eq 2 ]]
+jq -e \
+  '.schema == "ledger-transaction-error/v1" and
+   .code == "MissingOperationParameter" and
+   .semantic_authority_granted == false' \
+  <<<"$missing_revision_result" >/dev/null
+
+revise_result=$(
+  "$ledger_bin" transact \
+    --definition "$plan_policy_definition" \
+    --operation revise \
+    --repo "$plan_repo" \
+    --input "policy=$plan_policy_fixture" \
+    --param "plan_id=$plan_id" \
+    --param request_id=revision-smoke \
+    --param "expected_revision=$created_revision" \
+    --format json
+)
+transaction_count=$((transaction_count + 1))
+jq -e \
+  --arg plan_id "$plan_id" \
+  '.schema == "ledger-transaction-result/v1" and
+   .definition.id == "plan/plan-policy-document" and
+   .operation == "revise" and
+   .effects[0].logical_ref == ("plan/" + $plan_id + "/policy.json") and
+   .effects[0].result == "replaced" and
+   .semantic_authority_granted == false and
+   .storage_mutated == true' \
+  <<<"$revise_result" >/dev/null
+rm -rf -- "$plan_tmp"
+
 tune_definition=codex/skills/tune/definitions/ledger/skill-decision-contract.json
 while IFS= read -r contract; do
   contract_count=$((contract_count + 1))
@@ -163,10 +258,11 @@ if rg --files codex | grep -q '/decision-contract\.ya\?ml$'; then
 fi
 
 printf \
-  'definition conformance passed: manifests=%d seq=%d ledger=%d fixtures=%d materializations=%d contracts=%d\n' \
+  'definition conformance passed: manifests=%d seq=%d ledger=%d fixtures=%d materializations=%d transactions=%d contracts=%d\n' \
   "$manifest_count" \
   "$seq_count" \
   "$ledger_count" \
   "$fixture_count" \
   "$materialization_count" \
+  "$transaction_count" \
   "$contract_count"

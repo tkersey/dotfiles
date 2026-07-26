@@ -569,9 +569,8 @@ The Architectonic Thread travels inside `implementation_spec` and
 `decision_packet`; no second handoff artifact is created.
 
 `$spec-pipeline` still must not emit `<proposed_plan>`. `$plan` performs its
-fixed-point synthesis and emits one EPG-v1 policy in `<proposed_plan>`. When a
-compatible compiler is available, `$plan` may validate the exact emitted EPG;
-compiler absence does not block the same-turn Plan result. `$plan` emits no
+fixed-point synthesis, validates the exact EPG through Plan's passive Ledger
+definition, and emits one EPG-v1 policy in `<proposed_plan>`. `$plan` emits no
 synthesis receipt or execution handoff and does not grant mutation authority.
 
 Do not auto-run `$plan` when any of these are true:

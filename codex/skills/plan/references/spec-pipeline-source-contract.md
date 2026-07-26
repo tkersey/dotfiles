@@ -69,7 +69,7 @@ SGR-v2 complete
 -> PSC-v1 with Architectonic Thread
 -> plan identity
 -> joint architecture-policy synthesis fixed point
--> EPG-v1 compilation
+-> EPG-v1 structural validation
 -> <proposed_plan>
 ```
 
