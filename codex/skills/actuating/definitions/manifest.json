@@ -6,6 +6,10 @@
     {
       "id": "actuating/construction-contract",
       "path": "ledger/construction-contract.json"
+    },
+    {
+      "id": "actuating/review-contract",
+      "path": "ledger/review-contract.json"
     }
   ]
 }
