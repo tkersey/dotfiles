@@ -1,0 +1,134 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/verifier-receipt",
+  "owner": "actuating",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "digest",
+      "enum",
+      "exact-object",
+      "scalar-type"
+    ]
+  },
+  "inputs": {
+    "receipt": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "receipt"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "path": "",
+        "keys": [
+          "construction_ref",
+          "exit_status",
+          "goal_contract_ref",
+          "output_digests",
+          "schema",
+          "step_id",
+          "subject_digest",
+          "verifier"
+        ]
+      },
+      {
+        "op": "enum",
+        "path": "/schema",
+        "values": [
+          "actuating-verifier-receipt/v1"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "path": "/step_id",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "digest",
+        "path": "/goal_contract_ref"
+      },
+      {
+        "op": "digest",
+        "path": "/construction_ref"
+      },
+      {
+        "op": "digest",
+        "path": "/subject_digest"
+      },
+      {
+        "op": "exact-object",
+        "path": "/verifier",
+        "keys": [
+          "argv"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "path": "/verifier/argv",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "path": "/verifier/argv",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "path": "/exit_status",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-array",
+        "path": "/output_digests",
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "path": "/output_digests",
+        "rules": [
+          {
+            "op": "digest"
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 1048576,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

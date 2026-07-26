@@ -4,6 +4,10 @@
   "seq": [],
   "ledger": [
     {
+      "id": "actuating/closure-receipt",
+      "path": "ledger/closure-receipt.json"
+    },
+    {
       "id": "actuating/construction-contract",
       "path": "ledger/construction-contract.json"
     },
@@ -18,6 +22,10 @@
     {
       "id": "actuating/review-contract",
       "path": "ledger/review-contract.json"
+    },
+    {
+      "id": "actuating/verifier-receipt",
+      "path": "ledger/verifier-receipt.json"
     }
   ]
 }
