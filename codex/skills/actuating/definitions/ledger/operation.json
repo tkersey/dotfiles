@@ -1,0 +1,192 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/operation",
+  "owner": "actuating",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "digest",
+      "enum",
+      "exact-object",
+      "safe-identifier",
+      "safe-relative-path",
+      "sorted",
+      "tagged-union",
+      "unique"
+    ]
+  },
+  "inputs": {
+    "operation": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "operation"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "path": "",
+        "keys": [
+          "construction_ref",
+          "effect",
+          "expected_subject_digest",
+          "goal_id",
+          "idempotency_key",
+          "owner_boundary",
+          "paths",
+          "proof_obligation_refs",
+          "schema",
+          "step_id"
+        ]
+      },
+      {
+        "op": "enum",
+        "path": "/schema",
+        "values": [
+          "actuating-operation/v1"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "path": "/goal_id",
+        "min": 1,
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "digest",
+        "path": "/construction_ref"
+      },
+      {
+        "op": "digest",
+        "path": "/expected_subject_digest"
+      },
+      {
+        "op": "bounded-string",
+        "path": "/step_id",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "path": "/idempotency_key",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "path": "/owner_boundary",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "tagged-union",
+        "path": "",
+        "tag": "/effect",
+        "variants": [
+          {
+            "value": "inspect",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/paths",
+                "min": 0,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "edit",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/paths",
+                "min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "verify",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/paths",
+                "min": 0,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "path": "/paths",
+        "rules": [
+          {
+            "op": "safe-relative-path",
+            "allow_root": false,
+            "reserved_roots": [
+              ".git",
+              ".ledger"
+            ],
+            "case_insensitive_reserved": true
+          }
+        ]
+      },
+      {
+        "op": "unique",
+        "path": "/paths"
+      },
+      {
+        "op": "sorted",
+        "path": "/paths"
+      },
+      {
+        "op": "bounded-array",
+        "path": "/proof_obligation_refs",
+        "min": 1,
+        "max": 1
+      },
+      {
+        "op": "all",
+        "path": "/proof_obligation_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 1048576,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

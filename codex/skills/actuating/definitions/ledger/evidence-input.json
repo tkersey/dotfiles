@@ -1,0 +1,567 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/evidence-input",
+  "owner": "actuating",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-string",
+      "digest",
+      "enum",
+      "exact-object",
+      "one-of",
+      "safe-identifier",
+      "safe-relative-path",
+      "scalar-type",
+      "sorted",
+      "tagged-union",
+      "unique"
+    ]
+  },
+  "inputs": {
+    "evidence": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "path": "",
+        "keys": [
+          "body",
+          "construction_ref",
+          "goal_id",
+          "kind",
+          "schema",
+          "subject_digest"
+        ]
+      },
+      {
+        "op": "enum",
+        "path": "/schema",
+        "values": [
+          "actuating-evidence-input/v1"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "path": "/goal_id",
+        "min": 1,
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "one-of",
+        "path": "/construction_ref",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "one-of",
+        "path": "/subject_digest",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "tagged-union",
+        "path": "",
+        "tag": "/kind",
+        "variants": [
+          {
+            "value": "effect_recorded",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "changed_paths",
+                  "pre_effect_subject_digest",
+                  "schema",
+                  "step_id"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "effect-recorded/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/step_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "digest",
+                "path": "/body/pre_effect_subject_digest"
+              },
+              {
+                "op": "bounded-array",
+                "path": "/body/changed_paths",
+                "min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/body/changed_paths",
+                "rules": [
+                  {
+                    "op": "safe-relative-path",
+                    "allow_root": false,
+                    "reserved_roots": [
+                      ".git",
+                      ".ledger"
+                    ],
+                    "case_insensitive_reserved": true
+                  }
+                ]
+              },
+              {
+                "op": "unique",
+                "path": "/body/changed_paths"
+              },
+              {
+                "op": "sorted",
+                "path": "/body/changed_paths"
+              }
+            ]
+          },
+          {
+            "value": "operation_observed",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "discharged_refs",
+                  "evidence_refs",
+                  "schema",
+                  "status",
+                  "step_id"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "operation-observed/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/step_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/status",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-array",
+                "path": "/body/discharged_refs",
+                "min": 0,
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/body/discharged_refs",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "trimmed_min": 1,
+                    "max": 4194304
+                  }
+                ]
+              },
+              {
+                "op": "unique",
+                "path": "/body/discharged_refs"
+              },
+              {
+                "op": "bounded-array",
+                "path": "/body/evidence_refs",
+                "min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/body/evidence_refs",
+                "rules": [
+                  {
+                    "op": "digest"
+                  }
+                ]
+              },
+              {
+                "op": "unique",
+                "path": "/body/evidence_refs"
+              }
+            ]
+          },
+          {
+            "value": "operation_aborted",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "reason",
+                  "schema",
+                  "step_id"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "operation-aborted/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/step_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/reason",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "value": "publication_observed",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "receipt_ref",
+                  "schema",
+                  "status"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "publication-observed/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/status",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "digest",
+                "path": "/body/receipt_ref"
+              }
+            ]
+          },
+          {
+            "value": "review_campaign_started",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "campaign_id",
+                  "review_contract_digest",
+                  "schema"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "review-campaign-started/v1"
+                ]
+              },
+              {
+                "op": "digest",
+                "path": "/body/campaign_id"
+              },
+              {
+                "op": "digest",
+                "path": "/body/review_contract_digest"
+              }
+            ]
+          },
+          {
+            "value": "review_request_bound",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "campaign_id",
+                  "initial_wave",
+                  "instruction_digest",
+                  "lens",
+                  "lens_contract_digest",
+                  "request_id",
+                  "schema"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "review-request-bound/v1"
+                ]
+              },
+              {
+                "op": "digest",
+                "path": "/body/campaign_id"
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/request_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "digest",
+                "path": "/body/instruction_digest"
+              },
+              {
+                "op": "digest",
+                "path": "/body/lens_contract_digest"
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/lens",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "scalar-type",
+                "path": "/body/initial_wave",
+                "type": "boolean"
+              }
+            ]
+          },
+          {
+            "value": "review_attempt_started",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "attempt_id",
+                  "fresh_attempt",
+                  "receipt_ref",
+                  "request_id",
+                  "schema"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "review-attempt-started/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/request_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/attempt_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "scalar-type",
+                "path": "/body/fresh_attempt",
+                "type": "boolean"
+              },
+              {
+                "op": "digest",
+                "path": "/body/receipt_ref"
+              }
+            ]
+          },
+          {
+            "value": "review_attempt_completed",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "attempt_id",
+                  "context_match",
+                  "fallback",
+                  "finding_refs",
+                  "principal",
+                  "receipt_ref",
+                  "request_id",
+                  "schema",
+                  "verdict"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "review-attempt-completed/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/request_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/attempt_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/principal",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/verdict",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "scalar-type",
+                "path": "/body/context_match",
+                "type": "boolean"
+              },
+              {
+                "op": "scalar-type",
+                "path": "/body/fallback",
+                "type": "boolean"
+              },
+              {
+                "op": "bounded-array",
+                "path": "/body/finding_refs",
+                "min": 0,
+                "max": 1048576
+              },
+              {
+                "op": "all",
+                "path": "/body/finding_refs",
+                "rules": [
+                  {
+                    "op": "digest"
+                  }
+                ]
+              },
+              {
+                "op": "unique",
+                "path": "/body/finding_refs"
+              },
+              {
+                "op": "digest",
+                "path": "/body/receipt_ref"
+              }
+            ]
+          },
+          {
+            "value": "review_transport_failed",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "/body",
+                "keys": [
+                  "attempt_id",
+                  "failure_ref",
+                  "receipt_ref",
+                  "request_id",
+                  "schema"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/body/schema",
+                "values": [
+                  "review-transport-failed/v1"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/request_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-string",
+                "path": "/body/attempt_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "digest",
+                "path": "/body/failure_ref"
+              },
+              {
+                "op": "digest",
+                "path": "/body/receipt_ref"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 1048576,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

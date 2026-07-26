@@ -8,6 +8,14 @@
       "path": "ledger/construction-contract.json"
     },
     {
+      "id": "actuating/evidence-input",
+      "path": "ledger/evidence-input.json"
+    },
+    {
+      "id": "actuating/operation",
+      "path": "ledger/operation.json"
+    },
+    {
       "id": "actuating/review-contract",
       "path": "ledger/review-contract.json"
     }
