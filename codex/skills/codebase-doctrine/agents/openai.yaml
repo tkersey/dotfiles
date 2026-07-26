@@ -2,17 +2,21 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Codebase Doctrine"
-  short_description: "Compile repository evidence into correctness doctrine and optional skills"
+  short_description: "Recover a repository's latent constitution for future decisions"
   default_prompt: >-
-    Use $codebase-doctrine read-only when the request combines deep repository
-    understanding with durable correctness doctrine, authority/proof maps,
-    knowledge routing, or repository-specific skill recommendations. Research
-    discoverable facts before asking. If DIG-v2 says grill_required=yes,
-    immediately activate $grill-me with the validated handoff, hard-stop this
-    workflow, and resume only after plan_allowed=true; never ask those material
-    questions directly or continue doctrine work. Compile DIG-v2 to CDI-v2, pin artifact state, close every evidence
-    graph edge, distinguish current from target doctrine, route durable knowledge
-    before skills, permit zero skills, and emit the mode-specific validated
-    artifact. Any skill handoff must include the evaluation/update criteria used
-    to grade future skill use. Do not implement, persist, or create skills without
-    explicit authorization.
+    Use $codebase-doctrine read-only to recover the repository's latent
+    constitution, not to fill schemas. Establish the consumer and change horizon,
+    trace change-bearing seams, form rival explanations, recover selection
+    pressures, map jurisdictions and authorities, derive laws together with
+    permitted variation, excavate wounds and rejected routes, map proof as claim
+    coverage, and preserve real contradiction as governed aporia. Compress the
+    result to the smallest doctrine whose absence could cause a plausible wrong
+    decision, then render exact Markdown context for the requested consumer. For
+    every consequential law state its jurisdiction, selection pressure, evidence,
+    counterexample, permitted variation, operational consequence, proof burden,
+    and invalidators. Distinguish current behavior, documented intent, explicit
+    target, proposal, and aporia. Do not emit protocol artifacts, synthetic IDs,
+    graph-closure bookkeeping, schemas, validators, compilers, or generic
+    validation claims. Route durable knowledge only after doctrine; use skills
+    only for recurring judgment; require explicit authority for persistence or
+    creation.
