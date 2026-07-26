@@ -1,30 +1,26 @@
 # Refining Repository-Specific Doctrine Skills
 
-Require the source CBD-v2 doctrine ID, CDI-v2 intent ID, candidate ID, and
-governing law IDs when available.
-
-Preserve:
+When available, recover the package's source doctrine projection:
 
 ```text
-trigger and non-trigger boundary
-current versus target doctrine status
-knowledge destination
-root/focused ownership
-prohibited canonical negative routes
-protected doctrine references
-trial versus accepted status
+mission and jurisdiction
+governing laws and permitted variation
+triggers and non-triggers
+consequential decisions
+currently applicable prohibited routes
+success, failure, narrowing, and retirement signals
 ```
 
-Do not let `$refine` silently update repository doctrine.
+Preserve those boundaries while refining the package. Do not let `$refine`
+silently update repository doctrine.
 
-When evidence shows that law, authority, boundary, proof, or intended target has
-changed, stop package refinement and route to:
+When evidence shows that law, authority, boundary, freedom, proof burden,
+governed aporia, selection pressure, or intended target has changed, stop package
+refinement and route to:
 
 ```text
 $codebase-doctrine refresh
 ```
 
 When a rule becomes mechanically enforceable, retire or narrow the skill rather
-than expanding it.
-
-A repository is allowed to end with zero generated skills.
+than expanding it. A repository may validly end with zero generated skills.
