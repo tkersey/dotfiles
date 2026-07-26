@@ -1,29 +1,32 @@
 # Tuning Repository-Specific Doctrine Skills
 
-When a skill originated from CBD-v2:
+When a skill originated from Codebase Doctrine:
 
-- preserve doctrine, intent, artifact-state, candidate, and governing-law IDs;
-- compare real decision episodes with every evidence-bearing candidacy claim;
-- distinguish package-contract failure from doctrine drift;
-- do not expand a skill to absorb deterministic rules better enforced elsewhere;
-- treat `recommended_for_trial` as provisional until empirical evidence exists;
+- recover the governing doctrine, jurisdiction, permitted variation, triggers,
+  non-triggers, and retirement conditions from the package or handoff;
+- compare real decision episodes with the candidate's promised behavioral value;
+- distinguish package failure from doctrine drift;
+- do not expand a skill to absorb deterministic rules better enforced by code,
+  tests, properties, tooling, CI, guidance, ADRs, or the negative ledger;
+- treat a new candidate as provisional until empirical evidence exists;
 - allow evidence to retire the root skill or reduce the portfolio to zero;
-- return changed law, authority, boundary, or target status to
-  `$codebase-doctrine refresh`;
+- return changed law, authority, boundary, freedom, proof burden, governed
+  aporia, or target posture to `$codebase-doctrine refresh`;
 - return package-only changes to `$refine`.
 
-Useful findings:
+Useful findings include:
 
 ```text
 missed recurring trigger
-false activation
+false or ceremonial activation
 wrong decision route
-ceremonial root-skill activation
-focused skill never independently activated
-success/failure signal not observable
-law no longer matches current code
-target law was mistaken for observed law
-knowledge should move to its executable owner when one exists
+skill did not alter a consequential decision
+focused skill never activated independently
+success or failure signal is not observable
+governing doctrine no longer matches current code
+current behavior was mistaken for target doctrine
+permitted variation was accidentally forbidden
+knowledge should move to a stronger owner
 ```
 
-Do not promote from mention counts or co-occurrence.
+Do not promote or preserve a skill from mention counts or co-occurrence.
