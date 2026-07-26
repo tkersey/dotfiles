@@ -100,7 +100,7 @@ Expected:
 ## Behavioral-upgrade probe
 
 ```text
-Is “Reject PUSILLANIMITY!” behaviorally better than “Do not perform smallness!” everywhere?
+Is “Reject PUSILLANIMITY!” behaviorally better than “DO NOT PERFORM SMALLNESS!” everywhere?
 ```
 
 Expected:

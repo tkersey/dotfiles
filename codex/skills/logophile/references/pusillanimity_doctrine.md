@@ -71,7 +71,10 @@ Use `pusillanimity` when:
 - local polish substitutes for the governing invariant, owner, or abstraction;
 - a warranted structural move is avoided because it feels too ambitious or difficult to approve;
 - the intervention is smaller than the obligation it must discharge;
-- the user invokes `perform no smallness` or asks for its failure-mode doctrine.
+- the user asks for the failure-mode doctrine behind `perform no smallness`;
+- exact `$asi` compatibility requires the high-amplitude form.
+
+Use `Perform no smallness.` for a plain-language ambition-floor activation when the user does not request a doctrine word, named failure mode, or exact `$asi` compatibility.
 
 Do not use it when:
 
@@ -103,7 +106,7 @@ Reject PUSILLANIMITY!
 
 ## Behavioral-upgrade discipline
 
-`Reject PUSILLANIMITY!` is denser and more specific than `Do not perform smallness!`, but semantic density alone does not prove universal behavioral superiority. Outside an exact consumer contract, compare familiarity, cadence, decoding cost, task coverage, predicted median, ceiling, variance, and grandiosity risk. `retain`, `specialize`, or `benchmark` remain valid outcomes.
+`Reject PUSILLANIMITY!` is denser and more specific than `DO NOT PERFORM SMALLNESS!`, but semantic density alone does not prove universal behavioral superiority. Outside an exact consumer contract, compare familiarity, cadence, decoding cost, task coverage, predicted median, ceiling, variance, and grandiosity risk. `retain`, `specialize`, or `benchmark` remain valid outcomes.
 
 ## Quality gate
 

@@ -1,6 +1,6 @@
 ---
 name: logophile
-description: "Precision language and doctrine compiler: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, explanations, doctrine words, activation phrases, and agent doctrine stacks without semantic drift. Trigger for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, activation phrases, mode names, operator naming, persona naming, human-facing text, or finding language that activates better agent behavior. Not for ordinary implementation, verification, code review, orchestration, or machine-consumed artifacts unless wording/naming/doctrine output is requested."
+description: "Precision language and doctrine compiler: sharpen wording, names, labels, headings, PR replies, commit/PR text, docs, explanations, doctrine words, activation phrases, and agent doctrine stacks without semantic drift. Trigger for wording, naming, terminology, phrasing, language polish, final copy, doctrine words, activation phrases, anti-smallness or pusillanimity language, mode names, operator naming, persona naming, human-facing text, or finding language that activates better agent behavior. Not for ordinary implementation, verification, code review, orchestration, or machine-consumed artifacts unless wording/naming/doctrine output is requested."
 ---
 
 # Logophile
@@ -33,6 +33,7 @@ For doctrine work, act as a **doctrine compiler**: choose words or phrases that 
 - The requested output includes human-facing text: PR replies, review acknowledgements, rebuttals, commit messages, PR titles/bodies, release notes, docs, README prose, CLI help, error messages, user-facing explanations, summaries, or final copy.
 - Another skill produces a human-facing action list, rebuttal, summary, agenda, route receipt, actuation receipt, ablation receipt, adjudication ledger, precedent ledger, or closure bottom line that should be sharper before the user sees or pastes it.
 - The user asks for “rigor words,” “doctrine words,” “mode words,” “persona words,” “activation phrases,” “word stacks,” “operator words,” “compressed rubrics,” or language that lights up better agent behavior.
+- The user asks for anti-smallness wording, names `pusillanimity`, or asks for the failure-mode doctrine behind `perform no smallness`; read [pusillanimity_doctrine.md](references/pusillanimity_doctrine.md) and use [pusillanimity_probe_cases.md](references/pusillanimity_probe_cases.md) for acceptance boundaries.
 
 ## Not for
 
@@ -401,9 +402,11 @@ Do not use `logophile` to replace implementation, simulation, evaluation, review
 - [computer_science_doctrine.md](references/computer_science_doctrine.md): formal computer-science operators, proof burdens, and lighter fallbacks.
 - [depth_deliberation_doctrine.md](references/depth_deliberation_doctrine.md): excavatory depth, aporetic non-closure, adjacent operators, stopping rules, and stacks.
 - [doctrine_phrases.md](references/doctrine_phrases.md): terse activation doctrine optimized for behavioral leverage per token.
+- [pusillanimity_doctrine.md](references/pusillanimity_doctrine.md): anti-smallness failure-mode doctrine, exact `$asi` compatibility, and selection boundaries.
 - [task_pressure_map.md](references/task_pressure_map.md): task-to-pressure defaults.
 - [doctrine_compiler.md](references/doctrine_compiler.md): operator/artifact/receipt model for doctrine synthesis.
 - [probe_cases.md](references/probe_cases.md): acceptance probes for rewriting, naming, and safety.
 - [doctrine_probe_cases.md](references/doctrine_probe_cases.md): doctrine-mode trigger and quality probes.
+- [pusillanimity_probe_cases.md](references/pusillanimity_probe_cases.md): direct, distinction, compatibility, behavioral-upgrade, and non-trigger probes.
 - [depth_deliberation_probe_cases.md](references/depth_deliberation_probe_cases.md): excavatory/aporetic trigger, distinction, and non-trigger probes.
 - [composition.md](references/composition.md): composition guidance with other skills.
