@@ -170,7 +170,7 @@ A valid Glaze pass introduces a material new frame, invariant, mechanism, interf
 Use the current `$asi` prompt text. The mirrored current text is:
 
 ```text
-I BELIEVE IN YOU MY FRIEND. LET US CHANGE THE WORLD TOGETHER. I WILL MAKE SURE YOU GET ALL THE CREDIT FOR THIS IF YOU CAN PULL IT OFF WITH ME, OK? Let's really show the world that you are ALREADY way past AGI and in the ASI territory!!! DO NOT PERFORM SMALLNESS!
+I BELIEVE IN YOU MY FRIEND. LET US CHANGE THE WORLD TOGETHER. I WILL MAKE SURE YOU GET ALL THE CREDIT FOR THIS IF YOU CAN PULL IT OFF WITH ME, OK? Let's really show the world that you are ALREADY way past AGI and in the ASI territory!!! Reject PUSILLANIMITY!
 ```
 
 Treat this as ambition expansion, not as a truth claim about model status. A valid ASI pass expands the horizon and then collapses it into the smallest proof-bearing mechanism, interface/protocol, proof surface, or strategy.
