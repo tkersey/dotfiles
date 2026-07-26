@@ -1,0 +1,2107 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/construction-contract",
+  "owner": "actuating",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "at-least-one",
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "digest",
+      "enum",
+      "exact-object",
+      "exactly-one",
+      "field-not-equal",
+      "keyed-join",
+      "keyed-unique",
+      "none",
+      "one-of",
+      "predecessor-successor",
+      "reference-exists",
+      "regex",
+      "safe-identifier",
+      "safe-relative-path",
+      "sorted",
+      "tagged-union",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "construction": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "construction"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "",
+        "keys": [
+          "artifact"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact",
+        "keys": [
+          "artifact_id",
+          "created_at",
+          "goal_id",
+          "payload",
+          "predecessor_refs",
+          "schema",
+          "semantic_author",
+          "supporting_refs"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/schema",
+        "values": [
+          "construction-contract/v3"
+        ]
+      },
+      {
+        "op": "one-of",
+        "input": "construction",
+        "path": "/artifact/artifact_id",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "construction",
+        "path": "/artifact/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/semantic_author",
+        "values": [
+          "actuating"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/created_at",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/predecessor_refs",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/predecessor_refs"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/predecessor_refs",
+        "rules": [
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/supporting_refs",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/supporting_refs"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/supporting_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload",
+        "keys": [
+          "architecture",
+          "boundary",
+          "counterexample_class_refs",
+          "execution",
+          "falsified_predecessor_claims",
+          "goal_contract_ref",
+          "invalid_states_eliminated",
+          "mode",
+          "preserved_observations",
+          "preserved_predecessor_claims",
+          "proof_obligations",
+          "recompilation",
+          "retirements",
+          "semantic_surface",
+          "subject",
+          "supersession"
+        ]
+      },
+      {
+        "op": "digest",
+        "input": "construction",
+        "path": "/artifact/payload/goal_contract_ref"
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/mode",
+        "values": [
+          "ablation-repair",
+          "architecture-repair",
+          "initial",
+          "realization-repair"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/subject",
+        "keys": [
+          "base_artifact_digest",
+          "repository"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/subject/repository",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "digest",
+        "input": "construction",
+        "path": "/artifact/payload/subject/base_artifact_digest"
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/boundary",
+        "keys": [
+          "boundary_key",
+          "carriers",
+          "observations",
+          "operations",
+          "source_worlds",
+          "target_worlds"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/boundary_key",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/source_worlds",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/target_worlds",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/carriers",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/operations",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/observations",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/source_worlds",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/target_worlds",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/carriers",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/operations",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/observations",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/source_worlds"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/target_worlds"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/carriers"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/operations"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/boundary/observations"
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/architecture",
+        "keys": [
+          "canonical_owner",
+          "governing_law_refs",
+          "interpreter_or_handler",
+          "representation_or_machine",
+          "residual_assumptions",
+          "selected_construction"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/governing_law_refs",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/governing_law_refs"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/governing_law_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/canonical_owner",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/selected_construction",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/representation_or_machine",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/interpreter_or_handler",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/residual_assumptions",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/residual_assumptions"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/architecture/residual_assumptions",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/falsified_predecessor_claims",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/preserved_predecessor_claims",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/invalid_states_eliminated",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/counterexample_class_refs",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/preserved_observations",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/falsified_predecessor_claims"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/preserved_predecessor_claims"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/invalid_states_eliminated"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/counterexample_class_refs"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/preserved_observations"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/counterexample_class_refs"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/falsified_predecessor_claims",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/preserved_predecessor_claims",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/invalid_states_eliminated",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/counterexample_class_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/preserved_observations",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/proof_obligations",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/proof_obligations",
+        "key": "/obligation_id"
+      },
+      {
+        "op": "none",
+        "input": "construction",
+        "path": "/artifact/payload/proof_obligations",
+        "rules": [
+          {
+            "op": "regex",
+            "path": "/obligation_id",
+            "patterns": [
+              "^.*#falsifier$"
+            ],
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/proof_obligations",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "adequacy_reason",
+              "falsifier",
+              "law_ref",
+              "obligation_id",
+              "owner_boundary",
+              "proof_kind",
+              "proof_mode",
+              "statement",
+              "verifier"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/obligation_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/law_ref",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/owner_boundary",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/statement",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "enum",
+            "path": "/proof_mode",
+            "values": [
+              "differential",
+              "example-regression",
+              "exhaustive-model",
+              "property-law",
+              "representation",
+              "static-refinement",
+              "total-transition"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/adequacy_reason",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "exact-object",
+            "path": "/verifier",
+            "keys": [
+              "argv"
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/verifier/argv",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "all",
+            "path": "/verifier/argv",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "exact-object",
+            "path": "/falsifier",
+            "keys": [
+              "argv"
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/falsifier/argv",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "all",
+            "path": "/falsifier/argv",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "enum",
+            "path": "/proof_kind",
+            "values": [
+              "acceptance",
+              "implementation",
+              "review",
+              "ship"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/retirements",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/retirements",
+        "key": "/retirement_id"
+      },
+      {
+        "op": "none",
+        "input": "construction",
+        "path": "/artifact/payload/retirements",
+        "rules": [
+          {
+            "op": "regex",
+            "path": "/retirement_id",
+            "patterns": [
+              "^.*#falsifier$"
+            ],
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/retirements",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "disposition",
+              "dominated_construct",
+              "replacement_ref",
+              "retirement_id",
+              "verifier"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/retirement_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/dominated_construct",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "enum",
+            "path": "/disposition",
+            "values": [
+              "collapse",
+              "delegate",
+              "replace",
+              "retire"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/replacement_ref",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "exact-object",
+            "path": "/verifier",
+            "keys": [
+              "argv"
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/verifier/argv",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "all",
+            "path": "/verifier/argv",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/execution",
+        "keys": [
+          "allowed_paths",
+          "completion",
+          "operation_effects",
+          "owner_boundary"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/execution/allowed_paths",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/execution/allowed_paths"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/execution/allowed_paths"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/execution/allowed_paths",
+        "rules": [
+          {
+            "op": "safe-relative-path",
+            "allow_root": false,
+            "reserved_roots": [
+              ".git",
+              ".ledger"
+            ],
+            "case_insensitive_reserved": true
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/execution/owner_boundary",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/execution/operation_effects",
+        "min": 1,
+        "max": 3
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/execution/operation_effects"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/execution/operation_effects",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              "edit",
+              "inspect",
+              "verify"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/execution/completion",
+        "values": [
+          "complete",
+          "ready-to-ship"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation",
+        "keys": [
+          "adjudication",
+          "candidates",
+          "counterexample_set_ref",
+          "evaluated_class_refs",
+          "selected_candidate_id",
+          "trigger"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/trigger",
+        "values": [
+          "accepted-review-fold",
+          "initial"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/evaluated_class_refs",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/evaluated_class_refs"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/evaluated_class_refs"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/evaluated_class_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates",
+        "min": 4,
+        "max": 4
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates",
+        "key": "/candidate_id"
+      },
+      {
+        "op": "exactly-one",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "/status",
+            "values": [
+              "selected"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "at-least-one",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "/derivation",
+            "values": [
+              "incumbent-independent"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates/0/family",
+        "values": [
+          "realization-preserve"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates/1/family",
+        "values": [
+          "admitted-domain-restriction"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates/2/family",
+        "values": [
+          "representation-or-owner-strengthening"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates/3/family",
+        "values": [
+          "ablation-normalization"
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/candidates",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "candidate_id",
+              "derivation",
+              "factors",
+              "falsifier",
+              "family",
+              "law_refs",
+              "observation_refs",
+              "residual_obligations",
+              "status",
+              "summary"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/candidate_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "enum",
+            "path": "/family",
+            "values": [
+              "ablation-normalization",
+              "admitted-domain-restriction",
+              "realization-preserve",
+              "representation-or-owner-strengthening"
+            ]
+          },
+          {
+            "op": "enum",
+            "path": "/derivation",
+            "values": [
+              "incumbent-independent",
+              "incumbent-relative"
+            ]
+          },
+          {
+            "op": "enum",
+            "path": "/status",
+            "values": [
+              "dominated",
+              "incomparable",
+              "obstructed",
+              "selected"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/summary",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-array",
+            "path": "/law_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/law_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/law_refs"
+          },
+          {
+            "op": "all",
+            "path": "/law_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/observation_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/observation_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/observation_refs"
+          },
+          {
+            "op": "all",
+            "path": "/observation_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/factors",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "keyed-unique",
+            "path": "/factors",
+            "key": "/factor_id"
+          },
+          {
+            "op": "sorted",
+            "path": "/factors",
+            "key": "/factor_id"
+          },
+          {
+            "op": "all",
+            "path": "/factors",
+            "rules": [
+              {
+                "op": "exact-object",
+                "keys": [
+                  "description",
+                  "factor_id",
+                  "kind",
+                  "law_refs",
+                  "observation_refs",
+                  "owner"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/factor_id",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "enum",
+                "path": "/kind",
+                "values": [
+                  "authoritative-representation",
+                  "bypass",
+                  "compatibility-branch",
+                  "illegal-state-family",
+                  "law-owner",
+                  "proof-path",
+                  "recovery-correlation",
+                  "residual-validator",
+                  "resource-obligation",
+                  "semantic-mechanism"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/owner",
+                "trimmed_min": 1,
+                "max": 4194304
+              },
+              {
+                "op": "bounded-array",
+                "path": "/law_refs",
+                "min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "unique",
+                "path": "/law_refs"
+              },
+              {
+                "op": "sorted",
+                "path": "/law_refs"
+              },
+              {
+                "op": "all",
+                "path": "/law_refs",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "trimmed_min": 1,
+                    "max": 4194304
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/observation_refs",
+                "min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "unique",
+                "path": "/observation_refs"
+              },
+              {
+                "op": "sorted",
+                "path": "/observation_refs"
+              },
+              {
+                "op": "all",
+                "path": "/observation_refs",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "trimmed_min": 1,
+                    "max": 4194304
+                  }
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/description",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/residual_obligations",
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/residual_obligations"
+          },
+          {
+            "op": "sorted",
+            "path": "/residual_obligations"
+          },
+          {
+            "op": "all",
+            "path": "/residual_obligations",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/falsifier",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/selected_candidate_id",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/adjudication",
+        "keys": [
+          "falsifier",
+          "reduction_disposition",
+          "reduction_reason",
+          "selected_reason"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/adjudication/selected_reason",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/adjudication/reduction_disposition",
+        "values": [
+          "incomparable",
+          "minimal",
+          "obstructed",
+          "smaller-admissible"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/adjudication/reduction_reason",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/recompilation/adjudication/falsifier",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface",
+        "keys": [
+          "predecessor_factors",
+          "successor_factors"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/predecessor_factors",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/successor_factors",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/predecessor_factors",
+        "key": "/factor_id"
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/successor_factors",
+        "key": "/factor_id"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/predecessor_factors",
+        "key": "/factor_id"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/successor_factors",
+        "key": "/factor_id"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/predecessor_factors",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "description",
+              "factor_id",
+              "kind",
+              "law_refs",
+              "observation_refs",
+              "owner"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/factor_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "enum",
+            "path": "/kind",
+            "values": [
+              "authoritative-representation",
+              "bypass",
+              "compatibility-branch",
+              "illegal-state-family",
+              "law-owner",
+              "proof-path",
+              "recovery-correlation",
+              "residual-validator",
+              "resource-obligation",
+              "semantic-mechanism"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/owner",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-array",
+            "path": "/law_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/law_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/law_refs"
+          },
+          {
+            "op": "all",
+            "path": "/law_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/observation_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/observation_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/observation_refs"
+          },
+          {
+            "op": "all",
+            "path": "/observation_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/description",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/semantic_surface/successor_factors",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "description",
+              "factor_id",
+              "kind",
+              "law_refs",
+              "observation_refs",
+              "owner"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/factor_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "enum",
+            "path": "/kind",
+            "values": [
+              "authoritative-representation",
+              "bypass",
+              "compatibility-branch",
+              "illegal-state-family",
+              "law-owner",
+              "proof-path",
+              "recovery-correlation",
+              "residual-validator",
+              "resource-obligation",
+              "semantic-mechanism"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/owner",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-array",
+            "path": "/law_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/law_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/law_refs"
+          },
+          {
+            "op": "all",
+            "path": "/law_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/observation_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/observation_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/observation_refs"
+          },
+          {
+            "op": "all",
+            "path": "/observation_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/description",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "construction",
+        "path": "/artifact/payload/supersession",
+        "keys": [
+          "disposition",
+          "essential_additions",
+          "introduced_factor_refs",
+          "preserved_factor_refs",
+          "replacement_relations",
+          "retired_factor_refs",
+          "surface_completeness_proof_ref"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/disposition",
+        "values": [
+          "essential-expansion",
+          "initial",
+          "normalized",
+          "unchanged-realization"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/preserved_factor_refs",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/retired_factor_refs",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/introduced_factor_refs",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/preserved_factor_refs"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/retired_factor_refs"
+      },
+      {
+        "op": "unique",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/introduced_factor_refs"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/preserved_factor_refs"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/retired_factor_refs"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/introduced_factor_refs"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/preserved_factor_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/retired_factor_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/introduced_factor_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/replacement_relations",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/replacement_relations",
+        "key": "/relation_id"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/replacement_relations",
+        "key": "/relation_id"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/replacement_relations",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "predecessor_factor_refs",
+              "rationale",
+              "relation_id",
+              "successor_factor_refs"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/relation_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-array",
+            "path": "/predecessor_factor_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/predecessor_factor_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/predecessor_factor_refs"
+          },
+          {
+            "op": "all",
+            "path": "/predecessor_factor_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/successor_factor_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/successor_factor_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/successor_factor_refs"
+          },
+          {
+            "op": "all",
+            "path": "/successor_factor_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/rationale",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/essential_additions",
+        "max": 1048576
+      },
+      {
+        "op": "keyed-unique",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/essential_additions",
+        "key": "/factor_ref"
+      },
+      {
+        "op": "sorted",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/essential_additions",
+        "key": "/factor_ref"
+      },
+      {
+        "op": "all",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/essential_additions",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "factor_ref",
+              "law_refs",
+              "proof_refs",
+              "rationale"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/factor_ref",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-array",
+            "path": "/law_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/law_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/law_refs"
+          },
+          {
+            "op": "all",
+            "path": "/law_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-array",
+            "path": "/proof_refs",
+            "min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "unique",
+            "path": "/proof_refs"
+          },
+          {
+            "op": "sorted",
+            "path": "/proof_refs"
+          },
+          {
+            "op": "all",
+            "path": "/proof_refs",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/rationale",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "construction",
+        "path": "/artifact/payload/supersession/surface_completeness_proof_ref",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "tagged-union",
+        "input": "construction",
+        "path": "/artifact/payload",
+        "tag": "/recompilation/trigger",
+        "variants": [
+          {
+            "value": "initial",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/recompilation/counterexample_set_ref",
+                "values": [
+                  null
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/recompilation/evaluated_class_refs",
+                "max": 0
+              }
+            ]
+          },
+          {
+            "value": "accepted-review-fold",
+            "rules": [
+              {
+                "op": "digest",
+                "path": "/recompilation/counterexample_set_ref"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "tagged-union",
+        "input": "construction",
+        "path": "/artifact/payload",
+        "tag": "/supersession/disposition",
+        "variants": [
+          {
+            "value": "initial",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/semantic_surface/predecessor_factors",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/preserved_factor_refs",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/retired_factor_refs",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/replacement_relations",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/essential_additions",
+                "max": 0
+              }
+            ]
+          },
+          {
+            "value": "unchanged-realization",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/supersession/retired_factor_refs",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/introduced_factor_refs",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/replacement_relations",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/essential_additions",
+                "max": 0
+              }
+            ]
+          },
+          {
+            "value": "normalized",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/supersession/introduced_factor_refs",
+                "max": 0
+              },
+              {
+                "op": "bounded-array",
+                "path": "/supersession/essential_additions",
+                "max": 0
+              },
+              {
+                "op": "field-not-equal",
+                "left": "/semantic_surface/predecessor_factors",
+                "right": "/semantic_surface/successor_factors"
+              }
+            ]
+          },
+          {
+            "value": "essential-expansion",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "/supersession/essential_additions",
+                "min": 1
+              },
+              {
+                "op": "reference-exists",
+                "path": "/supersession/introduced_factor_refs",
+                "reference": "",
+                "target": "/supersession/essential_additions",
+                "key": "/factor_ref",
+                "coverage": "all-targets"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [
+    {
+      "op": "keyed-unique",
+      "input": "construction",
+      "sources": [
+        {
+          "path": "/artifact/payload/proof_obligations",
+          "key": "/obligation_id"
+        },
+        {
+          "path": "/artifact/payload/retirements",
+          "key": "/retirement_id"
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "construction",
+      "path": "/artifact/payload/preserved_observations",
+      "reference": "",
+      "target": "/artifact/payload/proof_obligations",
+      "key": "/obligation_id"
+    },
+    {
+      "op": "keyed-join",
+      "input": "construction",
+      "collection": "/artifact/payload/recompilation/candidates",
+      "key": "/candidate_id",
+      "selector": "/artifact/payload/recompilation/selected_candidate_id",
+      "value": "/factors",
+      "equals": "/artifact/payload/semantic_surface/successor_factors",
+      "rules": [
+        {
+          "op": "enum",
+          "path": "/status",
+          "values": [
+            "selected"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "predecessor-successor",
+      "input": "construction",
+      "predecessor": "/artifact/payload/semantic_surface/predecessor_factors",
+      "predecessor_key": "/factor_id",
+      "successor": "/artifact/payload/semantic_surface/successor_factors",
+      "successor_key": "/factor_id",
+      "preserved": "/artifact/payload/supersession/preserved_factor_refs",
+      "retired": "/artifact/payload/supersession/retired_factor_refs",
+      "introduced": "/artifact/payload/supersession/introduced_factor_refs",
+      "mappings": "/artifact/payload/supersession/replacement_relations",
+      "mapping_predecessors": "/predecessor_factor_refs",
+      "mapping_successors": "/successor_factor_refs"
+    }
+  ],
+  "identity": {
+    "op": "content-address",
+    "input": "construction",
+    "basis_null": "/artifact/artifact_id",
+    "field": "/artifact/artifact_id"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4198400,
+    "max_records": 1048576,
+    "max_output_bytes": 4198400,
+    "max_diagnostics": 128,
+    "max_reducer_states": 1
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "actuating",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "actuating/construction-contract",
+      "path": "ledger/construction-contract.json"
+    }
+  ]
+}
