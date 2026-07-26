@@ -21,6 +21,7 @@ manifest_count=0
 seq_count=0
 ledger_count=0
 fixture_count=0
+materialization_count=0
 contract_count=0
 
 for manifest in $manifests; do
@@ -87,6 +88,26 @@ for manifest in $manifests; do
                   '.valid == true and
                    .authority_granted == false and
                    .storage_mutated == false' >/dev/null
+              fixture_name=${fixture##*/}
+              expectation="$fixture_root/expected/${fixture_name%.json}.materialization.json"
+              if [[ -f "$expectation" ]]; then
+                materialization_count=$((materialization_count + 1))
+                expected_content=$(jq -S -c '.canonical_content' "$expectation")
+                "$ledger_bin" materialize \
+                  --definition "$definition" \
+                  --input "$input_name=$fixture" \
+                  --format json |
+                  jq -e \
+                    --arg expected_content "$expected_content" \
+                    --slurpfile expectation "$expectation" \
+                    '.valid == true and
+                     .artifact_id == $expectation[0].artifact_id and
+                     .canonical_content_digest ==
+                       $expectation[0].canonical_content_digest and
+                     .canonical_content == $expected_content and
+                     .authority_granted == false and
+                     .storage_mutated == false' >/dev/null
+              fi
             done < <(find "$fixture_root/valid" -type f | LC_ALL=C sort)
           fi
           if [[ -d "$fixture_root/invalid" ]]; then
@@ -142,9 +163,10 @@ if rg --files codex | grep -q '/decision-contract\.ya\?ml$'; then
 fi
 
 printf \
-  'definition conformance passed: manifests=%d seq=%d ledger=%d fixtures=%d contracts=%d\n' \
+  'definition conformance passed: manifests=%d seq=%d ledger=%d fixtures=%d materializations=%d contracts=%d\n' \
   "$manifest_count" \
   "$seq_count" \
   "$ledger_count" \
   "$fixture_count" \
+  "$materialization_count" \
   "$contract_count"

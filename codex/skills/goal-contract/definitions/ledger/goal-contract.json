@@ -1,0 +1,569 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "goal-contract/goal-contract",
+  "owner": "goal-contract",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "digest",
+      "enum",
+      "exact-object",
+      "keyed-unique",
+      "one-of",
+      "safe-identifier",
+      "safe-relative-path",
+      "sorted",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "contract": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "contract"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "",
+        "keys": [
+          "artifact"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact",
+        "keys": [
+          "artifact_id",
+          "created_at",
+          "goal_id",
+          "payload",
+          "predecessor_refs",
+          "schema",
+          "semantic_author",
+          "supporting_refs"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "contract",
+        "path": "/artifact/schema",
+        "values": [
+          "goal-contract/v3"
+        ]
+      },
+      {
+        "op": "one-of",
+        "input": "contract",
+        "path": "/artifact/artifact_id",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "contract",
+        "path": "/artifact/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "enum",
+        "input": "contract",
+        "path": "/artifact/semantic_author",
+        "values": [
+          "goal-contract"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "contract",
+        "path": "/artifact/created_at",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/predecessor_refs",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/predecessor_refs"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/predecessor_refs",
+        "rules": [
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/supporting_refs",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/supporting_refs"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/supporting_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact/payload",
+        "keys": [
+          "acceptance",
+          "authority",
+          "compatibility",
+          "laws",
+          "objective",
+          "scope"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact/payload/objective",
+        "keys": [
+          "non_goals",
+          "required_outcomes"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/objective/required_outcomes",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/objective/required_outcomes"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/objective/required_outcomes",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/objective/non_goals",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/objective/non_goals"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/objective/non_goals",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact/payload/authority",
+        "keys": [
+          "execution_authority_digest",
+          "execution_authority_ref",
+          "mutation_allowed",
+          "source_digest",
+          "source_ref"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "contract",
+        "path": "/artifact/payload/authority/source_ref",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "digest",
+        "input": "contract",
+        "path": "/artifact/payload/authority/source_digest"
+      },
+      {
+        "op": "bounded-string",
+        "input": "contract",
+        "path": "/artifact/payload/authority/execution_authority_ref",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "digest",
+        "input": "contract",
+        "path": "/artifact/payload/authority/execution_authority_digest"
+      },
+      {
+        "op": "enum",
+        "input": "contract",
+        "path": "/artifact/payload/authority/mutation_allowed",
+        "values": [
+          false,
+          true
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact/payload/scope",
+        "keys": [
+          "allowed_paths",
+          "base_ref",
+          "prohibited_paths",
+          "repository"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "contract",
+        "path": "/artifact/payload/scope/repository",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-string",
+        "input": "contract",
+        "path": "/artifact/payload/scope/base_ref",
+        "trimmed_min": 1,
+        "max": 4194304
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/scope/allowed_paths",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/scope/allowed_paths"
+      },
+      {
+        "op": "sorted",
+        "input": "contract",
+        "path": "/artifact/payload/scope/allowed_paths"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/scope/allowed_paths",
+        "rules": [
+          {
+            "op": "safe-relative-path",
+            "allow_root": true,
+            "reserved_roots": [
+              ".git",
+              ".ledger"
+            ],
+            "case_insensitive_reserved": true
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/scope/prohibited_paths",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/scope/prohibited_paths"
+      },
+      {
+        "op": "sorted",
+        "input": "contract",
+        "path": "/artifact/payload/scope/prohibited_paths"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/scope/prohibited_paths",
+        "rules": [
+          {
+            "op": "safe-relative-path",
+            "allow_root": true,
+            "reserved_roots": [
+              ".git",
+              ".ledger"
+            ],
+            "case_insensitive_reserved": true
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility",
+        "keys": [
+          "migration_requirements",
+          "permitted_breaks",
+          "required_contracts"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/required_contracts",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/required_contracts"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/required_contracts",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/permitted_breaks",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/permitted_breaks"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/permitted_breaks",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/migration_requirements",
+        "max": 1048576
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/migration_requirements"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/compatibility/migration_requirements",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/laws",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/laws",
+        "rules": [
+          {
+            "op": "exact-object",
+            "keys": [
+              "applicability",
+              "law_id",
+              "required_observation",
+              "statement"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/law_id",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/statement",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/applicability",
+            "trimmed_min": 1,
+            "max": 4194304
+          },
+          {
+            "op": "bounded-string",
+            "path": "/required_observation",
+            "trimmed_min": 1,
+            "max": 4194304
+          }
+        ]
+      },
+      {
+        "op": "keyed-unique",
+        "input": "contract",
+        "path": "/artifact/payload/laws",
+        "key": "/law_id"
+      },
+      {
+        "op": "exact-object",
+        "input": "contract",
+        "path": "/artifact/payload/acceptance",
+        "keys": [
+          "publication_required",
+          "required_proof_kinds",
+          "terminal_route"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "contract",
+        "path": "/artifact/payload/acceptance/terminal_route",
+        "values": [
+          "complete",
+          "ready-to-ship"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "contract",
+        "path": "/artifact/payload/acceptance/publication_required",
+        "values": [
+          false,
+          true
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "contract",
+        "path": "/artifact/payload/acceptance/required_proof_kinds",
+        "min": 1,
+        "max": 4
+      },
+      {
+        "op": "unique",
+        "input": "contract",
+        "path": "/artifact/payload/acceptance/required_proof_kinds"
+      },
+      {
+        "op": "all",
+        "input": "contract",
+        "path": "/artifact/payload/acceptance/required_proof_kinds",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              "acceptance",
+              "implementation",
+              "review",
+              "ship"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {
+    "op": "content-address",
+    "input": "contract",
+    "basis_null": "/artifact/artifact_id",
+    "field": "/artifact/artifact_id"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4198400,
+    "max_records": 1048576,
+    "max_output_bytes": 4198400,
+    "max_diagnostics": 128,
+    "max_reducer_states": 1
+  }
+}

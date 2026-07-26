@@ -1,0 +1,56 @@
+{
+  "artifact": {
+    "schema": "goal-contract/v3",
+    "artifact_id": null,
+    "goal_id": "goal-1",
+    "semantic_author": "goal-contract",
+    "created_at": "now",
+    "predecessor_refs": [],
+    "supporting_refs": [
+      "user:turn"
+    ],
+    "payload": {
+      "objective": {
+        "required_outcomes": [
+          "law holds"
+        ],
+        "non_goals": []
+      },
+      "authority": {
+        "source_ref": "user:turn",
+        "source_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+        "execution_authority_ref": "user:turn",
+        "execution_authority_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "mutation_allowed": true
+      },
+      "scope": {
+        "repository": "repo",
+        "base_ref": "main",
+        "allowed_paths": [
+          "src"
+        ],
+        "prohibited_paths": []
+      },
+      "compatibility": {
+        "required_contracts": [],
+        "permitted_breaks": [],
+        "migration_requirements": []
+      },
+      "laws": [
+        {
+          "law_id": "law-1",
+          "statement": "law holds",
+          "applicability": "all",
+          "required_observation": "property"
+        }
+      ],
+      "acceptance": {
+        "terminal_route": "complete",
+        "publication_required": false,
+        "required_proof_kinds": [
+          "implementation"
+        ]
+      }
+    }
+  }
+}
