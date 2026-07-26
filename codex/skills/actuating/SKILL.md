@@ -143,30 +143,16 @@ Invalidators:
 Falsifier:
 ~~~
 
-The basis is a proof lease over exact Goal, fact, constraint, and host-capability
-inputs, not a fifth authority artifact or a new `construction-contract/v3`
-field. The compact view is session-local until Actuating compiles one replayable
-basis projection into the current Construction Contract:
-
-- `goal_contract_ref` and `architecture.governing_law_refs` bind the Goal axioms;
-- candidate `observation_refs` bind observed facts and host capabilities;
-- canonically tagged `architecture.residual_assumptions` bind necessary
-  constraints, chosen objectives, irreducible postulates, definitions, and
-  invalidators;
-- the incumbent-independent candidate's summary, factors, residual obligations,
-  and falsifier bind the derived claims, rejected inherited premises, governing
-  mechanisms, frozen derivation, comparison, status, and falsifier; and
-- `supporting_refs` contains
-  `axiomatic-basis/v1:sha256:<canonical-projection-digest>`.
-
-Before materialization, reconstruct that ordered projection from the named
-fields and require its digest to match the supporting reference. A later run may
-retain the basis only when it can repeat the reconstruction from the immutable
-current Construction and its referenced inputs; missing material, an unresolved
-reference, or a digest mismatch requires re-axiomatization. A candidate may use
+The basis is an ephemeral proof lease over exact Goal, fact, constraint, and
+host-capability inputs, not a fifth authority artifact or a new
+`construction-contract/v3` field. It expires at session, compaction, or subject
+handoff and is never reconstructed from a materialized Construction. Any later
+run must re-axiomatize before nomination or affected mutation. Within one
+uninterrupted run, compile its material conclusions into the existing Goal and
+observation references, residual assumptions, candidate factors, obligations,
+retirements, and falsifiers. A candidate may use
 `derivation: incumbent-independent` only after `$universalist` lowers the
-reconstructed frozen derivation into one of the four canonical candidate
-families.
+frozen derivation into one of the four canonical candidate families.
 
 `$first-principles` may expose an inconsistent Goal projection or missing
 authority, but it must return that as `inconsistent` or `blocked`; it may not
@@ -174,20 +160,26 @@ rewrite the Goal. `underdetermined` preserves every materially incomparable
 derivation for later comparison and blocks if Actuating cannot distinguish them
 by current Goal law, observation, or dominance. A new explicit source
 preference has no effect until `$goal-contract` compiles it into a successor
-Goal Contract; Actuating then re-axiomatizes before nomination. Neither
+Goal Contract. When accepted or blocked Counterexamples remain unresolved, the
+successor Goal must cite every current Set, and `$review-fold` must author a
+successor Set that cites the successor Goal, preserves predecessor lineage,
+evaluates the predecessor Construction, and assigns every carried class a
+disposition.
+Actuating re-axiomatizes only after that complete carry-forward and permits no
+affected mutation before successor Construction selection. Neither
 `$first-principles` nor its basis classifies Counterexamples, nominates or
 selects a Construction, grants mutation, or authors a durable decision.
 
-Retain the basis across a pure realization repair only while its durable
-projection replays with a matching digest and every bound input and invalidator
-remains current. Re-axiomatize before nomination when a
-successor Goal changes semantics, compatibility, authority, or proof posture;
-new evidence changes an observed fact, necessary constraint, or host
-capability; an accepted finding falsifies a premise; architecture or ablation
-repair becomes live; or the Causal recurrence gate triggers. A Glaze result may
-supply a new derivation under the current basis. If it requires a new premise,
-admit that premise only through fresh source authority or evidence and
-re-axiomatize before lowering; Glaze cannot manufacture axioms.
+Retain the basis across a pure realization repair only within the same
+uninterrupted run and while every bound input and invalidator remains current.
+Re-axiomatize before nomination after any handoff; when a successor Goal changes
+semantics, compatibility, authority, or proof posture; when new evidence changes
+an observed fact, necessary constraint, or host capability; when an accepted
+finding falsifies a premise; when architecture or ablation repair becomes live;
+or when the Causal recurrence gate triggers. A Glaze result may supply a new
+derivation under the current basis. If it requires a new premise, admit that
+premise only through fresh source authority or evidence and re-axiomatize before
+lowering; Glaze cannot manufacture axioms.
 
 After `$review-fold` has classified any findings, invoke `$glaze` exactly once
 after the first `$universalist` nomination and before candidate adjudication
@@ -360,7 +352,7 @@ Actuating then determines whether each accepted class is:
 - blocked by missing authority or evidence.
 
 Before deciding among these dispositions, enter the Architectonic decision
-gate and retain or re-establish the Axiomatic Construction Basis. A
+gate and establish the current-run Axiomatic Construction Basis. A
 `realization` classification is not established merely because the existing
 boundary can accept another local edit. If the finding falsifies a basis
 premise, or makes architecture or ablation repair live, re-axiomatize before
@@ -479,11 +471,19 @@ render a complete result but cannot decide it. Complete the handoff or report
 before the source-memory checkpoint; learning status cannot delay, invalidate,
 or roll back delivery closure.
 
+The Axiomatic Construction gate applies prospectively when `implement`,
+`remediation-plan`, or `review-closeout` selects a new or successor
+Construction. Non-mutating `triage` may classify findings against a valid
+pre-feature `construction-contract/v3` that lacks basis provenance; record that
+provenance as unavailable, award it no basis or selection proof, and preserve
+the artifact for review. Any transition from that triage to mutation requires
+fresh axiomatization and a successor Construction.
+
 ## Fail closed
 
 Always block on stale or missing authority, Goal, Construction, or subject; a
 missing, stale, inconsistent, blocked, or unresolvedly underdetermined
-Axiomatic Construction Basis for a material selection; an
+Axiomatic Construction Basis for a prospective material selection; an
 `incumbent-independent` marker without a traceable frozen derivation and
 Universalist lowering; unresolved accepted or blocked Counterexamples;
 out-of-scope operations; incomplete proof or retirement; missing Construction
