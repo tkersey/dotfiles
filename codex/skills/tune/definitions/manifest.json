@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "tune",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "tune/skill-decision-contract",
+      "path": "ledger/skill-decision-contract.json"
+    }
+  ]
+}

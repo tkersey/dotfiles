@@ -13,12 +13,13 @@ Place the complete tree at `codex/skills/universalist/`. The skill has no runtim
 From the repository root:
 
 ```bash
-seq skill-contract validate \
-  --file codex/skills/universalist/references/decision-contract.yaml \
+ledger validate \
+  --definition codex/skills/tune/definitions/ledger/skill-decision-contract.json \
+  --input contract=codex/skills/universalist/references/decision-contract.json \
   --format json
 ```
 
-Seq validates the `SKDC-v1` structure and computes the contract fingerprint used by Ledger receipts. It does not compare prose in `SKILL.md` with the contract. `references/decision-contract.yaml` is the machine-readable authority for consequential triggers, routes, clauses, and required evidence; update it together with `SKILL.md` and `templates/universalist-plan.md` whenever policy changes.
+Ledger validates the `SKDC-v1` structure without granting semantic authority. It does not compare prose in `SKILL.md` with the contract. `references/decision-contract.json` is the machine-readable authority for consequential triggers, routes, clauses, and required evidence; update it together with `SKILL.md` and `templates/universalist-plan.md` whenever policy changes.
 
 ## Use
 

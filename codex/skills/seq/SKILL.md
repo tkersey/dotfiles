@@ -183,7 +183,7 @@ skill mentions, tool reads, outcomes, and session identity.
 ## Decision contracts and receipts
 Decision-oriented skills may carry:
 ```text
-references/decision-contract.yaml
+references/decision-contract.json
 skill_decision_contract / SKDC-v1
 ```
 Authority order:

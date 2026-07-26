@@ -307,7 +307,7 @@ consequential root receipt selected by Universalist:
 ```bash
 ledger emit --source universalist \
   --plan .ledger/universalist/plan-PLAN_ID.md \
-  --contract /path/to/universalist/references/decision-contract.yaml \
+  --contract /path/to/universalist/references/decision-contract.json \
   --question "Which construction owns this seam?" \
   --selected-route UNI-ORDINARY \
   --rejected-route UNI-CANONICAL \

@@ -49,7 +49,7 @@ The classification guides observability. It does not belong in frontmatter unles
 Create:
 
 ```text
-references/decision-contract.yaml
+references/decision-contract.json
 ```
 
 only when all are true:

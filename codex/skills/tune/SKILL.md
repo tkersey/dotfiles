@@ -88,13 +88,25 @@ Read the target package before judging usage:
 ```text
 SKILL.md
 agents/openai.yaml
-references/decision-contract.yaml
+references/decision-contract.json
 scripts/
 references/
 assets/
 ```
 
 Prefer `skill_decision_contract / SKDC-v1`. If absent, reconstruct only the minimum provisional contract needed for diagnosis and label it `contract_authority: inferred`. Do not pretend inferred clauses are stable historical identifiers.
+
+Validate an authored contract through Tune's canonical passive definition:
+
+```bash
+ledger validate \
+  --definition codex/skills/tune/definitions/ledger/skill-decision-contract.json \
+  --input contract=<skill-root>/references/decision-contract.json \
+  --format json
+```
+
+A passing result means only that the contract is structurally valid under the
+reported definition digest. Tune retains interpretation and decision authority.
 
 ## Evidence hierarchy
 

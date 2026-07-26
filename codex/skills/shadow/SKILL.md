@@ -100,7 +100,7 @@ Read the target skill package outside the watched session evidence boundary:
 ```text
 SKILL.md
 agents/openai.yaml
-references/decision-contract.yaml
+references/decision-contract.json
 relevant references/scripts
 ```
 

@@ -518,7 +518,7 @@ After standalone root adjudication emit exactly one receipt:
 ```bash
 ledger --source universalist emit \
   --plan PLAN_PATH \
-  --contract /path/to/universalist/references/decision-contract.yaml \
+  --contract /path/to/universalist/references/decision-contract.json \
   --clause-ref UNI-DISPOSITION-001 \
   --clause-ref UNI-MINIMAL-001 \
   --clause-ref UNI-CONTEXT-001 \
