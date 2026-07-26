@@ -1,0 +1,887 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "spec-pipeline/spec-governance-receipt",
+  "owner": "spec-pipeline",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-string",
+      "enum",
+      "exact-object",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "receipt": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "",
+        "keys": [
+          "spec_governance_receipt"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt",
+        "keys": [
+          "authoritative_brief",
+          "auto_plan_handoff",
+          "challenge",
+          "execution_control",
+          "execution_handoff",
+          "fresh_eyes",
+          "gate",
+          "lane",
+          "lint",
+          "mode",
+          "phase_presence",
+          "profile",
+          "receipt_version",
+          "retro",
+          "spec_id",
+          "status",
+          "subagents"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/receipt_version",
+        "values": [
+          "SGR-v2"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/spec_id",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/mode",
+        "values": [
+          "challenge-only",
+          "full",
+          "gate-only",
+          "repair"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/profile",
+        "values": [
+          "balanced",
+          "campaign",
+          "fast",
+          "strict"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/lane",
+        "values": [
+          "campaign_checkpoint",
+          "repair",
+          "review_resolution",
+          "spec_only",
+          "spec_to_plan"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/status",
+        "values": [
+          "audit-only",
+          "blocked",
+          "complete",
+          "drift",
+          "partial"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/authoritative_brief",
+        "keys": [
+          "drift_detected",
+          "present"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/authoritative_brief/present",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/authoritative_brief/drift_detected",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence",
+        "keys": [
+          "challenge",
+          "decision_packet",
+          "evidence_brief",
+          "execution_handoff",
+          "fresh_eyes",
+          "gate",
+          "implementation_spec"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/evidence_brief",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/decision_packet",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/gate",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/implementation_spec",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/challenge",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/fresh_eyes",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/phase_presence/execution_handoff",
+        "values": [
+          "no",
+          "not-required",
+          "yes"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate",
+        "keys": [
+          "gate_blocked_plan",
+          "gate_changed_decision",
+          "gate_defaulted_decisions",
+          "material_open_questions_remaining",
+          "mutation_allowed_pre_spec",
+          "pass_no_delta",
+          "plan_allowed",
+          "reason",
+          "receipt_version"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/receipt_version",
+        "values": [
+          "SGATE-v1"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/plan_allowed",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/mutation_allowed_pre_spec",
+        "values": [
+          "no",
+          false
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/gate_changed_decision",
+        "values": [
+          "no",
+          "unknown",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/gate_blocked_plan",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/gate_defaulted_decisions",
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/gate_defaulted_decisions",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 1048576
+          }
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/material_open_questions_remaining",
+        "values": [
+          "no",
+          "unknown",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/pass_no_delta",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/gate/reason",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/lint",
+        "keys": [
+          "blocked_handoff",
+          "verdict"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/lint/verdict",
+        "values": [
+          "fail",
+          "not-run",
+          "pass"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/lint/blocked_handoff",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge",
+        "keys": [
+          "changed_route",
+          "changed_spec",
+          "classification",
+          "pass_no_delta",
+          "receipt_version",
+          "strongest_challenge"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge/receipt_version",
+        "values": [
+          "SCHAL-v1"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge/classification",
+        "values": [
+          "changed_architecture",
+          "changed_proof",
+          "changed_risk",
+          "changed_scope",
+          "not-run",
+          "pass",
+          "preference_only",
+          "skipped"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge/changed_spec",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge/changed_route",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge/pass_no_delta",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/challenge/strongest_challenge",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/fresh_eyes",
+        "keys": [
+          "changed_spec",
+          "drift_detected",
+          "pass_no_delta",
+          "receipt_version",
+          "returned_to_grill"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/fresh_eyes/receipt_version",
+        "values": [
+          "SFE-v1"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/fresh_eyes/changed_spec",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/fresh_eyes/returned_to_grill",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/fresh_eyes/drift_detected",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/fresh_eyes/pass_no_delta",
+        "values": [
+          "no",
+          "not-assessed",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents",
+        "keys": [
+          "consumed",
+          "negative_packets",
+          "neutral_packets",
+          "open_at_end",
+          "positive_packets",
+          "rejected",
+          "spawned",
+          "timed_out"
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/spawned",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/spawned",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/consumed",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/consumed",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/rejected",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/rejected",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/timed_out",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/timed_out",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/open_at_end",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/open_at_end",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/positive_packets",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/positive_packets",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/neutral_packets",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/neutral_packets",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/negative_packets",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/subagents/negative_packets",
+        "min": 0,
+        "max": 1000000
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_control",
+        "keys": [
+          "execution_handoff",
+          "mutation_allowed",
+          "mutation_started_after_handoff",
+          "plan_allowed",
+          "plan_started_after_gate"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_control/plan_allowed",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_control/mutation_allowed",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_control/execution_handoff",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_control/plan_started_after_gate",
+        "values": [
+          "no",
+          "unknown",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_control/mutation_started_after_handoff",
+        "values": [
+          "no",
+          "unknown",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff",
+        "keys": [
+          "do_not_execute_before",
+          "governance_receipt_ref",
+          "handoff_summary",
+          "next_owner",
+          "plan_source_ref",
+          "ready_for_plan"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/ready_for_plan",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/next_owner",
+        "values": [
+          "$plan",
+          "grill-me",
+          "implementation",
+          "none",
+          "spec-pipeline",
+          "spec-retro"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/handoff_summary",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/do_not_execute_before",
+        "max": 1048576
+      },
+      {
+        "op": "all",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/do_not_execute_before",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "trimmed_min": 1,
+            "max": 1048576
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/plan_source_ref",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/execution_handoff/governance_receipt_ref",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/auto_plan_handoff",
+        "keys": [
+          "eligible",
+          "invocation",
+          "reason"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/auto_plan_handoff/eligible",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/auto_plan_handoff/reason",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/auto_plan_handoff/invocation",
+        "values": [
+          "manual",
+          "none",
+          "same_turn_tail_call"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/retro",
+        "keys": [
+          "next_owner",
+          "reason",
+          "trigger_required"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/retro/trigger_required",
+        "values": [
+          "no",
+          "yes",
+          false,
+          true
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/retro/reason",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/spec_governance_receipt/retro/next_owner",
+        "values": [
+          "none",
+          "spec-retro"
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 1048576,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 128,
+    "max_reducer_states": 1
+  }
+}
