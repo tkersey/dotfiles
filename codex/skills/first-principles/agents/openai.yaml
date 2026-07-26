@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "first-principles"
+  short_description: "Re-derive axiomatically from irreducible premises"
+  default_prompt: "Use $first-principles and preserve the original verbatim axiomatic first-principles text."
