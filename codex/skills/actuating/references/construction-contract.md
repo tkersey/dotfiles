@@ -130,7 +130,13 @@ explicit successor. Arrays that represent sets are sorted and duplicate-free.
 The four candidate families above are a v3 schema constant in that exact order,
 not the incidental order of an implementation enum. Exactly one candidate is
 selected, its factor inventory exactly equals `successor_factors`, and at least
-one candidate is incumbent-independent.
+one candidate is incumbent-independent. That marker is semantic, not
+descriptive: it is legal only when the current Actuating-bound Axiomatic
+Construction Basis froze the derivation before incumbent comparison and
+`$universalist` lowered it into the candidate family. Repository facts,
+external obligations, and host capabilities may inform that derivation;
+incumbent abstractions, owner boundaries, factorization, names, and rationale
+may not serve as its premises.
 
 Supersession partitions every predecessor and successor factor exactly once.
 Preserved factors remain byte-semantically equal. `unchanged-realization`
@@ -156,8 +162,76 @@ OPERATE ARCHITECTONICALLY
 ~~~
 
 This is an activation instruction, not an authority artifact or proof.
-Actuating then applies `$universalist` to the affected boundary and records its
-nomination:
+
+Before the first Universalist nomination for a materially new candidate
+universe, Actuating invokes `$first-principles` with the current Goal Contract
+fixed as the irreducible outcome and sole semantic authority. The pass may
+bracket inherited architecture, conventions, analogies, incumbent rationale,
+and alleged constraints; it may not reopen source-bound outcomes, laws, scope,
+compatibility, authority, acceptance, or proof posture.
+
+Inspect the incumbent only for observed facts, external obligations, and host
+enforcement capabilities. Freeze the incumbent-independent derivation before
+using the incumbent as a comparator, then record:
+
+~~~text
+Axiomatic Construction Basis
+Goal axioms:
+Observed facts:
+Necessary constraints:
+Chosen objectives:
+Irreducible postulates:
+Definitions:
+Derived claims:
+Rejected inherited premises:
+Governing invariants and causal mechanisms:
+Incumbent-independent derivation:
+Incumbent comparison:
+Basis status: sufficient | underdetermined | inconsistent | blocked
+Invalidators:
+Falsifier:
+~~~
+
+This is a compact non-authoritative view and an ephemeral proof lease over its
+exact Goal, fact, constraint, and host-capability inputs. It creates no artifact
+family and adds no field to `construction-contract/v3`. It expires at session
+end, compaction, or execution-context handoff and is never reconstructed from a
+materialized Construction. A subject digest change alone does not expire it:
+within one uninterrupted run, a premise-neutral realization repair may retain
+the lease while every bound input and invalidator remains current. Any later
+run, or any subject change that alters a bound input or invalidator,
+re-axiomatizes before nomination or affected mutation. Compile its material
+conclusions into the existing `goal_contract_ref`, `governing_law_refs`,
+observation refs, `architecture.residual_assumptions`, candidate factors,
+residual obligations, predecessor claims, retirements, and falsifiers.
+
+A `sufficient` basis admits nomination. An `underdetermined` basis carries every
+materially incomparable derivation into candidate comparison and blocks if
+current Goal law, observation, or dominance cannot distinguish them. A new
+explicit source preference must first become a successor Goal Contract; only
+then may Actuating compare the successor candidate universe. When accepted or
+blocked Counterexamples remain unresolved, or when the revision brings a
+`follow-up` class within the successor Goal's scope, the successor Goal cites
+every Set carrying those classes and `$review-fold` authors a successor Set
+that cites the successor Goal, preserves predecessor lineage, evaluates the
+predecessor Construction, and assigns every carried class a disposition. No
+affected mutation or successor Construction selection is legal until that
+carry-forward is complete.
+`inconsistent` or `blocked` stops selection. `$first-principles` may expose a
+Goal conflict or missing authority, but it cannot revise the Goal, classify a
+Counterexample, nominate or select a Construction, grant mutation, or author a
+durable decision.
+
+Retain the basis across premise-neutral subject changes only within the same
+uninterrupted run and while its inputs and invalidators remain current.
+Re-axiomatize before nomination after any execution-context handoff; when a
+successor Goal changes semantics, compatibility, authority, or proof posture;
+when evidence changes an observed fact, necessary constraint, or host
+capability; when an accepted finding falsifies a premise; when architecture or
+ablation repair becomes live; or when causal recurrence triggers.
+
+With a current basis, Actuating applies `$universalist` to the affected boundary
+and records its nomination:
 
 - the current context and accepted laws;
 - the existing owner and host enforcement capabilities;
@@ -178,10 +252,15 @@ Universalist reclassifies and lowers any material Glaze result into its
 repository-native nomination before candidate compilation. A useful result
 must change at least one candidate's owner, factor inventory, admitted domain,
 equivalence or normalization, retirement surface, proof surface, or falsifier.
-Otherwise record `Glaze result: no-material-reframe`; renamed summaries do not
-constitute distinct candidates. Glaze does not classify Counterexamples,
-select a Construction or Repair Disposition, grant mutation, or create another
-artifact family.
+A Glaze result may supply another derivation under the current basis. If it
+depends on a new premise, Actuating admits that premise only through fresh
+source authority or evidence and re-axiomatizes before lowering; Glaze cannot
+manufacture axioms. If the result is material and uses only admitted premises,
+Universalist lowers it under the current basis. Record
+`Glaze result: no-material-reframe` only when the material-delta test fails;
+renamed summaries do not constitute distinct candidates. Glaze does not classify
+Counterexamples, select a Construction or Repair Disposition, grant mutation,
+or create another artifact family.
 
 Actuating then compiles exactly four comparable candidate families in canonical
 order:
@@ -213,11 +292,13 @@ The selected route is the least additive route that satisfies the law; an
 `add` route explains why `delete`, `consolidate`, and `edit` are insufficient.
 Before selection, `$reduce` challenges any materially disputable factor by
 factoring live obligations, testing congruent quotients or ablations, and
-checking recomposition. The order is `nominate -> challenge once -> adjudicate
--> one Construction` when Glaze is not triggered. When abstraction change is
-live, the order is `activate -> Universalist nomination -> Glaze once ->
-Universalist reclassification and lowering -> Reduce challenge once ->
-Actuating adjudication -> one Construction`. The compact challenge is
+checking recomposition. When Glaze is not triggered, the order is `activate ->
+axiomatize for the current run -> Universalist nomination -> Reduce challenge
+once -> Actuating adjudication -> one Construction`. When abstraction change is
+live, the order is `activate -> axiomatize for the current run -> Universalist
+nomination -> Glaze once -> Universalist
+reclassification and lowering -> Reduce challenge once -> Actuating
+adjudication -> one Construction`. The compact basis and challenge are
 sufficient in Actuating composition; an independently useful Reduction
 Certificate may appear only in `supporting_refs`. No supporting surface selects
 the Construction or Repair Disposition.
@@ -263,12 +344,18 @@ cannot manufacture a winner.
 ## Implementation reclassification
 
 Before fresh review, compare the realized production delta with the challenged
-candidate. Diff size is evidence to inspect, not a reduction trigger. Run one
-new challenge only when implementation introduces or materially changes a
+candidate and its Axiomatic Construction Basis. Diff size is evidence to
+inspect, not a reduction trigger. If implementation falsifies a basis premise
+or introduces a materially new premise, re-axiomatize and select a successor
+Construction before any further affected mutation. Run one new Reduction
+challenge only when implementation introduces or materially changes a
 disputable semantic factor. That challenge belongs to the successor candidate;
-the same candidate and evidence never repeat recursively. Otherwise retain the
-pre-mutation challenge. Fresh review evaluates the adjudicated result or the
-recorded obstruction.
+the same basis, candidate, and evidence never repeat recursively. Otherwise
+retain the pre-mutation basis and challenge only within the same uninterrupted
+run. A session end, compaction, or execution-context handoff requires
+re-axiomatization before another nomination or affected mutation; a
+premise-neutral subject digest change does not. Fresh review evaluates the
+adjudicated result or the recorded obstruction.
 
 ## Causal recurrence gate
 
@@ -292,10 +379,12 @@ equivalent, but it may not omit one of these semantic alternatives. The Reduce
 challenge tests the continued existence of the repair or validation mechanism,
 not only whether its latest implementation is locally minimal.
 
-Causal recurrence automatically makes abstraction change live. Complete the
-single Glaze pass and Universalist reclassification before comparing the four
-families. A `no-material-reframe` result does not weaken the required
-instance-specific non-example proof.
+Causal recurrence invalidates the prior candidate universe and automatically
+makes abstraction change live. Re-axiomatize before the next Universalist
+nomination, then complete the single Glaze pass and Universalist
+reclassification before comparing the four families. A
+`no-material-reframe` result does not weaken the required instance-specific
+non-example proof.
 
 Record one composed, non-authoritative view:
 
@@ -394,12 +483,20 @@ Construction as its sole predecessor, even when all subject-bound proof and
 review evidence must be re-established.
 
 Subject identity and causal lineage are independent. Subject change invalidates
-proof, operations, review bindings, and review credit for the old subject; it
-does not erase predecessor decisions or stable Counterexample classes. The
-Causal recurrence gate scans the complete goal-local predecessor chain across
-subject revisions. If changed laws or applicability make prior evidence
-irrelevant, the successor must record that rejection, separation, or
-supersession explicitly rather than omitting the lineage.
+proof, operations, review bindings, review credit, and the ephemeral basis for
+the old subject; it does not erase predecessor decisions or stable
+Counterexample classes. The Causal recurrence gate scans the complete goal-local
+predecessor chain across subject revisions and always requires
+re-axiomatization. If changed laws or applicability make prior evidence
+irrelevant, the successor records that rejection, separation, or supersession
+explicitly rather than omitting the lineage.
+
+The basis requirements are prospective selection laws. Every non-selecting
+route—including triage, Ship handoff or publication, and closure—may consume a
+valid pre-feature `construction-contract/v3` that lacks basis provenance; it
+records the provenance as unavailable and awards no basis or selection proof.
+Before any resulting mutation or new Construction selection, Actuating
+re-axiomatizes and selects a successor Construction.
 
 An accepted Review Fold uses `accepted-review-fold`, names the latest
 Counterexample Set, and records the exact current accepted-class set in both

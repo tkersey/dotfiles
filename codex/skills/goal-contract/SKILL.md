@@ -72,8 +72,18 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
   Construction or Counterexample lineage: return the current Construction
   identity to Actuating, which selects a successor with exactly one predecessor.
   Only the first Construction in the current authoritative v3 lineage for the
-  `goal_id` may be initial with no predecessor. Never edit a predecessor in
-  place.
+  `goal_id` may be initial with no predecessor. When an explicit source revision
+  occurs while accepted or blocked Counterexamples remain unresolved, or
+  brings a `follow-up` class within the successor Goal's scope, use the
+  carry-forward transition: cite every Set carrying those classes in the
+  successor Goal's `supporting_refs` as
+  `counterexample-set:<artifact_id>`; require a successor Set to cite that exact
+  Goal as `goal-contract:<artifact_id>` and each carried Set as
+  `counterexample-set:<artifact_id>`, evaluate the predecessor Construction,
+  preserve Set lineage, and assign every carried class a disposition; then
+  re-axiomatize before Actuating selects a successor Construction or permits an
+  affected mutation. Never edit a predecessor in place or use source revision
+  to erase review debt.
 
 ## Exclusions
 

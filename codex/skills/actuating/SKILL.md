@@ -1,25 +1,24 @@
 ---
 name: actuating
-description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY; when findings make an abstraction change live, integrate one bounded $glaze pass with $universalist before Actuating adjudicates. Actuating owns construction selection, orchestration, Counterexample evaluation, and the next action; Ledger is a non-executing artifact substrate and Ship alone owns public effects."
+description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $glaze pass when findings make abstraction change live. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
 ---
 
 # Actuating
 
-Turn accepted intent into a lawful construction, directly orchestrated effects,
-independent falsification, and an evidence-backed closure judgment.
+Turn accepted intent into a lawful construction, directly orchestrated effects, independent falsification, and an evidence-backed closure judgment.
 
 ## Authority kernel
 
 Use exactly four authoritative per-goal artifact families:
 
-1. `goal-contract/v3` — accepted semantics, authority, scope, compatibility,
-   laws, and acceptance, compiled by `$goal-contract`.
+1. `goal-contract/v3` — accepted semantics, authority, scope, compatibility, laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
 3. `construction-contract/v3` — the selected architecture, four compared
    candidate families, factor surfaces, supersession, proof obligations,
-   preserved observations, and retirements, authored by `$actuating` after a
-   `$universalist` nomination and, when required, one `$reduce` challenge.
+   preserved observations, and retirements, authored by `$actuating` after an
+   Actuating-bound `$first-principles` basis, a `$universalist` nomination, and,
+   when required, one `$reduce` challenge.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
    retain their domain owners.
 
@@ -49,13 +48,16 @@ Actuating owns:
 - application of the closure theorem and authorship of its semantic receipt.
 
 `$review-fold` must classify witnessed facts before Actuating selects any
-repair. `$universalist` nominates the essential boundary shape. When an
-abstraction change is live, `$glaze` performs one bounded generative
-escalation and `$universalist` lowers any material result into its nomination.
-`$reduce` may then challenge the nominated factors by testing congruent
-quotients, ablations, and recomposition. The composition order is
-`activate -> nominate -> glaze once when triggered -> lower -> challenge once
--> adjudicate`; Actuating alone performs the adjudication. Neither supporting
+repair. `$first-principles` establishes the admissible premise basis and one
+incumbent-independent derivation for the current Construction problem without
+revising the Goal. `$universalist` lowers the admissible derivation and
+nominates the essential boundary shape. When an abstraction change is live,
+`$glaze` performs one bounded generative escalation and `$universalist` lowers
+any material result into its nomination. `$reduce` may then challenge the
+nominated factors by testing congruent quotients, ablations, and recomposition.
+The composition order is `activate -> axiomatize once or retain the current
+basis -> nominate -> glaze once when triggered -> lower -> challenge once ->
+adjudicate`; Actuating alone performs the adjudication. Neither supporting
 skill, review prose, nor an optional plan or Reduction Certificate selects a
 Construction, Repair Disposition, operation, next action, or closure.
 
@@ -104,6 +106,83 @@ OPERATE ARCHITECTONICALLY
 
 This is an activation instruction, not evidence, authority, or a receipt.
 
+## Axiomatic Construction gate
+
+Before the first `$universalist` nomination for each materially new candidate
+universe, invoke `$first-principles` on the Construction problem with the
+current Goal Contract fixed as the irreducible outcome and sole semantic
+authority. In this composition, setting aside the current framing means
+bracketing inherited repository abstractions, conventions, analogies, owner
+boundaries, solution rationale, and alleged constraints. It does not authorize
+reopening source-bound Goal outcomes, laws, scope, compatibility, authority,
+acceptance, or proof posture.
+
+Inspect the incumbent only to establish observed facts, external obligations,
+and host enforcement capabilities. Do not admit its current abstractions,
+names, factorization, or rationale as axioms. Freeze the incumbent-independent
+derivation before using the incumbent as a comparator, then record this compact,
+non-authoritative view:
+
+~~~text
+Axiomatic Construction Basis
+Goal axioms:
+Observed facts:
+Necessary constraints:
+Chosen objectives:
+Irreducible postulates:
+Definitions:
+Derived claims:
+Rejected inherited premises:
+Governing invariants and causal mechanisms:
+Incumbent-independent derivation:
+Incumbent comparison:
+Basis status: sufficient | underdetermined | inconsistent | blocked
+Invalidators:
+Falsifier:
+~~~
+
+The basis is an ephemeral proof lease over exact Goal, fact, constraint, and
+host-capability inputs, not a fifth authority artifact or a new
+`construction-contract/v3` field. It expires at session end, compaction, or
+execution-context handoff and is never reconstructed from a materialized
+Construction. A subject digest change alone does not expire it: within one
+uninterrupted run, a premise-neutral realization repair may retain the lease
+while every bound input and invalidator remains current. Any later run or subject
+change that alters a bound input or invalidator must re-axiomatize before
+nomination or affected mutation. Compile its material conclusions into the
+existing Goal and observation references, residual assumptions, candidate
+factors, obligations, retirements, and falsifiers. A candidate may use
+`derivation: incumbent-independent` only after `$universalist` lowers the frozen
+derivation into one of the four canonical candidate families.
+
+`$first-principles` may expose an inconsistent Goal projection or missing
+authority, but it must return that as `inconsistent` or `blocked`; it may not
+rewrite the Goal. `underdetermined` preserves every materially incomparable
+derivation for later comparison and blocks if Actuating cannot distinguish them
+by current Goal law, observation, or dominance. A new explicit source
+preference has no effect until `$goal-contract` compiles it into a successor
+Goal Contract. When accepted or blocked Counterexamples remain unresolved, or
+when the revision brings a `follow-up` class within the successor Goal's scope,
+the successor Goal must cite every Set carrying those classes, and
+`$review-fold` must author a successor Set that cites the successor Goal,
+preserves predecessor lineage, evaluates the predecessor Construction, and
+assigns every carried class a disposition.
+Actuating re-axiomatizes only after that complete carry-forward and permits no
+affected mutation before successor Construction selection. Neither
+`$first-principles` nor its basis classifies Counterexamples, nominates or
+selects a Construction, grants mutation, or authors a durable decision.
+
+Retain the basis across premise-neutral subject changes only within the same
+uninterrupted run and while every bound input and invalidator remains current.
+Re-axiomatize before nomination after any execution-context handoff; when a
+successor Goal changes semantics, compatibility, authority, or proof posture;
+when new evidence changes an observed fact, necessary constraint, or host
+capability; when an accepted finding falsifies a premise; when architecture or
+ablation repair becomes live; or when the Causal recurrence gate triggers. A
+Glaze result may supply a new derivation under the current basis. If it requires
+a new premise, admit that premise only through fresh source authority or
+evidence and re-axiomatize before lowering; Glaze cannot manufacture axioms.
+
 After `$review-fold` has classified any findings, invoke `$glaze` exactly once
 after the first `$universalist` nomination and before candidate adjudication
 when an accepted class:
@@ -148,25 +227,29 @@ same finding set and nomination version.
    [$goal-contract](../goal-contract/SKILL.md). Do not select architecture in
    the Goal Contract. Require its returned canonical artifact, non-null
    `artifact_id`, and `goal_contract_registered` event before continuing.
-2. Enter the Architectonic decision gate. Inspect the repository boundary,
-   existing owner, host enforcement capabilities, and required observations.
-   Apply `$universalist` at every changed or preserved boundary and retain its
-   compact nomination: candidate, owner, laws, observations, residuals,
-   invalidators, and falsifier. When an abstraction-change trigger is present,
-   complete the bounded Glaze pass and Universalist reclassification before
-   continuing.
+2. Enter the Architectonic decision gate. Establish or retain the current
+   Axiomatic Construction Basis before nomination. Inspect the repository
+   boundary, existing owner, host enforcement capabilities, and required
+   observations under that basis. Apply `$universalist` at every changed or
+   preserved boundary and retain its compact nomination: candidate, owner,
+   laws, observations, residuals, invalidators, and falsifier. The nomination
+   must lower the frozen incumbent-independent derivation into one canonical
+   candidate family. When an abstraction-change trigger is present, complete
+   the bounded Glaze pass and Universalist reclassification before continuing.
 3. Compile exactly four ordinary candidate families in canonical order:
    `realization-preserve`, `admitted-domain-restriction`,
    `representation-or-owner-strengthening`, and `ablation-normalization`.
-   Give each candidate an explicit factor inventory and falsifier, and mark
-   exactly one selected. Classify the nominated candidate's factors. Invoke
-   `$reduce` exactly once for that candidate version when it
-   adds or preserves an independent semantic owner, parallel representation,
-   bypass, compatibility branch, semantic mechanism, or apparently dominated
-   residue. Otherwise record `Reduction: not-required`. When an accepted
-   Counterexample class can lead to mutation, record this
-   compact view over the current Construction selection before choosing an
-   operation; it is not a fifth authority artifact:
+   Give each candidate an explicit factor inventory and falsifier, mark at
+   least one genuinely `incumbent-independent`, and mark exactly one selected.
+   Reject any candidate factor or residual assumption that lacks a traceable
+   Goal, observation, necessary-constraint, or explicit-postulate derivation.
+   Classify the nominated candidate's factors. Invoke `$reduce` exactly once
+   for that candidate version when it adds or preserves an independent
+   semantic owner, parallel representation, bypass, compatibility branch,
+   semantic mechanism, or apparently dominated residue. Otherwise record
+   `Reduction: not-required`. When an accepted Counterexample class can lead to
+   mutation, record this compact view over the current Construction selection
+   before choosing an operation; it is not a fifth authority artifact:
 
    ~~~text
    Repair Disposition
@@ -181,11 +264,12 @@ same finding set and nomination version.
    A finding authorizes the invariant, not its suggested implementation.
    Choose the least additive route that satisfies the law; `add` must explain
    why `delete`, `consolidate`, and `edit` are insufficient.
-4. Adjudicate the nomination and challenge. Select the smallest non-dominated
-   Construction that satisfies every Goal law, makes invalid states
-   unrepresentable where feasible, and names exact proof and retirement
-   obligations. Record the predecessor and successor factor surfaces and a
-   total supersession partition: every factor is preserved, retired,
+4. Adjudicate the basis, nomination, and challenge. Select the smallest
+   non-dominated Construction that satisfies every Goal law, is derivable from
+   the current basis, makes invalid states unrepresentable where feasible, and
+   names exact proof and retirement obligations. Record the predecessor and
+   successor factor surfaces and a total supersession partition: every factor
+   is preserved, retired,
    introduced, or explicitly replaced. A `dominated` challenge selects the
    smaller admissible candidate; `incomparable`, `essential-shape-gap`, or
    `blocked` requires an Actuating disposition or obstruction, never recursive
@@ -270,11 +354,13 @@ Actuating then determines whether each accepted class is:
 - blocked by missing authority or evidence.
 
 Before deciding among these dispositions, enter the Architectonic decision
-gate. A `realization` classification is not established merely because the
-existing boundary can accept another local edit. When a finding challenges the
-current abstraction under the gate's triggers, run the bounded Glaze pass,
-lower any material reframe through `$universalist`, and compare it in the
-successor Construction before selecting the repair class.
+gate and establish the current-run Axiomatic Construction Basis. A
+`realization` classification is not established merely because the existing
+boundary can accept another local edit. If the finding falsifies a basis
+premise, or makes architecture or ablation repair live, re-axiomatize before
+the next `$universalist` nomination. Then run the bounded Glaze pass when
+triggered, lower any material reframe through `$universalist`, and compare it
+in the successor Construction before selecting the repair class.
 
 The successor records falsified and preserved predecessor claims, excluded
 Counterexample classes, stronger proof, and retirements. It must preserve
@@ -322,9 +408,10 @@ This is not a fifth authority artifact. The successor Construction carries the
 complete cluster in `counterexample_class_refs`, names the shared cause in
 `falsified_predecessor_claims`, and owns the selected proof and retirements.
 Do not select another affected repository mutation after the gate triggers.
-The recurrence trigger also makes abstraction change live under the
-Architectonic decision gate, so complete the single Glaze pass and
-Universalist reclassification before this candidate comparison.
+The recurrence trigger also invalidates the prior candidate universe and makes
+abstraction change live under the Architectonic decision gate. Re-axiomatize,
+then complete the single Glaze pass and Universalist reclassification before
+this candidate comparison.
 `instance-specific` is legal only when a non-example proof separates the
 cluster and establishes that the current representation remains sufficient.
 Otherwise select an architecture or ablation successor, or block.
@@ -347,6 +434,9 @@ the successor Construction and next operation; the same candidate and evidence
 never enter a recursive reduction loop.
 
 ## Review convergence
+
+`$first-principles` is a Construction-selection pass, not a review lens. Keep
+the static review topology at standard plus the existing four auxiliaries.
 
 Follow [review-contract.md](references/review-contract.md). Preserve all of
 these laws:
@@ -383,13 +473,25 @@ render a complete result but cannot decide it. Complete the handoff or report
 before the source-memory checkpoint; learning status cannot delay, invalidate,
 or roll back delivery closure.
 
+The Axiomatic Construction gate applies prospectively only when a route selects
+a new or successor Construction. Every non-selecting route—including `triage`,
+Ship handoff or publication, and `ACT-CLOSE`—may consume a valid pre-feature
+`construction-contract/v3` that lacks basis provenance; record that provenance
+as unavailable, award it no basis or selection proof, and preserve the artifact
+for review or closure. Any transition to mutation or new Construction selection
+requires fresh axiomatization and a successor Construction.
+
 ## Fail closed
 
-Always block on stale or missing authority, Goal, Construction, or subject;
-unresolved accepted or blocked Counterexamples; out-of-scope operations;
-incomplete proof or retirement; missing Construction or recurring-class
-predecessor lineage; a public effect outside Ship; or any attempt by Ledger or
-an executor to take Actuating's semantic authority. For a
+Always block on stale or missing authority, Goal, Construction, or subject; a
+prospective material selection with a missing, stale, inconsistent, blocked, or
+unresolvedly underdetermined Axiomatic Construction Basis or an
+`incumbent-independent` marker without a traceable frozen derivation and
+Universalist lowering; unresolved accepted or blocked Counterexamples;
+out-of-scope operations; incomplete proof or retirement; missing Construction
+or recurring-class predecessor lineage; a public effect outside Ship; or any
+attempt by a supporting skill, Ledger, or an executor to take Actuating's
+semantic authority. For a
 `final-closeout` `complete` verdict, also block on stale or missing review
 identity, CAS receipt mismatch, unresolved request-local recovery, or fewer than
 five current-subject standard clean attempts, and—when the Goal requires
