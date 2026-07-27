@@ -2038,6 +2038,72 @@
       "right": "/artifact/payload/execution/owner_boundary"
     },
     {
+      "op": "reference-exists",
+      "input": "construction",
+      "sources": [
+        {
+          "path": "/artifact/payload/recompilation/candidates",
+          "reference": "/law_refs"
+        },
+        {
+          "path": "/artifact/payload/recompilation/candidates",
+          "items": "/factors",
+          "reference": "/law_refs"
+        },
+        {
+          "path": "/artifact/payload/semantic_surface/predecessor_factors",
+          "reference": "/law_refs"
+        },
+        {
+          "path": "/artifact/payload/semantic_surface/successor_factors",
+          "reference": "/law_refs"
+        },
+        {
+          "path": "/artifact/payload/supersession/essential_additions",
+          "reference": "/law_refs"
+        }
+      ],
+      "targets": [
+        {
+          "path": "/artifact/payload/architecture/governing_law_refs",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "op": "reference-exists",
+      "input": "construction",
+      "sources": [
+        {
+          "path": "/artifact/payload/recompilation/candidates",
+          "reference": "/observation_refs"
+        },
+        {
+          "path": "/artifact/payload/recompilation/candidates",
+          "items": "/factors",
+          "reference": "/observation_refs"
+        },
+        {
+          "path": "/artifact/payload/semantic_surface/predecessor_factors",
+          "reference": "/observation_refs"
+        },
+        {
+          "path": "/artifact/payload/semantic_surface/successor_factors",
+          "reference": "/observation_refs"
+        },
+        {
+          "path": "/artifact/payload/supersession/essential_additions",
+          "reference": "/proof_refs"
+        }
+      ],
+      "targets": [
+        {
+          "path": "/artifact/payload/proof_obligations",
+          "key": "/obligation_id"
+        }
+      ]
+    },
+    {
       "op": "keyed-unique",
       "input": "construction",
       "sources": [
