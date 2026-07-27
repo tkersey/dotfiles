@@ -1,0 +1,3623 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/evidence-protocol",
+  "owner": "actuating",
+  "imports": [
+    {
+      "id": "actuating/construction-contract",
+      "path": "construction-contract.json"
+    },
+    {
+      "id": "actuating/evidence-input",
+      "path": "evidence-input.json"
+    },
+    {
+      "id": "actuating/operation",
+      "path": "operation.json"
+    },
+    {
+      "id": "goal-contract/goal-contract",
+      "path": "../../../goal-contract/definitions/ledger/goal-contract.json"
+    },
+    {
+      "id": "review-fold/counterexample-set",
+      "path": "../../../review-fold/definitions/ledger/counterexample-set.json"
+    }
+  ],
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "body-digest",
+      "bounded-array",
+      "bounded-number",
+      "canonical-json",
+      "compare-and-append",
+      "cross-input-equal",
+      "definition-ref",
+      "digest",
+      "enum",
+      "event-digest",
+      "event-envelope",
+      "event-kinds",
+      "exact-object",
+      "field-equal",
+      "field-not-equal",
+      "fold",
+      "implies",
+      "member-of",
+      "none",
+      "one-of",
+      "path-format",
+      "path-scope-disjoint",
+      "path-scope-subset",
+      "previous-digest",
+      "reference-exists",
+      "reducer",
+      "replay",
+      "safe-identifier",
+      "secure-token",
+      "set-equality",
+      "sha256",
+      "sequence",
+      "subset"
+    ]
+  },
+  "parameters": {
+    "goal": {
+      "type": "safe_identifier",
+      "required": true
+    },
+    "capability": {
+      "type": "string",
+      "required": false
+    }
+  },
+  "inputs": {
+    "construction_registration": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    },
+    "counterexample_registration": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    },
+    "evidence": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    },
+    "goal_registration": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    },
+    "operation": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "construction_registration"
+      },
+      {
+        "op": "canonical-json",
+        "input": "counterexample_registration"
+      },
+      {
+        "op": "canonical-json",
+        "input": "evidence"
+      },
+      {
+        "op": "canonical-json",
+        "input": "goal_registration"
+      },
+      {
+        "op": "canonical-json",
+        "input": "operation"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "goal_registration",
+        "path": "",
+        "keys": [
+          "body",
+          "goal_id",
+          "schema"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "goal_registration",
+        "path": "/schema",
+        "values": [
+          "actuating-goal-registration/v1"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "goal_registration",
+        "path": "/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "definition-ref",
+        "input": "goal_registration",
+        "path": "/body",
+        "definition": "goal-contract/goal-contract"
+      },
+      {
+        "op": "digest",
+        "input": "goal_registration",
+        "path": "/body/artifact/artifact_id"
+      },
+      {
+        "op": "exact-object",
+        "input": "construction_registration",
+        "path": "",
+        "keys": [
+          "body",
+          "construction_ref",
+          "goal_id",
+          "schema",
+          "subject_digest"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "construction_registration",
+        "path": "/schema",
+        "values": [
+          "actuating-construction-registration/v1"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "construction_registration",
+        "path": "/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "digest",
+        "input": "construction_registration",
+        "path": "/construction_ref"
+      },
+      {
+        "op": "digest",
+        "input": "construction_registration",
+        "path": "/subject_digest"
+      },
+      {
+        "op": "definition-ref",
+        "input": "construction_registration",
+        "path": "/body",
+        "definition": "actuating/construction-contract"
+      },
+      {
+        "op": "digest",
+        "input": "construction_registration",
+        "path": "/body/artifact/artifact_id"
+      },
+      {
+        "op": "exact-object",
+        "input": "counterexample_registration",
+        "path": "",
+        "keys": [
+          "body",
+          "construction_ref",
+          "goal_id",
+          "schema",
+          "subject_digest"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "counterexample_registration",
+        "path": "/schema",
+        "values": [
+          "actuating-counterexample-registration/v1"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "counterexample_registration",
+        "path": "/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "digest",
+        "input": "counterexample_registration",
+        "path": "/construction_ref"
+      },
+      {
+        "op": "digest",
+        "input": "counterexample_registration",
+        "path": "/subject_digest"
+      },
+      {
+        "op": "definition-ref",
+        "input": "counterexample_registration",
+        "path": "/body",
+        "definition": "review-fold/counterexample-set"
+      },
+      {
+        "op": "digest",
+        "input": "counterexample_registration",
+        "path": "/body/artifact/artifact_id"
+      },
+      {
+        "op": "exact-object",
+        "input": "operation",
+        "path": "",
+        "keys": [
+          "body",
+          "construction_ref",
+          "goal_id",
+          "schema",
+          "subject_digest"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "operation",
+        "path": "/schema",
+        "values": [
+          "actuating-operation-request/v1"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "operation",
+        "path": "/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "digest",
+        "input": "operation",
+        "path": "/construction_ref"
+      },
+      {
+        "op": "digest",
+        "input": "operation",
+        "path": "/subject_digest"
+      },
+      {
+        "op": "definition-ref",
+        "input": "operation",
+        "path": "/body",
+        "definition": "actuating/operation"
+      },
+      {
+        "op": "definition-ref",
+        "input": "evidence",
+        "path": "",
+        "definition": "actuating/evidence-input"
+      },
+      {
+        "op": "event-envelope",
+        "input": "goal_registration",
+        "keys": [
+          "body",
+          "body_digest",
+          "construction_ref",
+          "event_digest",
+          "event_id",
+          "goal_id",
+          "kind",
+          "previous_digest",
+          "recorded_at",
+          "schema",
+          "sequence",
+          "subject_digest"
+        ],
+        "sequence": "/sequence",
+        "kind": "/kind",
+        "previous_digest": "/previous_digest",
+        "body": "/body",
+        "body_digest": "/body_digest",
+        "event_digest": "/event_digest",
+        "partition_bindings": [
+          {
+            "parameter": "goal",
+            "event_value": "/goal_id"
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [
+    {
+      "op": "field-equal",
+      "input": "goal_registration",
+      "left": "/goal_id",
+      "right": "/body/artifact/goal_id"
+    },
+    {
+      "op": "field-equal",
+      "input": "construction_registration",
+      "left": "/goal_id",
+      "right": "/body/artifact/goal_id"
+    },
+    {
+      "op": "field-equal",
+      "input": "construction_registration",
+      "left": "/construction_ref",
+      "right": "/body/artifact/artifact_id"
+    },
+    {
+      "op": "field-equal",
+      "input": "construction_registration",
+      "left": "/subject_digest",
+      "right": "/body/artifact/payload/subject/base_artifact_digest"
+    },
+    {
+      "op": "field-equal",
+      "input": "counterexample_registration",
+      "left": "/goal_id",
+      "right": "/body/artifact/goal_id"
+    },
+    {
+      "op": "field-equal",
+      "input": "counterexample_registration",
+      "left": "/construction_ref",
+      "right": "/body/artifact/payload/subject/construction_ref"
+    },
+    {
+      "op": "field-equal",
+      "input": "counterexample_registration",
+      "left": "/subject_digest",
+      "right": "/body/artifact/payload/subject/artifact_digest"
+    },
+    {
+      "op": "field-equal",
+      "input": "operation",
+      "left": "/goal_id",
+      "right": "/body/goal_id"
+    },
+    {
+      "op": "field-equal",
+      "input": "operation",
+      "left": "/construction_ref",
+      "right": "/body/construction_ref"
+    },
+    {
+      "op": "field-equal",
+      "input": "operation",
+      "left": "/subject_digest",
+      "right": "/body/expected_subject_digest"
+    },
+    {
+      "op": "sequence",
+      "start": 1
+    },
+    {
+      "op": "previous-digest",
+      "genesis": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "op": "body-digest"
+    },
+    {
+      "op": "event-digest"
+    },
+    {
+      "op": "event-kinds",
+      "values": [
+        "construction_contract_registered",
+        "counterexample_set_registered",
+        "effect_recorded",
+        "goal_contract_registered",
+        "operation_aborted",
+        "operation_observed",
+        "operation_prepared",
+        "publication_observed",
+        "review_attempt_completed",
+        "review_attempt_started",
+        "review_campaign_started",
+        "review_request_bound",
+        "review_transport_failed"
+      ]
+    },
+    {
+      "op": "reducer",
+      "mode": "retained",
+      "event_kind": "/kind",
+      "registers": [
+        {
+          "name": "consumed",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "construction",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "counterexample_classes",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "counterexamples",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "goal",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "lineage_construction",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "pending",
+          "max_bytes": 4194304
+        },
+        {
+          "name": "subject",
+          "max_bytes": 128
+        }
+      ],
+      "sets": [
+        {
+          "name": "counterexample_sets",
+          "max_entries": 10000,
+          "max_key_bytes": 128,
+          "max_bytes": 1048576
+        },
+        {
+          "name": "used_idempotency_keys",
+          "max_entries": 10000,
+          "max_key_bytes": 4194304,
+          "max_bytes": 8388608
+        },
+        {
+          "name": "used_step_ids",
+          "max_entries": 10000,
+          "max_key_bytes": 4194304,
+          "max_bytes": 8388608
+        }
+      ],
+      "admissions": [
+        {
+          "on": "goal_contract_registered",
+          "requires": [],
+          "forbids": [
+            "goal"
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "goal-contract/goal-contract"
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "max": 0
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "goal",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "set",
+              "register": "counterexample_classes",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs"
+            }
+          ]
+        },
+        {
+          "on": "goal_contract_registered",
+          "requires": [
+            "construction",
+            "counterexample_classes",
+            "goal"
+          ],
+          "forbids": [
+            "lineage_construction",
+            "pending"
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "goal-contract/goal-contract"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/predecessor_refs/0",
+              "right_input": "goal",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "field-not-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload",
+              "right_input": "goal",
+              "right": "/artifact/payload"
+            },
+            {
+              "op": "none",
+              "input": "counterexample_classes",
+              "path": "",
+              "rules": [
+                {
+                  "op": "enum",
+                  "path": "/value/status",
+                  "values": [
+                    "accepted",
+                    "blocked"
+                  ]
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "goal",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "set",
+              "register": "lineage_construction",
+              "input": "construction",
+              "path": ""
+            },
+            {
+              "op": "clear",
+              "register": "construction"
+            },
+            {
+              "op": "clear",
+              "register": "counterexamples"
+            },
+            {
+              "op": "clear",
+              "register": "subject"
+            }
+          ]
+        },
+        {
+          "on": "goal_contract_registered",
+          "requires": [
+            "counterexample_classes",
+            "goal"
+          ],
+          "forbids": [
+            "construction",
+            "lineage_construction",
+            "pending",
+            "subject"
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "goal-contract/goal-contract"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/predecessor_refs/0",
+              "right_input": "goal",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "field-not-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload",
+              "right_input": "goal",
+              "right": "/artifact/payload"
+            },
+            {
+              "op": "none",
+              "input": "counterexample_classes",
+              "path": "",
+              "rules": [
+                {
+                  "op": "enum",
+                  "path": "/value/status",
+                  "values": [
+                    "accepted",
+                    "blocked"
+                  ]
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "goal",
+              "input": "event",
+              "path": "/body"
+            }
+          ]
+        },
+        {
+          "on": "construction_contract_registered",
+          "requires": [
+            "counterexample_classes",
+            "goal"
+          ],
+          "forbids": [
+            "construction",
+            "lineage_construction",
+            "pending"
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "actuating/construction-contract"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/goal_contract_ref",
+              "right_input": "goal",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "set-equality",
+              "input": "event",
+              "left": "/body/artifact/payload/counterexample_class_refs",
+              "right": "/body/artifact/payload/recompilation/evaluated_class_refs"
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "max": 0
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/payload/counterexample_class_refs",
+              "max": 0
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/mode",
+              "values": [
+                "initial"
+              ]
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/recompilation/trigger",
+              "values": [
+                "initial"
+              ]
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/supersession/disposition",
+              "values": [
+                "initial"
+              ]
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/payload/falsified_predecessor_claims",
+              "max": 0
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/payload/preserved_predecessor_claims",
+              "max": 0
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/subject/repository",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/repository"
+            },
+            {
+              "op": "path-scope-subset",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/allowed_paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/allowed_paths"
+            },
+            {
+              "op": "path-scope-disjoint",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/allowed_paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/prohibited_paths"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/architecture/governing_law_refs",
+              "reference": "",
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/proof_obligations",
+              "reference": "/law_ref",
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "goal",
+              "path": "/artifact/payload/acceptance/required_proof_kinds",
+              "reference": "",
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/proof_obligations",
+                  "key": "/proof_kind"
+                }
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/completion",
+              "right_input": "goal",
+              "right": "/artifact/payload/acceptance/terminal_route"
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "construction",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "set",
+              "register": "subject",
+              "input": "event",
+              "path": "/subject_digest"
+            }
+          ]
+        },
+        {
+          "on": "construction_contract_registered",
+          "requires": [
+            "counterexample_classes",
+            "goal",
+            "lineage_construction"
+          ],
+          "forbids": [
+            "construction",
+            "pending"
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "actuating/construction-contract"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/goal_contract_ref",
+              "right_input": "goal",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "set-equality",
+              "input": "event",
+              "left": "/body/artifact/payload/counterexample_class_refs",
+              "right": "/body/artifact/payload/recompilation/evaluated_class_refs"
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/payload/counterexample_class_refs",
+              "max": 0
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/recompilation/trigger",
+              "values": [
+                "initial"
+              ]
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/mode",
+              "values": [
+                "ablation-repair",
+                "architecture-repair",
+                "realization-repair"
+              ]
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/supersession/disposition",
+              "values": [
+                "essential-expansion",
+                "normalized",
+                "unchanged-realization"
+              ]
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/predecessor_refs/0",
+              "right_input": "lineage_construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/semantic_surface/predecessor_factors",
+              "right_input": "lineage_construction",
+              "right": "/artifact/payload/semantic_surface/successor_factors"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/semantic_surface/predecessor_factors",
+              "reference": "/observation_refs",
+              "target_input": "lineage_construction",
+              "targets": [
+                {
+                  "path": "/artifact/payload/proof_obligations",
+                  "key": "/obligation_id"
+                }
+              ]
+            },
+            {
+              "op": "implies",
+              "input": "event",
+              "if": "/body/artifact/payload/mode",
+              "equals": "realization-repair",
+              "rules": [
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/boundary",
+                  "right_input": "lineage_construction",
+                  "right": "/artifact/payload/boundary"
+                },
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/architecture",
+                  "right_input": "lineage_construction",
+                  "right": "/artifact/payload/architecture"
+                }
+              ]
+            },
+            {
+              "op": "implies",
+              "input": "event",
+              "if": "/body/artifact/payload/mode",
+              "equals": "ablation-repair",
+              "rules": [
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/boundary",
+                  "right_input": "lineage_construction",
+                  "right": "/artifact/payload/boundary"
+                },
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/architecture",
+                  "right_input": "lineage_construction",
+                  "right": "/artifact/payload/architecture"
+                }
+              ]
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/payload/falsified_predecessor_claims",
+              "min": 1
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/subject/repository",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/repository"
+            },
+            {
+              "op": "path-scope-subset",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/allowed_paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/allowed_paths"
+            },
+            {
+              "op": "path-scope-disjoint",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/allowed_paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/prohibited_paths"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/architecture/governing_law_refs",
+              "reference": "",
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/proof_obligations",
+              "reference": "/law_ref",
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "goal",
+              "path": "/artifact/payload/acceptance/required_proof_kinds",
+              "reference": "",
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/proof_obligations",
+                  "key": "/proof_kind"
+                }
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/completion",
+              "right_input": "goal",
+              "right": "/artifact/payload/acceptance/terminal_route"
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "construction",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "set",
+              "register": "subject",
+              "input": "event",
+              "path": "/subject_digest"
+            },
+            {
+              "op": "clear",
+              "register": "lineage_construction"
+            }
+          ]
+        },
+        {
+          "on": "construction_contract_registered",
+          "requires": [
+            "construction",
+            "counterexample_classes",
+            "counterexamples",
+            "goal"
+          ],
+          "forbids": [
+            "lineage_construction",
+            "pending"
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "actuating/construction-contract"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/goal_contract_ref",
+              "right_input": "goal",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "set-equality",
+              "input": "event",
+              "left": "/body/artifact/payload/counterexample_class_refs",
+              "right": "/body/artifact/payload/recompilation/evaluated_class_refs"
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/mode",
+              "values": [
+                "ablation-repair",
+                "architecture-repair",
+                "realization-repair"
+              ]
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/supersession/disposition",
+              "values": [
+                "essential-expansion",
+                "normalized",
+                "unchanged-realization"
+              ]
+            },
+            {
+              "op": "enum",
+              "input": "event",
+              "path": "/body/artifact/payload/recompilation/trigger",
+              "values": [
+                "accepted-review-fold"
+              ]
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "min": 1,
+              "max": 1
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/predecessor_refs/0",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/semantic_surface/predecessor_factors",
+              "right_input": "construction",
+              "right": "/artifact/payload/semantic_surface/successor_factors"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/semantic_surface/predecessor_factors",
+              "reference": "/observation_refs",
+              "target_input": "construction",
+              "targets": [
+                {
+                  "path": "/artifact/payload/proof_obligations",
+                  "key": "/obligation_id"
+                }
+              ]
+            },
+            {
+              "op": "implies",
+              "input": "event",
+              "if": "/body/artifact/payload/mode",
+              "equals": "realization-repair",
+              "rules": [
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/boundary",
+                  "right_input": "construction",
+                  "right": "/artifact/payload/boundary"
+                },
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/architecture",
+                  "right_input": "construction",
+                  "right": "/artifact/payload/architecture"
+                }
+              ]
+            },
+            {
+              "op": "implies",
+              "input": "event",
+              "if": "/body/artifact/payload/mode",
+              "equals": "ablation-repair",
+              "rules": [
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/boundary",
+                  "right_input": "construction",
+                  "right": "/artifact/payload/boundary"
+                },
+                {
+                  "op": "cross-input-equal",
+                  "input": "event",
+                  "left_input": "event",
+                  "left": "/body/artifact/payload/architecture",
+                  "right_input": "construction",
+                  "right": "/artifact/payload/architecture"
+                }
+              ]
+            },
+            {
+              "op": "bounded-array",
+              "input": "event",
+              "path": "/body/artifact/payload/falsified_predecessor_claims",
+              "min": 1
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "implies",
+              "input": "construction",
+              "if": "/artifact/payload/counterexample_class_refs",
+              "empty": true,
+              "rules": [
+                {
+                  "op": "bounded-array",
+                  "input": "event",
+                  "path": "/body/artifact/payload/counterexample_class_refs",
+                  "min": 1
+                }
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/recompilation/counterexample_set_ref",
+              "right_input": "counterexamples",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "counterexamples",
+              "left_input": "counterexamples",
+              "left": "/artifact/payload/subject/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "counterexamples",
+              "left_input": "counterexamples",
+              "left": "/artifact/payload/subject/artifact_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/subject/repository",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/repository"
+            },
+            {
+              "op": "path-scope-subset",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/allowed_paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/allowed_paths"
+            },
+            {
+              "op": "path-scope-disjoint",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/allowed_paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/prohibited_paths"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/architecture/governing_law_refs",
+              "reference": "",
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/artifact/payload/proof_obligations",
+              "reference": "/law_ref",
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "goal",
+              "path": "/artifact/payload/acceptance/required_proof_kinds",
+              "reference": "",
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/proof_obligations",
+                  "key": "/proof_kind"
+                }
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/execution/completion",
+              "right_input": "goal",
+              "right": "/artifact/payload/acceptance/terminal_route"
+            },
+            {
+              "op": "reference-exists",
+              "input": "counterexample_classes",
+              "sources": [
+                {
+                  "path": "",
+                  "reference": "/key",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/value/status",
+                      "values": [
+                        "accepted"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/counterexample_class_refs",
+                  "key": ""
+                }
+              ],
+              "coverage": "all-targets"
+            },
+            {
+              "op": "reference-exists",
+              "input": "counterexample_classes",
+              "sources": [
+                {
+                  "path": "",
+                  "reference": "/value/law_ref",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/value/status",
+                      "values": [
+                        "accepted"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/architecture/governing_law_refs",
+                  "key": ""
+                }
+              ]
+            },
+            {
+              "op": "reference-exists",
+              "input": "counterexample_classes",
+              "sources": [
+                {
+                  "path": "",
+                  "reference": "/key",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/value/status",
+                      "values": [
+                        "accepted"
+                      ]
+                    }
+                  ],
+                  "fragments": [
+                    {
+                      "item": "/value/law_ref"
+                    },
+                    {
+                      "literal": "\u0000"
+                    },
+                    {
+                      "item": "/value/owner_boundary"
+                    }
+                  ]
+                }
+              ],
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/proof_obligations",
+                  "fragments": [
+                    {
+                      "item": "/law_ref"
+                    },
+                    {
+                      "literal": "\u0000"
+                    },
+                    {
+                      "item": "/owner_boundary"
+                    }
+                  ],
+                  "match_rules": [
+                    {
+                      "op": "enum",
+                      "path": "/proof_kind",
+                      "values": [
+                        "implementation"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": "reference-exists",
+              "input": "counterexample_classes",
+              "sources": [
+                {
+                  "path": "",
+                  "reference": "/key",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/value/status",
+                      "values": [
+                        "accepted"
+                      ]
+                    },
+                    {
+                      "op": "bounded-number",
+                      "path": "/occurrences",
+                      "min": 2
+                    }
+                  ],
+                  "fragments": [
+                    {
+                      "item": "/value/law_ref"
+                    },
+                    {
+                      "literal": "\u0000"
+                    },
+                    {
+                      "item": "/value/owner_boundary"
+                    }
+                  ]
+                }
+              ],
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/proof_obligations",
+                  "fragments": [
+                    {
+                      "item": "/law_ref"
+                    },
+                    {
+                      "literal": "\u0000"
+                    },
+                    {
+                      "item": "/owner_boundary"
+                    }
+                  ],
+                  "match_rules": [
+                    {
+                      "op": "enum",
+                      "path": "/proof_kind",
+                      "values": [
+                        "implementation"
+                      ]
+                    },
+                    {
+                      "op": "enum",
+                      "path": "/proof_mode",
+                      "values": [
+                        "differential",
+                        "exhaustive-model",
+                        "property-law",
+                        "representation",
+                        "static-refinement",
+                        "total-transition"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": "reference-exists",
+              "input": "counterexample_classes",
+              "sources": [
+                {
+                  "path": "",
+                  "reference": "/key",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/value/status",
+                      "values": [
+                        "accepted"
+                      ]
+                    },
+                    {
+                      "op": "enum",
+                      "path": "/value/severity",
+                      "values": [
+                        "critical",
+                        "high"
+                      ]
+                    }
+                  ],
+                  "fragments": [
+                    {
+                      "item": "/value/law_ref"
+                    },
+                    {
+                      "literal": "\u0000"
+                    },
+                    {
+                      "item": "/value/owner_boundary"
+                    }
+                  ]
+                }
+              ],
+              "target_input": "event",
+              "targets": [
+                {
+                  "path": "/body/artifact/payload/proof_obligations",
+                  "fragments": [
+                    {
+                      "item": "/law_ref"
+                    },
+                    {
+                      "literal": "\u0000"
+                    },
+                    {
+                      "item": "/owner_boundary"
+                    }
+                  ],
+                  "match_rules": [
+                    {
+                      "op": "enum",
+                      "path": "/proof_kind",
+                      "values": [
+                        "implementation"
+                      ]
+                    },
+                    {
+                      "op": "enum",
+                      "path": "/proof_mode",
+                      "values": [
+                        "differential",
+                        "exhaustive-model",
+                        "property-law",
+                        "representation",
+                        "static-refinement",
+                        "total-transition"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "construction",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "set",
+              "register": "subject",
+              "input": "event",
+              "path": "/subject_digest"
+            },
+            {
+              "op": "clear",
+              "register": "counterexamples"
+            }
+          ]
+        },
+        {
+          "on": "counterexample_set_registered",
+          "requires": [
+            "construction",
+            "counterexample_classes",
+            "goal",
+            "subject"
+          ],
+          "forbids": [
+            "pending"
+          ],
+          "set_guards": [
+            {
+              "set": "counterexample_sets",
+              "input": "event",
+              "path": "/body/artifact/artifact_id",
+              "presence": "absent"
+            },
+            {
+              "set": "counterexample_sets",
+              "input": "event",
+              "path": "/body/artifact/predecessor_refs",
+              "presence": "present",
+              "mode": "each"
+            }
+          ],
+          "rules": [
+            {
+              "op": "definition-ref",
+              "input": "event",
+              "path": "/body",
+              "definition": "review-fold/counterexample-set"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/artifact/payload/subject/repository",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/repository"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "sources": [
+                {
+                  "path": "/body/artifact/payload/classes",
+                  "reference": "/law_ref",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/status",
+                      "values": [
+                        "accepted"
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "target_input": "goal",
+              "targets": [
+                {
+                  "path": "/artifact/payload/laws",
+                  "key": "/law_id"
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "counterexamples",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "upsert",
+              "register": "counterexample_classes",
+              "input": "event",
+              "path": "/body/artifact/payload/classes",
+              "key": "/class_id",
+              "source_ref": "/body/artifact/artifact_id",
+              "predecessor_refs": "/body/artifact/predecessor_refs",
+              "stable": [
+                "/boundary_key",
+                "/law_ref",
+                "/owner_boundary"
+              ],
+              "max_entries": 10000,
+              "max_key_bytes": 1024
+            },
+            {
+              "op": "insert",
+              "set": "counterexample_sets",
+              "input": "event",
+              "path": "/body/artifact/artifact_id"
+            }
+          ]
+        },
+        {
+          "on": "operation_prepared",
+          "requires": [
+            "construction",
+            "counterexample_classes",
+            "goal",
+            "subject"
+          ],
+          "forbids": [
+            "consumed",
+            "pending"
+          ],
+          "set_guards": [
+            {
+              "set": "used_idempotency_keys",
+              "input": "event",
+              "path": "/body/idempotency_key",
+              "presence": "absent"
+            },
+            {
+              "set": "used_step_ids",
+              "input": "event",
+              "path": "/body/step_id",
+              "presence": "absent"
+            }
+          ],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/owner_boundary",
+              "right_input": "construction",
+              "right": "/artifact/payload/execution/owner_boundary"
+            },
+            {
+              "op": "member-of",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/effect",
+              "right_input": "construction",
+              "right": "/artifact/payload/execution/operation_effects"
+            },
+            {
+              "op": "implies",
+              "input": "event",
+              "if": "/body/effect",
+              "equals": "edit",
+              "then_input": "goal",
+              "then": "/artifact/payload/authority/mutation_allowed",
+              "then_equals": true
+            },
+            {
+              "op": "implies",
+              "input": "event",
+              "if": "/body/effect",
+              "equals": "edit",
+              "rules": [
+                {
+                  "op": "none",
+                  "input": "counterexample_classes",
+                  "path": "",
+                  "rules": [
+                    {
+                      "op": "enum",
+                      "path": "/value/status",
+                      "values": [
+                        "blocked"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "reference-exists",
+                  "input": "counterexample_classes",
+                  "sources": [
+                    {
+                      "path": "",
+                      "reference": "/key",
+                      "rules": [
+                        {
+                          "op": "enum",
+                          "path": "/value/status",
+                          "values": [
+                            "accepted"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "target_input": "construction",
+                  "targets": [
+                    {
+                      "path": "/artifact/payload/counterexample_class_refs",
+                      "key": ""
+                    }
+                  ],
+                  "coverage": "all-targets"
+                },
+                {
+                  "op": "reference-exists",
+                  "input": "counterexample_classes",
+                  "sources": [
+                    {
+                      "path": "",
+                      "reference": "/value/law_ref",
+                      "rules": [
+                        {
+                          "op": "enum",
+                          "path": "/value/status",
+                          "values": [
+                            "accepted"
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "target_input": "construction",
+                  "targets": [
+                    {
+                      "path": "/artifact/payload/architecture/governing_law_refs",
+                      "key": ""
+                    }
+                  ]
+                },
+                {
+                  "op": "reference-exists",
+                  "input": "counterexample_classes",
+                  "sources": [
+                    {
+                      "path": "",
+                      "reference": "/key",
+                      "rules": [
+                        {
+                          "op": "enum",
+                          "path": "/value/status",
+                          "values": [
+                            "accepted"
+                          ]
+                        }
+                      ],
+                      "fragments": [
+                        {
+                          "item": "/value/law_ref"
+                        },
+                        {
+                          "literal": "\u0000"
+                        },
+                        {
+                          "item": "/value/owner_boundary"
+                        }
+                      ]
+                    }
+                  ],
+                  "target_input": "construction",
+                  "targets": [
+                    {
+                      "path": "/artifact/payload/proof_obligations",
+                      "fragments": [
+                        {
+                          "item": "/law_ref"
+                        },
+                        {
+                          "literal": "\u0000"
+                        },
+                        {
+                          "item": "/owner_boundary"
+                        }
+                      ],
+                      "match_rules": [
+                        {
+                          "op": "enum",
+                          "path": "/proof_kind",
+                          "values": [
+                            "implementation"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "reference-exists",
+                  "input": "counterexample_classes",
+                  "sources": [
+                    {
+                      "path": "",
+                      "reference": "/key",
+                      "rules": [
+                        {
+                          "op": "enum",
+                          "path": "/value/status",
+                          "values": [
+                            "accepted"
+                          ]
+                        },
+                        {
+                          "op": "bounded-number",
+                          "path": "/occurrences",
+                          "min": 2
+                        }
+                      ],
+                      "fragments": [
+                        {
+                          "item": "/value/law_ref"
+                        },
+                        {
+                          "literal": "\u0000"
+                        },
+                        {
+                          "item": "/value/owner_boundary"
+                        }
+                      ]
+                    }
+                  ],
+                  "target_input": "construction",
+                  "targets": [
+                    {
+                      "path": "/artifact/payload/proof_obligations",
+                      "fragments": [
+                        {
+                          "item": "/law_ref"
+                        },
+                        {
+                          "literal": "\u0000"
+                        },
+                        {
+                          "item": "/owner_boundary"
+                        }
+                      ],
+                      "match_rules": [
+                        {
+                          "op": "enum",
+                          "path": "/proof_kind",
+                          "values": [
+                            "implementation"
+                          ]
+                        },
+                        {
+                          "op": "enum",
+                          "path": "/proof_mode",
+                          "values": [
+                            "differential",
+                            "exhaustive-model",
+                            "property-law",
+                            "representation",
+                            "static-refinement",
+                            "total-transition"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "reference-exists",
+                  "input": "counterexample_classes",
+                  "sources": [
+                    {
+                      "path": "",
+                      "reference": "/key",
+                      "rules": [
+                        {
+                          "op": "enum",
+                          "path": "/value/status",
+                          "values": [
+                            "accepted"
+                          ]
+                        },
+                        {
+                          "op": "enum",
+                          "path": "/value/severity",
+                          "values": [
+                            "critical",
+                            "high"
+                          ]
+                        }
+                      ],
+                      "fragments": [
+                        {
+                          "item": "/value/law_ref"
+                        },
+                        {
+                          "literal": "\u0000"
+                        },
+                        {
+                          "item": "/value/owner_boundary"
+                        }
+                      ]
+                    }
+                  ],
+                  "target_input": "construction",
+                  "targets": [
+                    {
+                      "path": "/artifact/payload/proof_obligations",
+                      "fragments": [
+                        {
+                          "item": "/law_ref"
+                        },
+                        {
+                          "literal": "\u0000"
+                        },
+                        {
+                          "item": "/owner_boundary"
+                        }
+                      ],
+                      "match_rules": [
+                        {
+                          "op": "enum",
+                          "path": "/proof_kind",
+                          "values": [
+                            "implementation"
+                          ]
+                        },
+                        {
+                          "op": "enum",
+                          "path": "/proof_mode",
+                          "values": [
+                            "differential",
+                            "exhaustive-model",
+                            "property-law",
+                            "representation",
+                            "static-refinement",
+                            "total-transition"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "op": "path-scope-subset",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/paths",
+              "right_input": "construction",
+              "right": "/artifact/payload/execution/allowed_paths"
+            },
+            {
+              "op": "path-scope-disjoint",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/paths",
+              "right_input": "goal",
+              "right": "/artifact/payload/scope/prohibited_paths"
+            },
+            {
+              "op": "reference-exists",
+              "input": "event",
+              "path": "/body/proof_obligation_refs",
+              "reference": "",
+              "target_input": "construction",
+              "targets": [
+                {
+                  "path": "/artifact/payload/proof_obligations",
+                  "key": "/obligation_id",
+                  "match_rules": [
+                    {
+                      "op": "enum",
+                      "path": "/proof_kind",
+                      "values": [
+                        "acceptance",
+                        "implementation"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "path": "/artifact/payload/proof_obligations",
+                  "fragments": [
+                    {
+                      "item": "/obligation_id"
+                    },
+                    {
+                      "literal": "#falsifier"
+                    }
+                  ],
+                  "match_rules": [
+                    {
+                      "op": "enum",
+                      "path": "/proof_kind",
+                      "values": [
+                        "acceptance",
+                        "implementation"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "path": "/artifact/payload/retirements",
+                  "key": "/retirement_id"
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "pending",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "insert",
+              "set": "used_idempotency_keys",
+              "input": "event",
+              "path": "/body/idempotency_key"
+            },
+            {
+              "op": "insert",
+              "set": "used_step_ids",
+              "input": "event",
+              "path": "/body/step_id"
+            }
+          ]
+        },
+        {
+          "on": "effect_recorded",
+          "requires": [
+            "construction",
+            "goal",
+            "pending",
+            "subject"
+          ],
+          "forbids": [
+            "consumed"
+          ],
+          "rules": [
+            {
+              "op": "enum",
+              "input": "pending",
+              "path": "/effect",
+              "values": [
+                "edit"
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/step_id",
+              "right_input": "pending",
+              "right": "/step_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/capability_digest",
+              "right_input": "pending",
+              "right": "/capability_digest"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/pre_effect_subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "set-equality",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/changed_paths",
+              "right_input": "pending",
+              "right": "/paths"
+            }
+          ],
+          "actions": [
+            {
+              "op": "set",
+              "register": "consumed",
+              "input": "event",
+              "path": "/body"
+            },
+            {
+              "op": "set",
+              "register": "subject",
+              "input": "event",
+              "path": "/subject_digest"
+            }
+          ]
+        },
+        {
+          "on": "operation_observed",
+          "requires": [
+            "construction",
+            "goal",
+            "pending",
+            "subject"
+          ],
+          "forbids": [
+            "consumed"
+          ],
+          "rules": [
+            {
+              "op": "enum",
+              "input": "pending",
+              "path": "/effect",
+              "values": [
+                "inspect",
+                "verify"
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/step_id",
+              "right_input": "pending",
+              "right": "/step_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/capability_digest",
+              "right_input": "pending",
+              "right": "/capability_digest"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "subset",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/discharged_refs",
+              "right_input": "pending",
+              "right": "/proof_obligation_refs"
+            }
+          ],
+          "actions": [
+            {
+              "op": "clear",
+              "register": "pending"
+            }
+          ]
+        },
+        {
+          "on": "operation_observed",
+          "requires": [
+            "construction",
+            "consumed",
+            "goal",
+            "pending",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "enum",
+              "input": "pending",
+              "path": "/effect",
+              "values": [
+                "edit"
+              ]
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/step_id",
+              "right_input": "pending",
+              "right": "/step_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/capability_digest",
+              "right_input": "pending",
+              "right": "/capability_digest"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "subset",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/discharged_refs",
+              "right_input": "pending",
+              "right": "/proof_obligation_refs"
+            }
+          ],
+          "actions": [
+            {
+              "op": "clear",
+              "register": "consumed"
+            },
+            {
+              "op": "clear",
+              "register": "pending"
+            }
+          ]
+        },
+        {
+          "on": "operation_aborted",
+          "requires": [
+            "construction",
+            "goal",
+            "pending",
+            "subject"
+          ],
+          "forbids": [
+            "consumed"
+          ],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/step_id",
+              "right_input": "pending",
+              "right": "/step_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/capability_digest",
+              "right_input": "pending",
+              "right": "/capability_digest"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": [
+            {
+              "op": "clear",
+              "register": "pending"
+            }
+          ]
+        },
+        {
+          "on": "operation_aborted",
+          "requires": [
+            "construction",
+            "consumed",
+            "goal",
+            "pending",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/step_id",
+              "right_input": "pending",
+              "right": "/step_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/body/capability_digest",
+              "right_input": "pending",
+              "right": "/capability_digest"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": [
+            {
+              "op": "clear",
+              "register": "consumed"
+            },
+            {
+              "op": "clear",
+              "register": "pending"
+            }
+          ]
+        },
+        {
+          "on": "publication_observed",
+          "requires": [
+            "construction",
+            "goal",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": []
+        },
+        {
+          "on": "review_campaign_started",
+          "requires": [
+            "construction",
+            "goal",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            },
+            {
+              "op": "sha256",
+              "input": "event",
+              "path": "",
+              "mode": "framed-fields",
+              "field": "/body/campaign_id",
+              "prefix": "actuating-review-campaign/v1\u0000",
+              "fragments": [
+                {
+                  "parent": "/goal_id"
+                },
+                {
+                  "literal": "\u0000"
+                },
+                {
+                  "parent": "/construction_ref"
+                },
+                {
+                  "literal": "\u0000"
+                },
+                {
+                  "parent": "/subject_digest"
+                },
+                {
+                  "literal": "\u0000"
+                },
+                {
+                  "parent": "/body/review_contract_digest"
+                }
+              ],
+              "max_bytes": 4096
+            }
+          ],
+          "actions": []
+        },
+        {
+          "on": "review_request_bound",
+          "requires": [
+            "construction",
+            "goal",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": []
+        },
+        {
+          "on": "review_attempt_started",
+          "requires": [
+            "construction",
+            "goal",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": []
+        },
+        {
+          "on": "review_attempt_completed",
+          "requires": [
+            "construction",
+            "goal",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": []
+        },
+        {
+          "on": "review_transport_failed",
+          "requires": [
+            "construction",
+            "goal",
+            "subject"
+          ],
+          "forbids": [],
+          "rules": [
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/goal_id",
+              "right_input": "goal",
+              "right": "/artifact/goal_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/construction_ref",
+              "right_input": "construction",
+              "right": "/artifact/artifact_id"
+            },
+            {
+              "op": "cross-input-equal",
+              "input": "event",
+              "left_input": "event",
+              "left": "/subject_digest",
+              "right_input": "subject",
+              "right": ""
+            }
+          ],
+          "actions": []
+        }
+      ]
+    }
+  ],
+  "identity": {},
+  "storage": {
+    "kind": "event-log",
+    "slots": {
+      "events": {
+        "path": "actuation/{goal}/evidence.jsonl",
+        "kind": "event-log",
+        "codec": "jsonl",
+        "max_bytes": 16777216
+      }
+    }
+  },
+  "operations": {
+    "bind-review-request": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "review_request_bound"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "review_request_bound"
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "complete-review-attempt": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "review_attempt_completed"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "review_attempt_completed"
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "record-publication": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "publication_observed"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "publication_observed"
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "record-review-transport-failure": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "review_transport_failed"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "review_transport_failed"
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "start-review-attempt": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "review_attempt_started"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "review_attempt_started"
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "start-review-campaign": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "review_campaign_started"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "review_campaign_started"
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "record-effect": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "effect_recorded"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "effect_recorded"
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "capability_digest",
+                "parameter_sha256": {
+                  "parameter": "capability",
+                  "expected_state": {
+                    "register": "pending",
+                    "path": "/capability_digest"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "observe-readonly-operation": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_observed"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_observed"
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "capability_digest",
+                "parameter_sha256": {
+                  "parameter": "capability",
+                  "expected_state": {
+                    "register": "pending",
+                    "path": "/capability_digest"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "observe-edit-operation": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_observed"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_observed"
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "capability_digest",
+                "state_value": {
+                  "register": "pending",
+                  "path": "/capability_digest"
+                }
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "abort-operation": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "evidence",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_aborted"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-input/v1"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_aborted"
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "capability_digest",
+                "state_value": {
+                  "register": "pending",
+                  "path": "/capability_digest"
+                }
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "prepare-operation": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "operation",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "operation_prepared"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-operation-request/v1"
+              }
+            ],
+            "generate": [
+              {
+                "name": "capability",
+                "op": "secure-token",
+                "prefix": "AKC2-",
+                "bytes": 32
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "capability_digest",
+                "generated_sha256": "capability"
+              },
+              {
+                "field": "construction_ref",
+                "request_input": "construction_ref"
+              },
+              {
+                "field": "expected_subject_digest",
+                "request_input": "subject_digest"
+              },
+              {
+                "field": "goal_id",
+                "request_input": "goal_id"
+              },
+              {
+                "field": "schema",
+                "literal_mapping": {
+                  "request": "actuating-operation/v1",
+                  "stored": "operation-prepared/v1"
+                }
+              }
+            ],
+            "forbidden_parameters": [
+              "capability"
+            ]
+          }
+        }
+      ]
+    },
+    "register-construction": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "construction_registration",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "construction_contract_registered"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-construction-registration/v1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "register-counterexamples": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "counterexample_registration",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "counterexample_set_registered"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-counterexample-registration/v1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "register-goal": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "goal_registration",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "literal": null
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "literal": "goal_contract_registered"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "literal": null
+              }
+            ],
+            "request_literals": [
+              {
+                "field": "schema",
+                "literal": "actuating-goal-registration/v1"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "projections": {
+    "structural-facts": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "fields": {
+            "construction_ref": {
+              "register": "construction",
+              "path": "/artifact/artifact_id"
+            },
+            "counterexample_class_count": {
+              "register": "counterexample_classes",
+              "count": true
+            },
+            "event_count": {
+              "meta": "record-count"
+            },
+            "event_kinds": {
+              "meta": "event-kind-counts"
+            },
+            "goal_contract_ref": {
+              "register": "goal",
+              "path": "/artifact/artifact_id"
+            },
+            "goal_id": {
+              "register": "goal",
+              "path": "/artifact/goal_id"
+            },
+            "head_digest": {
+              "meta": "head-digest"
+            },
+            "pending_operation": {
+              "register": "pending"
+            },
+            "subject_digest": {
+              "register": "subject"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 33554432,
+    "max_records": 10000,
+    "max_output_bytes": 16777216,
+    "max_diagnostics": 64,
+    "max_reducer_states": 16
+  }
+}

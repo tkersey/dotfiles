@@ -16,6 +16,10 @@
       "path": "ledger/evidence-input.json"
     },
     {
+      "id": "actuating/evidence-protocol",
+      "path": "ledger/evidence-protocol.json"
+    },
+    {
       "id": "actuating/operation",
       "path": "ledger/operation.json"
     },
