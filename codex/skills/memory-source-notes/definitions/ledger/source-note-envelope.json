@@ -2,22 +2,18 @@
   "schema": "ledger-artifact-definition/v1",
   "id": "memory-source-notes/source-note-envelope",
   "owner": "memory-source-notes",
+  "imports": [
+    {
+      "id": "memory-source-notes/source-note-record",
+      "path": "source-note-record.json"
+    }
+  ],
   "requires": {
     "abi": "ledger-artifact-abi/v1",
     "operators": [
-      "all",
-      "bounded-array",
-      "bounded-object",
-      "bounded-string",
       "canonical-json",
-      "enum",
-      "exact-object",
-      "forbidden-object-keys",
-      "implies",
-      "one-of",
-      "optional-field",
-      "scalar-type",
-      "unique"
+      "definition-ref",
+      "exact-object"
     ]
   },
   "parameters": {},
@@ -58,249 +54,10 @@
         "allow_additional": false
       },
       {
-        "op": "enum",
-        "input": "note",
-        "path": "/operation",
-        "values": [
-          "assert",
-          "confirm",
-          "reject",
-          "reopen",
-          "retract",
-          "supersede"
-        ]
-      },
-      {
-        "op": "bounded-string",
-        "input": "note",
-        "path": "/authority",
-        "trimmed_min": 1,
-        "max": 128
-      },
-      {
-        "op": "bounded-string",
-        "input": "note",
-        "path": "/summary",
-        "trimmed_min": 1,
-        "max": 4096
-      },
-      {
-        "op": "exact-object",
-        "input": "note",
-        "path": "/scope",
-        "required_keys": [
-          "kind",
-          "paths",
-          "repo"
-        ],
-        "allow_additional": false
-      },
-      {
-        "op": "enum",
-        "input": "note",
-        "path": "/scope/kind",
-        "values": [
-          "global",
-          "path-family",
-          "repo",
-          "task-family",
-          "tool",
-          "workflow"
-        ]
-      },
-      {
-        "op": "one-of",
-        "input": "note",
-        "path": "/scope/repo",
-        "rules": [
-          {
-            "op": "enum",
-            "path": "",
-            "values": [
-              null
-            ]
-          },
-          {
-            "op": "bounded-string",
-            "path": "",
-            "max": 512
-          }
-        ]
-      },
-      {
-        "op": "bounded-array",
-        "input": "note",
-        "path": "/scope/paths",
-        "max": 128
-      },
-      {
-        "op": "all",
-        "input": "note",
-        "path": "/scope/paths",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "path": "",
-            "min": 1,
-            "max": 4096
-          }
-        ]
-      },
-      {
-        "op": "implies",
-        "input": "note",
-        "if": "/scope/kind",
-        "equals": "repo",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "path": "/scope/repo",
-            "min": 1,
-            "max": 512
-          }
-        ]
-      },
-      {
-        "op": "implies",
-        "input": "note",
-        "if": "/scope/kind",
-        "equals": "path-family",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "path": "/scope/repo",
-            "min": 1,
-            "max": 512
-          },
-          {
-            "op": "bounded-array",
-            "path": "/scope/paths",
-            "min": 1,
-            "max": 128
-          }
-        ]
-      },
-      {
-        "op": "bounded-array",
-        "input": "note",
-        "path": "/source_refs",
-        "min": 1,
-        "max": 128
-      },
-      {
-        "op": "all",
-        "input": "note",
-        "path": "/source_refs",
-        "rules": [
-          {
-            "op": "exact-object",
-            "path": "",
-            "keys": [
-              "kind",
-              "ref",
-              "summary"
-            ]
-          },
-          {
-            "op": "bounded-string",
-            "path": "/kind",
-            "trimmed_min": 1,
-            "max": 128
-          },
-          {
-            "op": "bounded-string",
-            "path": "/ref",
-            "trimmed_min": 1,
-            "max": 4096
-          },
-          {
-            "op": "bounded-string",
-            "path": "/summary",
-            "trimmed_min": 1,
-            "max": 4096
-          }
-        ]
-      },
-      {
-        "op": "optional-field",
-        "input": "note",
-        "path": "/related_ids",
-        "rules": [
-          {
-            "op": "bounded-array",
-            "path": "",
-            "max": 128
-          },
-          {
-            "op": "unique",
-            "path": ""
-          },
-          {
-            "op": "all",
-            "path": "",
-            "rules": [
-              {
-                "op": "bounded-string",
-                "path": "",
-                "trimmed_min": 1,
-                "max": 256
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "op": "optional-field",
-        "input": "note",
-        "path": "/supersedes_id",
-        "allow_null": true,
-        "rules": [
-          {
-            "op": "bounded-string",
-            "path": "",
-            "trimmed_min": 1,
-            "max": 256
-          }
-        ]
-      },
-      {
-        "op": "optional-field",
-        "input": "note",
-        "path": "/slug",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "path": "",
-            "trimmed_min": 1,
-            "max": 80
-          }
-        ]
-      },
-      {
-        "op": "bounded-object",
-        "input": "note",
-        "path": "/payload",
-        "min": 1,
-        "max": 1024
-      },
-      {
-        "op": "forbidden-object-keys",
+        "op": "definition-ref",
         "input": "note",
         "path": "",
-        "keys": [
-          "access_token",
-          "api_key",
-          "apikey",
-          "client_secret",
-          "passwd",
-          "password",
-          "private_key",
-          "refresh_token",
-          "secret"
-        ],
-        "case_insensitive": true,
-        "max_depth": 64,
-        "max_nodes": 100000
+        "definition": "memory-source-notes/source-note-record"
       }
     ]
   },

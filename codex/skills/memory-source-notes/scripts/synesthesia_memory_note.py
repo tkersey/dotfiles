@@ -19,21 +19,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from typing import Any, Iterable
-
-NOTE_ID_RE = re.compile(r"^MSN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}$")
-ALLOWED_SCOPE_KINDS = {"global", "repo", "path-family", "task-family", "workflow", "tool"}
-SENSITIVE_KEYS = {
-    "password",
-    "passwd",
-    "secret",
-    "api_key",
-    "apikey",
-    "access_token",
-    "refresh_token",
-    "private_key",
-    "client_secret",
-}
+from typing import Any
 
 LOGICAL_TO_PHYSICAL_KIND = {
     "mapping-endorsement": "mapping-endorsement",
@@ -43,8 +29,6 @@ LOGICAL_TO_PHYSICAL_KIND = {
     "activation-boundary": "activation-boundary",
     "boundary-retraction": "boundary-retraction",
 }
-
-PRIOR_RELATION_OPERATIONS = {"confirm", "supersede", "reject", "retract", "reopen"}
 
 COMPAT_SCOPE = {
     "global": "global_default",
@@ -58,101 +42,6 @@ COMPAT_SCOPE = {
 
 class ValidationError(ValueError):
     """A deterministic validation failure suitable for user-facing reporting."""
-
-
-def _nonempty_string(value: Any, field: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValidationError(f"{field}: expected non-empty string")
-    return value.strip()
-
-
-def _require_strings(mapping: dict[str, Any], fields: Iterable[str], prefix: str) -> None:
-    for field in fields:
-        _nonempty_string(mapping.get(field), f"{prefix}.{field}")
-
-
-def _validate_note_id(value: Any, field: str) -> str:
-    text = _nonempty_string(value, field)
-    if not NOTE_ID_RE.match(text):
-        raise ValidationError(f"{field}: invalid memory-source note id")
-    return text
-
-
-def _reject_sensitive_keys(value: Any, path: str = "$") -> None:
-    if isinstance(value, dict):
-        for key, child in value.items():
-            if key.lower() in SENSITIVE_KEYS:
-                raise ValidationError(f"{path}.{key}: sensitive key is not allowed")
-            _reject_sensitive_keys(child, f"{path}.{key}")
-    elif isinstance(value, list):
-        for index, child in enumerate(value):
-            _reject_sensitive_keys(child, f"{path}[{index}]")
-
-
-def _validate_scope(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        raise ValidationError("scope: expected object")
-    extra = set(value) - {"kind", "repo", "paths"}
-    if extra:
-        raise ValidationError(f"scope: unexpected fields: {', '.join(sorted(extra))}")
-    kind = _nonempty_string(value.get("kind"), "scope.kind")
-    if kind not in ALLOWED_SCOPE_KINDS:
-        raise ValidationError(f"scope.kind: unsupported value {kind!r}")
-    repo = value.get("repo")
-    if repo is not None and not isinstance(repo, str):
-        raise ValidationError("scope.repo: expected string or null")
-    paths = value.get("paths")
-    if not isinstance(paths, list) or any(not isinstance(item, str) or not item for item in paths):
-        raise ValidationError("scope.paths: expected list of non-empty strings")
-    if kind in {"repo", "path-family"} and not repo:
-        raise ValidationError(f"scope.repo: required for {kind}")
-    if kind == "path-family" and not paths:
-        raise ValidationError("scope.paths: required for path-family")
-    return {"kind": kind, "repo": repo, "paths": list(paths)}
-
-
-def _validate_source_refs(value: Any) -> list[dict[str, str]]:
-    if not isinstance(value, list) or not value:
-        raise ValidationError("source_refs: expected at least one source reference")
-    refs: list[dict[str, str]] = []
-    for index, row in enumerate(value):
-        if not isinstance(row, dict):
-            raise ValidationError(f"source_refs[{index}]: expected object")
-        extra = set(row) - {"kind", "ref", "summary"}
-        if extra:
-            raise ValidationError(
-                f"source_refs[{index}]: unexpected fields: {', '.join(sorted(extra))}"
-            )
-        refs.append(
-            {
-                "kind": _nonempty_string(row.get("kind"), f"source_refs[{index}].kind"),
-                "ref": _nonempty_string(row.get("ref"), f"source_refs[{index}].ref"),
-                "summary": _nonempty_string(
-                    row.get("summary"), f"source_refs[{index}].summary"
-                ),
-            }
-        )
-    return refs
-
-
-def _validate_relationships(data: dict[str, Any], operation: str) -> tuple[list[str], str | None]:
-    related_raw = data.get("related_ids", [])
-    if not isinstance(related_raw, list):
-        raise ValidationError("related_ids: expected list")
-    related_ids = [_validate_note_id(value, "related_ids[]") for value in related_raw]
-    if len(set(related_ids)) != len(related_ids):
-        raise ValidationError("related_ids: duplicate note id")
-
-    supersedes_raw = data.get("supersedes_id")
-    supersedes_id = None
-    if supersedes_raw is not None:
-        supersedes_id = _validate_note_id(supersedes_raw, "supersedes_id")
-
-    if operation in PRIOR_RELATION_OPERATIONS and not related_ids and supersedes_id is None:
-        raise ValidationError(f"operation {operation!r} requires a prior note relationship")
-    if operation == "confirm" and not related_ids:
-        raise ValidationError("confirmation requires the prior note in related_ids")
-    return related_ids, supersedes_id
 
 
 def _trim_if_string(value: Any) -> Any:
@@ -257,7 +146,12 @@ def synesthesia_source_definition_path() -> Path:
     )
 
 
-def _validate_submission_with_ledger(submission: dict[str, Any]) -> dict[str, Any]:
+def _validate_submission_with_ledger(
+    submission: dict[str, Any],
+    *,
+    stored_note: Any | None = None,
+    fingerprint_basis: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     binary = find_ledger_binary()
     if binary is None:
         raise ValidationError(
@@ -266,21 +160,37 @@ def _validate_submission_with_ledger(submission: dict[str, Any]) -> dict[str, An
     definition = synesthesia_definition_path()
     if not definition.is_file():
         raise ValidationError(f"ledger: definition not found: {definition}")
-    proc = subprocess.run(
-        [
-            str(binary),
-            "validate",
-            "--definition",
-            str(definition),
-            "--input",
-            "submission=-",
-            "--format",
-            "json",
-        ],
-        input=canonical_json_bytes(submission),
-        capture_output=True,
-        check=False,
-    )
+    command = [
+        str(binary),
+        "validate",
+        "--definition",
+        str(definition),
+    ]
+    input_bytes: bytes | None = canonical_json_bytes(submission)
+    if stored_note is None and fingerprint_basis is None:
+        command.extend(["--input", "submission=-"])
+        proc = subprocess.run(
+            [*command, "--format", "json"],
+            input=input_bytes,
+            capture_output=True,
+            check=False,
+        )
+    else:
+        documents: dict[str, Any] = {"submission": submission}
+        if stored_note is not None:
+            documents["stored_note"] = stored_note
+        if fingerprint_basis is not None:
+            documents["fingerprint_basis"] = fingerprint_basis
+        with tempfile.TemporaryDirectory(prefix="synesthesia-ledger-validation-") as root:
+            for name, value in documents.items():
+                path = Path(root) / f"{name}.json"
+                path.write_bytes(canonical_json_bytes(value))
+                command.extend(["--input", f"{name}={path}"])
+            proc = subprocess.run(
+                [*command, "--format", "json"],
+                capture_output=True,
+                check=False,
+            )
     try:
         result = json.loads(proc.stdout)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -436,7 +346,15 @@ def validate_and_normalize(
             "record": normalized,
         },
     }
-    structural_result = _validate_submission_with_ledger(submission)
+    structural_result = _validate_submission_with_ledger(
+        submission,
+        fingerprint_basis={
+            "extension": "synesthesia",
+            "kind": physical_kind,
+            "raw_projection": canonical_json_bytes(normalized).decode("utf-8"),
+            "expected": f"sha256:{canonical_fingerprint(physical_kind, normalized)}",
+        },
+    )
     return physical_kind, normalized, structural_result
 
 
@@ -605,24 +523,6 @@ class StoredNote:
 
 DIGEST_VERSION = "synesthesia-digest/v1"
 DIGEST_FILENAME = "latest_synesthesia_digest.md"
-PHYSICAL_ALLOWED_OPERATIONS = {
-    "mapping-endorsement": {"assert", "confirm", "reopen"},
-    "mapping-correction": {"supersede"},
-    "mapping-rejection": {"reject"},
-    "activation-boundary": {"assert", "confirm", "supersede", "reopen"},
-    "boundary-retraction": {"retract"},
-}
-PHYSICAL_ALLOWED_AUTHORITIES = {
-    "mapping-endorsement": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "mapping-correction": {"explicit-user-correction"},
-    "mapping-rejection": {"explicit-user-rejection"},
-    "activation-boundary": {
-        "explicit-user-endorsement",
-        "explicit-user-correction",
-        "repeated-accepted-use",
-    },
-    "boundary-retraction": {"explicit-user-correction", "explicit-user-rejection"},
-}
 SCOPE_SPECIFICITY = {
     "path-family": 6,
     "repo": 5,
@@ -633,105 +533,72 @@ SCOPE_SPECIFICITY = {
 }
 
 
-def _parse_iso_datetime(value: Any, field: str) -> str:
-    text = _nonempty_string(value, field)
-    try:
-        datetime.fromisoformat(text.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ValidationError(f"{field}: invalid ISO-8601 timestamp") from exc
-    return text
-
-
-def _validate_stored_payload(kind: str, payload: Any) -> dict[str, Any]:
-    if not isinstance(payload, dict) or not payload:
-        raise ValidationError("payload: expected non-empty object")
-    value = copy.deepcopy(payload)
-    if kind in {"mapping-endorsement", "mapping-correction"}:
-        _require_strings(
-            value,
-            (
-                "sensory_phrase",
-                "engineering_translation",
-                "activation_boundary",
-                "non_activation_boundary",
-                "verification",
-            ),
-            "payload",
-        )
-    elif kind == "mapping-rejection":
-        _require_strings(
-            value,
-            (
-                "sensory_phrase",
-                "activation_boundary",
-                "non_activation_boundary",
-                "rejection_reason",
-                "verification",
-            ),
-            "payload",
-        )
-    elif kind == "activation-boundary":
-        _require_strings(
-            value,
-            ("activation_boundary", "non_activation_boundary", "verification"),
-            "payload",
-        )
-    elif kind == "boundary-retraction":
-        _require_strings(
-            value,
-            ("retracted_boundary", "reason", "verification"),
-            "payload",
-        )
-    return value
-
-
 def _stored_note_from_value(path: Path, value: Any, file_sha256: str) -> StoredNote:
-    if not isinstance(value, dict):
-        raise ValidationError("note: expected JSON object")
-    if value.get("schema") != "memory-source-note/v1":
-        raise ValidationError("schema: expected memory-source-note/v1")
-    note_id = _validate_note_id(value.get("id"), "id")
-    captured_at = _parse_iso_datetime(value.get("captured_at"), "captured_at")
-    if value.get("extension") != "synesthesia":
-        raise ValidationError("extension: expected synesthesia")
-    kind = _nonempty_string(value.get("kind"), "kind")
-    if kind not in PHYSICAL_ALLOWED_OPERATIONS:
-        raise ValidationError(f"kind: unsupported stored kind {kind!r}")
-    operation = _nonempty_string(value.get("operation"), "operation")
-    if operation not in PHYSICAL_ALLOWED_OPERATIONS[kind]:
-        allowed = ", ".join(sorted(PHYSICAL_ALLOWED_OPERATIONS[kind]))
-        raise ValidationError(
-            f"operation: {operation!r} is invalid for stored kind {kind}; expected {allowed}"
+    note = value if isinstance(value, dict) else {}
+    kind = note.get("kind") if isinstance(note.get("kind"), str) else ""
+    operation = (
+        note.get("operation") if isinstance(note.get("operation"), str) else ""
+    )
+    logical_kind = (
+        "mapping-confirmation"
+        if kind == "mapping-endorsement" and operation == "confirm"
+        else kind
+    )
+    record = {
+        field: copy.deepcopy(note.get(field))
+        for field in (
+            "operation",
+            "authority",
+            "summary",
+            "scope",
+            "source_refs",
+            "related_ids",
+            "supersedes_id",
+            "payload",
         )
-    authority = _nonempty_string(value.get("authority"), "authority")
-    if authority not in PHYSICAL_ALLOWED_AUTHORITIES[kind]:
-        allowed = ", ".join(sorted(PHYSICAL_ALLOWED_AUTHORITIES[kind]))
-        raise ValidationError(
-            f"authority: {authority!r} is invalid for stored kind {kind}; expected {allowed}"
-        )
-    summary = _nonempty_string(value.get("summary"), "summary")
-    scope = _validate_scope(value.get("scope"))
-    source_refs = _validate_source_refs(value.get("source_refs"))
-    related_ids, supersedes_id = _validate_relationships(value, operation)
-    fingerprint = _nonempty_string(value.get("fingerprint"), "fingerprint")
-    if not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
-        raise ValidationError("fingerprint: expected 64 lowercase hex characters")
-    payload = _validate_stored_payload(kind, value.get("payload"))
-    _reject_sensitive_keys(value)
+    }
+    scope_anchor_source = _scope_anchor_source(record)
+    payload = record.get("payload")
+    scope = record.get("scope")
+    if (
+        scope_anchor_source == "kind"
+        and isinstance(payload, dict)
+        and isinstance(scope, dict)
+        and isinstance(payload.get("scope_anchor"), str)
+        and payload.get("scope_anchor") != scope.get("kind")
+    ):
+        scope_anchor_source = "declared"
+    submission = {
+        "scope_anchor_source": scope_anchor_source,
+        "source": {
+            "logical_kind": logical_kind,
+            "physical_kind": kind,
+            "record": record,
+        },
+    }
+    fingerprint = (
+        note.get("fingerprint")
+        if isinstance(note.get("fingerprint"), str)
+        else ""
+    )
+    _validate_submission_with_ledger(
+        submission,
+        stored_note=value,
+    )
     return StoredNote(
         path=path,
-        id=note_id,
-        captured_at=captured_at,
+        id=note["id"],
+        captured_at=note["captured_at"],
         kind=kind,
         operation=operation,
-        authority=authority,
-        summary=summary,
-        scope=scope,
-        source_refs=source_refs,
-        related_ids=related_ids,
-        supersedes_id=supersedes_id,
+        authority=record["authority"],
+        summary=record["summary"],
+        scope=record["scope"],
+        source_refs=record["source_refs"],
+        related_ids=record["related_ids"],
+        supersedes_id=record["supersedes_id"],
         fingerprint=fingerprint,
-        payload=payload,
+        payload=record["payload"],
         file_sha256=file_sha256,
     )
 

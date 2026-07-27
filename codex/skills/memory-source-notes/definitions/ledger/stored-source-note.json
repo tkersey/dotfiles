@@ -1,0 +1,138 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "memory-source-notes/stored-source-note",
+  "owner": "memory-source-notes",
+  "imports": [
+    {
+      "id": "memory-source-notes/memory-note-id",
+      "path": "memory-note-id.json"
+    },
+    {
+      "id": "memory-source-notes/source-note-record",
+      "path": "source-note-record.json"
+    }
+  ],
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "bounded-string",
+      "canonical-json",
+      "definition-ref",
+      "enum",
+      "exact-object",
+      "regex",
+      "safe-identifier",
+      "timestamp"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "note": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "note"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "note",
+        "path": "",
+        "keys": [
+          "authority",
+          "captured_at",
+          "extension",
+          "fingerprint",
+          "id",
+          "kind",
+          "operation",
+          "payload",
+          "related_ids",
+          "schema",
+          "scope",
+          "source_refs",
+          "summary",
+          "supersedes_id"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/schema",
+        "values": [
+          "memory-source-note/v1"
+        ]
+      },
+      {
+        "op": "definition-ref",
+        "input": "note",
+        "path": "/id",
+        "definition": "memory-source-notes/memory-note-id"
+      },
+      {
+        "op": "timestamp",
+        "input": "note",
+        "path": "/captured_at"
+      },
+      {
+        "op": "safe-identifier",
+        "input": "note",
+        "path": "/extension",
+        "max": 64
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/kind",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/fingerprint",
+        "min": 64,
+        "max": 64
+      },
+      {
+        "op": "regex",
+        "input": "note",
+        "path": "/fingerprint",
+        "patterns": [
+          "^[a-f0-9]+$"
+        ],
+        "max": 64
+      },
+      {
+        "op": "definition-ref",
+        "input": "note",
+        "path": "",
+        "definition": "memory-source-notes/source-note-record"
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 1048576,
+    "max_records": 10000,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

@@ -8,6 +8,14 @@
       "path": "memory-note-id.json"
     },
     {
+      "id": "memory-source-notes/stored-source-note",
+      "path": "stored-source-note.json"
+    },
+    {
+      "id": "memory-source-notes/writer-fingerprint",
+      "path": "writer-fingerprint.json"
+    },
+    {
       "id": "synesthesia/protocol",
       "path": "../../../synesthesia/definitions/ledger/synesthesia-protocol.json"
     }
@@ -33,6 +41,16 @@
       "codec": "json",
       "required": true,
       "max_bytes": 1048576
+    },
+    "stored_note": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 1048576
+    },
+    "fingerprint_basis": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 1048576
     }
   },
   "canonicalization": {
@@ -50,6 +68,24 @@
         "input": "submission",
         "path": "",
         "keys": ["scope_anchor_source", "source"]
+      },
+      {
+        "op": "definition-ref",
+        "input": "stored_note",
+        "path": "",
+        "definition": "memory-source-notes/stored-source-note"
+      },
+      {
+        "op": "enum",
+        "input": "stored_note",
+        "path": "/extension",
+        "values": ["synesthesia"]
+      },
+      {
+        "op": "definition-ref",
+        "input": "fingerprint_basis",
+        "path": "",
+        "definition": "memory-source-notes/writer-fingerprint"
       },
       {
         "op": "definition-ref",
@@ -106,7 +142,7 @@
         "op": "enum",
         "input": "submission",
         "path": "/scope_anchor_source",
-        "values": ["kind", "path", "repo"]
+        "values": ["declared", "kind", "path", "repo"]
       },
       {
         "op": "tagged-union",
@@ -114,6 +150,10 @@
         "path": "",
         "tag": "/scope_anchor_source",
         "variants": [
+          {
+            "value": "declared",
+            "rules": []
+          },
           {
             "value": "path",
             "rules": [
