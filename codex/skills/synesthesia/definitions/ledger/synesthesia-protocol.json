@@ -11,7 +11,6 @@
   "requires": {
     "abi": "ledger-artifact-abi/v1",
     "operators": [
-      "all",
       "at-least-one",
       "bind-existing",
       "bounded-array",
@@ -23,7 +22,8 @@
       "enum",
       "event-materialization",
       "exact-object",
-      "field-equal",
+      "export",
+      "id-lookup",
       "idempotency-key",
       "implies",
       "one-of",
@@ -39,6 +39,10 @@
       "type": "boolean",
       "required": false,
       "default": false
+    },
+    "id": {
+      "type": "string",
+      "required": false
     }
   },
   "inputs": {
@@ -826,7 +830,71 @@
       ]
     }
   },
-  "projections": {},
+  "projections": {
+    "memory-note": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "id-lookup",
+          "path": "/record/id",
+          "param": "id",
+          "required": true
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "operation",
+              "path": "/record/operation"
+            },
+            {
+              "name": "authority",
+              "path": "/record/authority"
+            },
+            {
+              "name": "summary",
+              "path": "/record/summary"
+            },
+            {
+              "name": "scope",
+              "path": "/record/scope"
+            },
+            {
+              "name": "source_refs",
+              "path": "/record/source_refs"
+            },
+            {
+              "name": "related_ids",
+              "path": "/record/related_ids"
+            },
+            {
+              "name": "supersedes_id",
+              "path": "/record/supersedes_id"
+            },
+            {
+              "name": "payload",
+              "path": "/record/payload"
+            }
+          ]
+        }
+      ]
+    },
+    "record": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "id-lookup",
+          "path": "/record/id",
+          "param": "id",
+          "required": true
+        },
+        {
+          "op": "export",
+          "raw": true
+        }
+      ]
+    }
+  },
   "bounds": {
     "max_input_bytes": 1048576,
     "max_store_bytes": 16777216,
