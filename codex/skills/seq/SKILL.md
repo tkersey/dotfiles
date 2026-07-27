@@ -101,6 +101,7 @@ Current definitions:
 message-search.json
 session-summary.json
 tool-search.json
+turn-metrics.json
 turn-report.json
 ```
 

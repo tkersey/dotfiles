@@ -15,6 +15,10 @@
       "path": "seq/tool-search.json"
     },
     {
+      "id": "seq/turn-metrics",
+      "path": "seq/turn-metrics.json"
+    },
+    {
       "id": "seq/turn-report",
       "path": "seq/turn-report.json"
     }
