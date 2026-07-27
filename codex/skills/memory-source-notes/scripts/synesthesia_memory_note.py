@@ -1406,6 +1406,12 @@ def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
             "Repair or explicitly bind the selected Synesthesia store through "
             "the owning passive definition."
         )
+    elif projection["invalid_notes"]:
+        stage = "source-notes-invalid"
+        recommendation = (
+            "Repair the invalid immutable-note transport or source definition "
+            "before regenerating the digest."
+        )
     elif projection["source_file_count"] == 0:
         stage = "no-source-notes"
         recommendation = "Create a note only after a qualifying durable user event."
@@ -1593,6 +1599,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
     body = report["synesthesia_memory_doctor"]
     if not body["source_ledger"]["healthy"]:
+        return 2
+    if body["notes"]["parse_errors"]:
         return 2
     if body["adapter"]["status"] in {"symlinked", "not-file"}:
         return 2
