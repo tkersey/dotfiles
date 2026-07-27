@@ -6,18 +6,24 @@
     "abi": "ledger-artifact-abi/v1",
     "operators": [
       "all",
+      "append-only-log",
       "bind-existing",
       "bounded-array",
       "bounded-object",
       "bounded-string",
       "enum",
+      "event-kinds",
       "exact-object",
       "field-equal",
+      "fold",
       "implies",
       "optional-field",
       "regex",
+      "reducer",
+      "replay",
       "tagged-union",
       "timestamp",
+      "transition-table",
       "unique"
     ]
   },
@@ -550,7 +556,233 @@
       }
     ]
   },
-  "constraints": [],
+  "constraints": [
+    {
+      "op": "append-only-log",
+      "input": "event"
+    },
+    {
+      "op": "event-kinds",
+      "values": [
+        "capture",
+        "status"
+      ]
+    },
+    {
+      "op": "transition-table",
+      "states": [
+        "accepted_risk",
+        "active",
+        "capture_candidate",
+        "need-evidence",
+        "reopened",
+        "stale",
+        "superseded",
+        "unknown"
+      ],
+      "transitions": [
+        {
+          "from": null,
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": null,
+          "on": "capture_candidate",
+          "to": "capture_candidate"
+        },
+        {
+          "from": null,
+          "on": "need-evidence",
+          "to": "need-evidence"
+        },
+        {
+          "from": null,
+          "on": "unknown",
+          "to": "unknown"
+        },
+        {
+          "from": "accepted_risk",
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": "accepted_risk",
+          "on": "reopened",
+          "to": "reopened"
+        },
+        {
+          "from": "accepted_risk",
+          "on": "stale",
+          "to": "stale"
+        },
+        {
+          "from": "accepted_risk",
+          "on": "superseded",
+          "to": "superseded"
+        },
+        {
+          "from": "active",
+          "on": "accepted_risk",
+          "to": "accepted_risk"
+        },
+        {
+          "from": "active",
+          "on": "reopened",
+          "to": "reopened"
+        },
+        {
+          "from": "active",
+          "on": "stale",
+          "to": "stale"
+        },
+        {
+          "from": "active",
+          "on": "superseded",
+          "to": "superseded"
+        },
+        {
+          "from": "capture_candidate",
+          "on": "accepted_risk",
+          "to": "accepted_risk"
+        },
+        {
+          "from": "capture_candidate",
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": "capture_candidate",
+          "on": "need-evidence",
+          "to": "need-evidence"
+        },
+        {
+          "from": "capture_candidate",
+          "on": "stale",
+          "to": "stale"
+        },
+        {
+          "from": "capture_candidate",
+          "on": "superseded",
+          "to": "superseded"
+        },
+        {
+          "from": "capture_candidate",
+          "on": "unknown",
+          "to": "unknown"
+        },
+        {
+          "from": "need-evidence",
+          "on": "accepted_risk",
+          "to": "accepted_risk"
+        },
+        {
+          "from": "need-evidence",
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": "need-evidence",
+          "on": "capture_candidate",
+          "to": "capture_candidate"
+        },
+        {
+          "from": "need-evidence",
+          "on": "stale",
+          "to": "stale"
+        },
+        {
+          "from": "need-evidence",
+          "on": "superseded",
+          "to": "superseded"
+        },
+        {
+          "from": "need-evidence",
+          "on": "unknown",
+          "to": "unknown"
+        },
+        {
+          "from": "reopened",
+          "on": "accepted_risk",
+          "to": "accepted_risk"
+        },
+        {
+          "from": "reopened",
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": "reopened",
+          "on": "stale",
+          "to": "stale"
+        },
+        {
+          "from": "reopened",
+          "on": "superseded",
+          "to": "superseded"
+        },
+        {
+          "from": "stale",
+          "on": "accepted_risk",
+          "to": "accepted_risk"
+        },
+        {
+          "from": "stale",
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": "stale",
+          "on": "reopened",
+          "to": "reopened"
+        },
+        {
+          "from": "stale",
+          "on": "superseded",
+          "to": "superseded"
+        },
+        {
+          "from": "unknown",
+          "on": "accepted_risk",
+          "to": "accepted_risk"
+        },
+        {
+          "from": "unknown",
+          "on": "active",
+          "to": "active"
+        },
+        {
+          "from": "unknown",
+          "on": "capture_candidate",
+          "to": "capture_candidate"
+        },
+        {
+          "from": "unknown",
+          "on": "need-evidence",
+          "to": "need-evidence"
+        },
+        {
+          "from": "unknown",
+          "on": "stale",
+          "to": "stale"
+        },
+        {
+          "from": "unknown",
+          "on": "superseded",
+          "to": "superseded"
+        }
+      ]
+    },
+    {
+      "op": "reducer",
+      "key": "/neg_id",
+      "on": "/status",
+      "event_kind": "/event",
+      "from": "/from",
+      "to": "/to",
+      "assertion_presence": "when-present"
+    }
+  ],
   "identity": {},
   "storage": {
     "kind": "event-log",
@@ -574,7 +806,18 @@
       ]
     }
   },
-  "projections": {},
+  "projections": {
+    "current-states": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "neg_id",
+          "state_field": "status"
+        }
+      ]
+    }
+  },
   "bounds": {
     "max_input_bytes": 4194304,
     "max_store_bytes": 67108864,
