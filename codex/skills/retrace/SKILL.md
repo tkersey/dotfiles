@@ -2,7 +2,7 @@
 name: retrace
 description: "Reconstruct and experimentally challenge decisions from prior Codex sessions. Use for `$retrace`, historical decision replay, counterfactual forks, alternative-route challenges, hindsight-separated retrospectives, workflow-governance audits, skill decision attribution, or 'why did that session choose this?'. `$seq` owns deterministic history and source-governance evidence; `$cas` owns safe thread/rollout replay and FIR lifecycle; `$retrace` owns bounded experiments and DRR synthesis. Never present fork output as the source model's hidden chain of thought."
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   activation_cost: high
   default_depth: standard
 ---
@@ -56,17 +56,22 @@ See [epistemic-boundary.md](references/epistemic-boundary.md).
 ### `$seq`
 Owns:
 - source session/rollout identity;
-- included-run and workflow-provenance evidence;
-- decision candidates;
+- bounded source-governance observations;
+- bounded decision-candidate observations;
 - turn ordering and temporal anchors;
 - explicit rationale/routes;
 - artifact-state reconstructability;
 - contamination and limitations.
-Artifacts:
-```text
-source_governance_gate / SGG-v1
-decision_context_packet / DCP-v2
-```
+
+Seq returns observations and provenance. It does not author or validate Retrace
+artifacts.
+
+### `$ledger`
+
+Owns passive-definition compilation, structural validation, canonicalization,
+and identity derivation for SGG-v1, DCP-v2, RIP-v1, and DRR-v1. A pass grants
+neither replay authority nor a Retrace verdict.
+
 ### `$cas`
 Owns:
 - app-server compatibility;
@@ -84,6 +89,7 @@ fork_inquiry_receipt / FIR-v1
 ### `$retrace`
 Owns:
 - source-governance decision;
+- SGG-v1 and DCP-v2 authorship and meaning;
 - inquiry objective and lanes;
 - question framing;
 - experiment staging and budgets;
@@ -91,9 +97,14 @@ Owns:
 - final reconstruction.
 Artifacts:
 ```text
+source_governance_gate / SGG-v1
+decision_context_packet / DCP-v2
 retrace_inquiry_plan / RIP-v1
 decision_reconstruction_record / DRR-v1
 ```
+
+Canonical passive definitions live under `definitions/`; the reference pages
+state interpretation laws and do not duplicate the machine schemas.
 
 ## Modes
 ```text
@@ -149,20 +160,32 @@ Run this phase when:
 - a workflow-specific audit selected the source;
 - the question asks whether a workflow/skill governed the decision;
 - an intervention will apply a current workflow contract;
-- source inclusion depends on classifier output such as `review-compiler-audit`.
+- source inclusion depends on a workflow-specific observation.
 Obtain the exact session-level row, not only aggregate counts.
 For controller-backed review-closure workflows:
 ```bash
-seq review-compiler-audit \
+seq observe \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/source-governance.json" \
   --root ~/.codex/sessions \
-  --protocol <review-protocol> \
   --repo <repo> \
   --since <time> \
   --until <time> \
-  --exclude-current \
+  --param "workflow=<workflow>" \
+  --projection events \
+  --format json
+
+seq observe \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/source-governance.json" \
+  --root ~/.codex/sessions \
+  --repo <repo> \
+  --since <time> \
+  --until <time> \
+  --param "workflow=<workflow>" \
+  --projection tools \
   --format json
 ```
-Select the exact `denominator.included_sessions` row and preserve evidence for:
+Set `--until` before the current audit when current-session contamination would
+change inclusion. Select the exact session evidence and preserve:
 ```text
 true workflow signal
 required
@@ -195,6 +218,16 @@ ambiguous
 absent
 ```
 Create `SGG-v1`.
+
+Validate the authored gate structurally:
+
+```bash
+ledger validate \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/source-governance-gate.json" \
+  --input gate=source-governance-gate.json \
+  --format json
+```
+
 Verdicts:
 ```text
 authoritative
@@ -213,23 +246,31 @@ A filename such as `.step/review-workflow-plan.jsonl` is not a workflow activati
 A generic merge/land/complete signal is not controller closure.
 See [source-governance.md](references/source-governance.md).
 ### 1. Find the decision
-Use the narrowest `$seq` surface:
-```text
-skill-decision-audit
-decision-capsule --mode candidates
-turns
-session-detail
-artifact-search
-```
-When automatic candidates are absent, locate the visible route decision and use an exact one-based `--turn-index`.
+Use Retrace's candidate observation first:
+
 ```bash
-seq decision-capsule \
-  --session-id <id> \
-  --turn-index <n> \
-  --anchor all \
-  --outcome-policy conservative \
+seq observe \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/decision-candidates.json" \
+  --root ~/.codex/sessions \
+  --repo <repo> \
+  --since <time> \
+  --until <time> \
+  --projection rows \
   --format json
 ```
+
+Then freeze the selected session's ordered source evidence:
+
+```bash
+seq observe \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/decision-capsule.json" \
+  --session-id <id> \
+  --projection events \
+  --format json
+```
+
+Locate the visible route decision and bind its exact one-based turn index while
+authoring DCP-v2. Seq does not choose the decision episode or author the packet.
 Do not let replay models select the historical source episode.
 ### 2. Bind DCP-v2
 The capsule must distinguish:
@@ -240,6 +281,19 @@ outcome_aware
 ```
 Outcome blindness must be structural.
 Do not use a full-history replay plus an instruction to ignore later outcomes.
+
+Materialize the content identity from a null `packet_id`, or verify an existing
+claimed identity:
+
+```bash
+ledger materialize \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-context-packet.json" \
+  --input packet=decision-context-packet.json \
+  --format json
+```
+
+Consume the returned canonical packet and `DCP-…` identity. A validation or
+materialization pass establishes structure only.
 See [decision-capsule.md](references/decision-capsule.md).
 ### 3. Select lineage and workspace mode
 CAS supports two lineage modes.
@@ -272,7 +326,8 @@ See [workspace-reconstruction.md](references/workspace-reconstruction.md).
 
 Require:
 ```text
-seq decision-capsule and DCP validation
+Seq observation ABI and all three Retrace observation definitions
+Ledger artifact ABI and all four Retrace artifact definitions
 cas session_inquiry and FIR support
 at least one supported lineage mode
 read-only inquiry
@@ -281,27 +336,17 @@ receipt persistence
 ```
 When only deterministic analysis is available, fork-based claims are forbidden.
 ### 5. Compile RIP-v1
-```yaml
-retrace_inquiry_plan:
-  plan_version: RIP-v1
-  inquiry_id:
-  source_capsule:
-  objective:
-  lanes:
-    - lane_id:
-      temporal_horizon:
-      inquiry_mode:
-      fork_count:
-      prompt_template:
-      evidence_allowed: []
-      evidence_withheld: []
-  model_policy:
-  workspace_policy:
-  permission_policy:
-  budgets:
-  cleanup:
-```
 Use different lane contracts; do not manufacture consensus through repeated leading prompts.
+
+Validate the exact plan CAS will consume:
+
+```bash
+ledger validate \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/retrace-inquiry-plan.json" \
+  --input plan=plan.json \
+  --format json
+```
+
 See [inquiry-lanes.md](references/inquiry-lanes.md).
 ### 6. Run CAS
 ```bash
@@ -357,6 +402,16 @@ limitations
 confidence
 ```
 Consensus is never historical fact.
+
+Validate the authored record:
+
+```bash
+ledger validate \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-reconstruction-record.json" \
+  --input record=decision-reconstruction-record.json \
+  --format json
+```
+
 See [synthesis.md](references/synthesis.md).
 
 ## Inquiry contracts

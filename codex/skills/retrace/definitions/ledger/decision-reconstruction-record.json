@@ -1,0 +1,377 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "retrace/decision-reconstruction-record",
+  "owner": "retrace",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-object",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "enum",
+      "exact-object",
+      "object-values",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "record": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "record"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "",
+        "keys": [
+          "decision_reconstruction_record"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record",
+        "keys": [
+          "adjudication",
+          "allowed_claims",
+          "confidence",
+          "contradictions",
+          "counterfactual",
+          "fork_population",
+          "historical_evidence",
+          "hindsight",
+          "inquiry_id",
+          "limitations",
+          "modes",
+          "prohibited_claims",
+          "question",
+          "rationale_reconstruction",
+          "record_id",
+          "record_version",
+          "skill_and_instruction_effects",
+          "source_capsule_id",
+          "source_governance"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "record",
+        "path": "/decision_reconstruction_record/record_version",
+        "values": [
+          "DRR-v1"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/decision_reconstruction_record/record_id",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/decision_reconstruction_record/inquiry_id",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/decision_reconstruction_record/source_capsule_id",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/decision_reconstruction_record/question",
+        "trimmed_min": 1,
+        "max": 65536
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/modes",
+        "min": 1,
+        "max": 6
+      },
+      {
+        "op": "all",
+        "input": "record",
+        "path": "/decision_reconstruction_record/modes",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              "audit",
+              "challenge",
+              "compare",
+              "explain",
+              "replay",
+              "retrospective"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/source_governance",
+        "keys": [
+          "gate_id",
+          "governing_evidence_refs",
+          "incidental_evidence_refs",
+          "limitations",
+          "replay_allowed",
+          "required",
+          "verdict",
+          "workflow"
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "record",
+        "path": "/decision_reconstruction_record/source_governance/required",
+        "type": "boolean"
+      },
+      {
+        "op": "enum",
+        "input": "record",
+        "path": "/decision_reconstruction_record/source_governance/verdict",
+        "values": [
+          "absent",
+          "ambiguous",
+          "authoritative",
+          "declared_uncontrolled",
+          "incidental"
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "record",
+        "path": "/decision_reconstruction_record/source_governance/replay_allowed",
+        "type": "boolean"
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/historical_evidence",
+        "keys": [
+          "explicit_at_time",
+          "trace_inferred",
+          "unknown"
+        ]
+      },
+      {
+        "op": "object-values",
+        "input": "record",
+        "path": "/decision_reconstruction_record/historical_evidence",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/fork_population",
+        "keys": [
+          "horizon_distribution",
+          "invalid_receipts",
+          "model_distribution",
+          "valid_receipts",
+          "workspace_distribution"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/fork_population/valid_receipts",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/fork_population/invalid_receipts",
+        "max": 4096
+      },
+      {
+        "op": "bounded-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/fork_population/model_distribution",
+        "max": 4096
+      },
+      {
+        "op": "bounded-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/fork_population/horizon_distribution",
+        "max": 4096
+      },
+      {
+        "op": "bounded-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/fork_population/workspace_distribution",
+        "max": 4096
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/rationale_reconstruction",
+        "keys": [
+          "confidence",
+          "consensus",
+          "disagreements"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/counterfactual",
+        "keys": [
+          "historical_route_stability",
+          "route_flip_conditions",
+          "selected_route_distribution",
+          "strongest_alternative"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "record",
+        "path": "/decision_reconstruction_record/counterfactual/historical_route_stability",
+        "values": [
+          "mixed",
+          "stable",
+          "unavailable",
+          "unstable"
+        ]
+      },
+      {
+        "op": "bounded-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/counterfactual/selected_route_distribution",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/counterfactual/route_flip_conditions",
+        "max": 4096
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/skill_and_instruction_effects",
+        "keys": [
+          "ablation_supported",
+          "fork_self_report_only",
+          "historically_explicit",
+          "unsupported"
+        ]
+      },
+      {
+        "op": "object-values",
+        "input": "record",
+        "path": "/decision_reconstruction_record/skill_and_instruction_effects",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "record",
+        "path": "/decision_reconstruction_record/hindsight",
+        "keys": [
+          "kept_separate",
+          "lessons"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "record",
+        "path": "/decision_reconstruction_record/hindsight/kept_separate",
+        "values": [
+          "yes"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/hindsight/lessons",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/contradictions",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/limitations",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/allowed_claims",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/decision_reconstruction_record/prohibited_claims",
+        "max": 4096
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/decision_reconstruction_record/confidence",
+        "trimmed_min": 1,
+        "max": 8192
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {
+    "op": "content-address",
+    "input": "record"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 16384,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

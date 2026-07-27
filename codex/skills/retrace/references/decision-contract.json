@@ -4,7 +4,7 @@
     "skill": {
       "name": "retrace",
       "kind": "mixed",
-      "source_fingerprint": "generated-with-retrace-v1.1-source-governance"
+      "source_fingerprint": "generated-with-retrace-v1.3-passive-definitions"
     },
     "triggers": [
       {

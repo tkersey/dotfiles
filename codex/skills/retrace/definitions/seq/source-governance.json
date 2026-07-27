@@ -1,0 +1,223 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "retrace/source-governance",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "filter",
+      "project",
+      "scan",
+      "sort"
+    ]
+  },
+  "parameters": {
+    "workflow": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "selectors": [
+    "root",
+    "session-id",
+    "path",
+    "repo",
+    "since",
+    "until",
+    "last"
+  ],
+  "relations": [
+    {
+      "name": "source_events",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "turn_index",
+        "role",
+        "text"
+      ]
+    },
+    {
+      "name": "tool_lifecycle",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "source_events",
+      "as": "events"
+    },
+    {
+      "op": "filter",
+      "input": "events",
+      "as": "matched_events",
+      "where": [
+        {
+          "field": "text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "sort",
+      "input": "matched_events",
+      "as": "ordered_events",
+      "by": [
+        {
+          "field": "path"
+        },
+        {
+          "field": "line_number"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "ordered_events",
+      "as": "event_evidence",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "turn_index",
+        "role",
+        "text"
+      ]
+    },
+    {
+      "op": "scan",
+      "relation": "tool_lifecycle",
+      "as": "tools"
+    },
+    {
+      "op": "filter",
+      "input": "tools",
+      "as": "matched_tools",
+      "where": [
+        {
+          "field": "command_text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "sort",
+      "input": "matched_tools",
+      "as": "ordered_tools",
+      "by": [
+        {
+          "field": "path"
+        },
+        {
+          "field": "turn_index",
+          "nulls": "last"
+        },
+        {
+          "field": "started_at",
+          "nulls": "last"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "ordered_tools",
+      "as": "tool_evidence",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
+    }
+  ],
+  "projections": {
+    "events": {
+      "relation": "event_evidence",
+      "schema": "retrace-source-governance-events/v1",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "turn_index",
+        "role",
+        "text"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
+    "tools": {
+      "relation": "tool_evidence",
+      "schema": "retrace-source-governance-tools/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 16777216,
+    "max_fold_states": 1
+  }
+}

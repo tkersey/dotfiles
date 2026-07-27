@@ -1,83 +1,14 @@
 # Decision Context Packet: DCP-v2
 
-`seq decision-capsule` freezes deterministic source evidence for one historical decision.
+Retrace authors DCP-v2 from the ordered evidence returned by
+[`../definitions/seq/decision-capsule.json`](../definitions/seq/decision-capsule.json).
+Seq neither selects the episode nor authors the packet.
 
-```yaml
-decision_context_packet:
-  packet_version: DCP-v2
-  packet_id:
-
-  source:
-    session_id:
-    rollout_path:
-    thread_id:
-    root_session_id:
-    worker_session_id:
-    decision_id:
-    source_model:
-    source_model_provider:
-    source_codex_version:
-
-  artifact_state:
-    cwd:
-    repository_root:
-    branch:
-    head:
-    dirty_fingerprint:
-    dirty_patch_ref:
-    generated_artifact_refs: []
-    dependency_refs: []
-    reconstructability:
-      exact |
-      head_only |
-      transcript_only |
-      unavailable
-
-  episode:
-    question:
-    selected_route:
-    rejected_routes: []
-    explicit_rationale: []
-    explicit_assumptions: []
-    evidence_refs: []
-    tools_and_artifacts: []
-    skills_and_instructions: []
-    outcome_refs: []
-
-  turns:
-    total_turns:
-    decision_turn_index:
-    decision_turn_id:
-    preceding_turn_id:
-    following_turn_id:
-    first_outcome_turn_index:
-    source_turn_digest:
-
-  anchors:
-    pre_decision:
-      available:
-      keep_through_turn_index:
-      drop_last_n_turns:
-      anchor_digest:
-    post_decision_pre_outcome:
-      available:
-      keep_through_turn_index:
-      drop_last_n_turns:
-      anchor_digest:
-    outcome_aware:
-      available:
-      keep_through_turn_index:
-      drop_last_n_turns:
-      anchor_digest:
-
-  contamination:
-    injected_skill_blocks:
-    generated_reports:
-    current_audit_prompt:
-    quoted_material:
-
-  limitations: []
-```
+The sole machine schema and identity law are in
+[`../definitions/ledger/decision-context-packet.json`](../definitions/ledger/decision-context-packet.json).
+Ledger materializes a null `packet_id` to the released `DCP-<sha256>` identity
+and rejects a mismatched claim. This page retains the temporal and epistemic
+laws only.
 
 ## Determinism
 

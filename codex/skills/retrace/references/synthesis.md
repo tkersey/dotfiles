@@ -2,69 +2,11 @@
 
 DRR-v1 separates deterministic source evidence from replay evidence and hindsight.
 
-```yaml
-decision_reconstruction_record:
-  record_version: DRR-v1
-  record_id:
-  inquiry_id:
-  source_capsule_id:
-  question:
-  modes: []
-
-  source_governance:
-    required:
-    gate_id:
-    workflow:
-    verdict:
-    replay_allowed:
-    governing_evidence_refs: []
-    incidental_evidence_refs: []
-    limitations: []
-
-  historical_evidence:
-    explicit_at_time: []
-    trace_inferred: []
-    unknown: []
-
-  fork_population:
-    valid_receipts: []
-    invalid_receipts: []
-    model_distribution: {}
-    horizon_distribution: {}
-    workspace_distribution: {}
-
-  rationale_reconstruction:
-    consensus: []
-    disagreements: []
-    confidence:
-
-  counterfactual:
-    selected_route_distribution: {}
-    historical_route_stability:
-      stable |
-      mixed |
-      unstable |
-      unavailable
-    strongest_alternative:
-    route_flip_conditions: []
-
-  skill_and_instruction_effects:
-    historically_explicit: []
-    ablation_supported: []
-    fork_self_report_only: []
-    unsupported: []
-
-  hindsight:
-    lessons: []
-    kept_separate: yes
-
-  contradictions: []
-  adjudication:
-  limitations: []
-  confidence:
-  allowed_claims: []
-  prohibited_claims: []
-```
+The sole machine schema is
+[`../definitions/ledger/decision-reconstruction-record.json`](../definitions/ledger/decision-reconstruction-record.json).
+Validate the authored JSON with Ledger and retain the definition digest. This
+page owns the interpretation and claim-strength laws, not a duplicate field
+inventory.
 
 ## Source-governance effect
 

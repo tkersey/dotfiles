@@ -1,0 +1,108 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "retrace/decision-capsule",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "project",
+      "scan",
+      "sort"
+    ]
+  },
+  "parameters": {},
+  "selectors": [
+    "session-id",
+    "path"
+  ],
+  "relations": [
+    {
+      "name": "source_events",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "payload_json",
+        "raw_json",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "source_events",
+      "as": "source"
+    },
+    {
+      "op": "sort",
+      "input": "source",
+      "as": "ordered",
+      "by": [
+        {
+          "field": "path"
+        },
+        {
+          "field": "line_number"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "ordered",
+      "as": "rows",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "payload_json",
+        "raw_json",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ]
+    }
+  ],
+  "projections": {
+    "events": {
+      "relation": "rows",
+      "schema": "retrace-decision-capsule-evidence/v1",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "payload_json",
+        "raw_json",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 67108864,
+    "max_fold_states": 1
+  }
+}
