@@ -26,10 +26,12 @@
       "id-lookup",
       "idempotency-key",
       "implies",
+      "limit",
       "one-of",
       "optional-field",
       "regex",
       "sha256",
+      "sort",
       "timestamp",
       "tagged-union"
     ]
@@ -43,6 +45,11 @@
     "id": {
       "type": "string",
       "required": false
+    },
+    "limit": {
+      "type": "integer",
+      "required": false,
+      "default": 20
     }
   },
   "inputs": {
@@ -891,6 +898,49 @@
         {
           "op": "export",
           "raw": true
+        }
+      ]
+    },
+    "recent": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "sort",
+          "keys": [
+            {
+              "meta": "record-order",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "id",
+              "path": "/record/id"
+            },
+            {
+              "name": "captured_at",
+              "path": "/record/captured_at"
+            },
+            {
+              "name": "kind",
+              "path": "/record/kind"
+            },
+            {
+              "name": "operation",
+              "path": "/record/operation"
+            },
+            {
+              "name": "summary",
+              "path": "/record/summary"
+            }
+          ]
+        },
+        {
+          "op": "limit",
+          "param": "limit"
         }
       ]
     }
