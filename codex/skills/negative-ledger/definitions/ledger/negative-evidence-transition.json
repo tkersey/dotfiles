@@ -211,7 +211,7 @@
   "bounds": {
     "max_input_bytes": 4194304,
     "max_store_bytes": 4194304,
-    "max_records": 1,
+    "max_records": 128,
     "max_output_bytes": 4194304,
     "max_diagnostics": 64,
     "max_reducer_states": 1

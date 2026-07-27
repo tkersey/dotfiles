@@ -2,17 +2,24 @@
   "schema": "ledger-artifact-definition/v1",
   "id": "negative-ledger/negative-evidence-record",
   "owner": "negative-ledger",
+  "imports": [
+    {
+      "id": "negative-ledger/negative-evidence-record-shape",
+      "path": "negative-evidence-record-shape.json"
+    }
+  ],
   "requires": {
     "abi": "ledger-artifact-abi/v1",
     "operators": [
-      "all",
+      "at-least-one",
       "bounded-array",
-      "bounded-object",
       "bounded-string",
       "canonical-json",
+      "definition-ref",
       "enum",
-      "exact-object",
-      "optional-field"
+      "implies",
+      "optional-field",
+      "regex"
     ]
   },
   "parameters": {},
@@ -34,260 +41,320 @@
   "shape": {
     "rules": [
       {
-        "op": "bounded-object",
+        "op": "definition-ref",
         "input": "record",
         "path": "",
-        "min": 1,
-        "max": 64
+        "definition": "negative-ledger/negative-evidence-record-shape"
       },
       {
-        "op": "optional-field",
+        "op": "enum",
         "input": "record",
         "path": "/record_version",
-        "rules": [
-          {
-            "op": "enum",
-            "path": "",
-            "values": [
-              "NER-v2"
-            ]
-          }
+        "values": [
+          "NER-v2"
         ]
       },
       {
-        "op": "optional-field",
+        "op": "enum",
         "input": "record",
         "path": "/kind",
-        "rules": [
-          {
-            "op": "enum",
-            "path": "",
-            "values": [
-              "authority_model",
-              "kernel_distinction",
-              "proof_pattern",
-              "realization_route"
-            ]
-          }
+        "values": [
+          "authority_model",
+          "kernel_distinction",
+          "proof_pattern",
+          "realization_route"
         ]
       },
       {
-        "op": "optional-field",
+        "op": "bounded-string",
         "input": "record",
-        "path": "/exclusion_scope",
-        "rules": [
-          {
-            "op": "enum",
-            "path": "",
-            "values": [
-              "authority_model",
-              "cluster",
-              "distinction_pattern",
-              "exact",
-              "proof_pattern",
-              "route",
-              "route_family"
-            ]
-          }
-        ]
+        "path": "/hypothesis",
+        "trimmed_min": 1,
+        "max": 1048576
       },
       {
-        "op": "optional-field",
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/attempted_change",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/observed_outcome",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "enum",
         "input": "record",
         "path": "/failure_class",
-        "rules": [
-          {
-            "op": "enum",
-            "path": "",
-            "values": [
-              "global-regression",
-              "local-regression",
-              "no-effect",
-              "stale",
-              "too-complex",
-              "unknown",
-              "unsound"
-            ]
-          }
+        "values": [
+          "global-regression",
+          "local-regression",
+          "no-effect",
+          "stale",
+          "too-complex",
+          "unsound"
         ]
       },
       {
-        "op": "optional-field",
+        "op": "enum",
         "input": "record",
         "path": "/confidence",
+        "values": [
+          "high",
+          "low",
+          "medium"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/next_search_hint",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/source_refs",
+        "min": 1,
+        "max": 128
+      },
+      {
+        "op": "enum",
+        "input": "record",
+        "path": "/exclusion_scope",
+        "values": [
+          "authority_model",
+          "cluster",
+          "distinction_pattern",
+          "exact",
+          "proof_pattern",
+          "route",
+          "route_family"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "record",
+        "path": "/exclusion_rule",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/applicability_conditions",
+        "min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-array",
+        "input": "record",
+        "path": "/reopening_criteria",
+        "min": 1,
+        "max": 128
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/status",
         "rules": [
           {
             "op": "enum",
             "path": "",
             "values": [
-              "high",
-              "low",
-              "medium",
-              "unknown"
+              "active"
             ]
           }
         ]
       },
       {
-        "op": "optional-field",
+        "op": "implies",
         "input": "record",
-        "path": "/source_refs",
+        "if": "/exclusion_scope",
+        "equals": "exact",
         "rules": [
           {
-            "op": "bounded-array",
-            "path": "",
-            "max": 128
-          },
-          {
-            "op": "all",
-            "path": "",
+            "op": "at-least-one",
+            "paths": [
+              "/route_id",
+              "/route"
+            ],
             "rules": [
               {
-                "op": "exact-object",
+                "op": "bounded-string",
                 "path": "",
-                "required_keys": [
-                  "kind",
-                  "ref"
-                ],
-                "optional_keys": [
-                  "summary"
-                ],
-                "allow_additional": false
-              },
-              {
-                "op": "bounded-string",
-                "path": "/kind",
                 "trimmed_min": 1,
-                "max": 128
-              },
-              {
-                "op": "bounded-string",
-                "path": "/ref",
-                "trimmed_min": 1,
-                "max": 4096
-              },
-              {
-                "op": "optional-field",
-                "path": "/summary",
-                "rules": [
-                  {
-                    "op": "bounded-string",
-                    "path": "",
-                    "max": 4096
-                  }
-                ]
+                "max": 4194304
               }
             ]
           }
         ]
       },
       {
-        "op": "optional-field",
+        "op": "implies",
         "input": "record",
-        "path": "/falsifying_evidence",
+        "if": "/exclusion_scope",
+        "equals": "route",
         "rules": [
           {
-            "op": "bounded-array",
-            "path": "",
-            "max": 128
-          },
-          {
-            "op": "all",
-            "path": "",
+            "op": "at-least-one",
+            "paths": [
+              "/route_id",
+              "/route"
+            ],
             "rules": [
               {
                 "op": "bounded-string",
                 "path": "",
                 "trimmed_min": 1,
-                "max": 1048576
+                "max": 4194304
               }
             ]
           }
         ]
       },
       {
-        "op": "optional-field",
+        "op": "implies",
         "input": "record",
-        "path": "/applicability_conditions",
+        "if": "/exclusion_scope",
+        "equals": "route_family",
         "rules": [
           {
-            "op": "bounded-array",
-            "path": "",
-            "max": 128
-          },
-          {
-            "op": "all",
-            "path": "",
+            "op": "at-least-one",
+            "paths": [
+              "/route_family_id",
+              "/route_or_model_id"
+            ],
             "rules": [
               {
                 "op": "bounded-string",
                 "path": "",
                 "trimmed_min": 1,
-                "max": 1048576
+                "max": 4194304
               }
             ]
           }
         ]
       },
       {
-        "op": "optional-field",
+        "op": "implies",
         "input": "record",
-        "path": "/reopening_criteria",
+        "if": "/exclusion_scope",
+        "equals": "cluster",
         "rules": [
           {
-            "op": "bounded-array",
-            "path": "",
-            "max": 128
-          },
-          {
-            "op": "all",
-            "path": "",
+            "op": "at-least-one",
+            "paths": [
+              "/cluster_id",
+              "/cluster"
+            ],
             "rules": [
               {
-                "op": "exact-object",
+                "op": "bounded-string",
                 "path": "",
-                "keys": [
-                  "condition",
-                  "id"
-                ]
-              },
-              {
-                "op": "bounded-string",
-                "path": "/id",
                 "trimmed_min": 1,
-                "max": 256
-              },
-              {
-                "op": "bounded-string",
-                "path": "/condition",
-                "trimmed_min": 1,
-                "max": 1048576
+                "max": 4194304
               }
             ]
           }
         ]
       },
       {
-        "op": "optional-field",
+        "op": "implies",
         "input": "record",
-        "path": "/applicable_paths",
+        "if": "/exclusion_scope",
+        "equals": "authority_model",
         "rules": [
           {
-            "op": "bounded-array",
-            "path": "",
-            "max": 128
-          },
-          {
-            "op": "all",
-            "path": "",
+            "op": "at-least-one",
+            "paths": [
+              "/authority_model_id",
+              "/route_or_model_id"
+            ],
             "rules": [
               {
                 "op": "bounded-string",
                 "path": "",
                 "trimmed_min": 1,
-                "max": 4096
+                "max": 4194304
               }
             ]
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "record",
+        "if": "/exclusion_scope",
+        "equals": "distinction_pattern",
+        "rules": [
+          {
+            "op": "at-least-one",
+            "paths": [
+              "/distinction_pattern_id",
+              "/route_or_model_id"
+            ],
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "record",
+        "if": "/exclusion_scope",
+        "equals": "proof_pattern",
+        "rules": [
+          {
+            "op": "at-least-one",
+            "paths": [
+              "/proof_pattern_id",
+              "/route_or_model_id"
+            ],
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 4194304
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "at-least-one",
+        "input": "record",
+        "paths": [
+          "/artifact_state_id",
+          "/artifact"
+        ],
+        "rules": [
+          {
+            "op": "regex",
+            "path": "",
+            "patterns": [
+              "^[A-Fa-f0-9]{40}$",
+              "^[A-Fa-f0-9]{64}$",
+              "^commit:[A-Fa-f0-9]{40}$",
+              "^commit:[A-Fa-f0-9]{64}$",
+              "^tree:[A-Fa-f0-9]{40}$",
+              "^tree:[A-Fa-f0-9]{64}$",
+              "^sha256:[A-Fa-f0-9]{64}$",
+              "^surface:[A-Fa-f0-9]{64}$"
+            ],
+            "max": 72
           }
         ]
       }
@@ -303,7 +370,7 @@
   "bounds": {
     "max_input_bytes": 4194304,
     "max_store_bytes": 4194304,
-    "max_records": 1,
+    "max_records": 128,
     "max_output_bytes": 4194304,
     "max_diagnostics": 64,
     "max_reducer_states": 1

@@ -4,6 +4,10 @@
   "owner": "negative-ledger",
   "imports": [
     {
+      "id": "negative-ledger/negative-evidence-record-shape",
+      "path": "negative-evidence-record-shape.json"
+    },
+    {
       "id": "negative-ledger/negative-evidence-record",
       "path": "negative-evidence-record.json"
     },
@@ -98,7 +102,7 @@
         "op": "definition-ref",
         "input": "capture",
         "path": "/record",
-        "definition": "negative-ledger/negative-evidence-record"
+        "definition": "negative-ledger/negative-evidence-record-shape"
       },
       {
         "op": "enum",
@@ -109,6 +113,19 @@
           "capture_candidate",
           "need-evidence",
           "unknown"
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "capture",
+        "if": "/record/status",
+        "equals": "active",
+        "rules": [
+          {
+            "op": "definition-ref",
+            "path": "/record",
+            "definition": "negative-ledger/negative-evidence-record"
+          }
         ]
       },
       {
@@ -222,6 +239,23 @@
                 "path": "/record",
                 "min": 1,
                 "max": 64
+              },
+              {
+                "op": "definition-ref",
+                "path": "/record",
+                "definition": "negative-ledger/negative-evidence-record-shape"
+              },
+              {
+                "op": "implies",
+                "if": "/status",
+                "equals": "active",
+                "rules": [
+                  {
+                    "op": "definition-ref",
+                    "path": "/record",
+                    "definition": "negative-ledger/negative-evidence-record"
+                  }
+                ]
               }
             ]
           },
@@ -257,19 +291,6 @@
                 "right": "/status"
               }
             ]
-          }
-        ]
-      },
-      {
-        "op": "implies",
-        "input": "event",
-        "if": "/event",
-        "equals": "capture",
-        "rules": [
-          {
-            "op": "definition-ref",
-            "path": "/record",
-            "definition": "negative-ledger/negative-evidence-record"
           }
         ]
       }
