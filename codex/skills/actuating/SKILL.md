@@ -315,7 +315,13 @@ same finding set and nomination version.
    compares only the opaque digest.
 7. Run the Construction's exact verifier and falsifier observations. Record
    their immutable outputs and the resulting subject identity in the Evidence
-   Ledger using [evidence-ledger.md](references/evidence-ledger.md).
+   Ledger using [evidence-ledger.md](references/evidence-ledger.md). When
+   session evidence is required, observe the selected session through
+   `definitions/seq/run-audit.json`. When Evidence-store structure is
+   required, pipe Ledger's `structural-facts` payload into
+   `definitions/seq/artifact-kernel.json`. Actuating interprets both
+   observations; neither structural runtime assigns review credit, chooses the
+   next action, or closes the Goal.
 8. Re-evaluate the current artifacts and observations. Actuating selects the
    next operation, review action, Ship handoff, closure judgment, or blocker.
 

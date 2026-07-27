@@ -1,7 +1,16 @@
 {
   "schema": "skill-definition-set/v1",
   "skill": "actuating",
-  "seq": [],
+  "seq": [
+    {
+      "id": "actuating/artifact-kernel",
+      "path": "seq/artifact-kernel.json"
+    },
+    {
+      "id": "actuating/run-audit",
+      "path": "seq/run-audit.json"
+    }
+  ],
   "ledger": [
     {
       "id": "actuating/closure-receipt",

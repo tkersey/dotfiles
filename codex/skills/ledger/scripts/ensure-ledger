@@ -16,7 +16,7 @@ usage:
 
 Ensures a ledger command resolves on PATH. With --install, installs the native
 Ledger CLI's Homebrew formula when ledger is missing or upgrades it when the
-installed CLI is incompatible. Readiness requires Ledger 1.x and
+installed CLI does not satisfy readiness. Readiness requires Ledger 1.x and
 ledger-artifact-abi/v1. The handler does not proxy native commands.
 EOF
 }
@@ -48,7 +48,7 @@ inspect_availability() {
   [[ -n "$ledger_path" ]]
 }
 
-inspect_compatibility() {
+inspect_readiness() {
   local capabilities
   ledger_version="$("$ledger_path" version 2>/dev/null || true)"
   [[ "$ledger_version" =~ ^1\.[0-9]+\.[0-9]+$ ]] || return 1
@@ -90,11 +90,11 @@ upgrade_cli() {
   if [[ "$os" != "Darwin" && "$os" != "Linux" ]] ||
     ! command -v brew >/dev/null 2>&1
   then
-    emit_error "incompatible" "Install or upgrade $formula to Ledger 1.x with ledger-artifact-abi/v1, then retry."
+    emit_error "version-or-abi-mismatch" "Install or upgrade $formula to Ledger 1.x with ledger-artifact-abi/v1, then retry."
     return 2
   fi
   if ! brew list --versions "$formula" >/dev/null 2>&1; then
-    emit_error "incompatible-nonformula" "Replace the current ledger with $formula 1.x, then retry."
+    emit_error "version-or-abi-mismatch-nonformula" "Replace the current ledger with $formula 1.x, then retry."
     return 2
   fi
   if ! brew upgrade "$formula" >&2; then
@@ -136,9 +136,9 @@ if ! inspect_availability; then
   fi
 fi
 
-if ! inspect_compatibility; then
+if ! inspect_readiness; then
   if [[ "$install_allowed" != true ]]; then
-    emit_error "incompatible" "Authorize the canonical upgrade, then rerun: ensure-ledger --install"
+    emit_error "version-or-abi-mismatch" "Authorize the canonical upgrade, then rerun: ensure-ledger --install"
     exit 3
   fi
   action="$(upgrade_cli)" || exit $?
@@ -147,8 +147,8 @@ if ! inspect_compatibility; then
     emit_error "post-upgrade-unavailable" "Verify PATH and the upgraded $formula formula."
     exit 2
   }
-  if ! inspect_compatibility; then
-    emit_error "post-upgrade-incompatible" "Verify $formula provides Ledger 1.x and ledger-artifact-abi/v1."
+  if ! inspect_readiness; then
+    emit_error "post-upgrade-version-or-abi-mismatch" "Verify $formula provides Ledger 1.x and ledger-artifact-abi/v1."
     exit 2
   fi
 fi

@@ -14,7 +14,7 @@ The sole structural definition is:
 ${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-There is no source namespace or source-less command alias.
+Every command selects this definition and names its operation or projection.
 
 ## Generic Operations and Projections
 

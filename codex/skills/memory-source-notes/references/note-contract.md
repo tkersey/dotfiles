@@ -52,8 +52,8 @@ The native writer creates one canonical envelope in a timestamped `.md` file:
 
 For Synesthesia writes, the extension adapter additionally guarantees:
 
-- operation-kind compatibility;
-- authority-kind compatibility;
+- operation-kind agreement;
+- authority-kind agreement;
 - prior-note relationships for state-changing operations;
 - required activation and non-activation boundaries;
 - canonical key ordering and compact JSON before writer fingerprinting;

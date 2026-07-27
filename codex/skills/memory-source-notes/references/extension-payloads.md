@@ -77,7 +77,7 @@ For a rejection, replace `engineering_translation` with:
 }
 ```
 
-The Synesthesia adapter generates these compatibility fields for the current native writer:
+The Synesthesia adapter generates these writer-bound fields:
 
 ```text
 payload.scope

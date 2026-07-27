@@ -348,8 +348,8 @@ See [source-store-layout.md](references/source-store-layout.md) and
 
 - Bootstrap once before the first Ledger command in a workflow; do not repeat
   it per skill or per command.
-- After readiness, invoke `ledger` directly and let the CLI own compatibility,
-  integrity, and failures.
+- After readiness, invoke `ledger` directly and let the CLI own ABI
+  enforcement, integrity, and failures.
 - Do not install without current installation authority.
 - Do not install during an active Actuating repository effect.
 - Do not mutate a source store except through its owning definition and

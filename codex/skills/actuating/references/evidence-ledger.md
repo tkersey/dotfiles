@@ -243,6 +243,46 @@ ledger doctor \
   --format json
 ~~~
 
+For deterministic Ledger-to-Seq transport, emit the definition-declared
+relation directly and observe it through the Actuating artifact kernel:
+
+~~~bash
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection structural-facts \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --payload-only \
+  --format json > structural-facts.json
+
+seq observe \
+  --definition <actuating-skill-root>/definitions/seq/artifact-kernel.json \
+  --input facts=structural-facts.json \
+  --projection structural-facts \
+  --format json
+~~~
+
+The payload is `actuating-structural-facts/v1`: one bounded relation row
+containing structural identities, counts, event-kind counts, the current
+pending-operation value, and the exact Evidence head. Seq verifies the input
+schema and emits `actuating-artifact-kernel-observation/v1`; Actuating alone
+interprets those facts.
+
+Observe physical run evidence independently, selecting an exact session or a
+bounded repository/time window:
+
+~~~bash
+seq observe \
+  --definition <actuating-skill-root>/definitions/seq/run-audit.json \
+  --session-id SESSION_ID \
+  --projection turns \
+  --format json
+~~~
+
+Use projection `tools` for tool lifecycle evidence. The definition returns
+evidence and provenance only; it does not recreate the retired native verdict
+or transfer Actuating authority into Seq.
+
 `prepare-operation` validates the exact current Goal, Construction,
 caller-owned `expected_subject_digest`, scope, effect, and obligation
 references; appends `operation_prepared`; returns the raw `AKC2-...` token once

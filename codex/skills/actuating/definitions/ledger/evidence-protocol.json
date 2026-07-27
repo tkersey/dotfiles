@@ -42,6 +42,7 @@
       "event-kinds",
       "event-materialization",
       "exact-object",
+      "export",
       "field-equal",
       "field-not-equal",
       "fold",
@@ -3726,6 +3727,84 @@
             "subject_digest": {
               "register": "subject"
             }
+          }
+        },
+        {
+          "op": "export",
+          "value": {
+            "object": [
+              {
+                "name": "schema",
+                "value": {
+                  "literal": "actuating-structural-facts/v1"
+                }
+              },
+              {
+                "name": "rows",
+                "value": {
+                  "array": [
+                    {
+                      "object": [
+                        {
+                          "name": "construction_ref",
+                          "value": {
+                            "path": "/construction_ref"
+                          }
+                        },
+                        {
+                          "name": "counterexample_class_count",
+                          "value": {
+                            "path": "/counterexample_class_count"
+                          }
+                        },
+                        {
+                          "name": "event_count",
+                          "value": {
+                            "path": "/event_count"
+                          }
+                        },
+                        {
+                          "name": "event_kinds",
+                          "value": {
+                            "path": "/event_kinds"
+                          }
+                        },
+                        {
+                          "name": "goal_contract_ref",
+                          "value": {
+                            "path": "/goal_contract_ref"
+                          }
+                        },
+                        {
+                          "name": "goal_id",
+                          "value": {
+                            "path": "/goal_id"
+                          }
+                        },
+                        {
+                          "name": "head_digest",
+                          "value": {
+                            "path": "/head_digest"
+                          }
+                        },
+                        {
+                          "name": "pending_operation",
+                          "value": {
+                            "path": "/pending_operation"
+                          }
+                        },
+                        {
+                          "name": "subject_digest",
+                          "value": {
+                            "path": "/subject_digest"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
           }
         }
       ]

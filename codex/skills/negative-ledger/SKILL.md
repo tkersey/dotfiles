@@ -17,8 +17,9 @@ The structural boundary is the passive definition:
 ${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-There is no source namespace, alias, or fallback reader. The definition keeps
-the canonical store at `.ledger/negative-ledger/events.jsonl`.
+The selected definition exclusively addresses the canonical store at
+`.ledger/negative-ledger/events.jsonl`, and every operation or projection is
+explicit.
 
 The memory-admission channel is:
 
