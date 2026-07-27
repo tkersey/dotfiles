@@ -38,6 +38,15 @@ for the material subject and evidence objects. The workspace fingerprint must
 cover the HEAD-relative index, worktree, and in-scope untracked artifacts in a
 staging-stable canonical representation; staging alone must not change it.
 
+Validate the freshness-bound input before participant fan-out:
+
+```bash
+ledger validate \
+  --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-input.json \
+  --input checkpoint_input=<checkpoint-input.json> \
+  --format json
+```
+
 ## Fixed participant registry
 
 Invoke each participant once with
@@ -72,7 +81,10 @@ Assemble one stateless `source-memory-checkpoint/v1` receipt with:
 Validate with:
 
 ```bash
-ledger validate source-memory-checkpoint --input checkpoint.json
+ledger validate \
+  --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-receipt.json \
+  --input checkpoint=<checkpoint.json> \
+  --format json
 ```
 
 Validation is structural and non-authorizing. It never reads or writes a source

@@ -166,7 +166,15 @@ implementation/review closeout, or explicit checkpoint request:
 2. Construct one bounded immutable `source-memory-checkpoint-input/v1` packet
    containing current subject identity, literal decision and validation
    evidence, attempted routes, user-authority events, changed paths, and the
-   final handoff. Compute subject and evidence SHA-256 fingerprints.
+   final handoff. Compute subject and evidence SHA-256 fingerprints, then
+   validate the packet with:
+
+   ```bash
+   ledger validate \
+     --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-input.json \
+     --input checkpoint_input=FILE|- \
+     --format json
+   ```
 3. Invoke exactly `$learnings`, `$synesthesia`, and `$negative-ledger` with
    `checkpoint_context=source-memory-checkpoint/v1`. Each participant evaluates
    only its source contract, returns exactly one canonical disposition plus one
@@ -175,11 +183,18 @@ implementation/review closeout, or explicit checkpoint request:
 4. Continue collecting all three results when one participant fails. Canonical
    source writes are independent and append-only; never roll one back because a
    sibling or derived admission stage failed.
-5. Assemble `source-memory-checkpoint/v1`, validate it with
-   `ledger validate source-memory-checkpoint --input FILE|-`, and retain one
-   current receipt. Recompute both fingerprints before reuse; changed code,
-   evidence, route, or authority makes the prior receipt stale and requires a
-   fresh fan-out.
+5. Assemble `source-memory-checkpoint/v1`, validate it with the canonical
+   passive definition, and retain one current receipt:
+
+   ```bash
+   ledger validate \
+     --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-receipt.json \
+     --input checkpoint=FILE|- \
+     --format json
+   ```
+
+   Recompute both fingerprints before reuse; changed code, evidence, route, or
+   authority makes the prior receipt stale and requires a fresh fan-out.
 
 Aggregate `complete` when every participant evaluated and neither a canonical
 nor derived operation is blocked; use `degraded` when semantic evaluation and
