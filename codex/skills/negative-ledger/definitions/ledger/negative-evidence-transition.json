@@ -1,0 +1,219 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "negative-ledger/negative-evidence-transition",
+  "owner": "negative-ledger",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-object",
+      "bounded-string",
+      "enum",
+      "exact-object",
+      "field-not-equal",
+      "optional-field",
+      "regex",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "transition": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "rules": [
+      {
+        "op": "bounded-object",
+        "input": "transition",
+        "path": "",
+        "min": 7,
+        "max": 12
+      },
+      {
+        "op": "regex",
+        "input": "transition",
+        "path": "/neg_id",
+        "patterns": [
+          "^NEG-[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        ],
+        "max": 256
+      },
+      {
+        "op": "enum",
+        "input": "transition",
+        "path": "/from",
+        "values": [
+          "accepted_risk",
+          "active",
+          "capture_candidate",
+          "need-evidence",
+          "reopened",
+          "stale",
+          "superseded",
+          "unknown"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "transition",
+        "path": "/to",
+        "values": [
+          "accepted_risk",
+          "active",
+          "capture_candidate",
+          "need-evidence",
+          "reopened",
+          "stale",
+          "superseded",
+          "unknown"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "transition",
+        "path": "/reason",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "transition",
+        "path": "/criterion_ids",
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "transition",
+        "path": "/criterion_ids",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 256
+          }
+        ]
+      },
+      {
+        "op": "unique",
+        "input": "transition",
+        "path": "/criterion_ids"
+      },
+      {
+        "op": "bounded-array",
+        "input": "transition",
+        "path": "/criterion_changes",
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "transition",
+        "path": "/criterion_changes",
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "keys": [
+              "after",
+              "before",
+              "criterion_id"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/criterion_id",
+            "trimmed_min": 1,
+            "max": 256
+          },
+          {
+            "op": "bounded-string",
+            "path": "/before",
+            "trimmed_min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "bounded-string",
+            "path": "/after",
+            "trimmed_min": 1,
+            "max": 1048576
+          },
+          {
+            "op": "field-not-equal",
+            "left": "/before",
+            "right": "/after"
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "transition",
+        "path": "/source_refs",
+        "min": 1,
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "transition",
+        "path": "/source_refs",
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "required_keys": [
+              "kind",
+              "ref"
+            ],
+            "optional_keys": [
+              "summary"
+            ],
+            "allow_additional": false
+          },
+          {
+            "op": "bounded-string",
+            "path": "/kind",
+            "trimmed_min": 1,
+            "max": 128
+          },
+          {
+            "op": "bounded-string",
+            "path": "/ref",
+            "trimmed_min": 1,
+            "max": 4096
+          },
+          {
+            "op": "optional-field",
+            "path": "/summary",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "max": 4096
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 1,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

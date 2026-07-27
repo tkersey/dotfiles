@@ -1,0 +1,311 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "negative-ledger/negative-evidence-record",
+  "owner": "negative-ledger",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-object",
+      "bounded-string",
+      "canonical-json",
+      "enum",
+      "exact-object",
+      "optional-field"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "record": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "record"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "bounded-object",
+        "input": "record",
+        "path": "",
+        "min": 1,
+        "max": 64
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/record_version",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "",
+            "values": [
+              "NER-v2"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/kind",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "",
+            "values": [
+              "authority_model",
+              "kernel_distinction",
+              "proof_pattern",
+              "realization_route"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/exclusion_scope",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "",
+            "values": [
+              "authority_model",
+              "cluster",
+              "distinction_pattern",
+              "exact",
+              "proof_pattern",
+              "route",
+              "route_family"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/failure_class",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "",
+            "values": [
+              "global-regression",
+              "local-regression",
+              "no-effect",
+              "stale",
+              "too-complex",
+              "unknown",
+              "unsound"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/confidence",
+        "rules": [
+          {
+            "op": "enum",
+            "path": "",
+            "values": [
+              "high",
+              "low",
+              "medium",
+              "unknown"
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/source_refs",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 128
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "",
+                "required_keys": [
+                  "kind",
+                  "ref"
+                ],
+                "optional_keys": [
+                  "summary"
+                ],
+                "allow_additional": false
+              },
+              {
+                "op": "bounded-string",
+                "path": "/kind",
+                "trimmed_min": 1,
+                "max": 128
+              },
+              {
+                "op": "bounded-string",
+                "path": "/ref",
+                "trimmed_min": 1,
+                "max": 4096
+              },
+              {
+                "op": "optional-field",
+                "path": "/summary",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "max": 4096
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/falsifying_evidence",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 128
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/applicability_conditions",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 128
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/reopening_criteria",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 128
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "",
+                "keys": [
+                  "condition",
+                  "id"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/id",
+                "trimmed_min": 1,
+                "max": 256
+              },
+              {
+                "op": "bounded-string",
+                "path": "/condition",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "record",
+        "path": "/applicable_paths",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 128
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 4096
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 1,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}
