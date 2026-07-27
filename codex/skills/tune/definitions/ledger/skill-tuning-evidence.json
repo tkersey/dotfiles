@@ -1,0 +1,985 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "tune/skill-tuning-evidence",
+  "owner": "tune",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "enum",
+      "exact-object",
+      "object-values",
+      "optional-field",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "evidence": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "evidence"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "",
+        "required_keys": [
+          "metadata",
+          "skill_tuning_evidence"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence",
+        "required_keys": [
+          "contract",
+          "contract_compliance",
+          "cursor_end",
+          "decision_influence",
+          "denominator",
+          "evidence_limitations",
+          "exemplars",
+          "outcomes",
+          "packet_version",
+          "recurrent_gap_signatures",
+          "skill_versions_observed",
+          "target_kind",
+          "target_skill",
+          "trigger_quality",
+          "window",
+          "workarounds"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "enum",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/packet_version",
+        "values": [
+          "STE-v1"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/target_skill",
+        "min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/target_kind",
+        "min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/skill_versions_observed",
+        "max": 10000
+      },
+      {
+        "op": "all",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/skill_versions_observed",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract",
+        "required_keys": [
+          "authority",
+          "clause_ids",
+          "fingerprint"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "enum",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract/authority",
+        "values": [
+          "absent",
+          "explicit",
+          "inferred"
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract/fingerprint",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          },
+          {
+            "op": "bounded-string",
+            "path": "",
+            "max": 1048576
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract/clause_ids",
+        "max": 10000
+      },
+      {
+        "op": "all",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract/clause_ids",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/window",
+        "required_keys": [
+          "current_session_excluded",
+          "repo",
+          "since",
+          "until",
+          "workdir"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/window/since",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/window/until",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/window/repo",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/window/workdir",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/window/current_session_excluded",
+        "type": "boolean"
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator",
+        "required_keys": [
+          "activation_sessions",
+          "associated_outcome_episodes",
+          "candidate_sessions",
+          "decision_episodes",
+          "explicit_effect_episodes",
+          "matched_control_episodes"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/candidate_sessions",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/candidate_sessions",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/activation_sessions",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/activation_sessions",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/decision_episodes",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/decision_episodes",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/explicit_effect_episodes",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/explicit_effect_episodes",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/associated_outcome_episodes",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/associated_outcome_episodes",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/matched_control_episodes",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/denominator/matched_control_episodes",
+        "min": 0
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality",
+        "required_keys": [
+          "ambiguous",
+          "correctly_activated",
+          "false_activations",
+          "missed",
+          "trigger_present"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/trigger_present",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/trigger_present",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/correctly_activated",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/correctly_activated",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/missed",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/missed",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/false_activations",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/false_activations",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/ambiguous",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/trigger_quality/ambiguous",
+        "min": 0
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence",
+        "required_keys": [
+          "contrary_to_contract",
+          "escalations_or_blocks",
+          "explicit_route_changes",
+          "no_visible_delta",
+          "prevented_actions",
+          "proof_changes",
+          "reinforced_existing",
+          "scope_narrowings",
+          "unknown"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/explicit_route_changes",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/explicit_route_changes",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/prevented_actions",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/prevented_actions",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/scope_narrowings",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/scope_narrowings",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/proof_changes",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/proof_changes",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/escalations_or_blocks",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/escalations_or_blocks",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/reinforced_existing",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/reinforced_existing",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/no_visible_delta",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/no_visible_delta",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/contrary_to_contract",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/contrary_to_contract",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/unknown",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/decision_influence/unknown",
+        "min": 0
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract_compliance",
+        "required_keys": [
+          "ambiguous",
+          "followed",
+          "never_exercised",
+          "violated"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "object-values",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract_compliance/followed",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "integer"
+          },
+          {
+            "op": "bounded-number",
+            "path": "",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "op": "object-values",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract_compliance/violated",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "integer"
+          },
+          {
+            "op": "bounded-number",
+            "path": "",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "op": "object-values",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract_compliance/ambiguous",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "integer"
+          },
+          {
+            "op": "bounded-number",
+            "path": "",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract_compliance/never_exercised",
+        "max": 10000
+      },
+      {
+        "op": "all",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/contract_compliance/never_exercised",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes",
+        "required_keys": [
+          "blocked_correctly",
+          "first_pass_success",
+          "proof_fail",
+          "proof_pass",
+          "review_clean",
+          "review_reopens",
+          "reversals",
+          "unknown"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/first_pass_success",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/first_pass_success",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/proof_pass",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/proof_pass",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/proof_fail",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/proof_fail",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/review_clean",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/review_clean",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/review_reopens",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/review_reopens",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/reversals",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/reversals",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/blocked_correctly",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/blocked_correctly",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/unknown",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/outcomes/unknown",
+        "min": 0
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/workarounds",
+        "max": 10000
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/recurrent_gap_signatures",
+        "max": 10000
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/exemplars",
+        "required_keys": [
+          "negative",
+          "positive"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/exemplars/positive",
+        "max": 10000
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/exemplars/negative",
+        "max": 10000
+      },
+      {
+        "op": "bounded-array",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/evidence_limitations",
+        "max": 10000
+      },
+      {
+        "op": "all",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/evidence_limitations",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end",
+        "required_keys": [
+          "contract_fingerprint",
+          "cursor_version",
+          "episodes_emitted",
+          "file_identity",
+          "file_size",
+          "last_event_offset",
+          "last_timestamp",
+          "rows_scanned",
+          "seq_version",
+          "session_id",
+          "session_path",
+          "sessions_scanned"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "enum",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/cursor_version",
+        "values": [
+          "SDD-C1"
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/session_path",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/session_id",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/file_size",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "integer"
+          },
+          {
+            "op": "bounded-number",
+            "path": "",
+            "min": 0
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/file_identity",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/last_timestamp",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/last_event_offset",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/last_event_offset",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/rows_scanned",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/rows_scanned",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/sessions_scanned",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/sessions_scanned",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/episodes_emitted",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/episodes_emitted",
+        "min": 0
+      },
+      {
+        "op": "optional-field",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/contract_fingerprint",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "evidence",
+        "path": "/skill_tuning_evidence/cursor_end/seq_version",
+        "min": 1,
+        "max": 256
+      },
+      {
+        "op": "exact-object",
+        "input": "evidence",
+        "path": "/metadata",
+        "required_keys": [
+          "causality",
+          "mode"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "enum",
+        "input": "evidence",
+        "path": "/metadata/mode",
+        "values": [
+          "tune-packet"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "evidence",
+        "path": "/metadata/causality",
+        "values": [
+          "any",
+          "associated",
+          "explicit",
+          "strong"
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {
+    "op": "content-address",
+    "input": "evidence"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 1048576,
+    "max_records": 10000,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

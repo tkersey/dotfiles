@@ -10,6 +10,10 @@
     {
       "id": "tune/skill-decision-receipt",
       "path": "ledger/skill-decision-receipt.json"
+    },
+    {
+      "id": "tune/skill-tuning-evidence",
+      "path": "ledger/skill-tuning-evidence.json"
     }
   ]
 }
