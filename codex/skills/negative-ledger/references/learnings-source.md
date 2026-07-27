@@ -19,7 +19,7 @@ ledger project \
 
 ## Candidate Test
 
-A learning may seed a ledger capture only when it has:
+A learning may seed a Negative Evidence capture transaction only when it has:
 
 - condition/action statement relevant to the current task;
 - inspectable command, test, benchmark, commit, revert, trace, path, or review witness;

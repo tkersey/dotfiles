@@ -8,23 +8,56 @@
 
 Use the `ledger` CLI. Do not hand-edit the store and do not treat `.ledger/learnings/events.jsonl` as the operational negative-ledger authority.
 
-## Commands
+The sole structural definition is:
 
-```bash
-ledger init
-ledger capture --json capture.json
-ledger query
-ledger map --route "<route>" --cluster "<cluster>" --artifact "<artifact-state>"
-ledger show --id NEG-000001
-ledger handoff
-ledger compact
-ledger doctor
-ledger export --id NEG-000001 --format full
-ledger export --id NEG-000001 --format memory-note
-ledger status --id NEG-000001 --to stale --reason "..."
+```text
+${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-`export` and generic `status` are required by the companion skills-zig specification.
+There is no source namespace or source-less command alias.
+
+## Generic Operations and Projections
+
+```bash
+negative_ledger_definition="${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json"
+
+ledger doctor \
+  --definition "$negative_ledger_definition" \
+  --repo "<repo-root>" \
+  --format json
+
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation capture \
+  --repo "<repo-root>" \
+  --input capture=capture.json \
+  --format json
+
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation transition \
+  --repo "<repo-root>" \
+  --input transition=transition.json \
+  --format json
+
+ledger project \
+  --definition "$negative_ledger_definition" \
+  --projection current-records \
+  --repo "<repo-root>" \
+  --format json
+
+ledger project \
+  --definition "$negative_ledger_definition" \
+  --projection memory-note \
+  --repo "<repo-root>" \
+  --param id=NEG-000001 \
+  --format json
+```
+
+Before retrying a route, use the `route-gate` projection with the immutable
+artifact identity and the identity required by the record's declared scope.
+Exit `0` means no exact active match, `2` means an exact active/applicable
+match, and `3` means the gate could not establish a valid result.
 
 ## Operational Versus Memory Authority
 
