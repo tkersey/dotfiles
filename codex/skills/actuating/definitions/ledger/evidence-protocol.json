@@ -27,6 +27,7 @@
   "requires": {
     "abi": "ledger-artifact-abi/v1",
     "operators": [
+      "bind-existing",
       "body-digest",
       "bounded-array",
       "bounded-number",
@@ -73,6 +74,11 @@
     }
   },
   "inputs": {
+    "binding_event": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    },
     "construction_registration": {
       "codec": "json",
       "required": false,
@@ -103,6 +109,10 @@
     "steps": [
       {
         "op": "canonical-json",
+        "input": "binding_event"
+      },
+      {
+        "op": "canonical-json",
         "input": "construction_registration"
       },
       {
@@ -125,6 +135,57 @@
   },
   "shape": {
     "rules": [
+      {
+        "op": "exact-object",
+        "input": "binding_event",
+        "path": "",
+        "keys": [
+          "body",
+          "construction_ref",
+          "goal_id",
+          "kind",
+          "subject_digest"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "binding_event",
+        "path": "/goal_id",
+        "max": 128,
+        "style": "lowercase-component"
+      },
+      {
+        "op": "one-of",
+        "input": "binding_event",
+        "path": "/construction_ref",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "digest"
+          }
+        ]
+      },
+      {
+        "op": "one-of",
+        "input": "binding_event",
+        "path": "/subject_digest",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "digest"
+          }
+        ]
+      },
       {
         "op": "exact-object",
         "input": "goal_registration",
@@ -2754,6 +2815,48 @@
     }
   },
   "operations": {
+    "bind-existing": {
+      "effects": [
+        {
+          "op": "bind-existing",
+          "slot": "events",
+          "input": "binding_event",
+          "event": {
+            "body_input_field": "body",
+            "fields": [
+              {
+                "field": "construction_ref",
+                "input_field": "construction_ref"
+              },
+              {
+                "field": "event_id",
+                "sequence_text_prefix": "e-"
+              },
+              {
+                "field": "goal_id",
+                "input_field": "goal_id"
+              },
+              {
+                "field": "kind",
+                "input_field": "kind"
+              },
+              {
+                "field": "recorded_at",
+                "unix_seconds": true
+              },
+              {
+                "field": "schema",
+                "literal": "actuating-evidence-event/v1"
+              },
+              {
+                "field": "subject_digest",
+                "input_field": "subject_digest"
+              }
+            ]
+          }
+        }
+      ]
+    },
     "bind-review-request": {
       "effects": [
         {

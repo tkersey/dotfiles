@@ -22,6 +22,23 @@ interprets the other's store or grants authority.
 Construction v1 and v2 stores are unsupported and are not migrated. Start a
 fresh goal-local store and ignore the legacy data.
 
+An unbound current-format v3 Evidence log also fails closed. Bind that exact
+history once, outside normal reads and writes:
+
+~~~bash
+ledger transact \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --operation bind-existing \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+~~~
+
+Supply no artifact input. The operation validates every existing row, event
+chain, retained transition, and partition value under the selected definition
+digest; writes only Ledger-owned binding metadata; and leaves
+`evidence.jsonl` byte-identical. Any invalid row blocks the binding.
+
 Before review, require `cas --version >= 0.2.83` and exactly `run`, `start`, and
 `wait` in `cas review --help`, with no retired action or `review_session` or
 `review-session` alias. Compare semantic versions numerically.
