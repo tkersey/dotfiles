@@ -15,6 +15,8 @@
       "compare-and-replace",
       "create-new",
       "definition-ref",
+      "export",
+      "latest",
       "path-format",
       "text-render",
       "timestamp-ordinal"
@@ -35,6 +37,11 @@
     }
   },
   "inputs": {
+    "plan": {
+      "codec": "text",
+      "required": false,
+      "max_bytes": 2162688
+    },
     "receipt": {
       "codec": "json",
       "required": false,
@@ -150,11 +157,78 @@
           }
         }
       ]
+    },
+    "revise": {
+      "effects": [
+        {
+          "op": "compare-and-replace",
+          "slot": "plan",
+          "input": "plan",
+          "expected_revision_param": "expected_revision"
+        }
+      ]
     }
   },
-  "projections": {},
+  "projections": {
+    "latest": {
+      "slot": "plan",
+      "scope": "matching",
+      "pipeline": [
+        {
+          "op": "latest",
+          "path": "/logical_ref",
+          "required": true
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "logical_ref",
+              "path": "/logical_ref"
+            },
+            {
+              "name": "path",
+              "path": "/path"
+            },
+            {
+              "name": "revision",
+              "path": "/revision"
+            },
+            {
+              "name": "content",
+              "path": "/content"
+            }
+          ]
+        }
+      ]
+    },
+    "path": {
+      "slot": "plan",
+      "required_parameters": [
+        "plan_file"
+      ],
+      "pipeline": [
+        {
+          "op": "export",
+          "path": "/path"
+        }
+      ]
+    },
+    "show": {
+      "slot": "plan",
+      "required_parameters": [
+        "plan_file"
+      ],
+      "pipeline": [
+        {
+          "op": "export",
+          "path": "/content"
+        }
+      ]
+    }
+  },
   "bounds": {
-    "max_input_bytes": 2097152,
+    "max_input_bytes": 4259840,
     "max_store_bytes": 2162688,
     "max_records": 4,
     "max_output_bytes": 2162688,

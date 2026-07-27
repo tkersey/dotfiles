@@ -130,15 +130,23 @@ A decision is consequential only when at least two plausible routes materially d
 
 Materiality controls reasoning, not storage. In Actuating composition, return the complete candidate analysis to Actuating and let the Construction carry the adjudicated decision. Create a Universalist plan and `SDR-v1` only when no current Construction carries that decision and a standalone, cross-session, multi-actor, migration, or supersession handoff must address it independently.
 
-Before the first Ledger command, load `$ledger` and complete `$ledger ensure` once. Universalist requires Ledger 0.10.6 or newer and Skills Seq 0.3.52 or newer.
+Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
+once. Universalist requires Ledger 1.x and `ledger-artifact-abi/v1`.
 
 ```bash
-ledger --source universalist create \
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation create \
   --repo PROJECT_ROOT \
-  --template /path/to/universalist/templates/universalist-plan.md
+  --input template=<universalist-skill-root>/templates/universalist-plan.md \
+  --format json
 ```
 
-For a durable double-category decision, include the applicable existing clauses plus `UNI-DOUBLE-001` in the Ledger emission. Pass every applicable clause explicitly. Ledger owns plan identity, address resolution, receipt construction, validation, and atomic append. Universalist owns decision policy and Markdown fields.
+For a durable double-category decision, include the applicable existing clauses
+plus `UNI-DOUBLE-001` in the `SDR-v1`. Pass every applicable clause explicitly.
+Tune's canonical definition validates and materializes the receipt;
+Universalist's plan definition owns plan identity, address resolution, and
+atomic custody. Universalist retains decision policy and Markdown meaning.
 
 ## Tracks
 

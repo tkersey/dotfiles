@@ -499,50 +499,80 @@ Do not escalate when this inventory cannot be grounded in repository evidence.
 When **Decision durability** applies, first load `$ledger` and complete `$ledger ensure` once. Then allocate a fresh plan:
 
 ```bash
-ledger --source universalist create \
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation create \
   --repo PROJECT_ROOT \
-  --template /path/to/universalist/templates/universalist-plan.md
+  --input template=<universalist-skill-root>/templates/universalist-plan.md \
+  --format json
 ```
 
-Resolve it with:
+Retain `generated_outputs.plan_id`, `generated_outputs.plan_file`, the effect
+`logical_ref`, and `revision_after` from the transaction result. Resolve an
+exact plan or the newest addressed plan with:
 
 ```bash
-ledger --source universalist path --repo PROJECT_ROOT --id PLAN_ID
-ledger --source universalist latest --repo PROJECT_ROOT
+ledger project \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --projection path \
+  --repo PROJECT_ROOT \
+  --param plan_file=PLAN_FILE \
+  --format text
+
+ledger project \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --projection latest \
+  --repo PROJECT_ROOT \
+  --format json
 ```
 
-Before mutation, write the current-context contract, composition owner and decision carrier, ordinary candidate, comparison universe, axis and typed hole, relevant card dispositions, Boundary Artifact Contract with applicability rationales, enforcement matrix, residual obligations, invalidation triggers, proof lease, law, falsifier, and any horizontal/vertical/square/pasting obligations into the plan.
-
-After standalone root adjudication emit exactly one receipt:
+Before mutation, author the current-context contract, composition owner and
+decision carrier, ordinary candidate, comparison universe, axis and typed hole,
+relevant card dispositions, Boundary Artifact Contract with applicability
+rationales, enforcement matrix, residual obligations, invalidation triggers,
+proof lease, law, falsifier, and any horizontal/vertical/square/pasting
+obligations in a draft. Admit the revision through the same definition:
 
 ```bash
-ledger --source universalist emit \
-  --plan PLAN_PATH \
-  --contract /path/to/universalist/references/decision-contract.json \
-  --clause-ref UNI-DISPOSITION-001 \
-  --clause-ref UNI-MINIMAL-001 \
-  --clause-ref UNI-CONTEXT-001 \
-  --clause-ref UNI-ARTIFACT-001 \
-  --clause-ref UNI-ENFORCEMENT-001 \
-  --clause-ref UNI-MECHANICS-001 \
-  --clause-ref UNI-DOUBLE-001 \
-  --clause-ref UNI-ROOT-001 \
-  --question "Which context-relative boundary artifact owns this seam?" \
-  --selected-route UNI-CANONICAL \
-  --rejected-route UNI-ORDINARY \
-  --expected-outcome "One owner enforces the current requirements." \
-  --disposition changed \
-  --construction "typed process/change compatibility-square calculus" \
-  --law "boundary-matched local squares paste and satisfy interchange under required observations" \
-  --falsifier "a mismatched square or observation-changing interchange is accepted" \
-  --advanced-mechanics double-category \
-  --evidence-ref "code:path" \
-  --write-plan
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation revise \
+  --repo PROJECT_ROOT \
+  --input plan=PLAN_DRAFT \
+  --param plan_file=PLAN_FILE \
+  --param expected_revision=REVISION \
+  --format json
+```
+
+After standalone root adjudication, author exactly one `SDR-v1` JSON receipt.
+Validate and canonicalize it through Tune's canonical definition, then append
+it atomically to the plan:
+
+```bash
+ledger materialize \
+  --definition <tune-skill-root>/definitions/ledger/skill-decision-receipt.json \
+  --input receipt=RECEIPT_JSON \
+  --format json
+
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation append-receipt \
+  --repo PROJECT_ROOT \
+  --input receipt=RECEIPT_JSON \
+  --param plan_file=PLAN_FILE \
+  --param expected_revision=REVISION \
+  --format json
 ```
 
 Pass only applicable clauses explicitly. Add `UNI-DOUBLE-001` only when two-dimensional composition is selected. Add `UNI-ROOT-001` only for independently durable decisions. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`. Reclassification adds `UNI-RECLASSIFY-001` and trigger `UNI-RECLASSIFY`.
 
-Ledger owns plan identity, addressing, receipt construction, validation, and atomic append. Universalist owns architecture policy. The contract is the machine-readable authority for triggers, routes, clauses, and required evidence; this file supplies operational semantics. Change the skill, contract, and plan template together. Seq validates structure and fingerprinting, not prose-to-contract equivalence.
+Ledger owns plan identity, addressing, structural validation, canonicalization,
+custody, and atomic replacement. Universalist owns architecture policy and the
+receipt's meaning. The contract is the machine-readable authority for triggers,
+routes, clauses, and required evidence; this file supplies operational
+semantics. Change the skill, contract, definition, and plan template together.
+Neither a Ledger pass nor a Seq observation proves prose-to-contract
+equivalence or grants authority.
 
 ## Decision observability
 
