@@ -22,6 +22,7 @@
       "regex",
       "reducer",
       "replay",
+      "sha256",
       "tagged-union",
       "timestamp",
       "transition-table",
@@ -826,7 +827,73 @@
           "key_field": "neg_id",
           "state_field": "status",
           "retained_field": "record",
-          "event_count_field": "source_event_count"
+          "event_count_field": "source_event_count",
+          "event_kind_counts": [
+            {
+              "kind": "capture",
+              "field": "capture_event_count"
+            },
+            {
+              "kind": "status",
+              "field": "status_event_count"
+            }
+          ],
+          "event_chain": {
+            "field": "event_chain_fingerprint",
+            "fragments": [
+              {
+                "literal": "negative-ledger-event-chain/v1\n"
+              },
+              {
+                "source": "previous-event-chain"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "event-bytes"
+              }
+            ]
+          },
+          "snapshot": {
+            "field": "projection_fingerprint",
+            "prior_field": "previous_projection_fingerprint",
+            "prior_on": [
+              "status"
+            ],
+            "fragments": [
+              {
+                "literal": "negative-ledger-projection/v3\n"
+              },
+              {
+                "source": "key"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "state"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "retained"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "retained_text": "/repository_id"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "event-chain"
+              }
+            ]
+          }
         }
       ]
     }
