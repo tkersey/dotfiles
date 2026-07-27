@@ -29,6 +29,7 @@
       "limit",
       "one-of",
       "optional-field",
+      "relevance",
       "regex",
       "sha256",
       "sort",
@@ -50,6 +51,15 @@
       "type": "integer",
       "required": false,
       "default": 20
+    },
+    "query": {
+      "type": "string",
+      "required": false
+    },
+    "search_limit": {
+      "type": "integer",
+      "required": false,
+      "default": 8
     }
   },
   "inputs": {
@@ -886,6 +896,67 @@
         }
       ]
     },
+    "query": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "relevance",
+          "paths": [
+            "/record/id",
+            "/record/logical_kind",
+            "/record/kind",
+            "/record/operation",
+            "/record/authority",
+            "/record/summary",
+            "/record/payload"
+          ],
+          "param": "query",
+          "mode": "literal"
+        },
+        {
+          "op": "sort",
+          "keys": [
+            {
+              "meta": "relevance-score",
+              "order": "descending"
+            },
+            {
+              "path": "/record/captured_at",
+              "order": "descending"
+            },
+            {
+              "meta": "record-order",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "id",
+              "path": "/record/id"
+            },
+            {
+              "name": "kind",
+              "path": "/record/kind"
+            },
+            {
+              "name": "operation",
+              "path": "/record/operation"
+            },
+            {
+              "name": "summary",
+              "path": "/record/summary"
+            }
+          ]
+        },
+        {
+          "op": "limit",
+          "param": "search_limit"
+        }
+      ]
+    },
     "record": {
       "slot": "events",
       "pipeline": [
@@ -898,6 +969,68 @@
         {
           "op": "export",
           "raw": true
+        }
+      ]
+    },
+    "recall": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "relevance",
+          "paths": [
+            "/record/id",
+            "/record/logical_kind",
+            "/record/kind",
+            "/record/operation",
+            "/record/authority",
+            "/record/summary",
+            "/record/payload"
+          ],
+          "param": "query",
+          "mode": "tokens",
+          "score_field": "score"
+        },
+        {
+          "op": "sort",
+          "keys": [
+            {
+              "meta": "relevance-score",
+              "order": "descending"
+            },
+            {
+              "path": "/record/captured_at",
+              "order": "descending"
+            },
+            {
+              "meta": "record-order",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "id",
+              "path": "/record/id"
+            },
+            {
+              "name": "kind",
+              "path": "/record/kind"
+            },
+            {
+              "name": "operation",
+              "path": "/record/operation"
+            },
+            {
+              "name": "summary",
+              "path": "/record/summary"
+            }
+          ]
+        },
+        {
+          "op": "limit",
+          "param": "search_limit"
         }
       ]
     },
