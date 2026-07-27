@@ -100,11 +100,11 @@ def validate_projection(
             cwd=repo,
             input_bytes=raw,
         ),
-        "ledger validate note",
+        "note structural validation",
     )
-    validation = _parse_json(validation_raw, "ledger validate note")
+    validation = _parse_json(validation_raw, "note structural validation")
     if not isinstance(validation, dict) or validation.get("valid") is not True:
-        raise AdapterError("ledger validate note: invalid result")
+        raise AdapterError("note structural validation: invalid result")
     envelope = _parse_json(raw, "ledger project")
     if not isinstance(envelope, dict):
         raise AdapterError("ledger project: expected object")

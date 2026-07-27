@@ -119,7 +119,12 @@ def _normalize_writer_input(raw: Any) -> Any:
     return normalized
 
 
-def find_ledger_binary() -> Path | None:
+def find_ledger_binary(explicit: str | Path | None = None) -> Path | None:
+    if explicit is not None:
+        path = Path(explicit).expanduser()
+        if path.is_file() and os.access(path, os.X_OK):
+            return path
+        return None
     override = os.environ.get("LEDGER_BIN")
     if override:
         path = Path(override).expanduser()
@@ -151,8 +156,9 @@ def _validate_submission_with_ledger(
     *,
     stored_note: Any | None = None,
     fingerprint_basis: dict[str, Any] | None = None,
+    ledger_bin: str | Path | None = None,
 ) -> dict[str, Any]:
-    binary = find_ledger_binary()
+    binary = find_ledger_binary(ledger_bin)
     if binary is None:
         raise ValidationError(
             "ledger: Ledger 1.x with ledger-artifact-abi/v1 is required"
@@ -333,7 +339,10 @@ def _scope_anchor_source(normalized: Any) -> str:
 
 
 def validate_and_normalize(
-    logical_kind: str, raw: Any
+    logical_kind: str,
+    raw: Any,
+    *,
+    ledger_bin: str | Path | None = None,
 ) -> tuple[str, dict[str, Any], dict[str, Any]]:
     """Normalize transport fields and obtain Ledger's structural decision."""
     physical_kind = LOGICAL_TO_PHYSICAL_KIND[logical_kind]
@@ -354,6 +363,7 @@ def validate_and_normalize(
             "raw_projection": canonical_json_bytes(normalized).decode("utf-8"),
             "expected": f"sha256:{canonical_fingerprint(physical_kind, normalized)}",
         },
+        ledger_bin=ledger_bin,
     )
     return physical_kind, normalized, structural_result
 

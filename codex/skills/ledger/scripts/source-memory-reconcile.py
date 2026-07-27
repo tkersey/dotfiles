@@ -485,8 +485,10 @@ def source_report(
         if raw is not None and source == "synesthesia":
             try:
                 value = parse_json(raw, f"ledger project {record_id}")
-                physical, normalized = synesthesia_adapter.validate_and_normalize(
-                    logical_kind, value
+                physical, normalized, _ = synesthesia_adapter.validate_and_normalize(
+                    logical_kind,
+                    value,
+                    ledger_bin=ledger,
                 )
                 expected = synesthesia_adapter.canonical_fingerprint(
                     physical, normalized

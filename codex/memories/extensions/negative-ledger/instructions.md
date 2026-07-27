@@ -33,7 +33,8 @@ ledger-supersession
 ledger-retraction
 ```
 
-A valid active projection should have authority `ledger-cli` and an embedded full `ledger export` snapshot.
+A valid active projection should have authority `ledger-cli` and an embedded
+full canonical Negative Ledger projection snapshot.
 
 ## Required Projection Fields
 
@@ -84,7 +85,10 @@ Require narrow hypothesis, named attempted route, inspectable witness, observed 
 ## Artifact Targeting
 
 - `memory_summary.md`: broad routing rules only.
-- `MEMORY.md`: use task-group structure with `NEG-*`, ledger path, status, artifact state, failed hypothesis, exclusion/applicability/reopening fields, `source_note_ids`, and projection fingerprint.
+- `MEMORY.md`: use task-group structure with `NEG-*`, canonical-store path,
+  status, artifact state, failed hypothesis,
+  exclusion/applicability/reopening fields, `source_note_ids`, and projection
+  fingerprint.
 - `skills/*`: only for repeated repo-specific preflight procedures.
 - `none`: incomplete, non-recurrent, weak, retracted, or superseded material with no remaining routing value.
 
