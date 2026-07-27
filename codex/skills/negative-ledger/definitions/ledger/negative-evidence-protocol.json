@@ -1,0 +1,586 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "negative-ledger/negative-evidence-protocol",
+  "owner": "negative-ledger",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bind-existing",
+      "bounded-array",
+      "bounded-object",
+      "bounded-string",
+      "enum",
+      "exact-object",
+      "field-equal",
+      "implies",
+      "optional-field",
+      "regex",
+      "tagged-union",
+      "timestamp",
+      "unique"
+    ]
+  },
+  "parameters": {
+    "id": {
+      "type": "string",
+      "required": false
+    },
+    "limit": {
+      "type": "integer",
+      "required": false,
+      "default": 20
+    },
+    "query": {
+      "type": "string",
+      "required": false
+    }
+  },
+  "inputs": {
+    "event": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "rules": [
+      {
+        "op": "bounded-object",
+        "input": "event",
+        "path": "",
+        "min": 7,
+        "max": 12
+      },
+      {
+        "op": "enum",
+        "input": "event",
+        "path": "/v",
+        "values": [
+          3
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "event",
+        "path": "/event",
+        "values": [
+          "capture",
+          "status"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "event",
+        "path": "/event_id",
+        "min": 28,
+        "max": 28
+      },
+      {
+        "op": "regex",
+        "input": "event",
+        "path": "/event_id",
+        "patterns": [
+          "^NLE-[a-f0-9]+$"
+        ],
+        "max": 28
+      },
+      {
+        "op": "timestamp",
+        "input": "event",
+        "path": "/timestamp"
+      },
+      {
+        "op": "regex",
+        "input": "event",
+        "path": "/neg_id",
+        "patterns": [
+          "^NEG-[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        ],
+        "max": 256
+      },
+      {
+        "op": "tagged-union",
+        "input": "event",
+        "path": "",
+        "tag": "/event",
+        "variants": [
+          {
+            "value": "capture",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "",
+                "keys": [
+                  "event",
+                  "event_id",
+                  "neg_id",
+                  "record",
+                  "status",
+                  "timestamp",
+                  "v"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/status",
+                "values": [
+                  "active",
+                  "capture_candidate",
+                  "need-evidence",
+                  "unknown"
+                ]
+              },
+              {
+                "op": "bounded-object",
+                "path": "/record",
+                "min": 1,
+                "max": 64
+              }
+            ]
+          },
+          {
+            "value": "status",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "",
+                "keys": [
+                  "criterion_changes",
+                  "criterion_ids",
+                  "event",
+                  "event_id",
+                  "from",
+                  "neg_id",
+                  "reason",
+                  "source_refs",
+                  "status",
+                  "timestamp",
+                  "to",
+                  "v"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/from",
+                "values": [
+                  "accepted_risk",
+                  "active",
+                  "capture_candidate",
+                  "need-evidence",
+                  "reopened",
+                  "stale",
+                  "superseded",
+                  "unknown"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/to",
+                "values": [
+                  "accepted_risk",
+                  "active",
+                  "capture_candidate",
+                  "need-evidence",
+                  "reopened",
+                  "stale",
+                  "superseded",
+                  "unknown"
+                ]
+              },
+              {
+                "op": "field-equal",
+                "left": "/to",
+                "right": "/status"
+              },
+              {
+                "op": "bounded-string",
+                "path": "/reason",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-array",
+                "path": "/criterion_ids",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "/criterion_ids",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "trimmed_min": 1,
+                    "max": 256
+                  }
+                ]
+              },
+              {
+                "op": "unique",
+                "path": "/criterion_ids"
+              },
+              {
+                "op": "bounded-array",
+                "path": "/criterion_changes",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "/criterion_changes",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "path": "",
+                    "keys": [
+                      "after",
+                      "before",
+                      "criterion_id"
+                    ]
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/criterion_id",
+                    "trimmed_min": 1,
+                    "max": 256
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/before",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/after",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              },
+              {
+                "op": "bounded-array",
+                "path": "/source_refs",
+                "min": 1,
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "/source_refs",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "path": "",
+                    "required_keys": [
+                      "kind",
+                      "ref"
+                    ],
+                    "optional_keys": [
+                      "summary"
+                    ],
+                    "allow_additional": false
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/kind",
+                    "trimmed_min": 1,
+                    "max": 128
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/ref",
+                    "trimmed_min": 1,
+                    "max": 4096
+                  },
+                  {
+                    "op": "optional-field",
+                    "path": "/summary",
+                    "rules": [
+                      {
+                        "op": "bounded-string",
+                        "path": "",
+                        "max": 4096
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "event",
+        "if": "/event",
+        "equals": "capture",
+        "rules": [
+          {
+            "op": "optional-field",
+            "path": "/record/record_version",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "NER-v2"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/kind",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "authority_model",
+                  "kernel_distinction",
+                  "proof_pattern",
+                  "realization_route"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/exclusion_scope",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "authority_model",
+                  "cluster",
+                  "distinction_pattern",
+                  "exact",
+                  "proof_pattern",
+                  "route",
+                  "route_family"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/failure_class",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "global-regression",
+                  "local-regression",
+                  "no-effect",
+                  "stale",
+                  "too-complex",
+                  "unknown",
+                  "unsound"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/confidence",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "",
+                "values": [
+                  "high",
+                  "low",
+                  "medium",
+                  "unknown"
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/source_refs",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "path": "",
+                    "required_keys": [
+                      "kind",
+                      "ref"
+                    ],
+                    "optional_keys": [
+                      "summary"
+                    ],
+                    "allow_additional": false
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/kind",
+                    "trimmed_min": 1,
+                    "max": 128
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/ref",
+                    "trimmed_min": 1,
+                    "max": 4096
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/falsifying_evidence",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/applicability_conditions",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/reopening_criteria",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "exact-object",
+                    "path": "",
+                    "keys": [
+                      "condition",
+                      "id"
+                    ]
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/id",
+                    "trimmed_min": 1,
+                    "max": 256
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "/condition",
+                    "trimmed_min": 1,
+                    "max": 1048576
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "optional-field",
+            "path": "/record/applicable_paths",
+            "rules": [
+              {
+                "op": "bounded-array",
+                "path": "",
+                "max": 128
+              },
+              {
+                "op": "all",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "trimmed_min": 1,
+                    "max": 4096
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "event-log",
+    "slots": {
+      "events": {
+        "path": "negative-ledger/events.jsonl",
+        "kind": "event-log",
+        "codec": "jsonl",
+        "max_bytes": 67108864
+      }
+    }
+  },
+  "operations": {
+    "bind-existing": {
+      "effects": [
+        {
+          "op": "bind-existing",
+          "slot": "events",
+          "input": "event"
+        }
+      ]
+    }
+  },
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 67108864,
+    "max_records": 100000,
+    "max_output_bytes": 16777216,
+    "max_diagnostics": 64,
+    "max_reducer_states": 65536
+  }
+}

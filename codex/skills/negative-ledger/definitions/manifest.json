@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "negative-ledger",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "negative-ledger/negative-evidence-protocol",
+      "path": "ledger/negative-evidence-protocol.json"
+    }
+  ]
+}
