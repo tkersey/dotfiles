@@ -1,0 +1,92 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "seq/session-summary",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "project",
+      "scan"
+    ]
+  },
+  "parameters": {},
+  "selectors": [
+    "path"
+  ],
+  "relations": [
+    {
+      "name": "sessions",
+      "fields": [
+        "session_id",
+        "path",
+        "start_time",
+        "end_time",
+        "cwd",
+        "git_branch",
+        "git_commit_hash",
+        "model",
+        "turn_count",
+        "total_tokens",
+        "is_ongoing",
+        "status_reason",
+        "spawned_worker_count"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "sessions",
+      "as": "source"
+    },
+    {
+      "op": "project",
+      "input": "source",
+      "as": "rows",
+      "fields": [
+        "session_id",
+        "path",
+        "start_time",
+        "end_time",
+        "cwd",
+        "git_branch",
+        "git_commit_hash",
+        "model",
+        "turn_count",
+        "total_tokens",
+        "is_ongoing",
+        "status_reason",
+        "spawned_worker_count"
+      ]
+    }
+  ],
+  "projections": {
+    "rows": {
+      "relation": "rows",
+      "schema": "seq-session-summary-result/v1",
+      "fields": [
+        "session_id",
+        "path",
+        "start_time",
+        "end_time",
+        "cwd",
+        "git_branch",
+        "git_commit_hash",
+        "model",
+        "turn_count",
+        "total_tokens",
+        "is_ongoing",
+        "status_reason",
+        "spawned_worker_count"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 1,
+    "max_output_bytes": 65536,
+    "max_fold_states": 1
+  }
+}

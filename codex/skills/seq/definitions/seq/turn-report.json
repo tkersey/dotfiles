@@ -1,0 +1,119 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "seq/turn-report",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "project",
+      "scan"
+    ]
+  },
+  "parameters": {},
+  "selectors": [
+    "path"
+  ],
+  "relations": [
+    {
+      "name": "turns",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "duration_ms",
+        "status",
+        "status_reason",
+        "model",
+        "cwd",
+        "reasoning_effort",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "reasoning_output_tokens",
+        "total_tokens",
+        "tool_count",
+        "has_compaction",
+        "error",
+        "aborted_reason",
+        "spawned_worker_count"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "turns",
+      "as": "source"
+    },
+    {
+      "op": "project",
+      "input": "source",
+      "as": "rows",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "duration_ms",
+        "status",
+        "status_reason",
+        "model",
+        "cwd",
+        "reasoning_effort",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "reasoning_output_tokens",
+        "total_tokens",
+        "tool_count",
+        "has_compaction",
+        "error",
+        "aborted_reason",
+        "spawned_worker_count"
+      ]
+    }
+  ],
+  "projections": {
+    "rows": {
+      "relation": "rows",
+      "schema": "seq-turn-report-result/v1",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "duration_ms",
+        "status",
+        "status_reason",
+        "model",
+        "cwd",
+        "reasoning_effort",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "reasoning_output_tokens",
+        "total_tokens",
+        "tool_count",
+        "has_compaction",
+        "error",
+        "aborted_reason",
+        "spawned_worker_count"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 16777216,
+    "max_fold_states": 1
+  }
+}

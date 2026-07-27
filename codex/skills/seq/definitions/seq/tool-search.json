@@ -1,0 +1,121 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "seq/tool-search",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "filter",
+      "limit",
+      "project",
+      "scan"
+    ]
+  },
+  "parameters": {
+    "needle": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "selectors": [
+    "path"
+  ],
+  "relations": [
+    {
+      "name": "tool_lifecycle",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "exit_code",
+        "duration_ms",
+        "lifecycle_status",
+        "path"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "tool_lifecycle",
+      "as": "source"
+    },
+    {
+      "op": "filter",
+      "input": "source",
+      "as": "matched",
+      "where": [
+        {
+          "field": "command_text",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "matched",
+      "as": "selected",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "exit_code",
+        "duration_ms",
+        "lifecycle_status",
+        "path"
+      ]
+    },
+    {
+      "op": "limit",
+      "input": "selected",
+      "as": "rows",
+      "limit": 100
+    }
+  ],
+  "projections": {
+    "rows": {
+      "relation": "rows",
+      "schema": "seq-tool-search-result/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "exit_code",
+        "duration_ms",
+        "lifecycle_status",
+        "path"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100,
+    "max_output_bytes": 2097152,
+    "max_fold_states": 1
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "seq/message-search",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "filter",
+      "limit",
+      "project",
+      "scan"
+    ]
+  },
+  "parameters": {
+    "needle": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "selectors": [
+    "path"
+  ],
+  "relations": [
+    {
+      "name": "messages",
+      "fields": [
+        "message_id",
+        "session_id",
+        "turn_index",
+        "role",
+        "text",
+        "timestamp",
+        "source_event_id",
+        "path"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "messages",
+      "as": "source"
+    },
+    {
+      "op": "filter",
+      "input": "source",
+      "as": "matched",
+      "where": [
+        {
+          "field": "text",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "matched",
+      "as": "selected",
+      "fields": [
+        "message_id",
+        "session_id",
+        "turn_index",
+        "role",
+        "text",
+        "timestamp",
+        "source_event_id",
+        "path"
+      ]
+    },
+    {
+      "op": "limit",
+      "input": "selected",
+      "as": "rows",
+      "limit": 100
+    }
+  ],
+  "projections": {
+    "rows": {
+      "relation": "rows",
+      "schema": "seq-message-search-result/v1",
+      "fields": [
+        "message_id",
+        "session_id",
+        "turn_index",
+        "role",
+        "text",
+        "timestamp",
+        "source_event_id",
+        "path"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100,
+    "max_output_bytes": 1048576,
+    "max_fold_states": 1
+  }
+}

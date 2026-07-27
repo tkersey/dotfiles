@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "seq"
-  short_description: "Mine sessions, decisions, provenance, tools, and memory"
-  default_prompt: "Use $seq with the narrowest lifted command. Prove the installed capability surface, preserve denominators and evidence provenance, use included-session rows before session-level review-compiler claims, and never treat artifact/path mentions or generic closure prose as workflow governance."
+  short_description: "Observe session facts with provenance and limits"
+  default_prompt: "Use $seq with the narrowest native physical command or owning passive observation definition. Require Seq 1.x and seq-observation-abi/v1; preserve denominators, corpus identity, provenance, contamination, limitations, and uncertainty; never treat an observation as semantic authority."

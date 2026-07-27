@@ -1,0 +1,23 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "seq",
+  "seq": [
+    {
+      "id": "seq/message-search",
+      "path": "seq/message-search.json"
+    },
+    {
+      "id": "seq/session-summary",
+      "path": "seq/session-summary.json"
+    },
+    {
+      "id": "seq/tool-search",
+      "path": "seq/tool-search.json"
+    },
+    {
+      "id": "seq/turn-report",
+      "path": "seq/turn-report.json"
+    }
+  ],
+  "ledger": []
+}
