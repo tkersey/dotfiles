@@ -15,6 +15,7 @@
       "enum",
       "exact-object",
       "exactly-one",
+      "field-equal",
       "field-not-equal",
       "keyed-join",
       "keyed-unique",
@@ -2030,6 +2031,12 @@
     ]
   },
   "constraints": [
+    {
+      "op": "field-equal",
+      "input": "construction",
+      "left": "/artifact/payload/architecture/canonical_owner",
+      "right": "/artifact/payload/execution/owner_boundary"
+    },
     {
       "op": "keyed-unique",
       "input": "construction",
