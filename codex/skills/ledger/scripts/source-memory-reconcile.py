@@ -21,8 +21,14 @@ SKILLS_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_DEFINITIONS = {
     "learnings": SKILLS_ROOT
     / "learnings/definitions/ledger/learnings-protocol.json",
+    "negative-ledger": SKILLS_ROOT
+    / "negative-ledger/definitions/ledger/negative-evidence-protocol.json",
     "synesthesia": SKILLS_ROOT
     / "synesthesia/definitions/ledger/synesthesia-protocol.json",
+}
+MEMORY_NOTE_PROJECTIONS = {
+    "learnings": "memory-note",
+    "synesthesia": "memory-note",
 }
 
 
@@ -303,10 +309,29 @@ def learning_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
 
 
 def negative_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
-    value = run_json([ledger, "query", "--source", "negative-ledger"], cwd=cwd)
-    if not isinstance(value, dict) or not isinstance(value.get("records"), list):
-        raise ReconcileError("ledger query negative-ledger: expected records")
-    return value["records"]
+    value = run_json(
+        [
+            ledger,
+            "project",
+            "--definition",
+            str(SOURCE_DEFINITIONS["negative-ledger"]),
+            "--projection",
+            "current-records",
+            "--repo",
+            str(cwd),
+            "--param",
+            "limit=10000",
+            "--payload-only",
+            "--format",
+            "json",
+        ],
+        cwd=cwd,
+    )
+    if not isinstance(value, list):
+        raise ReconcileError(
+            "ledger project negative-ledger current-records: expected array"
+        )
+    return value
 
 
 def synesthesia_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
@@ -342,14 +367,14 @@ def native_export(
     *,
     cwd: Path,
 ) -> tuple[bytes | None, str | None]:
-    if definition_path := SOURCE_DEFINITIONS.get(source):
+    if projection := MEMORY_NOTE_PROJECTIONS.get(source):
         argv = [
             ledger,
             "project",
             "--definition",
-            str(definition_path),
+            str(SOURCE_DEFINITIONS[source]),
             "--projection",
-            "memory-note",
+            projection,
             "--repo",
             str(cwd),
             "--param",
@@ -557,19 +582,16 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
 
     doctors = {}
     for source in SOURCES:
-        if definition_path := SOURCE_DEFINITIONS.get(source):
-            argv = [
-                ledger,
-                "doctor",
-                "--definition",
-                str(definition_path),
-                "--repo",
-                str(cwd),
-                "--format",
-                "json",
-            ]
-        else:
-            argv = [ledger, "doctor", "--source", source]
+        argv = [
+            ledger,
+            "doctor",
+            "--definition",
+            str(SOURCE_DEFINITIONS[source]),
+            "--repo",
+            str(cwd),
+            "--format",
+            "json",
+        ]
         doctors[source] = run_json(argv, cwd=cwd)
     note_doctor_argv = [memory_note, "doctor", "--format", "json"]
     if args.codex_home:
