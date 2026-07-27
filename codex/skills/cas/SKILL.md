@@ -220,6 +220,21 @@ to its static quality predicates: `principalStrength == "strong"`,
 matching. Process exit status describes command or transport completion only.
 It never substitutes for `reviewVerdict`.
 
+A caller that consumes a terminal receipt structurally must first validate the
+exact returned JSON through CAS's passive definition:
+
+~~~bash
+ledger validate \
+  --definition <cas-skill-root>/definitions/ledger/review-receipt.json \
+  --input receipt=<cas-review-receipt.json> \
+  --format json
+~~~
+
+This recursively validates every compact finding row under
+`cas/review-finding`. The pass means only `structurally valid under
+cas/review-receipt@<digest>`; CAS still owns the observed facts, and the caller
+still owns their workflow meaning.
+
 A terminal attempt without a structured semantic verdict has zero semantic
 credit. CAS reports the failure and terminal attempt identity. Actuating alone
 decides whether its one request-local fresh recovery is legal.

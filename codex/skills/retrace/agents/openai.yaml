@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Retrace"
   short_description: "Replay decisions after proving source governance"
-  default_prompt: "Use $retrace to prove the claimed workflow governed the source, freeze visible decision evidence with Retrace's passive $seq definitions, validate the authored artifacts with $ledger, run a staged read-only replay through $cas using thread-fork or rollout-transcript lineage, separate historical and hindsight evidence, and emit a cautious DRR-v1."
+  default_prompt: "Use $retrace to prove the claimed workflow governed the source, freeze visible decision evidence with Retrace's passive $seq definitions, validate Retrace artifacts and CAS-owned FIRs with $ledger, run a staged read-only replay through $cas using thread-fork or rollout-transcript lineage, separate historical and hindsight evidence, and emit a cautious DRR-v1."

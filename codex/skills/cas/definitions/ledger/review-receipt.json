@@ -1,0 +1,279 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "cas/review-receipt",
+  "owner": "cas",
+  "imports": [
+    {
+      "id": "cas/review-finding",
+      "path": "review-finding.json"
+    }
+  ],
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "definition-ref",
+      "enum",
+      "exact-object",
+      "optional-field",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "receipt": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "receipt"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "",
+        "required_keys": [
+          "reviewVerdict"
+        ],
+        "optional_keys": [
+          "accountFingerprint",
+          "accountFingerprintReducedProtection",
+          "action",
+          "baseSha",
+          "clean",
+          "codexThreadId",
+          "createdAtUnixS",
+          "cwd",
+          "demo",
+          "developerInstructions",
+          "eventLogPath",
+          "headSha",
+          "parentThreadId",
+          "principalStrength",
+          "recordPath",
+          "resolvedCodexPath",
+          "resolvedCodexVersion",
+          "reviewAttemptExists",
+          "reviewAttemptPhase",
+          "reviewThreadId",
+          "reviewTurnId",
+          "target",
+          "targetFingerprint",
+          "tupleVerdictExists",
+          "workflowBinding"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/reviewVerdict",
+        "required_keys": [
+          "accountFingerprintReducedProtection",
+          "backendClass",
+          "baseSha",
+          "clean",
+          "eventLogPath",
+          "failureCode",
+          "failureHint",
+          "findingCount",
+          "findings",
+          "headSha",
+          "principalStrength",
+          "recordPath",
+          "reviewThreadId",
+          "reviewTurnId",
+          "status",
+          "targetFingerprint"
+        ],
+        "optional_keys": [
+          "accountFingerprint",
+          "codexThreadId",
+          "failureClass",
+          "retryableSameTupleNow",
+          "reviewAttemptExists",
+          "reviewAttemptPhase",
+          "tupleVerdictExists",
+          "workflowBinding"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/reviewVerdict/status",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/reviewVerdict/principalStrength",
+        "values": [
+          "reduced",
+          "strong"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/reviewVerdict/backendClass",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/reviewVerdict/accountFingerprintReducedProtection",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/reviewVerdict/clean",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/reviewVerdict/findingCount",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/reviewVerdict/findingCount",
+        "min": 0,
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/reviewVerdict/findings",
+        "max": 4096
+      },
+      {
+        "op": "all",
+        "input": "receipt",
+        "path": "/reviewVerdict/findings",
+        "rules": [
+          {
+            "op": "definition-ref",
+            "path": "",
+            "definition": "cas/review-finding"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/reviewVerdict/reviewAttemptPhase",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 128
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/reviewVerdict/reviewAttemptExists",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/reviewVerdict/tupleVerdictExists",
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "boolean"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/reviewVerdict/workflowBinding",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "keys": [
+              "requestFingerprint",
+              "requestId"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/requestId",
+            "trimmed_min": 1,
+            "max": 4096
+          },
+          {
+            "op": "bounded-string",
+            "path": "/requestFingerprint",
+            "trimmed_min": 1,
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/reviewVerdict/retryableSameTupleNow",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "boolean"
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {
+    "op": "content-address",
+    "input": "receipt"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 4096,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

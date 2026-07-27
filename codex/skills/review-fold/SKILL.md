@@ -126,10 +126,10 @@ because a reviewer proposed it.
 ## Procedure
 
 Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure` once. Resolve the active `$review-fold` and
-`$actuating` skill roots. Require Ledger 1.x, `ledger-artifact-abi/v1`, and
-successful `ledger definition check` results for their canonical
-Counterexample and Evidence definitions.
+complete `$ledger ensure` once. Resolve the active `$review-fold`,
+`$actuating`, and, for CAS evidence, `$cas` skill roots. Require Ledger 1.x,
+`ledger-artifact-abi/v1`, and successful `ledger definition check` results for
+the definitions this fold will consume.
 
 1. Bind the source to the exact current Goal artifact, Construction, subject
    digest, static Review Contract digest, and source-owner receipt. Put
@@ -137,8 +137,11 @@ Counterexample and Evidence definitions.
    compatibility failure, or other non-review falsifier requires no review
    campaign. A CAS-derived set additionally binds its originating campaign,
    whose Review Contract digest must match the static digest in the
-   Counterexample subject. Never fabricate a campaign for local evidence or
-   make `review_contract_digest` optional.
+   Counterexample subject, and validates the exact owner receipt through
+   `<cas-skill-root>/definitions/ledger/review-receipt.json`. That validation
+   recursively checks the compact finding rows and grants no review credit.
+   Never fabricate a campaign for local evidence or make
+   `review_contract_digest` optional.
 2. Separate each claim, observed fact, and suggested repair.
 3. Decide whether the fact is a current liability under an accepted Goal law.
 4. Identify the governing law, stable boundary, discrepancy, owner, witness,

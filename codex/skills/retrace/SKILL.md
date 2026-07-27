@@ -69,8 +69,9 @@ artifacts.
 ### `$ledger`
 
 Owns passive-definition compilation, structural validation, canonicalization,
-and identity derivation for SGG-v1, DCP-v2, RIP-v1, and DRR-v1. A pass grants
-neither replay authority nor a Retrace verdict.
+and identity derivation for SGG-v1, DCP-v2, RIP-v1, DRR-v1, and the CAS-owned
+FIR-v1 definition. A pass grants neither replay authority nor a Retrace
+verdict.
 
 ### `$cas`
 Owns:
@@ -328,6 +329,7 @@ Require:
 ```text
 Seq observation ABI and all three Retrace observation definitions
 Ledger artifact ABI and all four Retrace artifact definitions
+CAS FIR definition
 cas session_inquiry and FIR support
 at least one supported lineage mode
 read-only inquiry
@@ -360,6 +362,17 @@ CAS must prove source lineage, retained anchor, model/provider, permission polic
 Detached lifecycle remains available through `start`, `status`, `wait`, `interrupt`, and `cleanup`.
 ### 7. Consume FIR-v1
 
+Validate each exact receipt before interpretation:
+
+```bash
+ledger validate \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/cas/definitions/ledger/fork-inquiry-receipt.json" \
+  --input receipt=<fir.json> \
+  --format json
+```
+
+Require `ledger-validation-result/v1`, `valid:true`, the returned CAS
+definition digest, `authority_granted:false`, and `storage_mutated:false`.
 Only complete, source-bound FIRs contribute to:
 ```text
 route distribution

@@ -1,0 +1,758 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "cas/fork-inquiry-receipt",
+  "owner": "cas",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-object",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "enum",
+      "exact-object",
+      "one-of",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "receipt": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "receipt"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "",
+        "keys": [
+          "fork_inquiry_receipt"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt",
+        "keys": [
+          "answer",
+          "fork",
+          "gate",
+          "inquiry",
+          "inquiry_id",
+          "lane_id",
+          "lifecycle",
+          "receipt_id",
+          "receipt_version",
+          "source",
+          "workspace_reconstruction"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/receipt_version",
+        "values": [
+          "FIR-v1"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/receipt_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lane_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source",
+        "keys": [
+          "capsule_id",
+          "lineage_mode",
+          "source_artifact_reconstructability",
+          "source_episode_id",
+          "source_rollout_path",
+          "source_thread_id",
+          "source_thread_id_present",
+          "source_turn_digest"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/capsule_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/source_episode_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/source_thread_id",
+        "max": 512
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/source_thread_id_present",
+        "type": "boolean"
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/source_rollout_path",
+        "max": 4096
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/source_artifact_reconstructability",
+        "values": [
+          "exact",
+          "head_only",
+          "transcript_only",
+          "unavailable"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/source_turn_digest",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/source/lineage_mode",
+        "values": [
+          "rollout_transcript",
+          "thread_fork"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork",
+        "keys": [
+          "anchor",
+          "approval_policy",
+          "codex_version",
+          "ephemeral",
+          "fork_thread_id",
+          "forked_from_id",
+          "hooks",
+          "lineage_mode",
+          "model",
+          "model_provider",
+          "multi_agent_mode",
+          "permissions",
+          "sandbox",
+          "service_tier"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/lineage_mode",
+        "values": [
+          "rollout_transcript",
+          "thread_fork"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/fork_thread_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/forked_from_id",
+        "max": 512
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor",
+        "keys": [
+          "anchor_digest_expected",
+          "anchor_digest_observed",
+          "exact",
+          "temporal_horizon",
+          "turns_after",
+          "turns_before",
+          "turns_dropped"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/temporal_horizon",
+        "values": [
+          "outcome_aware",
+          "outcome_blind"
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/turns_before",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/turns_before",
+        "min": 0,
+        "max": 10000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/turns_dropped",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/turns_dropped",
+        "min": 0,
+        "max": 10000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/turns_after",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/turns_after",
+        "min": 0,
+        "max": 10000000
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/anchor_digest_expected",
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/anchor_digest_observed",
+        "max": 256
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/anchor/exact",
+        "type": "boolean"
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/model",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/model_provider",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "one-of",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/service_tier",
+        "rules": [
+          {
+            "op": "enum",
+            "values": [
+              null
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 128
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/codex_version",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/ephemeral",
+        "type": "boolean"
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/approval_policy",
+        "values": [
+          "never"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/multi_agent_mode",
+        "values": [
+          "explicit-request-only"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/permissions",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/sandbox",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/fork/hooks",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction",
+        "keys": [
+          "dependencies_exact",
+          "dirty_state_exact",
+          "generated_artifacts_exact",
+          "head_exact",
+          "limitations",
+          "mode",
+          "network_allowed",
+          "path",
+          "tools_allowed"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/mode",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/path",
+        "trimmed_min": 1,
+        "max": 4096
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/head_exact",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/dirty_state_exact",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/dependencies_exact",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/generated_artifacts_exact",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/tools_allowed",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/network_allowed",
+        "type": "boolean"
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/limitations",
+        "max": 1024
+      },
+      {
+        "op": "all",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/workspace_reconstruction/limitations",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 65536
+          }
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry",
+        "keys": [
+          "client_user_message_id",
+          "ended_at",
+          "evidence_allowed",
+          "evidence_withheld",
+          "mode",
+          "question",
+          "started_at",
+          "status",
+          "token_usage",
+          "turn_id"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/mode",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/question",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/evidence_allowed",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/evidence_withheld",
+        "max": 4096
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/client_user_message_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/turn_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/started_at",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/started_at",
+        "min": 0
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/ended_at",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/ended_at",
+        "min": 0
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/status",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "bounded-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/inquiry/token_usage",
+        "max": 64
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer",
+        "keys": [
+          "alternatives",
+          "assumptions",
+          "evidence_refs",
+          "final_text_ref",
+          "hindsight_available",
+          "reconstructed_decision",
+          "rejected_routes",
+          "route_flip_conditions",
+          "selected_route",
+          "uncertainty",
+          "unsupported_claims"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/reconstructed_decision",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/selected_route",
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/rejected_routes",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/evidence_refs",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/assumptions",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/alternatives",
+        "max": 4096
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/route_flip_conditions",
+        "max": 4096
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/uncertainty",
+        "max": 1048576
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/hindsight_available",
+        "type": "boolean"
+      },
+      {
+        "op": "bounded-array",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/unsupported_claims",
+        "max": 4096
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/answer/final_text_ref",
+        "trimmed_min": 1,
+        "max": 4096
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lifecycle",
+        "keys": [
+          "archived",
+          "cleanup_status",
+          "deleted",
+          "event_log_ref",
+          "interrupted"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lifecycle/event_log_ref",
+        "trimmed_min": 1,
+        "max": 4096
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lifecycle/interrupted",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lifecycle/archived",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lifecycle/deleted",
+        "type": "boolean"
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/lifecycle/cleanup_status",
+        "trimmed_min": 1,
+        "max": 128
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate",
+        "keys": [
+          "anchor_valid",
+          "answer_complete",
+          "approval_or_tool_request_observed",
+          "hindsight_label_valid",
+          "lineage_valid",
+          "permissions_valid",
+          "receipt_valid"
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/lineage_valid",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/anchor_valid",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/permissions_valid",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/approval_or_tool_request_observed",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/hindsight_label_valid",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/answer_complete",
+        "type": "boolean"
+      },
+      {
+        "op": "scalar-type",
+        "input": "receipt",
+        "path": "/fork_inquiry_receipt/gate/receipt_valid",
+        "type": "boolean"
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {
+    "op": "content-address",
+    "input": "receipt"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 4096,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

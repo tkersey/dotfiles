@@ -35,6 +35,15 @@ cas session_inquiry run \
   --json
 ```
 
+Before Retrace interprets a returned FIR:
+
+```bash
+ledger validate \
+  --definition <cas-skill-root>/definitions/ledger/fork-inquiry-receipt.json \
+  --input receipt=<fir.json> \
+  --format json
+```
+
 Before execution:
 
 ```bash
