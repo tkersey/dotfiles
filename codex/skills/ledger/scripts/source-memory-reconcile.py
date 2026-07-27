@@ -28,6 +28,7 @@ SOURCE_DEFINITIONS = {
 }
 MEMORY_NOTE_PROJECTIONS = {
     "learnings": "memory-note",
+    "negative-ledger": "memory-note",
     "synesthesia": "memory-note",
 }
 
@@ -367,33 +368,21 @@ def native_export(
     *,
     cwd: Path,
 ) -> tuple[bytes | None, str | None]:
-    if projection := MEMORY_NOTE_PROJECTIONS.get(source):
-        argv = [
-            ledger,
-            "project",
-            "--definition",
-            str(SOURCE_DEFINITIONS[source]),
-            "--projection",
-            projection,
-            "--repo",
-            str(cwd),
-            "--param",
-            f"id={record_id}",
-            "--payload-only",
-            "--format",
-            "json",
-        ]
-    else:
-        argv = [
-            ledger,
-            "export",
-            "--source",
-            source,
-            "--id",
-            record_id,
-            "--format",
-            "memory-note",
-        ]
+    argv = [
+        ledger,
+        "project",
+        "--definition",
+        str(SOURCE_DEFINITIONS[source]),
+        "--projection",
+        MEMORY_NOTE_PROJECTIONS[source],
+        "--repo",
+        str(cwd),
+        "--param",
+        f"id={record_id}",
+        "--payload-only",
+        "--format",
+        "json",
+    ]
     try:
         return run_bytes(argv, cwd=cwd), None
     except ReconcileError as exc:
@@ -495,7 +484,7 @@ def source_report(
         note = candidate_notes[0] if candidate_notes else None
         if raw is not None and source == "synesthesia":
             try:
-                value = parse_json(raw, f"ledger export {record_id}")
+                value = parse_json(raw, f"ledger project {record_id}")
                 physical, normalized = synesthesia_adapter.validate_and_normalize(
                     logical_kind, value
                 )

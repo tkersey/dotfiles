@@ -15,8 +15,10 @@
       "enum",
       "event-kinds",
       "exact-object",
+      "export",
       "field-equal",
       "fold",
+      "id-lookup",
       "implies",
       "optional-field",
       "regex",
@@ -891,6 +893,569 @@
               },
               {
                 "source": "event-chain"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "memory-note": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "neg_id",
+          "state_field": "status",
+          "retained_field": "record",
+          "event_count_field": "source_event_count",
+          "event_kind_counts": [
+            {
+              "kind": "capture",
+              "field": "capture_event_count"
+            },
+            {
+              "kind": "status",
+              "field": "status_event_count"
+            }
+          ],
+          "event_chain": {
+            "field": "event_chain_fingerprint",
+            "fragments": [
+              {
+                "literal": "negative-ledger-event-chain/v1\n"
+              },
+              {
+                "source": "previous-event-chain"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "event-bytes"
+              }
+            ]
+          },
+          "snapshot": {
+            "field": "projection_fingerprint",
+            "prior_field": "previous_projection_fingerprint",
+            "prior_on": [
+              "status"
+            ],
+            "fragments": [
+              {
+                "literal": "negative-ledger-projection/v3\n"
+              },
+              {
+                "source": "key"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "state"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "retained"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "retained_text": "/repository_id"
+              },
+              {
+                "literal": "\n"
+              },
+              {
+                "source": "event-chain"
+              }
+            ]
+          }
+        },
+        {
+          "op": "id-lookup",
+          "path": "/neg_id",
+          "param": "id",
+          "required": true
+        },
+        {
+          "op": "export",
+          "value": {
+            "object": [
+              {
+                "name": "operation",
+                "value": {
+                  "switch": {
+                    "path": "/status",
+                    "cases": [
+                      {
+                        "equals": "reopened",
+                        "value": {
+                          "literal": "reopen"
+                        }
+                      }
+                    ],
+                    "default": {
+                      "literal": "assert"
+                    }
+                  }
+                }
+              },
+              {
+                "name": "authority",
+                "value": {
+                  "literal": "ledger-cli"
+                }
+              },
+              {
+                "name": "summary",
+                "value": {
+                  "concat": [
+                    {
+                      "path": "/neg_id"
+                    },
+                    {
+                      "literal": " "
+                    },
+                    {
+                      "path": "/status"
+                    },
+                    {
+                      "literal": " negative-evidence projection"
+                    }
+                  ],
+                  "max_bytes": 1024
+                }
+              },
+              {
+                "name": "scope",
+                "value": {
+                  "object": [
+                    {
+                      "name": "kind",
+                      "value": {
+                        "literal": "repo"
+                      }
+                    },
+                    {
+                      "name": "repo",
+                      "value": {
+                        "path": "/record/repository_id"
+                      }
+                    },
+                    {
+                      "name": "paths",
+                      "value": {
+                        "path": "/record/applicable_paths"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "source_refs",
+                "value": {
+                  "array": [
+                    {
+                      "object": [
+                        {
+                          "name": "kind",
+                          "value": {
+                            "literal": "negative-ledger"
+                          }
+                        },
+                        {
+                          "name": "ref",
+                          "value": {
+                            "concat": [
+                              {
+                                "path": "/record/repository_id"
+                              },
+                              {
+                                "literal": ":.ledger/negative-ledger/events.jsonl#"
+                              },
+                              {
+                                "path": "/neg_id"
+                              }
+                            ],
+                            "max_bytes": 4096
+                          }
+                        },
+                        {
+                          "name": "summary",
+                          "value": {
+                            "literal": "Canonical ledger export"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "related_ids",
+                "value": {
+                  "switch": {
+                    "path": "/previous_projection_fingerprint",
+                    "cases": [
+                      {
+                        "equals": null,
+                        "value": {
+                          "literal": []
+                        }
+                      }
+                    ],
+                    "default": {
+                      "array": [
+                        {
+                          "concat": [
+                            {
+                              "literal": "projection:"
+                            },
+                            {
+                              "path": "/previous_projection_fingerprint"
+                            }
+                          ],
+                          "max_bytes": 128
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "name": "supersedes_id",
+                "value": {
+                  "literal": null
+                }
+              },
+              {
+                "name": "payload",
+                "value": {
+                  "object": [
+                    {
+                      "name": "schema",
+                      "value": {
+                        "literal": "negative-ledger-projection/v3"
+                      }
+                    },
+                    {
+                      "name": "repository_id",
+                      "value": {
+                        "path": "/record/repository_id"
+                      }
+                    },
+                    {
+                      "name": "ledger_path",
+                      "value": {
+                        "literal": ".ledger/negative-ledger/events.jsonl"
+                      }
+                    },
+                    {
+                      "name": "applicable_paths",
+                      "value": {
+                        "path": "/record/applicable_paths"
+                      }
+                    },
+                    {
+                      "name": "neg_id",
+                      "value": {
+                        "path": "/neg_id"
+                      }
+                    },
+                    {
+                      "name": "record_version",
+                      "value": {
+                        "path": "/record/record_version"
+                      }
+                    },
+                    {
+                      "name": "campaign_id",
+                      "value": {
+                        "path": "/record/campaign_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "status",
+                      "value": {
+                        "path": "/status"
+                      }
+                    },
+                    {
+                      "name": "kind",
+                      "value": {
+                        "path": "/record/kind"
+                      }
+                    },
+                    {
+                      "name": "kernel_law_ids",
+                      "value": {
+                        "path": "/record/kernel_law_ids",
+                        "default": []
+                      }
+                    },
+                    {
+                      "name": "counterexample_family_ids",
+                      "value": {
+                        "path": "/record/counterexample_family_ids",
+                        "default": []
+                      }
+                    },
+                    {
+                      "name": "route_or_model_id",
+                      "value": {
+                        "switch": {
+                          "path": "/record/exclusion_scope",
+                          "cases": [
+                            {
+                              "equals": "exact",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/route_id",
+                                "default": ""
+                              }
+                            },
+                            {
+                              "equals": "route",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/route_id",
+                                "default": ""
+                              }
+                            },
+                            {
+                              "equals": "route_family",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/route_family_id",
+                                "default": ""
+                              }
+                            },
+                            {
+                              "equals": "cluster",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/cluster_id",
+                                "default": ""
+                              }
+                            },
+                            {
+                              "equals": "authority_model",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/authority_model_id",
+                                "default": ""
+                              }
+                            },
+                            {
+                              "equals": "distinction_pattern",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/distinction_pattern_id",
+                                "default": ""
+                              }
+                            },
+                            {
+                              "equals": "proof_pattern",
+                              "value": {
+                                "path": "/record/route_or_model_id",
+                                "fallback_path": "/record/proof_pattern_id",
+                                "default": ""
+                              }
+                            }
+                          ],
+                          "default": {
+                            "literal": ""
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "name": "route_id",
+                      "value": {
+                        "path": "/record/route_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "route_family_id",
+                      "value": {
+                        "path": "/record/route_family_id",
+                        "fallback_path": "/record/route_or_model_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "cluster_id",
+                      "value": {
+                        "path": "/record/cluster_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "authority_model_id",
+                      "value": {
+                        "path": "/record/authority_model_id",
+                        "fallback_path": "/record/route_or_model_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "distinction_pattern_id",
+                      "value": {
+                        "path": "/record/distinction_pattern_id",
+                        "fallback_path": "/record/route_or_model_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "proof_pattern_id",
+                      "value": {
+                        "path": "/record/proof_pattern_id",
+                        "fallback_path": "/record/route_or_model_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "artifact_state_id",
+                      "value": {
+                        "path": "/record/artifact_state_id",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "artifact_state_label",
+                      "value": {
+                        "path": "/record/artifact_state_label",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "hypothesis",
+                      "value": {
+                        "path": "/record/hypothesis",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "attempted_change",
+                      "value": {
+                        "path": "/record/attempted_change",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "observed_outcome",
+                      "value": {
+                        "path": "/record/observed_outcome",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "failure_class",
+                      "value": {
+                        "path": "/record/failure_class",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "source_refs",
+                      "value": {
+                        "path": "/record/source_refs",
+                        "default": []
+                      }
+                    },
+                    {
+                      "name": "falsifying_evidence",
+                      "value": {
+                        "path": "/record/falsifying_evidence",
+                        "default": []
+                      }
+                    },
+                    {
+                      "name": "exclusion_scope",
+                      "value": {
+                        "path": "/record/exclusion_scope",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "exclusion_rule",
+                      "value": {
+                        "path": "/record/exclusion_rule",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "applicability_conditions",
+                      "value": {
+                        "path": "/record/applicability_conditions",
+                        "default": []
+                      }
+                    },
+                    {
+                      "name": "reopening_criteria",
+                      "value": {
+                        "path": "/record/reopening_criteria",
+                        "default": []
+                      }
+                    },
+                    {
+                      "name": "confidence",
+                      "value": {
+                        "path": "/record/confidence",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "next_search_hint",
+                      "value": {
+                        "path": "/record/next_search_hint",
+                        "default": ""
+                      }
+                    },
+                    {
+                      "name": "capture_event_count",
+                      "value": {
+                        "path": "/capture_event_count"
+                      }
+                    },
+                    {
+                      "name": "status_event_count",
+                      "value": {
+                        "path": "/status_event_count"
+                      }
+                    },
+                    {
+                      "name": "source_event_count",
+                      "value": {
+                        "path": "/source_event_count"
+                      }
+                    },
+                    {
+                      "name": "event_chain_fingerprint",
+                      "value": {
+                        "path": "/event_chain_fingerprint"
+                      }
+                    },
+                    {
+                      "name": "previous_projection_fingerprint",
+                      "value": {
+                        "path": "/previous_projection_fingerprint"
+                      }
+                    },
+                    {
+                      "name": "projection_fingerprint",
+                      "value": {
+                        "path": "/projection_fingerprint"
+                      }
+                    }
+                  ]
+                }
               }
             ]
           }
