@@ -17,9 +17,11 @@
       "exact-object",
       "export",
       "field-equal",
+      "filter",
       "fold",
       "id-lookup",
       "implies",
+      "limit",
       "optional-field",
       "regex",
       "reducer",
@@ -32,7 +34,15 @@
     ]
   },
   "parameters": {
+    "artifact": {
+      "type": "string",
+      "required": false
+    },
     "id": {
+      "type": "string",
+      "required": false
+    },
+    "identity": {
       "type": "string",
       "required": false
     },
@@ -898,6 +908,129 @@
           }
         }
       ]
+    },
+    "route-gate": {
+      "slot": "events",
+      "required_parameters": [
+        "artifact",
+        "identity"
+      ],
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "neg_id",
+          "state_field": "status",
+          "retained_field": "record"
+        },
+        {
+          "op": "filter",
+          "path": "/status",
+          "equals": "active"
+        },
+        {
+          "op": "filter",
+          "path": "/record/artifact_state_id",
+          "param": "artifact"
+        },
+        {
+          "op": "filter",
+          "any": [
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "exact"
+                },
+                {
+                  "path": "/record/route_id",
+                  "param": "identity"
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "route"
+                },
+                {
+                  "path": "/record/route_id",
+                  "param": "identity"
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "route_family"
+                },
+                {
+                  "path": "/record/route_family_id",
+                  "param": "identity"
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "cluster"
+                },
+                {
+                  "path": "/record/cluster_id",
+                  "param": "identity"
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "authority_model"
+                },
+                {
+                  "path": "/record/authority_model_id",
+                  "param": "identity"
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "distinction_pattern"
+                },
+                {
+                  "path": "/record/distinction_pattern_id",
+                  "param": "identity"
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "path": "/record/exclusion_scope",
+                  "equals": "proof_pattern"
+                },
+                {
+                  "path": "/record/proof_pattern_id",
+                  "param": "identity"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "limit",
+          "count": 1
+        }
+      ],
+      "exit": {
+        "matched": 2,
+        "unmatched": 0,
+        "failure": 3
+      }
     },
     "memory-note": {
       "slot": "events",
