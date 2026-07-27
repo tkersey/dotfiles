@@ -1,8 +1,8 @@
 ---
 name: learnings
-description: "Capture, browse, query, supersede, migrate, and selectively admit evidence-backed execution learnings through the repo-local `ledger --source learnings` API. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
+description: "Capture, browse, query, supersede, and selectively admit evidence-backed execution learnings through the passive Learnings protocol definition. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
-  version: "7.1.0"
+  version: "8.0.0"
 ---
 
 # Learnings
@@ -14,11 +14,11 @@ Maintain a repo-local, evidence-backed execution-learning store and selectively 
 Authority split:
 
 ```text
-ledger --source learnings
-  canonical learning event API; learning records live under event.record
+definitions/ledger/learnings-protocol.json
+  canonical passive protocol; learning records live under event.record
 
 <repo>/.ledger/learnings/events.jsonl
-  current persistent-adapter location; compatibility and migration surface only
+  canonical repo-local store
 
 ~/.codex/memories/extensions/learnings/notes/*.md
   immutable admission snapshots for Phase 2
@@ -43,33 +43,19 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 ## Canonical Store
 
 Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. Learnings doctor/migration recovery requires Ledger
-`>= 0.5.2`; exact single-record `show` requires Ledger `>= 0.10.5`. After
-readiness, run `ledger --version` and block or perform an authorized Homebrew
-upgrade when the version is older than the command this workflow requires.
-Only then invoke the learnings commands directly.
+complete `$ledger ensure`. Require Ledger 1.x and `ledger-artifact-abi/v1`.
+Set:
 
-Use `ledger capture --source learnings` for writes and native query, recall,
-recent, doctor, and path commands for reads and diagnostics. Use
-`ledger show --source learnings --id lrn-...` for an exact single-record read;
-it is the source-owned alias for `export --format full`. Treat the source API
-and returned learning ID as canonical identity. Do not open or hand-edit the
-current persistent adapter during normal operation. Legacy
-`.ledger/learnings/learnings.jsonl` and
-`.learnings.jsonl` are read only during migration. Use
-`ledger migrate --source learnings --mode copy` to copy old rows into the
-canonical event store.
-Treat `legacy-only` as a required migration state, not a normal operating
-state. If `ledger doctor --source learnings` reports `legacy-only`, run
-`ledger migrate --source learnings --mode copy` before any append, commit
-closeout, or handoff that depends on learning capture.
-Treat `invalid` as a blocking state. Inspect the reported physical line spans.
-Migration recovers logical multiline objects and reports bounded repairs. It
-rejects irreparable records by default. Use `--invalid-policy skip` only when
-the task explicitly authorizes retaining valid records despite the reported
-invalid spans; it must remain `--mode copy`, preserve the legacy source, and
-report every skipped span with a `*_with_skips` status. Never combine skip with `--mode move` or
-`--remove-legacy`.
+```bash
+learnings_definition="${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json"
+```
+
+Use `ledger transact --operation capture` for writes; use definition-bound
+`record`, `recent`, `recall`, `search`, `reconciliation-index`, and
+`memory-note` projections for reads. Treat the returned `lrn-*` identity as
+canonical. Do not open or hand-edit the store. An unbound current-format store
+requires the explicit one-shot `bind-existing` transaction and otherwise fails
+closed; there is no alternate-path reader.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
@@ -120,8 +106,8 @@ Learnings disposition plus one admission disposition. Preserve
 checkpoint is mandatory. A duplicate skip may identify the existing `lrn-*`
 row. A no-op or block must state its source-local reason.
 
-If a canonical row passes the admission gate, use the native export below and
-return `created`, `duplicate-skip`, or `blocked` with the note proof. If it does
+If a canonical row passes the admission gate, use the definition projection
+below and return `created`, `duplicate-skip`, or `blocked` with the note proof. If it does
 not pass, return `not-eligible`; if no canonical row exists, return
 `not-applicable`. An admission failure after a successful append never changes
 the canonical disposition.
@@ -134,51 +120,36 @@ the canonical disposition.
    git rev-parse --show-toplevel
    ```
 
-2. Run the migration preflight:
+2. Run the definition-bound doctor:
 
    ```bash
-   ledger doctor --source learnings
+   ledger doctor \
+     --definition "$learnings_definition" \
+     --repo "<repo-root>" \
+     --format json
    ```
 
-   If status is `legacy-only`, run:
-
-   ```bash
-   ledger migrate --source learnings --dry-run --mode copy
-   ledger migrate --source learnings --mode copy
-   ledger doctor --source learnings
-   ```
-
-   If status is `invalid`, inspect the receipt and stop by default. When the
-   task explicitly authorizes source-preserving omission of irreparable rows,
-   run:
-
-   ```bash
-   ledger migrate --source learnings --dry-run --mode copy --invalid-policy skip
-   ledger migrate --source learnings --mode copy --invalid-policy skip
-   ledger doctor --source learnings
-   ```
-
-   Append only after the doctor status is `migrated`, `current`, or `missing`.
-   `missing` is valid only when neither legacy learning path exists.
+   Append only when the store is `current` or absent. For an unbound
+   current-format store, run the explicit `bind-existing` operation once after
+   full validation. Stop on every invalid row; do not skip or reinterpret it.
 3. Gather exact evidence and changed paths.
 4. Distill objective, inflection, proof, and transferable rule.
-5. Append from the verified repo root:
+5. Author `learning.json` as one `submission.record` packet, then append from
+   the verified repo root:
 
    ```bash
-   ledger capture --source learnings \
-     --status do_more \
-     --learning "When X, prefer Y because Z." \
-     --evidence "exact command/result/path" \
-     --application "Do Y first on the next similar task." \
-     --tag example
+   ledger transact \
+     --definition "$learnings_definition" \
+     --operation capture \
+     --repo "<repo-root>" \
+     --input submission=learning.json \
+     --format json
    ```
 
-6. Retain the appended learning ID from the capture receipt, then run
-   `ledger doctor --source learnings` and a focused native recall or query to
-   verify the source remains readable through its API.
-7. Before any Codex-made commit, inspect the current learning through
-   `ledger show --source learnings --id <reported-id>`. Do not read the
-   persistent adapter directly.
+6. Retain the appended learning ID, rerun definition-bound doctor, and use a
+   focused `record` or `recall` projection to verify readability.
+7. Before any Codex-made commit, inspect the current learning through the
+   `record` projection. Do not read the store directly.
 8. Retain exactly one canonical learning proof line in working evidence. Include
    source-memory proof in the final user-facing reply only when it changed
    repo-visible state, needs user action, explains a blocker/error, or the user
@@ -189,10 +160,13 @@ Use the disposition invariant above as the internal proof line.
 ## Recall Workflow
 
 ```bash
-ledger recall --source learnings \
-  --query "<focused component failure objective terms>" \
-  --limit 5 \
-  --drop-superseded
+ledger project \
+  --definition "$learnings_definition" \
+  --projection recall \
+  --repo "<repo-root>" \
+  --param "query=<focused component failure objective terms>" \
+  --param limit=5 \
+  --format json
 ```
 
 Do not use `recall` as a substitute for current artifact inspection.
@@ -217,22 +191,27 @@ At least one must also hold:
 
 Do not admit every `do_more` row, raw chronology, weak `review_later` candidates, failed-hypothesis exclusions better owned by `negative-ledger`, operating-correction events better handled as standing policy, or synesthetic mappings.
 
-## Native projection and admission
+## Definition projection and admission
 
-Ledger 0.10.0 or newer is required for authoritative Learnings export. After
-the source owner accepts admission, load `$memory-source-notes` and pass the
-native deterministic projection to the general writer:
+After the source owner accepts admission, load `$memory-source-notes` and pass
+the deterministic definition projection to the general writer:
 
 ```bash
-ledger export --source learnings --id lrn-... --format memory-note |
+ledger project \
+  --definition "$learnings_definition" \
+  --projection memory-note \
+  --repo "<repo-root>" \
+  --param id=lrn-... \
+  --payload-only \
+  --format json |
   run_memory_note_tool append \
     --extension learnings \
     --kind learning-admission \
     --json -
 ```
 
-Do not reconstruct the payload from prose, `recent`, or query output. Native
-export validates the canonical store and fails closed for a missing or
+Do not reconstruct the payload from prose, `recent`, or query output. The
+projection validates the canonical store and fails closed for a missing or
 incomplete row; it does not decide admission eligibility.
 
 ## Admission Proof
@@ -260,24 +239,23 @@ When a canonical learning is superseded or withdrawn from memory relevance, appe
 
 Never edit or delete prior admission notes.
 
-## Memory Digest Compatibility
+## Memory Digest
 
-`ledger memory-digest --source learnings` remains useful for disposable batch imports, but it is not the primary durable admission path. Prefer timestamped resources under:
-
-```text
-~/.codex/memories/extensions/learnings/resources/YYYY-MM-DDTHH-MM-SS-learnings-digest.md
-```
+`$memory-source-notes` owns generated Learnings digests and their timestamped
+resources. Ledger supplies only the deterministic source projection.
 
 ## Relationship to Negative Ledger
 
-A learning can seed negative evidence, but the learning source is not the operational route-exclusion store. Promote witnessed failed hypotheses through `ledger capture --source negative-ledger`, then use native export plus `memory-note` for memory admission.
+A learning can seed negative evidence, but the learning source is not the
+operational route-exclusion store. Promote witnessed failed hypotheses through
+the Negative Evidence definition's `capture` transaction, then use its
+`memory-note` projection for admission.
 
 ## Guardrails
 
 - Ground every row in observed evidence.
 - Write rules, not changelog bullets.
 - Do not append from an unverified non-repo cwd.
-- Do not write legacy `.learnings.jsonl` after migration.
 - Do not force-add local-only source stores.
 - Do not bypass the Ledger API or edit persistent-adapter records directly.
 - Do not admit every learning to memory.
