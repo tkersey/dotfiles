@@ -2084,10 +2084,6 @@
           "reference": "/observation_refs"
         },
         {
-          "path": "/artifact/payload/semantic_surface/predecessor_factors",
-          "reference": "/observation_refs"
-        },
-        {
           "path": "/artifact/payload/semantic_surface/successor_factors",
           "reference": "/observation_refs"
         },
