@@ -1,0 +1,591 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "memory-source-notes/negative-ledger-memory-note-payload",
+  "owner": "memory-source-notes",
+  "imports": [
+    {
+      "id": "memory-source-notes/source-note-envelope",
+      "path": "source-note-envelope.json"
+    }
+  ],
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-object",
+      "bounded-string",
+      "canonical-json",
+      "definition-ref",
+      "enum",
+      "exact-object",
+      "field-equal",
+      "implies",
+      "one-of",
+      "optional-field",
+      "regex",
+      "safe-relative-path",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "note": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "note"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "definition-ref",
+        "input": "note",
+        "path": "",
+        "definition": "memory-source-notes/source-note-envelope"
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/operation",
+        "values": [
+          "assert",
+          "reopen"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/authority",
+        "values": [
+          "ledger-cli"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/scope/kind",
+        "values": [
+          "repo"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "note",
+        "path": "/payload",
+        "keys": [
+          "applicability_conditions",
+          "applicable_paths",
+          "artifact_state_id",
+          "artifact_state_label",
+          "attempted_change",
+          "authority_model_id",
+          "campaign_id",
+          "capture_event_count",
+          "cluster_id",
+          "confidence",
+          "counterexample_family_ids",
+          "distinction_pattern_id",
+          "event_chain_fingerprint",
+          "exclusion_rule",
+          "exclusion_scope",
+          "failure_class",
+          "falsifying_evidence",
+          "hypothesis",
+          "kernel_law_ids",
+          "kind",
+          "ledger_path",
+          "neg_id",
+          "next_search_hint",
+          "observed_outcome",
+          "previous_projection_fingerprint",
+          "projection_fingerprint",
+          "proof_pattern_id",
+          "record_version",
+          "reopening_criteria",
+          "repository_id",
+          "route_family_id",
+          "route_id",
+          "route_or_model_id",
+          "schema",
+          "source_event_count",
+          "source_refs",
+          "status",
+          "status_event_count"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/payload/schema",
+        "values": [
+          "negative-ledger-projection/v3"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/repository_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "field-equal",
+        "input": "note",
+        "left": "/payload/repository_id",
+        "right": "/scope/repo"
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/ledger_path",
+        "trimmed_min": 1,
+        "max": 4096
+      },
+      {
+        "op": "safe-relative-path",
+        "input": "note",
+        "path": "/payload/ledger_path",
+        "allow_root": false
+      },
+      {
+        "op": "bounded-array",
+        "input": "note",
+        "path": "/payload/applicable_paths",
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/applicable_paths",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/neg_id",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "regex",
+        "input": "note",
+        "path": "/payload/neg_id",
+        "patterns": [
+          "^NEG-[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        ],
+        "max": 256
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/payload/record_version",
+        "values": [
+          "NER-v2"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "note",
+        "path": "/payload/status",
+        "values": [
+          "accepted_risk",
+          "active",
+          "reopened",
+          "stale",
+          "superseded"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/kind",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/artifact_state_id",
+        "trimmed_min": 1,
+        "max": 512
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/hypothesis",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/attempted_change",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/observed_outcome",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/failure_class",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/exclusion_scope",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/confidence",
+        "trimmed_min": 1,
+        "max": 64
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/next_search_hint",
+        "trimmed_min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-array",
+        "input": "note",
+        "path": "/payload/source_refs",
+        "min": 1,
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/source_refs",
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "required_keys": [
+              "kind",
+              "ref"
+            ],
+            "optional_keys": [
+              "summary"
+            ],
+            "allow_additional": false
+          },
+          {
+            "op": "bounded-string",
+            "path": "/kind",
+            "trimmed_min": 1,
+            "max": 128
+          },
+          {
+            "op": "bounded-string",
+            "path": "/ref",
+            "trimmed_min": 1,
+            "max": 4096
+          },
+          {
+            "op": "optional-field",
+            "path": "/summary",
+            "rules": [
+              {
+                "op": "bounded-string",
+                "path": "",
+                "trimmed_min": 1,
+                "max": 4096
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "note",
+        "path": "/payload/falsifying_evidence",
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/falsifying_evidence",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "note",
+        "path": "/payload/applicability_conditions",
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/applicability_conditions",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "note",
+        "path": "/payload/reopening_criteria",
+        "max": 128
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/reopening_criteria",
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "keys": [
+              "condition",
+              "id"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/id",
+            "trimmed_min": 1,
+            "max": 256
+          },
+          {
+            "op": "bounded-string",
+            "path": "/condition",
+            "trimmed_min": 1,
+            "max": 4096
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "note",
+        "if": "/payload/status",
+        "equals": "active",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "/payload/applicability_conditions",
+            "min": 1,
+            "max": 128
+          },
+          {
+            "op": "bounded-array",
+            "path": "/payload/reopening_criteria",
+            "min": 1,
+            "max": 128
+          },
+          {
+            "op": "bounded-string",
+            "path": "/payload/exclusion_rule",
+            "trimmed_min": 1,
+            "max": 1048576
+          }
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/projection_fingerprint",
+        "min": 64,
+        "max": 64
+      },
+      {
+        "op": "regex",
+        "input": "note",
+        "path": "/payload/projection_fingerprint",
+        "patterns": [
+          "^[a-f0-9]+$"
+        ],
+        "max": 64
+      },
+      {
+        "op": "bounded-string",
+        "input": "note",
+        "path": "/payload/event_chain_fingerprint",
+        "min": 64,
+        "max": 64
+      },
+      {
+        "op": "regex",
+        "input": "note",
+        "path": "/payload/event_chain_fingerprint",
+        "patterns": [
+          "^[a-f0-9]+$"
+        ],
+        "max": 64
+      },
+      {
+        "op": "optional-field",
+        "input": "note",
+        "path": "/payload/previous_projection_fingerprint",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "min": 64,
+            "max": 64
+          },
+          {
+            "op": "regex",
+            "path": "",
+            "patterns": [
+              "^[a-f0-9]+$"
+            ],
+            "max": 64
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/kernel_law_ids",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 256
+          }
+        ]
+      },
+      {
+        "op": "all",
+        "input": "note",
+        "path": "/payload/counterexample_family_ids",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 256
+          }
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "note",
+        "path": "/payload/capture_event_count",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "note",
+        "path": "/payload/capture_event_count",
+        "min": 0,
+        "max": 10000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "note",
+        "path": "/payload/status_event_count",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "note",
+        "path": "/payload/status_event_count",
+        "min": 0,
+        "max": 10000000
+      },
+      {
+        "op": "scalar-type",
+        "input": "note",
+        "path": "/payload/source_event_count",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "note",
+        "path": "/payload/source_event_count",
+        "min": 0,
+        "max": 10000000
+      },
+      {
+        "op": "implies",
+        "input": "note",
+        "if": "/payload/status",
+        "equals": "reopened",
+        "then": "/operation",
+        "then_equals": "reopen"
+      },
+      {
+        "op": "implies",
+        "input": "note",
+        "if": "/operation",
+        "equals": "reopen",
+        "then": "/payload/status",
+        "then_equals": "reopened"
+      },
+      {
+        "op": "implies",
+        "input": "note",
+        "if": "/operation",
+        "equals": "reopen",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "/related_ids",
+            "min": 1,
+            "max": 128
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 1048576,
+    "max_records": 10000,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "memory-source-notes",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "memory-source-notes/source-note-envelope",
+      "path": "ledger/source-note-envelope.json"
+    },
+    {
+      "id": "memory-source-notes/learnings-memory-note-payload",
+      "path": "ledger/learnings-memory-note-payload.json"
+    },
+    {
+      "id": "memory-source-notes/negative-ledger-memory-note-payload",
+      "path": "ledger/negative-ledger-memory-note-payload.json"
+    },
+    {
+      "id": "memory-source-notes/source-memory-eligibility",
+      "path": "ledger/source-memory-eligibility.json"
+    }
+  ]
+}

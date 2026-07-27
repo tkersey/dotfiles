@@ -1,0 +1,120 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "memory-source-notes/source-memory-eligibility",
+  "owner": "memory-source-notes",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "bounded-object",
+      "bounded-string",
+      "canonical-json",
+      "enum",
+      "exact-object",
+      "object-values"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "eligibility": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "eligibility"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "eligibility",
+        "path": "",
+        "keys": [
+          "decisions",
+          "schema"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "eligibility",
+        "path": "/schema",
+        "values": [
+          "source-memory-eligibility/v1"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "eligibility",
+        "path": "/decisions",
+        "required_keys": [],
+        "optional_keys": [
+          "learnings",
+          "negative-ledger",
+          "synesthesia"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "object-values",
+        "input": "eligibility",
+        "path": "/decisions",
+        "rules": [
+          {
+            "op": "bounded-object",
+            "path": "",
+            "max": 10000
+          },
+          {
+            "op": "object-values",
+            "path": "",
+            "rules": [
+              {
+                "op": "exact-object",
+                "path": "",
+                "keys": [
+                  "disposition",
+                  "reason"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/disposition",
+                "values": [
+                  "eligible",
+                  "not-eligible"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/reason",
+                "trimmed_min": 1,
+                "max": 4096
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 1048576,
+    "max_records": 10000,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}
