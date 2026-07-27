@@ -1,0 +1,312 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "tune/skill-decision-receipt",
+  "owner": "tune",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "enum",
+      "exact-object",
+      "implies",
+      "not-member-of",
+      "optional-field",
+      "regex",
+      "scalar-type"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "receipt": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "receipt"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "",
+        "required_keys": [
+          "skill_decision_receipt"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "exact-object",
+        "input": "receipt",
+        "path": "/skill_decision_receipt",
+        "required_keys": [
+          "artifact_state",
+          "decision_id",
+          "receipt_version",
+          "selected_route",
+          "skill"
+        ],
+        "optional_keys": [
+          "alternatives_considered",
+          "clause_refs",
+          "evidence_refs",
+          "expected_outcome",
+          "question",
+          "rejected_routes",
+          "skill_contract_fingerprint",
+          "skill_version",
+          "trigger_refs"
+        ],
+        "allow_additional": true
+      },
+      {
+        "op": "enum",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/receipt_version",
+        "values": [
+          "SDR-v1"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/decision_id",
+        "min": 3,
+        "max": 1048576
+      },
+      {
+        "op": "regex",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/decision_id",
+        "patterns": [
+          "^[A-Za-z0-9_.:-]+$"
+        ],
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/skill",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "bounded-string",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/selected_route",
+        "min": 1,
+        "max": 1048576
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/skill_version",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/skill_contract_fingerprint",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/question",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/expected_outcome",
+        "allow_null": true,
+        "rules": [
+          {
+            "op": "scalar-type",
+            "path": "",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/trigger_refs",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 10000
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "path": "",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/clause_refs",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 10000
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "path": "",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/alternatives_considered",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 10000
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "path": "",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/rejected_routes",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 10000
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "path": "",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "receipt",
+        "path": "/skill_decision_receipt/evidence_refs",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "",
+            "max": 10000
+          },
+          {
+            "op": "all",
+            "path": "",
+            "rules": [
+              {
+                "op": "scalar-type",
+                "path": "",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [
+    {
+      "op": "implies",
+      "input": "receipt",
+      "if": "/skill_decision_receipt/rejected_routes",
+      "nonempty": true,
+      "rules": [
+        {
+          "op": "not-member-of",
+          "left": "/skill_decision_receipt/selected_route",
+          "right": "/skill_decision_receipt/rejected_routes"
+        }
+      ]
+    }
+  ],
+  "identity": {
+    "op": "content-address",
+    "input": "receipt"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 1048576,
+    "max_records": 10000,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

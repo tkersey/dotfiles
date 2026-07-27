@@ -6,6 +6,10 @@
     {
       "id": "tune/skill-decision-contract",
       "path": "ledger/skill-decision-contract.json"
+    },
+    {
+      "id": "tune/skill-decision-receipt",
+      "path": "ledger/skill-decision-receipt.json"
     }
   ]
 }
