@@ -1,0 +1,838 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "synesthesia/protocol",
+  "owner": "synesthesia",
+  "imports": [
+    {
+      "id": "memory-source-notes/source-note-envelope",
+      "path": "../../../memory-source-notes/definitions/ledger/source-note-envelope.json"
+    }
+  ],
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "at-least-one",
+      "bind-existing",
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "compare-and-append",
+      "composite-identity",
+      "definition-ref",
+      "enum",
+      "event-materialization",
+      "exact-object",
+      "field-equal",
+      "idempotency-key",
+      "implies",
+      "one-of",
+      "optional-field",
+      "regex",
+      "sha256",
+      "timestamp",
+      "tagged-union"
+    ]
+  },
+  "parameters": {
+    "allow_duplicate": {
+      "type": "boolean",
+      "required": false,
+      "default": false
+    }
+  },
+  "inputs": {
+    "submission": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "submission"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "submission",
+        "path": "",
+        "keys": [
+          "logical_kind",
+          "record",
+          "physical_kind"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "submission",
+        "path": "/logical_kind",
+        "values": [
+          "activation-boundary",
+          "boundary-retraction",
+          "mapping-confirmation",
+          "mapping-correction",
+          "mapping-endorsement",
+          "mapping-rejection"
+        ]
+      },
+      {
+        "op": "enum",
+        "input": "submission",
+        "path": "/physical_kind",
+        "values": [
+          "activation-boundary",
+          "boundary-retraction",
+          "mapping-correction",
+          "mapping-endorsement",
+          "mapping-rejection"
+        ]
+      },
+      {
+        "op": "definition-ref",
+        "input": "submission",
+        "path": "/record",
+        "definition": "memory-source-notes/source-note-envelope"
+      },
+      {
+        "op": "optional-field",
+        "input": "submission",
+        "path": "/record/slug",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 80
+          },
+          {
+            "op": "regex",
+            "path": "",
+            "patterns": [
+              "^[a-z0-9][a-z0-9-]*$"
+            ],
+            "max": 80
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "submission",
+        "if": "/record/operation",
+        "equals": "confirm",
+        "rules": [
+          {
+            "op": "bounded-array",
+            "path": "/record/related_ids",
+            "min": 1,
+            "max": 128
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "submission",
+        "if": "/record/operation",
+        "equals": "supersede",
+        "rules": [
+          {
+            "op": "at-least-one",
+            "paths": [
+              "/record/related_ids",
+              "/record/supersedes_id"
+            ],
+            "rules": [
+              {
+                "op": "one-of",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "min": 1,
+                    "max": 128
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "min": 1,
+                    "max": 256
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "submission",
+        "if": "/record/operation",
+        "equals": "reject",
+        "rules": [
+          {
+            "op": "at-least-one",
+            "paths": [
+              "/record/related_ids",
+              "/record/supersedes_id"
+            ],
+            "rules": [
+              {
+                "op": "one-of",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "min": 1,
+                    "max": 128
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "min": 1,
+                    "max": 256
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "submission",
+        "if": "/record/operation",
+        "equals": "retract",
+        "rules": [
+          {
+            "op": "at-least-one",
+            "paths": [
+              "/record/related_ids",
+              "/record/supersedes_id"
+            ],
+            "rules": [
+              {
+                "op": "one-of",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "min": 1,
+                    "max": 128
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "min": 1,
+                    "max": 256
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "implies",
+        "input": "submission",
+        "if": "/record/operation",
+        "equals": "reopen",
+        "rules": [
+          {
+            "op": "at-least-one",
+            "paths": [
+              "/record/related_ids",
+              "/record/supersedes_id"
+            ],
+            "rules": [
+              {
+                "op": "one-of",
+                "path": "",
+                "rules": [
+                  {
+                    "op": "bounded-array",
+                    "path": "",
+                    "min": 1,
+                    "max": 128
+                  },
+                  {
+                    "op": "bounded-string",
+                    "path": "",
+                    "min": 1,
+                    "max": 256
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "tagged-union",
+        "input": "submission",
+        "path": "",
+        "tag": "/logical_kind",
+        "variants": [
+          {
+            "value": "mapping-endorsement",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/physical_kind",
+                "values": [
+                  "mapping-endorsement"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/operation",
+                "values": [
+                  "assert",
+                  "confirm",
+                  "reopen"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/authority",
+                "values": [
+                  "explicit-user-endorsement",
+                  "repeated-accepted-use"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/sensory_phrase",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/engineering_translation",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/non_activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/verification",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "mapping-confirmation",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/physical_kind",
+                "values": [
+                  "mapping-endorsement"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/operation",
+                "values": [
+                  "confirm"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/authority",
+                "values": [
+                  "explicit-user-endorsement",
+                  "repeated-accepted-use"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/sensory_phrase",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/engineering_translation",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/non_activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/verification",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "mapping-correction",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/physical_kind",
+                "values": [
+                  "mapping-correction"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/operation",
+                "values": [
+                  "supersede"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/authority",
+                "values": [
+                  "explicit-user-correction"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/sensory_phrase",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/engineering_translation",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/non_activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/verification",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "mapping-rejection",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/physical_kind",
+                "values": [
+                  "mapping-rejection"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/operation",
+                "values": [
+                  "reject"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/authority",
+                "values": [
+                  "explicit-user-rejection"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/sensory_phrase",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/non_activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/rejection_reason",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/verification",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "optional-field",
+                "path": "/record/payload/engineering_translation",
+                "allow_null": true,
+                "rules": [
+                  {
+                    "op": "one-of",
+                    "path": "",
+                    "rules": [
+                      {
+                        "op": "enum",
+                        "path": "",
+                        "values": [
+                          ""
+                        ]
+                      },
+                      {
+                        "op": "bounded-string",
+                        "path": "",
+                        "trimmed_min": 1,
+                        "max": 1048576
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "value": "activation-boundary",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/physical_kind",
+                "values": [
+                  "activation-boundary"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/operation",
+                "values": [
+                  "assert",
+                  "confirm",
+                  "reopen",
+                  "supersede"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/authority",
+                "values": [
+                  "explicit-user-correction",
+                  "explicit-user-endorsement",
+                  "repeated-accepted-use"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/non_activation_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/verification",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          },
+          {
+            "value": "boundary-retraction",
+            "rules": [
+              {
+                "op": "enum",
+                "path": "/physical_kind",
+                "values": [
+                  "boundary-retraction"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/operation",
+                "values": [
+                  "retract"
+                ]
+              },
+              {
+                "op": "enum",
+                "path": "/record/authority",
+                "values": [
+                  "explicit-user-correction",
+                  "explicit-user-rejection"
+                ]
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/retracted_boundary",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/reason",
+                "trimmed_min": 1,
+                "max": 1048576
+              },
+              {
+                "op": "bounded-string",
+                "path": "/record/payload/verification",
+                "trimmed_min": 1,
+                "max": 1048576
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {
+    "kind": "event-log",
+    "slots": {
+      "events": {
+        "path": "synesthesia/events.jsonl",
+        "kind": "event-log",
+        "codec": "jsonl",
+        "max_bytes": 16777216
+      }
+    }
+  },
+  "operations": {
+    "bind-existing": {
+      "effects": [
+        {
+          "op": "bind-existing",
+          "slot": "events",
+          "input": "submission",
+          "event_from_operation": "capture"
+        }
+      ]
+    },
+    "capture": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "submission",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "v",
+              "source",
+              "event",
+              "syn_id",
+              "captured_at",
+              "kind",
+              "logical_kind",
+              "operation",
+              "record"
+            ],
+            "body_order": [
+              "id",
+              "captured_at",
+              "logical_kind",
+              "kind",
+              "operation",
+              "authority",
+              "summary",
+              "scope",
+              "source_refs",
+              "related_ids",
+              "supersedes_id",
+              "fingerprint",
+              "payload",
+              "slug"
+            ],
+            "fields": [
+              {
+                "field": "v",
+                "literal": 1
+              },
+              {
+                "field": "source",
+                "literal": "synesthesia"
+              },
+              {
+                "field": "event",
+                "literal": "synesthesia.capture"
+              },
+              {
+                "field": "syn_id",
+                "derived": "syn_id"
+              },
+              {
+                "field": "captured_at",
+                "derived": "captured_at"
+              },
+              {
+                "field": "kind",
+                "input_field": "physical_kind"
+              },
+              {
+                "field": "logical_kind",
+                "input_field": "logical_kind"
+              },
+              {
+                "field": "operation",
+                "derived": "operation"
+              }
+            ],
+            "derive": [
+              {
+                "name": "physical_kind",
+                "op": "input-text",
+                "pointer": "/physical_kind"
+              },
+              {
+                "name": "logical_kind",
+                "op": "input-text",
+                "pointer": "/logical_kind"
+              },
+              {
+                "name": "operation",
+                "op": "input-text",
+                "pointer": "/record/operation"
+              },
+              {
+                "name": "captured_at",
+                "op": "utc-timestamp",
+                "format": "rfc3339-seconds"
+              },
+              {
+                "name": "fingerprint",
+                "op": "sha256",
+                "encoding": "hex",
+                "fragments": [
+                  {
+                    "literal": "synesthesia\n"
+                  },
+                  {
+                    "input_text": "/physical_kind"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/logical_kind"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_json": "/record"
+                  }
+                ],
+                "max_bytes": 1048576
+              },
+              {
+                "name": "syn_id",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "SYN-"
+                  },
+                  {
+                    "derived": "captured_at",
+                    "transform": "compact-utc"
+                  },
+                  {
+                    "literal": "-"
+                  },
+                  {
+                    "derived": "fingerprint",
+                    "prefix_bytes": 16
+                  }
+                ],
+                "max_bytes": 64
+              }
+            ],
+            "idempotency": {
+              "derived": "fingerprint",
+              "bypass_param": "allow_duplicate"
+            },
+            "body_fields": [
+              {
+                "field": "id",
+                "derived": "syn_id"
+              },
+              {
+                "field": "captured_at",
+                "derived": "captured_at"
+              },
+              {
+                "field": "logical_kind",
+                "derived": "logical_kind"
+              },
+              {
+                "field": "kind",
+                "derived": "physical_kind"
+              },
+              {
+                "field": "fingerprint",
+                "derived": "fingerprint"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 16777216,
+    "max_records": 10000,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "memory-source-notes/memory-note-id",
+  "owner": "memory-source-notes",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": ["bounded-string", "canonical-json", "regex"]
+  },
+  "parameters": {},
+  "inputs": {
+    "value": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 64
+    }
+  },
+  "canonicalization": {
+    "steps": [{"op": "canonical-json", "input": "value"}]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "bounded-string",
+        "input": "value",
+        "path": "",
+        "min": 37,
+        "max": 37
+      },
+      {
+        "op": "regex",
+        "input": "value",
+        "path": "",
+        "patterns": [
+          "^MSN-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z-[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9]$"
+        ],
+        "max": 37
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {},
+  "storage": {"kind": "pure"},
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 64,
+    "max_store_bytes": 64,
+    "max_records": 1,
+    "max_output_bytes": 64,
+    "max_diagnostics": 4,
+    "max_reducer_states": 1
+  }
+}

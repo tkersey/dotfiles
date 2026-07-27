@@ -330,10 +330,12 @@ def validate_and_normalize(
     physical_kind = LOGICAL_TO_PHYSICAL_KIND[logical_kind]
     normalized = _normalize_writer_input(raw)
     submission = {
-        "logical_kind": logical_kind,
-        "physical_kind": physical_kind,
         "scope_anchor_source": _scope_anchor_source(normalized),
-        "note": normalized,
+        "source": {
+            "logical_kind": logical_kind,
+            "physical_kind": physical_kind,
+            "record": normalized,
+        },
     }
     structural_result = _validate_submission_with_ledger(submission)
     return physical_kind, normalized, structural_result

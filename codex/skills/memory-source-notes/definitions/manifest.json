@@ -8,6 +8,10 @@
       "path": "ledger/source-note-envelope.json"
     },
     {
+      "id": "memory-source-notes/memory-note-id",
+      "path": "ledger/memory-note-id.json"
+    },
+    {
       "id": "memory-source-notes/learnings-memory-note-payload",
       "path": "ledger/learnings-memory-note-payload.json"
     },

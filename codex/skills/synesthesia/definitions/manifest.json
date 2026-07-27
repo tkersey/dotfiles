@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "synesthesia",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "synesthesia/protocol",
+      "path": "ledger/synesthesia-protocol.json"
+    }
+  ]
+}
