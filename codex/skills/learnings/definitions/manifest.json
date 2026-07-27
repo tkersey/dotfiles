@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "learnings",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "learnings/protocol",
+      "path": "ledger/learnings-protocol.json"
+    }
+  ]
+}
