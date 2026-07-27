@@ -249,6 +249,14 @@ def synesthesia_definition_path() -> Path:
     )
 
 
+def synesthesia_source_definition_path() -> Path:
+    return (
+        repo_root()
+        / "codex/skills/synesthesia/definitions/ledger"
+        / "synesthesia-protocol.json"
+    )
+
+
 def _validate_submission_with_ledger(submission: dict[str, Any]) -> dict[str, Any]:
     binary = find_ledger_binary()
     if binary is None:
@@ -306,6 +314,97 @@ def _validate_submission_with_ledger(submission: dict[str, Any]) -> dict[str, An
             f"{detail}"
         )
     return result
+
+
+def _inspect_source_ledger(repo: Path) -> dict[str, Any]:
+    binary = find_ledger_binary()
+    definition = synesthesia_source_definition_path()
+    report: dict[str, Any] = {
+        "available": binary is not None and definition.is_file(),
+        "binary": str(binary) if binary else None,
+        "definition": str(definition),
+        "repo": str(repo),
+        "healthy": False,
+        "status": "unavailable",
+    }
+    if binary is None:
+        report["error"] = "Ledger 1.x with ledger-artifact-abi/v1 is required"
+        return report
+    if not definition.is_file():
+        report["error"] = f"definition not found: {definition}"
+        return report
+    if not repo.is_dir():
+        report["error"] = f"repo is not a directory: {repo}"
+        return report
+
+    proc = subprocess.run(
+        [
+            str(binary),
+            "doctor",
+            "--definition",
+            str(definition),
+            "--repo",
+            str(repo),
+            "--format",
+            "json",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    report["exit_code"] = proc.returncode
+    report["stderr"] = proc.stderr.strip()
+    try:
+        result = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        report.update(
+            status="invalid-result",
+            error=f"ledger doctor returned invalid JSON: {exc}",
+        )
+        return report
+
+    definition_result = result.get("definition")
+    slots = result.get("slots")
+    slot = (
+        next(
+            (
+                row
+                for row in slots
+                if isinstance(row, dict) and row.get("name") == "events"
+            ),
+            None,
+        )
+        if isinstance(slots, list)
+        else None
+    )
+    if (
+        result.get("schema") != "ledger-doctor-result/v1"
+        or not isinstance(definition_result, dict)
+        or definition_result.get("id") != "synesthesia/protocol"
+        or definition_result.get("abi") != "ledger-artifact-abi/v1"
+        or result.get("authority_granted") is not False
+        or result.get("storage_mutated") is not False
+        or slot is None
+        or slot.get("status") not in {"missing", "current", "invalid"}
+    ):
+        report.update(
+            status="invalid-result",
+            error="ledger doctor returned an unexpected structural result",
+            result=result,
+        )
+        return report
+
+    healthy = (
+        proc.returncode == 0
+        and result.get("healthy") is True
+        and slot.get("healthy") is True
+    )
+    report.update(
+        healthy=healthy,
+        status=slot["status"],
+        result=result,
+    )
+    return report
 
 
 def _scope_anchor_source(normalized: Any) -> str:
@@ -1374,7 +1473,8 @@ def _scan_compiled_memory(home: Path, note_ids: list[str]) -> dict[str, Any]:
     return {"files_checked": len(roots), "mentions": mentions}
 
 
-def doctor(home: Path) -> dict[str, Any]:
+def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
+    source_ledger = _inspect_source_ledger((source_repo or Path.cwd()).resolve())
     source = source_instructions_path()
     live = live_instructions_path(home)
     if live.is_symlink():
@@ -1408,7 +1508,14 @@ def doctor(home: Path) -> dict[str, Any]:
     }
     if binary:
         proc = subprocess.run(
-            [str(binary), "doctor", "--extension", "synesthesia"],
+            [
+                str(binary),
+                "doctor",
+                "--extension",
+                "synesthesia",
+                "--codex-home",
+                str(home),
+            ],
             text=True,
             capture_output=True,
             check=False,
@@ -1423,7 +1530,16 @@ def doctor(home: Path) -> dict[str, Any]:
 
     digest = inspect_digest(home, projection)
     compiled = _scan_compiled_memory(home, note_ids)
-    if projection["source_file_count"] == 0:
+    if not source_ledger["available"]:
+        stage = "source-ledger-unavailable"
+        recommendation = source_ledger["error"]
+    elif not source_ledger["healthy"]:
+        stage = f"source-ledger-{source_ledger['status']}"
+        recommendation = (
+            "Repair or explicitly bind the selected Synesthesia store through "
+            "the owning passive definition."
+        )
+    elif projection["source_file_count"] == 0:
         stage = "no-source-notes"
         recommendation = "Create a note only after a qualifying durable user event."
     elif adapter_status != "current":
@@ -1450,6 +1566,7 @@ def doctor(home: Path) -> dict[str, Any]:
             "codex_home": str(home),
             "stage": stage,
             "recommendation": recommendation,
+            "source_ledger": source_ledger,
             "adapter": {
                 "status": adapter_status,
                 "source": str(source),
@@ -1484,6 +1601,12 @@ def print_doctor_text(report: dict[str, Any]) -> None:
     body = report["synesthesia_memory_doctor"]
     print(f"stage: {body['stage']}")
     print(f"codex_home: {body['codex_home']}")
+    print(
+        "source_ledger: "
+        f"{body['source_ledger']['status']} "
+        f"healthy={str(body['source_ledger']['healthy']).lower()} "
+        f"({body['source_ledger']['repo']})"
+    )
     print(f"adapter: {body['adapter']['status']} ({body['adapter']['live']})")
     print(f"source_notes: {body['notes']['count']} valid={body['notes']['valid_count']}")
     print(f"digest: {body['digest']['status']} ({body['digest']['path']})")
@@ -1593,12 +1716,17 @@ def cmd_sync(args: argparse.Namespace) -> int:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    report = doctor(codex_home(args.codex_home))
+    report = doctor(
+        codex_home(args.codex_home),
+        Path(args.repo).expanduser().resolve(),
+    )
     if args.format == "text":
         print_doctor_text(report)
     else:
         print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
     body = report["synesthesia_memory_doctor"]
+    if not body["source_ledger"]["healthy"]:
+        return 2
     if body["adapter"]["status"] in {"symlinked", "not-file"}:
         return 2
     if body["digest"]["status"] in {"symlinked", "not-file", "invalid"}:
@@ -1650,6 +1778,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor_parser = sub.add_parser("doctor", help="Diagnose note, digest, and Phase 2 state")
     doctor_parser.add_argument("--codex-home")
+    doctor_parser.add_argument("--repo", default=".")
     doctor_parser.add_argument("--format", choices=("json", "text"), default="json")
     doctor_parser.set_defaults(func=cmd_doctor)
     return parser
