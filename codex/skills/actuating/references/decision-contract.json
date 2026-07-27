@@ -125,8 +125,8 @@
           "Universalist nominates and Reduce challenges once before Actuating alone adjudicates and selects the Construction and next action",
           "compact composed analysis needs no independent axiom artifact SDR-v1 or RC-v1",
           "Actuating owns the static Review Contract and semantic closure receipt",
-          "Ledger 0.13.0 or newer is the sole structural admission owner",
-          "Seq 0.5.0 or newer consumes only Ledger checked structure",
+          "Ledger 1.x with ledger-artifact-abi/v1 is the sole structural admission owner",
+          "Seq 1.x with seq-observation-abi/v1 consumes only explicit Ledger projections",
           "Construction v1 and v2 data is ignored without migration",
           "Ship alone owns public effects"
         ],

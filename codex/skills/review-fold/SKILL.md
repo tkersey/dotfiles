@@ -126,10 +126,10 @@ because a reviewer proposed it.
 ## Procedure
 
 Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure` once. Reuse Actuating's current adapter gate. When
-invoked standalone, require `ledger --version` to be at least `0.11.0` and
-verify that `ledger --source actuation --help` exposes only
-`append|prepare|state|project|doctor|path` before materialization.
+complete `$ledger ensure` once. Resolve the active `$review-fold` and
+`$actuating` skill roots. Require Ledger 1.x, `ledger-artifact-abi/v1`, and
+successful `ledger definition check` results for their canonical
+Counterexample and Evidence definitions.
 
 1. Bind the source to the exact current Goal artifact, Construction, subject
    digest, static Review Contract digest, and source-owner receipt. Put
@@ -152,15 +152,32 @@ verify that `ledger --source actuation --help` exposes only
    scope; verify successor Goal and carried-Set reference symmetry, preserve the
    predecessor Construction, and require total stable-class coverage.
 7. Assign exactly one disposition to every class.
-8. Materialize canonical JSON with the current six-command artifact adapter:
+8. Materialize the Counterexample Set, then register the returned canonical
+   artifact through the Evidence protocol:
 
    ~~~bash
-   ledger --source actuation --repo <repo> --goal <goal-id> \
-     append --input <counterexample-set.json>
+   ledger materialize \
+     --definition <review-fold-skill-root>/definitions/ledger/counterexample-set.json \
+     --input counterexamples=<counterexample-set.json> \
+     --format json
+
+   ledger transact \
+     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+     --operation register-counterexamples \
+     --repo <repo> \
+     --input counterexample_registration=<counterexample-registration.json> \
+     --param goal=<goal-id> \
+     --format json
    ~~~
 
-9. Return the materialized Counterexample Set to Actuating. Do not propose or
-   execute a repair.
+   The registration packet is passive JSON containing
+   `schema:"actuating-counterexample-registration/v1"`, the exact Goal,
+   Construction, and subject tuple, and the materialization result's parsed
+   `canonical_content` as `body`.
+9. Require `ledger-materialization-result/v1` followed by
+   `ledger-transaction-result/v1` for `register-counterexamples`. Return the
+   materialized Counterexample Set and registration event identity to
+   Actuating. Do not propose or execute a repair.
 
 Use [review-fold.valid.example.json](assets/review-fold.valid.example.json) as
 a shape example, never as evidence or authority.

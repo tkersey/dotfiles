@@ -29,9 +29,9 @@ per-goal truth. Read [artifact-kernel.md](references/artifact-kernel.md) for the
 owner map.
 
 Plans, CAS receipts, Ship receipts, verifier output, work graphs, and Ledger
-`state` or `project` views are supporting evidence or discardable structural
-aids. An Actuating-authored closure receipt is a semantic report, not another
-authority family.
+projections are supporting evidence or discardable structural aids. An
+Actuating-authored closure receipt is a semantic report, not another authority
+family.
 
 ## Owner boundary
 
@@ -67,9 +67,10 @@ changes; evaluates CAS facts or review credit; interprets Ship evidence; selects
 a repair, Construction, or next action; grants mutation; emits a semantic
 closure verdict; or authors the closure receipt. Before the first Ledger
 command in a workflow, load `$ledger` and complete `$ledger ensure` once. Then
-require Ledger 0.13.0 or newer and Seq 0.5.0 or newer, apply the current
-zero-legacy Ledger and CAS runtime gates, and use the exact transient schemas
-and one-shot capability law in
+require Ledger 1.x with `ledger-artifact-abi/v1`, Seq 1.x with
+`seq-observation-abi/v1`, and successful definition checks for every selected
+passive definition. Apply the current hard-cutover Ledger and CAS runtime
+gates, and use the exact transient schemas and one-shot capability law in
 [evidence-ledger.md](references/evidence-ledger.md). Apply the same Actuating
 gate when entering from a standalone Goal Contract or Review Fold handoff.
 Construction v1 and v2 are unsupported. Do not migrate, translate, replay, or
@@ -280,13 +281,27 @@ same finding set and nomination version.
    materialize and register it before selecting any operation:
 
    ~~~bash
-   ledger --source actuation --repo <repo> --goal <goal-id> \
-     append --input <construction-contract.json>
+   ledger materialize \
+     --definition <actuating-skill-root>/definitions/ledger/construction-contract.json \
+     --input construction=<construction-contract.json> \
+     --format json
+
+   ledger transact \
+     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+     --operation register-construction \
+     --repo <repo> \
+     --input construction_registration=<construction-registration.json> \
+     --param goal=<goal-id> \
+     --format json
    ~~~
 
-   Require `construction-contract/v3` and `actuating-append-result/v1`, retain
-   its complete canonical `artifact`, exact-match its non-null `artifact_id` to
-   `artifact.artifact_id`, and retain `event_digest` as the
+   The registration packet is passive JSON containing
+   `schema:"actuating-construction-registration/v1"`, the exact Goal,
+   Construction, and subject tuple, and the materialization result's parsed
+   `canonical_content` as `body`. Require
+   `ledger-materialization-result/v1` followed by
+   `ledger-transaction-result/v1` for `register-construction`. Retain the
+   complete canonical artifact and appended event identity as the
    `construction_contract_registered` observation. Only the returned artifact
    is the current Construction; Ledger does not select or revise it.
 6. For each repository effect, Actuating selects one exact operation projected
