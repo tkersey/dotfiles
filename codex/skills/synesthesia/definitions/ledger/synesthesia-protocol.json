@@ -957,6 +957,45 @@
         }
       ]
     },
+    "reconciliation-index": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "sort",
+          "keys": [
+            {
+              "meta": "record-order",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "syn_id",
+              "path": "/record/id"
+            },
+            {
+              "name": "captured_at",
+              "path": "/record/captured_at"
+            },
+            {
+              "name": "logical_kind",
+              "path": "/record/logical_kind"
+            },
+            {
+              "name": "kind",
+              "path": "/record/kind"
+            }
+          ]
+        },
+        {
+          "op": "limit",
+          "param": "limit"
+        }
+      ]
+    },
     "record": {
       "slot": "events",
       "pipeline": [

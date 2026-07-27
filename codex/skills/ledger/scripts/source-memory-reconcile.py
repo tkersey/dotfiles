@@ -18,9 +18,12 @@ from urllib.parse import urlparse
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
 ELIGIBILITY = {"eligible", "not-eligible"}
 SKILLS_ROOT = Path(__file__).resolve().parents[2]
-LEARNINGS_DEFINITION = (
-    SKILLS_ROOT / "learnings/definitions/ledger/learnings-protocol.json"
-)
+SOURCE_DEFINITIONS = {
+    "learnings": SKILLS_ROOT
+    / "learnings/definitions/ledger/learnings-protocol.json",
+    "synesthesia": SKILLS_ROOT
+    / "synesthesia/definitions/ledger/synesthesia-protocol.json",
+}
 
 
 class ReconcileError(RuntimeError):
@@ -279,7 +282,7 @@ def learning_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
             ledger,
             "project",
             "--definition",
-            str(LEARNINGS_DEFINITION),
+            str(SOURCE_DEFINITIONS["learnings"]),
             "--projection",
             "reconciliation-index",
             "--repo",
@@ -307,20 +310,29 @@ def negative_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
 
 
 def synesthesia_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
-    raw = run_bytes(
-        [ledger, "recent", "--source", "synesthesia", "--limit", "10000"], cwd=cwd
+    value = run_json(
+        [
+            ledger,
+            "project",
+            "--definition",
+            str(SOURCE_DEFINITIONS["synesthesia"]),
+            "--projection",
+            "reconciliation-index",
+            "--repo",
+            str(cwd),
+            "--param",
+            "limit=10000",
+            "--payload-only",
+            "--format",
+            "json",
+        ],
+        cwd=cwd,
     )
-    records = []
-    for line in raw.decode("utf-8").splitlines():
-        record_id = line.split(maxsplit=1)[0] if line.strip() else ""
-        if not record_id.startswith("SYN-"):
-            continue
-        value = run_json(
-            [ledger, "show", "--source", "synesthesia", "--id", record_id], cwd=cwd
+    if not isinstance(value, list):
+        raise ReconcileError(
+            "ledger project synesthesia reconciliation-index: expected array"
         )
-        if isinstance(value, dict):
-            records.append(value)
-    return records
+    return value
 
 
 def native_export(
@@ -330,12 +342,12 @@ def native_export(
     *,
     cwd: Path,
 ) -> tuple[bytes | None, str | None]:
-    if source == "learnings":
+    if definition_path := SOURCE_DEFINITIONS.get(source):
         argv = [
             ledger,
             "project",
             "--definition",
-            str(LEARNINGS_DEFINITION),
+            str(definition_path),
             "--projection",
             "memory-note",
             "--repo",
@@ -543,23 +555,22 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
     compiled = load_compiled_corpus(codex_home)
     repo_aliases = repository_aliases(cwd)
 
-    doctors = {
-        "learnings": run_json(
-            [
+    doctors = {}
+    for source in SOURCES:
+        if definition_path := SOURCE_DEFINITIONS.get(source):
+            argv = [
                 ledger,
                 "doctor",
                 "--definition",
-                str(LEARNINGS_DEFINITION),
+                str(definition_path),
                 "--repo",
                 str(cwd),
                 "--format",
                 "json",
-            ],
-            cwd=cwd,
-        )
-    }
-    for source in ("synesthesia", "negative-ledger"):
-        doctors[source] = run_json([ledger, "doctor", "--source", source], cwd=cwd)
+            ]
+        else:
+            argv = [ledger, "doctor", "--source", source]
+        doctors[source] = run_json(argv, cwd=cwd)
     note_doctor_argv = [memory_note, "doctor", "--format", "json"]
     if args.codex_home:
         note_doctor_argv.extend(["--codex-home", args.codex_home])
