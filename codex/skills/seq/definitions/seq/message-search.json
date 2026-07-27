@@ -7,7 +7,8 @@
       "filter",
       "limit",
       "project",
-      "scan"
+      "scan",
+      "sort"
     ]
   },
   "parameters": {
@@ -70,8 +71,19 @@
       ]
     },
     {
-      "op": "limit",
+      "op": "sort",
       "input": "selected",
+      "as": "ordered",
+      "by": [
+        {
+          "field": "timestamp",
+          "direction": "desc"
+        }
+      ]
+    },
+    {
+      "op": "limit",
+      "input": "ordered",
       "as": "rows",
       "limit": 100
     }
