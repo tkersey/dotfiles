@@ -8,16 +8,19 @@ import hashlib
 import importlib.util
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
 ELIGIBILITY = {"eligible", "not-eligible"}
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+LEARNINGS_DEFINITION = (
+    SKILLS_ROOT / "learnings/definitions/ledger/learnings-protocol.json"
+)
 
 
 class ReconcileError(RuntimeError):
@@ -271,21 +274,28 @@ def classify_record(
 
 
 def learning_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
-    spec = json.dumps(
-        {
-            "dataset": "learnings",
-            "select": ["id", "captured_at", "status", "fingerprint"],
-            "sort": ["-captured_at"],
-            "limit": 10000,
-            "format": "json",
-        },
-        separators=(",", ":"),
-    )
     value = run_json(
-        [ledger, "query", "--source", "learnings", "--spec", spec], cwd=cwd
+        [
+            ledger,
+            "project",
+            "--definition",
+            str(LEARNINGS_DEFINITION),
+            "--projection",
+            "reconciliation-index",
+            "--repo",
+            str(cwd),
+            "--param",
+            "limit=10000",
+            "--payload-only",
+            "--format",
+            "json",
+        ],
+        cwd=cwd,
     )
     if not isinstance(value, list):
-        raise ReconcileError("ledger query learnings: expected array")
+        raise ReconcileError(
+            "ledger project learnings reconciliation-index: expected array"
+        )
     return value
 
 
@@ -320,16 +330,33 @@ def native_export(
     *,
     cwd: Path,
 ) -> tuple[bytes | None, str | None]:
-    argv = [
-        ledger,
-        "export",
-        "--source",
-        source,
-        "--id",
-        record_id,
-        "--format",
-        "memory-note",
-    ]
+    if source == "learnings":
+        argv = [
+            ledger,
+            "project",
+            "--definition",
+            str(LEARNINGS_DEFINITION),
+            "--projection",
+            "memory-note",
+            "--repo",
+            str(cwd),
+            "--param",
+            f"id={record_id}",
+            "--payload-only",
+            "--format",
+            "json",
+        ]
+    else:
+        argv = [
+            ledger,
+            "export",
+            "--source",
+            source,
+            "--id",
+            record_id,
+            "--format",
+            "memory-note",
+        ]
     try:
         return run_bytes(argv, cwd=cwd), None
     except ReconcileError as exc:
@@ -516,8 +543,22 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
     compiled = load_compiled_corpus(codex_home)
     repo_aliases = repository_aliases(cwd)
 
-    doctors = {}
-    for source in SOURCES:
+    doctors = {
+        "learnings": run_json(
+            [
+                ledger,
+                "doctor",
+                "--definition",
+                str(LEARNINGS_DEFINITION),
+                "--repo",
+                str(cwd),
+                "--format",
+                "json",
+            ],
+            cwd=cwd,
+        )
+    }
+    for source in ("synesthesia", "negative-ledger"):
         doctors[source] = run_json([ledger, "doctor", "--source", source], cwd=cwd)
     note_doctor_argv = [memory_note, "doctor", "--format", "json"]
     if args.codex_home:
@@ -540,8 +581,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
     }
     validate_eligibility_ids(eligibility, records)
     adapter_path = (
-        Path(__file__).resolve().parents[2]
-        / "memory-source-notes/scripts/synesthesia_memory_note.py"
+        SKILLS_ROOT / "memory-source-notes/scripts/synesthesia_memory_note.py"
     )
     synesthesia_adapter = load_synesthesia_adapter(adapter_path)
     source_reports = {

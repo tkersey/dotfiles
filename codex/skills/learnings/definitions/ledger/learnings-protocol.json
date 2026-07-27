@@ -43,6 +43,20 @@
       "required": false,
       "default": 20
     },
+    "drop_superseded": {
+      "type": "boolean",
+      "required": false,
+      "default": false
+    },
+    "now": {
+      "type": "string",
+      "required": false
+    },
+    "paths": {
+      "type": "string",
+      "required": false,
+      "default": ""
+    },
     "query": {
       "type": "string",
       "required": false
@@ -932,7 +946,7 @@
         }
       ]
     },
-    "query": {
+    "search": {
       "slot": "events",
       "pipeline": [
         {
@@ -1004,18 +1018,162 @@
         {
           "op": "relevance",
           "paths": [
-            "/record/id",
-            "/record/status",
             "/record/learning",
-            "/record/evidence",
             "/record/application",
-            "/record/context",
-            "/record/source",
-            "/record/tags"
+            "/record/tags",
+            "/record/evidence"
           ],
           "param": "query",
-          "mode": "tokens",
-          "score_field": "score"
+          "mode": "ranked-tokens",
+          "score_field": "score",
+          "ranking": {
+            "tokenizer": {
+              "minimum_length": 3,
+              "stopwords": [
+                "a",
+                "an",
+                "and",
+                "are",
+                "as",
+                "at",
+                "be",
+                "because",
+                "but",
+                "by",
+                "for",
+                "from",
+                "if",
+                "in",
+                "into",
+                "is",
+                "it",
+                "no",
+                "not",
+                "of",
+                "on",
+                "or",
+                "over",
+                "so",
+                "such",
+                "that",
+                "the",
+                "their",
+                "then",
+                "there",
+                "these",
+                "this",
+                "to",
+                "too",
+                "up",
+                "was",
+                "were",
+                "when",
+                "with"
+              ],
+              "suffixes": [
+                {
+                  "value": "ing",
+                  "minimum_length": 6
+                },
+                {
+                  "value": "ed",
+                  "minimum_length": 5
+                },
+                {
+                  "value": "es",
+                  "minimum_length": 5
+                },
+                {
+                  "value": "s",
+                  "minimum_length": 4
+                }
+              ]
+            },
+            "weights": {
+              "jaccard": 3.0,
+              "token_group": 1.0,
+              "path_match": 1.5,
+              "recency": 1.0,
+              "presence": 0.25
+            },
+            "token_group": [
+              "git",
+              "gh",
+              "uv",
+              "pytest",
+              "ruff",
+              "mypy",
+              "zig",
+              "go",
+              "npm",
+              "bun",
+              "docker",
+              "make",
+              "ci",
+              "pre_commit",
+              "precommit"
+            ],
+            "path_match": {
+              "paths": [
+                "/record/context/paths"
+              ],
+              "param": "paths",
+              "extract_from_query": true
+            },
+            "recency": {
+              "path": "/record/captured_at",
+              "now_param": "now",
+              "decay_seconds": 3888000.0
+            },
+            "presence": {
+              "path": "/record/evidence",
+              "absent_strings": [
+                "none_provided"
+              ]
+            },
+            "enum_boost": {
+              "path": "/record/status",
+              "values": [
+                {
+                  "value": "codify_now",
+                  "score": 0.3
+                },
+                {
+                  "value": "avoid_for_now",
+                  "score": 0.25
+                },
+                {
+                  "value": "do_less",
+                  "score": 0.15
+                },
+                {
+                  "value": "do_more",
+                  "score": 0.15
+                },
+                {
+                  "value": "investigate_more",
+                  "score": 0.1
+                },
+                {
+                  "value": "review_later",
+                  "score": -0.05
+                }
+              ]
+            },
+            "exclude_referenced": {
+              "enabled_param": "drop_superseded",
+              "id_path": "/record/id",
+              "reference_path": "/record/supersedes_id"
+            },
+            "diversity": {
+              "paths": [
+                "/record/tags",
+                "/record/learning"
+              ],
+              "token_limit": 6,
+              "max_per_key": 2
+            }
+          }
         },
         {
           "op": "sort",
@@ -1026,11 +1184,11 @@
             },
             {
               "path": "/record/captured_at",
-              "order": "descending"
+              "order": "ascending"
             },
             {
               "meta": "record-order",
-              "order": "descending"
+              "order": "ascending"
             }
           ]
         },
@@ -1099,6 +1257,49 @@
             {
               "name": "learning",
               "path": "/record/learning"
+            }
+          ]
+        },
+        {
+          "op": "limit",
+          "param": "limit"
+        }
+      ]
+    },
+    "reconciliation-index": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "sort",
+          "keys": [
+            {
+              "path": "/record/captured_at",
+              "order": "descending"
+            },
+            {
+              "meta": "record-order",
+              "order": "descending"
+            }
+          ]
+        },
+        {
+          "op": "export",
+          "fields": [
+            {
+              "name": "id",
+              "path": "/record/id"
+            },
+            {
+              "name": "captured_at",
+              "path": "/record/captured_at"
+            },
+            {
+              "name": "status",
+              "path": "/record/status"
+            },
+            {
+              "name": "fingerprint",
+              "path": "/record/fingerprint"
             }
           ]
         },
