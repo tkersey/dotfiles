@@ -11,6 +11,7 @@
       "bounded-array",
       "bounded-object",
       "bounded-string",
+      "compare-and-append",
       "enum",
       "event-kinds",
       "exact-object",
@@ -778,6 +779,7 @@
       "key": "/neg_id",
       "on": "/status",
       "event_kind": "/event",
+      "retain_once": "/record",
       "from": "/from",
       "to": "/to",
       "assertion_presence": "when-present"
@@ -796,6 +798,15 @@
     }
   },
   "operations": {
+    "append-event": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "event"
+        }
+      ]
+    },
     "bind-existing": {
       "effects": [
         {
@@ -807,13 +818,15 @@
     }
   },
   "projections": {
-    "current-states": {
+    "current-records": {
       "slot": "events",
       "pipeline": [
         {
           "op": "fold",
           "key_field": "neg_id",
-          "state_field": "status"
+          "state_field": "status",
+          "retained_field": "record",
+          "event_count_field": "source_event_count"
         }
       ]
     }
