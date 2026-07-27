@@ -36,8 +36,8 @@ source skill or canonical domain store
 -> compiled memory
 ```
 
-- `ledger --source learnings` owns `.ledger/learnings/events.jsonl` and the admission gate for learning snapshots.
-- `ledger --source negative-ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
+- `$learnings` owns the passive Learnings protocol, `.ledger/learnings/events.jsonl`, and learning admission semantics.
+- `$negative-ledger` owns the passive Negative Evidence protocol, `.ledger/negative-ledger/events.jsonl`, and route-state admission semantics.
 - `$synesthesia` owns the passive `synesthesia/protocol` definition and the semantic admission decision; Ledger owns structural validation and custody of its declared repo-local event slot.
 - `synesthesia` owns sensory mapping and activation-boundary admission semantics.
 - `memory-note` owns safe immutable transport.
@@ -161,8 +161,8 @@ uv run \
 
 Use `ledger-status-transition`, `ledger-supersession`, or `ledger-retraction`
 only when the source owner classifies that event. The adapter runs
-`ledger doctor --source negative-ledger`, obtains the authoritative native
-`memory-note` export, validates identity and projection completeness, preserves
+definition-bound `ledger doctor`, obtains the authoritative `memory-note`
+projection, validates identity and projection completeness, preserves
 the deterministic export bytes, and invokes `memory-note` idempotently. It
 rejects `need-evidence`, `capture_candidate`, `unknown`, and incomplete active
 projections.
