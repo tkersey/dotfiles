@@ -16,6 +16,10 @@
       "path": "ledger/negative-ledger-memory-note-payload.json"
     },
     {
+      "id": "memory-source-notes/synesthesia-memory-note-payload",
+      "path": "ledger/synesthesia-memory-note-payload.json"
+    },
+    {
       "id": "memory-source-notes/source-memory-eligibility",
       "path": "ledger/source-memory-eligibility.json"
     }

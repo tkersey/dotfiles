@@ -44,28 +44,6 @@ LOGICAL_TO_PHYSICAL_KIND = {
     "boundary-retraction": "boundary-retraction",
 }
 
-ALLOWED_OPERATIONS = {
-    "mapping-endorsement": {"assert", "confirm", "reopen"},
-    "mapping-confirmation": {"confirm"},
-    "mapping-correction": {"supersede"},
-    "mapping-rejection": {"reject"},
-    "activation-boundary": {"assert", "confirm", "supersede", "reopen"},
-    "boundary-retraction": {"retract"},
-}
-
-ALLOWED_AUTHORITIES = {
-    "mapping-endorsement": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "mapping-confirmation": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "mapping-correction": {"explicit-user-correction"},
-    "mapping-rejection": {"explicit-user-rejection"},
-    "activation-boundary": {
-        "explicit-user-endorsement",
-        "explicit-user-correction",
-        "repeated-accepted-use",
-    },
-    "boundary-retraction": {"explicit-user-correction", "explicit-user-rejection"},
-}
-
 PRIOR_RELATION_OPERATIONS = {"confirm", "supersede", "reject", "retract", "reopen"}
 
 COMPAT_SCOPE = {
@@ -177,132 +155,188 @@ def _validate_relationships(data: dict[str, Any], operation: str) -> tuple[list[
     return related_ids, supersedes_id
 
 
-def _compat_scope_anchor(scope: dict[str, Any]) -> str:
-    if scope["paths"]:
-        return scope["paths"][0]
-    if scope["repo"]:
-        return str(scope["repo"])
-    return str(scope["kind"])
+def _trim_if_string(value: Any) -> Any:
+    return value.strip() if isinstance(value, str) else value
 
 
-def _set_compat_field(payload: dict[str, Any], field: str, expected: str) -> None:
-    current = payload.get(field)
-    if current is not None and current != expected:
-        raise ValidationError(
-            f"payload.{field}: conflicts with canonical envelope value {expected!r}"
-        )
-    payload[field] = expected
+def _normalize_writer_input(raw: Any) -> Any:
+    """Apply only deterministic writer transport normalization.
 
-
-def validate_and_normalize(logical_kind: str, raw: Any) -> tuple[str, dict[str, Any]]:
-    """Validate a skill-facing payload and return physical kind plus normalized input."""
-    if logical_kind not in LOGICAL_TO_PHYSICAL_KIND:
-        raise ValidationError(f"kind: unsupported Synesthesia kind {logical_kind!r}")
+    Ledger owns every structural acceptance decision. Invalid values are
+    preserved so the passive definition can reject them instead of this adapter
+    silently repairing or dropping them.
+    """
     if not isinstance(raw, dict):
-        raise ValidationError("input: expected JSON object")
-    data = copy.deepcopy(raw)
+        return copy.deepcopy(raw)
+    normalized = copy.deepcopy(raw)
+    for field in ("operation", "authority", "summary", "slug"):
+        if field in normalized:
+            normalized[field] = _trim_if_string(normalized[field])
 
-    allowed_top = {
-        "operation",
-        "authority",
-        "summary",
-        "scope",
-        "source_refs",
-        "related_ids",
-        "supersedes_id",
-        "slug",
-        "payload",
-    }
-    extra = set(data) - allowed_top
-    if extra:
-        raise ValidationError(f"input: unexpected fields: {', '.join(sorted(extra))}")
+    scope = normalized.get("scope")
+    if isinstance(scope, dict):
+        if "kind" in scope:
+            scope["kind"] = _trim_if_string(scope["kind"])
+        scope.setdefault("repo", None)
 
-    operation = _nonempty_string(data.get("operation"), "operation")
-    if operation not in ALLOWED_OPERATIONS[logical_kind]:
-        allowed = ", ".join(sorted(ALLOWED_OPERATIONS[logical_kind]))
+    source_refs = normalized.get("source_refs")
+    if isinstance(source_refs, list):
+        for row in source_refs:
+            if not isinstance(row, dict):
+                continue
+            for field in ("kind", "ref", "summary"):
+                if field in row:
+                    row[field] = _trim_if_string(row[field])
+
+    related_ids = normalized.setdefault("related_ids", [])
+    if isinstance(related_ids, list):
+        normalized["related_ids"] = [
+            _trim_if_string(value) for value in related_ids
+        ]
+    if "supersedes_id" not in normalized:
+        normalized["supersedes_id"] = None
+    else:
+        normalized["supersedes_id"] = _trim_if_string(
+            normalized["supersedes_id"]
+        )
+
+    payload = normalized.get("payload")
+    authority = normalized.get("authority")
+    if isinstance(payload, dict):
+        if "endorsement_type" not in payload and isinstance(authority, str):
+            payload["endorsement_type"] = authority
+        if isinstance(scope, dict):
+            scope_kind = scope.get("kind")
+            if (
+                "scope" not in payload
+                and isinstance(scope_kind, str)
+                and scope_kind in COMPAT_SCOPE
+            ):
+                payload["scope"] = COMPAT_SCOPE[scope_kind]
+            if "scope_anchor" not in payload:
+                paths = scope.get("paths")
+                repo = scope.get("repo")
+                if (
+                    isinstance(paths, list)
+                    and paths
+                    and isinstance(paths[0], str)
+                    and paths[0]
+                ):
+                    payload["scope_anchor"] = paths[0]
+                elif isinstance(repo, str) and repo:
+                    payload["scope_anchor"] = repo
+                elif isinstance(scope_kind, str) and scope_kind:
+                    payload["scope_anchor"] = scope_kind
+    return normalized
+
+
+def find_ledger_binary() -> Path | None:
+    override = os.environ.get("LEDGER_BIN")
+    if override:
+        path = Path(override).expanduser()
+        if path.is_file() and os.access(path, os.X_OK):
+            return path
+        return None
+    discovered = shutil.which("ledger")
+    return Path(discovered) if discovered else None
+
+
+def synesthesia_definition_path() -> Path:
+    return (
+        repo_root()
+        / "codex/skills/memory-source-notes/definitions/ledger"
+        / "synesthesia-memory-note-payload.json"
+    )
+
+
+def _validate_submission_with_ledger(submission: dict[str, Any]) -> dict[str, Any]:
+    binary = find_ledger_binary()
+    if binary is None:
         raise ValidationError(
-            f"operation: {operation!r} is invalid for {logical_kind}; expected {allowed}"
+            "ledger: Ledger 1.x with ledger-artifact-abi/v1 is required"
         )
-
-    authority = _nonempty_string(data.get("authority"), "authority")
-    if authority not in ALLOWED_AUTHORITIES[logical_kind]:
-        allowed = ", ".join(sorted(ALLOWED_AUTHORITIES[logical_kind]))
+    definition = synesthesia_definition_path()
+    if not definition.is_file():
+        raise ValidationError(f"ledger: definition not found: {definition}")
+    proc = subprocess.run(
+        [
+            str(binary),
+            "validate",
+            "--definition",
+            str(definition),
+            "--input",
+            "submission=-",
+            "--format",
+            "json",
+        ],
+        input=canonical_json_bytes(submission),
+        capture_output=True,
+        check=False,
+    )
+    try:
+        result = json.loads(proc.stdout)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        detail = proc.stderr.decode("utf-8", errors="replace").strip()
         raise ValidationError(
-            f"authority: {authority!r} is invalid for {logical_kind}; expected {allowed}"
+            f"ledger: validation command failed"
+            + (f": {detail}" if detail else "")
+        ) from exc
+    definition_result = result.get("definition")
+    if (
+        not isinstance(definition_result, dict)
+        or definition_result.get("id")
+        != "memory-source-notes/synesthesia-memory-note-payload"
+        or definition_result.get("abi") != "ledger-artifact-abi/v1"
+        or result.get("authority_granted") is not False
+        or result.get("storage_mutated") is not False
+    ):
+        raise ValidationError("ledger: unexpected structural validation result")
+    if proc.returncode != 0 or result.get("valid") is not True:
+        errors = result.get("errors")
+        detail = (
+            errors[0].get("message")
+            if isinstance(errors, list)
+            and errors
+            and isinstance(errors[0], dict)
+            else "definition rejected the submission"
         )
-
-    summary = _nonempty_string(data.get("summary"), "summary")
-    scope = _validate_scope(data.get("scope"))
-    source_refs = _validate_source_refs(data.get("source_refs"))
-    related_ids, supersedes_id = _validate_relationships(data, operation)
-
-    payload_raw = data.get("payload")
-    if not isinstance(payload_raw, dict) or not payload_raw:
-        raise ValidationError("payload: expected non-empty object")
-    payload = copy.deepcopy(payload_raw)
-
-    if logical_kind in {"mapping-endorsement", "mapping-confirmation", "mapping-correction"}:
-        _require_strings(
-            payload,
-            (
-                "sensory_phrase",
-                "engineering_translation",
-                "activation_boundary",
-                "non_activation_boundary",
-                "verification",
-            ),
-            "payload",
+        raise ValidationError(
+            "structurally invalid under "
+            f"{definition_result.get('id')}@{definition_result.get('digest')}: "
+            f"{detail}"
         )
-    elif logical_kind == "mapping-rejection":
-        _require_strings(
-            payload,
-            (
-                "sensory_phrase",
-                "activation_boundary",
-                "non_activation_boundary",
-                "rejection_reason",
-                "verification",
-            ),
-            "payload",
-        )
-        if payload.get("engineering_translation") not in (None, ""):
-            _nonempty_string(payload.get("engineering_translation"), "payload.engineering_translation")
-    elif logical_kind == "activation-boundary":
-        _require_strings(
-            payload,
-            ("activation_boundary", "non_activation_boundary", "verification"),
-            "payload",
-        )
-    elif logical_kind == "boundary-retraction":
-        _require_strings(
-            payload,
-            ("retracted_boundary", "reason", "verification"),
-            "payload",
-        )
+    return result
 
-    _set_compat_field(payload, "scope", COMPAT_SCOPE[scope["kind"]])
-    _set_compat_field(payload, "scope_anchor", _compat_scope_anchor(scope))
-    _set_compat_field(payload, "endorsement_type", authority)
 
-    normalized: dict[str, Any] = {
-        "operation": operation,
-        "authority": authority,
-        "summary": summary,
-        "scope": scope,
-        "source_refs": source_refs,
-        "related_ids": related_ids,
-        "supersedes_id": supersedes_id,
-        "payload": payload,
+def _scope_anchor_source(normalized: Any) -> str:
+    if not isinstance(normalized, dict):
+        return "kind"
+    scope = normalized.get("scope")
+    if not isinstance(scope, dict):
+        return "kind"
+    paths = scope.get("paths")
+    if isinstance(paths, list) and paths:
+        return "path"
+    repo = scope.get("repo")
+    if isinstance(repo, str) and repo:
+        return "repo"
+    return "kind"
+
+
+def validate_and_normalize(
+    logical_kind: str, raw: Any
+) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    """Normalize transport fields and obtain Ledger's structural decision."""
+    physical_kind = LOGICAL_TO_PHYSICAL_KIND[logical_kind]
+    normalized = _normalize_writer_input(raw)
+    submission = {
+        "logical_kind": logical_kind,
+        "physical_kind": physical_kind,
+        "scope_anchor_source": _scope_anchor_source(normalized),
+        "note": normalized,
     }
-    slug = data.get("slug")
-    if slug is not None:
-        slug_text = _nonempty_string(slug, "slug")
-        if not re.match(r"^[a-z0-9][a-z0-9-]{0,79}$", slug_text):
-            raise ValidationError("slug: invalid slug")
-        normalized["slug"] = slug_text
-
-    _reject_sensitive_keys(normalized)
-    return LOGICAL_TO_PHYSICAL_KIND[logical_kind], normalized
+    structural_result = _validate_submission_with_ledger(submission)
+    return physical_kind, normalized, structural_result
 
 
 def canonical_json_bytes(value: Any) -> bytes:
@@ -1473,12 +1507,15 @@ def print_doctor_text(report: dict[str, Any]) -> None:
 
 def cmd_validate(args: argparse.Namespace) -> int:
     raw = read_json_input(args.json)
-    physical_kind, normalized = validate_and_normalize(args.kind, raw)
+    physical_kind, normalized, structural_result = validate_and_normalize(
+        args.kind, raw
+    )
     result = {
         "valid": True,
         "logical_kind": args.kind,
         "physical_kind": physical_kind,
         "canonical_fingerprint": canonical_fingerprint(physical_kind, normalized),
+        "structural_validation": structural_result["definition"],
         "normalized": normalized,
     }
     print(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True))
@@ -1487,7 +1524,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 def cmd_append(args: argparse.Namespace) -> int:
     raw = read_json_input(args.json)
-    physical_kind, normalized = validate_and_normalize(args.kind, raw)
+    physical_kind, normalized, _ = validate_and_normalize(args.kind, raw)
     binary = find_memory_note_binary()
     if binary is None:
         print("memory-note: not-attempted: cli unavailable", file=sys.stderr)
