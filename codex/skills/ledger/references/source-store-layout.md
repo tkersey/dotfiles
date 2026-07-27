@@ -1,49 +1,38 @@
 # Source Store Layout
 
-Canonical repo-local sources are addressed through their native APIs:
+Canonical repo-local sources are addressed through their owning definitions:
 
 ```text
-ledger --source learnings
-ledger
-ledger --source synesthesia
-ledger --source actuation
+$learnings          definitions/ledger/learnings-protocol.json
+$negative-ledger    definitions/ledger/negative-evidence-protocol.json
+$synesthesia        definitions/ledger/synesthesia-protocol.json
+$actuating          definitions/ledger/evidence-protocol.json
 ```
 
-Current source-memory persistent-adapter locations:
+Current source-memory stores:
 
 ```text
 .ledger/learnings/events.jsonl
 .ledger/negative-ledger/events.jsonl
 ```
 
-Optional source-memory adapter location:
+Synesthesia store:
 
 ```text
 .ledger/synesthesia/events.jsonl
 ```
 
-Operational, non-memory adapter locations:
+Operational, non-memory store:
 
 ```text
 .ledger/actuation/<safe-goal-id>/evidence.jsonl
 ```
 
-Legacy stores:
-
-```text
-.learnings.jsonl
-.ledger/learnings/learnings.jsonl
-.ledger/negative-ledger.jsonl
-```
-
-Legacy stores are read only for migration or compatibility. Normal reads and
-writes go through the native source API; use `ledger path` only when a physical
-adapter location is required for migration diagnostics.
-
-`legacy-only` means the legacy store exists and the canonical namespaced store
-is missing. Treat this as a preflight failure for writes: run the owning
-source-specific migration command before append or commit closeout. For
-learnings, use `ledger migrate --source learnings --mode copy`.
+Normal reads use `ledger project` or `ledger doctor`; writes use
+`ledger transact`, always with the owning definition. An existing current-format
+store must be bound once through that definition's explicit `bind-existing`
+operation. Normal reads and writes reject an unbound store and never inspect an
+alternate path.
 
 Memory-source notes live outside the repo:
 

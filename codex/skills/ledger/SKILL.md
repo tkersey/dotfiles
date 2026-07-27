@@ -314,7 +314,8 @@ explicit one-shot remediation; no normal read path falls back.
    that authority.
 6. Report harvest candidates and recommended definition-bound commands.
 
-See [source-store-layout.md](references/source-store-layout.md), [migration-workflow.md](references/migration-workflow.md), and [harvest-workflow.md](references/harvest-workflow.md).
+See [source-store-layout.md](references/source-store-layout.md) and
+[harvest-workflow.md](references/harvest-workflow.md).
 
 ## Output Shape
 
