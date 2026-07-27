@@ -40,6 +40,7 @@
       "event-digest",
       "event-envelope",
       "event-kinds",
+      "event-materialization",
       "exact-object",
       "field-equal",
       "field-not-equal",
@@ -2822,6 +2823,7 @@
           "slot": "events",
           "input": "binding_event",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -2864,6 +2866,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -2919,6 +2922,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -2974,6 +2978,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3029,6 +3034,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3084,6 +3090,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3139,6 +3146,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3194,6 +3202,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3258,6 +3267,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3322,6 +3332,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3386,6 +3397,7 @@
           "slot": "events",
           "input": "evidence",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3450,6 +3462,7 @@
           "slot": "events",
           "input": "operation",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3534,6 +3547,7 @@
           "slot": "events",
           "input": "construction_registration",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3582,6 +3596,7 @@
           "slot": "events",
           "input": "counterexample_registration",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
@@ -3630,6 +3645,7 @@
           "slot": "events",
           "input": "goal_registration",
           "event": {
+            "mode": "chained",
             "body_input_field": "body",
             "fields": [
               {
