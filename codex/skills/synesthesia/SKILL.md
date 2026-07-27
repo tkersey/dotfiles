@@ -239,6 +239,12 @@ Most sensory output must not become memory.
 When this workflow reaches a native Ledger command, load `$ledger` and complete
 `$ledger ensure` once. After readiness, invoke `ledger` directly.
 
+Resolve `<synesthesia-definition>` once to:
+
+```text
+<this-skill-root>/definitions/ledger/synesthesia-protocol.json
+```
+
 A durable memory event exists when the user explicitly:
 
 - says `remember this`, `save this`, `from now on`, or equivalent;
@@ -256,9 +262,9 @@ When a durable memory event exists:
 2. identify the narrowest reusable scope;
 3. require an engineering translation and verification rule;
 4. identify the prior `SYN-*` ledger ID or `MSN-*` source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
-5. run `ledger doctor --source synesthesia`;
-6. append the canonical row with `ledger capture --source synesthesia --kind <kind> --json -`;
-7. when global memory admission is warranted, load `$memory-source-notes`, export with `ledger export --source synesthesia --format memory-note --id <SYN-ID>`, and use the Synesthesia source-note adapter in the same turn;
+5. run `ledger doctor --definition <synesthesia-definition> --repo <repo> --format json`;
+6. append the canonical row with `ledger transact --definition <synesthesia-definition> --operation capture --repo <repo> --input submission=<file|-> --format json`;
+7. when global memory admission is warranted, load `$memory-source-notes`, project `memory-note` with the same definition and exact returned `SYN-*` ID, then use the Synesthesia source-note adapter in the same turn;
 8. emit separate canonical and admission proof lines.
 
 Do not merely describe a qualifying memory event without attempting the handoff.
@@ -273,13 +279,13 @@ rerun `$ledger ensure`, invoke `$ledger` as lifecycle coordinator, or call
 Learnings or Negative Ledger. Evaluate only whether the packet contains a
 durable Synesthesia event or a useful reversible candidate.
 
-Do not stop at `ledger doctor --source synesthesia` or at the absence of
+Do not stop at the generic Ledger doctor or at the absence of
 explicit durable authority. Run a candidate pass over the literal evidence,
 user-authority events, representational ambiguity, route delta, and final
 handoff:
 
 1. If a durable memory event exists, append it through
-   `ledger capture --source synesthesia` and emit the append proof.
+   the definition's `capture` transaction and emit the append proof.
 2. If no durable authority exists but the turn exposes a reusable sensory
    phrase, activation boundary, or representational ambiguity with a concrete
    engineering translation, emit a non-durable candidate.
@@ -353,16 +359,20 @@ See [memory-admission.md](references/memory-admission.md) for the operation matr
 ## Canonical Store
 
 ```text
-ledger --source synesthesia
+<this-skill-root>/definitions/ledger/synesthesia-protocol.json
 ```
 
-Use native Synesthesia source commands for canonical repo-local reads, writes,
-and diagnostics. `.ledger/synesthesia/events.jsonl` is the current persistent
-adapter location, not a caller contract; do not open or hand-edit it in normal
-operation. Existing immutable Synesthesia memory-source notes remain valid
-transition evidence; import them with
-`ledger migrate --source synesthesia --mode copy` only when an explicit copy
-migration is intended.
+The passive definition owns the structural submission contract, `capture` and
+one-shot `bind-existing` transactions, and `record`, `memory-note`, `recent`,
+`query`, and `recall` projections. Invoke them only through generic
+`ledger doctor`, `ledger transact`, and `ledger project`.
+
+`.ledger/synesthesia/events.jsonl` is the current persistent adapter location,
+not a caller contract; do not open or hand-edit it in normal operation.
+Existing immutable Synesthesia memory-source notes remain byte-identical
+current data and require no migration. An existing event store must be bound
+once through the explicit `bind-existing` transaction before normal reads or
+writes; there is no implicit reader, note import, or fallback path.
 
 ## Generated current-state digest
 
@@ -379,13 +389,19 @@ The digest is disposable and non-canonical. Every promotable entry must retain r
 Manual refresh:
 
 ```bash
-ledger memory-digest --source synesthesia
+uv run \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  memory-digest
 ```
 
 Run the doctor after copy-deploying the Phase 2 adapter or when promotion appears stale:
 
 ```bash
-ledger doctor --source synesthesia
+uv run \
+  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  doctor \
+  --repo <repo> \
+  --format text
 ```
 
 ## Cross-extension ownership

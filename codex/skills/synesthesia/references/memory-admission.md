@@ -6,6 +6,12 @@ Synesthesia owns the decision that a sensory mapping or activation boundary is d
 
 Ordinary sensory output is not persisted.
 
+Throughout this reference, `<synesthesia-definition>` means:
+
+```text
+<synesthesia-skill-root>/definitions/ledger/synesthesia-protocol.json
+```
+
 ## Durable event classes
 
 | Event | Logical kind | Stored kind | Operation | Prior note required |
@@ -60,7 +66,20 @@ appropriate durable operation.
 
 Envelope fields own authority, scope, source references, and prior-note relationships. The payload owns only the sensory contract.
 
-For endorsement, confirmation, or correction:
+The `record` in the structural submission is the writer envelope. The outer
+fields declare the logical kind and its current physical writer kind exactly
+once:
+
+```json
+{
+  "logical_kind": "mapping-endorsement",
+  "physical_kind": "mapping-endorsement",
+  "record": {}
+}
+```
+
+For endorsement, confirmation, or correction, replace that empty `record`
+with:
 
 ```json
 {
@@ -91,7 +110,9 @@ For endorsement, confirmation, or correction:
 }
 ```
 
-The adapter generates legacy compatibility fields required by the current writer. Do not manually make payload scope or endorsement type a second authority.
+The adapter generates deterministic transport fields required by the current
+writer. Do not manually make payload scope or endorsement type a second
+authority.
 
 For rejection, replace `engineering_translation` with:
 
@@ -124,25 +145,24 @@ For boundary retraction:
 After the gate passes, write the repo-local canonical event first:
 
 ```bash
-ledger capture --source synesthesia \
-  --kind mapping-endorsement \
-  --json -
+ledger transact \
+  --definition <synesthesia-definition> \
+  --operation capture \
+  --repo <repo> \
+  --input submission=<file|-> \
+  --format json
 ```
 
-For confirmation:
+The compiled definition validates the operation-kind matrix, prior
+relationship, scope, authority, payload, and source references before
+appending. The returned `ledger-transaction-result/v1` supplies the canonical
+row and exact `SYN-*` identity.
 
-```bash
-ledger capture --source synesthesia \
-  --kind mapping-confirmation \
-  --json -
-```
-
-The ledger source validates the operation-kind matrix, prior relationship,
-scope, authority, payload, and source references before appending to:
-
-```text
-.ledger/synesthesia/events.jsonl
-```
+An existing current-format event store is admitted only by the explicit,
+one-shot `bind-existing` transaction after full replay under the selected
+definition digest. Normal reads and writes never bind or fall back
+implicitly. Existing immutable `MSN-*` notes are not rewritten or imported
+into this store.
 
 ## Same-turn memory-source admission
 
@@ -153,25 +173,29 @@ mapping or boundary, a non-durable candidate, or no reusable sensory event. It
 must not consume a Learnings or Negative Ledger disposition as authority.
 
 After the canonical append succeeds, load `$memory-source-notes` only when
-global memory admission is warranted. Export the memory-note adapter envelope:
+global memory admission is warranted. Project the memory-note adapter envelope:
 
 ```bash
-ledger export --source synesthesia \
-  --format memory-note \
-  --id SYN-...
+ledger project \
+  --definition <synesthesia-definition> \
+  --projection memory-note \
+  --repo <repo> \
+  --param id=SYN-... \
+  --payload-only \
+  --format json
 ```
 
 Then pass that envelope to the Synesthesia source-note adapter:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   append \
   --kind <logical-kind> \
   --json -
 ```
 
-The adapter injects writer-compatibility fields, canonicalizes JSON before
+The adapter injects writer-required transport fields, canonicalizes JSON before
 fingerprinting, invokes `memory-note`, and emits the writer result. A failed
 memory admission must never roll back a successful ledger append.
 
@@ -182,7 +206,7 @@ Memory extension instructions must be regular copied files, not symlinks.
 From the dotfiles repository root:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   sync-instructions
 ```
@@ -204,15 +228,17 @@ It refuses a symlinked destination or symlinked destination component.
 ## Doctor workflow
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   doctor \
+  --repo <repo> \
   --format text
 ```
 
 The doctor distinguishes:
 
 ```text
+source Ledger missing, current, invalid, or unavailable
 no source notes
 adapter missing, stale, or symlinked
 digest missing, stale, invalid, or current
@@ -232,7 +258,7 @@ ${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_syn
 Manual refresh:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   memory-digest
 ```
