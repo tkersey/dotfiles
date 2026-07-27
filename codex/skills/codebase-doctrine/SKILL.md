@@ -522,7 +522,7 @@ that authorization exists is not itself authority.
 After a generated repository skill has real decision episodes:
 
 ```text
-$seq skill-decision-audit
+$seq observe with Tune's skill-decision-audit definition
 -> $tune
 -> $refine
 ```

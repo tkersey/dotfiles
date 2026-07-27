@@ -4,7 +4,7 @@
     "skill": {
       "name": "shadow",
       "kind": "orchestration",
-      "source_fingerprint": "generated-with-dropin"
+      "source_fingerprint": "generated-with-shadow-passive-observation-v1"
     },
     "triggers": [
       {
@@ -49,10 +49,10 @@
         "terminal": true
       },
       {
-        "route_id": "SHADOW-SEQ-SPEC",
-        "description": "Transfer a missing watched-session evidence surface to seq.",
+        "route_id": "SHADOW-SEQ-DEFINITION-GAP",
+        "description": "Transfer a missing watched-session evidence surface to the owning passive definition or a genuinely generic Seq operator.",
         "aliases": [
-          "seq-special-spec"
+          "seq-definition-gap"
         ],
         "terminal": true
       },
@@ -97,7 +97,7 @@
         ],
         "expected_routes": [
           "SHADOW-HANDOFF-TUNE",
-          "SHADOW-SEQ-SPEC",
+          "SHADOW-SEQ-DEFINITION-GAP",
           "SHADOW-CONTINUE",
           "SHADOW-STATUS-STOP"
         ],

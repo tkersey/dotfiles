@@ -18,13 +18,13 @@ Options:
   --history-scope <scope>          recent | arbitrary | explicit-sessions. Default: recent.
   --root <sessions-root>           Sessions root for history source. Default: ~/.codex/sessions.
   --since <iso8601>                Start timestamp for history source.
-  --last <duration>                Recent duration for skill-success-rank. Default: 90d for recent history.
-  --session-id <id>                Add explicit session-detail evidence. Repeatable.
-  --failure-phrase <phrase>        Add targeted message-search evidence. Repeatable.
+  --last <duration>                Recent observation window. Default: 90d.
+  --session-id <id>                Add an explicit-session observation. Repeatable.
+  --failure-phrase <phrase>        Add a classification lens. Repeatable.
   --trigger-phrase <phrase>        Alias for --failure-phrase. Repeatable.
-  --command-pattern <fragment>     Add targeted tool-search evidence. Repeatable.
-  --workflow <name>                Add workflow-audit evidence. Repeatable.
-  --workdir <path-fragment>        Add workdir-report evidence.
+  --command-pattern <fragment>     Add a tool-lifecycle lens. Repeatable.
+  --workflow <name>                Add a workflow interpretation lens. Repeatable.
+  --workdir <path>                 Add a repository scope.
   -h, --help                       Show this help.
 
 This helper scaffolds deterministic evidence collection only. $tune still owns source
@@ -97,22 +97,7 @@ if [[ ${#session_ids[@]} -gt 0 || ${#failure_phrases[@]} -gt 0 || ${#command_pat
   needs_history="yes"
 fi
 
-if [[ -z "$since" && "$needs_history" == "yes" && "$history_scope" == "recent" ]]; then
-  if command -v python3 >/dev/null 2>&1; then
-    since="$(TUNE_LAST="$last" python3 - <<'PY'
-import os
-import re
-from datetime import datetime, timedelta, timezone
-last = os.environ.get("TUNE_LAST", "90d")
-match = re.fullmatch(r"(\d+)d", last)
-days = int(match.group(1)) if match else 90
-print((datetime.now(timezone.utc) - timedelta(days=days)).isoformat(timespec="seconds").replace("+00:00", "Z"))
-PY
-)"
-  else
-    since="<iso8601>"
-  fi
-elif [[ -z "$since" && "$needs_history" == "yes" ]]; then
+if [[ -z "$since" && "$needs_history" == "yes" && "$history_scope" != "recent" ]]; then
   since="<iso8601-or-omit-if-command-supports-full-history>"
 fi
 
@@ -174,59 +159,53 @@ fi
 if [[ "$needs_history" == "yes" ]]; then
   cat <<TUNE_OUT
 
-## Historical evidence commands
+## Historical evidence command
 TUNE_OUT
 
   if [[ "$history_scope" == "recent" || "$last_provided" == "yes" ]]; then
-    printf '\nseq skill-success-rank --root %s --skill %s --mode sessions --last %s --format jsonl\n' "$q_root" "$q_skill" "$q_last"
+    printf '\nseq observe --definition codex/skills/tune/definitions/seq/skill-decision-audit.json --projection evidence --root %s --last %s --param skill=%s --format json\n' "$q_root" "$q_last" "$q_skill"
   else
-    printf '\n# skill-success-rank usually needs a duration; supply --last <duration> if this report needs ranked activation history.\n'
+    printf '\nseq observe --definition codex/skills/tune/definitions/seq/skill-decision-audit.json --projection evidence --root %s --since %s --param skill=%s --format json\n' "$q_root" "$q_since" "$q_skill"
   fi
-
-  printf 'seq skill-audit --root %s --skill %s --mode trend --since %s --format table\n' "$q_root" "$q_skill" "$q_since"
-  printf 'seq skill-cohort --root %s --skill %s --since %s --format table\n' "$q_root" "$q_skill" "$q_since"
-  printf 'seq skill-blocks --root %s --skill %s --history latest --format json\n' "$q_root" "$q_skill"
-  printf 'seq skill-blocks --root %s --skill %s --history all --format jsonl\n' "$q_root" "$q_skill"
 fi
 
 if [[ ${#session_ids[@]} -gt 0 ]]; then
   printf '\n## Explicit session evidence\n\n'
   for sid in "${session_ids[@]}"; do
     [[ -z "$sid" ]] && continue
-    printf 'seq session-detail --root %s --session-id %s --format markdown\n' "$q_root" "$(shq "$sid")"
-    printf 'seq session-tooling --root %s --session-id %s --summary --group-by executable --format table\n' "$q_root" "$(shq "$sid")"
+    printf 'seq observe --definition codex/skills/tune/definitions/seq/skill-decision-audit.json --projection evidence --root %s --session-id %s --param skill=%s --format json\n' "$q_root" "$(shq "$sid")" "$q_skill"
+    printf 'seq session-detail --root %s --session-id %s --format json\n' "$q_root" "$(shq "$sid")"
+    printf 'seq tool-lifecycle --root %s --session-id %s --format json\n' "$q_root" "$(shq "$sid")"
   done
 fi
 
 if [[ ${#failure_phrases[@]} -gt 0 ]]; then
-  printf '\n## Targeted trigger/failure phrase searches\n\n'
+  printf '\n## Targeted trigger/failure phrases\n\n'
   for phrase in "${failure_phrases[@]}"; do
     [[ -z "$phrase" ]] && continue
-    printf 'seq message-search --root %s --contains %s --roles user,assistant --limit 50 --format jsonl\n' "$q_root" "$(shq "$phrase")"
-    printf 'seq message-audit --root %s --contains %s --roles user,assistant --show-query --format json\n' "$q_root" "$(shq "$phrase")"
+    printf -- '- Classify returned evidence against phrase: %s\n' "$(shq "$phrase")"
   done
 fi
 
 if [[ ${#command_patterns[@]} -gt 0 ]]; then
-  printf '\n## Targeted tooling searches\n\n'
+  printf '\n## Targeted tooling patterns\n\n'
   for pattern in "${command_patterns[@]}"; do
     [[ -z "$pattern" ]] && continue
-    printf 'seq tool-search --root %s --contains %s --mode rows --format table\n' "$q_root" "$(shq "$pattern")"
-    printf 'seq tool-search --root %s --contains %s --mode args --format jsonl\n' "$q_root" "$(shq "$pattern")"
+    printf -- '- Use tool-lifecycle only for selected sessions; match: %s\n' "$(shq "$pattern")"
   done
 fi
 
 if [[ ${#workflows[@]} -gt 0 ]]; then
-  printf '\n## Targeted workflow audits\n\n'
+  printf '\n## Targeted workflow lenses\n\n'
   for workflow in "${workflows[@]}"; do
     [[ -z "$workflow" ]] && continue
-    printf 'seq workflow-audit --root %s --workflow %s --mode report --since %s --format markdown\n' "$q_root" "$(shq "$workflow")" "$q_since"
+    printf -- '- Interpret the evidence through workflow lens: %s\n' "$(shq "$workflow")"
   done
 fi
 
 if [[ -n "$workdir" ]]; then
   printf '\n## Targeted workdir evidence\n\n'
-  printf 'seq workdir-report --root %s --contains %s --mode sessions --limit 20 --format table\n' "$q_root" "$(shq "$workdir")"
+  printf -- '- Add --repo %s to the canonical observation when this is a repository scope.\n' "$(shq "$workdir")"
 fi
 
 cat <<TUNE_OUT

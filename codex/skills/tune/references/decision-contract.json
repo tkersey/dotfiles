@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "decision",
-      "source_fingerprint": "generated-with-dropin"
+      "source_fingerprint": "generated-with-tune-passive-definitions-v1"
     },
     "triggers": [
       {
@@ -74,11 +74,11 @@
         "terminal": false
       },
       {
-        "route_id": "TUNE-SEQ-SPEC",
-        "description": "Transfer an evidence-surface gap into a separate seq CLI spec.",
+        "route_id": "TUNE-SEQ-DEFINITION-GAP",
+        "description": "Transfer an evidence-surface gap to the owning passive definition or a genuinely generic Seq operator.",
         "aliases": [
-          "handoff-seq-special-spec",
-          "transferred-to-seq"
+          "handoff-seq-definition-gap",
+          "transferred-to-definition"
         ],
         "terminal": true
       }
@@ -92,7 +92,7 @@
         "expected_routes": [
           "TUNE-NO-ACTION",
           "TUNE-PROPOSE",
-          "TUNE-SEQ-SPEC"
+          "TUNE-SEQ-DEFINITION-GAP"
         ],
         "prohibited_routes": [
           "TUNE-REFINE"

@@ -1,0 +1,360 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "tune/skill-delta-candidate",
+  "owner": "tune",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "all",
+      "bounded-array",
+      "bounded-number",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "digest",
+      "enum",
+      "exact-object",
+      "optional-field",
+      "safe-identifier",
+      "scalar-type",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "candidate": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "candidate"
+      }
+    ]
+  },
+  "shape": {
+    "rules": [
+      {
+        "op": "exact-object",
+        "input": "candidate",
+        "path": "",
+        "keys": [
+          "skill_delta_candidate"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "candidate",
+        "path": "/skill_delta_candidate",
+        "required_keys": [
+          "candidate_version",
+          "expected_decision_delta",
+          "gap",
+          "outcome_observation",
+          "proposed_action",
+          "protected_contracts",
+          "smallest_change",
+          "source_packet",
+          "target_kind",
+          "target_skill"
+        ],
+        "optional_keys": [
+          "publication"
+        ],
+        "allow_additional": false
+      },
+      {
+        "op": "enum",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/candidate_version",
+        "values": [
+          "SDC-v2"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/target_skill",
+        "max": 128
+      },
+      {
+        "op": "enum",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/target_kind",
+        "values": [
+          "decision",
+          "evidence",
+          "execution",
+          "mixed",
+          "orchestration"
+        ]
+      },
+      {
+        "op": "exact-object",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/source_packet",
+        "keys": [
+          "content_digest",
+          "definition_digest",
+          "definition_id"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/source_packet/definition_id",
+        "trimmed_min": 1,
+        "max": 256
+      },
+      {
+        "op": "digest",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/source_packet/definition_digest"
+      },
+      {
+        "op": "digest",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/source_packet/content_digest"
+      },
+      {
+        "op": "exact-object",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap",
+        "keys": [
+          "clause_refs",
+          "confidence",
+          "episode_refs",
+          "evidence_class",
+          "recurrence",
+          "signature",
+          "type"
+        ]
+      },
+      {
+        "op": "safe-identifier",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/signature",
+        "max": 256
+      },
+      {
+        "op": "enum",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/type",
+        "values": [
+          "activation",
+          "boundary",
+          "ceremony",
+          "decision-contract",
+          "interpretation",
+          "metadata",
+          "observability",
+          "outcome",
+          "overconstraint",
+          "resource",
+          "source-scope",
+          "tooling",
+          "workflow"
+        ]
+      },
+      {
+        "op": "bounded-array",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/episode_refs",
+        "max": 4096
+      },
+      {
+        "op": "all",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/episode_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 512
+          }
+        ]
+      },
+      {
+        "op": "unique",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/episode_refs"
+      },
+      {
+        "op": "bounded-array",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/clause_refs",
+        "max": 4096
+      },
+      {
+        "op": "all",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/clause_refs",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 512
+          }
+        ]
+      },
+      {
+        "op": "unique",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/clause_refs"
+      },
+      {
+        "op": "enum",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/evidence_class",
+        "values": [
+          "associated",
+          "explicit",
+          "inferred",
+          "strong",
+          "unknown"
+        ]
+      },
+      {
+        "op": "scalar-type",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/recurrence",
+        "type": "integer"
+      },
+      {
+        "op": "bounded-number",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/recurrence",
+        "min": 1
+      },
+      {
+        "op": "enum",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/gap/confidence",
+        "values": [
+          "high",
+          "low",
+          "medium"
+        ]
+      },
+      {
+        "op": "bounded-string",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/expected_decision_delta",
+        "trimmed_min": 1,
+        "max": 65536
+      },
+      {
+        "op": "bounded-string",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/smallest_change",
+        "trimmed_min": 1,
+        "max": 65536
+      },
+      {
+        "op": "bounded-array",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/protected_contracts",
+        "max": 4096
+      },
+      {
+        "op": "all",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/protected_contracts",
+        "rules": [
+          {
+            "op": "bounded-string",
+            "path": "",
+            "trimmed_min": 1,
+            "max": 1024
+          }
+        ]
+      },
+      {
+        "op": "unique",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/protected_contracts"
+      },
+      {
+        "op": "bounded-string",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/outcome_observation",
+        "trimmed_min": 1,
+        "max": 65536
+      },
+      {
+        "op": "enum",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/proposed_action",
+        "values": [
+          "apply-with-refine",
+          "audit-only",
+          "no-action",
+          "proposal-only",
+          "retire",
+          "transfer"
+        ]
+      },
+      {
+        "op": "optional-field",
+        "input": "candidate",
+        "path": "/skill_delta_candidate/publication",
+        "rules": [
+          {
+            "op": "exact-object",
+            "path": "",
+            "keys": [
+              "authorization",
+              "commit_state",
+              "push_state"
+            ]
+          },
+          {
+            "op": "enum",
+            "path": "/authorization",
+            "values": [
+              "commit-and-push",
+              "commit-only",
+              "none"
+            ]
+          },
+          {
+            "op": "bounded-string",
+            "path": "/commit_state",
+            "trimmed_min": 1,
+            "max": 1024
+          },
+          {
+            "op": "bounded-string",
+            "path": "/push_state",
+            "trimmed_min": 1,
+            "max": 1024
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": [],
+  "identity": {
+    "op": "content-address",
+    "input": "candidate"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 1048576,
+    "max_records": 4096,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}

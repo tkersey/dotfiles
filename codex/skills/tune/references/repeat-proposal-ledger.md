@@ -6,7 +6,7 @@ If the same proposal signature appears three times without new evidence, choose 
 
 - `apply-blocked`
 - `final-brief`
-- `transferred-to-seq`
+- `transferred-to-definition`
 - `retired`
 
 Do not emit another full diagnosis.

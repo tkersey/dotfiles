@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Shadow"
   short_description: "Watch one session for decision deltas"
-  default_prompt: "Use $shadow on exactly one watched session; prefer seq skill-decision-audit delta mode and stop when no decision-relevant evidence changed."
+  default_prompt: "Use $shadow on exactly one watched session through Tune's passive Seq evidence definition, compare stable event provenance with the prior cursor, and stop when no decision-relevant evidence changed."

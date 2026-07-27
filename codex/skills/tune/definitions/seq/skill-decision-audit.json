@@ -1,0 +1,131 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "tune/skill-decision-audit",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "filter",
+      "project",
+      "scan",
+      "sort"
+    ]
+  },
+  "parameters": {
+    "skill": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "selectors": [
+    "root",
+    "session-id",
+    "path",
+    "repo",
+    "since",
+    "until",
+    "last"
+  ],
+  "relations": [
+    {
+      "name": "source_events",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "payload_json",
+        "raw_json",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "source_events",
+      "as": "source"
+    },
+    {
+      "op": "filter",
+      "input": "source",
+      "as": "matched",
+      "where": [
+        {
+          "field": "raw_json",
+          "op": "contains",
+          "param": "skill",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "sort",
+      "input": "matched",
+      "as": "ordered",
+      "by": [
+        {
+          "field": "path"
+        },
+        {
+          "field": "line_number"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "ordered",
+      "as": "evidence",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "payload_json",
+        "raw_json",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ]
+    }
+  ],
+  "projections": {
+    "evidence": {
+      "relation": "evidence",
+      "schema": "tune-skill-decision-evidence/v1",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "payload_json",
+        "raw_json",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 67108864,
+    "max_fold_states": 1
+  }
+}

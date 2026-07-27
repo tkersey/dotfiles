@@ -1,6 +1,6 @@
 ---
 name: tune
-description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Prefer `seq skill-decision-audit --mode tune-packet`; use for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization for skill-refinement changes. Stop at audit/proposal unless apply or skill-refinement publication is explicit. Commit/push only with explicit publish intent. `$seq` CLI changes require a separate special spec."
+description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Use Tune's passive Seq observation and Ledger artifact definitions for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization for skill-refinement changes. Stop at audit/proposal unless apply or skill-refinement publication is explicit. Commit/push only with explicit publish intent."
 ---
 
 # Tune
@@ -18,7 +18,8 @@ outcome evidence asks: was that change useful?
 Ownership:
 
 ```text
-$seq    gathers historical/session/tool evidence
+$seq    reconstructs bounded session evidence under Tune's definition
+Ledger validates Tune's authored SKDC/SDR/STE/SDC structures
 $tune   diagnoses the gap and decides the refinement route
 $refine owns in-place skill-package edits after the apply gate passes
 ```
@@ -28,30 +29,44 @@ $refine owns in-place skill-package edits after the apply gate passes
 For historical or multi-session tuning, prefer:
 
 ```bash
-seq skill-decision-audit \
-  --skill <skill> \
-  --skill-root codex/skills \
-  --repo <repo> \
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection evidence \
+  --root <sessions-root> \
   --last 30d \
-  --exclude-current \
-  --mode tune-packet \
+  --repo <repo> \
+  --param skill=<skill> \
   --format json
 ```
 
 For one watched session, prefer:
 
 ```bash
-seq skill-decision-audit \
-  --skill <skill> \
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection evidence \
+  --root <sessions-root> \
   --session-id <session> \
-  --since-cursor '<cursor>' \
-  --mode delta \
+  --param skill=<skill> \
   --format json
 ```
 
-Canonical packet: `skill_tuning_evidence / STE-v1`.
+The Seq result is evidence, provenance, corpus scope, statistics, and
+limitations. It is not an STE packet and grants no authority. Tune classifies
+the evidence, compares it with the target contract, authors
+`skill_tuning_evidence / STE-v1`, and validates that packet through:
 
-If the installed CLI lacks `skill-decision-audit`, use the existing narrow `$seq` surfaces, keep activation/decision/outcome evidence separate, mark decision causality `unknown` unless explicit, and emit `SEQ-SPEC-HANDOFF-v1` when the missing surface materially blocks diagnosis. Do not normalize broad raw transcript mining as the replacement workflow.
+```bash
+ledger validate \
+  --definition <tune-skill-root>/definitions/ledger/skill-tuning-evidence.json \
+  --input evidence=<ste.json> \
+  --format json
+```
+
+For watched-session deltas, compare stable `source_event_id` and line positions
+with the prior cursor. If the definition lacks a needed observation, request a
+passive observation-definition change or a genuinely domain-independent Seq
+operator. Do not request a new skill-specific native command.
 
 ## Modes
 
@@ -199,6 +214,18 @@ publish authorization and commit/push state, when apply-mode is requested
 
 If there is no expected decision delta, do not produce a long redesign.
 
+Validate an authored candidate through Tune's canonical definition:
+
+```bash
+ledger validate \
+  --definition <tune-skill-root>/definitions/ledger/skill-delta-candidate.json \
+  --input candidate=<sdc.json> \
+  --format json
+```
+
+A pass establishes only structural validity under the reported definition
+digest. Tune retains change-selection authority.
+
 ## Repeat proposal ledger
 
 Track proposal signature, first/last seen, repeat count, evidence delta, state, and next action. If the same proposal appears three times without new decision/outcome evidence, emit one terminal state:
@@ -206,7 +233,7 @@ Track proposal signature, first/last seen, repeat count, evidence delta, state, 
 ```text
 apply-blocked
 final-brief
-transferred-to-seq
+transferred-to-definition
 retired
 ```
 
@@ -235,7 +262,9 @@ If any required gate fails, stop at audit/proposal or report blocked publication
 
 `$refine` handoff: use `REFINE-SKILL-v3`. The brief must bind source packet, target kind, gap/clause refs, expected delta, optimization boundary, intervention budget, forbidden changes, smallest-change hint, outcome-observation query, and publish authorization when relevant. Do not hand `$refine` raw transcripts when STE-v1 is available.
 
-`$seq` special-spec handoff: when a missing evidence surface blocks diagnosis, emit `SEQ-SPEC-HANDOFF-v1` with need, observed gap, desired command/packet fields, acceptance criteria, observation examples, and source evidence. Do not edit `$seq` inside ordinary skill refinement.
+Missing observation handoff: identify the physical evidence, the owning passive
+definition, the missing generic operator if any, bounds, and acceptance
+examples. Never ask Seq to acquire Tune vocabulary or decision authority.
 
 ## Subagent policy
 
@@ -251,8 +280,8 @@ Use `skill_outcome_skeptic` when compliance/outcome correlation could be mistake
 
 ## Outcome observation
 
-Rerun the exact `skill-decision-audit` query named by the tuning packet when
-current evidence can exist. Otherwise retain it as a future query. A text edit
+Rerun the exact `seq observe` invocation named by the tuning packet when current
+evidence can exist. Otherwise retain it as a future observation. A text edit
 does not prove that behavior improved.
 
 ## Report
@@ -284,7 +313,7 @@ Skill delta:
 - Repeat state:
 
 Handoff / action:
-- <no action | refine brief | seq spec | applied edit>
+- <no action | refine brief | Seq definition gap | applied edit>
 - Publication: <authorization | commit | push>
 
 Outcome observation:

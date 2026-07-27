@@ -1,7 +1,12 @@
 {
   "schema": "skill-definition-set/v1",
   "skill": "tune",
-  "seq": [],
+  "seq": [
+    {
+      "id": "tune/skill-decision-audit",
+      "path": "seq/skill-decision-audit.json"
+    }
+  ],
   "ledger": [
     {
       "id": "tune/skill-decision-contract",
@@ -14,6 +19,10 @@
     {
       "id": "tune/skill-tuning-evidence",
       "path": "ledger/skill-tuning-evidence.json"
+    },
+    {
+      "id": "tune/skill-delta-candidate",
+      "path": "ledger/skill-delta-candidate.json"
     }
   ]
 }

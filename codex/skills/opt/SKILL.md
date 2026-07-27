@@ -77,15 +77,17 @@ Evaluate the type with its relevant evidence:
 Prefer:
 
 ```bash
-seq skill-decision-audit \
-  --skill <skill> \
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection evidence \
+  --root <sessions-root> \
   --last 30d \
-  --exclude-current \
-  --mode tune-packet \
+  --param skill=<skill> \
   --format json
 ```
 
-Pass `STE-v1` to `$tune`.
+Pass the provenance-preserving Seq result to `$tune`; Tune authors STE-v1 and
+validates it through its canonical Ledger definition.
 
 ### One watched session
 

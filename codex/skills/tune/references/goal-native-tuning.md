@@ -8,7 +8,7 @@
 - skill-delta candidate;
 - final brief;
 - apply request;
-- seq special spec handoff;
+- Seq definition/operator-gap handoff;
 - retired finding;
 - blocked.
 
