@@ -526,6 +526,9 @@ This single JSON object is the machine-readable truth. Mode-specific
 human-readable sections remain required, but duplicated top-level receipt blocks
 are not.
 
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once.
+
 Validate the exact final object before treating it as the current SGR-v2:
 
 ```bash

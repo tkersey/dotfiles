@@ -35,6 +35,7 @@ seq observe \
   --root <sessions-root> \
   --last 30d \
   --repo <repo> \
+  --param exclude_session_id=<current-session-id> \
   --param needle=<skill> \
   --format json
 
@@ -44,6 +45,7 @@ seq observe \
   --root <sessions-root> \
   --last 30d \
   --repo <repo> \
+  --param exclude_session_id=<current-session-id> \
   --param needle=<skill> \
   --format json
 ```
@@ -74,9 +76,19 @@ the evidence, compares it with the target contract, authors
 `skill_tuning_evidence / STE-v1`, and validates that packet through:
 
 Free-form `evidence` rows are candidate mentions, never activation identity.
+For historical root scans, bind `exclude_session_id` to the current
+`CODEX_THREAD_ID`; Seq pushes this exclusion into file preselection so the
+audit cannot count its own prompt or tool invocation.
 For an executable or tool pattern, invoke the same definition with projection
 `tools` and the exact pattern as `needle`; treat a tool row as activation only
 after Tune verifies the owning command or skill boundary.
+
+The default `tools` projection emits only tool identity, lifecycle, and
+provenance metadata. Use `tools-raw` only when the user explicitly requests raw
+tool payloads and the selected evidence scope is safe to disclose.
+
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once.
 
 ```bash
 ledger validate \

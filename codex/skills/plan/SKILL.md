@@ -132,6 +132,9 @@ explicitly:
 plan_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger")"
 ```
 
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once.
+
 For a valid pre-cutover EPG-v1 document already at that canonical path, perform
 the explicit one-shot binding before any normal read or write:
 

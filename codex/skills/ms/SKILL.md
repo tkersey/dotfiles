@@ -74,18 +74,9 @@ success/failure signals
 required artifacts
 ```
 
-Use:
-
-```yaml
-skill_decision_contract:
-  contract_version: SKDC-v1
-  skill:
-    name:
-    kind:
-  triggers: []
-  routes: []
-  clauses: []
-```
+Author the artifact as JSON conforming to SKDC-v1 and validate it through
+`$tune`'s canonical `skill-decision-contract` Ledger definition. Do not emit a
+YAML decision-contract template.
 
 ## Optional SDR-v1
 

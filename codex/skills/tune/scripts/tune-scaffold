@@ -138,6 +138,10 @@ repo_selector=""
 if [[ -n "$workdir" ]]; then
   repo_selector=" --repo $(shq "$workdir")"
 fi
+history_exclusion=""
+if [[ -n "${CODEX_THREAD_ID:-}" ]]; then
+  history_exclusion=" --param exclude_session_id=$(shq "$CODEX_THREAD_ID")"
+fi
 
 cat <<TUNE_OUT
 # \$tune scaffold for skill: $skill
@@ -183,8 +187,8 @@ if [[ "$needs_history" == "yes" ]]; then
 ## Historical evidence command
 TUNE_OUT
 
-  printf '\nseq observe --definition %s --projection evidence --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$q_skill"
-  printf 'seq observe --definition %s --projection tools --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$q_skill"
+  printf '\nseq observe --definition %s --projection evidence --root %s %s%s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$history_exclusion" "$q_skill"
+  printf 'seq observe --definition %s --projection tools --root %s %s%s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$history_exclusion" "$q_skill"
 fi
 
 if [[ ${#session_ids[@]} -gt 0 ]]; then
@@ -202,7 +206,7 @@ if [[ ${#failure_phrases[@]} -gt 0 ]]; then
   printf '\n## Targeted trigger/failure phrases\n\n'
   for phrase in "${failure_phrases[@]}"; do
     [[ -z "$phrase" ]] && continue
-    printf 'seq observe --definition %s --projection evidence --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$(shq "$phrase")"
+    printf 'seq observe --definition %s --projection evidence --root %s %s%s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$history_exclusion" "$(shq "$phrase")"
   done
 fi
 
@@ -210,7 +214,7 @@ if [[ ${#command_patterns[@]} -gt 0 ]]; then
   printf '\n## Targeted tooling patterns\n\n'
   for pattern in "${command_patterns[@]}"; do
     [[ -z "$pattern" ]] && continue
-    printf 'seq observe --definition %s --projection tools --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$(shq "$pattern")"
+    printf 'seq observe --definition %s --projection tools --root %s %s%s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$history_exclusion" "$(shq "$pattern")"
   done
 fi
 

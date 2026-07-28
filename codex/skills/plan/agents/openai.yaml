@@ -11,8 +11,9 @@ interface:
     Emit no Plan-owned runtime state, decision, transition, readiness, or execution
     handoff artifact. Do not invent an architectonic seam for work inside an
     unchanged exact boundary. Validate the exact emitted EPG through
-    codex/skills/plan/definitions/ledger/execution-policy-graph.json, or persist it
-    through the importing plan-policy-document definition, and report only that it
+    <plan-skill-root>/definitions/ledger/execution-policy-graph.json, resolved
+    from the installed Plan skill root, or persist it through the importing
+    plan-policy-document definition, and report only that it
     is structurally valid under the returned definition digest.
     Never grant mutation authority, select an execution owner, require $actuating,
     $universalist, or $reduce, or silently infer an existing plan.

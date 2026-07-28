@@ -73,6 +73,9 @@ and identity derivation for SGG-v1, DCP-v2, RIP-v1, DRR-v1, and the CAS-owned
 FIR-v1 definition. A pass grants neither replay authority nor a Retrace
 verdict.
 
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once.
+
 ### `$cas`
 Owns:
 - app-server compatibility;
