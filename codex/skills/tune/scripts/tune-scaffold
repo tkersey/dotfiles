@@ -102,7 +102,11 @@ if [[ ${#session_ids[@]} -gt 0 || ${#failure_phrases[@]} -gt 0 || ${#command_pat
   needs_history="yes"
 fi
 
-if [[ -z "$since" && "$needs_history" == "yes" && "$history_scope" != "recent" ]]; then
+if [[ -z "$since" &&
+  "$needs_history" == "yes" &&
+  "$history_scope" != "recent" &&
+  "$last_provided" != "yes" ]]
+then
   since="<iso8601-or-omit-if-command-supports-full-history>"
 fi
 
