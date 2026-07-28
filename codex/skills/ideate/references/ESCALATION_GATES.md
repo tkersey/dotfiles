@@ -1,16 +1,14 @@
 # Escalation Gates
 
-`$ideate` uses Glaze and ASI as mandatory **prompt passes**. The prompt-only `$glaze` and `$asi` skill bodies are the canonical source for verbatim text; this reference mirrors the current prompts and defines how `$ideate` evaluates the gates.
+`$ideate` uses Glaze and ASI as mandatory **prompt passes**. Invoke `$glaze` directly; its prompt-only skill body is the sole source of Glaze text. This reference defines how `$ideate` evaluates the passes and does not mirror the Glaze body.
 
-When restating prompt text, preserve it exactly. If this mirror differs from the current `$glaze` or `$asi` `SKILL.md`, use the current skill body and update this file.
+When applying Glaze, load `$glaze` and use its body verbatim. The `$asi` skill body remains canonical for ASI text; if the ASI mirror below diverges, use `$asi`.
 
 ## Gate 1 — Glaze prompt pass
 
-### Current verbatim prompt
+### Invocation
 
-```text
-I think you can do much much much better than that! DIG DEEPER!!! RUMINATE HARDER!! BE BOLDER! MORE CREATIVE! USE FRESH EYES!!
-```
+Invoke `$glaze` directly on each top candidate selected by the mode budget. Treat the loaded skill body as the complete escalation instruction; `$ideate` owns only the evaluation semantics below.
 
 ### Intent
 
