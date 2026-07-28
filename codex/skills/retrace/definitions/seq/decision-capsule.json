@@ -11,6 +11,7 @@
   },
   "parameters": {},
   "selectors": [
+    "root",
     "session-id",
     "path"
   ],

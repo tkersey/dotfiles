@@ -82,7 +82,7 @@ seq observe \
   --projection evidence \
   --root <sessions-root> \
   --last 30d \
-  --param skill=<skill> \
+  --param needle=<skill> \
   --format json
 ```
 

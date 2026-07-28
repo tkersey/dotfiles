@@ -13,7 +13,7 @@ seq observe \
   --projection evidence \
   --root <sessions-root> \
   --last <duration> \
-  --param skill=<skill> \
+  --param needle=<skill> \
   --format json
 ```
 
@@ -25,7 +25,7 @@ seq observe \
   --projection evidence \
   --root <sessions-root> \
   --session-id <session> \
-  --param skill=<skill> \
+  --param needle=<skill> \
   --format json
 ```
 

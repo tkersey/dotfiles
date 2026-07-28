@@ -231,7 +231,7 @@ Use only Seq for watched-session monitoring. The passive Tune definition is the
 canonical evidence source; native commands are narrow physical follow-ups.
 Compare stable source-event and line positions with the prior cursor.
 
-seq observe --definition $tune_definition_q --projection evidence $session_args --param skill=$skill_name_q --format json
+seq observe --definition $tune_definition_q --projection evidence $session_args --param needle=$skill_name_q --format json
 seq session-detail $session_args --format json
 seq turns $session_args --format json
 seq tool-lifecycle $session_args --format json

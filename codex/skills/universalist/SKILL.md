@@ -498,6 +498,25 @@ Do not escalate when this inventory cannot be grounded in repository evidence.
 
 When **Decision durability** applies, first load `$ledger` and complete `$ledger ensure` once. Then allocate a fresh plan:
 
+For a valid pre-cutover `universalist-plan/v1` document already under
+`.ledger/universalist/`, bind that exact file once before projecting or revising
+it:
+
+```bash
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation bind-existing \
+  --repo PROJECT_ROOT \
+  --param plan_file=PLAN_FILE \
+  --format json
+```
+
+The operation validates the existing bytes and writes only Ledger-owned binding
+metadata. It fails closed for invalid or already-bound documents and is not a
+normal read path.
+
+Allocate new plans with:
+
 ```bash
 ledger transact \
   --definition <universalist-skill-root>/definitions/ledger/plan-document.json \

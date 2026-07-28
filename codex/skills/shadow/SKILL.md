@@ -63,7 +63,7 @@ seq observe \
   --projection evidence \
   --root ~/.codex/sessions \
   --session-id <session> \
-  --param skill=<target> \
+  --param needle=<target> \
   --format json
 ```
 

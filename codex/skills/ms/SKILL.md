@@ -159,7 +159,7 @@ seq observe \
   --projection evidence \
   --root <sessions-root> \
   --last 30d \
-  --param skill=ms \
+  --param needle=ms \
   --format json
 ```
 

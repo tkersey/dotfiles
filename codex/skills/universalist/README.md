@@ -133,6 +133,10 @@ Materiality controls reasoning, not storage. In Actuating composition, return th
 Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
 once. Universalist requires Ledger 1.x and `ledger-artifact-abi/v1`.
 
+Bind a valid pre-cutover plan once with `ledger transact --operation
+bind-existing --param plan_file=PLAN_FILE`; the operation validates existing
+bytes and writes only Ledger-owned binding metadata. New plans use:
+
 ```bash
 ledger transact \
   --definition <universalist-skill-root>/definitions/ledger/plan-document.json \

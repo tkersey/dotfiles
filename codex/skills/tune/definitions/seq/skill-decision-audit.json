@@ -11,7 +11,7 @@
     ]
   },
   "parameters": {
-    "skill": {
+    "needle": {
       "type": "string",
       "required": true
     }
@@ -60,7 +60,7 @@
         {
           "field": "raw_json",
           "op": "contains",
-          "param": "skill",
+          "param": "needle",
           "case_insensitive": true
         }
       ]

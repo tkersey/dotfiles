@@ -128,6 +128,24 @@ same `plan_id`. They do not introduce another artifact family.
 Never write, replace, or read this path directly. Select the definition operation
 explicitly:
 
+For a valid pre-cutover EPG-v1 document already at that canonical path, perform
+the explicit one-shot binding before any normal read or write:
+
+```bash
+ledger transact \
+  --definition codex/skills/plan/definitions/ledger/plan-policy-document.json \
+  --operation bind-existing \
+  --repo <repository-root> \
+  --param plan_id=<plan-id> \
+  --format json
+```
+
+This validates the existing bytes under the selected definition and writes only
+Ledger-owned binding metadata. It fails closed for invalid or already-bound
+documents and is never part of normal operation.
+
+For a new document:
+
 ```bash
 ledger transact \
   --definition codex/skills/plan/definitions/ledger/plan-policy-document.json \
