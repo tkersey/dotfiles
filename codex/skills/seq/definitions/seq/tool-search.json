@@ -31,6 +31,9 @@
         "kind",
         "tool_name",
         "namespace",
+        "arguments_json",
+        "input_text",
+        "output_text",
         "command_text",
         "cwd",
         "exit_code",
@@ -51,7 +54,38 @@
       "op": "filter",
       "input": "source",
       "as": "matched",
+      "where_mode": "any",
       "where": [
+        {
+          "field": "tool_name",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "namespace",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "arguments_json",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "input_text",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "output_text",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
         {
           "field": "command_text",
           "op": "contains",
@@ -73,6 +107,9 @@
         "kind",
         "tool_name",
         "namespace",
+        "arguments_json",
+        "input_text",
+        "output_text",
         "command_text",
         "cwd",
         "exit_code",
@@ -101,6 +138,9 @@
         "kind",
         "tool_name",
         "namespace",
+        "arguments_json",
+        "input_text",
+        "output_text",
         "command_text",
         "cwd",
         "exit_code",

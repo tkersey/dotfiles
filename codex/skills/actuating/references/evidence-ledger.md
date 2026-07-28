@@ -68,6 +68,7 @@ The core kinds are:
 
 ~~~text
 goal_contract_registered
+goal_contract_carry_forward_registered
 counterexample_set_registered
 construction_contract_registered
 operation_prepared

@@ -120,17 +120,15 @@ def _normalize_writer_input(raw: Any) -> Any:
 
 
 def find_ledger_binary(explicit: str | Path | None = None) -> Path | None:
-    if explicit is not None:
-        path = Path(explicit).expanduser()
-        if path.is_file() and os.access(path, os.X_OK):
-            return path
-        return None
-    override = os.environ.get("LEDGER_BIN")
-    if override:
-        path = Path(override).expanduser()
-        if path.is_file() and os.access(path, os.X_OK):
-            return path
-        return None
+    selected = str(explicit) if explicit is not None else os.environ.get("LEDGER_BIN")
+    if selected:
+        path = Path(selected).expanduser()
+        if path.is_absolute() or path.parent != Path("."):
+            if path.is_file() and os.access(path, os.X_OK):
+                return path
+            return None
+        discovered = shutil.which(selected)
+        return Path(discovered) if discovered else None
     discovered = shutil.which("ledger")
     return Path(discovered) if discovered else None
 
@@ -230,6 +228,54 @@ def _validate_submission_with_ledger(
             f"{detail}"
         )
     return result
+
+
+def _require_synesthesia_validator(
+    ledger_bin: str | Path | None = None,
+) -> Path:
+    binary = find_ledger_binary(ledger_bin)
+    if binary is None:
+        raise ValidationError(
+            "ledger: Ledger 1.x with ledger-artifact-abi/v1 is required"
+        )
+    definition = synesthesia_definition_path()
+    if not definition.is_file():
+        raise ValidationError(f"ledger: definition not found: {definition}")
+    proc = subprocess.run(
+        [
+            str(binary),
+            "definition",
+            "check",
+            "--definition",
+            str(definition),
+            "--format",
+            "json",
+        ],
+        capture_output=True,
+        check=False,
+    )
+    try:
+        result = json.loads(proc.stdout)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        detail = proc.stderr.decode("utf-8", errors="replace").strip()
+        raise ValidationError(
+            "ledger: definition check failed"
+            + (f": {detail}" if detail else "")
+        ) from exc
+    definition_result = result.get("definition")
+    if (
+        proc.returncode != 0
+        or result.get("schema") != "ledger-definition-check-result/v1"
+        or result.get("valid") is not True
+        or result.get("passive") is not True
+        or result.get("authority_granted") is not False
+        or not isinstance(definition_result, dict)
+        or definition_result.get("id")
+        != "memory-source-notes/synesthesia-memory-note-payload"
+        or definition_result.get("abi") != "ledger-artifact-abi/v1"
+    ):
+        raise ValidationError("ledger: unexpected definition check result")
+    return binary
 
 
 def _inspect_source_ledger(repo: Path) -> dict[str, Any]:
@@ -543,7 +589,13 @@ SCOPE_SPECIFICITY = {
 }
 
 
-def _stored_note_from_value(path: Path, value: Any, file_sha256: str) -> StoredNote:
+def _stored_note_from_value(
+    path: Path,
+    value: Any,
+    file_sha256: str,
+    *,
+    ledger_bin: str | Path | None = None,
+) -> StoredNote:
     note = value if isinstance(value, dict) else {}
     kind = note.get("kind") if isinstance(note.get("kind"), str) else ""
     operation = (
@@ -594,6 +646,7 @@ def _stored_note_from_value(path: Path, value: Any, file_sha256: str) -> StoredN
     _validate_submission_with_ledger(
         submission,
         stored_note=value,
+        ledger_bin=ledger_bin,
     )
     return StoredNote(
         path=path,
@@ -660,6 +713,8 @@ def _source_manifest_fingerprint(
 
 def load_stored_notes(
     home: Path,
+    *,
+    ledger_bin: str | Path | None = None,
 ) -> tuple[list[StoredNote], list[dict[str, Any]], str, int]:
     directory = notes_directory(home)
     if directory.is_symlink():
@@ -691,7 +746,12 @@ def load_stored_notes(
             raw = path.read_bytes()
             file_sha256 = hashlib.sha256(raw).hexdigest()
             value = json.loads(raw.decode("utf-8"))
-            note = _stored_note_from_value(path, value, file_sha256)
+            note = _stored_note_from_value(
+                path,
+                value,
+                file_sha256,
+                ledger_bin=ledger_bin,
+            )
             if note.id in seen_ids:
                 raise ValidationError(f"id: duplicate source note id {note.id}")
             seen_ids.add(note.id)
@@ -757,8 +817,15 @@ def _unresolved_event(note: StoredNote, reason: str) -> dict[str, Any]:
     }
 
 
-def build_digest_projection(home: Path) -> dict[str, Any]:
-    notes, invalid_notes, source_fingerprint, source_file_count = load_stored_notes(home)
+def build_digest_projection(
+    home: Path,
+    *,
+    ledger_bin: str | Path | None = None,
+) -> dict[str, Any]:
+    notes, invalid_notes, source_fingerprint, source_file_count = load_stored_notes(
+        home,
+        ledger_bin=ledger_bin,
+    )
     lineages: dict[str, dict[str, Any]] = {}
     note_to_lineage: dict[str, str] = {}
     unresolved: list[dict[str, Any]] = []
@@ -1294,7 +1361,8 @@ def generate_memory_digest(
         raise ValidationError(
             "partial digest options require --output; the default latest digest must be complete"
         )
-    projection = build_digest_projection(home)
+    ledger_bin = _require_synesthesia_validator()
+    projection = build_digest_projection(home, ledger_bin=ledger_bin)
     before = inspect_digest(home, projection, destination)
     if before["status"] == "current" and not force:
         return {

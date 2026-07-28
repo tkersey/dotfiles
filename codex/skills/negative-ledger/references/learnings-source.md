@@ -12,6 +12,7 @@ ledger project \
   --projection recall \
   --repo <repo> \
   --param "query=<artifact> <objective> failed attempt regression revert no-effect avoid" \
+  --param "now=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --param search_limit=10 \
   --param drop_superseded=true \
   --format json

@@ -47,7 +47,7 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
 
    ledger transact \
      --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
-     --operation register-goal \
+     --operation <register-goal|register-goal-carry-forward> \
      --repo <repo> \
      --input goal_registration=<goal-registration.json> \
      --param goal=<goal-id> \
@@ -56,10 +56,14 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
 
    The registration packet is passive JSON containing
    `schema:"actuating-goal-registration/v1"`, the exact `goal_id`, and the
-   materialization result's parsed `canonical_content` as `body`.
+   materialization result's parsed `canonical_content` as `body`. Use
+   `register-goal-carry-forward` only for the source-revision transition that
+   must preserve the predecessor Construction while `$review-fold` classifies
+   carried Counterexamples; otherwise use `register-goal`.
 10. Require `ledger-materialization-result/v1` with a non-null `artifact_id`
     equal to `artifact.artifact_id`, then
-    `ledger-transaction-result/v1` for `register-goal` with one appended event.
+    `ledger-transaction-result/v1` for the selected registration operation
+    with one appended event.
     Retain the complete canonical artifact and registration event identity as
     the current Goal Contract. Ledger canonicalizes, identifies, and registers
     its structure; it does not author semantics or grant authority.
@@ -110,7 +114,7 @@ Return:
 
 ~~~text
 Goal Contract identity
-goal_contract_registered event identity
+goal registration event identity
 accepted source identity
 execution-authority identity
 mutation posture

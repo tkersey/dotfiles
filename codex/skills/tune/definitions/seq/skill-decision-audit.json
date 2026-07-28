@@ -5,6 +5,7 @@
     "abi": "seq-observation-abi/v1",
     "operators": [
       "filter",
+      "limit",
       "project",
       "scan",
       "sort"
@@ -36,8 +37,6 @@
         "entry_type",
         "event_type",
         "timestamp",
-        "payload_json",
-        "raw_json",
         "turn_index",
         "role",
         "text",
@@ -63,7 +62,7 @@
           "value": false
         },
         {
-          "field": "raw_json",
+          "field": "text",
           "op": "contains",
           "param": "needle",
           "case_insensitive": true
@@ -71,8 +70,14 @@
       ]
     },
     {
-      "op": "sort",
+      "op": "limit",
       "input": "matched",
+      "as": "bounded",
+      "limit": 2000
+    },
+    {
+      "op": "sort",
+      "input": "bounded",
       "as": "ordered",
       "by": [
         {
@@ -95,8 +100,6 @@
         "entry_type",
         "event_type",
         "timestamp",
-        "payload_json",
-        "raw_json",
         "turn_index",
         "role",
         "text",
@@ -116,8 +119,6 @@
         "entry_type",
         "event_type",
         "timestamp",
-        "payload_json",
-        "raw_json",
         "turn_index",
         "role",
         "text",
@@ -129,8 +130,8 @@
     }
   },
   "bounds": {
-    "max_rows": 100000,
-    "max_output_bytes": 67108864,
+    "max_rows": 2000,
+    "max_output_bytes": 16777216,
     "max_fold_states": 1
   }
 }

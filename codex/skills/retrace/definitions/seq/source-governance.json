@@ -39,7 +39,8 @@
         "turn_index",
         "role",
         "text",
-        "raw_json"
+        "raw_json",
+        "private"
       ]
     },
     {
@@ -53,6 +54,8 @@
         "kind",
         "tool_name",
         "namespace",
+        "arguments_json",
+        "input_text",
         "command_text",
         "cwd",
         "output_text",
@@ -74,6 +77,11 @@
       "input": "events",
       "as": "matched_events",
       "where": [
+        {
+          "field": "private",
+          "op": "exact",
+          "value": false
+        },
         {
           "field": "raw_json",
           "op": "contains",
@@ -122,7 +130,38 @@
       "op": "filter",
       "input": "tools",
       "as": "matched_tools",
+      "where_mode": "any",
       "where": [
+        {
+          "field": "tool_name",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "namespace",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "arguments_json",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "input_text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "output_text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
         {
           "field": "command_text",
           "op": "contains",
@@ -162,6 +201,8 @@
         "kind",
         "tool_name",
         "namespace",
+        "arguments_json",
+        "input_text",
         "command_text",
         "cwd",
         "output_text",
@@ -205,6 +246,8 @@
         "kind",
         "tool_name",
         "namespace",
+        "arguments_json",
+        "input_text",
         "command_text",
         "cwd",
         "output_text",

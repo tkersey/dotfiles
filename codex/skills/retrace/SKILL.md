@@ -344,9 +344,14 @@ Validate the exact plan CAS will consume:
 
 ```bash
 ledger validate \
+  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-context-packet.json" \
+  --input packet=capsule.json \
+  --format json > capsule.validation.json
+
+ledger validate \
   --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/retrace-inquiry-plan.json" \
   --input plan=plan.json \
-  --format json
+  --format json > plan.validation.json
 ```
 
 See [inquiry-lanes.md](references/inquiry-lanes.md).
@@ -354,7 +359,9 @@ See [inquiry-lanes.md](references/inquiry-lanes.md).
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
+  --capsule-validation capsule.validation.json \
   --plan plan.json \
+  --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
   --json
 ```

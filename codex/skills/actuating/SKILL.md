@@ -227,7 +227,8 @@ same finding set and nomination version.
 1. Compile the accepted source with
    [$goal-contract](../goal-contract/SKILL.md). Do not select architecture in
    the Goal Contract. Require its returned canonical artifact, non-null
-   `artifact_id`, and `goal_contract_registered` event before continuing.
+   `artifact_id`, and the applicable Goal registration event before
+   continuing.
 2. Enter the Architectonic decision gate. Establish or retain the current
    Axiomatic Construction Basis before nomination. Inspect the repository
    boundary, existing owner, host enforcement capabilities, and required
