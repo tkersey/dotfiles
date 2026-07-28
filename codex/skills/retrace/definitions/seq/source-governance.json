@@ -124,7 +124,7 @@
       "as": "matched_tools",
       "where": [
         {
-          "field": "output_text",
+          "field": "command_text",
           "op": "contains",
           "param": "workflow",
           "case_insensitive": true
