@@ -49,12 +49,18 @@ inspect_availability() {
 }
 
 inspect_readiness() {
-  local capabilities
+  local capabilities line
+  local abi_found=false
   ledger_version="$("$ledger_path" version 2>/dev/null || true)"
   [[ "$ledger_version" =~ ^1\.[0-9]+\.[0-9]+$ ]] || return 1
-  capabilities="$("$ledger_path" capabilities --format json 2>/dev/null || true)"
-  [[ "$capabilities" == *'"artifact_abis":['*'"ledger-artifact-abi/v1"'* ]] ||
-    return 1
+  capabilities="$("$ledger_path" capabilities --format text 2>/dev/null || true)"
+  while IFS= read -r line; do
+    if [[ "$line" == "ABI: ledger-artifact-abi/v1" ]]; then
+      abi_found=true
+      break
+    fi
+  done <<<"$capabilities"
+  [[ "$abi_found" == true ]] || return 1
   ledger_abi="ledger-artifact-abi/v1"
 }
 

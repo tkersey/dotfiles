@@ -108,13 +108,26 @@ Use only:
 
 ```text
 ledger definition check --definition DEFINITION
-ledger transact --definition DEFINITION --operation capture|transition --repo REPO
+ledger transact --definition DEFINITION --operation capture|promote|transition|bind-existing --repo REPO
 ledger project --definition DEFINITION --projection current-records|route-gate|memory-note --repo REPO
 ledger doctor --definition DEFINITION --repo REPO
 ```
 
 `ledger project --projection memory-note` is the authoritative source payload
 for memory admission. Never reconstruct it from a summary projection.
+
+Bind a pre-cutover current-format store exactly once before ordinary reads or
+writes. This validates every existing row and records the selected definition
+digest without rewriting the event log:
+
+```bash
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation bind-existing \
+  --repo "<repo-root>" \
+  --input event="<repo-root>/.ledger/negative-ledger/events.jsonl" \
+  --format json
+```
 
 ## Valid Statuses
 
@@ -182,6 +195,20 @@ criteria. Select `need-evidence` before transaction when those structural
 requirements are incomplete; never assert `active` in prose after Ledger
 rejects it.
 
+Promoting an incomplete candidate to `active` requires the transition proof
+plus the complete replacement record, whose `status` is `active`. Use the
+dedicated operation so the event atomically replaces the reducer's retained
+record:
+
+```bash
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation promote \
+  --repo "<repo-root>" \
+  --input promotion=promotion.json \
+  --format json
+```
+
 ## Lifecycle Transitions
 
 Use append-only status events. Every transition requires a JSON proof packet with a reason and structured source references:
@@ -241,7 +268,8 @@ ledger transact \
   --format json
 ```
 
-Ledger rejects illegal edges, proofless promotion, unknown criteria, and unchanged before/after claims before append.
+Ledger rejects illegal edges, promotion without a complete active record,
+unknown criteria, and unchanged before/after claims before append.
 
 Never rewrite old events.
 

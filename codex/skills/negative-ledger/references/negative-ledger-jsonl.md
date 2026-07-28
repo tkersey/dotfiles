@@ -28,9 +28,23 @@ ledger doctor \
 
 ledger transact \
   --definition "$negative_ledger_definition" \
+  --operation bind-existing \
+  --repo "<repo-root>" \
+  --input event="<repo-root>/.ledger/negative-ledger/events.jsonl" \
+  --format json
+
+ledger transact \
+  --definition "$negative_ledger_definition" \
   --operation capture \
   --repo "<repo-root>" \
   --input capture=capture.json \
+  --format json
+
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation promote \
+  --repo "<repo-root>" \
+  --input promotion=promotion.json \
   --format json
 
 ledger transact \
