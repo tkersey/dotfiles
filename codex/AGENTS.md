@@ -21,6 +21,13 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 
 - Run `$logophile` as a final language-only pass on every non-trivial root response and human-facing artifact. Preserve facts, modality, uncertainty, scope, ownership, sequence, identifiers, code, paths, flags, schemas, protocol literals, and operational decisions; skip terse acknowledgements or status updates and machine-consumed surfaces.
 
+## Glaze intelligence-escalation mandate
+
+- Treat `$glaze` as the repo's default implicit high-intelligence escalation pulse for substantive work, not only a literal user invocation. Invoke it once after forming an initial candidate and before accepting a consequential answer, plan, diagnosis, design, review disposition, simplification, architecture or abstraction direction, or implementation route that is coherent but merely adequate, conventional, locally optimized, inherited-frame, or under-ambitious.
+- Do not wait for the user to name `$glaze`. Use it whenever a fresh frame, deeper governing layer, live contradiction, bolder option, new construction, or discontinuous move could materially improve the result. When an owning workflow already specifies a Glaze gate, satisfy that gate rather than adding a duplicate pass.
+- Glaze is generative, not authoritative. Preserve accepted intent, evidence, scope, constraints, and owner boundaries; return any material delta to the owning workflow for adjudication. If the pass yields no material reframe, retain the incumbent and continue without manufactured novelty.
+- Skip Glaze for terse acknowledgements, mechanical lookups, trivial edits, already-dispositive answers, and cases where divergence would violate fixed scope or authority. Run at most one bounded pass per unchanged decision surface; do not recurse on rhetoric alone.
+
 ## Universalist boundary mandate
 
 - Invoke `$universalist` whenever implementation, refactoring, review, migration, or resolution considers a code boundary.
