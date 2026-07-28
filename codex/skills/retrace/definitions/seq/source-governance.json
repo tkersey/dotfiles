@@ -38,7 +38,8 @@
         "timestamp",
         "turn_index",
         "role",
-        "text"
+        "text",
+        "raw_json"
       ]
     },
     {
@@ -74,7 +75,7 @@
       "as": "matched_events",
       "where": [
         {
-          "field": "text",
+          "field": "raw_json",
           "op": "contains",
           "param": "workflow",
           "case_insensitive": true
@@ -108,7 +109,8 @@
         "timestamp",
         "turn_index",
         "role",
-        "text"
+        "text",
+        "raw_json"
       ]
     },
     {
@@ -122,7 +124,7 @@
       "as": "matched_tools",
       "where": [
         {
-          "field": "command_text",
+          "field": "output_text",
           "op": "contains",
           "param": "workflow",
           "case_insensitive": true
@@ -183,7 +185,8 @@
         "timestamp",
         "turn_index",
         "role",
-        "text"
+        "text",
+        "raw_json"
       ],
       "renderers": [
         "json",
