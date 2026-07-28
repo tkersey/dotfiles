@@ -10,11 +10,20 @@
       "sort"
     ]
   },
-  "parameters": {},
+  "parameters": {
+    "through_turn_index": {
+      "type": "integer",
+      "required": true
+    }
+  },
   "selectors": [
     "root",
     "session-id",
-    "path"
+    "path",
+    "repo",
+    "since",
+    "until",
+    "last"
   ],
   "relations": [
     {
@@ -56,8 +65,20 @@
       ]
     },
     {
-      "op": "sort",
+      "op": "filter",
       "input": "public_source",
+      "as": "bounded_source",
+      "where": [
+        {
+          "field": "turn_index",
+          "op": "less-or-equal",
+          "param": "through_turn_index"
+        }
+      ]
+    },
+    {
+      "op": "sort",
+      "input": "bounded_source",
       "as": "ordered",
       "by": [
         {

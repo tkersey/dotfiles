@@ -588,6 +588,7 @@ it atomically to the plan:
 ```bash
 ledger materialize \
   --definition <tune-skill-root>/definitions/ledger/skill-decision-receipt.json \
+  --input contract=<universalist-skill-root>/references/decision-contract.json \
   --input receipt=RECEIPT_JSON \
   --format json
 
@@ -595,6 +596,7 @@ ledger transact \
   --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
   --operation append-receipt \
   --repo PROJECT_ROOT \
+  --input contract=<universalist-skill-root>/references/decision-contract.json \
   --input receipt=RECEIPT_JSON \
   --param plan_file=PLAN_FILE \
   --param expected_revision=REVISION \

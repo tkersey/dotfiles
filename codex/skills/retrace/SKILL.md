@@ -276,13 +276,16 @@ Then freeze the selected session's ordered source evidence:
 seq observe \
   --definition "$retrace_definition_root/seq/decision-capsule.json" \
   --session-id <id> \
+  --param through_turn_index=<one-based-selected-turn-index> \
   --projection events \
   --format json
 ```
 
-Locate the visible route decision and bind its exact one-based turn index while
-authoring DCP-v2. Seq does not choose the decision episode or author the packet.
-Do not let replay models select the historical source episode.
+Locate the visible route decision with the candidate observation, then rerun
+the capsule with that exact one-based turn index. The capsule excludes later
+turns and source rows without a turn assignment before replay can inspect them.
+Seq does not choose the decision episode or author the packet. Do not let replay
+models select the historical source episode.
 ### 2. Bind DCP-v2
 The capsule must distinguish:
 ```text

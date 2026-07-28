@@ -4,6 +4,12 @@ Retrace authors DCP-v2 from the ordered evidence returned by
 [`../definitions/seq/decision-capsule.json`](../definitions/seq/decision-capsule.json).
 Seq neither selects the episode nor authors the packet.
 
+The observation requires `through_turn_index`, the exact one-based turn index
+selected from the candidate observation. It returns only public source rows
+assigned to that turn or an earlier turn. Later rows and rows without a turn
+assignment are structurally excluded. `source_event_id` remains the stable
+evidence anchor for every retained row.
+
 The sole machine schema and identity law are in
 [`../definitions/ledger/decision-context-packet.json`](../definitions/ledger/decision-context-packet.json).
 Ledger materializes a null `packet_id` to the released `DCP-<sha256>` identity

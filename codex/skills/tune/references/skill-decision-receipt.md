@@ -30,11 +30,13 @@ Validate or content-address it through Tune's canonical passive definition:
 ```bash
 ledger validate \
   --definition <tune-skill-root>/definitions/ledger/skill-decision-receipt.json \
+  --input contract=<skill-root>/references/decision-contract.json \
   --input receipt=<receipt.json> \
   --format json
 
 ledger materialize \
   --definition <tune-skill-root>/definitions/ledger/skill-decision-receipt.json \
+  --input contract=<skill-root>/references/decision-contract.json \
   --input receipt=<receipt.json> \
   --format json
 ```
