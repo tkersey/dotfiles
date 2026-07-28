@@ -16,8 +16,11 @@ from typing import Any
 from urllib.parse import urlparse
 
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
-ELIGIBILITY = {"eligible", "not-eligible"}
 SKILLS_ROOT = Path(__file__).resolve().parents[2]
+ELIGIBILITY_DEFINITION = (
+    SKILLS_ROOT
+    / "memory-source-notes/definitions/ledger/source-memory-eligibility.json"
+)
 SOURCE_DEFINITIONS = {
     "learnings": SKILLS_ROOT
     / "learnings/definitions/ledger/learnings-protocol.json",
@@ -81,41 +84,39 @@ def writer_fingerprint(extension: str, kind: str, raw: bytes) -> str:
     return digest.hexdigest()
 
 
-def load_eligibility(path: str | None) -> dict[str, dict[str, dict[str, str]]]:
+def load_eligibility(
+    path: str | None,
+    *,
+    ledger: str,
+    cwd: Path,
+) -> dict[str, dict[str, dict[str, str]]]:
     empty = {source: {} for source in SOURCES}
     if not path:
         return empty
+    eligibility_path = Path(path).expanduser().resolve()
+    run_json(
+        [
+            ledger,
+            "validate",
+            "--definition",
+            str(ELIGIBILITY_DEFINITION),
+            "--input",
+            f"eligibility={eligibility_path}",
+            "--format",
+            "json",
+        ],
+        cwd=cwd,
+    )
     try:
-        value = json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
+        value = json.loads(eligibility_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ReconcileError(f"eligibility: {exc}") from exc
-    if (
-        not isinstance(value, dict)
-        or value.get("schema") != "source-memory-eligibility/v1"
-    ):
-        raise ReconcileError("eligibility: expected source-memory-eligibility/v1")
-    decisions = value.get("decisions")
-    if not isinstance(decisions, dict) or set(decisions) - set(SOURCES):
-        raise ReconcileError("eligibility.decisions: unexpected source")
+    decisions = value["decisions"]
     result = {source: {} for source in SOURCES}
     for source, rows in decisions.items():
-        if not isinstance(rows, dict):
-            raise ReconcileError(f"eligibility.decisions.{source}: expected object")
         for record_id, decision in rows.items():
-            if not isinstance(decision, dict):
-                raise ReconcileError(
-                    f"eligibility {source}/{record_id}: expected object"
-                )
-            disposition = decision.get("disposition")
-            reason = decision.get("reason")
-            if (
-                disposition not in ELIGIBILITY
-                or not isinstance(reason, str)
-                or not reason.strip()
-            ):
-                raise ReconcileError(
-                    f"eligibility {source}/{record_id}: expected eligible|not-eligible and reason"
-                )
+            disposition = decision["disposition"]
+            reason = decision["reason"]
             result[source][record_id] = {
                 "disposition": disposition,
                 "reason": reason.strip(),
@@ -136,7 +137,7 @@ def load_notes(
         "--extension",
         source,
         "--limit",
-        "10000",
+        "100000",
         "--format",
         "json",
     ]
@@ -320,7 +321,7 @@ def negative_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
             "--definition",
             str(SOURCE_DEFINITIONS["negative-ledger"]),
             "--projection",
-            "current-records",
+            "reconciliation-index",
             "--repo",
             str(cwd),
             "--param",
@@ -333,7 +334,7 @@ def negative_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
     )
     if not isinstance(value, list):
         raise ReconcileError(
-            "ledger project negative-ledger current-records: expected array"
+            "ledger project negative-ledger reconciliation-index: expected array"
         )
     return value
 
@@ -350,7 +351,7 @@ def synesthesia_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
             "--repo",
             str(cwd),
             "--param",
-            "limit=10000",
+            "limit=100000",
             "--payload-only",
             "--format",
             "json",
@@ -570,7 +571,11 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
         .expanduser()
         .resolve()
     )
-    eligibility = load_eligibility(args.eligibility)
+    eligibility = load_eligibility(
+        args.eligibility,
+        ledger=ledger,
+        cwd=cwd,
+    )
     compiled = load_compiled_corpus(codex_home)
     repo_aliases = repository_aliases(cwd)
 

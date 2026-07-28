@@ -224,6 +224,7 @@ A caller that consumes a terminal receipt structurally must first validate the
 exact returned JSON through CAS's passive definition:
 
 ~~~bash
+# Load $ledger and complete $ledger ensure once before validation.
 ledger validate \
   --definition <cas-skill-root>/definitions/ledger/review-receipt.json \
   --input receipt=<cas-review-receipt.json> \

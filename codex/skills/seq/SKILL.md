@@ -35,6 +35,7 @@ Seq does not scan memory roots, Ledger stores, artifact directories, or another
 durable source implicitly. Compose durable facts explicitly:
 
 ```bash
+# Load $ledger and complete $ledger ensure once before this composition.
 ledger project \
   --definition <artifact-definition.json> \
   --projection <facts> \
@@ -109,6 +110,9 @@ tool-search.json
 turn-metrics.json
 turn-report.json
 ```
+
+`tool-search.json` returns metadata through `rows`. Request `rows-raw` only
+when raw arguments, inputs, commands, and outputs are necessary and safe.
 
 Example:
 

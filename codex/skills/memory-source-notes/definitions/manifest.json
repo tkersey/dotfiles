@@ -24,10 +24,6 @@
       "path": "ledger/memory-note-id.json"
     },
     {
-      "id": "memory-source-notes/learnings-memory-note-payload",
-      "path": "ledger/learnings-memory-note-payload.json"
-    },
-    {
       "id": "memory-source-notes/negative-ledger-memory-note-payload",
       "path": "ledger/negative-ledger-memory-note-payload.json"
     },

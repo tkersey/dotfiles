@@ -515,6 +515,24 @@ The operation validates the existing bytes and writes only Ledger-owned binding
 metadata. It fails closed for invalid or already-bound documents and is not a
 normal read path.
 
+For a valid legacy root document at
+`.ledger/universalist-plan-<PLAN_ID>.md`, perform the explicit one-shot copy
+into the canonical address, then retain the transaction receipt:
+
+```bash
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation migrate-legacy \
+  --repo PROJECT_ROOT \
+  --input legacy_plan=PROJECT_ROOT/.ledger/universalist-plan-PLAN_ID.md \
+  --param plan_file=plan-PLAN_ID.md \
+  --format json
+```
+
+This operation never runs during normal reads or writes. It leaves the legacy
+file untouched, creates the canonical document atomically, and fails when the
+canonical address already exists.
+
 Allocate new plans with:
 
 ```bash

@@ -120,7 +120,18 @@ the canonical disposition.
    git rev-parse --show-toplevel
    ```
 
-2. Run the definition-bound doctor:
+2. Fail closed when either retired Learnings path exists without the canonical
+   store. Do not create a parallel store or read the retired path:
+
+   ```bash
+   if [ ! -f .ledger/learnings/events.jsonl ] &&
+      { [ -e .ledger/learnings/learnings.jsonl ] || [ -e .learnings.jsonl ]; }; then
+     printf '%s\n' 'blocked: retired Learnings store requires explicit owner-authorized recovery' >&2
+     exit 1
+   fi
+   ```
+
+3. Run the definition-bound doctor:
 
    ```bash
    ledger doctor \
@@ -132,9 +143,9 @@ the canonical disposition.
    Append only when the store is `current` or absent. For an unbound
    current-format store, run the explicit `bind-existing` operation once after
    full validation. Stop on every invalid row; do not skip or reinterpret it.
-3. Gather exact evidence and changed paths.
-4. Distill objective, inflection, proof, and transferable rule.
-5. Author `learning.json` as one `submission.record` packet, then append from
+4. Gather exact evidence and changed paths.
+5. Distill objective, inflection, proof, and transferable rule.
+6. Author `learning.json` as one `submission.record` packet, then append from
    the verified repo root:
 
    ```bash
@@ -146,9 +157,9 @@ the canonical disposition.
      --format json
    ```
 
-6. Retain the appended learning ID, rerun definition-bound doctor, and use a
+7. Retain the appended learning ID, rerun definition-bound doctor, and use a
    focused `record` or `recall` projection to verify readability.
-7. Before any Codex-made commit, inspect the current learning through the
+8. Before any Codex-made commit, inspect the current learning through the
    `record` projection. Do not read the store directly.
 8. Retain exactly one canonical learning proof line in working evidence. Include
    source-memory proof in the final user-facing reply only when it changed
