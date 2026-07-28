@@ -1,389 +1,42 @@
 {
-  "schema": "ledger-artifact-definition/v1",
-  "id": "spec-pipeline/plan-source-contract",
-  "owner": "spec-pipeline",
-  "imports": [
-    {
-      "id": "spec-pipeline/spec-governance-receipt",
-      "path": "spec-governance-receipt.json"
-    }
-  ],
-  "requires": {
-    "abi": "ledger-artifact-abi/v1",
-    "operators": [
-      "all",
-      "bounded-array",
-      "bounded-object",
-      "bounded-string",
-      "definition-ref",
-      "enum",
-      "exact-object",
-      "one-of"
-    ]
-  },
-  "parameters": {},
-  "inputs": {
-    "contract": {
-      "codec": "json",
-      "required": true,
-      "max_bytes": 4194304
-    }
-  },
-  "canonicalization": {},
-  "shape": {
-    "rules": [
-      {
-        "op": "exact-object",
-        "input": "contract",
-        "path": "",
-        "keys": [
-          "plan_source_contract"
-        ]
-      },
-      {
-        "op": "exact-object",
-        "input": "contract",
-        "path": "/plan_source_contract",
-        "keys": [
-          "contract_version",
-          "decision_packet",
-          "do_not_execute_before",
-          "implementation_spec",
-          "non_goals",
-          "proof_bar",
-          "sgr_v2",
-          "source_owner",
-          "spec_id",
-          "target_branch"
-        ]
-      },
-      {
-        "op": "enum",
-        "input": "contract",
-        "path": "/plan_source_contract/contract_version",
-        "values": [
-          "PSC-v1"
-        ]
-      },
-      {
-        "op": "enum",
-        "input": "contract",
-        "path": "/plan_source_contract/source_owner",
-        "values": [
-          "spec-pipeline"
-        ]
-      },
-      {
-        "op": "bounded-string",
-        "input": "contract",
-        "path": "/plan_source_contract/spec_id",
-        "trimmed_min": 1,
-        "max": 1048576
-      },
-      {
-        "op": "one-of",
-        "input": "contract",
-        "path": "/plan_source_contract/implementation_spec",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "trimmed_min": 1,
-            "max": 4194304
-          },
-          {
-            "op": "bounded-array",
-            "min": 1,
-            "max": 1048576
-          },
-          {
-            "op": "bounded-object",
-            "min": 1,
-            "max": 1048576
-          }
-        ]
-      },
-      {
-        "op": "one-of",
-        "input": "contract",
-        "path": "/plan_source_contract/decision_packet",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "trimmed_min": 1,
-            "max": 4194304
-          },
-          {
-            "op": "bounded-array",
-            "min": 1,
-            "max": 1048576
-          },
-          {
-            "op": "bounded-object",
-            "min": 1,
-            "max": 1048576
-          }
-        ]
-      },
-      {
-        "op": "definition-ref",
-        "input": "contract",
-        "path": "/plan_source_contract/sgr_v2",
-        "definition": "spec-pipeline/spec-governance-receipt"
-      },
-      {
-        "op": "one-of",
-        "input": "contract",
-        "path": "/plan_source_contract/proof_bar",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "trimmed_min": 1,
-            "max": 4194304
-          },
-          {
-            "op": "bounded-array",
-            "min": 1,
-            "max": 1048576
-          },
-          {
-            "op": "bounded-object",
-            "min": 1,
-            "max": 1048576
-          }
-        ]
-      },
-      {
-        "op": "bounded-array",
-        "input": "contract",
-        "path": "/plan_source_contract/non_goals",
-        "max": 1048576
-      },
-      {
-        "op": "all",
-        "input": "contract",
-        "path": "/plan_source_contract/non_goals",
-        "rules": [
-          {
-            "op": "bounded-string",
-            "trimmed_min": 1,
-            "max": 1048576
-          }
-        ]
-      },
-      {
-        "op": "bounded-string",
-        "input": "contract",
-        "path": "/plan_source_contract/target_branch",
-        "trimmed_min": 1,
-        "max": 1048576
-      },
-      {
-        "op": "bounded-array",
-        "input": "contract",
-        "path": "/plan_source_contract/do_not_execute_before",
-        "max": 0
-      }
-    ]
-  },
-  "constraints": [
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/lint/verdict",
-      "values": [
-        "pass"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/lint/blocked_handoff",
-      "values": [
-        "no",
-        false
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/mode",
-      "values": [
-        "full",
-        "repair"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/status",
-      "values": [
-        "complete"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/lane",
-      "values": [
-        "spec_to_plan"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/authoritative_brief/drift_detected",
-      "values": [
-        "no",
-        false
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/gate",
-      "values": [
-        "yes"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/implementation_spec",
-      "values": [
-        "yes"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/challenge",
-      "values": [
-        "yes"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/fresh_eyes",
-      "values": [
-        "yes"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/execution_handoff",
-      "values": [
-        "yes"
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/gate/plan_allowed",
-      "values": [
-        "yes",
-        true
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/gate/material_open_questions_remaining",
-      "values": [
-        "no",
-        false
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/fresh_eyes/drift_detected",
-      "values": [
-        "no",
-        false
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/subagents/open_at_end",
-      "values": [
-        0
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/execution_control/plan_allowed",
-      "values": [
-        "yes",
-        true
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/execution_control/execution_handoff",
-      "values": [
-        "yes",
-        true
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/execution_handoff/ready_for_plan",
-      "values": [
-        "yes",
-        true
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/execution_handoff/next_owner",
-      "values": [
-        "$plan"
-      ]
-    },
-    {
-      "op": "bounded-array",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/execution_handoff/do_not_execute_before",
-      "max": 0
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/auto_plan_handoff/eligible",
-      "values": [
-        "yes",
-        true
-      ]
-    },
-    {
-      "op": "enum",
-      "input": "contract",
-      "path": "/plan_source_contract/sgr_v2/spec_governance_receipt/auto_plan_handoff/invocation",
-      "values": [
-        "manual",
-        "same_turn_tail_call"
-      ]
-    }
-  ],
-  "identity": {},
-  "storage": {
-    "kind": "pure"
-  },
-  "operations": {},
-  "projections": {},
-  "bounds": {
-    "max_input_bytes": 4194304,
-    "max_store_bytes": 4194304,
-    "max_records": 1048576,
-    "max_output_bytes": 4194304,
-    "max_diagnostics": 128,
-    "max_reducer_states": 1
-  }
+ "schema": "ledger-artifact-definition/v1",
+ "id": "spec-pipeline/plan-source-contract",
+ "owner": "spec-pipeline",
+ "imports": [{"id":"spec-pipeline/spec-governance-receipt","path":"spec-governance-receipt.json"}],
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-object","bounded-string","definition-ref","enum","exact-object","one-of"]},
+ "parameters": {},
+ "inputs": {"contract":{"codec":"json","required":true,"max_bytes":4194304}},
+ "canonicalization": {},
+ "shape": {"documents":{"contract":{"object":"exact","fields":{"plan_source_contract":{"object":"exact","fields":{"contract_version":{"enum":["PSC-v1"]},"decision_packet":{"one_of":[{"string":{"trimmed_min":1,"max":4194304}},{"array":{"min":1,"max":1048576}},{"object_bounds":{"min":1,"max":1048576}}]},"do_not_execute_before":{"array":{"max":0}},"implementation_spec":{"one_of":[{"string":{"trimmed_min":1,"max":4194304}},{"array":{"min":1,"max":1048576}},{"object_bounds":{"min":1,"max":1048576}}]},"non_goals":{"array":{"max":1048576},"items":{"string":{"trimmed_min":1,"max":1048576}}},"proof_bar":{"one_of":[{"string":{"trimmed_min":1,"max":4194304}},{"array":{"min":1,"max":1048576}},{"object_bounds":{"min":1,"max":1048576}}]},"sgr_v2":{"definition":"spec-pipeline/spec-governance-receipt"},"source_owner":{"enum":["spec-pipeline"]},"spec_id":{"string":{"trimmed_min":1,"max":1048576}},"target_branch":{"string":{"trimmed_min":1,"max":1048576}}}}}}}},
+ "constraints": {
+  "laws": [
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/lint/verdict","values":["pass"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/lint/blocked_handoff","values":["no",false]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/mode","values":["full","repair"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/status","values":["complete"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/lane","values":["spec_to_plan"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/authoritative_brief/drift_detected","values":["no",false]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/gate","values":["yes"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/implementation_spec","values":["yes"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/challenge","values":["yes"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/fresh_eyes","values":["yes"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/phase_presence/execution_handoff","values":["yes"]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/gate/plan_allowed","values":["yes",true]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/gate/material_open_questions_remaining","values":["no",false]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/fresh_eyes/drift_detected","values":["no",false]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/subagents/open_at_end","values":[0]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/execution_control/plan_allowed","values":["yes",true]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/execution_control/execution_handoff","values":["yes",true]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/execution_handoff/ready_for_plan","values":["yes",true]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/execution_handoff/next_owner","values":["$plan"]}],
+   ["bounded-array",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/execution_handoff/do_not_execute_before","max":0}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/auto_plan_handoff/eligible","values":["yes",true]}],
+   ["enum",{"input":"contract","path":"/plan_source_contract/sgr_v2/spec_governance_receipt/auto_plan_handoff/invocation","values":["manual","same_turn_tail_call"]}]
+  ]
+ },
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":4194304,"max_store_bytes":4194304,"max_records":1048576,"max_output_bytes":4194304,"max_diagnostics":128,"max_reducer_states":1}
 }
