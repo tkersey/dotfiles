@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "glaze"
-  short_description: "Force an excavatory, aporetic, audacious, poietic, saltatory pass"
-  default_prompt: "Use $glaze and preserve the original verbatim escalation text, including the exact terminal fragment BE SALTATORY."
+  short_description: "Force a fresh-eyed, excavatory, aporetic, audacious, poietic, saltatory pass"
+  default_prompt: "Use $glaze and preserve its canonical one-line escalation text verbatim as one bounded basin-escape pass."
