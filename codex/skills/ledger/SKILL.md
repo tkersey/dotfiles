@@ -28,7 +28,8 @@ Use [scripts/ensure-ledger](scripts/ensure-ledger) as the deterministic bootstra
 handler:
 
 ```bash
-codex/skills/ledger/scripts/ensure-ledger
+ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
+"$ledger_skill_root/scripts/ensure-ledger"
 ```
 
 After the handler emits `ledger-bootstrap-ready/v1`, invoke the native CLI
@@ -177,7 +178,7 @@ implementation/review closeout, or explicit checkpoint request:
 
    ```bash
    ledger validate \
-     --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-input.json \
+     --definition "$ledger_skill_root/definitions/ledger/source-memory-checkpoint-input.json" \
      --input checkpoint_input=FILE|- \
      --format json
    ```
@@ -194,7 +195,8 @@ implementation/review closeout, or explicit checkpoint request:
 
    ```bash
    ledger validate \
-     --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-receipt.json \
+     --definition "$ledger_skill_root/definitions/ledger/source-memory-checkpoint-receipt.json" \
+     --input checkpoint_input=CHECKPOINT_INPUT_FILE \
      --input checkpoint=FILE|- \
      --format json
    ```
@@ -227,7 +229,7 @@ report may identify `admitted`, `eligible-unadmitted`, `not-eligible`,
 
 ```bash
 uv run python \
-  codex/skills/ledger/scripts/source-memory-reconcile.py \
+  "$ledger_skill_root/scripts/source-memory-reconcile.py" \
   --repo "$(git rev-parse --show-toplevel)" \
   --format text
 ```

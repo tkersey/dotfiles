@@ -17,11 +17,13 @@ Build one bounded `source-memory-checkpoint-input/v1` packet:
   "checkpoint_id": "SMC-...",
   "trigger": "validation-transition",
   "subject": {
+    "fingerprint": "sha256:<hex>",
     "repository_id": "owner/repo",
     "head_oid": "<git-oid-or-null>",
     "workspace_fingerprint": "<sha256>"
   },
   "evidence": {
+    "fingerprint": "sha256:<hex>",
     "decision_delta": "Literal route or conclusion change",
     "validation_transitions": [],
     "attempted_routes": [],
@@ -33,16 +35,18 @@ Build one bounded `source-memory-checkpoint-input/v1` packet:
 ```
 
 Do not embed full logs, transcripts, secrets, or unrelated chronology. Preserve
-exact source references and explicit missing values. Fingerprint canonical JSON
-for the material subject and evidence objects. The workspace fingerprint must
-cover the HEAD-relative index, worktree, and in-scope untracked artifacts in a
-staging-stable canonical representation; staging alone must not change it.
+exact source references and explicit missing values. Each `fingerprint` is the
+SHA-256 of its containing object after replacing that field with JSON `null`;
+Ledger verifies both values during input validation. The workspace fingerprint
+must cover the HEAD-relative index, worktree, and in-scope untracked artifacts
+in a staging-stable canonical representation; staging alone must not change it.
 
 Validate the freshness-bound input before participant fan-out:
 
 ```bash
+ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
 ledger validate \
-  --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-input.json \
+  --definition "$ledger_skill_root/definitions/ledger/source-memory-checkpoint-input.json" \
   --input checkpoint_input=<checkpoint-input.json> \
   --format json
 ```
@@ -62,6 +66,9 @@ Every participant also returns one admission disposition:
 `created`, `duplicate-skip`, `not-eligible`, `not-applicable`, or `blocked`.
 Canonical IDs and note IDs are present only when compatible with those results.
 Canonical writes require proof references; no-write outcomes require a reason.
+Synesthesia also reports digest `current`, `not-applicable`, or `blocked`;
+`blocked` requires a digest reason and degrades an otherwise successful
+checkpoint.
 
 A participant in checkpoint context must not bootstrap Ledger, invoke the
 coordinator, call a sibling participant, or use another participant's result as
@@ -82,7 +89,8 @@ Validate with:
 
 ```bash
 ledger validate \
-  --definition codex/skills/ledger/definitions/ledger/source-memory-checkpoint-receipt.json \
+  --definition "$ledger_skill_root/definitions/ledger/source-memory-checkpoint-receipt.json" \
+  --input checkpoint_input=<checkpoint-input.json> \
   --input checkpoint=<checkpoint.json> \
   --format json
 ```

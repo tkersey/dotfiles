@@ -17,7 +17,7 @@ Check:
 - commitment horizon is short enough to remain evidence-responsive;
 - success terminal proves the source contract;
 - human projection does not contradict EPG;
-- `ledger validate --definition codex/skills/plan/definitions/ledger/execution-policy-graph.json --input policy=<epg.json> --format json`
+- `ledger validate --definition "$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger/execution-policy-graph.json")" --input policy=<epg.json> --format json`
   returns `ledger-validation-result/v1` with `valid: true` for the exact emitted
   EPG and reports the expected definition ID, digest, and ABI.
 

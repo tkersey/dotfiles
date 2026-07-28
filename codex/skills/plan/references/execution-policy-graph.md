@@ -425,7 +425,7 @@ execution_policy_graph:
   readiness or select its eventual consumer.
 - EPG-v1 is a source plan, not runtime state or execution authority.
 - Structural validation uses
-  `ledger validate --definition codex/skills/plan/definitions/ledger/execution-policy-graph.json --input policy=<epg.json> --format json`.
+  `ledger validate --definition "$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger/execution-policy-graph.json")" --input policy=<epg.json> --format json`.
   Accept only `ledger-validation-result/v1` with `valid: true`, bind the exact
   definition and input digests, and describe the result only as structurally valid
   under `plan/execution-policy-graph@<definition-digest>`.

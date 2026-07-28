@@ -136,8 +136,9 @@ Prefer `skill_decision_contract / SKDC-v1`. If absent, reconstruct only the mini
 Validate an authored contract through Tune's canonical passive definition:
 
 ```bash
+tune_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions")"
 ledger validate \
-  --definition codex/skills/tune/definitions/ledger/skill-decision-contract.json \
+  --definition "$tune_definition_root/ledger/skill-decision-contract.json" \
   --input contract=<skill-root>/references/decision-contract.json \
   --format json
 ```

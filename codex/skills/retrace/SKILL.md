@@ -155,6 +155,13 @@ permissions = read-only, network-off
 persistence = receipts
 ```
 
+Resolve installed definition symlinks once before invoking either runtime:
+
+```bash
+retrace_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions")"
+cas_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/cas/definitions")"
+```
+
 ## Workflow
 ### 0. Source-governance gate
 Run this phase when:
@@ -166,7 +173,7 @@ Obtain the exact session-level row, not only aggregate counts.
 For controller-backed review-closure workflows:
 ```bash
 seq observe \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/source-governance.json" \
+  --definition "$retrace_definition_root/seq/source-governance.json" \
   --root ~/.codex/sessions \
   --repo <repo> \
   --since <time> \
@@ -176,7 +183,7 @@ seq observe \
   --format json
 
 seq observe \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/source-governance.json" \
+  --definition "$retrace_definition_root/seq/source-governance.json" \
   --root ~/.codex/sessions \
   --repo <repo> \
   --since <time> \
@@ -224,7 +231,7 @@ Validate the authored gate structurally:
 
 ```bash
 ledger validate \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/source-governance-gate.json" \
+  --definition "$retrace_definition_root/ledger/source-governance-gate.json" \
   --input gate=source-governance-gate.json \
   --format json
 ```
@@ -251,7 +258,7 @@ Use Retrace's candidate observation first:
 
 ```bash
 seq observe \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/decision-candidates.json" \
+  --definition "$retrace_definition_root/seq/decision-candidates.json" \
   --root ~/.codex/sessions \
   --repo <repo> \
   --since <time> \
@@ -264,7 +271,7 @@ Then freeze the selected session's ordered source evidence:
 
 ```bash
 seq observe \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/seq/decision-capsule.json" \
+  --definition "$retrace_definition_root/seq/decision-capsule.json" \
   --session-id <id> \
   --projection events \
   --format json
@@ -288,7 +295,7 @@ claimed identity:
 
 ```bash
 ledger materialize \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-context-packet.json" \
+  --definition "$retrace_definition_root/ledger/decision-context-packet.json" \
   --input packet=decision-context-packet.json \
   --format json
 ```
@@ -344,12 +351,12 @@ Validate the exact plan CAS will consume:
 
 ```bash
 ledger validate \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-context-packet.json" \
+  --definition "$retrace_definition_root/ledger/decision-context-packet.json" \
   --input packet=capsule.json \
   --format json > capsule.validation.json
 
 ledger validate \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/retrace-inquiry-plan.json" \
+  --definition "$retrace_definition_root/ledger/retrace-inquiry-plan.json" \
   --input plan=plan.json \
   --format json > plan.validation.json
 ```
@@ -359,10 +366,10 @@ See [inquiry-lanes.md](references/inquiry-lanes.md).
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
-  --capsule-definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-context-packet.json" \
+  --capsule-definition "$retrace_definition_root/ledger/decision-context-packet.json" \
   --capsule-validation capsule.validation.json \
   --plan plan.json \
-  --plan-definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/retrace-inquiry-plan.json" \
+  --plan-definition "$retrace_definition_root/ledger/retrace-inquiry-plan.json" \
   --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
   --json
@@ -375,7 +382,7 @@ Validate each exact receipt before interpretation:
 
 ```bash
 ledger validate \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/cas/definitions/ledger/fork-inquiry-receipt.json" \
+  --definition "$cas_definition_root/ledger/fork-inquiry-receipt.json" \
   --input receipt=<fir.json> \
   --format json
 ```
@@ -429,7 +436,7 @@ Validate the authored record:
 
 ```bash
 ledger validate \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-reconstruction-record.json" \
+  --definition "$retrace_definition_root/ledger/decision-reconstruction-record.json" \
   --input record=decision-reconstruction-record.json \
   --format json
 ```

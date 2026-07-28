@@ -154,8 +154,9 @@ Do not add instrumentation merely to make every answer “yes.”
 When refining `ms` itself, prefer:
 
 ```bash
+tune_seq_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions/seq/skill-decision-audit.json")"
 seq observe \
-  --definition codex/skills/tune/definitions/seq/skill-decision-audit.json \
+  --definition "$tune_seq_definition" \
   --projection evidence \
   --root <sessions-root> \
   --last 30d \

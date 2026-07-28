@@ -15,7 +15,7 @@ mapped
 Expected flow:
 
 ```bash
-negative_ledger_definition="${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json"
+negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 
 ledger project \
   --definition "$negative_ledger_definition" \

@@ -25,7 +25,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 2. Set the canonical definition and prove the store:
 
    ```bash
-   negative_ledger_definition="${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json"
+   negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 
    ledger doctor \
      --definition "$negative_ledger_definition" \

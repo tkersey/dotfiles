@@ -113,8 +113,9 @@ turn-report.json
 Example:
 
 ```bash
+seq_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq")"
 seq observe \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq/message-search.json" \
+  --definition "$seq_definition_root/message-search.json" \
   --path <rollout.jsonl> \
   --param "needle=<term>" \
   --projection rows \

@@ -7,8 +7,9 @@ and operational route state through its own protocol definition.
 ## Read Path
 
 ```bash
+learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json")"
 ledger project \
-  --definition "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json" \
+  --definition "$learnings_definition" \
   --projection recall \
   --repo <repo> \
   --param "query=<artifact> <objective> failed attempt regression revert no-effect avoid" \

@@ -19,7 +19,7 @@ Every command selects this definition and names its operation or projection.
 ## Generic Operations and Projections
 
 ```bash
-negative_ledger_definition="${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json"
+negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 
 ledger doctor \
   --definition "$negative_ledger_definition" \
@@ -30,7 +30,6 @@ ledger transact \
   --definition "$negative_ledger_definition" \
   --operation bind-existing \
   --repo "<repo-root>" \
-  --input event="<repo-root>/.ledger/negative-ledger/events.jsonl" \
   --format json
 
 ledger transact \

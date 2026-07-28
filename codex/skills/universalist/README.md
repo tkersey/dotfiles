@@ -13,8 +13,9 @@ Place the complete tree at `codex/skills/universalist/`. The skill has no runtim
 From the repository root:
 
 ```bash
+tune_contract_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions/ledger/skill-decision-contract.json")"
 ledger validate \
-  --definition codex/skills/tune/definitions/ledger/skill-decision-contract.json \
+  --definition "$tune_contract_definition" \
   --input contract=codex/skills/universalist/references/decision-contract.json \
   --format json
 ```

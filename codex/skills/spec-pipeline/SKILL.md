@@ -529,8 +529,9 @@ are not.
 Validate the exact final object before treating it as the current SGR-v2:
 
 ```bash
+spec_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/spec-pipeline/definitions/ledger")"
 ledger validate \
-  --definition codex/skills/spec-pipeline/definitions/ledger/spec-governance-receipt.json \
+  --definition "$spec_definition_root/spec-governance-receipt.json" \
   --input receipt=<sgr-v2.json> \
   --format json
 ```
@@ -617,7 +618,7 @@ Plan:
 
 ```bash
 ledger validate \
-  --definition codex/skills/spec-pipeline/definitions/ledger/plan-source-contract.json \
+  --definition "$spec_definition_root/plan-source-contract.json" \
   --input contract=<psc-v1.json> \
   --format json
 ```

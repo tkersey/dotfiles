@@ -128,12 +128,16 @@ same `plan_id`. They do not introduce another artifact family.
 Never write, replace, or read this path directly. Select the definition operation
 explicitly:
 
+```bash
+plan_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger")"
+```
+
 For a valid pre-cutover EPG-v1 document already at that canonical path, perform
 the explicit one-shot binding before any normal read or write:
 
 ```bash
 ledger transact \
-  --definition codex/skills/plan/definitions/ledger/plan-policy-document.json \
+  --definition "$plan_definition_root/plan-policy-document.json" \
   --operation bind-existing \
   --repo <repository-root> \
   --param plan_id=<plan-id> \
@@ -148,7 +152,7 @@ For a new document:
 
 ```bash
 ledger transact \
-  --definition codex/skills/plan/definitions/ledger/plan-policy-document.json \
+  --definition "$plan_definition_root/plan-policy-document.json" \
   --operation create \
   --repo <repository-root> \
   --input policy=<epg.json> \
@@ -161,7 +165,7 @@ ID:
 
 ```bash
 ledger transact \
-  --definition codex/skills/plan/definitions/ledger/plan-policy-document.json \
+  --definition "$plan_definition_root/plan-policy-document.json" \
   --operation revise \
   --repo <repository-root> \
   --input policy=<revised-epg.json> \
@@ -180,7 +184,7 @@ Read the current source and its revision through:
 
 ```bash
 ledger project \
-  --definition codex/skills/plan/definitions/ledger/plan-policy-document.json \
+  --definition "$plan_definition_root/plan-policy-document.json" \
   --projection show \
   --repo <repository-root> \
   --param plan_id=<plan-id> \
@@ -433,7 +437,7 @@ Validate the exact emitted candidate with:
 
 ```bash
 ledger validate \
-  --definition codex/skills/plan/definitions/ledger/execution-policy-graph.json \
+  --definition "$plan_definition_root/execution-policy-graph.json" \
   --input policy=<epg.json> \
   --format json
 ```

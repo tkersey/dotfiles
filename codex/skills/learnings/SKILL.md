@@ -47,7 +47,7 @@ complete `$ledger ensure`. Require Ledger 1.x and `ledger-artifact-abi/v1`.
 Set:
 
 ```bash
-learnings_definition="${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json"
+learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json")"
 ```
 
 Use `ledger transact --operation capture` for writes; use definition-bound

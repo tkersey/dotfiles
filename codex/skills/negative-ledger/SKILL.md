@@ -101,7 +101,7 @@ ledger capabilities --format json
 Set the canonical definition once:
 
 ```bash
-negative_ledger_definition="${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json"
+negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 ```
 
 Use only:
@@ -125,7 +125,6 @@ ledger transact \
   --definition "$negative_ledger_definition" \
   --operation bind-existing \
   --repo "<repo-root>" \
-  --input event="<repo-root>/.ledger/negative-ledger/events.jsonl" \
   --format json
 ```
 
@@ -195,10 +194,10 @@ criteria. Select `need-evidence` before transaction when those structural
 requirements are incomplete; never assert `active` in prose after Ledger
 rejects it.
 
-Promoting an incomplete candidate to `active` requires the transition proof
-plus the complete replacement record, whose `status` is `active`. Use the
-dedicated operation so the event atomically replaces the reducer's retained
-record:
+Every transition to `active`, including promotion, reactivation, and
+reopening, requires the transition proof plus the complete replacement record,
+whose `status` is `active`. Use the dedicated operation so the event atomically
+replaces the reducer's retained record:
 
 ```bash
 ledger transact \
