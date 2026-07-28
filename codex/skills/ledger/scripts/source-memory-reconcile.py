@@ -50,7 +50,10 @@ def run_bytes(argv: list[str], *, cwd: Path) -> bytes:
     except OSError as exc:
         raise ReconcileError(f"{Path(argv[0]).name}: {exc}") from exc
     if proc.returncode != 0:
-        detail = proc.stderr.decode("utf-8", errors="replace").strip()
+        detail = (
+            proc.stderr.decode("utf-8", errors="replace").strip()
+            or proc.stdout.decode("utf-8", errors="replace").strip()
+        )
         raise ReconcileError(
             f"{' '.join(argv[1:3])}: {detail or f'exit {proc.returncode}'}"
         )

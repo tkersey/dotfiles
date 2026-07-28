@@ -15,6 +15,14 @@ seq observe \
   --last <duration> \
   --param needle=<skill> \
   --format json
+
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection tools \
+  --root <sessions-root> \
+  --last <duration> \
+  --param needle=<skill> \
+  --format json
 ```
 
 One watched session:
@@ -23,6 +31,14 @@ One watched session:
 seq observe \
   --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
   --projection evidence \
+  --root <sessions-root> \
+  --session-id <session> \
+  --param needle=<skill> \
+  --format json
+
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection tools \
   --root <sessions-root> \
   --session-id <session> \
   --param needle=<skill> \
@@ -46,6 +62,10 @@ Treat every returned row as candidate evidence:
   `turn_index` as provenance;
 - mark causality unknown unless the episode explicitly binds the skill to the
   decision.
+
+For a tool or command pattern, select projection `tools` under the same
+selectors and pass that exact pattern as `needle`. This keeps tool-backed
+activation evidence distinct from arbitrary prose mentions.
 
 Tune authors STE-v1 from the classified evidence. Seq does not author or
 validate Tune artifacts.

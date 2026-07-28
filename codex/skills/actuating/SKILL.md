@@ -393,7 +393,8 @@ An accepted Review Fold makes the current Construction stale. Its successor
 uses `accepted-review-fold`, binds the latest Counterexample Set on the exact
 current subject, and records the same canonical accepted-class list in both
 `counterexample_class_refs` and `evaluated_class_refs`. A zero-class successor
-is legal only when it clears a nonempty predecessor debt set on that subject.
+is legal whenever the latest fold has no accepted class, including when it
+rejects a newly observed class against an empty predecessor debt set.
 Subject rebinding refreshes this exact-subject evaluation without resetting the
 goal-causal lineage.
 Predecessor-factor proof refs resolve through the predecessor artifact;

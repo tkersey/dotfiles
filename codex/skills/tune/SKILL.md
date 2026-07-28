@@ -37,6 +37,15 @@ seq observe \
   --repo <repo> \
   --param needle=<skill> \
   --format json
+
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection tools \
+  --root <sessions-root> \
+  --last 30d \
+  --repo <repo> \
+  --param needle=<skill> \
+  --format json
 ```
 
 For one watched session, prefer:
@@ -49,12 +58,25 @@ seq observe \
   --session-id <session> \
   --param needle=<skill> \
   --format json
+
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection tools \
+  --root <sessions-root> \
+  --session-id <session> \
+  --param needle=<skill> \
+  --format json
 ```
 
 The Seq result is evidence, provenance, corpus scope, statistics, and
 limitations. It is not an STE packet and grants no authority. Tune classifies
 the evidence, compares it with the target contract, authors
 `skill_tuning_evidence / STE-v1`, and validates that packet through:
+
+Free-form `evidence` rows are candidate mentions, never activation identity.
+For an executable or tool pattern, invoke the same definition with projection
+`tools` and the exact pattern as `needle`; treat a tool row as activation only
+after Tune verifies the owning command or skill boundary.
 
 ```bash
 ledger validate \

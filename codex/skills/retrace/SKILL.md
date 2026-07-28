@@ -359,8 +359,10 @@ See [inquiry-lanes.md](references/inquiry-lanes.md).
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
+  --capsule-definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/decision-context-packet.json" \
   --capsule-validation capsule.validation.json \
   --plan plan.json \
+  --plan-definition "${CODEX_HOME:-$HOME/.codex}/skills/retrace/definitions/ledger/retrace-inquiry-plan.json" \
   --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
   --json

@@ -7,7 +7,8 @@
       "filter",
       "limit",
       "project",
-      "scan"
+      "scan",
+      "sort"
     ]
   },
   "parameters": {
@@ -95,8 +96,29 @@
       ]
     },
     {
-      "op": "project",
+      "op": "sort",
       "input": "matched",
+      "as": "newest",
+      "by": [
+        {
+          "field": "started_at",
+          "direction": "desc",
+          "nulls": "last"
+        },
+        {
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "turn_index",
+          "direction": "desc",
+          "nulls": "last"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "newest",
       "as": "selected",
       "fields": [
         "call_id",

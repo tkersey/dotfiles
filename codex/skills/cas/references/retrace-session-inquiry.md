@@ -48,8 +48,10 @@ Preferred command:
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
+  --capsule-definition <retrace-skill-root>/definitions/ledger/decision-context-packet.json \
   --capsule-validation capsule.validation.json \
   --plan plan.json \
+  --plan-definition <retrace-skill-root>/definitions/ledger/retrace-inquiry-plan.json \
   --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
   --json

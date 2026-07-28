@@ -26,6 +26,11 @@ Seq reads only:
 - supported OpenCode execution/session sources;
 - explicit immutable input relations supplied by the caller.
 
+Select OpenCode prompt history explicitly with
+`--path ~/.local/state/opencode/prompt-history.jsonl`; its prompts, parts, and
+tool lifecycle use the canonical physical relations, never a source-specific
+command.
+
 Seq does not scan memory roots, Ledger stores, artifact directories, or another
 durable source implicitly. Compose durable facts explicitly:
 

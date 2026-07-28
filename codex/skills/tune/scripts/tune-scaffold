@@ -184,6 +184,7 @@ if [[ "$needs_history" == "yes" ]]; then
 TUNE_OUT
 
   printf '\nseq observe --definition %s --projection evidence --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$q_skill"
+  printf 'seq observe --definition %s --projection tools --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$q_skill"
 fi
 
 if [[ ${#session_ids[@]} -gt 0 ]]; then
@@ -191,6 +192,7 @@ if [[ ${#session_ids[@]} -gt 0 ]]; then
   for sid in "${session_ids[@]}"; do
     [[ -z "$sid" ]] && continue
     printf 'seq observe --definition %s --projection evidence --root %s --session-id %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$(shq "$sid")" "$repo_selector" "$q_skill"
+    printf 'seq observe --definition %s --projection tools --root %s --session-id %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$(shq "$sid")" "$repo_selector" "$q_skill"
     printf 'seq session-detail --root %s --session-id %s --format json\n' "$q_root" "$(shq "$sid")"
     printf 'seq tool-lifecycle --root %s --session-id %s --format json\n' "$q_root" "$(shq "$sid")"
   done
@@ -208,7 +210,7 @@ if [[ ${#command_patterns[@]} -gt 0 ]]; then
   printf '\n## Targeted tooling patterns\n\n'
   for pattern in "${command_patterns[@]}"; do
     [[ -z "$pattern" ]] && continue
-    printf -- '- Use tool-lifecycle only for selected sessions; match: %s\n' "$(shq "$pattern")"
+    printf 'seq observe --definition %s --projection tools --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$(shq "$pattern")"
   done
 fi
 

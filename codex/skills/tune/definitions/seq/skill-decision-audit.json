@@ -42,6 +42,27 @@
         "text",
         "private"
       ]
+    },
+    {
+      "name": "tool_lifecycle",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "arguments_json",
+        "input_text",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
     }
   ],
   "inputs": [],
@@ -70,27 +91,34 @@
       ]
     },
     {
-      "op": "limit",
-      "input": "matched",
-      "as": "bounded",
-      "limit": 2000
-    },
-    {
       "op": "sort",
-      "input": "bounded",
-      "as": "ordered",
+      "input": "matched",
+      "as": "newest",
       "by": [
         {
-          "field": "path"
+          "field": "timestamp",
+          "direction": "desc",
+          "nulls": "last"
         },
         {
-          "field": "line_number"
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "line_number",
+          "direction": "desc"
         }
       ]
     },
     {
+      "op": "limit",
+      "input": "newest",
+      "as": "bounded",
+      "limit": 2000
+    },
+    {
       "op": "project",
-      "input": "ordered",
+      "input": "bounded",
       "as": "evidence",
       "fields": [
         "source_event_id",
@@ -104,6 +132,99 @@
         "role",
         "text",
         "private"
+      ]
+    },
+    {
+      "op": "scan",
+      "relation": "tool_lifecycle",
+      "as": "tools_source"
+    },
+    {
+      "op": "filter",
+      "input": "tools_source",
+      "as": "matched_tools",
+      "where_mode": "any",
+      "where": [
+        {
+          "field": "tool_name",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "namespace",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "arguments_json",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "input_text",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        },
+        {
+          "field": "command_text",
+          "op": "contains",
+          "param": "needle",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "sort",
+      "input": "matched_tools",
+      "as": "newest_tools",
+      "by": [
+        {
+          "field": "started_at",
+          "direction": "desc",
+          "nulls": "last"
+        },
+        {
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "turn_index",
+          "direction": "desc",
+          "nulls": "last"
+        }
+      ]
+    },
+    {
+      "op": "limit",
+      "input": "newest_tools",
+      "as": "bounded_tools",
+      "limit": 2000
+    },
+    {
+      "op": "project",
+      "input": "bounded_tools",
+      "as": "tool_evidence",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "arguments_json",
+        "input_text",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
       ]
     }
   ],
@@ -123,6 +244,31 @@
         "role",
         "text",
         "private"
+      ],
+      "renderers": [
+        "json"
+      ]
+    },
+    "tools": {
+      "relation": "tool_evidence",
+      "schema": "tune-skill-decision-tool-evidence/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "arguments_json",
+        "input_text",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
       ],
       "renderers": [
         "json"

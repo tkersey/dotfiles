@@ -66,7 +66,10 @@ def _run(
 
 def _require_success(proc: subprocess.CompletedProcess[bytes], stage: str) -> bytes:
     if proc.returncode != 0:
-        detail = proc.stderr.decode("utf-8", errors="replace").strip()
+        detail = (
+            proc.stderr.decode("utf-8", errors="replace").strip()
+            or proc.stdout.decode("utf-8", errors="replace").strip()
+        )
         raise AdapterError(f"{stage}: {detail or f'exit {proc.returncode}'}")
     return proc.stdout
 

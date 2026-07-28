@@ -93,16 +93,22 @@ owner evidence; Ledger validates only its declared structural contract.
 
 ~~~json
 {
-  "schema": "actuating-operation/v1",
+  "schema": "actuating-operation-request/v1",
   "goal_id": "<goal-id>",
   "construction_ref": "sha256:<64-lower-hex>",
-  "expected_subject_digest": "sha256:<64-lower-hex>",
-  "step_id": "<step-id>",
-  "effect": "inspect|edit|verify",
-  "idempotency_key": "<unique-key>",
-  "owner_boundary": "<owner>",
-  "paths": ["<literal-repository-path>"],
-  "proof_obligation_refs": ["<obligation-id>"]
+  "subject_digest": "sha256:<64-lower-hex>",
+  "body": {
+    "schema": "actuating-operation/v1",
+    "goal_id": "<goal-id>",
+    "construction_ref": "sha256:<64-lower-hex>",
+    "expected_subject_digest": "sha256:<64-lower-hex>",
+    "step_id": "<step-id>",
+    "effect": "inspect|edit|verify",
+    "idempotency_key": "<unique-key>",
+    "owner_boundary": "<owner>",
+    "paths": ["<literal-repository-path>"],
+    "proof_obligation_refs": ["<obligation-id>"]
+  }
 }
 ~~~
 
@@ -321,12 +327,14 @@ HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
 out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
 index-flagged, platform-ambiguous, or unequal captures fail closed.
 
-`operation_aborted` is the capabilityless recovery path: reject any raw
-capability, exact-match the current tuple and pending `step_id`, require a
-nonblank reason, then terminate the pending operation and invalidate its stored
-capability digest. This permits recovery when `prepare-operation` persisted
-admission but its one-time raw output was lost, without adding another command
-or granting an effect.
+Before an effect, `operation_aborted` is the capabilityless recovery path:
+reject any raw capability, exact-match the current tuple and pending `step_id`,
+require a nonblank reason, then terminate the pending operation and invalidate
+its stored capability digest. This permits recovery when `prepare-operation`
+persisted admission but its one-time raw output was lost, without adding
+another command or granting an effect. After `record-effect`, abort is
+inadmissible: the owner must record `operation_observed` so the changed subject
+and proof disposition remain explicit.
 
 When the observed live subject has drifted, the current goal remains blocked;
 `operation_aborted` does not pretend that an external change was an authorized

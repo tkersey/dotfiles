@@ -39,7 +39,6 @@
         "turn_index",
         "role",
         "text",
-        "raw_json",
         "private"
       ]
     },
@@ -83,7 +82,7 @@
           "value": false
         },
         {
-          "field": "raw_json",
+          "field": "text",
           "op": "contains",
           "param": "workflow",
           "case_insensitive": true
@@ -117,8 +116,7 @@
         "timestamp",
         "turn_index",
         "role",
-        "text",
-        "raw_json"
+        "text"
       ]
     },
     {
@@ -226,8 +224,7 @@
         "timestamp",
         "turn_index",
         "role",
-        "text",
-        "raw_json"
+        "text"
       ],
       "renderers": [
         "json",
