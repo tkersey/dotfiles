@@ -106,6 +106,37 @@ Do not polish novelty, magnitude, a large rewrite, or a metric jump into a break
 
 For terse activation, prefer `Be saltatory.` or the caller's exact requested fragment. For behavioral replacement claims, route through [behavioral_upgrade.md](behavioral_upgrade.md) rather than assuming the formal term outperforms `Find the leap.` or another plain phrase.
 
+## After composite cognitive-regime escalation
+
+Use [metanoetic_doctrine.md](metanoetic_doctrine.md) when an output names or explains a coordinated escalation intended to change the frame, assumptions, search posture, admissible possibilities, and kind of answer the agent can produce.
+
+Preserve:
+
+- the incumbent cognitive regime and inherited frame;
+- verified facts and explicit constraints that survive the reset;
+- the distinct roles of defamiliarization, excavation, aporia, audacity, poiesis, and saltation;
+- the new governing layer, frame, or possibility space;
+- the newly admitted candidate or created form;
+- the route delta and discontinuity candidate;
+- the adjudicative re-entry boundary;
+- the evidence status and falsifier.
+
+Keep the distinctions explicit:
+
+- `METACOGNITIVE` inspects the reasoning strategy;
+- `PARADIGMATIC` replaces the governing frame;
+- `POTENTIATING` amplifies latent capability;
+- `TRANSFIGURATIVE` describes transformation of the manifested result;
+- `INCANTATORY` names the rhetorical form;
+- `SALTATORY` supplies terminal leap pressure;
+- `METANOETIC` names the composite cognitive-regime change.
+
+Treat `METANOETIC` as the umbrella over the component transformation, not as another primitive stage after `SALTATORY`. A useful summary is `metanoetic in function, incantatory in form`.
+
+When another skill owns an exact multi-operator invocation, preserve its wording, order, capitalization, punctuation, and cadence. Do not collapse it to `Be metanoetic.` without a Behavioral Upgrade Verdict and, for a consequential replacement, matched evidence.
+
+A metanoetic pass may generate a new frame or candidate; it does not select, authorize, implement, verify, or publish it. Route the result through the owning adjudication and execution workflow.
+
 ## After $seq or $learnings
 
 Use `$logophile` to make forensic/cartographic/precedential outputs readable without losing provenance:
