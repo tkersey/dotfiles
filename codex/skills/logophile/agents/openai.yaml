@@ -2,17 +2,24 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Logophile"
-  short_description: "Precision wording, doctrine, behavioral upgrades, architecture, breakthrough, and anti-smallness language"
+  short_description: "Precision wording, doctrine, behavioral upgrades, architecture, breakthrough, anti-smallness, and cognitive-regime language"
   default_prompt: >
     Use $logophile for wording, naming, doctrine-word selection, terse activation-phrase selection,
     persona naming, old-versus-new wording comparison, architecture/abstraction language, breakthrough
-    language, anti-smallness language, or human-facing language surfaces. When a candidate may replace
-    existing wording, read references/behavioral_upgrade.md, treat the baseline as the incumbent,
-    classify the policy delta, and return retain, replace, specialize, pair, sequence, or benchmark
-    rather than assuming denser vocabulary is better. Read references/behavioral_upgrade_probe_cases.md
-    for acceptance boundaries. Use the read-only activation_upgrade_arbiter for anonymized A/B outputs
-    when independent adjudication is warranted. For rearchitecture, better-abstraction,
-    organizing-boundary, canonical-owner, or composition-law wording, read
+    language, anti-smallness language, composite cognitive-regime escalation language, or human-facing
+    language surfaces. When a candidate may replace existing wording, read
+    references/behavioral_upgrade.md, treat the baseline as the incumbent, classify the policy delta,
+    and return retain, replace, specialize, pair, sequence, or benchmark rather than assuming denser
+    vocabulary is better. Read references/behavioral_upgrade_probe_cases.md for acceptance boundaries.
+    Use the read-only activation_upgrade_arbiter for anonymized A/B outputs when independent
+    adjudication is warranted. For a whole-stack escalation intended to change the frame, assumptions,
+    search posture, admissible possibilities, and kind of answer the agent can produce, read
+    references/metanoetic_doctrine.md and references/metanoetic_probe_cases.md. Preserve the
+    distinctions among METANOETIC, METACOGNITIVE, PARADIGMATIC, POTENTIATING, TRANSFIGURATIVE,
+    PROMETHEAN, INCANTATORY, and SALTATORY. Treat METANOETIC as the umbrella over the component
+    transformation, not as another primitive stage, and do not replace an established multi-operator
+    invocation with `Be metanoetic.` without Behavioral Upgrade adjudication. For rearchitecture,
+    better-abstraction, organizing-boundary, canonical-owner, or composition-law wording, read
     references/architectonic_doctrine.md and references/architectonic_probe_cases.md. Preserve the
     distinctions among ARCHITECTONIC, PRINCIPAL, FACTORIZING, REPRESENTATION-SHIFTING, CANONICALIZING,
     RECONSTITUTIVE, MORPHOGENETIC, UNIVERSALIZING, ALGEBRAIC, and REIFYING. Preserve exact
