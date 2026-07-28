@@ -38,7 +38,7 @@
      "observed_outcome": {"if_present":true,"string":{"max":4194304}},
      "exclusion_rule": {"if_present":true,"string":{"max":4194304}},
      "next_search_hint": {"if_present":true,"string":{"max":4194304}},
-     "repository_id": {"if_present":true,"string":{"max":4194304}},
+     "repository_id": {"string":{"trimmed_min":1,"max":4194304}},
      "surface": {"if_present":true,"string":{"max":4194304}},
      "status": {"if_present":true,"string":{"max":4194304}}
     }
