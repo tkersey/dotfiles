@@ -89,6 +89,11 @@ case "$history_scope" in
   *) echo "invalid --history-scope: $history_scope" >&2; echo "expected: recent | arbitrary | explicit-sessions" >&2; exit 2 ;;
 esac
 
+if [[ -n "$since" && "$last_provided" == "yes" ]]; then
+  echo "--since and --last are mutually exclusive" >&2
+  exit 2
+fi
+
 needs_history="no"
 case "$evidence_source" in
   history|mixed) needs_history="yes" ;;
@@ -117,6 +122,11 @@ q_root="$(shq "$root")"
 q_skill="$(shq "$skill")"
 q_last="$(shq "$last")"
 q_since="$(shq "$since")"
+if [[ -n "$since" ]]; then
+  history_window="--since $q_since"
+else
+  history_window="--last $q_last"
+fi
 script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 skill_dir="$(CDPATH= cd -- "$script_dir/.." && pwd -P)"
 q_definition="$(shq "$skill_dir/definitions/seq/skill-decision-audit.json")"
@@ -169,11 +179,7 @@ if [[ "$needs_history" == "yes" ]]; then
 ## Historical evidence command
 TUNE_OUT
 
-  if [[ "$history_scope" == "recent" || "$last_provided" == "yes" ]]; then
-    printf '\nseq observe --definition %s --projection evidence --root %s --last %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$q_last" "$repo_selector" "$q_skill"
-  else
-    printf '\nseq observe --definition %s --projection evidence --root %s --since %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$q_since" "$repo_selector" "$q_skill"
-  fi
+  printf '\nseq observe --definition %s --projection evidence --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$q_skill"
 fi
 
 if [[ ${#session_ids[@]} -gt 0 ]]; then
@@ -190,7 +196,7 @@ if [[ ${#failure_phrases[@]} -gt 0 ]]; then
   printf '\n## Targeted trigger/failure phrases\n\n'
   for phrase in "${failure_phrases[@]}"; do
     [[ -z "$phrase" ]] && continue
-    printf 'seq observe --definition %s --projection evidence --root %s --last %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$q_last" "$repo_selector" "$(shq "$phrase")"
+    printf 'seq observe --definition %s --projection evidence --root %s %s%s --param needle=%s --format json\n' "$q_definition" "$q_root" "$history_window" "$repo_selector" "$(shq "$phrase")"
   done
 fi
 

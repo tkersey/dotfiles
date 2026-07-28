@@ -23,7 +23,7 @@ Admission gates:
 Recommended handoff:
 
 ```bash
-ledger project --definition <learnings-protocol.json> --projection recall --repo <repo> --param query="<topic>" --param limit=5 --format json
+ledger project --definition <learnings-protocol.json> --projection recall --repo <repo> --param query="<topic>" --param search_limit=5 --param drop_superseded=true --format json
 ledger doctor --definition <negative-evidence-protocol.json> --repo <repo> --format json
 ledger project --definition <negative-evidence-protocol.json> --projection memory-note --repo <repo> --param id=NEG-000001 --payload-only --format json
 memory-note append --extension <source> --kind <kind> --json -

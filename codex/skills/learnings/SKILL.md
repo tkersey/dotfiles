@@ -165,7 +165,8 @@ ledger project \
   --projection recall \
   --repo "<repo-root>" \
   --param "query=<focused component failure objective terms>" \
-  --param limit=5 \
+  --param search_limit=5 \
+  --param drop_superseded=true \
   --format json
 ```
 

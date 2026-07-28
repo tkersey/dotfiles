@@ -4,6 +4,7 @@
   "requires": {
     "abi": "seq-observation-abi/v1",
     "operators": [
+      "filter",
       "project",
       "scan",
       "sort"
@@ -43,8 +44,20 @@
       "as": "source"
     },
     {
-      "op": "sort",
+      "op": "filter",
       "input": "source",
+      "as": "public_source",
+      "where": [
+        {
+          "field": "private",
+          "op": "exact",
+          "value": false
+        }
+      ]
+    },
+    {
+      "op": "sort",
+      "input": "public_source",
       "as": "ordered",
       "by": [
         {

@@ -58,6 +58,11 @@
       "as": "matched",
       "where": [
         {
+          "field": "private",
+          "op": "exact",
+          "value": false
+        },
+        {
           "field": "raw_json",
           "op": "contains",
           "param": "needle",
