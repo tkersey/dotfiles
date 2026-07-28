@@ -117,6 +117,13 @@ q_root="$(shq "$root")"
 q_skill="$(shq "$skill")"
 q_last="$(shq "$last")"
 q_since="$(shq "$since")"
+script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+skill_dir="$(CDPATH= cd -- "$script_dir/.." && pwd -P)"
+q_definition="$(shq "$skill_dir/definitions/seq/skill-decision-audit.json")"
+repo_selector=""
+if [[ -n "$workdir" ]]; then
+  repo_selector=" --repo $(shq "$workdir")"
+fi
 
 cat <<TUNE_OUT
 # \$tune scaffold for skill: $skill
@@ -163,9 +170,9 @@ if [[ "$needs_history" == "yes" ]]; then
 TUNE_OUT
 
   if [[ "$history_scope" == "recent" || "$last_provided" == "yes" ]]; then
-    printf '\nseq observe --definition codex/skills/tune/definitions/seq/skill-decision-audit.json --projection evidence --root %s --last %s --param skill=%s --format json\n' "$q_root" "$q_last" "$q_skill"
+    printf '\nseq observe --definition %s --projection evidence --root %s --last %s%s --param skill=%s --format json\n' "$q_definition" "$q_root" "$q_last" "$repo_selector" "$q_skill"
   else
-    printf '\nseq observe --definition codex/skills/tune/definitions/seq/skill-decision-audit.json --projection evidence --root %s --since %s --param skill=%s --format json\n' "$q_root" "$q_since" "$q_skill"
+    printf '\nseq observe --definition %s --projection evidence --root %s --since %s%s --param skill=%s --format json\n' "$q_definition" "$q_root" "$q_since" "$repo_selector" "$q_skill"
   fi
 fi
 
@@ -173,7 +180,7 @@ if [[ ${#session_ids[@]} -gt 0 ]]; then
   printf '\n## Explicit session evidence\n\n'
   for sid in "${session_ids[@]}"; do
     [[ -z "$sid" ]] && continue
-    printf 'seq observe --definition codex/skills/tune/definitions/seq/skill-decision-audit.json --projection evidence --root %s --session-id %s --param skill=%s --format json\n' "$q_root" "$(shq "$sid")" "$q_skill"
+    printf 'seq observe --definition %s --projection evidence --root %s --session-id %s%s --param skill=%s --format json\n' "$q_definition" "$q_root" "$(shq "$sid")" "$repo_selector" "$q_skill"
     printf 'seq session-detail --root %s --session-id %s --format json\n' "$q_root" "$(shq "$sid")"
     printf 'seq tool-lifecycle --root %s --session-id %s --format json\n' "$q_root" "$(shq "$sid")"
   done
@@ -205,7 +212,7 @@ fi
 
 if [[ -n "$workdir" ]]; then
   printf '\n## Targeted workdir evidence\n\n'
-  printf -- '- Add --repo %s to the canonical observation when this is a repository scope.\n' "$(shq "$workdir")"
+  printf -- '- The canonical observation is scoped with --repo %s.\n' "$(shq "$workdir")"
 fi
 
 cat <<TUNE_OUT
