@@ -1,6 +1,6 @@
 ---
 name: ideate
-description: "Mine a codebase or product surface for evidence-backed breakthrough opportunities. Use for `$ideate`, repo/product improvement discovery, idea portfolios, non-obvious refactors, DX/UX/reliability/performance opportunities, or choosing what to plan next. Mode-aware: fast, standard, deep, or audit-only. Run Glaze and ASI prompt gates before choosing; output a ranked opportunity portfolio, escalation ledger, IDR-v1 receipt, and a planning handoff seed when evidence is sufficient. Do not implement, create tickets, or emit task graphs."
+description: "Mine a codebase or product surface for evidence-backed breakthrough opportunities. Use for `$ideate`, repo/product improvement discovery, idea portfolios, non-obvious refactors, DX/UX/reliability/performance opportunities, or choosing what to plan next. Mode-aware: fast, standard, deep, or audit-only. Invoke `$glaze` directly and run the ASI prompt gate before choosing; output a ranked opportunity portfolio, escalation ledger, IDR-v1 receipt, and a planning handoff seed when evidence is sufficient. Do not implement, create tickets, or emit task graphs."
 ---
 
 # Ideate
@@ -12,7 +12,7 @@ repository evidence
 -> opportunity signals
 -> candidate field
 -> winnow
--> Glaze prompt pass
+-> direct $glaze pass
 -> ASI prompt pass
 -> ranked opportunity portfolio
 -> planning handoff seed
@@ -24,7 +24,7 @@ It is not a brainstorming free-for-all, not a ticket generator, and not an imple
 
 - Research first; do not ask for facts available in artifacts.
 - Generate original ideas from repository/product evidence, not vibes.
-- Use Glaze and ASI as escalation **prompt passes**; `$ideate` owns the pass/fail gate semantics.
+- Invoke `$glaze` directly for Glaze escalation and use ASI as an escalation prompt pass; `$ideate` owns the pass/fail gate semantics.
 - Do not choose a leading direction until the candidate survives the required gates for the selected mode.
 - A breakthrough candidate must cash out as a concrete mechanism, interface, proof surface, or strategy.
 - Prefer leverage, proof, and maintainability over novelty or rhetoric.
@@ -43,7 +43,7 @@ It is not a brainstorming free-for-all, not a ticket generator, and not an imple
 - Planning handoff seed: `references/PLAN_SEED_TEMPLATE.md`
 - Auditable receipt: `references/IDEATE_RESULT.md`
 
-The actual `$glaze` and `$asi` skill bodies remain the canonical source for their verbatim prompt text. `ESCALATION_GATES.md` mirrors the current prompt bodies and defines how `$ideate` evaluates the passes. If a prompt body and the mirror diverge, use the current `$glaze` / `$asi` `SKILL.md` body for verbatim text and update the mirror.
+The `$glaze` skill body is the sole source of Glaze prompt text. Invoke `$glaze` directly; do not copy, mirror, paraphrase, or restate its body in `$ideate` or its references. The `$asi` skill body remains canonical for ASI prompt text, and `ESCALATION_GATES.md` defines how `$ideate` evaluates both passes.
 
 ## Mode selection
 
@@ -157,11 +157,7 @@ Run the gates after the first winnow.
 
 ### Glaze prompt pass
 
-Use the current `$glaze` prompt text. The mirrored current text is:
-
-```text
-I think you can do much much much better than that! DIG DEEPER!!! RUMINATE HARDER!! BE BOLDER! MORE CREATIVE! USE FRESH EYES!!
-```
+Invoke `$glaze` directly on each selected candidate. Treat its skill body as the complete escalation instruction; do not restate or mirror it here.
 
 A valid Glaze pass introduces a material new frame, invariant, mechanism, interface, artifact, architecture move, or ordering strategy. Intensified wording alone fails.
 
