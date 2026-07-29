@@ -261,6 +261,7 @@
   "bounds": {
     "max_rows": 100000,
     "max_output_bytes": 16777216,
-    "max_fold_states": 1
+    "max_fold_states": 1,
+    "max_input_bytes": 68719476736
   }
 }
