@@ -9,16 +9,17 @@ from __future__ import annotations
 
 import argparse
 import copy
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 LOGICAL_TO_PHYSICAL_KIND = {
@@ -1261,11 +1262,7 @@ def render_memory_digest(
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _digest_metadata(path: Path) -> dict[str, str] | None:
-    try:
-        text = path.read_text(encoding="utf-8")
-    except OSError:
-        return None
+def _digest_metadata(text: str) -> dict[str, str] | None:
     lines = text.splitlines()
     if not lines or lines[0].strip() != "# Synesthesia Digest":
         return None
@@ -1294,13 +1291,48 @@ def inspect_digest(
 ) -> dict[str, Any]:
     digest_path = path or default_digest_path(home)
     expected = f"sha256:{projection['source_fingerprint']}"
-    if digest_path.is_symlink():
-        return {"path": str(digest_path), "status": "symlinked", "expected_source_fingerprint": expected}
+    try:
+        ensure_no_symlink_components(digest_path)
+    except ValidationError as exc:
+        return {
+            "path": str(digest_path),
+            "status": "symlinked",
+            "expected_source_fingerprint": expected,
+            "error": str(exc),
+        }
     if not digest_path.exists():
         return {"path": str(digest_path), "status": "missing", "expected_source_fingerprint": expected}
+    try:
+        descriptor = os.open(digest_path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    except OSError:
+        return {
+            "path": str(digest_path),
+            "status": "invalid",
+            "expected_source_fingerprint": expected,
+        }
+    try:
+        file_stat = os.fstat(descriptor)
+        if not stat.S_ISREG(file_stat.st_mode):
+            return {
+                "path": str(digest_path),
+                "status": "not-file",
+                "expected_source_fingerprint": expected,
+            }
+        with os.fdopen(descriptor, encoding="utf-8") as handle:
+            descriptor = -1
+            text = handle.read()
+    except (OSError, UnicodeError):
+        return {
+            "path": str(digest_path),
+            "status": "invalid",
+            "expected_source_fingerprint": expected,
+        }
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
     if not digest_path.is_file():
         return {"path": str(digest_path), "status": "not-file", "expected_source_fingerprint": expected}
-    file_mode = digest_path.stat().st_mode & 0o777
+    file_mode = file_stat.st_mode & 0o777
     directory_mode = digest_path.parent.stat().st_mode & 0o777
     if file_mode != 0o600 or directory_mode != 0o700:
         return {
@@ -1312,7 +1344,7 @@ def inspect_digest(
             "directory_mode": f"{directory_mode:04o}",
             "expected_directory_mode": "0700",
         }
-    metadata = _digest_metadata(digest_path)
+    metadata = _digest_metadata(text)
     if metadata is None or metadata.get("digest_version") != DIGEST_VERSION:
         return {
             "path": str(digest_path),
@@ -1326,6 +1358,18 @@ def inspect_digest(
         if metadata.get("source_fingerprint") == expected and full_projection
         else "stale"
     )
+    generated_at = metadata.get("generated_at")
+    if status == "current" and (
+        not generated_at
+        or text
+        != render_memory_digest(
+            projection,
+            generated_at,
+            include_inactive=True,
+            limit=0,
+        )
+    ):
+        status = "invalid"
     try:
         counts = {
             "active_mappings": _metadata_int(metadata, "active_mapping_count"),
@@ -1344,7 +1388,7 @@ def inspect_digest(
     return {
         "path": str(digest_path),
         "status": status,
-        "generated_at": metadata.get("generated_at"),
+        "generated_at": generated_at,
         "source_fingerprint": metadata.get("source_fingerprint"),
         "expected_source_fingerprint": expected,
         **counts,
@@ -1353,13 +1397,20 @@ def inspect_digest(
     }
 
 
-def _atomic_write_regular(path: Path, content: bytes) -> None:
+def _atomic_write_regular(
+    path: Path,
+    content: bytes,
+    *,
+    secure_parent: bool,
+) -> None:
     ensure_no_symlink_components(path)
     if path.is_symlink():
         raise ValidationError(f"digest destination is a symlink: {path}")
+    parent_existed = path.parent.exists()
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     ensure_no_symlink_components(path.parent)
-    os.chmod(path.parent, 0o700)
+    if secure_parent or not parent_existed:
+        os.chmod(path.parent, 0o700)
     fd, temp_name = tempfile.mkstemp(prefix=".synesthesia-digest-", dir=str(path.parent))
     try:
         os.fchmod(fd, 0o600)
@@ -1415,7 +1466,11 @@ def generate_memory_digest(
         include_inactive=include_inactive,
         limit=limit,
     )
-    _atomic_write_regular(destination, digest.encode("utf-8"))
+    _atomic_write_regular(
+        destination,
+        digest.encode("utf-8"),
+        secure_parent=output is None,
+    )
     return {
         "status": "written",
         "path": str(destination),
@@ -1720,7 +1775,12 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         return 2
     if body["adapter"]["status"] in {"symlinked", "not-file"}:
         return 2
-    if body["digest"]["status"] in {"symlinked", "not-file", "invalid"}:
+    if body["digest"]["status"] in {
+        "symlinked",
+        "not-file",
+        "invalid",
+        "insecure-permissions",
+    }:
         return 2
     return 0
 

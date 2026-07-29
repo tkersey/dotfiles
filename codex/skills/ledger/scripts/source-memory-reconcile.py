@@ -668,8 +668,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
             stage=f"ledger doctor {source}",
         )
     note_doctor_argv = [memory_note, "doctor", "--format", "json"]
-    if args.codex_home:
-        note_doctor_argv.extend(["--codex-home", str(codex_home)])
+    note_doctor_argv.extend(["--codex-home", str(codex_home)])
     doctors["memory-note"] = memory_note_result(
         run_json(note_doctor_argv, cwd=cwd),
         command="doctor",
@@ -681,7 +680,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
             memory_note,
             source,
             cwd=cwd,
-            codex_home=str(codex_home) if args.codex_home else None,
+            codex_home=str(codex_home),
         )
         for source in SOURCES
     }
