@@ -195,10 +195,23 @@ seq observe \
   --projection tools \
   --format json
 ```
-The bounded `tools` projection identifies the exact session and tool rows
-without retaining unbounded payloads. Inspect the selected row's raw lifecycle
-evidence with native `seq tool-lifecycle --session-id <id>` only when the
-governance classification requires it.
+Both projections return at most 256 newest matching metadata candidates. A
+top-k omission limitation means the result is incomplete: narrow the selectors
+before classifying, and never infer absence from that result.
+
+Read raw evidence only for one selected identity. Use native `seq query` with
+the candidate's exact `source_event_id` or `call_id`; do not emit a whole
+session's lifecycle:
+
+```bash
+seq query --root ~/.codex/sessions --session-id <id> \
+  --spec '{"dataset":"source_events","where":[{"field":"source_event_id","op":"eq","value":"<source-event-id>"}],"limit":1,"format":"json"}' \
+  --format json
+
+seq query --root ~/.codex/sessions --session-id <id> \
+  --spec '{"dataset":"tool_lifecycle","where":[{"field":"call_id","op":"eq","value":"<call-id>"}],"limit":1,"format":"json"}' \
+  --format json
+```
 
 Set `--until` before the current audit when current-session contamination would
 change inclusion. Select the exact session evidence and preserve:

@@ -7,7 +7,6 @@
       "filter",
       "project",
       "scan",
-      "sort",
       "top-k"
     ]
   },
@@ -91,22 +90,9 @@
       ]
     },
     {
-      "op": "sort",
-      "input": "matched_events",
-      "as": "ordered_events",
-      "by": [
-        {
-          "field": "path"
-        },
-        {
-          "field": "line_number"
-        }
-      ]
-    },
-    {
       "op": "project",
-      "input": "ordered_events",
-      "as": "event_evidence",
+      "input": "matched_events",
+      "as": "event_metadata",
       "fields": [
         "source_event_id",
         "session_id",
@@ -116,9 +102,29 @@
         "event_type",
         "timestamp",
         "turn_index",
-        "role",
-        "text"
+        "role"
       ]
+    },
+    {
+      "op": "top-k",
+      "input": "event_metadata",
+      "as": "event_evidence",
+      "by": [
+        {
+          "field": "timestamp",
+          "direction": "desc",
+          "nulls": "last"
+        },
+        {
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "line_number",
+          "direction": "desc"
+        }
+      ],
+      "limit": 256
     },
     {
       "op": "scan",
@@ -214,7 +220,7 @@
   "projections": {
     "events": {
       "relation": "event_evidence",
-      "schema": "retrace-source-governance-events/v1",
+      "schema": "retrace-source-governance-event-candidates/v1",
       "fields": [
         "source_event_id",
         "session_id",
@@ -224,8 +230,7 @@
         "event_type",
         "timestamp",
         "turn_index",
-        "role",
-        "text"
+        "role"
       ],
       "renderers": [
         "json",
@@ -234,7 +239,7 @@
     },
     "tools": {
       "relation": "tool_evidence",
-      "schema": "retrace-source-governance-tools/v1",
+      "schema": "retrace-source-governance-tool-candidates/v1",
       "fields": [
         "call_id",
         "session_id",

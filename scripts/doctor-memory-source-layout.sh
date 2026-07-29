@@ -53,6 +53,25 @@ print_learnings_store
 print_store "negative-ledger" ".ledger/negative-ledger/events.jsonl" "true"
 print_synesthesia_store
 
+codex_home="${CODEX_HOME:-$HOME/.codex}"
+for tracked in codex/memories/extensions/*/instructions.md; do
+  [ -f "$tracked" ] || continue
+  extension="${tracked%/instructions.md}"
+  extension="${extension##*/}"
+  installed="$codex_home/memories/extensions/$extension/instructions.md"
+  if [ -L "$installed" ]; then
+    status="symlink"
+  elif [ ! -f "$installed" ]; then
+    status="missing"
+  elif cmp -s "$tracked" "$installed"; then
+    status="current"
+  else
+    status="drifted"
+  fi
+  printf 'extension-instructions:%s\t%s\t%s\n' \
+    "$extension" "$status" "$installed"
+done
+
 if [ -f ".learnings.jsonl" ]; then
   printf 'learnings-legacy\tlegacy_present\t.learnings.jsonl\n'
 fi
