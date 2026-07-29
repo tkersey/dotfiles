@@ -25,14 +25,45 @@ approvals denied
 
 It is not live historical workspace reconstruction.
 
+Before CAS receives the inputs, validate the exact DCP-v2 and RIP-v1 bytes
+through Retrace's canonical Ledger definitions:
+
+```bash
+ledger validate \
+  --definition <retrace-skill-root>/definitions/ledger/decision-context-packet.json \
+  --input packet=capsule.json \
+  --format json > capsule.validation.json
+
+ledger validate \
+  --definition <retrace-skill-root>/definitions/ledger/retrace-inquiry-plan.json \
+  --input plan=plan.json \
+  --format json > plan.validation.json
+```
+
+Those passes establish structure only. CAS independently verifies the released
+DCP identity and the exact carriers needed for inquiry.
+
 Preferred command:
 
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
+  --capsule-definition <retrace-skill-root>/definitions/ledger/decision-context-packet.json \
+  --capsule-validation capsule.validation.json \
   --plan plan.json \
+  --plan-definition <retrace-skill-root>/definitions/ledger/retrace-inquiry-plan.json \
+  --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
   --json
+```
+
+Before Retrace interprets a returned FIR:
+
+```bash
+ledger validate \
+  --definition <cas-skill-root>/definitions/ledger/fork-inquiry-receipt.json \
+  --input receipt=<fir.json> \
+  --format json
 ```
 
 Before execution:

@@ -1,0 +1,46 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "tune/skill-tuning-evidence",
+ "owner": "tune",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-number","bounded-string","canonical-json","content-address","enum","exact-object","object-values","optional-field","scalar-type"]},
+ "parameters": {},
+ "inputs": {"evidence":{"codec":"json","required":true,"max_bytes":1048576}},
+ "canonicalization": {"steps":[{"op":"canonical-json","input":"evidence"}]},
+ "shape": {
+  "documents": {
+   "evidence": {
+    "object": "closed",
+    "fields": {
+     "metadata": {"object":"closed","fields":{"causality":{"enum":["any","associated","explicit","strong"]},"mode":{"enum":["tune-packet"]}}},
+     "skill_tuning_evidence": {
+      "object": "closed",
+      "fields": {
+       "contract": {"object":"closed","fields":{"authority":{"enum":["absent","explicit","inferred"]},"clause_ids":{"array":{"max":10000},"items":{"scalar":"string"}},"fingerprint":{"scalar":"string","string":{"max":1048576},"if_present":"nullable"}}},
+       "contract_compliance": {"object":"closed","fields":{"ambiguous":{"values":{"scalar":"integer","number":{"min":0}}},"followed":{"values":{"scalar":"integer","number":{"min":0}}},"never_exercised":{"array":{"max":10000},"items":{"scalar":"string"}},"violated":{"values":{"scalar":"integer","number":{"min":0}}}}},
+       "cursor_end": {"object":"closed","fields":{"contract_fingerprint":{"scalar":"string","if_present":"nullable"},"cursor_version":{"enum":["SDD-C1"]},"episodes_emitted":{"scalar":"integer","number":{"min":0}},"file_identity":{"scalar":"string","if_present":"nullable"},"file_size":{"scalar":"integer","number":{"min":0},"if_present":"nullable"},"last_event_offset":{"scalar":"integer","number":{"min":0}},"last_timestamp":{"scalar":"string","if_present":"nullable"},"rows_scanned":{"scalar":"integer","number":{"min":0}},"seq_version":{"string":{"min":1,"max":256}},"session_id":{"scalar":"string","if_present":"nullable"},"session_path":{"scalar":"string","if_present":"nullable"},"sessions_scanned":{"scalar":"integer","number":{"min":0}}}},
+       "decision_influence": {"object":"closed","fields":{"contrary_to_contract":{"scalar":"integer","number":{"min":0}},"escalations_or_blocks":{"scalar":"integer","number":{"min":0}},"explicit_route_changes":{"scalar":"integer","number":{"min":0}},"no_visible_delta":{"scalar":"integer","number":{"min":0}},"prevented_actions":{"scalar":"integer","number":{"min":0}},"proof_changes":{"scalar":"integer","number":{"min":0}},"reinforced_existing":{"scalar":"integer","number":{"min":0}},"scope_narrowings":{"scalar":"integer","number":{"min":0}},"unknown":{"scalar":"integer","number":{"min":0}}}},
+       "denominator": {"object":"closed","fields":{"activation_sessions":{"scalar":"integer","number":{"min":0}},"associated_outcome_episodes":{"scalar":"integer","number":{"min":0}},"candidate_sessions":{"scalar":"integer","number":{"min":0}},"decision_episodes":{"scalar":"integer","number":{"min":0}},"explicit_effect_episodes":{"scalar":"integer","number":{"min":0}},"matched_control_episodes":{"scalar":"integer","number":{"min":0}}}},
+       "evidence_limitations": {"array":{"max":10000},"items":{"scalar":"string"}},
+       "exemplars": {"object":"closed","fields":{"negative":{"array":{"max":10000}},"positive":{"array":{"max":10000}}}},
+       "outcomes": {"object":"closed","fields":{"blocked_correctly":{"scalar":"integer","number":{"min":0}},"first_pass_success":{"scalar":"integer","number":{"min":0}},"proof_fail":{"scalar":"integer","number":{"min":0}},"proof_pass":{"scalar":"integer","number":{"min":0}},"review_clean":{"scalar":"integer","number":{"min":0}},"review_reopens":{"scalar":"integer","number":{"min":0}},"reversals":{"scalar":"integer","number":{"min":0}},"unknown":{"scalar":"integer","number":{"min":0}}}},
+       "packet_version": {"enum":["STE-v1"]},
+       "recurrent_gap_signatures": {"array":{"max":10000}},
+       "skill_versions_observed": {"array":{"max":10000},"items":{"scalar":"string"}},
+       "target_kind": {"string":{"min":1,"max":256}},
+       "target_skill": {"string":{"min":1,"max":256}},
+       "trigger_quality": {"object":"closed","fields":{"ambiguous":{"scalar":"integer","number":{"min":0}},"correctly_activated":{"scalar":"integer","number":{"min":0}},"false_activations":{"scalar":"integer","number":{"min":0}},"missed":{"scalar":"integer","number":{"min":0}},"trigger_present":{"scalar":"integer","number":{"min":0}}}},
+       "window": {"object":"closed","fields":{"current_session_excluded":{"scalar":"boolean"},"repo":{"scalar":"string","if_present":"nullable"},"since":{"scalar":"string","if_present":"nullable"},"until":{"scalar":"string","if_present":"nullable"},"workdir":{"scalar":"string","if_present":"nullable"}}},
+       "workarounds": {"array":{"max":10000}}
+      }
+     }
+    }
+   }
+  }
+ },
+ "constraints": {"laws":[]},
+ "identity": {"op":"content-address","input":"evidence"},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":1048576,"max_store_bytes":1048576,"max_records":10000,"max_output_bytes":1048576,"max_diagnostics":64,"max_reducer_states":1}
+}

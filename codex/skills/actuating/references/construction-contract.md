@@ -145,12 +145,14 @@ factor delta and cannot encode an identity replacement; `essential-expansion`
 binds every introduced factor to an essential addition and proof.
 
 Before any projected operation, Actuating sets the selected draft's
-`artifact_id` to JSON `null` and requests the current Ledger structural adapter
-to append it. Only `actuating-append-result/v1` with a non-null top-level
-`artifact_id` equal to the returned `artifact.artifact_id` and the associated
-registration `event_digest` makes that exact canonical artifact current. Ledger
-identifies and registers the Actuating-authored selection; it never selects or
-revises the Construction.
+`artifact_id` to JSON `null`, materializes it through
+`definitions/ledger/construction-contract.json`, and registers the returned
+canonical artifact through the Evidence protocol's `register-construction`
+operation. Only a valid `ledger-materialization-result/v1` with a non-null
+`artifact_id` equal to `artifact.artifact_id` and the corresponding appended
+transaction event make that exact artifact current. Ledger identifies and
+registers the Actuating-authored selection; it never selects or revises the
+Construction.
 
 ## Selection law
 
@@ -438,9 +440,9 @@ or concurrency defects require more than an example unless the accepted source e
 For every accepted Counterexample class, v3 requires a law-matched
 `implementation` obligation; aggregate `acceptance` is not a substitute.
 Recurrent, High, and Critical classes require non-`example-regression`
-implementation proof. Ledger 0.13.0 and later reject Construction v1, v2, and
-mixed stores with `LegacyConstructionUnsupported`. There is no migration:
-start a fresh goal-local Evidence store and ignore the legacy data.
+implementation proof. Ledger 1.x rejects Construction v1, v2, and mixed stores
+with `LegacyConstructionUnsupported`. There is no migration: start a fresh
+goal-local Evidence store and ignore the legacy data.
 
 Expected minimums by law family are:
 

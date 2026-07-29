@@ -1,51 +1,66 @@
 # Grill Decision Packet Template
 
-```yaml
-spec_decision_packet:
-  goal:
-  problem_layer:
-  target_user_or_maintainer:
-  scope:
-  non_goals:
-  locked_decisions:
-    - id:
-      decision:
-      rationale:
-      consequence:
-  tradeoffs_accepted:
-  primary_invariant:
-  success_criteria:
-  proof_bar:
-  compatibility_posture:
-  rollout_rollback_posture:
-  architectonic_authority:
-    source_fixed_decision_refs: []
-    source_bounded_seam_refs: []
-    specification_local_seam_refs: []
-  architectonic_seams: []
-  conceptual_compression_target:
-    live_obligations: []
-    maximum_independent_owners:
-    prohibited_parallel_truth: []
-    prohibited_reconstruction_paths: []
-  downstream_open_decisions:
-    - seam_ref:
-      admissible_space:
-      required_observation_refs: []
-      forbidden_outcomes: []
-      default_action:
-      invalidators: []
-  open_questions:
-    - id:
-      question:
-      owner:
-      default_action:
-      consequence:
-  deferred_questions:
-  default_assumptions:
-  clarification_receipt:
-    grill_rounds:
-    no_grill_justification:
+```json
+{
+  "spec_decision_packet": {
+    "goal": {},
+    "problem_layer": "",
+    "target_user_or_maintainer": "",
+    "scope": {},
+    "non_goals": [],
+    "locked_decisions": [
+      {
+        "id": "",
+        "decision": "",
+        "rationale": "",
+        "consequence": ""
+      }
+    ],
+    "tradeoffs_accepted": [],
+    "primary_invariant": "",
+    "success_criteria": [],
+    "proof_bar": {},
+    "compatibility_posture": {},
+    "rollout_rollback_posture": {},
+    "architectonic_authority": {
+      "source_fixed_decision_refs": [],
+      "source_bounded_seam_refs": [],
+      "specification_local_seam_refs": []
+    },
+    "architectonic_seams": [],
+    "conceptual_compression_target": {
+      "live_obligations": [],
+      "maximum_independent_owners": null,
+      "prohibited_parallel_truth": [],
+      "prohibited_reconstruction_paths": []
+    },
+    "downstream_open_decisions": [
+      {
+        "seam_ref": "",
+        "admissible_space": [],
+        "required_observation_refs": [],
+        "forbidden_outcomes": [],
+        "default_action": "",
+        "invalidators": []
+      }
+    ],
+    "open_questions": [
+      {
+        "id": "",
+        "question": "",
+        "owner": "",
+        "default_action": "",
+        "consequence": ""
+      }
+    ],
+    "deferred_questions": [],
+    "default_assumptions": [],
+    "clarification_receipt": {
+      "grill_rounds": 0,
+      "no_grill_justification": null
+    }
+  }
+}
 ```
 
 Completion bar:

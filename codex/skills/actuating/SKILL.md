@@ -29,9 +29,9 @@ per-goal truth. Read [artifact-kernel.md](references/artifact-kernel.md) for the
 owner map.
 
 Plans, CAS receipts, Ship receipts, verifier output, work graphs, and Ledger
-`state` or `project` views are supporting evidence or discardable structural
-aids. An Actuating-authored closure receipt is a semantic report, not another
-authority family.
+projections are supporting evidence or discardable structural aids. An
+Actuating-authored closure receipt is a semantic report, not another authority
+family.
 
 ## Owner boundary
 
@@ -70,9 +70,10 @@ changes; evaluates CAS facts or review credit; interprets Ship evidence; selects
 a repair, Construction, or next action; grants mutation; emits a semantic
 closure verdict; or authors the closure receipt. Before the first Ledger
 command in a workflow, load `$ledger` and complete `$ledger ensure` once. Then
-require Ledger 0.13.0 or newer and Seq 0.5.0 or newer, apply the current
-zero-legacy Ledger and CAS runtime gates, and use the exact transient schemas
-and one-shot capability law in
+require Ledger 1.x with `ledger-artifact-abi/v1`, Seq 1.x with
+`seq-observation-abi/v1`, and successful definition checks for every selected
+passive definition. Apply the current hard-cutover Ledger and CAS runtime
+gates, and use the exact transient schemas and one-shot capability law in
 [evidence-ledger.md](references/evidence-ledger.md). Apply the same Actuating
 gate when entering from a standalone Goal Contract or Review Fold handoff.
 Construction v1 and v2 are unsupported. Do not migrate, translate, replay, or
@@ -240,7 +241,8 @@ repair-path delta may create a new surface.
 1. Compile the accepted source with
    [$goal-contract](../goal-contract/SKILL.md). Do not select architecture in
    the Goal Contract. Require its returned canonical artifact, non-null
-   `artifact_id`, and `goal_contract_registered` event before continuing.
+   `artifact_id`, and the applicable Goal registration event before
+   continuing.
 2. Enter the Architectonic decision gate. Establish or retain the current
    Axiomatic Construction Basis before nomination. Inspect the repository
    boundary, existing owner, host enforcement capabilities, and required
@@ -295,13 +297,27 @@ repair-path delta may create a new surface.
    materialize and register it before selecting any operation:
 
    ~~~bash
-   ledger --source actuation --repo <repo> --goal <goal-id> \
-     append --input <construction-contract.json>
+   ledger materialize \
+     --definition <actuating-skill-root>/definitions/ledger/construction-contract.json \
+     --input construction=<construction-contract.json> \
+     --format json
+
+   ledger transact \
+     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+     --operation register-construction \
+     --repo <repo> \
+     --input construction_registration=<construction-registration.json> \
+     --param goal=<goal-id> \
+     --format json
    ~~~
 
-   Require `construction-contract/v3` and `actuating-append-result/v1`, retain
-   its complete canonical `artifact`, exact-match its non-null `artifact_id` to
-   `artifact.artifact_id`, and retain `event_digest` as the
+   The registration packet is passive JSON containing
+   `schema:"actuating-construction-registration/v1"`, the exact Goal,
+   Construction, and subject tuple, and the materialization result's parsed
+   `canonical_content` as `body`. Require
+   `ledger-materialization-result/v1` followed by
+   `ledger-transaction-result/v1` for `register-construction`. Retain the
+   complete canonical artifact and appended event identity as the
    `construction_contract_registered` observation. Only the returned artifact
    is the current Construction; Ledger does not select or revise it.
 6. For each repository effect, Actuating selects one exact operation projected
@@ -315,7 +331,13 @@ repair-path delta may create a new surface.
    compares only the opaque digest.
 7. Run the Construction's exact verifier and falsifier observations. Record
    their immutable outputs and the resulting subject identity in the Evidence
-   Ledger using [evidence-ledger.md](references/evidence-ledger.md).
+   Ledger using [evidence-ledger.md](references/evidence-ledger.md). When
+   session evidence is required, observe the selected session through
+   `definitions/seq/run-audit.json`. When Evidence-store structure is
+   required, pipe Ledger's `structural-facts` payload into
+   `definitions/seq/artifact-kernel.json`. Actuating interprets both
+   observations; neither structural runtime assigns review credit, chooses the
+   next action, or closes the Goal.
 8. Re-evaluate the current artifacts and observations. Actuating selects the
    next operation, review action, Ship handoff, closure judgment, or blocker.
 
@@ -386,7 +408,8 @@ An accepted Review Fold makes the current Construction stale. Its successor
 uses `accepted-review-fold`, binds the latest Counterexample Set on the exact
 current subject, and records the same canonical accepted-class list in both
 `counterexample_class_refs` and `evaluated_class_refs`. A zero-class successor
-is legal only when it clears a nonempty predecessor debt set on that subject.
+is legal whenever the latest fold has no accepted class, including when it
+rejects a newly observed class against an empty predecessor debt set.
 Subject rebinding refreshes this exact-subject evaluation without resetting the
 goal-causal lineage.
 Predecessor-factor proof refs resolve through the predecessor artifact;

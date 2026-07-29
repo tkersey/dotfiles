@@ -8,10 +8,11 @@
 negative_route_gate:
   checked: yes
   evidence_source:
-    query_or_map: yes
+    route_gate_projection: yes
     ledger_cli: ledger
+    definition: negative-ledger/negative-evidence-protocol
     store: .ledger/negative-ledger/events.jsonl
-    command: "ledger map --route ... --cluster ... --artifact ..."
+    command: "ledger project --definition ... --projection route-gate --repo ... --param artifact=... --param identity=... --format json"
     exit_code: 0 | 2 | 3
     ledger_available: yes | no
   active_exclusion_match: yes | no | null
@@ -33,11 +34,13 @@ Memory admission is downstream of the operational gate and never substitutes for
 ```yaml
 negative_memory_admission:
   required: yes | no
-  ledger_export_available: yes | no
+  source_projection_available: yes | no
   projection_fingerprint: "none | sha256..."
   memory_note_attempted: yes | no
   memory_note_id: "none | MSN-..."
-  outcome: created | duplicate_skip | not_qualified | cli_unavailable | export_unavailable | failed
+  outcome: created | duplicate_skip | not_qualified | cli_unavailable | projection_unavailable | failed
 ```
 
-A failed or skipped memory admission does not invalidate a valid canonical ledger capture. It only means future global memory has not yet received the projection.
+A failed or skipped memory admission does not invalidate a valid canonical
+capture transaction. It only means future global memory has not yet received
+the projection.

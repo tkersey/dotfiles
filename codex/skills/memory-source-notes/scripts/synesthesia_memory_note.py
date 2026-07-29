@@ -9,31 +9,18 @@ from __future__ import annotations
 
 import argparse
 import copy
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
-from typing import Any, Iterable
-
-NOTE_ID_RE = re.compile(r"^MSN-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{16}$")
-ALLOWED_SCOPE_KINDS = {"global", "repo", "path-family", "task-family", "workflow", "tool"}
-SENSITIVE_KEYS = {
-    "password",
-    "passwd",
-    "secret",
-    "api_key",
-    "apikey",
-    "access_token",
-    "refresh_token",
-    "private_key",
-    "client_secret",
-}
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
 
 LOGICAL_TO_PHYSICAL_KIND = {
     "mapping-endorsement": "mapping-endorsement",
@@ -43,30 +30,6 @@ LOGICAL_TO_PHYSICAL_KIND = {
     "activation-boundary": "activation-boundary",
     "boundary-retraction": "boundary-retraction",
 }
-
-ALLOWED_OPERATIONS = {
-    "mapping-endorsement": {"assert", "confirm", "reopen"},
-    "mapping-confirmation": {"confirm"},
-    "mapping-correction": {"supersede"},
-    "mapping-rejection": {"reject"},
-    "activation-boundary": {"assert", "confirm", "supersede", "reopen"},
-    "boundary-retraction": {"retract"},
-}
-
-ALLOWED_AUTHORITIES = {
-    "mapping-endorsement": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "mapping-confirmation": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "mapping-correction": {"explicit-user-correction"},
-    "mapping-rejection": {"explicit-user-rejection"},
-    "activation-boundary": {
-        "explicit-user-endorsement",
-        "explicit-user-correction",
-        "repeated-accepted-use",
-    },
-    "boundary-retraction": {"explicit-user-correction", "explicit-user-rejection"},
-}
-
-PRIOR_RELATION_OPERATIONS = {"confirm", "supersede", "reject", "retract", "reopen"}
 
 COMPAT_SCOPE = {
     "global": "global_default",
@@ -82,227 +45,370 @@ class ValidationError(ValueError):
     """A deterministic validation failure suitable for user-facing reporting."""
 
 
-def _nonempty_string(value: Any, field: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ValidationError(f"{field}: expected non-empty string")
-    return value.strip()
+def _trim_if_string(value: Any) -> Any:
+    return value.strip() if isinstance(value, str) else value
 
 
-def _require_strings(mapping: dict[str, Any], fields: Iterable[str], prefix: str) -> None:
-    for field in fields:
-        _nonempty_string(mapping.get(field), f"{prefix}.{field}")
+def _normalize_writer_input(raw: Any) -> Any:
+    """Apply only deterministic writer transport normalization.
 
-
-def _validate_note_id(value: Any, field: str) -> str:
-    text = _nonempty_string(value, field)
-    if not NOTE_ID_RE.match(text):
-        raise ValidationError(f"{field}: invalid memory-source note id")
-    return text
-
-
-def _reject_sensitive_keys(value: Any, path: str = "$") -> None:
-    if isinstance(value, dict):
-        for key, child in value.items():
-            if key.lower() in SENSITIVE_KEYS:
-                raise ValidationError(f"{path}.{key}: sensitive key is not allowed")
-            _reject_sensitive_keys(child, f"{path}.{key}")
-    elif isinstance(value, list):
-        for index, child in enumerate(value):
-            _reject_sensitive_keys(child, f"{path}[{index}]")
-
-
-def _validate_scope(value: Any) -> dict[str, Any]:
-    if not isinstance(value, dict):
-        raise ValidationError("scope: expected object")
-    extra = set(value) - {"kind", "repo", "paths"}
-    if extra:
-        raise ValidationError(f"scope: unexpected fields: {', '.join(sorted(extra))}")
-    kind = _nonempty_string(value.get("kind"), "scope.kind")
-    if kind not in ALLOWED_SCOPE_KINDS:
-        raise ValidationError(f"scope.kind: unsupported value {kind!r}")
-    repo = value.get("repo")
-    if repo is not None and not isinstance(repo, str):
-        raise ValidationError("scope.repo: expected string or null")
-    paths = value.get("paths")
-    if not isinstance(paths, list) or any(not isinstance(item, str) or not item for item in paths):
-        raise ValidationError("scope.paths: expected list of non-empty strings")
-    if kind in {"repo", "path-family"} and not repo:
-        raise ValidationError(f"scope.repo: required for {kind}")
-    if kind == "path-family" and not paths:
-        raise ValidationError("scope.paths: required for path-family")
-    return {"kind": kind, "repo": repo, "paths": list(paths)}
-
-
-def _validate_source_refs(value: Any) -> list[dict[str, str]]:
-    if not isinstance(value, list) or not value:
-        raise ValidationError("source_refs: expected at least one source reference")
-    refs: list[dict[str, str]] = []
-    for index, row in enumerate(value):
-        if not isinstance(row, dict):
-            raise ValidationError(f"source_refs[{index}]: expected object")
-        extra = set(row) - {"kind", "ref", "summary"}
-        if extra:
-            raise ValidationError(
-                f"source_refs[{index}]: unexpected fields: {', '.join(sorted(extra))}"
-            )
-        refs.append(
-            {
-                "kind": _nonempty_string(row.get("kind"), f"source_refs[{index}].kind"),
-                "ref": _nonempty_string(row.get("ref"), f"source_refs[{index}].ref"),
-                "summary": _nonempty_string(
-                    row.get("summary"), f"source_refs[{index}].summary"
-                ),
-            }
-        )
-    return refs
-
-
-def _validate_relationships(data: dict[str, Any], operation: str) -> tuple[list[str], str | None]:
-    related_raw = data.get("related_ids", [])
-    if not isinstance(related_raw, list):
-        raise ValidationError("related_ids: expected list")
-    related_ids = [_validate_note_id(value, "related_ids[]") for value in related_raw]
-    if len(set(related_ids)) != len(related_ids):
-        raise ValidationError("related_ids: duplicate note id")
-
-    supersedes_raw = data.get("supersedes_id")
-    supersedes_id = None
-    if supersedes_raw is not None:
-        supersedes_id = _validate_note_id(supersedes_raw, "supersedes_id")
-
-    if operation in PRIOR_RELATION_OPERATIONS and not related_ids and supersedes_id is None:
-        raise ValidationError(f"operation {operation!r} requires a prior note relationship")
-    if operation == "confirm" and not related_ids:
-        raise ValidationError("confirmation requires the prior note in related_ids")
-    return related_ids, supersedes_id
-
-
-def _compat_scope_anchor(scope: dict[str, Any]) -> str:
-    if scope["paths"]:
-        return scope["paths"][0]
-    if scope["repo"]:
-        return str(scope["repo"])
-    return str(scope["kind"])
-
-
-def _set_compat_field(payload: dict[str, Any], field: str, expected: str) -> None:
-    current = payload.get(field)
-    if current is not None and current != expected:
-        raise ValidationError(
-            f"payload.{field}: conflicts with canonical envelope value {expected!r}"
-        )
-    payload[field] = expected
-
-
-def validate_and_normalize(logical_kind: str, raw: Any) -> tuple[str, dict[str, Any]]:
-    """Validate a skill-facing payload and return physical kind plus normalized input."""
-    if logical_kind not in LOGICAL_TO_PHYSICAL_KIND:
-        raise ValidationError(f"kind: unsupported Synesthesia kind {logical_kind!r}")
+    Ledger owns every structural acceptance decision. Invalid values are
+    preserved so the passive definition can reject them instead of this adapter
+    silently repairing or dropping them.
+    """
     if not isinstance(raw, dict):
-        raise ValidationError("input: expected JSON object")
-    data = copy.deepcopy(raw)
+        return copy.deepcopy(raw)
+    normalized = copy.deepcopy(raw)
+    for field in ("operation", "authority", "summary", "slug"):
+        if field in normalized:
+            normalized[field] = _trim_if_string(normalized[field])
 
-    allowed_top = {
-        "operation",
-        "authority",
-        "summary",
-        "scope",
-        "source_refs",
-        "related_ids",
-        "supersedes_id",
-        "slug",
-        "payload",
-    }
-    extra = set(data) - allowed_top
-    if extra:
-        raise ValidationError(f"input: unexpected fields: {', '.join(sorted(extra))}")
+    scope = normalized.get("scope")
+    if isinstance(scope, dict):
+        if "kind" in scope:
+            scope["kind"] = _trim_if_string(scope["kind"])
+        scope.setdefault("repo", None)
 
-    operation = _nonempty_string(data.get("operation"), "operation")
-    if operation not in ALLOWED_OPERATIONS[logical_kind]:
-        allowed = ", ".join(sorted(ALLOWED_OPERATIONS[logical_kind]))
+    source_refs = normalized.get("source_refs")
+    if isinstance(source_refs, list):
+        for row in source_refs:
+            if not isinstance(row, dict):
+                continue
+            for field in ("kind", "ref", "summary"):
+                if field in row:
+                    row[field] = _trim_if_string(row[field])
+
+    related_ids = normalized.setdefault("related_ids", [])
+    if isinstance(related_ids, list):
+        normalized["related_ids"] = [
+            _trim_if_string(value) for value in related_ids
+        ]
+    if "supersedes_id" not in normalized:
+        normalized["supersedes_id"] = None
+    else:
+        normalized["supersedes_id"] = _trim_if_string(
+            normalized["supersedes_id"]
+        )
+
+    payload = normalized.get("payload")
+    authority = normalized.get("authority")
+    if isinstance(payload, dict):
+        if "endorsement_type" not in payload and isinstance(authority, str):
+            payload["endorsement_type"] = authority
+        if isinstance(scope, dict):
+            scope_kind = scope.get("kind")
+            if (
+                "scope" not in payload
+                and isinstance(scope_kind, str)
+                and scope_kind in COMPAT_SCOPE
+            ):
+                payload["scope"] = COMPAT_SCOPE[scope_kind]
+            if "scope_anchor" not in payload:
+                paths = scope.get("paths")
+                repo = scope.get("repo")
+                if (
+                    isinstance(paths, list)
+                    and paths
+                    and isinstance(paths[0], str)
+                    and paths[0]
+                ):
+                    payload["scope_anchor"] = paths[0]
+                elif isinstance(repo, str) and repo:
+                    payload["scope_anchor"] = repo
+                elif isinstance(scope_kind, str) and scope_kind:
+                    payload["scope_anchor"] = scope_kind
+    return normalized
+
+
+def find_ledger_binary(explicit: str | Path | None = None) -> Path | None:
+    selected = str(explicit) if explicit is not None else os.environ.get("LEDGER_BIN")
+    if selected:
+        path = Path(selected).expanduser()
+        if path.is_absolute() or path.parent != Path("."):
+            if path.is_file() and os.access(path, os.X_OK):
+                return path
+            return None
+        discovered = shutil.which(selected)
+        return Path(discovered) if discovered else None
+    discovered = shutil.which("ledger")
+    return Path(discovered) if discovered else None
+
+
+def synesthesia_definition_path() -> Path:
+    return (
+        repo_root()
+        / "codex/skills/memory-source-notes/definitions/ledger"
+        / "synesthesia-memory-note-payload.json"
+    )
+
+
+def synesthesia_source_definition_path() -> Path:
+    return (
+        repo_root()
+        / "codex/skills/synesthesia/definitions/ledger"
+        / "synesthesia-protocol.json"
+    )
+
+
+def _validate_submission_with_ledger(
+    submission: dict[str, Any],
+    *,
+    stored_note: Any | None = None,
+    ledger_bin: str | Path | None = None,
+) -> dict[str, Any]:
+    binary = find_ledger_binary(ledger_bin)
+    if binary is None:
         raise ValidationError(
-            f"operation: {operation!r} is invalid for {logical_kind}; expected {allowed}"
+            "ledger: Ledger 1.x with ledger-artifact-abi/v1 is required"
         )
-
-    authority = _nonempty_string(data.get("authority"), "authority")
-    if authority not in ALLOWED_AUTHORITIES[logical_kind]:
-        allowed = ", ".join(sorted(ALLOWED_AUTHORITIES[logical_kind]))
+    definition = synesthesia_definition_path()
+    if not definition.is_file():
+        raise ValidationError(f"ledger: definition not found: {definition}")
+    command = [
+        str(binary),
+        "validate",
+        "--definition",
+        str(definition),
+    ]
+    input_bytes: bytes | None = canonical_json_bytes(submission)
+    if stored_note is None:
+        command.extend(["--input", "submission=-"])
+        proc = subprocess.run(
+            [*command, "--format", "json"],
+            input=input_bytes,
+            capture_output=True,
+            check=False,
+        )
+    else:
+        documents: dict[str, Any] = {"submission": submission}
+        if stored_note is not None:
+            documents["stored_note"] = stored_note
+        with tempfile.TemporaryDirectory(prefix="synesthesia-ledger-validation-") as root:
+            for name, value in documents.items():
+                path = Path(root) / f"{name}.json"
+                path.write_bytes(canonical_json_bytes(value))
+                command.extend(["--input", f"{name}={path}"])
+            proc = subprocess.run(
+                [*command, "--format", "json"],
+                capture_output=True,
+                check=False,
+            )
+    try:
+        result = json.loads(proc.stdout)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        detail = proc.stderr.decode("utf-8", errors="replace").strip()
         raise ValidationError(
-            f"authority: {authority!r} is invalid for {logical_kind}; expected {allowed}"
+            "ledger: validation command failed"
+            + (f": {detail}" if detail else "")
+        ) from exc
+    definition_result = result.get("definition")
+    if (
+        not isinstance(definition_result, dict)
+        or definition_result.get("id")
+        != "memory-source-notes/synesthesia-memory-note-payload"
+        or definition_result.get("abi") != "ledger-artifact-abi/v1"
+        or result.get("authority_granted") is not False
+        or result.get("storage_mutated") is not False
+    ):
+        raise ValidationError("ledger: unexpected structural validation result")
+    if proc.returncode != 0 or result.get("valid") is not True:
+        errors = result.get("errors")
+        detail = (
+            errors[0].get("message")
+            if isinstance(errors, list)
+            and errors
+            and isinstance(errors[0], dict)
+            else "definition rejected the submission"
         )
-
-    summary = _nonempty_string(data.get("summary"), "summary")
-    scope = _validate_scope(data.get("scope"))
-    source_refs = _validate_source_refs(data.get("source_refs"))
-    related_ids, supersedes_id = _validate_relationships(data, operation)
-
-    payload_raw = data.get("payload")
-    if not isinstance(payload_raw, dict) or not payload_raw:
-        raise ValidationError("payload: expected non-empty object")
-    payload = copy.deepcopy(payload_raw)
-
-    if logical_kind in {"mapping-endorsement", "mapping-confirmation", "mapping-correction"}:
-        _require_strings(
-            payload,
-            (
-                "sensory_phrase",
-                "engineering_translation",
-                "activation_boundary",
-                "non_activation_boundary",
-                "verification",
-            ),
-            "payload",
+        raise ValidationError(
+            "structurally invalid under "
+            f"{definition_result.get('id')}@{definition_result.get('digest')}: "
+            f"{detail}"
         )
-    elif logical_kind == "mapping-rejection":
-        _require_strings(
-            payload,
-            (
-                "sensory_phrase",
-                "activation_boundary",
-                "non_activation_boundary",
-                "rejection_reason",
-                "verification",
-            ),
-            "payload",
-        )
-        if payload.get("engineering_translation") not in (None, ""):
-            _nonempty_string(payload.get("engineering_translation"), "payload.engineering_translation")
-    elif logical_kind == "activation-boundary":
-        _require_strings(
-            payload,
-            ("activation_boundary", "non_activation_boundary", "verification"),
-            "payload",
-        )
-    elif logical_kind == "boundary-retraction":
-        _require_strings(
-            payload,
-            ("retracted_boundary", "reason", "verification"),
-            "payload",
-        )
+    return result
 
-    _set_compat_field(payload, "scope", COMPAT_SCOPE[scope["kind"]])
-    _set_compat_field(payload, "scope_anchor", _compat_scope_anchor(scope))
-    _set_compat_field(payload, "endorsement_type", authority)
 
-    normalized: dict[str, Any] = {
-        "operation": operation,
-        "authority": authority,
-        "summary": summary,
-        "scope": scope,
-        "source_refs": source_refs,
-        "related_ids": related_ids,
-        "supersedes_id": supersedes_id,
-        "payload": payload,
+def _require_synesthesia_validator(
+    ledger_bin: str | Path | None = None,
+) -> Path:
+    binary = find_ledger_binary(ledger_bin)
+    if binary is None:
+        raise ValidationError(
+            "ledger: Ledger 1.x with ledger-artifact-abi/v1 is required"
+        )
+    definition = synesthesia_definition_path()
+    if not definition.is_file():
+        raise ValidationError(f"ledger: definition not found: {definition}")
+    proc = subprocess.run(
+        [
+            str(binary),
+            "definition",
+            "check",
+            "--definition",
+            str(definition),
+            "--format",
+            "json",
+        ],
+        capture_output=True,
+        check=False,
+    )
+    try:
+        result = json.loads(proc.stdout)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        detail = proc.stderr.decode("utf-8", errors="replace").strip()
+        raise ValidationError(
+            "ledger: definition check failed"
+            + (f": {detail}" if detail else "")
+        ) from exc
+    definition_result = result.get("definition")
+    if (
+        proc.returncode != 0
+        or result.get("schema") != "ledger-definition-check-result/v1"
+        or result.get("valid") is not True
+        or result.get("passive") is not True
+        or result.get("authority_granted") is not False
+        or not isinstance(definition_result, dict)
+        or definition_result.get("id")
+        != "memory-source-notes/synesthesia-memory-note-payload"
+        or definition_result.get("abi") != "ledger-artifact-abi/v1"
+    ):
+        raise ValidationError("ledger: unexpected definition check result")
+    return binary
+
+
+def _inspect_source_ledger(repo: Path) -> dict[str, Any]:
+    binary = find_ledger_binary()
+    definition = synesthesia_source_definition_path()
+    report: dict[str, Any] = {
+        "available": binary is not None and definition.is_file(),
+        "binary": str(binary) if binary else None,
+        "definition": str(definition),
+        "repo": str(repo),
+        "healthy": False,
+        "status": "unavailable",
     }
-    slug = data.get("slug")
-    if slug is not None:
-        slug_text = _nonempty_string(slug, "slug")
-        if not re.match(r"^[a-z0-9][a-z0-9-]{0,79}$", slug_text):
-            raise ValidationError("slug: invalid slug")
-        normalized["slug"] = slug_text
+    if binary is None:
+        report["error"] = "Ledger 1.x with ledger-artifact-abi/v1 is required"
+        return report
+    if not definition.is_file():
+        report["error"] = f"definition not found: {definition}"
+        return report
+    if not repo.is_dir():
+        report["error"] = f"repo is not a directory: {repo}"
+        return report
 
-    _reject_sensitive_keys(normalized)
-    return LOGICAL_TO_PHYSICAL_KIND[logical_kind], normalized
+    proc = subprocess.run(
+        [
+            str(binary),
+            "doctor",
+            "--definition",
+            str(definition),
+            "--repo",
+            str(repo),
+            "--format",
+            "json",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    report["exit_code"] = proc.returncode
+    report["stderr"] = proc.stderr.strip()
+    try:
+        result = json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        report.update(
+            status="invalid-result",
+            error=f"ledger doctor returned invalid JSON: {exc}",
+        )
+        return report
+
+    definition_result = result.get("definition")
+    slots = result.get("slots")
+    slot = (
+        next(
+            (
+                row
+                for row in slots
+                if isinstance(row, dict) and row.get("name") == "events"
+            ),
+            None,
+        )
+        if isinstance(slots, list)
+        else None
+    )
+    if (
+        result.get("schema") != "ledger-doctor-result/v1"
+        or not isinstance(definition_result, dict)
+        or definition_result.get("id") != "synesthesia/protocol"
+        or definition_result.get("abi") != "ledger-artifact-abi/v1"
+        or result.get("authority_granted") is not False
+        or result.get("storage_mutated") is not False
+        or slot is None
+        or slot.get("status") not in {"missing", "current", "invalid"}
+    ):
+        report.update(
+            status="invalid-result",
+            error="ledger doctor returned an unexpected structural result",
+            result=result,
+        )
+        return report
+
+    healthy = (
+        proc.returncode == 0
+        and result.get("healthy") is True
+        and slot.get("healthy") is True
+    )
+    report.update(
+        healthy=healthy,
+        status=slot["status"],
+        result=result,
+    )
+    return report
+
+
+def _scope_anchor_source(normalized: Any) -> str:
+    if not isinstance(normalized, dict):
+        return "kind"
+    scope = normalized.get("scope")
+    if not isinstance(scope, dict):
+        return "kind"
+    paths = scope.get("paths")
+    if isinstance(paths, list) and paths:
+        return "path"
+    repo = scope.get("repo")
+    if isinstance(repo, str) and repo:
+        return "repo"
+    return "kind"
+
+
+def validate_and_normalize(
+    logical_kind: str,
+    raw: Any,
+    *,
+    ledger_bin: str | Path | None = None,
+) -> tuple[str, dict[str, Any], dict[str, Any]]:
+    """Normalize transport fields and obtain Ledger's structural decision."""
+    physical_kind = LOGICAL_TO_PHYSICAL_KIND[logical_kind]
+    normalized = _normalize_writer_input(raw)
+    submission = {
+        "fingerprint_profile": "append-v1",
+        "expected_fingerprint": canonical_fingerprint(physical_kind, normalized),
+        "scope_anchor_source": _scope_anchor_source(normalized),
+        "stored_file_sha256": None,
+        "stored_fingerprint": None,
+        "stored_note_id": None,
+        "source": {
+            "logical_kind": logical_kind,
+            "physical_kind": physical_kind,
+            "record": normalized,
+        },
+    }
+    structural_result = _validate_submission_with_ledger(
+        submission,
+        ledger_bin=ledger_bin,
+    )
+    return physical_kind, normalized, structural_result
 
 
 def canonical_json_bytes(value: Any) -> bytes:
@@ -442,7 +548,7 @@ class StoredNote:
     __slots__ = (
         "path", "id", "captured_at", "kind", "operation", "authority",
         "summary", "scope", "source_refs", "related_ids", "supersedes_id",
-        "fingerprint", "payload", "file_sha256",
+        "fingerprint", "payload", "file_sha256", "validation_profile",
     )
 
     def __init__(
@@ -450,7 +556,7 @@ class StoredNote:
         operation: str, authority: str, summary: str, scope: dict[str, Any],
         source_refs: list[dict[str, str]], related_ids: list[str],
         supersedes_id: str | None, fingerprint: str, payload: dict[str, Any],
-        file_sha256: str,
+        file_sha256: str, validation_profile: str,
     ) -> None:
         self.path = path
         self.id = id
@@ -466,28 +572,18 @@ class StoredNote:
         self.fingerprint = fingerprint
         self.payload = payload
         self.file_sha256 = file_sha256
+        self.validation_profile = validation_profile
 
 
 DIGEST_VERSION = "synesthesia-digest/v1"
 DIGEST_FILENAME = "latest_synesthesia_digest.md"
-PHYSICAL_ALLOWED_OPERATIONS = {
-    "mapping-endorsement": {"assert", "confirm", "reopen"},
-    "mapping-correction": {"supersede"},
-    "mapping-rejection": {"reject"},
-    "activation-boundary": {"assert", "confirm", "supersede", "reopen"},
-    "boundary-retraction": {"retract"},
-}
-PHYSICAL_ALLOWED_AUTHORITIES = {
-    "mapping-endorsement": {"explicit-user-endorsement", "repeated-accepted-use"},
-    "mapping-correction": {"explicit-user-correction"},
-    "mapping-rejection": {"explicit-user-rejection"},
-    "activation-boundary": {
-        "explicit-user-endorsement",
-        "explicit-user-correction",
-        "repeated-accepted-use",
-    },
-    "boundary-retraction": {"explicit-user-correction", "explicit-user-rejection"},
-}
+LEGACY_CORRIDOR_NOTE_ID = "MSN-20260621T163031Z-13ff9b8733ea3532"
+LEGACY_CORRIDOR_FINGERPRINT = (
+    "13ff9b8733ea3532de358dc38dc7b0a0edea576907340d654b5164bd0dfd0dd5"
+)
+LEGACY_CORRIDOR_FILE_SHA256 = (
+    "1d85f689cfe47773347c39ea9992b4f189d2b433140f1b4b5050f72abb99b94b"
+)
 SCOPE_SPECIFICITY = {
     "path-family": 6,
     "repo": 5,
@@ -498,106 +594,95 @@ SCOPE_SPECIFICITY = {
 }
 
 
-def _parse_iso_datetime(value: Any, field: str) -> str:
-    text = _nonempty_string(value, field)
-    try:
-        datetime.fromisoformat(text.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ValidationError(f"{field}: invalid ISO-8601 timestamp") from exc
-    return text
-
-
-def _validate_stored_payload(kind: str, payload: Any) -> dict[str, Any]:
-    if not isinstance(payload, dict) or not payload:
-        raise ValidationError("payload: expected non-empty object")
-    value = copy.deepcopy(payload)
-    if kind in {"mapping-endorsement", "mapping-correction"}:
-        _require_strings(
-            value,
-            (
-                "sensory_phrase",
-                "engineering_translation",
-                "activation_boundary",
-                "non_activation_boundary",
-                "verification",
-            ),
+def _stored_note_from_value(
+    path: Path,
+    value: Any,
+    file_sha256: str,
+    *,
+    ledger_bin: str | Path | None = None,
+) -> StoredNote:
+    note = value if isinstance(value, dict) else {}
+    kind = note.get("kind") if isinstance(note.get("kind"), str) else ""
+    operation = (
+        note.get("operation") if isinstance(note.get("operation"), str) else ""
+    )
+    logical_kind = (
+        "mapping-confirmation"
+        if kind == "mapping-endorsement" and operation == "confirm"
+        else kind
+    )
+    record = {
+        field: copy.deepcopy(note.get(field))
+        for field in (
+            "operation",
+            "authority",
+            "summary",
+            "scope",
+            "source_refs",
+            "related_ids",
+            "supersedes_id",
             "payload",
         )
-    elif kind == "mapping-rejection":
-        _require_strings(
-            value,
-            (
-                "sensory_phrase",
-                "activation_boundary",
-                "non_activation_boundary",
-                "rejection_reason",
-                "verification",
-            ),
-            "payload",
-        )
-    elif kind == "activation-boundary":
-        _require_strings(
-            value,
-            ("activation_boundary", "non_activation_boundary", "verification"),
-            "payload",
-        )
-    elif kind == "boundary-retraction":
-        _require_strings(
-            value,
-            ("retracted_boundary", "reason", "verification"),
-            "payload",
-        )
-    return value
-
-
-def _stored_note_from_value(path: Path, value: Any, file_sha256: str) -> StoredNote:
-    if not isinstance(value, dict):
-        raise ValidationError("note: expected JSON object")
-    if value.get("schema") != "memory-source-note/v1":
-        raise ValidationError("schema: expected memory-source-note/v1")
-    note_id = _validate_note_id(value.get("id"), "id")
-    captured_at = _parse_iso_datetime(value.get("captured_at"), "captured_at")
-    if value.get("extension") != "synesthesia":
-        raise ValidationError("extension: expected synesthesia")
-    kind = _nonempty_string(value.get("kind"), "kind")
-    if kind not in PHYSICAL_ALLOWED_OPERATIONS:
-        raise ValidationError(f"kind: unsupported stored kind {kind!r}")
-    operation = _nonempty_string(value.get("operation"), "operation")
-    if operation not in PHYSICAL_ALLOWED_OPERATIONS[kind]:
-        allowed = ", ".join(sorted(PHYSICAL_ALLOWED_OPERATIONS[kind]))
-        raise ValidationError(
-            f"operation: {operation!r} is invalid for stored kind {kind}; expected {allowed}"
-        )
-    authority = _nonempty_string(value.get("authority"), "authority")
-    if authority not in PHYSICAL_ALLOWED_AUTHORITIES[kind]:
-        allowed = ", ".join(sorted(PHYSICAL_ALLOWED_AUTHORITIES[kind]))
-        raise ValidationError(
-            f"authority: {authority!r} is invalid for stored kind {kind}; expected {allowed}"
-        )
-    summary = _nonempty_string(value.get("summary"), "summary")
-    scope = _validate_scope(value.get("scope"))
-    source_refs = _validate_source_refs(value.get("source_refs"))
-    related_ids, supersedes_id = _validate_relationships(value, operation)
-    fingerprint = _nonempty_string(value.get("fingerprint"), "fingerprint")
-    if not re.fullmatch(r"[a-f0-9]{64}", fingerprint):
-        raise ValidationError("fingerprint: expected 64 lowercase hex characters")
-    payload = _validate_stored_payload(kind, value.get("payload"))
-    _reject_sensitive_keys(value)
+    }
+    scope_anchor_source = _scope_anchor_source(record)
+    payload = record.get("payload")
+    scope = record.get("scope")
+    if (
+        scope_anchor_source == "kind"
+        and isinstance(payload, dict)
+        and isinstance(scope, dict)
+        and isinstance(payload.get("scope_anchor"), str)
+        and payload.get("scope_anchor") != scope.get("kind")
+    ):
+        scope_anchor_source = "declared"
+    fingerprint = (
+        note.get("fingerprint")
+        if isinstance(note.get("fingerprint"), str)
+        else ""
+    )
+    note_id = note.get("id") if isinstance(note.get("id"), str) else ""
+    legacy_corridor = (
+        note_id == LEGACY_CORRIDOR_NOTE_ID
+        and fingerprint == LEGACY_CORRIDOR_FINGERPRINT
+        and file_sha256 == LEGACY_CORRIDOR_FILE_SHA256
+    )
+    validation_profile = (
+        "stored-legacy-corridor-v1" if legacy_corridor else "stored-v1"
+    )
+    submission = {
+        "fingerprint_profile": validation_profile,
+        "expected_fingerprint": canonical_fingerprint(kind, record),
+        "scope_anchor_source": scope_anchor_source,
+        "stored_file_sha256": file_sha256,
+        "stored_fingerprint": fingerprint,
+        "stored_note_id": note_id,
+        "source": {
+            "logical_kind": logical_kind,
+            "physical_kind": kind,
+            "record": record,
+        },
+    }
+    _validate_submission_with_ledger(
+        submission,
+        stored_note=value,
+        ledger_bin=ledger_bin,
+    )
     return StoredNote(
         path=path,
-        id=note_id,
-        captured_at=captured_at,
+        id=note["id"],
+        captured_at=note["captured_at"],
         kind=kind,
         operation=operation,
-        authority=authority,
-        summary=summary,
-        scope=scope,
-        source_refs=source_refs,
-        related_ids=related_ids,
-        supersedes_id=supersedes_id,
+        authority=record["authority"],
+        summary=record["summary"],
+        scope=record["scope"],
+        source_refs=record["source_refs"],
+        related_ids=record["related_ids"],
+        supersedes_id=record["supersedes_id"],
         fingerprint=fingerprint,
-        payload=payload,
+        payload=record["payload"],
         file_sha256=file_sha256,
+        validation_profile=validation_profile,
     )
 
 
@@ -648,6 +733,8 @@ def _source_manifest_fingerprint(
 
 def load_stored_notes(
     home: Path,
+    *,
+    ledger_bin: str | Path | None = None,
 ) -> tuple[list[StoredNote], list[dict[str, Any]], str, int]:
     directory = notes_directory(home)
     if directory.is_symlink():
@@ -679,7 +766,12 @@ def load_stored_notes(
             raw = path.read_bytes()
             file_sha256 = hashlib.sha256(raw).hexdigest()
             value = json.loads(raw.decode("utf-8"))
-            note = _stored_note_from_value(path, value, file_sha256)
+            note = _stored_note_from_value(
+                path,
+                value,
+                file_sha256,
+                ledger_bin=ledger_bin,
+            )
             if note.id in seen_ids:
                 raise ValidationError(f"id: duplicate source note id {note.id}")
             seen_ids.add(note.id)
@@ -745,8 +837,15 @@ def _unresolved_event(note: StoredNote, reason: str) -> dict[str, Any]:
     }
 
 
-def build_digest_projection(home: Path) -> dict[str, Any]:
-    notes, invalid_notes, source_fingerprint, source_file_count = load_stored_notes(home)
+def build_digest_projection(
+    home: Path,
+    *,
+    ledger_bin: str | Path | None = None,
+) -> dict[str, Any]:
+    notes, invalid_notes, source_fingerprint, source_file_count = load_stored_notes(
+        home,
+        ledger_bin=ledger_bin,
+    )
     lineages: dict[str, dict[str, Any]] = {}
     note_to_lineage: dict[str, str] = {}
     unresolved: list[dict[str, Any]] = []
@@ -1076,7 +1175,7 @@ def render_memory_digest(
         "# Synesthesia Digest",
         "",
         f"generated_at: {generated_at}",
-        f"generator: synesthesia_memory_note.py memory-digest",
+        "generator: synesthesia_memory_note.py memory-digest",
         f"digest_version: {DIGEST_VERSION}",
         "canonical: false",
         "source: immutable memory-source-note/v1 events",
@@ -1163,11 +1262,7 @@ def render_memory_digest(
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _digest_metadata(path: Path) -> dict[str, str] | None:
-    try:
-        text = path.read_text(encoding="utf-8")
-    except OSError:
-        return None
+def _digest_metadata(text: str) -> dict[str, str] | None:
     lines = text.splitlines()
     if not lines or lines[0].strip() != "# Synesthesia Digest":
         return None
@@ -1196,13 +1291,60 @@ def inspect_digest(
 ) -> dict[str, Any]:
     digest_path = path or default_digest_path(home)
     expected = f"sha256:{projection['source_fingerprint']}"
-    if digest_path.is_symlink():
-        return {"path": str(digest_path), "status": "symlinked", "expected_source_fingerprint": expected}
+    try:
+        ensure_no_symlink_components(digest_path)
+    except ValidationError as exc:
+        return {
+            "path": str(digest_path),
+            "status": "symlinked",
+            "expected_source_fingerprint": expected,
+            "error": str(exc),
+        }
     if not digest_path.exists():
         return {"path": str(digest_path), "status": "missing", "expected_source_fingerprint": expected}
+    try:
+        descriptor = os.open(digest_path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    except OSError:
+        return {
+            "path": str(digest_path),
+            "status": "invalid",
+            "expected_source_fingerprint": expected,
+        }
+    try:
+        file_stat = os.fstat(descriptor)
+        if not stat.S_ISREG(file_stat.st_mode):
+            return {
+                "path": str(digest_path),
+                "status": "not-file",
+                "expected_source_fingerprint": expected,
+            }
+        with os.fdopen(descriptor, encoding="utf-8") as handle:
+            descriptor = -1
+            text = handle.read()
+    except (OSError, UnicodeError):
+        return {
+            "path": str(digest_path),
+            "status": "invalid",
+            "expected_source_fingerprint": expected,
+        }
+    finally:
+        if descriptor >= 0:
+            os.close(descriptor)
     if not digest_path.is_file():
         return {"path": str(digest_path), "status": "not-file", "expected_source_fingerprint": expected}
-    metadata = _digest_metadata(digest_path)
+    file_mode = file_stat.st_mode & 0o777
+    directory_mode = digest_path.parent.stat().st_mode & 0o777
+    if file_mode != 0o600 or directory_mode != 0o700:
+        return {
+            "path": str(digest_path),
+            "status": "insecure-permissions",
+            "expected_source_fingerprint": expected,
+            "file_mode": f"{file_mode:04o}",
+            "expected_file_mode": "0600",
+            "directory_mode": f"{directory_mode:04o}",
+            "expected_directory_mode": "0700",
+        }
+    metadata = _digest_metadata(text)
     if metadata is None or metadata.get("digest_version") != DIGEST_VERSION:
         return {
             "path": str(digest_path),
@@ -1216,6 +1358,18 @@ def inspect_digest(
         if metadata.get("source_fingerprint") == expected and full_projection
         else "stale"
     )
+    generated_at = metadata.get("generated_at")
+    if status == "current" and (
+        not generated_at
+        or text
+        != render_memory_digest(
+            projection,
+            generated_at,
+            include_inactive=True,
+            limit=0,
+        )
+    ):
+        status = "invalid"
     try:
         counts = {
             "active_mappings": _metadata_int(metadata, "active_mapping_count"),
@@ -1234,7 +1388,7 @@ def inspect_digest(
     return {
         "path": str(digest_path),
         "status": status,
-        "generated_at": metadata.get("generated_at"),
+        "generated_at": generated_at,
         "source_fingerprint": metadata.get("source_fingerprint"),
         "expected_source_fingerprint": expected,
         **counts,
@@ -1243,19 +1397,27 @@ def inspect_digest(
     }
 
 
-def _atomic_write_regular(path: Path, content: bytes) -> None:
+def _atomic_write_regular(
+    path: Path,
+    content: bytes,
+    *,
+    secure_parent: bool,
+) -> None:
     ensure_no_symlink_components(path)
     if path.is_symlink():
         raise ValidationError(f"digest destination is a symlink: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
+    parent_existed = path.parent.exists()
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     ensure_no_symlink_components(path.parent)
+    if secure_parent or not parent_existed:
+        os.chmod(path.parent, 0o700)
     fd, temp_name = tempfile.mkstemp(prefix=".synesthesia-digest-", dir=str(path.parent))
     try:
+        os.fchmod(fd, 0o600)
         with os.fdopen(fd, "wb") as handle:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
-        os.chmod(temp_name, 0o644)
         os.replace(temp_name, path)
     finally:
         if os.path.exists(temp_name):
@@ -1282,7 +1444,8 @@ def generate_memory_digest(
         raise ValidationError(
             "partial digest options require --output; the default latest digest must be complete"
         )
-    projection = build_digest_projection(home)
+    ledger_bin = _require_synesthesia_validator()
+    projection = build_digest_projection(home, ledger_bin=ledger_bin)
     before = inspect_digest(home, projection, destination)
     if before["status"] == "current" and not force:
         return {
@@ -1303,7 +1466,11 @@ def generate_memory_digest(
         include_inactive=include_inactive,
         limit=limit,
     )
-    _atomic_write_regular(destination, digest.encode("utf-8"))
+    _atomic_write_regular(
+        destination,
+        digest.encode("utf-8"),
+        secure_parent=output is None,
+    )
     return {
         "status": "written",
         "path": str(destination),
@@ -1338,7 +1505,8 @@ def _scan_compiled_memory(home: Path, note_ids: list[str]) -> dict[str, Any]:
     return {"files_checked": len(roots), "mentions": mentions}
 
 
-def doctor(home: Path) -> dict[str, Any]:
+def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
+    source_ledger = _inspect_source_ledger((source_repo or Path.cwd()).resolve())
     source = source_instructions_path()
     live = live_instructions_path(home)
     if live.is_symlink():
@@ -1372,7 +1540,14 @@ def doctor(home: Path) -> dict[str, Any]:
     }
     if binary:
         proc = subprocess.run(
-            [str(binary), "doctor", "--extension", "synesthesia"],
+            [
+                str(binary),
+                "doctor",
+                "--extension",
+                "synesthesia",
+                "--codex-home",
+                str(home),
+            ],
             text=True,
             capture_output=True,
             check=False,
@@ -1387,7 +1562,22 @@ def doctor(home: Path) -> dict[str, Any]:
 
     digest = inspect_digest(home, projection)
     compiled = _scan_compiled_memory(home, note_ids)
-    if projection["source_file_count"] == 0:
+    if not source_ledger["available"]:
+        stage = "source-ledger-unavailable"
+        recommendation = source_ledger["error"]
+    elif not source_ledger["healthy"]:
+        stage = f"source-ledger-{source_ledger['status']}"
+        recommendation = (
+            "Repair or explicitly bind the selected Synesthesia store through "
+            "the owning passive definition."
+        )
+    elif projection["invalid_notes"]:
+        stage = "source-notes-invalid"
+        recommendation = (
+            "Repair the invalid immutable-note transport or source definition "
+            "before regenerating the digest."
+        )
+    elif projection["source_file_count"] == 0:
         stage = "no-source-notes"
         recommendation = "Create a note only after a qualifying durable user event."
     elif adapter_status != "current":
@@ -1396,7 +1586,13 @@ def doctor(home: Path) -> dict[str, Any]:
     elif digest["status"] == "missing":
         stage = "source-notes-digest-missing"
         recommendation = "Run memory-digest to materialize the current Synesthesia state."
-    elif digest["status"] in {"stale", "invalid", "symlinked", "not-file"}:
+    elif digest["status"] in {
+        "stale",
+        "invalid",
+        "insecure-permissions",
+        "symlinked",
+        "not-file",
+    }:
         stage = f"source-notes-digest-{digest['status']}"
         recommendation = "Repair the digest path if needed, then run memory-digest --force."
     elif compiled["mentions"]:
@@ -1414,6 +1610,7 @@ def doctor(home: Path) -> dict[str, Any]:
             "codex_home": str(home),
             "stage": stage,
             "recommendation": recommendation,
+            "source_ledger": source_ledger,
             "adapter": {
                 "status": adapter_status,
                 "source": str(source),
@@ -1448,6 +1645,12 @@ def print_doctor_text(report: dict[str, Any]) -> None:
     body = report["synesthesia_memory_doctor"]
     print(f"stage: {body['stage']}")
     print(f"codex_home: {body['codex_home']}")
+    print(
+        "source_ledger: "
+        f"{body['source_ledger']['status']} "
+        f"healthy={str(body['source_ledger']['healthy']).lower()} "
+        f"({body['source_ledger']['repo']})"
+    )
     print(f"adapter: {body['adapter']['status']} ({body['adapter']['live']})")
     print(f"source_notes: {body['notes']['count']} valid={body['notes']['valid_count']}")
     print(f"digest: {body['digest']['status']} ({body['digest']['path']})")
@@ -1473,12 +1676,15 @@ def print_doctor_text(report: dict[str, Any]) -> None:
 
 def cmd_validate(args: argparse.Namespace) -> int:
     raw = read_json_input(args.json)
-    physical_kind, normalized = validate_and_normalize(args.kind, raw)
+    physical_kind, normalized, structural_result = validate_and_normalize(
+        args.kind, raw
+    )
     result = {
         "valid": True,
         "logical_kind": args.kind,
         "physical_kind": physical_kind,
         "canonical_fingerprint": canonical_fingerprint(physical_kind, normalized),
+        "structural_validation": structural_result["definition"],
         "normalized": normalized,
     }
     print(json.dumps(result, indent=2, ensure_ascii=False, sort_keys=True))
@@ -1487,7 +1693,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
 
 def cmd_append(args: argparse.Namespace) -> int:
     raw = read_json_input(args.json)
-    physical_kind, normalized = validate_and_normalize(args.kind, raw)
+    physical_kind, normalized, _ = validate_and_normalize(args.kind, raw)
     binary = find_memory_note_binary()
     if binary is None:
         print("memory-note: not-attempted: cli unavailable", file=sys.stderr)
@@ -1554,15 +1760,27 @@ def cmd_sync(args: argparse.Namespace) -> int:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    report = doctor(codex_home(args.codex_home))
+    report = doctor(
+        codex_home(args.codex_home),
+        Path(args.repo).expanduser().resolve(),
+    )
     if args.format == "text":
         print_doctor_text(report)
     else:
         print(json.dumps(report, indent=2, ensure_ascii=False, sort_keys=True))
     body = report["synesthesia_memory_doctor"]
+    if not body["source_ledger"]["healthy"]:
+        return 2
+    if body["notes"]["parse_errors"]:
+        return 2
     if body["adapter"]["status"] in {"symlinked", "not-file"}:
         return 2
-    if body["digest"]["status"] in {"symlinked", "not-file", "invalid"}:
+    if body["digest"]["status"] in {
+        "symlinked",
+        "not-file",
+        "invalid",
+        "insecure-permissions",
+    }:
         return 2
     return 0
 
@@ -1611,6 +1829,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     doctor_parser = sub.add_parser("doctor", help="Diagnose note, digest, and Phase 2 state")
     doctor_parser.add_argument("--codex-home")
+    doctor_parser.add_argument("--repo", default=".")
     doctor_parser.add_argument("--format", choices=("json", "text"), default="json")
     doctor_parser.set_defaults(func=cmd_doctor)
     return parser

@@ -1,0 +1,229 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "actuating/run-audit",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "project",
+      "scan",
+      "sort"
+    ]
+  },
+  "parameters": {},
+  "selectors": [
+    "root",
+    "session-id",
+    "path",
+    "repo",
+    "since",
+    "until",
+    "last"
+  ],
+  "relations": [
+    {
+      "name": "turns",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "status",
+        "status_reason",
+        "user_message",
+        "final_answer",
+        "error",
+        "aborted_reason"
+      ]
+    },
+    {
+      "name": "tool_lifecycle",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "turns",
+      "as": "turn_source"
+    },
+    {
+      "op": "sort",
+      "input": "turn_source",
+      "as": "ordered_turns",
+      "by": [
+        {
+          "field": "path"
+        },
+        {
+          "field": "turn_index"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "ordered_turns",
+      "as": "turn_evidence",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "status",
+        "status_reason",
+        "user_message",
+        "final_answer",
+        "error",
+        "aborted_reason"
+      ]
+    },
+    {
+      "op": "scan",
+      "relation": "tool_lifecycle",
+      "as": "tool_source"
+    },
+    {
+      "op": "sort",
+      "input": "tool_source",
+      "as": "ordered_tools",
+      "by": [
+        {
+          "field": "path"
+        },
+        {
+          "field": "turn_index",
+          "nulls": "last"
+        },
+        {
+          "field": "started_at",
+          "nulls": "last"
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "ordered_tools",
+      "as": "tool_evidence",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
+    }
+  ],
+  "projections": {
+    "tool-metadata": {
+      "relation": "ordered_tools",
+      "schema": "actuating-run-tool-metadata/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "tool_name",
+        "namespace",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
+    "tools": {
+      "relation": "tool_evidence",
+      "schema": "actuating-run-tool-evidence/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "tool_name",
+        "namespace",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
+    "turn-metadata": {
+      "relation": "ordered_turns",
+      "schema": "actuating-run-turn-metadata/v1",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "status",
+        "status_reason",
+        "aborted_reason"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
+    "turns": {
+      "relation": "turn_evidence",
+      "schema": "actuating-run-turn-evidence/v1",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "status",
+        "status_reason",
+        "user_message",
+        "final_answer",
+        "error",
+        "aborted_reason"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 67108864,
+    "max_fold_states": 1
+  }
+}

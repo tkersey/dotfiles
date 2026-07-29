@@ -6,57 +6,10 @@ Before a workflow-specific experiment, prove that the workflow actually governed
 
 ## SGG-v1
 
-```yaml
-source_governance_gate:
-  gate_version: SGG-v1
-  gate_id:
-
-  source:
-    session_id:
-    rollout_path:
-    workflow:
-    protocol:
-    classifier_command:
-    classifier_version:
-    included_row_ref:
-
-  evidence:
-    governance:
-      - evidence_id:
-        present:
-        source:
-        timestamp:
-        tool_name:
-        executable:
-        command:
-        matched_field:
-        matched_cue:
-        excerpt:
-        provenance_role:
-    entry: []
-    closure: []
-    incidental: []
-
-  classification:
-    governance_provenance:
-    closure_provenance:
-    governing_evidence_refs: []
-    incidental_evidence_refs: []
-    absent_evidence_reasons: []
-
-  verdict:
-    state:
-      authoritative |
-      declared_uncontrolled |
-      incidental |
-      ambiguous |
-      absent
-    replay_allowed:
-    allowed_modes: []
-    reason:
-
-  limitations: []
-```
+The sole machine schema is
+[`../definitions/ledger/source-governance-gate.json`](../definitions/ledger/source-governance-gate.json).
+Author JSON, validate it with Ledger, and retain the returned definition digest.
+This page owns interpretation, not a second field inventory.
 
 ## Governance provenance
 

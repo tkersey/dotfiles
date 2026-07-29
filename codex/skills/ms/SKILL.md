@@ -49,7 +49,7 @@ The classification guides observability. It does not belong in frontmatter unles
 Create:
 
 ```text
-references/decision-contract.yaml
+references/decision-contract.json
 ```
 
 only when all are true:
@@ -74,18 +74,9 @@ success/failure signals
 required artifacts
 ```
 
-Use:
-
-```yaml
-skill_decision_contract:
-  contract_version: SKDC-v1
-  skill:
-    name:
-    kind:
-  triggers: []
-  routes: []
-  clauses: []
-```
+Author the artifact as JSON conforming to SKDC-v1 and validate it through
+`$tune`'s canonical `skill-decision-contract` Ledger definition. Do not emit a
+YAML decision-contract template.
 
 ## Optional SDR-v1
 
@@ -154,15 +145,20 @@ Do not add instrumentation merely to make every answer “yes.”
 When refining `ms` itself, prefer:
 
 ```bash
-seq skill-decision-audit \
-  --skill ms \
-  --mode tune-packet \
+tune_seq_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions/seq/skill-decision-audit.json")"
+seq observe \
+  --definition "$tune_seq_definition" \
+  --projection evidence \
+  --root <sessions-root> \
   --last 30d \
-  --exclude-current \
+  --param needle=ms \
   --format json
 ```
 
-If unavailable, use narrow activation, message, and outcome evidence and report the CLI gap.
+Tune classifies that evidence and validates any STE-v1 packet through its
+canonical Ledger definition. A missing evidence shape belongs in a passive
+observation definition or a genuinely generic Seq operator, never a new
+skill-specific command.
 
 ## Final report
 

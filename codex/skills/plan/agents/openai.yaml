@@ -10,8 +10,10 @@ interface:
     improvements are exhausted; run fresh eyes and one private radical candidate.
     Emit no Plan-owned runtime state, decision, transition, readiness, or execution
     handoff artifact. Do not invent an architectonic seam for work inside an
-    unchanged exact boundary. When a compatible execution-policy compiler is
-    available, validate the exact emitted EPG and report its contract and source
-    digest. Compiler absence prevents only the compilation claim, not Plan emission.
+    unchanged exact boundary. Validate the exact emitted EPG through
+    <plan-skill-root>/definitions/ledger/execution-policy-graph.json, resolved
+    from the installed Plan skill root, or persist it through the importing
+    plan-policy-document definition, and report only that it
+    is structurally valid under the returned definition digest.
     Never grant mutation authority, select an execution owner, require $actuating,
     $universalist, or $reduce, or silently infer an existing plan.

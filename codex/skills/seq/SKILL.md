@@ -1,418 +1,191 @@
 ---
 name: seq
-description: "Mine Codex session JSONL and memory artifacts with the Zig `seq` CLI. Use for explicit `$seq`, artifact/session/tool/memory/plan forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, `$retrace` source capsules, review-compiler provenance, watched-session deltas, worker attribution, or reproducible historical reports. Prefer the narrowest lifted command and preserve denominators, provenance, contamination, and uncertainty."
+description: "Reconstruct provenance-preserving observations from Codex and OpenCode execution/session evidence with Seq 1.x. Use for explicit `$seq`, session/tool/message forensics, skill activation and outcome audits, decision provenance, `$tune` evidence, `$retrace` source observations, watched-session deltas, worker attribution, or reproducible historical reports. Use native commands only for physical session structure; use the owning passive observation definition for every higher-level question."
 metadata:
-  version: "1.2.1"
+  version: "2.0.0"
 ---
-# seq
+
+# Seq
 
 ## Mission
-Use deterministic local session and memory evidence to answer:
+
+Reconstruct:
+
 ```text
-what happened
-where it happened
-what evidence supports it
-what remains unknown
+facts + provenance + corpus scope + contamination + limitations + uncertainty
 ```
-For skill/workflow analysis distinguish:
+
+Seq does not validate durable artifacts or grant action, repair, review,
+publication, or closure authority.
+
+## Source boundary
+
+Seq reads only:
+
+- Codex rollout JSONL and session/state metadata needed to locate or interpret it;
+- supported OpenCode execution/session sources;
+- explicit immutable input relations supplied by the caller.
+
+Select OpenCode prompt history explicitly with
+`--path ~/.local/state/opencode/prompt-history.jsonl`; its prompts, parts, and
+tool lifecycle use the canonical physical relations, never a source-specific
+command.
+
+Seq does not scan memory roots, Ledger stores, artifact directories, or another
+durable source implicitly. Compose durable facts explicitly:
+
+```bash
+# Load $ledger and complete $ledger ensure once before this composition.
+ledger project \
+  --definition <artifact-definition.json> \
+  --projection <facts> \
+  --repo <repo> \
+  --payload-only \
+  --format json >facts.json
+
+seq observe \
+  --definition <observation-definition.json> \
+  --input facts=facts.json \
+  --projection <projection> \
+  --format json
+```
+
+## Bootstrap and capability boundary
+
+Require Seq major version 1 and `seq-observation-abi/v1`:
+
+```bash
+seq version
+seq capabilities --format json
+```
+
+Capabilities report only physical adapters, native operators, renderers, cache
+format, and generic limits. A missing skill-specific flag is never a fallback
+signal; load the owning definition and check its ABI/operators.
+
+## Native surface
+
+Use native commands only for physical session structure:
+
+```text
+seq definition check
+seq definition describe
+seq observe
+seq explain
+seq sessions
+seq turns
+seq session-detail
+seq tool-lifecycle
+seq session-graph
+seq tail
+seq find-session
+seq datasets
+seq dataset-schema
+seq query
+seq index
+seq capabilities
+seq version
+```
+
+If a higher-level question cannot be expressed, add a passive observation
+definition to the semantic owner. Request a new native operator only when it is
+domain-independent, explicitly bounded, and necessary for three unrelated
+definitions or for preserving one live behavior without material performance
+loss.
+
+## Standard Seq definitions
+
+Seq owns reusable physical analyses under:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq/
+```
+
+Current definitions:
+
+```text
+message-search.json
+session-summary.json
+tool-search.json
+turn-metrics.json
+turn-report.json
+```
+
+`tool-search.json` returns metadata through `rows`. Request `rows-raw` only
+when raw arguments, inputs, commands, and outputs are necessary and safe.
+
+Example:
+
+```bash
+seq_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq")"
+seq observe \
+  --definition "$seq_definition_root/message-search.json" \
+  --path <rollout.jsonl> \
+  --param "needle=<term>" \
+  --projection rows \
+  --format json
+```
+
+Domain observations live with their owners. For example, `$tune` owns skill
+decision audits and `$retrace` owns decision discovery/source governance. Seq
+compiles their passive data; it does not own their vocabulary or conclusions.
+
+## Evidence discipline
+
+For every report preserve:
+
+```text
+definition id and closure digest
+Seq ABI and binary version
+source adapter/schema version
+session IDs and path/corpus digest
+explicit since/until and timezone when applicable
+worker inclusion
+current-session exclusion
+files opened and bytes read
+physical passes and rows scanned/materialized
+contamination
+limitations and uncertainty
+```
+
+A fixed time window is not an immutable corpus snapshot.
+
+Distinguish:
+
 ```text
 presence
 decision influence
 downstream outcome
 workflow governance
 ```
-These are not interchangeable.
 
-## Source boundary
-Primary local sources:
-```text
-~/.codex/sessions
-~/.codex/memories
-```
-`seq` is local-corpus forensics, not product-wide telemetry.
-State the denominator and exclusion policy before counts.
-
-## Capability-first rule
-
-For current or post-change audits, run:
-```bash
-seq --version
-seq capabilities --format json
-<target-command> --help
-```
-Use the installed lifted surface as source of truth.
-Do not recreate a newer native classifier with broad transcript searches when the installed binary is old.
-
-For session JSONL forensics, require:
-```text
-streaming_session_scanner_v1
-```
-This capability means aggregate session or corpus size is not a scanner limit;
-the shared scanner retains one protocol record at a time and each command owns
-its semantic fold. The per-record fail-closed guard remains separate. If the
-capability is absent, upgrade Seq rather than substituting broad `jq`, `rg`, or
-ad hoc whole-file scans. A genuinely bounded native query is acceptable only
-when that narrower denominator fully answers the question.
-
-## Routing ladder
-### Skill decisions and tuning
-```text
-skill-decision-audit
-skill-evidence
-skill-success-rank
-skill-audit
-skill-cohort
-workflow-audit
-workflow-overlap
-```
-### Historical decisions and replay
-```text
-decision-capsule
-historical_decisions dataset
-turns
-session-detail
-artifact-search
-```
-### Review/workflow audits
-```text
-review-compiler-audit
-adjudication-audit
-goal-audit
-routing-gap
-```
-### Session/artifact forensics
-```text
-artifact-search
-plan-search
-find-session
-session-prompts
-sessions
-turns
-session-detail
-tail
-```
-### Tools and orchestration
-```text
-tool-lifecycle
-tool-audit
-tool-search
-session-tooling
-session-graph
-orchestration-concurrency
-```
-### Memory
-```text
-memory-inventory
-memory-provenance
-memory-map
-memory-history
-memory-extension-audit
-```
-### Generic
-```text
-message-search
-message-audit
-token-usage
-token-window
-token-cost
-query-diagnose
-query
-```
-Use generic `query` when no lifted surface owns the relation.
-See [command-routing.md](references/command-routing.md).
-
-## Skill-decision audit
-Use when asking:
-```text
-How did a skill affect decisions?
-Was its decision contract followed?
-Was activation missed?
-What should $tune change?
-```
-```bash
-seq skill-decision-audit \
-  --root ~/.codex/sessions \
-  --skill <skill> \
-  --skill-root codex/skills \
-  --repo <repo> \
-  --last 30d \
-  --exclude-current \
-  --mode tune-packet \
-  --format json
-```
-Modes:
-```text
-summary
-episodes
-misses
-clauses
-outcomes
-matched-cohort
-tune-packet
-delta
-```
-Evidence levels:
-```text
-structured SDR-v1 receipt
-explicit assistant attribution
-contract-aligned action
-associated outcome
-co-occurrence only
-```
-Do not collapse these into one “used” count.
-A receipt proves attribution structure, not a good outcome.
-`skill-decision-audit` uses the shared streaming scanner and retains only
-activation, decision, and outcome evidence needed by its output contract.
-
-## Skill presence
-Use `skill-evidence` for one watched session and `skill-audit --mode activation` for cohorts.
-Preserve:
-```text
-explicit user call
-implicit assistant declaration
-injected skill block
-manual skill-file read
-target-skill lens use
-outcome evidence
-raw mention
-```
-Presence does not prove influence.
-`skill-evidence` uses the same scanner in a single pass for normalized messages,
-skill mentions, tool reads, outcomes, and session identity.
-
-## Decision contracts and receipts
-Decision-oriented skills may carry:
-```text
-references/decision-contract.yaml
-skill_decision_contract / SKDC-v1
-```
-Authority order:
-1. explicit `--contract`;
-2. target skill contract under `--skill-root`;
-3. no clause-level judgment.
-Do not invent contract semantics in the CLI.
-Strongest decision attribution:
-```yaml
-skill_decision_receipt:
-  receipt_version: SDR-v1
-  decision_id:
-  skill:
-  skill_contract_fingerprint:
-  trigger_refs: []
-  clause_refs: []
-  question:
-  alternatives_considered: []
-  selected_route:
-  rejected_routes: []
-  expected_outcome:
-  artifact_state:
-```
-
-## Decision capsules
-Use `decision-capsule` to freeze one visible decision for `$retrace`.
-```bash
-seq decision-capsule \
-  --root ~/.codex/sessions \
-  --session-id <id> \
-  --turn-index <n> \
-  --anchor all \
-  --outcome-policy conservative \
-  --format json
-```
-Prefer `--decision-id` when candidate normalization produced one.
-When candidates are empty:
-```text
-inspect turns/session-detail
-locate the visible route boundary
-use exact one-based turn index
-```
-DCP owns visible historical context and structural temporal anchors.
-It does not infer hidden rationale.
-
-## Review-compiler provenance
-Aggregate counts are discovery only.
-Before a session-level claim:
-1. select the exact `denominator.included_sessions` row;
-2. preserve the row’s session ID/path/protocol/classification;
-3. cite evidence for true workflow, required, entered, closed, and compression;
-4. distinguish present signals from absence-derived evidence;
-5. classify workflow and closure provenance;
-6. only then use the row as a `$retrace` source.
-For controller-backed review-closure workflows, evidence roles are:
-```text
-controller_invocation
-controller_event
-controller_state
-controller_receipt
-explicit_workflow_declaration
-artifact_under_repair
-filename_or_path_mention
-historical_reference
-generic_prose
-```
-Only controller-grade evidence proves authoritative governance.
-A path containing only a workflow name is not activation.
-Generic completion, merge, or land evidence is not controller closure.
-When evidence is incidental, exclude the row from the true workflow denominator rather than deriving required/entered/closed state.
-Use ordered lifecycle evidence when available:
-```text
-begin
-basis
-candidate
-ablation
-proof
-permit
-realization
-apply
-commit
-push
-close/abort
-```
-See [review-compiler-provenance.md](references/review-compiler-provenance.md).
-
-## `$retrace` source selection
-When `$retrace` investigates a workflow:
-```text
-aggregate audit
--> included session row
--> provenance classification
--> SGG-v1
--> DCP-v2
-```
-Do not select a replay source from aggregate counts or fallback transcript similarity.
-Allowed source-governance states:
-```text
-authoritative
-declared_uncontrolled
-incidental
-ambiguous
-absent
-```
-Only the first two permit workflow-specific replay, with limitations preserved.
-See [retrace-decision-capsules.md](references/retrace-decision-capsules.md).
-
-## Protocol separation
-Do not evaluate one protocol with another protocol’s vocabulary.
-For review-closure workflow audits, distinguish:
-```text
-legacy-cleanroom
-controller-backed
-kernel-compression
-mixed
-none
-```
-Report:
-```text
-expected protocol
-detected protocol
-mismatch
-```
-Keep controller lifecycle evidence separate from kernel/compression/recomposition evidence.
-
-## Churn, Git delta, and semantic surface
-Never collapse:
-```text
-mutation churn
-final Git delta
-semantic surface
-```
-Mutation churn:
-```text
-patch operations
-gross insertions/deletions
-rewrites
-```
-Final Git delta:
-```text
-base/head
-path classes
-production/test/docs/generated/config
-```
-Semantic surface:
-```text
-metric name/version/unit
-dimensions
-baseline/head
-value
-```
-Unknown units must be labeled `UNIT_UNRESOLVED`.
-
-## Corpus reproducibility
-For comparative audits preserve:
-```text
-sessions root
-seq version
-scanner/index version
-candidate files
-files opened
-session-id/path digest
-time window
-worker inclusion
-current-session exclusion
-```
-A fixed time window is not an immutable corpus snapshot.
+Likewise, keep mutation churn, final Git delta, and semantic surface separate.
+Presence does not prove influence; outcome association does not prove causality;
+an observation does not grant authority.
 
 ## Worker attribution
-Use linked workers only when requested or when the relevant decision occurred there.
-Preserve:
-```text
-root session
-worker session
-parent edge
-lane/receipt ID
-declared skills
-decision receipt
-outcome
-```
-Do not merge unlinked worker sessions into the root denominator.
 
-## Causality discipline
-Report:
-```text
-explicit decision delta
-contract-consistent but causality unproven
-associated outcome only
-co-occurrence only
-```
-Matched cohorts are observational.
-Fork/retrace evidence is experimental but remains separate from historical source fact.
+Include linked workers only when requested or when the relevant evidence occurs
+there. Preserve root session, worker session, parent edge, lane/receipt ID,
+declared skills, observation, and outcome. Never merge unlinked workers into the
+root denominator.
 
 ## Privacy and contamination
-Default to sanitized refs and bounded excerpts.
-Detect:
-```text
-injected skill blocks
-current audit prompts
-generated reports
-quoted transcripts
-memory summaries
-examples
-```
-A schema example inside a skill body is not a historical decision.
-Private reasoning must not be exposed as report evidence.
 
-## Current patterns
-```bash
-seq artifact-search --contains "<term>" --surface messages --format jsonl
-seq plan-search --repo <repo> --include-body --format jsonl
-seq skill-audit --skill <skill> --mode activation --last 30d --exclude-current
-seq tool-lifecycle --session-id <id> --format json
-seq session-detail --session-id <id> --format markdown
-seq review-compiler-audit --protocol auto --repo <repo> --format json
-seq decision-capsule --session-id <id> --mode candidates --format table
-```
+Default to sanitized references and bounded excerpts. Detect injected skill
+blocks, current audit prompts, generated reports, quoted transcripts, memory
+summaries supplied as explicit inputs, and examples. Do not expose private
+reasoning as report evidence.
 
 ## Hard rules
-- Use the narrowest lifted command.
-- Prove the installed CLI surface first for post-change questions.
-- Require `streaming_session_scanner_v1` for session JSONL forensics; do not fall back to broad whole-file scans when it is absent.
-- State denominators and exclusions.
-- Preserve protocol and evidence provenance.
-- Aggregate counts do not authorize session-level claims.
-- Artifact/path mentions are not workflow activations.
-- Generic delivery completion is not controller closure.
-- Presence is not influence.
-- Outcome association is not causality.
-- Historical source fact is not replay consensus.
-- Use generic query only for relations not owned by lifted commands.
-- Report unresolved units, identities, and evidence gaps honestly.
+
+- Use the narrowest native physical command or owning passive definition.
+- State denominators, exclusions, time bounds, and timezone.
+- Preserve evidence provenance and definition identity.
+- Use one fused scan when several requested projections share a source.
+- Do not interpret a definition condition-by-condition in the hot loop.
+- Do not validate SKDC, SDR, DCP, EPG, or another durable artifact with Seq;
+  use its canonical Ledger definition.
+- Do not read a Ledger store or memory root implicitly.
+- Do not replace a missing operator with shell, `jq`, Python, a plugin, or a subprocess.
+- Report unresolved units, identities, contamination, and evidence gaps.

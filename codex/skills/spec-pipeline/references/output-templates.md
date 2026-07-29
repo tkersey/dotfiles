@@ -5,7 +5,7 @@
 ```text
 SPEC_PIPELINE_DRIFT_WARNING
 ## Spec Pipeline Receipt
-<partial SGR-v2>
+<one SGR-v2 JSON object>
 ```
 
 ## Gate failure
@@ -13,7 +13,7 @@ SPEC_PIPELINE_DRIFT_WARNING
 ```text
 SPEC_PIPELINE_GATE_FAILURE
 ## Spec Pipeline Receipt
-<partial SGR-v2>
+<one SGR-v2 JSON object>
 ## Gate Result
 <1-3 questions>
 ```
@@ -23,7 +23,7 @@ SPEC_PIPELINE_GATE_FAILURE
 ```text
 # Title
 ## Spec Pipeline Receipt
-<SGR-v2>
+<one SGR-v2 JSON object>
 ## Evidence Brief
 ## Gate Result
 <decision packet>
@@ -32,3 +32,7 @@ SPEC_PIPELINE_GATE_FAILURE
 ## Fresh-Eyes Pass
 ## Execution Handoff
 ```
+
+The final SGR-v2 JSON must pass its passive Ledger definition before emission.
+A plan-ready handoff also includes one PSC-v1 JSON object structurally validated
+through its own definition. Neither structural result grants handoff authority.

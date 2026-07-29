@@ -32,24 +32,41 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
    a required observation. An unobservable required law blocks.
 7. Select only the source-authorized terminal route, publication posture, and
    proof kinds.
-8. Set the draft `artifact_id` to JSON `null`. After `$ledger ensure`, request
-   the workflow's current Actuating adapter gate. When invoked standalone,
-   require `ledger --version` to be at least `0.11.0` and verify that
-   `ledger --source actuation --help` exposes only the current six-command
-   adapter.
-9. Materialize and register the authored draft through the existing structural
-   adapter before handoff:
+8. Set the draft `artifact_id` to JSON `null`. After `$ledger ensure`, resolve
+   the active `$goal-contract` and `$actuating` skill roots. Require Ledger
+   1.x, `ledger-artifact-abi/v1`, and successful `ledger definition check`
+   results for their canonical Goal and Evidence definitions.
+9. Materialize the authored draft, then register the returned canonical
+   artifact through the Evidence protocol before handoff:
 
    ~~~bash
-   ledger --source actuation --repo <repo> --goal <goal-id> \
-     append --input <goal-contract-draft.json>
+   ledger materialize \
+     --definition <goal-contract-skill-root>/definitions/ledger/goal-contract.json \
+     --input contract=<goal-contract-draft.json> \
+     --format json
+
+   ledger transact \
+     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+     --operation <register-goal|register-goal-carry-forward> \
+     --repo <repo> \
+     --input goal_registration=<goal-registration.json> \
+     --param goal=<goal-id> \
+     --format json
    ~~~
 
-10. Require `actuating-append-result/v1`, a non-null top-level `artifact_id`
-    equal to `artifact.artifact_id`, the complete returned canonical artifact,
-    and its registration `event_digest`. Retain that returned artifact as the
-    current Goal Contract. Ledger canonicalizes, identifies, and registers its
-    structure; it does not author semantics or grant authority.
+   The registration packet is passive JSON containing
+   `schema:"actuating-goal-registration/v1"`, the exact `goal_id`, and the
+   materialization result's parsed `canonical_content` as `body`. Use
+   `register-goal-carry-forward` only for the source-revision transition that
+   must preserve the predecessor Construction while `$review-fold` classifies
+   carried Counterexamples; otherwise use `register-goal`.
+10. Require `ledger-materialization-result/v1` with a non-null `artifact_id`
+    equal to `artifact.artifact_id`, then
+    `ledger-transaction-result/v1` for the selected registration operation
+    with one appended event.
+    Retain the complete canonical artifact and registration event identity as
+    the current Goal Contract. Ledger canonicalizes, identifies, and registers
+    its structure; it does not author semantics or grant authority.
 11. Inspect the complete source-to-Goal projection before handing the returned
     immutable artifact and exact identity to `$actuating` for Construction
     selection.
@@ -97,7 +114,7 @@ Return:
 
 ~~~text
 Goal Contract identity
-goal_contract_registered event identity
+goal registration event identity
 accepted source identity
 execution-authority identity
 mutation posture

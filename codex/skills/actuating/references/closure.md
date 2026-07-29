@@ -60,8 +60,9 @@ A terminal judgment is legal only when all applicable statements hold:
 10. No later material event invalidates authority, subject, proof, publication,
     review evidence, or the current Review Accretion Disposition.
 
-Ledger validation, replay, `state`, or `project` can expose structural premises.
-They cannot decide semantic adequacy, review-path accretion, Glaze materiality,
+Ledger validation, replay, `doctor`, or the `structural-facts` projection can
+expose structural premises. They cannot decide semantic adequacy, review-path
+accretion, Glaze materiality,
 interpret CAS or Ship, compute review credit, choose the next action, or
 pronounce the theorem satisfied. Actuating performs that evaluation and records
 the cited Goal, Construction, Counterexample, owner-evidence, publication, and
@@ -91,7 +92,7 @@ Construction, subject, Evidence head, Review Contract, closure route, semantic
 verdict, and cited premises. The receipt grants no new authority and becomes
 stale when any bound input changes. Ledger may validate its structure after
 authorship; it must not construct it, populate its verdict, or emit it from
-`state` or `project`.
+the Evidence projection.
 
 ~~~yaml
 closure_receipt:

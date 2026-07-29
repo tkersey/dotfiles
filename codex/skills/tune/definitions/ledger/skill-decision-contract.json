@@ -1,0 +1,16 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "tune/skill-decision-contract",
+ "owner": "tune",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-string","disjoint","enum","exact-object","keyed-unique","reference-exists","safe-identifier","unique"]},
+ "parameters": {},
+ "inputs": {"contract":{"codec":"json","required":true,"max_bytes":1048576}},
+ "canonicalization": {},
+ "shape": {"documents":{"contract":{"object":"exact","fields":{"skill_decision_contract":{"object":"exact","fields":{"clauses":{"array":{"min":1,"max":256},"items":{"object":"exact","fields":{"clause_id":{"identifier":{"max":128}},"expected_routes":{"array":{"min":1,"max":128},"items":{"identifier":{"max":128}},"unique":true},"failure_signals":{"array":{"max":256},"items":{"string":{"min":1,"max":2048}}},"prohibited_routes":{"array":{"max":128},"items":{"identifier":{"max":128}},"unique":true},"rationale":{"string":{"min":1,"max":4096}},"required_artifacts":{"array":{"max":256},"items":{"string":{"min":1,"max":2048}}},"success_signals":{"array":{"max":256},"items":{"string":{"min":1,"max":2048}}},"trigger_refs":{"array":{"min":1,"max":128},"items":{"identifier":{"max":128}},"unique":true}},"laws":[["disjoint",{"left":"/expected_routes","right":"/prohibited_routes"}]]},"key":"/clause_id"},"contract_version":{"enum":["SKDC-v1"]},"instrumentation":{"object":"exact","fields":{"decision_receipt":{"enum":["not-needed","optional","required"]},"rationale":{"string":{"min":1,"max":4096}}}},"routes":{"array":{"min":1,"max":128},"items":{"object":"exact","fields":{"aliases":{"array":{"max":256},"unique":true,"items":{"string":{"min":1,"max":256}}},"description":{"string":{"min":1,"max":4096}},"route_id":{"identifier":{"max":128}},"terminal":{"enum":[false,true]}}},"key":"/route_id"},"skill":{"object":"exact","fields":{"kind":{"enum":["decision","evidence","execution","mixed","orchestration"]},"name":{"identifier":{"max":128}},"source_fingerprint":{"string":{"min":1,"max":256}}}},"triggers":{"array":{"min":1,"max":128},"items":{"object":"exact","fields":{"cue_literals":{"array":{"max":256},"unique":true,"items":{"string":{"min":1,"max":2048}}},"cue_regexes":{"array":{"max":256},"unique":true,"items":{"string":{"min":1,"max":2048}}},"description":{"string":{"min":1,"max":4096}},"exclusions":{"array":{"max":256},"unique":true,"items":{"string":{"min":1,"max":2048}}},"trigger_id":{"identifier":{"max":128}}}},"key":"/trigger_id"}}}}}}},
+ "constraints": {"laws":[["reference-exists",{"input":"contract","path":"/skill_decision_contract/clauses","reference":"/trigger_refs","target":"/skill_decision_contract/triggers","key":"/trigger_id"}],["reference-exists",{"input":"contract","path":"/skill_decision_contract/clauses","reference":"/expected_routes","target":"/skill_decision_contract/routes","key":"/route_id"}],["reference-exists",{"input":"contract","path":"/skill_decision_contract/clauses","reference":"/prohibited_routes","target":"/skill_decision_contract/routes","key":"/route_id"}]]},
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":1048576,"max_store_bytes":1048576,"max_records":4096,"max_output_bytes":1048576,"max_diagnostics":64,"max_reducer_states":1}
+}

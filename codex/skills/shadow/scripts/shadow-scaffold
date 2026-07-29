@@ -184,6 +184,9 @@ skill_refs_q="$(q "$skill_dir/references")"
 skill_assets_q="$(q "$skill_dir/assets")"
 root_q="$(q "$root")"
 skill_name_q="$(q "$skill_name")"
+script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+codex_skills_root="$(CDPATH= cd -- "$script_dir/../.." && pwd -P)"
+tune_definition_q="$(q "$codex_skills_root/tune/definitions/seq/skill-decision-audit.json")"
 
 cat <<SHADOW_OUT
 # \$shadow scaffold
@@ -224,40 +227,16 @@ Summarize:
 
 ## Watched-session evidence commands
 
-Use only seq for watched-session monitoring. If seq cannot expose a needed watched-session fact, or the available seq path is too slow or awkward for repeated monitoring, report a tooling_gap/seq_tuning_gap/state_unknown finding and produce a \$tune-on-\$seq brief instead of reading raw session files.
+Use only Seq for watched-session monitoring. The passive Tune definition is the
+canonical evidence source; native commands are narrow physical follow-ups.
+Compare stable source-event and line positions with the prior cursor.
 
-seq session-detail $session_args --format markdown
-seq turns $session_args --format table
-seq tool-lifecycle $session_args --format table
+seq observe --definition $tune_definition_q --projection evidence $session_args --param needle=$skill_name_q --format json
+seq session-detail $session_args --format json
+seq turns $session_args --format json
+seq tool-lifecycle $session_args --format json
+seq session-graph $session_args --format json
 SHADOW_OUT
-
-if [[ "$session_kind" == "id" ]]; then
-  cat <<SHADOW_ID_CMDS
-seq session-tooling --root $root_q --session-id $(q "$session") --format table
-seq session-prompts --root $root_q --session-id $(q "$session") --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-
-# Optional targeted follow-ups when the lens calls for them:
-seq tool-search --root $root_q --session-id $(q "$session") --contains "<command-or-tool-pattern>" --mode rows --format table
-seq skill-blocks --root $root_q --session-id $(q "$session") --skill $skill_name_q --history latest --format json
-SHADOW_ID_CMDS
-else
-  cat <<'SHADOW_PATH_CMDS'
-
-# Path mode note:
-# session-detail should expose the canonical watched session id. After resolving it, set:
-watched_session_id="<resolved-session-id>"
-
-# Id-preferred follow-ups after resolution:
-SHADOW_PATH_CMDS
-  cat <<SHADOW_PATH_CMDS
-seq session-tooling --root $root_q --session-id "\$watched_session_id" --format table
-seq session-prompts --root $root_q --session-id "\$watched_session_id" --roles user,assistant --strip-skill-blocks --limit 100 --format jsonl
-
-# Optional targeted follow-ups when the lens calls for them:
-seq tool-search --path $(q "$session") --contains "<command-or-tool-pattern>" --mode rows --format table
-seq skill-blocks --root $root_q --session-id "\$watched_session_id" --skill $skill_name_q --history latest --format json
-SHADOW_PATH_CMDS
-fi
 
 cat <<'SHADOW_CURSOR'
 
@@ -295,15 +274,14 @@ Delta:
 SHADOW_CURSOR
 
 if [[ "$include_workers" == "true" ]]; then
-  if [[ "$session_kind" == "id" ]]; then
-    cat <<SHADOW_WORKERS
+  cat <<SHADOW_WORKERS
 
 ## Worker/subagent follow-up
 
 Use only if linked workers are necessary to interpret the watched root session:
 
-seq session-graph --root $root_q --session-id $(q "$session") --format table
-seq session-detail --root $root_q --session-id "<linked-worker-session-id>" --format markdown
+seq session-graph $session_args --format json
+seq session-detail --root $root_q --session-id "<linked-worker-session-id>" --format json
 
 Worker selection rule:
 - include only directly linked workers whose timing overlaps the new root-session evidence window,
@@ -311,23 +289,6 @@ Worker selection rule:
 - report worker evidence under "Linked worker evidence",
 - keep $session as the lifecycle anchor unless the user explicitly says to wait for workers too.
 SHADOW_WORKERS
-  else
-    cat <<SHADOW_WORKERS
-
-## Worker/subagent follow-up
-
-Path mode requires resolving the canonical session id first:
-
-seq session-graph --root $root_q --session-id "\$watched_session_id" --format table
-seq session-detail --root $root_q --session-id "<linked-worker-session-id>" --format markdown
-
-Worker selection rule:
-- include only directly linked workers whose timing overlaps the new root-session evidence window,
-- inspect a worker only if the root session delegated target-skill-relevant work to it,
-- report worker evidence under "Linked worker evidence",
-- keep $session as the lifecycle anchor unless the user explicitly says to wait for workers too.
-SHADOW_WORKERS
-  fi
 fi
 
 cat <<SHADOW_REPORT
@@ -355,7 +316,7 @@ Finding:
 - <no_new_evidence|aligned|missed_activation|false_activation|partial_activation|workflow_gap|validation_gap|tooling_gap|seq_tuning_gap|boundary_gap|ready_for_target_action|needs_user_approval|watched_session_stopped|state_unknown>
 
 Action:
-- <none|proposed brief|proposed \$tune-on-\$seq brief|applied change|needs approval>
+- <none|proposed brief|Seq definition gap|applied change|needs approval>
 
 Next:
 - <continue shadowing under active /goal|stop because watched session stopped|continue once with uncertainty|wait for approval|reinvoke/enable /goal for continued monitoring>
@@ -370,27 +331,19 @@ Shadow complete:
 - Actions proposed/taken:
 - Remaining uncertainty:
 
-## \$tune-on-\$seq brief skeleton
+## Seq definition/operator-gap skeleton
 
-Use when seq lacks an efficient monitoring surface needed by this shadow run.
+Use when the passive observation cannot expose a required physical fact.
 
-Target skill: seq
-
-Tuning goal:
-- Make <watched-session monitoring need> available as an efficient seq surface for \$shadow.
-
-Observed usage:
-- Evidence class: repeated_manual_workaround | clear_observed_failure | explicit_user_feedback | tooling_gap
+- Need:
 - Source: \$shadow cycle for session $session
-- Finding: <sanitized missing/slow/awkward seq command shape>
+- Owning definition:
+- Missing physical evidence:
+- Missing generic operator, if any:
+- Bounds:
+- Acceptance examples:
+- Falsifier:
 
-Gap:
-- Type: tooling
-- Diagnosis: \$shadow cannot monitor this session requirement through an efficient seq surface.
-
-Recommended \$refine action:
-- <smallest seq skill or CLI-surface update needed>
-
-Outcome observation:
-- representative seq command sample, if the command surface changed
+Do not request a skill-specific command, dataset, capability flag, or semantic
+classifier in Seq.
 SHADOW_REPORT

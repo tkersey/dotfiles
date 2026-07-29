@@ -1,0 +1,44 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "actuating",
+  "seq": [
+    {
+      "id": "actuating/artifact-kernel",
+      "path": "seq/artifact-kernel.json"
+    },
+    {
+      "id": "actuating/run-audit",
+      "path": "seq/run-audit.json"
+    }
+  ],
+  "ledger": [
+    {
+      "id": "actuating/closure-receipt",
+      "path": "ledger/closure-receipt.json"
+    },
+    {
+      "id": "actuating/construction-contract",
+      "path": "ledger/construction-contract.json"
+    },
+    {
+      "id": "actuating/evidence-input",
+      "path": "ledger/evidence-input.json"
+    },
+    {
+      "id": "actuating/evidence-protocol",
+      "path": "ledger/evidence-protocol.json"
+    },
+    {
+      "id": "actuating/operation",
+      "path": "ledger/operation.json"
+    },
+    {
+      "id": "actuating/review-contract",
+      "path": "ledger/review-contract.json"
+    },
+    {
+      "id": "actuating/verifier-receipt",
+      "path": "ledger/verifier-receipt.json"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "actuating/artifact-kernel",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "project"
+    ]
+  },
+  "parameters": {},
+  "selectors": [],
+  "relations": [],
+  "inputs": [
+    {
+      "name": "facts",
+      "schema": "actuating-structural-facts/v1",
+      "fields": [
+        {
+          "name": "construction_ref",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "counterexample_class_count",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "event_count",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "event_kinds",
+          "type": "json",
+          "nullable": false
+        },
+        {
+          "name": "goal_contract_ref",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "goal_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "head_digest",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "pending_operation",
+          "type": "json",
+          "nullable": true
+        },
+        {
+          "name": "subject_digest",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "max_rows": 1,
+      "max_bytes": 16777216
+    }
+  ],
+  "pipeline": [
+    {
+      "op": "project",
+      "input": "facts",
+      "as": "structural_facts",
+      "fields": [
+        "construction_ref",
+        "counterexample_class_count",
+        "event_count",
+        "event_kinds",
+        "goal_contract_ref",
+        "goal_id",
+        "head_digest",
+        "pending_operation",
+        "subject_digest"
+      ]
+    }
+  ],
+  "projections": {
+    "structural-facts": {
+      "relation": "structural_facts",
+      "schema": "actuating-artifact-kernel-observation/v1",
+      "fields": [
+        "construction_ref",
+        "counterexample_class_count",
+        "event_count",
+        "event_kinds",
+        "goal_contract_ref",
+        "goal_id",
+        "head_digest",
+        "pending_operation",
+        "subject_digest"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 1,
+    "max_output_bytes": 16777216,
+    "max_fold_states": 1,
+    "max_input_bytes": 16777216
+  }
+}

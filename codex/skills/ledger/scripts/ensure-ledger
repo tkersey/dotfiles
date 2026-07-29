@@ -15,9 +15,9 @@ usage:
   ensure-ledger [--install]
 
 Ensures a ledger command resolves on PATH. With --install, installs the native
-Ledger CLI's Homebrew formula when ledger is missing. It does not inspect command
-identity or version, or proxy native commands. After readiness, invoke ledger
-directly.
+Ledger CLI's Homebrew formula when ledger is missing or upgrades it when the
+installed CLI does not satisfy readiness. Readiness requires Ledger 1.x and
+ledger-artifact-abi/v1. The handler does not proxy native commands.
 EOF
 }
 
@@ -40,10 +40,28 @@ emit_error() {
 }
 
 ledger_path=""
+ledger_version=""
+ledger_abi=""
 
 inspect_availability() {
   ledger_path="$(command -v ledger 2>/dev/null || true)"
   [[ -n "$ledger_path" ]]
+}
+
+inspect_readiness() {
+  local capabilities line
+  local abi_found=false
+  ledger_version="$("$ledger_path" version 2>/dev/null || true)"
+  [[ "$ledger_version" =~ ^1\.[0-9]+\.[0-9]+$ ]] || return 1
+  capabilities="$("$ledger_path" capabilities --format text 2>/dev/null || true)"
+  while IFS= read -r line; do
+    if [[ "$line" == "ABI: ledger-artifact-abi/v1" ]]; then
+      abi_found=true
+      break
+    fi
+  done <<<"$capabilities"
+  [[ "$abi_found" == true ]] || return 1
+  ledger_abi="ledger-artifact-abi/v1"
 }
 
 install_cli() {
@@ -71,6 +89,25 @@ install_cli() {
     return "$install_status"
   fi
   printf '%s' "installed"
+}
+
+upgrade_cli() {
+  local os="${LEDGER_BOOTSTRAP_OS:-$(uname -s)}"
+  if [[ "$os" != "Darwin" && "$os" != "Linux" ]] ||
+    ! command -v brew >/dev/null 2>&1
+  then
+    emit_error "version-or-abi-mismatch" "Install or upgrade $formula to Ledger 1.x with ledger-artifact-abi/v1, then retry."
+    return 2
+  fi
+  if ! brew list --versions "$formula" >/dev/null 2>&1; then
+    emit_error "version-or-abi-mismatch-nonformula" "Replace the current ledger with $formula 1.x, then retry."
+    return 2
+  fi
+  if ! brew upgrade "$formula" >&2; then
+    emit_error "homebrew-upgrade-failed" "Fix the Homebrew failure, then rerun: ensure-ledger --install"
+    return 2
+  fi
+  printf '%s' "upgraded"
 }
 
 while (($#)); do
@@ -105,6 +142,25 @@ if ! inspect_availability; then
   fi
 fi
 
-printf '{"schema":"ledger-bootstrap-ready/v1","status":"ready","path":"%s","action":"%s"}\n' \
+if ! inspect_readiness; then
+  if [[ "$install_allowed" != true ]]; then
+    emit_error "version-or-abi-mismatch" "Authorize the canonical upgrade, then rerun: ensure-ledger --install"
+    exit 3
+  fi
+  action="$(upgrade_cli)" || exit $?
+  hash -r
+  inspect_availability || {
+    emit_error "post-upgrade-unavailable" "Verify PATH and the upgraded $formula formula."
+    exit 2
+  }
+  if ! inspect_readiness; then
+    emit_error "post-upgrade-version-or-abi-mismatch" "Verify $formula provides Ledger 1.x and ledger-artifact-abi/v1."
+    exit 2
+  fi
+fi
+
+printf '{"schema":"ledger-bootstrap-ready/v1","status":"ready","path":"%s","version":"%s","abi":"%s","action":"%s"}\n' \
   "$(json_escape "$ledger_path")" \
+  "$(json_escape "$ledger_version")" \
+  "$(json_escape "$ledger_abi")" \
   "$(json_escape "$action")"

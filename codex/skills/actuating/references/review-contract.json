@@ -1,6 +1,9 @@
 {
-  "lens_contract_manifests": {
-    "standard": {
+  "lens_contract_manifests": [
+    {
+      "name": "standard",
+      "contract_ref": "codex/skills/actuating/references/standard-review.md",
+      "contract_digest": "sha256:fd88f1bcccdd20ffb2999e1cc22ef021dab3fd837a6dd466b121dff6b33de5a5",
       "resources": [
         {
           "path": "codex/skills/actuating/references/standard-review.md",
@@ -8,7 +11,10 @@
         }
       ]
     },
-    "footgun-finder": {
+    {
+      "name": "footgun-finder",
+      "contract_ref": "codex/skills/footgun-finder/SKILL.md",
+      "contract_digest": "sha256:cbdfa336b9d2528f09e569616611e6d85ee3925129c74125904a9b11789457eb",
       "resources": [
         {
           "path": "codex/skills/footgun-finder/SKILL.md",
@@ -16,7 +22,10 @@
         }
       ]
     },
-    "invariant-ace": {
+    {
+      "name": "invariant-ace",
+      "contract_ref": "codex/skills/invariant-ace/SKILL.md",
+      "contract_digest": "sha256:e16fcbdde731f1116872dc36b161826fdf7a7c859c6b89aa0e3c2cf05743f5f6",
       "resources": [
         {
           "path": "codex/skills/invariant-ace/SKILL.md",
@@ -40,7 +49,10 @@
         }
       ]
     },
-    "complexity-mitigator": {
+    {
+      "name": "complexity-mitigator",
+      "contract_ref": "codex/skills/complexity-mitigator/SKILL.md",
+      "contract_digest": "sha256:c1045397d7c0bc43138a1c72f8b963afb32acd3b952e032d447de961ddea5fbd",
       "resources": [
         {
           "path": "codex/skills/complexity-mitigator/SKILL.md",
@@ -48,7 +60,10 @@
         }
       ]
     },
-    "fresh-eyes": {
+    {
+      "name": "fresh-eyes",
+      "contract_ref": "codex/skills/fresh-eyes/SKILL.md",
+      "contract_digest": "sha256:7b52906ad696b71bae095a9f68f5233131861c16948bdbc93983b5a0d5c26187",
       "resources": [
         {
           "path": "codex/skills/fresh-eyes/SKILL.md",
@@ -56,7 +71,7 @@
         }
       ]
     }
-  },
+  ],
   "review_contract": {
     "schema": "actuating-review-contract/v1",
     "contract_id": "actuating-review-contract-v2",

@@ -6,7 +6,7 @@ Check:
 
 - source/spec digest and inspected artifact state match the state against which the
   EPG is being synthesized;
-- no semantic decision was smuggled into policy compilation;
+- no semantic decision was smuggled into structural validation;
 - regime classification fits the actual causal uncertainty;
 - every critical unknown has observable evidence or an explicit block/return;
 - each action has bounded effects, failure observations, proof, and rollback;
@@ -17,10 +17,10 @@ Check:
 - commitment horizon is short enough to remain evidence-responsive;
 - success terminal proves the source contract;
 - human projection does not contradict EPG;
-- when a compatible compiler is available,
-  `seq execution-policy-compile --file <epg.json> --format json` returns
-  `compiled: true` for the exact emitted EPG and reports its structural contract.
+- `ledger validate --definition "$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger/execution-policy-graph.json")" --input policy=<epg.json> --format json`
+  returns `ledger-validation-result/v1` with `valid: true` for the exact emitted
+  EPG and reports the expected definition ID, digest, and ABI.
 
 If a material issue remains, revise or return it and restart the affected synthesis
-lens. Otherwise emit the EPG whether or not optional compiler validation was
-available. Do not create an audit artifact or readiness gate.
+lens. Otherwise emit the structurally validated EPG. Do not create an audit
+artifact or readiness gate.

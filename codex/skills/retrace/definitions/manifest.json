@@ -1,0 +1,36 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "retrace",
+  "seq": [
+    {
+      "id": "retrace/source-governance",
+      "path": "seq/source-governance.json"
+    },
+    {
+      "id": "retrace/decision-candidates",
+      "path": "seq/decision-candidates.json"
+    },
+    {
+      "id": "retrace/decision-capsule",
+      "path": "seq/decision-capsule.json"
+    }
+  ],
+  "ledger": [
+    {
+      "id": "retrace/source-governance-gate",
+      "path": "ledger/source-governance-gate.json"
+    },
+    {
+      "id": "retrace/decision-context-packet",
+      "path": "ledger/decision-context-packet.json"
+    },
+    {
+      "id": "retrace/retrace-inquiry-plan",
+      "path": "ledger/retrace-inquiry-plan.json"
+    },
+    {
+      "id": "retrace/decision-reconstruction-record",
+      "path": "ledger/decision-reconstruction-record.json"
+    }
+  ]
+}

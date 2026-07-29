@@ -127,7 +127,7 @@ Read only:
 ```text
 SKILL.md
 agents/openai.yaml
-references/decision-contract.yaml
+references/decision-contract.json
 brief-authorized references/
 brief-authorized scripts/
 brief-authorized assets/
@@ -211,7 +211,7 @@ Do not add a script that merely grades skill prose.
 
 ## Stable contract preservation
 
-When `references/decision-contract.yaml` exists:
+When `references/decision-contract.json` exists:
 
 - preserve trigger, route, and clause IDs;
 - never renumber for formatting;

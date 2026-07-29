@@ -13,12 +13,14 @@ Place the complete tree at `codex/skills/universalist/`. The skill has no runtim
 From the repository root:
 
 ```bash
-seq skill-contract validate \
-  --file codex/skills/universalist/references/decision-contract.yaml \
+tune_contract_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions/ledger/skill-decision-contract.json")"
+ledger validate \
+  --definition "$tune_contract_definition" \
+  --input contract=codex/skills/universalist/references/decision-contract.json \
   --format json
 ```
 
-Seq validates the `SKDC-v1` structure and computes the contract fingerprint used by Ledger receipts. It does not compare prose in `SKILL.md` with the contract. `references/decision-contract.yaml` is the machine-readable authority for consequential triggers, routes, clauses, and required evidence; update it together with `SKILL.md` and `templates/universalist-plan.md` whenever policy changes.
+Ledger validates the `SKDC-v1` structure without granting semantic authority. It does not compare prose in `SKILL.md` with the contract. `references/decision-contract.json` is the machine-readable authority for consequential triggers, routes, clauses, and required evidence; update it together with `SKILL.md` and `templates/universalist-plan.md` whenever policy changes.
 
 ## Use
 
@@ -129,15 +131,33 @@ A decision is consequential only when at least two plausible routes materially d
 
 Materiality controls reasoning, not storage. In Actuating composition, return the complete candidate analysis to Actuating and let the Construction carry the adjudicated decision. Create a Universalist plan and `SDR-v1` only when no current Construction carries that decision and a standalone, cross-session, multi-actor, migration, or supersession handoff must address it independently.
 
-Before the first Ledger command, load `$ledger` and complete `$ledger ensure` once. Universalist requires Ledger 0.10.6 or newer and Skills Seq 0.3.52 or newer.
+Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
+once. Universalist requires Ledger 1.x and `ledger-artifact-abi/v1`.
+
+Bind a valid pre-cutover plan already under `.ledger/universalist/` once with
+`ledger transact --definition
+<universalist-skill-root>/definitions/ledger/plan-document.json --operation
+bind-existing --repo PROJECT_ROOT --param plan_file=PLAN_FILE --format json`;
+the operation validates existing bytes and writes only Ledger-owned binding
+metadata. A legacy root `.ledger/universalist-plan-<PLAN_ID>.md` uses the
+explicit one-shot `migrate-legacy` operation with that file as
+`legacy_plan` and `plan-<PLAN_ID>.md` as `plan_file`. Normal reads never inspect
+the legacy root. New plans use:
 
 ```bash
-ledger --source universalist create \
+ledger transact \
+  --definition <universalist-skill-root>/definitions/ledger/plan-document.json \
+  --operation create \
   --repo PROJECT_ROOT \
-  --template /path/to/universalist/templates/universalist-plan.md
+  --input template=<universalist-skill-root>/templates/universalist-plan.md \
+  --format json
 ```
 
-For a durable double-category decision, include the applicable existing clauses plus `UNI-DOUBLE-001` in the Ledger emission. Pass every applicable clause explicitly. Ledger owns plan identity, address resolution, receipt construction, validation, and atomic append. Universalist owns decision policy and Markdown fields.
+For a durable double-category decision, include the applicable existing clauses
+plus `UNI-DOUBLE-001` in the `SDR-v1`. Pass every applicable clause explicitly.
+Tune's canonical definition validates and materializes the receipt;
+Universalist's plan definition owns plan identity, address resolution, and
+atomic custody. Universalist retains decision policy and Markdown meaning.
 
 ## Tracks
 

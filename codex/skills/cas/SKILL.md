@@ -189,14 +189,24 @@ those bytes.
 
 ## Structured owner receipt
 
-Waited `start` and terminal `wait` return a current structured receipt whose
-`reviewVerdict` carries:
+Waited `start` and terminal `wait` return a current structured receipt. The
+receipt envelope carries the attempt witnesses:
 
 ~~~text
-status
 reviewAttemptPhase
 reviewAttemptExists
 tupleVerdictExists
+reviewThreadId
+reviewTurnId
+baseSha
+headSha
+targetFingerprint
+~~~
+
+Its closed `reviewVerdict` carries:
+
+~~~text
+status
 principalStrength
 accountFingerprintReducedProtection
 backendClass
@@ -220,6 +230,22 @@ to its static quality predicates: `principalStrength == "strong"`,
 matching. Process exit status describes command or transport completion only.
 It never substitutes for `reviewVerdict`.
 
+A caller that consumes a terminal receipt structurally must first validate the
+exact returned JSON through CAS's passive definition:
+
+~~~bash
+# Load $ledger and complete $ledger ensure once before validation.
+ledger validate \
+  --definition <cas-skill-root>/definitions/ledger/review-receipt.json \
+  --input receipt=<cas-review-receipt.json> \
+  --format json
+~~~
+
+This recursively validates every compact finding row under
+`cas/review-finding`. The pass means only `structurally valid under
+cas/review-receipt@<digest>`; CAS still owns the observed facts, and the caller
+still owns their workflow meaning.
+
 A terminal attempt without a structured semantic verdict has zero semantic
 credit. CAS reports the failure and terminal attempt identity. Actuating alone
 decides whether its one request-local fresh recovery is legal.
@@ -241,8 +267,9 @@ Each canonical compact finding row is deliberately small:
 }
 ~~~
 
-The enclosing `reviewVerdict` supplies the attempt, tuple, request binding, and
-verdict status. `$review-fold` may digest the exact canonical row bytes and
+The receipt envelope supplies attempt existence and tuple existence; the
+enclosed `reviewVerdict` supplies the request binding and verdict status.
+`$review-fold` may digest the exact canonical row bytes and
 cite the enclosing receipt; it performs stable law-and-boundary classification.
 CAS does not manufacture a second per-finding identity or duplicate receipt
 provenance into every row.

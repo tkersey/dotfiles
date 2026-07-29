@@ -8,16 +8,38 @@ import hashlib
 import importlib.util
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
-ELIGIBILITY = {"eligible", "not-eligible"}
+LEDGER_ABI = "ledger-artifact-abi/v1"
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+ELIGIBILITY_DEFINITION = (
+    SKILLS_ROOT
+    / "memory-source-notes/definitions/ledger/source-memory-eligibility.json"
+)
+SOURCE_DEFINITIONS = {
+    "learnings": SKILLS_ROOT
+    / "learnings/definitions/ledger/learnings-protocol.json",
+    "negative-ledger": SKILLS_ROOT
+    / "negative-ledger/definitions/ledger/negative-evidence-protocol.json",
+    "synesthesia": SKILLS_ROOT
+    / "synesthesia/definitions/ledger/synesthesia-protocol.json",
+}
+SOURCE_DEFINITION_IDS = {
+    "learnings": "learnings/protocol",
+    "negative-ledger": "negative-ledger/negative-evidence-protocol",
+    "synesthesia": "synesthesia/protocol",
+}
+MEMORY_NOTE_PROJECTIONS = {
+    "learnings": "memory-note",
+    "negative-ledger": "memory-note",
+    "synesthesia": "memory-note",
+}
 
 
 class ReconcileError(RuntimeError):
@@ -37,7 +59,10 @@ def run_bytes(argv: list[str], *, cwd: Path) -> bytes:
     except OSError as exc:
         raise ReconcileError(f"{Path(argv[0]).name}: {exc}") from exc
     if proc.returncode != 0:
-        detail = proc.stderr.decode("utf-8", errors="replace").strip()
+        detail = (
+            proc.stderr.decode("utf-8", errors="replace").strip()
+            or proc.stdout.decode("utf-8", errors="replace").strip()
+        )
         raise ReconcileError(
             f"{' '.join(argv[1:3])}: {detail or f'exit {proc.returncode}'}"
         )
@@ -55,6 +80,78 @@ def run_json(argv: list[str], *, cwd: Path) -> Any:
     return parse_json(run_bytes(argv, cwd=cwd), " ".join(argv[1:3]))
 
 
+def ledger_envelope(
+    value: Any,
+    *,
+    schema: str,
+    definition_id: str,
+    stage: str,
+) -> dict[str, Any]:
+    if not isinstance(value, dict) or value.get("schema") != schema:
+        raise ReconcileError(f"{stage}: invalid result schema")
+    definition = value.get("definition")
+    if (
+        not isinstance(definition, dict)
+        or definition.get("id") != definition_id
+        or definition.get("abi") != LEDGER_ABI
+    ):
+        raise ReconcileError(f"{stage}: definition identity mismatch")
+    if value.get("authority_granted") is not False:
+        raise ReconcileError(f"{stage}: authority boundary violated")
+    if value.get("storage_mutated") is not False:
+        raise ReconcileError(f"{stage}: unexpected storage mutation")
+    return value
+
+
+def ledger_validation(
+    value: Any,
+    *,
+    definition_id: str,
+    stage: str,
+) -> dict[str, Any]:
+    result = ledger_envelope(
+        value,
+        schema="ledger-validation-result/v1",
+        definition_id=definition_id,
+        stage=stage,
+    )
+    if result.get("valid") is not True or result.get("errors") != []:
+        raise ReconcileError(f"{stage}: structurally invalid")
+    return result
+
+
+def ledger_doctor(
+    value: Any,
+    *,
+    definition_id: str,
+    stage: str,
+) -> dict[str, Any]:
+    result = ledger_envelope(
+        value,
+        schema="ledger-doctor-result/v1",
+        definition_id=definition_id,
+        stage=stage,
+    )
+    if result.get("healthy") is not True:
+        raise ReconcileError(f"{stage}: unhealthy store")
+    return result
+
+
+def memory_note_result(
+    value: Any,
+    *,
+    command: str,
+    stage: str,
+) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ReconcileError(f"{stage}: expected object result")
+    if command == "doctor" and (
+        value.get("command") != "doctor" or value.get("issues") != 0
+    ):
+        raise ReconcileError(f"{stage}: unhealthy memory-note store")
+    return value
+
+
 def writer_fingerprint(extension: str, kind: str, raw: bytes) -> str:
     digest = hashlib.sha256()
     digest.update(extension.encode())
@@ -65,41 +162,43 @@ def writer_fingerprint(extension: str, kind: str, raw: bytes) -> str:
     return digest.hexdigest()
 
 
-def load_eligibility(path: str | None) -> dict[str, dict[str, dict[str, str]]]:
+def load_eligibility(
+    path: str | None,
+    *,
+    ledger: str,
+    cwd: Path,
+) -> dict[str, dict[str, dict[str, str]]]:
     empty = {source: {} for source in SOURCES}
     if not path:
         return empty
+    eligibility_path = Path(path).expanduser().resolve()
+    ledger_validation(
+        run_json(
+            [
+                ledger,
+                "validate",
+                "--definition",
+                str(ELIGIBILITY_DEFINITION),
+                "--input",
+                f"eligibility={eligibility_path}",
+                "--format",
+                "json",
+            ],
+            cwd=cwd,
+        ),
+        definition_id="memory-source-notes/source-memory-eligibility",
+        stage="ledger eligibility validation",
+    )
     try:
-        value = json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
+        value = json.loads(eligibility_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ReconcileError(f"eligibility: {exc}") from exc
-    if (
-        not isinstance(value, dict)
-        or value.get("schema") != "source-memory-eligibility/v1"
-    ):
-        raise ReconcileError("eligibility: expected source-memory-eligibility/v1")
-    decisions = value.get("decisions")
-    if not isinstance(decisions, dict) or set(decisions) - set(SOURCES):
-        raise ReconcileError("eligibility.decisions: unexpected source")
+    decisions = value["decisions"]
     result = {source: {} for source in SOURCES}
     for source, rows in decisions.items():
-        if not isinstance(rows, dict):
-            raise ReconcileError(f"eligibility.decisions.{source}: expected object")
         for record_id, decision in rows.items():
-            if not isinstance(decision, dict):
-                raise ReconcileError(
-                    f"eligibility {source}/{record_id}: expected object"
-                )
-            disposition = decision.get("disposition")
-            reason = decision.get("reason")
-            if (
-                disposition not in ELIGIBILITY
-                or not isinstance(reason, str)
-                or not reason.strip()
-            ):
-                raise ReconcileError(
-                    f"eligibility {source}/{record_id}: expected eligible|not-eligible and reason"
-                )
+            disposition = decision["disposition"]
+            reason = decision["reason"]
             result[source][record_id] = {
                 "disposition": disposition,
                 "reason": reason.strip(),
@@ -120,14 +219,20 @@ def load_notes(
         "--extension",
         source,
         "--limit",
-        "10000",
+        "100000",
         "--format",
         "json",
     ]
     if codex_home:
         list_argv.extend(["--codex-home", codex_home])
-    listing = run_json(list_argv, cwd=cwd)
-    if not isinstance(listing, dict) or not isinstance(listing.get("notes"), list):
+    listing = memory_note_result(
+        run_json(list_argv, cwd=cwd),
+        command="list",
+        stage=f"memory-note list {source}",
+    )
+    if listing.get("extension") != source or not isinstance(
+        listing.get("notes"), list
+    ):
         raise ReconcileError(f"memory-note list {source}: invalid result")
     notes = []
     for row in listing["notes"]:
@@ -146,8 +251,12 @@ def load_notes(
         ]
         if codex_home:
             show_argv.extend(["--codex-home", codex_home])
-        note = run_json(show_argv, cwd=cwd)
-        if not isinstance(note, dict):
+        note = memory_note_result(
+            run_json(show_argv, cwd=cwd),
+            command="show",
+            stage=f"memory-note show {note_id}",
+        )
+        if note.get("id") != note_id or note.get("extension") != source:
             raise ReconcileError(f"memory-note show {note_id}: invalid result")
         notes.append(note)
     return notes
@@ -270,47 +379,41 @@ def classify_record(
     }
 
 
-def learning_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
-    spec = json.dumps(
-        {
-            "dataset": "learnings",
-            "select": ["id", "captured_at", "status", "fingerprint"],
-            "sort": ["-captured_at"],
-            "limit": 10000,
-            "format": "json",
-        },
-        separators=(",", ":"),
+def source_records(
+    ledger: str,
+    source: str,
+    *,
+    cwd: Path,
+) -> list[dict[str, Any]]:
+    stage = f"ledger project {source} reconciliation-index"
+    envelope = ledger_envelope(
+        run_json(
+            [
+                ledger,
+                "project",
+                "--definition",
+                str(SOURCE_DEFINITIONS[source]),
+                "--projection",
+                "reconciliation-index",
+                "--repo",
+                str(cwd),
+                "--param",
+                "limit=100000",
+                "--format",
+                "json",
+            ],
+            cwd=cwd,
+        ),
+        schema="ledger-projection-result/v1",
+        definition_id=SOURCE_DEFINITION_IDS[source],
+        stage=stage,
     )
-    value = run_json(
-        [ledger, "query", "--source", "learnings", "--spec", spec], cwd=cwd
-    )
+    if envelope.get("projection") != "reconciliation-index":
+        raise ReconcileError(f"{stage}: projection identity mismatch")
+    value = envelope.get("data")
     if not isinstance(value, list):
-        raise ReconcileError("ledger query learnings: expected array")
+        raise ReconcileError(f"{stage}: expected array payload")
     return value
-
-
-def negative_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
-    value = run_json([ledger, "query", "--source", "negative-ledger"], cwd=cwd)
-    if not isinstance(value, dict) or not isinstance(value.get("records"), list):
-        raise ReconcileError("ledger query negative-ledger: expected records")
-    return value["records"]
-
-
-def synesthesia_records(ledger: str, *, cwd: Path) -> list[dict[str, Any]]:
-    raw = run_bytes(
-        [ledger, "recent", "--source", "synesthesia", "--limit", "10000"], cwd=cwd
-    )
-    records = []
-    for line in raw.decode("utf-8").splitlines():
-        record_id = line.split(maxsplit=1)[0] if line.strip() else ""
-        if not record_id.startswith("SYN-"):
-            continue
-        value = run_json(
-            [ledger, "show", "--source", "synesthesia", "--id", record_id], cwd=cwd
-        )
-        if isinstance(value, dict):
-            records.append(value)
-    return records
 
 
 def native_export(
@@ -320,18 +423,39 @@ def native_export(
     *,
     cwd: Path,
 ) -> tuple[bytes | None, str | None]:
+    stage = f"ledger project {source} {record_id}"
     argv = [
         ledger,
-        "export",
-        "--source",
-        source,
-        "--id",
-        record_id,
+        "project",
+        "--definition",
+        str(SOURCE_DEFINITIONS[source]),
+        "--projection",
+        MEMORY_NOTE_PROJECTIONS[source],
+        "--repo",
+        str(cwd),
+        "--param",
+        f"id={record_id}",
         "--format",
-        "memory-note",
+        "json",
     ]
     try:
-        return run_bytes(argv, cwd=cwd), None
+        envelope = ledger_envelope(
+            parse_json(run_bytes(argv, cwd=cwd), stage),
+            schema="ledger-projection-result/v1",
+            definition_id=SOURCE_DEFINITION_IDS[source],
+            stage=stage,
+        )
+        if envelope.get("projection") != MEMORY_NOTE_PROJECTIONS[source]:
+            raise ReconcileError(f"{stage}: projection identity mismatch")
+        payload = envelope.get("data")
+        if not isinstance(payload, dict):
+            raise ReconcileError(f"{stage}: expected object payload")
+        raw = json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
+        return raw, None
     except ReconcileError as exc:
         return None, str(exc)
 
@@ -383,6 +507,7 @@ def source_report(
     compiled_corpus: str,
     synesthesia_adapter: Any,
     repo_aliases: set[str],
+    standalone_note_ids: set[str],
 ) -> dict[str, Any]:
     foreign_notes: list[dict[str, Any]] = []
     local_notes: list[dict[str, Any]] = []
@@ -431,9 +556,11 @@ def source_report(
         note = candidate_notes[0] if candidate_notes else None
         if raw is not None and source == "synesthesia":
             try:
-                value = parse_json(raw, f"ledger export {record_id}")
-                physical, normalized = synesthesia_adapter.validate_and_normalize(
-                    logical_kind, value
+                value = parse_json(raw, f"ledger project {record_id}")
+                physical, normalized, _ = synesthesia_adapter.validate_and_normalize(
+                    logical_kind,
+                    value,
+                    ledger_bin=ledger,
                 )
                 expected = synesthesia_adapter.canonical_fingerprint(
                     physical, normalized
@@ -472,6 +599,8 @@ def source_report(
 
     orphan_notes = []
     for note in local_notes:
+        if note.get("id") in standalone_note_ids:
+            continue
         source_id = note_source_id(source, note)
         if source == "synesthesia":
             if note.get("fingerprint") not in {
@@ -493,6 +622,7 @@ def source_report(
         "counts": counts,
         "records": rows,
         "orphan_note_ids": [value for value in orphan_notes if isinstance(value, str)],
+        "standalone_compatible_note_ids": sorted(standalone_note_ids),
         "foreign_repo_note_ids": [
             note["id"] for note in foreign_notes if isinstance(note.get("id"), str)
         ],
@@ -512,38 +642,70 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
         .expanduser()
         .resolve()
     )
-    eligibility = load_eligibility(args.eligibility)
+    eligibility = load_eligibility(
+        args.eligibility,
+        ledger=ledger,
+        cwd=cwd,
+    )
     compiled = load_compiled_corpus(codex_home)
     repo_aliases = repository_aliases(cwd)
 
     doctors = {}
     for source in SOURCES:
-        doctors[source] = run_json([ledger, "doctor", "--source", source], cwd=cwd)
+        argv = [
+            ledger,
+            "doctor",
+            "--definition",
+            str(SOURCE_DEFINITIONS[source]),
+            "--repo",
+            str(cwd),
+            "--format",
+            "json",
+        ]
+        doctors[source] = ledger_doctor(
+            run_json(argv, cwd=cwd),
+            definition_id=SOURCE_DEFINITION_IDS[source],
+            stage=f"ledger doctor {source}",
+        )
     note_doctor_argv = [memory_note, "doctor", "--format", "json"]
-    if args.codex_home:
-        note_doctor_argv.extend(["--codex-home", args.codex_home])
-    doctors["memory-note"] = run_json(note_doctor_argv, cwd=cwd)
+    note_doctor_argv.extend(["--codex-home", str(codex_home)])
+    doctors["memory-note"] = memory_note_result(
+        run_json(note_doctor_argv, cwd=cwd),
+        command="doctor",
+        stage="memory-note doctor",
+    )
 
     notes = {
         source: load_notes(
             memory_note,
             source,
             cwd=cwd,
-            codex_home=args.codex_home,
+            codex_home=str(codex_home),
         )
         for source in SOURCES
     }
     records = {
-        "learnings": learning_records(ledger, cwd=cwd),
-        "negative-ledger": negative_records(ledger, cwd=cwd),
-        "synesthesia": synesthesia_records(ledger, cwd=cwd),
+        source: source_records(ledger, source, cwd=cwd) for source in SOURCES
     }
     validate_eligibility_ids(eligibility, records)
     adapter_path = (
-        Path(__file__).resolve().parents[2]
-        / "memory-source-notes/scripts/synesthesia_memory_note.py"
+        SKILLS_ROOT / "memory-source-notes/scripts/synesthesia_memory_note.py"
     )
     synesthesia_adapter = load_synesthesia_adapter(adapter_path)
+    stored_synesthesia, invalid_synesthesia, _, _ = (
+        synesthesia_adapter.load_stored_notes(codex_home, ledger_bin=ledger)
+    )
+    if invalid_synesthesia:
+        raise ReconcileError("synesthesia stored-note validation failed")
+    listed_synesthesia_ids = {note.get("id") for note in notes["synesthesia"]}
+    validated_synesthesia_ids = {note.id for note in stored_synesthesia}
+    if listed_synesthesia_ids != validated_synesthesia_ids:
+        raise ReconcileError("synesthesia note inventory mismatch")
+    standalone_synesthesia_ids = {
+        note.id
+        for note in stored_synesthesia
+        if note.validation_profile == "stored-legacy-corridor-v1"
+    }
     source_reports = {
         source: source_report(
             source,
@@ -555,6 +717,9 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
             compiled_corpus=compiled,
             synesthesia_adapter=synesthesia_adapter,
             repo_aliases=repo_aliases,
+            standalone_note_ids=(
+                standalone_synesthesia_ids if source == "synesthesia" else set()
+            ),
         )
         for source in SOURCES
     }

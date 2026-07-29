@@ -423,15 +423,14 @@ execution_policy_graph:
   observation-conditioned route or blocker.
 - `gate` and `handoff` are not EPG fields. The policy may not certify its own
   readiness or select its eventual consumer.
-- EPG-v1 is a source plan, not runtime state or execution authority. A compatible
-  execution-policy compiler may privately lower it to an opaque compiled policy.
-- Optional validation uses
-  `seq execution-policy-compile --file <epg.json> --format json`; accept only
-  `compiled: true`, require `execution-policy-compiler/v1`, and bind its
-  `source_policy_digest` to the emitted source. Compiler absence does not block Plan
-  emission.
-- The compiler's private normalized representation is transient and must not be
-  persisted as another Plan artifact.
+- EPG-v1 is a source plan, not runtime state or execution authority.
+- Structural validation uses
+  `ledger validate --definition "$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger/execution-policy-graph.json")" --input policy=<epg.json> --format json`.
+  Accept only `ledger-validation-result/v1` with `valid: true`, bind the exact
+  definition and input digests, and describe the result only as structurally valid
+  under `plan/execution-policy-graph@<definition-digest>`.
+- Ledger validation does not create a second Plan artifact or grant semantic,
+  mutation, or execution authority.
 
 For a bounded local action inside an unchanged exact boundary, the architectonic
 surface is only:

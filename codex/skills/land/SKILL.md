@@ -250,4 +250,4 @@ remote cleanup, local cleanup, and per-worktree cleanup separate. Use
 
 - [landing-protocol.md](references/landing-protocol.md)
 - [land-record.md](references/land-record.md)
-- [decision-contract.yaml](references/decision-contract.yaml)
+- [decision-contract.json](references/decision-contract.json)

@@ -1,0 +1,25 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "actuating/review-contract",
+ "owner": "actuating",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-number","bounded-string","digest","enum","exact-object","keyed-unique","reference-exists","safe-identifier","safe-relative-path","scalar-type","sha256","sorted","unique"]},
+ "inputs": {"contract":{"codec":"json","required":true,"max_bytes":1048576}},
+ "canonicalization": {},
+ "shape": {
+  "documents": {
+   "contract": {
+    "object": "exact",
+    "fields": {
+     "lens_contract_manifests": {"array":{"min":1,"max":64},"items":{"object":"exact","fields":{"contract_digest":{"format":"digest"},"contract_ref":{"relative_path":{"allow_root":true,"reserved_roots":[".git",".ledger"],"case_insensitive_reserved":false}},"name":{"identifier":{"min":1,"max":128,"style":"portable"}},"resources":{"array":{"min":1,"max":128},"items":{"object":"exact","fields":{"digest":{"format":"digest"},"path":{"relative_path":{"allow_root":true,"reserved_roots":[".git",".ledger"],"case_insensitive_reserved":false}}}},"sorted":{"key":"/path"},"key":"/path"}},"sha256":{"mode":"framed-items","field":"/contract_digest","items":"/resources","prefix":"actuating-lens-contract/v1\u0000","fragments":[{"item":"/path"},{"literal":"\u0000"},{"item":"/digest"},{"literal":"\u0000"}],"max_bytes":262144}},"key":"/name"},
+     "review_contract": {"object":"exact","fields":{"attempt_quality":{"object":"exact","fields":{"context_match_required":{"scalar":"boolean"},"current_tuple_required":{"scalar":"boolean"},"exact_instruction_digest_required":{"scalar":"boolean"},"exact_workflow_binding_required":{"scalar":"boolean"},"fallback_forbidden":{"scalar":"boolean"},"reduced_principal_forbidden":{"scalar":"boolean"},"required_backend_class":{"string":{"trimmed_min":1,"max":128}},"strong_principal_required":{"scalar":"boolean"},"structured_statuses":{"array":{"min":1,"max":64},"items":{"string":{"trimmed_min":1,"max":128}},"unique":true},"tuple_verdict_required":{"scalar":"boolean"}}},"contract_digest":{"format":"digest"},"contract_id":{"string":{"trimmed_min":1,"max":256}},"initial_wave":{"object":"exact","fields":{"all_lenses_required":{"scalar":"boolean"},"concurrent":{"scalar":"boolean"},"non_cancelling":{"scalar":"boolean"}}},"material_change":{"object":"exact","fields":{"resets_all_review_credit":{"scalar":"boolean"}}},"required_lenses":{"array":{"min":1,"max":64},"items":{"object":"exact","fields":{"contract_digest":{"format":"digest"},"contract_ref":{"relative_path":{"allow_root":true,"reserved_roots":[".git",".ledger"],"case_insensitive_reserved":false}},"name":{"identifier":{"min":1,"max":128,"style":"portable"}},"role":{"string":{"trimmed_min":1,"max":128}}}},"key":"/name"},"schema":{"enum":["actuating-review-contract/v1"]},"standard_convergence":{"object":"exact","fields":{"findings_reset_streak":{"scalar":"boolean"},"first_wave_standard_counts":{"scalar":"boolean"},"later_attempts_serial":{"scalar":"boolean"},"required_consecutive_clean_attempts":{"scalar":"integer","number":{"min":1}}}},"transport_recovery":{"object":"exact","fields":{"maximum_fresh_recovery_attempts":{"scalar":"integer","number":{"min":0}},"request_local":{"scalar":"boolean"}}}},"sha256":{"mode":"canonical-json-null","field":"/contract_digest","null":"/contract_digest","max_bytes":524288}}
+    }
+   }
+  }
+ },
+ "constraints": {"laws":[["reference-exists",{"sources":[{"path":"/review_contract/required_lenses","reference":"/name","fragments":[{"item":"/name"},{"literal":"\u0000"},{"item":"/contract_ref"},{"literal":"\u0000"},{"item":"/contract_digest"}]}],"targets":[{"path":"/lens_contract_manifests","fragments":[{"item":"/name"},{"literal":"\u0000"},{"item":"/contract_ref"},{"literal":"\u0000"},{"item":"/contract_digest"}]}],"coverage":"all-targets"}],["reference-exists",{"sources":[{"path":"/lens_contract_manifests","reference":"/contract_ref","fragments":[{"item":"/name"},{"literal":"\u0000"},{"value":true}]}],"targets":[{"path":"/lens_contract_manifests","items":"/resources","fragments":[{"parent":"/name"},{"literal":"\u0000"},{"item":"/path"}]}]}]]},
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":1048576,"max_store_bytes":1048576,"max_records":8192,"max_output_bytes":1048576,"max_diagnostics":128,"max_reducer_states":1}
+}

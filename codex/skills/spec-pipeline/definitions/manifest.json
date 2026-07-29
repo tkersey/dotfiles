@@ -1,0 +1,15 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "spec-pipeline",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "spec-pipeline/plan-source-contract",
+      "path": "ledger/plan-source-contract.json"
+    },
+    {
+      "id": "spec-pipeline/spec-governance-receipt",
+      "path": "ledger/spec-governance-receipt.json"
+    }
+  ]
+}

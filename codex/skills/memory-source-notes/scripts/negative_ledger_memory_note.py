@@ -8,51 +8,35 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import re
 import shutil
 import subprocess
 import sys
 from typing import Any
 
 
-NEG_ID_RE = re.compile(r"^NEG-[A-Za-z0-9][A-Za-z0-9._:-]*$")
-SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 ALLOWED_KINDS = {
     "ledger-projection",
     "ledger-status-transition",
     "ledger-supersession",
     "ledger-retraction",
 }
-INCOMPLETE_STATUSES = {"capture_candidate", "need-evidence", "unknown"}
-COMPLETE_STATUSES = {"active", "accepted_risk", "stale", "reopened", "superseded"}
-REQUIRED_PAYLOAD_STRINGS = {
-    "neg_id",
-    "record_version",
-    "repository_id",
-    "ledger_path",
-    "projection_fingerprint",
-    "event_chain_fingerprint",
-    "status",
-    "kind",
-    "artifact_state_id",
-    "hypothesis",
-    "attempted_change",
-    "observed_outcome",
-    "failure_class",
-    "exclusion_scope",
-    "confidence",
-    "next_search_hint",
-}
+SKILLS_ROOT = Path(__file__).resolve().parents[2]
+SOURCE_DEFINITION = (
+    SKILLS_ROOT
+    / "negative-ledger/definitions/ledger/negative-evidence-protocol.json"
+)
+NOTE_DEFINITION = (
+    SKILLS_ROOT
+    / "memory-source-notes/definitions/ledger/"
+    "negative-ledger-memory-note-payload.json"
+)
+SOURCE_DEFINITION_ID = "negative-ledger/negative-evidence-protocol"
+NOTE_DEFINITION_ID = "memory-source-notes/negative-ledger-memory-note-payload"
+LEDGER_ABI = "ledger-artifact-abi/v1"
 
 
 class AdapterError(RuntimeError):
     """Deterministic adapter failure suitable for a checkpoint receipt."""
-
-
-def _nonempty(value: Any, field: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise AdapterError(f"{field}: expected non-empty string")
-    return value.strip()
 
 
 def _resolve_binary(explicit: str | None, env_name: str, name: str) -> str:
@@ -85,7 +69,10 @@ def _run(
 
 def _require_success(proc: subprocess.CompletedProcess[bytes], stage: str) -> bytes:
     if proc.returncode != 0:
-        detail = proc.stderr.decode("utf-8", errors="replace").strip()
+        detail = (
+            proc.stderr.decode("utf-8", errors="replace").strip()
+            or proc.stdout.decode("utf-8", errors="replace").strip()
+        )
         raise AdapterError(f"{stage}: {detail or f'exit {proc.returncode}'}")
     return proc.stdout
 
@@ -97,47 +84,72 @@ def _parse_json(raw: bytes, stage: str) -> Any:
         raise AdapterError(f"{stage}: invalid JSON: {exc}") from exc
 
 
-def validate_projection(raw: bytes, expected_id: str) -> dict[str, Any]:
-    envelope = _parse_json(raw, "ledger export")
+def _require_passive_result(
+    value: Any,
+    *,
+    stage: str,
+    schema: str,
+    definition_id: str,
+) -> dict[str, Any]:
+    if not isinstance(value, dict) or value.get("schema") != schema:
+        raise AdapterError(f"{stage}: unexpected result schema")
+    definition = value.get("definition")
+    if (
+        not isinstance(definition, dict)
+        or definition.get("id") != definition_id
+        or definition.get("abi") != LEDGER_ABI
+        or not isinstance(definition.get("digest"), str)
+    ):
+        raise AdapterError(f"{stage}: unexpected definition identity")
+    if value.get("authority_granted") is not False:
+        raise AdapterError(f"{stage}: authority must remain false")
+    if value.get("storage_mutated") is not False:
+        raise AdapterError(f"{stage}: storage mutation must remain false")
+    return value
+
+
+def validate_projection(
+    raw: bytes,
+    expected_id: str,
+    *,
+    ledger: str,
+    repo: Path,
+) -> dict[str, Any]:
+    validation_raw = _require_success(
+        _run(
+            [
+                ledger,
+                "validate",
+                "--definition",
+                str(NOTE_DEFINITION),
+                "--input",
+                "note=-",
+                "--format",
+                "json",
+            ],
+            cwd=repo,
+            input_bytes=raw,
+        ),
+        "note structural validation",
+    )
+    validation = _require_passive_result(
+        _parse_json(validation_raw, "note structural validation"),
+        stage="note structural validation",
+        schema="ledger-validation-result/v1",
+        definition_id=NOTE_DEFINITION_ID,
+    )
+    if validation.get("valid") is not True:
+        raise AdapterError("note structural validation: invalid result")
+    envelope = _parse_json(raw, "ledger project")
     if not isinstance(envelope, dict):
-        raise AdapterError("ledger export: expected object")
-    if envelope.get("authority") != "ledger-cli":
-        raise AdapterError("ledger export.authority: expected ledger-cli")
-    _nonempty(envelope.get("operation"), "ledger export.operation")
-    _nonempty(envelope.get("summary"), "ledger export.summary")
+        raise AdapterError("ledger project: expected object")
     payload = envelope.get("payload")
     if not isinstance(payload, dict):
-        raise AdapterError("ledger export.payload: expected object")
-    for field in sorted(REQUIRED_PAYLOAD_STRINGS):
-        _nonempty(payload.get(field), f"ledger export.payload.{field}")
+        raise AdapterError("ledger project.payload: expected object")
     if payload["neg_id"] != expected_id:
         raise AdapterError(
-            f"ledger export.payload.neg_id: expected {expected_id}, got {payload['neg_id']}"
+            f"ledger project.payload.neg_id: expected {expected_id}, got {payload['neg_id']}"
         )
-    if not NEG_ID_RE.fullmatch(expected_id):
-        raise AdapterError(f"id: invalid Negative Ledger id: {expected_id}")
-    if payload["status"] in INCOMPLETE_STATUSES:
-        raise AdapterError(
-            f"ledger export.payload.status: incomplete projection {payload['status']}"
-        )
-    if payload["status"] not in COMPLETE_STATUSES:
-        raise AdapterError(f"ledger export.payload.status: unknown {payload['status']}")
-    for field in ("projection_fingerprint", "event_chain_fingerprint"):
-        if not SHA256_RE.fullmatch(payload[field]):
-            raise AdapterError(f"ledger export.payload.{field}: invalid sha256")
-
-    source_refs = payload.get("source_refs")
-    if not isinstance(source_refs, list) or not source_refs:
-        raise AdapterError("ledger export.payload.source_refs: expected witness rows")
-
-    if payload["status"] == "active":
-        for field in ("applicability_conditions", "reopening_criteria"):
-            value = payload.get(field)
-            if not isinstance(value, list) or not value:
-                raise AdapterError(
-                    f"ledger export.payload.{field}: active projection requires rows"
-                )
-        _nonempty(payload.get("exclusion_rule"), "ledger export.payload.exclusion_rule")
     return envelope
 
 
@@ -155,24 +167,47 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
     if not repo.is_dir():
         raise AdapterError(f"repo: not a directory: {repo}")
     ledger = _resolve_binary(args.ledger_bin, "LEDGER_BIN", "ledger")
-    doctor_argv = [ledger, "doctor", "--source", "negative-ledger"]
+    doctor_argv = [
+        ledger,
+        "doctor",
+        "--definition",
+        str(SOURCE_DEFINITION),
+        "--repo",
+        str(repo),
+        "--format",
+        "json",
+    ]
     export_argv = [
         ledger,
-        "export",
-        "--source",
-        "negative-ledger",
-        "--id",
-        args.id,
-        "--format",
+        "project",
+        "--definition",
+        str(SOURCE_DEFINITION),
+        "--projection",
         "memory-note",
+        "--repo",
+        str(repo),
+        "--param",
+        f"id={args.id}",
+        "--payload-only",
+        "--format",
+        "json",
     ]
-    if args.file:
-        doctor_argv.extend(["--file", args.file])
-        export_argv.extend(["--file", args.file])
     doctor_raw = _require_success(_run(doctor_argv, cwd=repo), "ledger doctor")
-    doctor = _parse_json(doctor_raw, "ledger doctor")
-    export_raw = _require_success(_run(export_argv, cwd=repo), "ledger export")
-    envelope = validate_projection(export_raw, args.id)
+    doctor = _require_passive_result(
+        _parse_json(doctor_raw, "ledger doctor"),
+        stage="ledger doctor",
+        schema="ledger-doctor-result/v1",
+        definition_id=SOURCE_DEFINITION_ID,
+    )
+    if doctor.get("healthy") is not True:
+        raise AdapterError("ledger doctor: source store is not healthy")
+    export_raw = _require_success(_run(export_argv, cwd=repo), "ledger project")
+    envelope = validate_projection(
+        export_raw,
+        args.id,
+        ledger=ledger,
+        repo=repo,
+    )
     return export_raw, {
         "schema": "negative-ledger-admission-inspection/v1",
         "status": "exportable",
@@ -236,7 +271,6 @@ def build_parser() -> argparse.ArgumentParser:
             "--kind", choices=sorted(ALLOWED_KINDS), default="ledger-projection"
         )
         command.add_argument("--repo", default=".")
-        command.add_argument("--file")
         command.add_argument("--ledger-bin")
         if name == "admit":
             command.add_argument("--memory-note-bin")

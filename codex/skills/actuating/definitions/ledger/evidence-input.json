@@ -1,0 +1,36 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "actuating/evidence-input",
+ "owner": "actuating",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-string","digest","enum","exact-object","one-of","safe-identifier","safe-relative-path","scalar-type","sorted","tagged-union","unique"]},
+ "inputs": {"evidence":{"codec":"json","required":true,"max_bytes":4194304}},
+ "canonicalization": {},
+ "shape": {
+  "documents": {
+   "evidence": {
+    "object": "exact",
+    "fields": {"body":{},"construction_ref":{"one_of":[{"enum":[null]},{"format":"digest"}]},"goal_id":{"identifier":{"min":1,"max":128,"style":"lowercase-component"}},"kind":{},"schema":{"enum":["actuating-evidence-input/v1"]},"subject_digest":{"one_of":[{"enum":[null]},{"format":"digest"}]}},
+    "tagged": {
+     "tag": "/kind",
+     "variants": [
+      {"value":"effect_recorded","node":{"fields":{"body":{"object":"exact","fields":{"changed_paths":{"array":{"min":1,"max":1048576},"items":{"relative_path":{"allow_root":false,"reserved_roots":[".git",".ledger"],"case_insensitive_reserved":true}},"unique":true,"sorted":true},"pre_effect_subject_digest":{"format":"digest"},"schema":{"enum":["effect-recorded/v1"]},"step_id":{"string":{"trimmed_min":1,"max":4194304}}}}}}},
+      {"value":"operation_observed","node":{"fields":{"body":{"object":"exact","fields":{"discharged_refs":{"array":{"min":0,"max":1048576},"items":{"string":{"trimmed_min":1,"max":4194304}},"unique":true},"evidence_refs":{"array":{"min":1,"max":1048576},"items":{"format":"digest"},"unique":true},"schema":{"enum":["operation-observed/v1"]},"status":{"string":{"trimmed_min":1,"max":4194304}},"step_id":{"string":{"trimmed_min":1,"max":4194304}}}}}}},
+      {"value":"operation_aborted","node":{"fields":{"body":{"object":"exact","fields":{"reason":{"string":{"trimmed_min":1,"max":4194304}},"schema":{"enum":["operation-aborted/v1"]},"step_id":{"string":{"trimmed_min":1,"max":4194304}}}}}}},
+      {"value":"publication_observed","node":{"fields":{"body":{"object":"exact","fields":{"receipt_ref":{"format":"digest"},"schema":{"enum":["publication-observed/v1"]},"status":{"string":{"trimmed_min":1,"max":4194304}}}}}}},
+      {"value":"review_campaign_started","node":{"fields":{"body":{"object":"exact","fields":{"campaign_id":{"format":"digest"},"review_contract_digest":{"format":"digest"},"schema":{"enum":["review-campaign-started/v1"]}}}}}},
+      {"value":"review_request_bound","node":{"fields":{"body":{"object":"exact","fields":{"campaign_id":{"format":"digest"},"initial_wave":{"scalar":"boolean"},"instruction_digest":{"format":"digest"},"lens":{"string":{"trimmed_min":1,"max":4194304}},"lens_contract_digest":{"format":"digest"},"request_id":{"string":{"trimmed_min":1,"max":4194304}},"schema":{"enum":["review-request-bound/v1"]}}}}}},
+      {"value":"review_attempt_started","node":{"fields":{"body":{"object":"exact","fields":{"attempt_id":{"string":{"trimmed_min":1,"max":4194304}},"fresh_attempt":{"scalar":"boolean"},"receipt_ref":{"format":"digest"},"request_id":{"string":{"trimmed_min":1,"max":4194304}},"schema":{"enum":["review-attempt-started/v1"]}}}}}},
+      {"value":"review_attempt_completed","node":{"fields":{"body":{"object":"exact","fields":{"attempt_id":{"string":{"trimmed_min":1,"max":4194304}},"context_match":{"scalar":"boolean"},"fallback":{"scalar":"boolean"},"finding_refs":{"array":{"min":0,"max":1048576},"items":{"format":"digest"},"unique":true},"principal":{"string":{"trimmed_min":1,"max":4194304}},"receipt_ref":{"format":"digest"},"request_id":{"string":{"trimmed_min":1,"max":4194304}},"schema":{"enum":["review-attempt-completed/v1"]},"verdict":{"string":{"trimmed_min":1,"max":4194304}}}}}}},
+      {"value":"review_transport_failed","node":{"fields":{"body":{"object":"exact","fields":{"attempt_id":{"string":{"trimmed_min":1,"max":4194304}},"failure_ref":{"format":"digest"},"receipt_ref":{"format":"digest"},"request_id":{"string":{"trimmed_min":1,"max":4194304}},"schema":{"enum":["review-transport-failed/v1"]}}}}}}
+     ]
+    }
+   }
+  }
+ },
+ "constraints": {"laws":[]},
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":4194304,"max_store_bytes":4194304,"max_records":1048576,"max_output_bytes":4194304,"max_diagnostics":64,"max_reducer_states":1}
+}

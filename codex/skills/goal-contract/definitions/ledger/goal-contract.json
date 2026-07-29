@@ -1,0 +1,37 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "goal-contract/goal-contract",
+ "owner": "goal-contract",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-string","canonical-json","content-address","digest","enum","exact-object","keyed-unique","one-of","safe-identifier","safe-relative-path","sorted","unique"]},
+ "parameters": {},
+ "inputs": {"contract":{"codec":"json","required":true,"max_bytes":4194304}},
+ "canonicalization": {"steps":[{"op":"canonical-json","input":"contract"}]},
+ "shape": {
+  "documents": {
+   "contract": {
+    "object": "exact",
+    "fields": {
+     "artifact": {
+      "object": "exact",
+      "fields": {
+       "artifact_id": {"one_of":[{"enum":[null]},{"format":"digest"}]},
+       "created_at": {"string":{"trimmed_min":1,"max":4194304}},
+       "goal_id": {"identifier":{"max":128,"style":"lowercase-component"}},
+       "payload": {"object":"exact","fields":{"acceptance":{"object":"exact","fields":{"publication_required":{"enum":[false,true]},"required_proof_kinds":{"array":{"min":1,"max":4},"unique":true,"items":{"enum":["acceptance","implementation","review","ship"]}},"terminal_route":{"enum":["complete","ready-to-ship"]}}},"authority":{"object":"exact","fields":{"execution_authority_digest":{"format":"digest"},"execution_authority_ref":{"string":{"trimmed_min":1,"max":4194304}},"mutation_allowed":{"enum":[false,true]},"source_digest":{"format":"digest"},"source_ref":{"string":{"trimmed_min":1,"max":4194304}}}},"compatibility":{"object":"exact","fields":{"migration_requirements":{"array":{"max":1048576},"unique":true,"items":{"string":{"trimmed_min":1,"max":4194304}}},"permitted_breaks":{"array":{"max":1048576},"unique":true,"items":{"string":{"trimmed_min":1,"max":4194304}}},"required_contracts":{"array":{"max":1048576},"unique":true,"items":{"string":{"trimmed_min":1,"max":4194304}}}}},"laws":{"array":{"min":1,"max":1048576},"items":{"object":"exact","fields":{"applicability":{"string":{"trimmed_min":1,"max":4194304}},"law_id":{"string":{"trimmed_min":1,"max":4194304}},"required_observation":{"string":{"trimmed_min":1,"max":4194304}},"statement":{"string":{"trimmed_min":1,"max":4194304}}}},"key":"/law_id"},"objective":{"object":"exact","fields":{"non_goals":{"array":{"max":1048576},"unique":true,"items":{"string":{"trimmed_min":1,"max":4194304}}},"required_outcomes":{"array":{"min":1,"max":1048576},"unique":true,"items":{"string":{"trimmed_min":1,"max":4194304}}}}},"scope":{"object":"exact","fields":{"allowed_paths":{"array":{"min":1,"max":1048576},"unique":true,"sorted":true,"items":{"relative_path":{"allow_root":true,"reserved_roots":[".git",".ledger"],"case_insensitive_reserved":true}}},"base_ref":{"string":{"trimmed_min":1,"max":4194304}},"prohibited_paths":{"array":{"max":1048576},"unique":true,"sorted":true,"items":{"relative_path":{"allow_root":true,"reserved_roots":[".git",".ledger"],"case_insensitive_reserved":true}}},"repository":{"string":{"trimmed_min":1,"max":4194304}}}}}},
+       "predecessor_refs": {"array":{"max":1048576},"unique":true,"items":{"format":"digest"}},
+       "schema": {"enum":["goal-contract/v3"]},
+       "semantic_author": {"enum":["goal-contract"]},
+       "supporting_refs": {"array":{"max":1048576},"unique":true,"items":{"string":{"trimmed_min":1,"max":4194304}}}
+      }
+     }
+    }
+   }
+  }
+ },
+ "constraints": {"laws":[]},
+ "identity": {"op":"content-address","input":"contract","basis_null":"/artifact/artifact_id","field":"/artifact/artifact_id"},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":4194304,"max_store_bytes":4198400,"max_records":1048576,"max_output_bytes":4198400,"max_diagnostics":128,"max_reducer_states":1}
+}

@@ -20,8 +20,15 @@ locked user decisions
 known facts and unresolved semantic questions
 ```
 
-`$plan` synthesizes those semantics into EPG-v1. It does not require a compiler,
-implementation workflow, or actuation workflow to do so.
+`$plan` synthesizes those semantics into EPG-v1 and validates the result through
+its passive Ledger definition. It does not require an implementation or actuation
+workflow to do so.
+
+The handoff crosses as one PSC-v1 JSON object containing the exact final SGR-v2.
+Before the tail-call, Spec Pipeline validates those objects under
+`spec-pipeline/spec-governance-receipt` and
+`spec-pipeline/plan-source-contract`. These structural passes do not decide whether
+the handoff is semantically authorized.
 
 It may add:
 

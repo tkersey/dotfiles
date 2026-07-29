@@ -24,14 +24,15 @@ Activate when any of these could change the next route:
 - a learning hit describes a failed hypothesis that may need promotion;
 - an artifact-state change may satisfy a recorded reopening criterion.
 
-The first action is normally `query` or `map`, not `capture`.
+The first action is normally the read-only `route-gate` projection, not
+`capture`.
 
 ## Ledger checkpoint evaluation
 
 `checkpoint_context=source-memory-checkpoint/v1` activates a separate closeout
 evaluation. Consume the coordinator's evidence packet and return one source
 disposition plus one admission disposition without invoking the coordinator or
-a sibling source. Do not repeat the online pre-route map during ordinary
+a sibling source. Do not repeat the online pre-route projection during ordinary
 successful work with no failed-route semantics; return `no-op` cheaply.
 
 When the packet contains a witnessed failed, no-effect, regressed, reverted, or
@@ -84,10 +85,11 @@ Review empirical decision episodes, not raw mention counts. A healthy week may h
 For each candidate episode, ask:
 
 1. Did `$negative-ledger` appear before the next route was selected?
-2. Did it query/map rather than immediately capture?
+2. Did it project `route-gate` rather than immediately capture?
 3. Did transient failures remain `no-op`?
 4. Did a qualified event produce durable, narrow evidence?
 5. Did blocking require an active, fully validated, witnessed, exact native-scope match with current-state applicability?
-6. Did map, export, and handoff fail closed rather than project malformed authority?
+6. Did the `route-gate` projection, memory-note admission, and participant
+   reporting fail closed rather than project malformed authority?
 7. Under a Ledger checkpoint, did the participant return exactly one canonical
    and one admission disposition without recursive coordination?

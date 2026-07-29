@@ -1,6 +1,6 @@
 ---
 name: shadow
-description: "Watch exactly one Codex session through one target-skill lens and emit only decision-relevant deltas. Prefer `seq skill-decision-audit --mode delta` for `$shadow $tune`; use for shadow/tail/follow/monitor one session, missed or contrary skill decisions, validation/outcome changes, worker decisions, or goal-cycle status. Do not scan broad history, inspect raw JSONL, create a second continual controller, or repeat full analysis when the cursor contains no new decision evidence."
+description: "Watch exactly one Codex session through one target-skill lens and emit only decision-relevant deltas. Use Tune's passive Seq skill-decision evidence definition for `$shadow $tune`; use for shadow/tail/follow/monitor one session, missed or contrary skill decisions, validation/outcome changes, worker decisions, or goal-cycle status. Do not scan broad history, inspect raw JSONL, create a second continual controller, or repeat full analysis when the cursor contains no new decision evidence."
 ---
 
 # Shadow
@@ -58,24 +58,25 @@ Monitor the watched session only through `$seq`.
 Preferred when target lens is `$tune` or when decision influence matters:
 
 ```bash
-seq skill-decision-audit \
+seq observe \
+  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
+  --projection evidence \
   --root ~/.codex/sessions \
   --session-id <session> \
-  --skill <target> \
-  --since-cursor '<cursor>' \
-  --include-workers=<yes|no> \
-  --mode delta \
+  --param needle=<target> \
   --format json
 ```
 
-Fallback when the installed CLI lacks the command:
+Compare stable source-event and line positions with the prior cursor. Include
+worker sessions only through an explicit parent/worker path from
+`seq session-graph`.
+
+Narrow physical follow-ups:
 
 ```text
-skill-evidence
 session-detail
 turns
 tool-lifecycle
-session-prompts
 session-graph
 ```
 
@@ -83,7 +84,7 @@ Use the smallest set required.
 
 Do not inspect raw watched-session JSONL with shell, Python, `jq`, `rg`, `cat`, or `tail`.
 
-If `$seq` cannot expose the required fact:
+If the passive definition cannot expose the required fact:
 
 ```text
 tooling_gap
@@ -91,7 +92,7 @@ seq_tuning_gap
 state_unknown
 ```
 
-and produce a special-spec handoff when concrete.
+and produce a bounded definition/operator-gap handoff when concrete.
 
 ## Target skill contract
 
@@ -100,7 +101,7 @@ Read the target skill package outside the watched session evidence boundary:
 ```text
 SKILL.md
 agents/openai.yaml
-references/decision-contract.yaml
+references/decision-contract.json
 relevant references/scripts
 ```
 
@@ -206,7 +207,7 @@ goal_skill_delta_record:
       target-skill-brief |
       tune-packet |
       apply-request |
-      seq-special-spec |
+      seq-definition-gap |
       retire |
       blocked
     expected_decision_change:
@@ -216,7 +217,7 @@ goal_skill_delta_record:
     handoff-tune |
     ask-apply-permission |
     handoff-refine |
-    handoff-seq-special-spec |
+    handoff-seq-definition-gap |
     retire-finding |
     wait-for-session-stop
 ```
@@ -283,19 +284,24 @@ evidence insufficient
 finding retired/transferred
 ```
 
-## `$seq` special-spec handoff
+## Seq definition/operator gap
 
 ```yaml
-seq_special_spec_handoff:
-  spec_version: SEQ-SPEC-HANDOFF-v2
+seq_definition_gap:
+  gap_version: SEQ-DEFINITION-GAP-v1
   need:
   watched_session:
   target_skill:
   missing_decision_evidence:
-  desired_command:
+  owning_definition:
+  missing_generic_operator:
+  bounds:
   acceptance_criteria: []
   validation_examples: []
 ```
+
+The handoff must not request a skill-specific command, dataset, capability
+flag, or semantic classifier in Seq.
 
 ## Report
 

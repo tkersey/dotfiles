@@ -1,0 +1,173 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "seq/turn-metrics",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "aggregate",
+      "scan"
+    ]
+  },
+  "parameters": {},
+  "selectors": [
+    "path",
+    "root",
+    "session-id",
+    "repo",
+    "since",
+    "until",
+    "last"
+  ],
+  "relations": [
+    {
+      "name": "turns",
+      "fields": [
+        "duration_ms",
+        "input_tokens",
+        "cached_input_tokens",
+        "output_tokens",
+        "reasoning_output_tokens",
+        "total_tokens",
+        "tool_count"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "turns",
+      "as": "source"
+    },
+    {
+      "op": "aggregate",
+      "input": "source",
+      "as": "summary",
+      "metrics": [
+        {
+          "name": "turn_count",
+          "op": "count"
+        },
+        {
+          "name": "timed_turn_count",
+          "op": "count",
+          "field": "duration_ms"
+        },
+        {
+          "name": "duration_ms_total",
+          "op": "sum",
+          "field": "duration_ms"
+        },
+        {
+          "name": "duration_ms_min",
+          "op": "min",
+          "field": "duration_ms"
+        },
+        {
+          "name": "duration_ms_max",
+          "op": "max",
+          "field": "duration_ms"
+        },
+        {
+          "name": "duration_ms_average",
+          "op": "average",
+          "field": "duration_ms"
+        },
+        {
+          "name": "input_tokens",
+          "op": "sum",
+          "field": "input_tokens"
+        },
+        {
+          "name": "input_token_turn_count",
+          "op": "count",
+          "field": "input_tokens"
+        },
+        {
+          "name": "cached_input_tokens",
+          "op": "sum",
+          "field": "cached_input_tokens"
+        },
+        {
+          "name": "cached_input_token_turn_count",
+          "op": "count",
+          "field": "cached_input_tokens"
+        },
+        {
+          "name": "output_tokens",
+          "op": "sum",
+          "field": "output_tokens"
+        },
+        {
+          "name": "output_token_turn_count",
+          "op": "count",
+          "field": "output_tokens"
+        },
+        {
+          "name": "reasoning_output_tokens",
+          "op": "sum",
+          "field": "reasoning_output_tokens"
+        },
+        {
+          "name": "reasoning_output_token_turn_count",
+          "op": "count",
+          "field": "reasoning_output_tokens"
+        },
+        {
+          "name": "total_tokens",
+          "op": "sum",
+          "field": "total_tokens"
+        },
+        {
+          "name": "total_token_turn_count",
+          "op": "count",
+          "field": "total_tokens"
+        },
+        {
+          "name": "tool_count",
+          "op": "sum",
+          "field": "tool_count"
+        },
+        {
+          "name": "tool_count_turn_count",
+          "op": "count",
+          "field": "tool_count"
+        }
+      ]
+    }
+  ],
+  "projections": {
+    "summary": {
+      "relation": "summary",
+      "schema": "seq-turn-metrics-result/v1",
+      "fields": [
+        "turn_count",
+        "timed_turn_count",
+        "duration_ms_total",
+        "duration_ms_min",
+        "duration_ms_max",
+        "duration_ms_average",
+        "input_tokens",
+        "input_token_turn_count",
+        "cached_input_tokens",
+        "cached_input_token_turn_count",
+        "output_tokens",
+        "output_token_turn_count",
+        "reasoning_output_tokens",
+        "reasoning_output_token_turn_count",
+        "total_tokens",
+        "total_token_turn_count",
+        "tool_count",
+        "tool_count_turn_count"
+      ],
+      "renderers": [
+        "json"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 65536,
+    "max_fold_states": 22
+  }
+}

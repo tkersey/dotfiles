@@ -1,6 +1,6 @@
 ---
 name: spec-pipeline
-description: "Canonical architectonic current-spec engine. Turn ambiguous project, architecture, implementation, or product requests into decision-complete specs whose architecture and abstractions are explicit, authority-bound, and proof-linked; operate narrowly in gate-only, challenge-only, or repair mode; default full-mode plan-ready specs to lane=spec_to_plan; and tail-call `$plan` when SGR-v2 and execution handoff authorize planning. Never emit a proposed_plan block."
+description: "Canonical architectonic current-spec engine. Turn ambiguous project, architecture, implementation, or product requests into decision-complete specs whose architecture and abstractions are explicit, authority-bound, and proof-linked; operate narrowly in gate-only, challenge-only, or repair mode; validate final SGR-v2 and PSC-v1 JSON through passive Ledger definitions; default full-mode plan-ready specs to lane=spec_to_plan; and tail-call `$plan` when SGR-v2 and execution handoff authorize planning. Never emit a proposed_plan block."
 metadata:
   version: "2.3.0"
   activation_cost: adaptive
@@ -262,37 +262,43 @@ The receipt names the obstructed seam and blocker. Do not emit PSC-v1 or tail-ca
 
 After recovering the Architectonic Thread and before the pre-spec gate, emit:
 
-```yaml
-spec_decision_packet:
-  goal:
-  problem_layer:
-  target_user_or_maintainer:
-  scope:
-  non_goals:
-  locked_decisions:
-  tradeoffs_accepted:
-  primary_invariant:
-  success_criteria:
-  proof_bar:
-  compatibility_posture:
-  rollout_rollback_posture:
-  architectonic_authority:
-    source_fixed_decision_refs: []
-    source_bounded_seam_refs: []
-    specification_local_seam_refs: []
-  architectonic_seams: []
-  conceptual_compression_target:
-    live_obligations: []
-    maximum_independent_owners:
-    prohibited_parallel_truth: []
-    prohibited_reconstruction_paths: []
-  downstream_open_decisions: []
-  open_questions:
-  deferred_questions:
-  default_assumptions:
-  clarification_receipt:
-    grill_rounds:
-    no_grill_justification:
+```json
+{
+  "spec_decision_packet": {
+    "goal": {},
+    "problem_layer": "",
+    "target_user_or_maintainer": "",
+    "scope": {},
+    "non_goals": [],
+    "locked_decisions": [],
+    "tradeoffs_accepted": [],
+    "primary_invariant": "",
+    "success_criteria": [],
+    "proof_bar": {},
+    "compatibility_posture": {},
+    "rollout_rollback_posture": {},
+    "architectonic_authority": {
+      "source_fixed_decision_refs": [],
+      "source_bounded_seam_refs": [],
+      "specification_local_seam_refs": []
+    },
+    "architectonic_seams": [],
+    "conceptual_compression_target": {
+      "live_obligations": [],
+      "maximum_independent_owners": null,
+      "prohibited_parallel_truth": [],
+      "prohibited_reconstruction_paths": []
+    },
+    "downstream_open_decisions": [],
+    "open_questions": [],
+    "deferred_questions": [],
+    "default_assumptions": [],
+    "clarification_receipt": {
+      "grill_rounds": 0,
+      "no_grill_justification": null
+    }
+  }
+}
 ```
 
 Open questions need owner, default, consequence, and non-blocking reason. Defaults
@@ -422,84 +428,123 @@ missing, return to gate failure rather than handing off.
 ## Spec Pipeline Receipt
 
 Every terminal output must include exactly one `## Spec Pipeline Receipt` section
-followed by one YAML object:
+followed by one JSON object. The template below is JSON syntax; replace every
+angle-bracket value with one value admitted by SGR-v2.
 
-```yaml
-spec_governance_receipt:
-  receipt_version: SGR-v2
-  spec_id: "..."
-  mode: full | gate-only | challenge-only | repair
-  profile: fast | balanced | strict | campaign
-  lane: spec_only | spec_to_plan | repair | review_resolution | campaign_checkpoint
-  status: complete | blocked | drift | audit-only | partial
-  authoritative_brief:
-    present: yes | no
-    drift_detected: yes | no
-  phase_presence:
-    evidence_brief: yes | no | not-required
-    decision_packet: yes | no | not-required
-    gate: yes | no | not-required
-    implementation_spec: yes | no | not-required
-    challenge: yes | no | not-required
-    fresh_eyes: yes | no | not-required
-    execution_handoff: yes | no | not-required
-  gate:
-    receipt_version: SGATE-v1
-    plan_allowed: yes | no | not-assessed
-    mutation_allowed_pre_spec: no
-    gate_changed_decision: yes | no | unknown
-    gate_blocked_plan: yes | no | not-assessed
-    gate_defaulted_decisions: []
-    material_open_questions_remaining: yes | no | unknown
-    pass_no_delta: yes | no | not-assessed
-    reason: "..."
-  challenge:
-    receipt_version: SCHAL-v1
-    classification: pass | changed_architecture | changed_proof | changed_scope | changed_risk | preference_only | skipped | not-run
-    changed_spec: yes | no | not-assessed
-    changed_route: yes | no | not-assessed
-    pass_no_delta: yes | no | not-assessed
-    strongest_challenge: "..."
-  fresh_eyes:
-    receipt_version: SFE-v1
-    changed_spec: yes | no | not-assessed
-    returned_to_grill: yes | no | not-assessed
-    drift_detected: yes | no | not-assessed
-    pass_no_delta: yes | no | not-assessed
-  subagents:
-    spawned: 0
-    consumed: 0
-    rejected: 0
-    timed_out: 0
-    open_at_end: 0
-    positive_packets: 0
-    neutral_packets: 0
-    negative_packets: 0
-  execution_control:
-    plan_allowed: yes | no
-    mutation_allowed: yes | no
-    execution_handoff: yes | no
-    plan_started_after_gate: yes | no | unknown
-    mutation_started_after_handoff: yes | no | unknown
-  execution_handoff:
-    ready_for_plan: yes | no
-    next_owner: $plan | implementation | grill-me | spec-pipeline | spec-retro | none
-    handoff_summary: "..."
-    do_not_execute_before: []
-    plan_source_ref: "inline implementation spec | path"
-    governance_receipt_ref: "inline SGR-v2 | path"
-  auto_plan_handoff:
-    eligible: yes | no
-    reason: "..."
-    invocation: same_turn_tail_call | manual | none
-  retro:
-    trigger_required: yes | no
-    reason: "..."
-    next_owner: spec-retro | none
+```json
+{
+  "spec_governance_receipt": {
+    "receipt_version": "SGR-v2",
+    "spec_id": "<spec-id>",
+    "mode": "<full|gate-only|challenge-only|repair>",
+    "profile": "<fast|balanced|strict|campaign>",
+    "lane": "<spec_only|spec_to_plan|repair|review_resolution|campaign_checkpoint>",
+    "status": "<complete|blocked|drift|audit-only|partial>",
+    "authoritative_brief": {
+      "present": "<yes|no>",
+      "drift_detected": "<yes|no>"
+    },
+    "phase_presence": {
+      "evidence_brief": "<yes|no|not-required>",
+      "decision_packet": "<yes|no|not-required>",
+      "gate": "<yes|no|not-required>",
+      "implementation_spec": "<yes|no|not-required>",
+      "challenge": "<yes|no|not-required>",
+      "fresh_eyes": "<yes|no|not-required>",
+      "execution_handoff": "<yes|no|not-required>"
+    },
+    "gate": {
+      "receipt_version": "SGATE-v1",
+      "plan_allowed": "<yes|no|not-assessed>",
+      "mutation_allowed_pre_spec": "no",
+      "gate_changed_decision": "<yes|no|unknown>",
+      "gate_blocked_plan": "<yes|no|not-assessed>",
+      "gate_defaulted_decisions": [],
+      "material_open_questions_remaining": "<yes|no|unknown>",
+      "pass_no_delta": "<yes|no|not-assessed>",
+      "reason": "<reason>"
+    },
+    "lint": {
+      "verdict": "<pass|fail|not-run>",
+      "blocked_handoff": "<yes|no>"
+    },
+    "challenge": {
+      "receipt_version": "SCHAL-v1",
+      "classification": "<pass|changed_architecture|changed_proof|changed_scope|changed_risk|preference_only|skipped|not-run>",
+      "changed_spec": "<yes|no|not-assessed>",
+      "changed_route": "<yes|no|not-assessed>",
+      "pass_no_delta": "<yes|no|not-assessed>",
+      "strongest_challenge": "<challenge>"
+    },
+    "fresh_eyes": {
+      "receipt_version": "SFE-v1",
+      "changed_spec": "<yes|no|not-assessed>",
+      "returned_to_grill": "<yes|no|not-assessed>",
+      "drift_detected": "<yes|no|not-assessed>",
+      "pass_no_delta": "<yes|no|not-assessed>"
+    },
+    "subagents": {
+      "spawned": 0,
+      "consumed": 0,
+      "rejected": 0,
+      "timed_out": 0,
+      "open_at_end": 0,
+      "positive_packets": 0,
+      "neutral_packets": 0,
+      "negative_packets": 0
+    },
+    "execution_control": {
+      "plan_allowed": "<yes|no>",
+      "mutation_allowed": "<yes|no>",
+      "execution_handoff": "<yes|no>",
+      "plan_started_after_gate": "<yes|no|unknown>",
+      "mutation_started_after_handoff": "<yes|no|unknown>"
+    },
+    "execution_handoff": {
+      "ready_for_plan": "<yes|no>",
+      "next_owner": "<$plan|implementation|grill-me|spec-pipeline|spec-retro|none>",
+      "handoff_summary": "<summary>",
+      "do_not_execute_before": [],
+      "plan_source_ref": "<inline implementation spec|path>",
+      "governance_receipt_ref": "<inline SGR-v2|path>"
+    },
+    "auto_plan_handoff": {
+      "eligible": "<yes|no>",
+      "reason": "<reason>",
+      "invocation": "<same_turn_tail_call|manual|none>"
+    },
+    "retro": {
+      "trigger_required": "<yes|no>",
+      "reason": "<reason>",
+      "next_owner": "<spec-retro|none>"
+    }
+  }
+}
 ```
 
-This single object is the machine-readable truth. Mode-specific human-readable
-sections remain required, but duplicated top-level receipt blocks are not.
+This single JSON object is the machine-readable truth. Mode-specific
+human-readable sections remain required, but duplicated top-level receipt blocks
+are not.
+
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once.
+
+Validate the exact final object before treating it as the current SGR-v2:
+
+```bash
+spec_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/spec-pipeline/definitions/ledger")"
+ledger validate \
+  --definition "$spec_definition_root/spec-governance-receipt.json" \
+  --input receipt=<sgr-v2.json> \
+  --format json
+```
+
+Accept only `ledger-validation-result/v1` with `valid: true`,
+`definition.id = spec-pipeline/spec-governance-receipt`,
+`definition.abi = ledger-artifact-abi/v1`, and the exact definition and input
+digests. Describe this only as structurally valid under the returned definition
+digest. The Spec Pipeline—not Ledger—still decides the semantic receipt values,
+lane, blockers, and handoff authority.
 
 ## Execution handoff
 
@@ -549,29 +594,51 @@ auto_plan_handoff.eligible = yes
 auto_plan_handoff.invocation = same_turn_tail_call
 ```
 
-The tail-call passes `plan_source_contract / PSC-v1` to `$plan`:
+The tail-call passes `plan_source_contract / PSC-v1` to `$plan` as JSON:
 
-```yaml
-plan_source_contract:
-  contract_version: PSC-v1
-  source_owner: spec-pipeline
-  spec_id:
-  implementation_spec:
-  decision_packet:
-  sgr_v2:
-  proof_bar:
-  non_goals: []
-  target_branch:
-  do_not_execute_before: []
+```json
+{
+  "plan_source_contract": {
+    "contract_version": "PSC-v1",
+    "source_owner": "spec-pipeline",
+    "spec_id": "<spec-id>",
+    "implementation_spec": {},
+    "decision_packet": {},
+    "sgr_v2": {
+      "spec_governance_receipt": {}
+    },
+    "proof_bar": {},
+    "non_goals": [],
+    "target_branch": "<target-branch>",
+    "do_not_execute_before": []
+  }
+}
 ```
+
+Embed the exact structurally valid SGR-v2 object; do not replace it with a second
+handoff artifact or summary. Validate the exact completed PSC-v1 before calling
+Plan:
+
+```bash
+ledger validate \
+  --definition "$spec_definition_root/plan-source-contract.json" \
+  --input contract=<psc-v1.json> \
+  --format json
+```
+
+Accept only `ledger-validation-result/v1` with `valid: true`,
+`definition.id = spec-pipeline/plan-source-contract`,
+`definition.abi = ledger-artifact-abi/v1`, and the exact definition and input
+digests. A structural pass does not authorize the tail-call. Invoke `$plan` only
+when Spec Pipeline's independently authored SGR-v2 and all semantic predicates
+above grant that handoff.
 
 The Architectonic Thread travels inside `implementation_spec` and
 `decision_packet`; no second handoff artifact is created.
 
 `$spec-pipeline` still must not emit `<proposed_plan>`. `$plan` performs its
-fixed-point synthesis and emits one EPG-v1 policy in `<proposed_plan>`. When a
-compatible compiler is available, `$plan` may validate the exact emitted EPG;
-compiler absence does not block the same-turn Plan result. `$plan` emits no
+fixed-point synthesis, validates the exact EPG through Plan's passive Ledger
+definition, and emits one EPG-v1 policy in `<proposed_plan>`. `$plan` emits no
 synthesis receipt or execution handoff and does not grant mutation authority.
 
 Do not auto-run `$plan` when any of these are true:

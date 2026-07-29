@@ -24,20 +24,25 @@ Process valid new or changed immutable admission snapshots under:
 extensions/synesthesia/notes/*.md
 ```
 
-When present, a repo-local canonical source store lives at:
+When present, the Ledger-managed repo-local canonical source slot resolves to:
 
 ```text
 <repo>/.ledger/synesthesia/events.jsonl
 ```
 
-During transition, existing immutable notes remain valid source evidence. New repo-scoped events should be admitted from the canonical store when it exists.
+Existing immutable notes remain valid, byte-identical source evidence. New
+repo-scoped events are admitted through Synesthesia's passive Ledger definition.
 
 Prioritize notes surfaced by `phase2_workspace_diff.md` when that artifact is available.
 
-Canonical repo-local ledger rows are created by:
+Canonical repo-local Ledger rows are created by:
 
 ```text
-ledger capture --source synesthesia
+ledger transact
+  --definition <synesthesia-skill-root>/definitions/ledger/synesthesia-protocol.json
+  --operation capture
+  --repo <repo>
+  --input submission=<file|->
 ```
 
 Supported stored kinds:
@@ -74,7 +79,9 @@ fingerprint
 note id
 ```
 
-Legacy payload fields named `scope`, `scope_anchor`, or `endorsement_type` are generated compatibility projections. They must agree with the envelope and must not be treated as independent authority.
+Writer payload fields named `scope`, `scope_anchor`, or `endorsement_type` are
+generated transport projections. They must agree with the envelope and must
+not be treated as independent authority.
 
 ## Required mapping payload
 

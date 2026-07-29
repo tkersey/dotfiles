@@ -52,8 +52,8 @@ The native writer creates one canonical envelope in a timestamped `.md` file:
 
 For Synesthesia writes, the extension adapter additionally guarantees:
 
-- operation-kind compatibility;
-- authority-kind compatibility;
+- operation-kind agreement;
+- authority-kind agreement;
 - prior-note relationships for state-changing operations;
 - required activation and non-activation boundaries;
 - canonical key ordering and compact JSON before writer fingerprinting;
@@ -68,12 +68,16 @@ Recommended general values:
 explicit-user-correction
 repeated-user-steering
 ledger-cli
-ledger-cli
 explicit-user-endorsement
 explicit-user-rejection
 source-skill
 verified-artifact
 ```
+
+`ledger-cli` is the retained writer/source-attestation label in existing
+Learnings and Negative Ledger note envelopes. It does not grant the Ledger
+runtime semantic authority; the enclosing Ledger result must still report
+`authority_granted:false`.
 
 Synesthesia additionally uses:
 
@@ -128,7 +132,7 @@ Phase 2 updates compiled memory surgically. It never deletes source notes.
 
 A note can be authoritative that Phase 2 must consider an event while remaining subordinate to its canonical domain source.
 
-- a negative-ledger note is an exported snapshot; `ledger --source negative-ledger` and `.ledger/negative-ledger/events.jsonl` own route state;
+- a negative-ledger note is a projected snapshot; `$negative-ledger` and its passive Negative Evidence definition own route state in `.ledger/negative-ledger/events.jsonl`;
 - a learnings note admits a row; `.ledger/learnings/events.jsonl` owns the full learning event;
 - a Synesthesia note may itself be canonical when it records explicit endorsement, correction, rejection, retraction, reopening, or a durable boundary.
 

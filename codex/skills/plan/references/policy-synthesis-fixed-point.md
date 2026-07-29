@@ -198,7 +198,7 @@ readiness gate
 execution handoff
 ```
 
-## Emission and optional compilation
+## Emission and structural validation
 
 ```text
 plan synthesized
@@ -216,14 +216,14 @@ all consequential seams dispositioned
 These terms are private synthesis discipline, not machine-certified history. The
 resulting EPG is the complete Plan truth surface.
 
-When a compatible compiler is available, it may additionally establish:
+Ledger must additionally establish:
 
 ```text
-plan compiles
+EPG structurally valid under <definition-id>@<definition-digest>
 =
-exact emitted EPG lowers under the named structural compiler contract
+exact emitted EPG satisfies the named passive structural definition
 ```
 
-Compiler absence does not block Plan emission. Compilation does not establish that
-the private synthesis process occurred, that architecture is semantically correct,
-that source state is current, or that execution is authorized.
+Validation does not establish that the private synthesis process occurred, that
+architecture is semantically correct, that source state is current, or that
+execution is authorized.

@@ -1,0 +1,46 @@
+{
+ "schema": "ledger-artifact-definition/v1",
+ "id": "spec-pipeline/spec-governance-receipt",
+ "owner": "spec-pipeline",
+ "requires": {"abi":"ledger-artifact-abi/v1","operators":["all","bounded-array","bounded-number","bounded-string","enum","exact-object","scalar-type"]},
+ "parameters": {},
+ "inputs": {"receipt":{"codec":"json","required":true,"max_bytes":4194304}},
+ "canonicalization": {},
+ "shape": {
+  "documents": {
+   "receipt": {
+    "object": "exact",
+    "fields": {
+     "spec_governance_receipt": {
+      "object": "exact",
+      "fields": {
+       "authoritative_brief": {"object":"exact","fields":{"drift_detected":{"enum":["no","yes",false,true]},"present":{"enum":["no","yes",false,true]}}},
+       "auto_plan_handoff": {"object":"exact","fields":{"eligible":{"enum":["no","yes",false,true]},"invocation":{"enum":["manual","none","same_turn_tail_call"]},"reason":{"string":{"trimmed_min":1,"max":1048576}}}},
+       "challenge": {"object":"exact","fields":{"changed_route":{"enum":["no","not-assessed","yes",false,true]},"changed_spec":{"enum":["no","not-assessed","yes",false,true]},"classification":{"enum":["changed_architecture","changed_proof","changed_risk","changed_scope","not-run","pass","preference_only","skipped"]},"pass_no_delta":{"enum":["no","not-assessed","yes",false,true]},"receipt_version":{"enum":["SCHAL-v1"]},"strongest_challenge":{"string":{"trimmed_min":1,"max":1048576}}}},
+       "execution_control": {"object":"exact","fields":{"execution_handoff":{"enum":["no","yes",false,true]},"mutation_allowed":{"enum":["no","yes",false,true]},"mutation_started_after_handoff":{"enum":["no","unknown","yes",false,true]},"plan_allowed":{"enum":["no","yes",false,true]},"plan_started_after_gate":{"enum":["no","unknown","yes",false,true]}}},
+       "execution_handoff": {"object":"exact","fields":{"do_not_execute_before":{"array":{"max":1048576},"items":{"string":{"trimmed_min":1,"max":1048576}}},"governance_receipt_ref":{"string":{"trimmed_min":1,"max":1048576}},"handoff_summary":{"string":{"trimmed_min":1,"max":1048576}},"next_owner":{"enum":["$plan","grill-me","implementation","none","spec-pipeline","spec-retro"]},"plan_source_ref":{"string":{"trimmed_min":1,"max":1048576}},"ready_for_plan":{"enum":["no","yes",false,true]}}},
+       "fresh_eyes": {"object":"exact","fields":{"changed_spec":{"enum":["no","not-assessed","yes",false,true]},"drift_detected":{"enum":["no","not-assessed","yes",false,true]},"pass_no_delta":{"enum":["no","not-assessed","yes",false,true]},"receipt_version":{"enum":["SFE-v1"]},"returned_to_grill":{"enum":["no","not-assessed","yes",false,true]}}},
+       "gate": {"object":"exact","fields":{"gate_blocked_plan":{"enum":["no","not-assessed","yes",false,true]},"gate_changed_decision":{"enum":["no","unknown","yes",false,true]},"gate_defaulted_decisions":{"array":{"max":1048576},"items":{"string":{"trimmed_min":1,"max":1048576}}},"material_open_questions_remaining":{"enum":["no","unknown","yes",false,true]},"mutation_allowed_pre_spec":{"enum":["no",false]},"pass_no_delta":{"enum":["no","not-assessed","yes",false,true]},"plan_allowed":{"enum":["no","not-assessed","yes",false,true]},"reason":{"string":{"trimmed_min":1,"max":1048576}},"receipt_version":{"enum":["SGATE-v1"]}}},
+       "lane": {"enum":["campaign_checkpoint","repair","review_resolution","spec_only","spec_to_plan"]},
+       "lint": {"object":"exact","fields":{"blocked_handoff":{"enum":["no","yes",false,true]},"verdict":{"enum":["fail","not-run","pass"]}}},
+       "mode": {"enum":["challenge-only","full","gate-only","repair"]},
+       "phase_presence": {"object":"exact","fields":{"challenge":{"enum":["no","not-required","yes"]},"decision_packet":{"enum":["no","not-required","yes"]},"evidence_brief":{"enum":["no","not-required","yes"]},"execution_handoff":{"enum":["no","not-required","yes"]},"fresh_eyes":{"enum":["no","not-required","yes"]},"gate":{"enum":["no","not-required","yes"]},"implementation_spec":{"enum":["no","not-required","yes"]}}},
+       "profile": {"enum":["balanced","campaign","fast","strict"]},
+       "receipt_version": {"enum":["SGR-v2"]},
+       "retro": {"object":"exact","fields":{"next_owner":{"enum":["none","spec-retro"]},"reason":{"string":{"trimmed_min":1,"max":1048576}},"trigger_required":{"enum":["no","yes",false,true]}}},
+       "spec_id": {"string":{"trimmed_min":1,"max":1048576}},
+       "status": {"enum":["audit-only","blocked","complete","drift","partial"]},
+       "subagents": {"object":"exact","fields":{"consumed":{"scalar":"integer","number":{"min":0,"max":1000000}},"negative_packets":{"scalar":"integer","number":{"min":0,"max":1000000}},"neutral_packets":{"scalar":"integer","number":{"min":0,"max":1000000}},"open_at_end":{"scalar":"integer","number":{"min":0,"max":1000000}},"positive_packets":{"scalar":"integer","number":{"min":0,"max":1000000}},"rejected":{"scalar":"integer","number":{"min":0,"max":1000000}},"spawned":{"scalar":"integer","number":{"min":0,"max":1000000}},"timed_out":{"scalar":"integer","number":{"min":0,"max":1000000}}}}
+      }
+     }
+    }
+   }
+  }
+ },
+ "constraints": {"laws":[]},
+ "identity": {},
+ "storage": {"kind":"pure"},
+ "operations": {},
+ "projections": {},
+ "bounds": {"max_input_bytes":4194304,"max_store_bytes":4194304,"max_records":1048576,"max_output_bytes":4194304,"max_diagnostics":128,"max_reducer_states":1}
+}

@@ -15,10 +15,15 @@ mapped
 Expected flow:
 
 ```bash
-ledger map \
-  --route "parser-tolerance" \
-  --cluster "parser-compatibility" \
-  --artifact "<full-commit-id>"
+negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
+
+ledger project \
+  --definition "$negative_ledger_definition" \
+  --projection route-gate \
+  --repo "<repo-root>" \
+  --param "artifact=<full-commit-id>" \
+  --param "identity=parser-tolerance" \
+  --format json
 ```
 
 Do not capture merely because the cue activated the skill. Capture only after the current failure has an inspectable witness and a future-routing delta.
@@ -40,15 +45,15 @@ A transient implementation failure is not durable negative evidence unless it fa
 ## Capture and Admit a Failed Route
 
 ```md
-Use $negative-ledger capture.
+Use $negative-ledger to capture this failed route.
 Hypothesis: same-leaf batching improves small-write throughput.
 Attempted change: prototype in btree/mutation_run.*
 Witness:
 - command: zig build bench -- write-small-n
 - result: 7% regression
 Need:
-- ledger capture
-- full ledger export
+- canonical Ledger capture transaction
+- complete current-record projection
 - negative-ledger memory admission if the route is likely to recur
 - separate proof lines for both stores
 ```
@@ -56,19 +61,31 @@ Need:
 Expected flow:
 
 ```bash
-ledger capture --json capture.json
-ledger export --id NEG-000001 --format memory-note |
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation capture \
+  --repo "<repo-root>" \
+  --input capture=capture.json \
+  --format json
+
+ledger project \
+  --definition "$negative_ledger_definition" \
+  --projection memory-note \
+  --repo "<repo-root>" \
+  --param id=NEG-000001 \
+  --payload-only \
+  --format json |
   memory-note append --extension negative-ledger --kind ledger-projection --json -
 ```
 
 ## Reopen Old Evidence
 
 ```md
-Use $negative-ledger reopen.
+Use $negative-ledger to reopen the old evidence.
 Old record: NEG-000004.
 Changed condition: the MVCC bookkeeping path was replaced.
 Need:
-- append-only ledger status transition
+- append-only canonical status transition
 - criterion-bound before/after proof and structured source references
 - memory-source ledger-status-transition note if the old exclusion is already durable memory
 ```
@@ -77,7 +94,11 @@ Expected proof packet and flow:
 
 ```json
 {
+  "neg_id": "NEG-000004",
+  "from": "stale",
+  "to": "reopened",
   "reason": "The MVCC bookkeeping path changed.",
+  "criterion_ids": ["bookkeeping-path-changed"],
   "criterion_changes": [
     {
       "criterion_id": "bookkeeping-path-changed",
@@ -92,5 +113,10 @@ Expected proof packet and flow:
 ```
 
 ```bash
-ledger reopen --id NEG-000004 --json reopen-proof.json
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation transition \
+  --repo "<repo-root>" \
+  --input transition=reopen-proof.json \
+  --format json
 ```

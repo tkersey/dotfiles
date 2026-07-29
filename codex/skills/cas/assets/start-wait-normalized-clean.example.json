@@ -20,10 +20,12 @@
     "principalStrength": "strong",
     "accountFingerprintReducedProtection": false,
     "recordPath": "/tmp/thr_clean.json",
+    "reviewAttemptExists": true,
     "reviewThreadId": "thr_clean",
     "reviewTurnId": "turn_clean",
     "status": "clean",
     "targetFingerprint": "sha256:start-wait-target",
+    "tupleVerdictExists": true,
     "workflowBinding": {
       "requestId": "request-clean",
       "requestFingerprint": "sha256:request-clean"

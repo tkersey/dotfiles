@@ -13,42 +13,58 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 
 ## Allowed Reads
 
-- `ledger doctor`, `query`, `map`, `handoff`, `show`, and `export`;
-- negative-ledger events through the native CLI;
-- selected `.ledger/learnings/events.jsonl` hits as historical candidate evidence;
+- `ledger doctor` and `ledger project` with the canonical passive definition;
+- `current-records`, `route-gate`, and `memory-note` projections;
+- selected Learnings projections as historical candidate evidence;
 - relevant commits, reverts, reviews, benchmarks, tests, traces, and diffs;
 - the current changed surface needed to judge applicability.
 
 ## Method
 
 1. Establish `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, every applicable native scope identity, target signal, and declared scope.
-2. Run:
+2. Set the canonical definition and prove the store:
 
    ```bash
-   ledger map \
-     --artifact "<artifact-state>" \
-     --route "<route>" \
-     --route-family "<route-family>" \
-     --cluster "<cluster>" \
-     --authority-model "<authority-model>" \
-     --distinction-pattern "<distinction-pattern>" \
-     --proof-pattern "<proof-pattern>"
-   ledger handoff
+   negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
+
+   ledger doctor \
+     --definition "$negative_ledger_definition" \
+     --repo "<repo-root>" \
+     --format json
    ```
 
-   Pass every selector whose current identity is known, and always include the selector for the declared scope. Omit only selectors whose identity was not established.
-
-3. For material `NEG-*` records, prefer:
+3. Run `route-gate` once for each established scope identity:
 
    ```bash
-   ledger export --id NEG-... --format full
+   ledger project \
+     --definition "$negative_ledger_definition" \
+     --projection route-gate \
+     --repo "<repo-root>" \
+     --param "artifact=<immutable-artifact-state-id>" \
+     --param "identity=<scope-identity>" \
+     --format json
    ```
 
-   over lossy prose or count-only projections.
-4. Query learnings only when additional historical evidence is needed.
-5. Classify each candidate as capture_candidate, need-evidence, unknown, active, accepted_risk, stale, reopened, or superseded.
-6. Explain current-state applicability.
-7. Give the safest adjacent search frontier.
+   Interpret exit `0` as no exact active match, `2` as an exact
+   active/applicable match, and `3` as blocked. Always include the identity for
+   the record's declared scope; omit only identities that were not established.
+
+4. For material `NEG-*` records, obtain the complete current structural record:
+
+   ```bash
+   ledger project \
+     --definition "$negative_ledger_definition" \
+     --projection current-records \
+     --repo "<repo-root>" \
+     --format json
+   ```
+
+   Use `memory-note --param id=NEG-...` only when the admission-shaped source
+   payload itself is required. Do not reconstruct it from a summary.
+5. Query Learnings only when additional historical evidence is needed.
+6. Classify each candidate as capture_candidate, need-evidence, unknown, active, accepted_risk, stale, reopened, or superseded.
+7. Explain current-state applicability.
+8. Give the safest adjacent search frontier.
 
 ## Output
 

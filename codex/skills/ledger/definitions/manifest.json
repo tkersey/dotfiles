@@ -1,0 +1,15 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "ledger",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "ledger/source-memory-checkpoint-input",
+      "path": "ledger/source-memory-checkpoint-input.json"
+    },
+    {
+      "id": "ledger/source-memory-checkpoint-receipt",
+      "path": "ledger/source-memory-checkpoint-receipt.json"
+    }
+  ]
+}

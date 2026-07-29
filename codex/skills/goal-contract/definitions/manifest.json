@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "goal-contract",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "goal-contract/goal-contract",
+      "path": "ledger/goal-contract.json"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "universalist",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "universalist/plan-document",
+      "path": "ledger/plan-document.json"
+    }
+  ]
+}

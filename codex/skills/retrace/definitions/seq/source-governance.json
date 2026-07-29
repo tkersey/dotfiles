@@ -1,0 +1,269 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "retrace/source-governance",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": [
+      "filter",
+      "project",
+      "scan",
+      "top-k"
+    ]
+  },
+  "parameters": {
+    "workflow": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "selectors": [
+    "root",
+    "session-id",
+    "path",
+    "repo",
+    "since",
+    "until",
+    "last"
+  ],
+  "relations": [
+    {
+      "name": "source_events",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "turn_index",
+        "role",
+        "text",
+        "private"
+      ]
+    },
+    {
+      "name": "tool_lifecycle",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "arguments_json",
+        "input_text",
+        "command_text",
+        "cwd",
+        "output_text",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {
+      "op": "scan",
+      "relation": "source_events",
+      "as": "events"
+    },
+    {
+      "op": "filter",
+      "input": "events",
+      "as": "matched_events",
+      "where": [
+        {
+          "field": "private",
+          "op": "exact",
+          "value": false
+        },
+        {
+          "field": "text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "matched_events",
+      "as": "event_metadata",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "turn_index",
+        "role"
+      ]
+    },
+    {
+      "op": "top-k",
+      "input": "event_metadata",
+      "as": "event_evidence",
+      "by": [
+        {
+          "field": "timestamp",
+          "direction": "desc",
+          "nulls": "last"
+        },
+        {
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "line_number",
+          "direction": "desc"
+        }
+      ],
+      "limit": 256
+    },
+    {
+      "op": "scan",
+      "relation": "tool_lifecycle",
+      "as": "tools"
+    },
+    {
+      "op": "filter",
+      "input": "tools",
+      "as": "matched_tools",
+      "where_mode": "any",
+      "where": [
+        {
+          "field": "tool_name",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "namespace",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "arguments_json",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "input_text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "output_text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        },
+        {
+          "field": "command_text",
+          "op": "contains",
+          "param": "workflow",
+          "case_insensitive": true
+        }
+      ]
+    },
+    {
+      "op": "project",
+      "input": "matched_tools",
+      "as": "tool_metadata",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "cwd",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ]
+    },
+    {
+      "op": "top-k",
+      "input": "tool_metadata",
+      "as": "tool_evidence",
+      "by": [
+        {
+          "field": "started_at",
+          "direction": "desc",
+          "nulls": "last"
+        },
+        {
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "turn_index",
+          "direction": "desc",
+          "nulls": "last"
+        }
+      ],
+      "limit": 256
+    }
+  ],
+  "projections": {
+    "events": {
+      "relation": "event_evidence",
+      "schema": "retrace-source-governance-event-candidates/v1",
+      "fields": [
+        "source_event_id",
+        "session_id",
+        "path",
+        "line_number",
+        "entry_type",
+        "event_type",
+        "timestamp",
+        "turn_index",
+        "role"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
+    "tools": {
+      "relation": "tool_evidence",
+      "schema": "retrace-source-governance-tool-candidates/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "kind",
+        "tool_name",
+        "namespace",
+        "cwd",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    }
+  },
+  "bounds": {
+    "max_rows": 100000,
+    "max_output_bytes": 16777216,
+    "max_fold_states": 1,
+    "max_input_bytes": 68719476736
+  }
+}

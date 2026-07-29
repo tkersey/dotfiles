@@ -6,22 +6,38 @@ projection adapter. Event bodies retain their domain owners.
 
 ## Current runtime gate
 
-After `$ledger ensure` once for the workflow, require `ledger --version >=
-0.13.0` and exactly these `ledger --source actuation --help` actions:
+After `$ledger ensure` once for the workflow, require Ledger 1.x,
+`ledger-artifact-abi/v1`, and a successful definition check for
+`../definitions/ledger/evidence-protocol.json`. Require only the native Ledger
+1.0 command surface; no source namespace, positional validator, alias, or
+fallback is permitted. Apply the same gate to standalone Goal Contract or
+Review Fold handoff.
 
-~~~text
-append prepare state project doctor path
-~~~
-
-Reject missing or extra actions and retired `open`, `observe`, `close`, or
-`decide`; apply the same gate to standalone Goal Contract or Review Fold handoff.
-Require `seq --version >= 0.5.0` before Actuation kernel audit, and require its
-JSON capabilities to report `actuation_artifact_kernel_audit_v1: true`. Seq
-consumes Ledger's checked Construction view; it does not interpret the
-Construction schema or grant authority.
+When Actuating requests a session observation, require Seq 1.x,
+`seq-observation-abi/v1`, and a successful check of the explicitly selected
+Actuating observation definition. Ledger projects immutable structural facts;
+Seq receives them only through an explicit `--input` relation. Neither runtime
+interprets the other's store or grants authority.
 
 Construction v1 and v2 stores are unsupported and are not migrated. Start a
 fresh goal-local store and ignore the legacy data.
+
+An unbound current-format v3 Evidence log also fails closed. Bind that exact
+history once, outside normal reads and writes:
+
+~~~bash
+ledger transact \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --operation bind-existing \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+~~~
+
+Supply no artifact input. The operation validates every existing row, event
+chain, retained transition, and partition value under the selected definition
+digest; writes only Ledger-owned binding metadata; and leaves
+`evidence.jsonl` byte-identical. Any invalid row blocks the binding.
 
 Before review, require `cas --version >= 0.2.83` and exactly `run`, `start`, and
 `wait` in `cas review --help`, with no retired action or `review_session` or
@@ -52,6 +68,7 @@ The core kinds are:
 
 ~~~text
 goal_contract_registered
+goal_contract_carry_forward_registered
 counterexample_set_registered
 construction_contract_registered
 operation_prepared
@@ -72,24 +89,30 @@ owner evidence; Ledger validates only its declared structural contract.
 
 ## Transient inputs
 
-`prepare` accepts exactly:
+`prepare-operation` accepts exactly:
 
 ~~~json
 {
-  "schema": "actuating-operation/v1",
+  "schema": "actuating-operation-request/v1",
   "goal_id": "<goal-id>",
   "construction_ref": "sha256:<64-lower-hex>",
-  "expected_subject_digest": "sha256:<64-lower-hex>",
-  "step_id": "<step-id>",
-  "effect": "inspect|edit|verify",
-  "idempotency_key": "<unique-key>",
-  "owner_boundary": "<owner>",
-  "paths": ["<literal-repository-path>"],
-  "proof_obligation_refs": ["<obligation-id>"]
+  "subject_digest": "sha256:<64-lower-hex>",
+  "body": {
+    "schema": "actuating-operation/v1",
+    "goal_id": "<goal-id>",
+    "construction_ref": "sha256:<64-lower-hex>",
+    "expected_subject_digest": "sha256:<64-lower-hex>",
+    "step_id": "<step-id>",
+    "effect": "inspect|edit|verify",
+    "idempotency_key": "<unique-key>",
+    "owner_boundary": "<owner>",
+    "paths": ["<literal-repository-path>"],
+    "proof_obligation_refs": ["<obligation-id>"]
+  }
 }
 ~~~
 
-`append` accepts an artifact or exactly this owner-observation envelope:
+Evidence operations accept exactly this owner-observation envelope:
 
 ~~~json
 {
@@ -179,26 +202,107 @@ store would duplicate their custody boundary.
 ## Commands and capability law
 
 ~~~bash
-ledger --source actuation --goal GOAL_ID prepare --input operation.json
-ledger --source actuation --goal GOAL_ID append --input artifact-or-evidence.json
-ledger --source actuation --goal GOAL_ID append --input effect-evidence.json --capability AKC2-...
-ledger --source actuation --goal GOAL_ID state
-ledger --source actuation --goal GOAL_ID project
-ledger --source actuation --goal GOAL_ID doctor
-ledger --source actuation --goal GOAL_ID path
+ledger transact \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --operation prepare-operation \
+  --repo REPO \
+  --input operation=operation.json \
+  --param goal=GOAL_ID \
+  --format json
+
+ledger transact \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --operation record-effect \
+  --repo REPO \
+  --input evidence=effect-evidence.json \
+  --param goal=GOAL_ID \
+  --param capability=AKC2-... \
+  --format json
+
+ledger transact \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --operation observe-readonly-operation \
+  --repo REPO \
+  --input evidence=observation.json \
+  --param goal=GOAL_ID \
+  --param capability=AKC2-... \
+  --format json
+
+ledger transact \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --operation observe-edit-operation \
+  --repo REPO \
+  --input evidence=observation.json \
+  --param goal=GOAL_ID \
+  --format json
+
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection structural-facts \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+
+ledger doctor \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
 ~~~
 
-Place optional `--repo PATH` before `--goal`. `prepare` validates the exact
-current Goal, Construction, caller-owned `expected_subject_digest`, scope,
-effect, and obligation references; appends `operation_prepared`; returns the raw
-`AKC2-...` capability once; and persists only its digest. The durable event
-envelope retains the expected subject. The capability is evidence-custody
-binding, not mutation authority. `effect_recorded` consumes it for edits only
-when `pre_effect_subject_digest` equals the current structural subject. A
-successful `operation_observed` consumes it for inspect or verify against the
-event envelope's current subject. Post-edit observation exact-matches the
-recorded result subject. Missing, mismatched, reused, or unexpectedly supplied
-capability material fails closed.
+For deterministic Ledger-to-Seq transport, emit the definition-declared
+relation directly and observe it through the Actuating artifact kernel:
+
+~~~bash
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection structural-facts \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --payload-only \
+  --format json > structural-facts.json
+
+seq observe \
+  --definition <actuating-skill-root>/definitions/seq/artifact-kernel.json \
+  --input facts=structural-facts.json \
+  --projection structural-facts \
+  --format json
+~~~
+
+The payload is `actuating-structural-facts/v1`: one bounded relation row
+containing structural identities, counts, event-kind counts, the current
+pending-operation value, and the exact Evidence head. Seq verifies the input
+schema and emits `actuating-artifact-kernel-observation/v1`; Actuating alone
+interprets those facts.
+
+Observe physical run evidence independently, selecting an exact session or a
+bounded repository/time window:
+
+~~~bash
+seq observe \
+  --definition <actuating-skill-root>/definitions/seq/run-audit.json \
+  --session-id SESSION_ID \
+  --projection turn-metadata \
+  --format json
+~~~
+
+Use `tool-metadata` for tool lifecycle structure. Opt into `turns` or `tools`
+only when the evidence question requires raw message, command, or output text.
+The definition returns evidence and provenance only; it does not recreate the
+retired native verdict or transfer Actuating authority into Seq.
+
+`prepare-operation` validates the exact current Goal, Construction,
+caller-owned `expected_subject_digest`, scope, effect, and obligation
+references; appends `operation_prepared`; returns the raw `AKC2-...` token once
+as `generated_outputs.capability`; and persists only its digest. The durable
+event envelope retains the expected subject. The capability is
+evidence-custody binding, not mutation authority. `record-effect` consumes it
+for edits only when `pre_effect_subject_digest` equals the current structural
+subject. `observe-readonly-operation` consumes it for inspect or verify.
+`observe-edit-operation` requires the prior effect consumption and rejects a
+second raw capability. Post-edit observation exact-matches the recorded result
+subject. Missing, mismatched, reused, or unexpectedly supplied capability
+material fails closed.
 
 Immediately before an edit, inspection, or verifier, Actuating requires the
 executor to recompute the live subject with the exact repository-native
@@ -224,12 +328,14 @@ HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
 out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
 index-flagged, platform-ambiguous, or unequal captures fail closed.
 
-`operation_aborted` is the capabilityless recovery path: reject any raw
-capability, exact-match the current tuple and pending `step_id`, require a
-nonblank reason, then terminate the pending operation and invalidate its stored
-capability digest. This permits recovery when `prepare` persisted admission but
-its one-time raw output was lost, without adding another command or granting an
-effect.
+Before an effect, `operation_aborted` is the capabilityless recovery path:
+reject any raw capability, exact-match the current tuple and pending `step_id`,
+require a nonblank reason, then terminate the pending operation and invalidate
+its stored capability digest. This permits recovery when `prepare-operation`
+persisted admission but its one-time raw output was lost, without adding
+another command or granting an effect. After `record-effect`, abort is
+inadmissible: the owner must record `operation_observed` so the changed subject
+and proof disposition remain explicit.
 
 When the observed live subject has drifted, the current goal remains blocked;
 `operation_aborted` does not pretend that an external change was an authorized
@@ -237,8 +343,9 @@ effect. Recovery requires fresh accepted authority compiled as a Goal successor
 before a Construction may bind the new subject. No no-effect subject-refresh
 event is inferred by Ledger.
 
-`state` and `project` are discardable structural aids and must report
-`authority_granted:false` and `semantic_decision_established:false`. Ledger
-never executes work, dispatches or interprets reviews, computes credit,
-interprets Ship, chooses a Construction or next action, or emits a semantic
-closure decision or receipt.
+The `structural-facts` projection is a discardable structural aid. The generic
+projection envelope must report `authority_granted:false` and
+`storage_mutated:false`; its store metadata carries the former path/revision
+observation. Ledger never executes work, dispatches or interprets reviews,
+computes credit, interprets Ship, chooses a Construction or next action, or
+emits a semantic closure decision or receipt.

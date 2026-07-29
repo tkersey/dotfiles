@@ -36,9 +36,9 @@ source skill or canonical domain store
 -> compiled memory
 ```
 
-- `ledger --source learnings` owns `.ledger/learnings/events.jsonl` and the admission gate for learning snapshots.
-- `ledger --source negative-ledger` owns `.ledger/negative-ledger/events.jsonl` and the admission gate for route state.
-- `ledger --source synesthesia` owns `.ledger/synesthesia/events.jsonl` and the canonical sensory mapping or activation-boundary event.
+- `$learnings` owns the passive Learnings protocol, `.ledger/learnings/events.jsonl`, and learning admission semantics.
+- `$negative-ledger` owns the passive Negative Evidence protocol, `.ledger/negative-ledger/events.jsonl`, and route-state admission semantics.
+- `$synesthesia` owns the passive `synesthesia/protocol` definition and the semantic admission decision; Ledger owns structural validation and custody of its declared repo-local event slot.
 - `synesthesia` owns sensory mapping and activation-boundary admission semantics.
 - `memory-note` owns safe immutable transport.
 - this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, and proof-line interpretation;
@@ -113,7 +113,7 @@ Do not silently install unreleased tooling. Never hand-author a note as a fallba
 Synesthesia uses:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   append \
   --kind <logical-kind> \
@@ -133,13 +133,11 @@ boundary-retraction
 
 The adapter:
 
-- enforces operation-kind and authority-kind matrices;
-- requires prior note relationships for confirmation, correction, rejection, retraction, and reopening;
-- requires activation and non-activation boundaries;
-- validates source references and narrow scope;
-- rejects sensitive keys;
-- makes the envelope authoritative for scope and authority;
-- injects compatibility fields required by the current `memory-note` writer;
+- performs deterministic writer-transport normalization;
+- delegates operation-kind, authority-kind, relationship, boundary, scope, source-reference, sensitive-key, and payload validation to `ledger validate` with the passive Synesthesia memory-note definition;
+- treats Ledger's result as the sole structural decision without granting semantic authority;
+- preserves the envelope as the authority for scope and authority;
+- injects deterministic transport fields required by the current `memory-note` writer;
 - serializes canonical JSON before writer fingerprinting;
 - maps logical `mapping-confirmation` to stored `mapping-endorsement` with `operation=confirm`;
 - invokes `memory-note` without hand-authoring notes;
@@ -154,7 +152,7 @@ After `$negative-ledger` accepts a complete current projection for admission,
 use:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
   admit \
   --id NEG-... \
@@ -163,8 +161,8 @@ uv run python \
 
 Use `ledger-status-transition`, `ledger-supersession`, or `ledger-retraction`
 only when the source owner classifies that event. The adapter runs
-`ledger doctor --source negative-ledger`, obtains the authoritative native
-`memory-note` export, validates identity and projection completeness, preserves
+definition-bound `ledger doctor`, obtains the authoritative `memory-note`
+projection, validates identity and projection completeness, preserves
 the deterministic export bytes, and invokes `memory-note` idempotently. It
 rejects `need-evidence`, `capture_candidate`, `unknown`, and incomplete active
 projections.
@@ -173,7 +171,7 @@ The adapter is transport, not admission authority. It must be called only after
 Negative Ledger decides recurrence and utility. Inspect without writing via:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
   inspect \
   --id NEG-...
@@ -184,7 +182,7 @@ uv run python \
 Manual refresh:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   memory-digest
 ```
@@ -206,7 +204,7 @@ Live memory extension instructions must be regular copied files. Do not deploy t
 Synchronize Synesthesia instructions from the dotfiles repository into the live memory root:
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   sync-instructions
 ```
@@ -222,9 +220,10 @@ The command:
 ## Synesthesia doctor
 
 ```bash
-uv run python \
+uv run \
   codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
   doctor \
+  --repo <repo> \
   --format text
 ```
 
@@ -232,7 +231,8 @@ The doctor reports:
 
 - live adapter status and source/live hashes;
 - source-note count, kinds, operations, parse failures, and latest note IDs;
-- digest status (`missing`, `current`, `stale`, `invalid`, or unsafe path);
+- digest status (`missing`, `current`, `stale`, `invalid`,
+  `insecure-permissions`, or unsafe path);
 - current active/inactive/unresolved projection counts;
 - `memory-note` availability and doctor output;
 - compiled-memory mentions of Synesthesia or source-note IDs;

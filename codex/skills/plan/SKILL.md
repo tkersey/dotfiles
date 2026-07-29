@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Synthesize accepted intent or a `$spec-pipeline` PSC-v1 source contract into one source-bound, architecture-aware EPG-v1 plan with an immutable `plan_id`. Exhaustively refine source-owned architecture, delegated architectonic change, and policy together; emit the plan whether or not a compatible optional compiler is installed. Use for `$plan`, spec-to-plan lowering, adaptive probes, stabilization plans, or plan revision. Preserve source authority; never author runtime state, mutate implementation state, require another architecture or execution skill, or silently select an existing plan."
+description: "Synthesize accepted intent or a `$spec-pipeline` PSC-v1 source contract into one source-bound, architecture-aware EPG-v1 plan with an immutable `plan_id`, then validate its structure through Plan's passive Ledger definition. Exhaustively refine source-owned architecture, delegated architectonic change, and policy together. Use for `$plan`, spec-to-plan lowering, adaptive probes, stabilization plans, or plan revision. Preserve source authority; never author runtime state, mutate implementation state, require another architecture or execution skill, or silently select an existing plan."
 ---
 
 # Plan
@@ -8,14 +8,14 @@ description: "Synthesize accepted intent or a `$spec-pipeline` PSC-v1 source con
 ## Mission
 
 Synthesize accepted intent into one canonical architecture-aware EPG-v1 source
-plan. A compatible neutral compiler may validate and privately lower that source;
-compiler availability is not a planning prerequisite.
+plan, then validate its structure through Plan's canonical passive Ledger
+definition.
 
 ```text
 source contract
 -> architecture-policy synthesis
 -> EPG-v1 source
--> optional execution-policy compiler
+-> Ledger structural validation
 ```
 
 The candidate is:
@@ -48,9 +48,9 @@ no Plan-owned runtime state, decision, or transition receipt
 ```
 
 `$plan` performs its own architectonic reasoning inside the source-authorized
-envelope. It does not require another architecture skill, compiler, or execution
-controller. A consumer may later compile this EPG and use the resulting policy
-under its own authority; that relationship is outside Plan.
+envelope. It does not require another architecture skill or execution controller.
+A consumer may interpret the structurally valid EPG under its own authority; that
+relationship is outside Plan.
 
 ## Accepted source contracts
 
@@ -64,22 +64,29 @@ revision request for an existing plan_id
 
 A `$spec-pipeline` tail-call passes:
 
-```yaml
-plan_source_contract:
-  contract_version: PSC-v1
-  source_owner: spec-pipeline
-  spec_id:
-  implementation_spec:
-  decision_packet:
-  sgr_v2:
-  proof_bar:
-  non_goals: []
-  target_branch:
-  do_not_execute_before: []
+```json
+{
+  "plan_source_contract": {
+    "contract_version": "PSC-v1",
+    "source_owner": "spec-pipeline",
+    "spec_id": "<spec-id>",
+    "implementation_spec": {},
+    "decision_packet": {},
+    "sgr_v2": {
+      "spec_governance_receipt": {}
+    },
+    "proof_bar": {},
+    "non_goals": [],
+    "target_branch": "<target-branch>",
+    "do_not_execute_before": []
+  }
+}
 ```
 
 The Architectonic Thread travels inside `implementation_spec` and
-`decision_packet`; do not create a second architecture packet.
+`decision_packet`; do not create a second architecture packet. Require the exact
+packet to be structurally valid under
+`spec-pipeline/plan-source-contract@<definition-digest>` before consuming it.
 
 Fail closed when:
 
@@ -113,9 +120,79 @@ When persistence is useful, Plan's sole authoritative artifact is:
 .ledger/plan/<plan-id>/policy.json
 ```
 
-That file contains the canonical EPG-v1 source. Revisions replace the same policy
-artifact under the same `plan_id`; repository history provides archival lineage.
-They do not introduce another artifact family.
+That Ledger-managed document contains the canonical EPG-v1 source bytes.
+`plan/plan-policy-document` imports `plan/execution-policy-graph`; it does not copy
+the EPG schema. Revisions compare and replace the same policy artifact under the
+same `plan_id`. They do not introduce another artifact family.
+
+Never write, replace, or read this path directly. Select the definition operation
+explicitly:
+
+```bash
+plan_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/plan/definitions/ledger")"
+```
+
+Before the first native Ledger command in this workflow, load `$ledger` and
+complete `$ledger ensure` once.
+
+For a valid pre-cutover EPG-v1 document already at that canonical path, perform
+the explicit one-shot binding before any normal read or write:
+
+```bash
+ledger transact \
+  --definition "$plan_definition_root/plan-policy-document.json" \
+  --operation bind-existing \
+  --repo <repository-root> \
+  --param plan_id=<plan-id> \
+  --format json
+```
+
+This validates the existing bytes under the selected definition and writes only
+Ledger-owned binding metadata. It fails closed for invalid or already-bound
+documents and is never part of normal operation.
+
+For a new document:
+
+```bash
+ledger transact \
+  --definition "$plan_definition_root/plan-policy-document.json" \
+  --operation create \
+  --repo <repository-root> \
+  --input policy=<epg.json> \
+  --param plan_id=<plan-id> \
+  --format json
+```
+
+For a revision, bind the exact current Ledger revision and one retry-stable request
+ID:
+
+```bash
+ledger transact \
+  --definition "$plan_definition_root/plan-policy-document.json" \
+  --operation revise \
+  --repo <repository-root> \
+  --input policy=<revised-epg.json> \
+  --param plan_id=<plan-id> \
+  --param expected_revision=<sha256:...> \
+  --param request_id=<safe-id> \
+  --format json
+```
+
+Before either transaction, require the `plan_id` parameter to equal
+`/execution_policy_graph/plan_id`. Afterward, require the returned logical reference
+to equal `plan/<plan-id>/policy.json`. A missing or stale expected revision blocks a
+revision. The transaction result proves structural admission and custody only.
+
+Read the current source and its revision through:
+
+```bash
+ledger project \
+  --definition "$plan_definition_root/plan-policy-document.json" \
+  --projection show \
+  --repo <repository-root> \
+  --param plan_id=<plan-id> \
+  --format json
+```
 
 A human projection is generated on demand from EPG-v1. It is not authoritative and
 need not be persisted. Runtime state, decisions, observations, and transition
@@ -349,48 +426,41 @@ If adopted, transport the affected policy and restart synthesis. The final EPG
 contains the resulting architecture-policy state, not the private candidate or its
 rejected alternatives. Creativity is mandatory; architectural accretion is not.
 
-## Compilation boundary
+## Structural validation boundary
 
 The source EPG is not executable and does not certify planning convergence.
 
 ```text
 EPG-v1 JSON
--> parse
--> structural and architectonic validation
--> private normalization
--> opaque CompiledPolicy
+-> ledger validate
+-> structural result bound to the definition digest and exact input bytes
 ```
 
-Only `CompiledPolicy` may reach selection or transition in a compatible consumer.
-The private normalized form is an in-memory compiler representation, not a second
-Plan artifact.
-
-Compiler validation is optional proof. First inspect `seq capabilities --format
-json`; invoke the compiler only when it advertises
-`execution_policy_compiler_contract_v1`.
-
-When compatible, compile the exact emitted candidate with:
+Validate the exact emitted candidate with:
 
 ```bash
-seq execution-policy-compile --file <epg.json> --format json
+ledger validate \
+  --definition "$plan_definition_root/execution-policy-graph.json" \
+  --input policy=<epg.json> \
+  --format json
 ```
 
-When the EPG is not being persisted, stage it only in a temporary file for this
-command and remove the file afterward. Accept only `compiled: true`; require
-`compiler_contract = execution-policy-compiler/v1` and bind the reported
-`source_policy_digest` to the emitted EPG. The command output is structural proof,
-not a Plan artifact.
+When the EPG is not being persisted, stage it only in a temporary regular file for
+this command and remove the file afterward. When it is being persisted,
+`plan/plan-policy-document` invokes the same imported compiled validator inside the
+selected transaction; do not perform a redundant preliminary validation pass.
 
-If a compatible compiler is unavailable, emit the EPG and report:
+For the pure path, accept only `ledger-validation-result/v1` with `valid: true`,
+`definition.id = plan/execution-policy-graph`, and
+`definition.abi = ledger-artifact-abi/v1`. For the persistent path, accept only
+`ledger-transaction-result/v1` with `valid: true`,
+`definition.id = plan/plan-policy-document`, and the expected operation, logical
+reference, definition digest, returned canonical content, and revision. Both paths
+must report `ledger-artifact-abi/v1` and no semantic authority. The result is
+structural proof, not a second Plan artifact.
 
-```text
-Compilation not run: compatible compiler unavailable.
-```
-
-Compiler absence prevents only a compilation claim. It does not prevent a planning
-result.
-
-Compilation success is the only machine claim Plan needs. Do not embed or persist:
+Structural validation is the only machine claim Plan needs. Do not embed or
+persist:
 
 ```text
 gate
@@ -400,15 +470,17 @@ downstream_runtime_ready
 self-reported lens results
 ```
 
-If the compiler rejects the EPG, revise only a structural encoding defect within
-Plan authority or report the compiler obstruction. A compiler rejection cannot
-expand source authority or select different semantics.
+If Ledger rejects the EPG, revise only a structural encoding defect within Plan
+authority or report the validation obstruction. Rejection cannot expand source
+authority or select different semantics.
 
-The compiler proves that the source parses, its references and architectonic
-bindings are structurally coherent, and it lowers under the named compiler
-contract. It does not prove that architecture is semantically correct, that Plan's
-private fixed-point process occurred, that source state remains current, that
-execution is authorized, or that completion occurred.
+Ledger proves only that the source is structurally valid under the exact returned
+`<definition-id>@<definition-digest>`. The pure path returns
+`plan/execution-policy-graph`; the persistent path returns
+`plan/plan-policy-document`, whose closure imports that canonical EPG validator.
+Neither proves that architecture is semantically correct, that Plan's private
+fixed-point process occurred, that source state remains current, that execution is
+authorized, or that completion occurred.
 
 ## Revision
 
@@ -416,13 +488,14 @@ Revise when source, repository identity, observations, architecture, or proof
 assumptions change.
 
 ```text
-load current EPG
+ledger project current EPG and revision
 -> verify plan_id and source binding
 -> change only affected architecture-policy state
 -> transport affected actions
 -> rerun fixed point and fresh eyes
--> optionally compile
+-> validate the exact revised EPG
 -> increment revision
+-> ledger transact revise with the exact prior revision and retry-stable request ID
 ```
 
 The canonical digest identifies the complete revised EPG. Do not emit a separate
@@ -452,14 +525,14 @@ After successful synthesis and emission, say:
 Plan synthesized.
 ```
 
-If a compatible compiler accepts the exact emitted EPG, also say:
+After Ledger accepts the exact emitted EPG, also say:
 
 ```text
-Plan compiles.
+EPG structurally valid under <definition-id>@<definition-digest>.
 ```
 
-That statement means the source lowered under the reported structural compiler
-contract. It does not prove semantic completeness or authorize execution.
+That statement names only the structural definition and digest. It does not prove
+semantic completeness or authorize execution.
 
 ## Hard rules
 
@@ -475,5 +548,5 @@ contract. It does not prove semantic completeness or authorize execution.
 - No fixed iteration cap.
 - No public iteration history or convergence receipt.
 - Mandatory radical candidate; optional adoption.
-- Compiler absence never blocks Plan emission.
-- Compilation is structural evidence, not readiness, authority, or completion.
+- Ledger validation is structural evidence, not readiness, authority, or
+  completion.

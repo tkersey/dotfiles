@@ -53,8 +53,19 @@ with a campaign or Counterexample subject. Ledger must not substitute an
 internal hardcoded contract, choose a contract version, or interpret the
 contract into review credit.
 
-With the required Ledger `>= 0.11.7`, `project --review-contract FILE|-` emits a non-mutating
-`actuating-review-identity-projection/v1` for the current campaign tuple.
+Validate the checked-in bundle through the passive definition before binding a
+campaign:
+
+~~~bash
+ledger validate \
+  --definition <actuating-skill-root>/definitions/ledger/review-contract.json \
+  --input contract=<actuating-skill-root>/references/review-contract.json \
+  --format json
+~~~
+
+The result establishes structural validity only. Actuating derives and owns
+the current campaign identity from the validated contract and exact campaign
+tuple.
 
 Derive the campaign identity from the exact UTF-8 strings and NUL separators:
 
@@ -127,11 +138,10 @@ subject, lens, role, instruction, or tuple mismatch earns no credit.
 
 ## CAS owner-fact projection
 
-CAS owns the current receipt protocol and reports these exact owner facts under
-`reviewVerdict`:
+CAS owns the current receipt protocol. The envelope reports
+`tupleVerdictExists`; `reviewVerdict` reports:
 
 ~~~text
-tupleVerdictExists
 principalStrength
 accountFingerprintReducedProtection
 backendClass

@@ -48,10 +48,48 @@ print_synesthesia_store() {
   printf 'synesthesia\tmissing\t.ledger/synesthesia/events.jsonl\n'
 }
 
+path_has_symlink_component() {
+  symlink_path="$1"
+  case "$symlink_path" in
+    /*) ;;
+    *) symlink_path="$(pwd -P)/$symlink_path" ;;
+  esac
+  while :; do
+    if [ -L "$symlink_path" ]; then
+      return 0
+    fi
+    [ "$symlink_path" = "/" ] && break
+    symlink_parent="$(dirname "$symlink_path")"
+    [ "$symlink_parent" = "$symlink_path" ] && break
+    symlink_path="$symlink_parent"
+  done
+  return 1
+}
+
 printf 'memory-source-layout\trepo_root\t%s\n' "$repo_root"
 print_learnings_store
 print_store "negative-ledger" ".ledger/negative-ledger/events.jsonl" "true"
 print_synesthesia_store
+
+codex_home="${CODEX_HOME:-$HOME/.codex}"
+for tracked in codex/memories/extensions/*/instructions.md; do
+  [ -f "$tracked" ] || continue
+  extension="${tracked%/instructions.md}"
+  extension="${extension##*/}"
+  installed="$codex_home/memories/extensions/$extension/instructions.md"
+  if path_has_symlink_component "$installed"
+  then
+    status="symlink"
+  elif [ ! -f "$installed" ]; then
+    status="missing"
+  elif cmp -s "$tracked" "$installed"; then
+    status="current"
+  else
+    status="drifted"
+  fi
+  printf 'extension-instructions:%s\t%s\t%s\n' \
+    "$extension" "$status" "$installed"
+done
 
 if [ -f ".learnings.jsonl" ]; then
   printf 'learnings-legacy\tlegacy_present\t.learnings.jsonl\n'
