@@ -18,7 +18,7 @@ Options:
   --history-scope <scope>          recent | arbitrary | explicit-sessions. Default: recent.
   --root <sessions-root>           Sessions root for history source. Default: ~/.codex/sessions.
   --since <iso8601>                Start timestamp for history source.
-  --last <duration>                Recent observation window. Default: 90d.
+  --last <duration>                Recent observation window. Default: 30d.
   --session-id <id>                Add an explicit-session observation. Repeatable.
   --failure-phrase <phrase>        Add a classification lens. Repeatable.
   --trigger-phrase <phrase>        Alias for --failure-phrase. Repeatable.
@@ -39,7 +39,7 @@ goal="<one-line goal>"
 evidence_source="history"
 history_scope="recent"
 root="$HOME/.codex/sessions"
-last="90d"
+last="30d"
 since=""
 last_provided="no"
 workdir=""

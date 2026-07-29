@@ -30,6 +30,9 @@ NOTE_DEFINITION = (
     / "memory-source-notes/definitions/ledger/"
     "negative-ledger-memory-note-payload.json"
 )
+SOURCE_DEFINITION_ID = "negative-ledger/negative-evidence-protocol"
+NOTE_DEFINITION_ID = "memory-source-notes/negative-ledger-memory-note-payload"
+LEDGER_ABI = "ledger-artifact-abi/v1"
 
 
 class AdapterError(RuntimeError):
@@ -81,6 +84,30 @@ def _parse_json(raw: bytes, stage: str) -> Any:
         raise AdapterError(f"{stage}: invalid JSON: {exc}") from exc
 
 
+def _require_passive_result(
+    value: Any,
+    *,
+    stage: str,
+    schema: str,
+    definition_id: str,
+) -> dict[str, Any]:
+    if not isinstance(value, dict) or value.get("schema") != schema:
+        raise AdapterError(f"{stage}: unexpected result schema")
+    definition = value.get("definition")
+    if (
+        not isinstance(definition, dict)
+        or definition.get("id") != definition_id
+        or definition.get("abi") != LEDGER_ABI
+        or not isinstance(definition.get("digest"), str)
+    ):
+        raise AdapterError(f"{stage}: unexpected definition identity")
+    if value.get("authority_granted") is not False:
+        raise AdapterError(f"{stage}: authority must remain false")
+    if value.get("storage_mutated") is not False:
+        raise AdapterError(f"{stage}: storage mutation must remain false")
+    return value
+
+
 def validate_projection(
     raw: bytes,
     expected_id: str,
@@ -105,8 +132,13 @@ def validate_projection(
         ),
         "note structural validation",
     )
-    validation = _parse_json(validation_raw, "note structural validation")
-    if not isinstance(validation, dict) or validation.get("valid") is not True:
+    validation = _require_passive_result(
+        _parse_json(validation_raw, "note structural validation"),
+        stage="note structural validation",
+        schema="ledger-validation-result/v1",
+        definition_id=NOTE_DEFINITION_ID,
+    )
+    if validation.get("valid") is not True:
         raise AdapterError("note structural validation: invalid result")
     envelope = _parse_json(raw, "ledger project")
     if not isinstance(envelope, dict):
@@ -161,7 +193,14 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
         "json",
     ]
     doctor_raw = _require_success(_run(doctor_argv, cwd=repo), "ledger doctor")
-    doctor = _parse_json(doctor_raw, "ledger doctor")
+    doctor = _require_passive_result(
+        _parse_json(doctor_raw, "ledger doctor"),
+        stage="ledger doctor",
+        schema="ledger-doctor-result/v1",
+        definition_id=SOURCE_DEFINITION_ID,
+    )
+    if doctor.get("healthy") is not True:
+        raise AdapterError("ledger doctor: source store is not healthy")
     export_raw = _require_success(_run(export_argv, cwd=repo), "ledger project")
     envelope = validate_projection(
         export_raw,

@@ -7,7 +7,7 @@ a review classifier, architecture selector, or workflow authority.
 review or failure evidence
 -> $review-fold classifies counterexample-set/v1
 -> $actuating evaluates the current Construction
--> current exact Negative Ledger map
+-> current exact Negative Ledger `route-gate` projection
 -> $actuating selects or blocks a successor Construction
 ~~~
 
@@ -36,6 +36,6 @@ proved stale or superseded, or recorded as accepted risk with the required
 external authority through Negative Ledger's lifecycle. Fuzzy, stale, or
 merely recalled evidence is suggest-only.
 
-The map result grants no mutation, does not become a Construction, and does not
-count review credit. Capture a failed successor route only when current
-evidence satisfies Negative Ledger's durable, route-shaping threshold.
+The projection result grants no mutation, does not become a Construction, and
+does not count review credit. Capture a failed successor route only when
+current evidence satisfies Negative Ledger's durable, route-shaping threshold.

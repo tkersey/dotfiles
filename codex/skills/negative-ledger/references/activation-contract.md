@@ -24,7 +24,8 @@ Activate when any of these could change the next route:
 - a learning hit describes a failed hypothesis that may need promotion;
 - an artifact-state change may satisfy a recorded reopening criterion.
 
-The first action is normally `query` or `map`, not `capture`.
+The first action is normally the read-only `route-gate` projection, not
+`capture`.
 
 ## Ledger checkpoint evaluation
 
@@ -88,6 +89,7 @@ For each candidate episode, ask:
 3. Did transient failures remain `no-op`?
 4. Did a qualified event produce durable, narrow evidence?
 5. Did blocking require an active, fully validated, witnessed, exact native-scope match with current-state applicability?
-6. Did map, export, and handoff fail closed rather than project malformed authority?
+6. Did the `route-gate` projection, memory-note admission, and participant
+   reporting fail closed rather than project malformed authority?
 7. Under a Ledger checkpoint, did the participant return exactly one canonical
    and one admission disposition without recursive coordination?

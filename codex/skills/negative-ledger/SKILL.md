@@ -27,7 +27,11 @@ The memory-admission channel is:
 ~/.codex/memories/extensions/negative-ledger/notes/*.md
 ```
 
-`ledger` decides current negative-evidence state. `memory-note` transports an immutable exported projection to Phase 2. Phase 2 decides whether to compile a route constraint, routing trigger, or reusable memory skill.
+`$negative-ledger` owns the meaning and lifecycle of current negative-evidence
+state. Ledger structurally replays the declared protocol and projects that
+state without acquiring its semantic authority. `memory-note` transports an
+immutable projection to Phase 2. Phase 2 decides whether to compile a route
+constraint, routing trigger, or reusable memory skill.
 
 Never use memory notes as the operational route gate. For accepted admission, load `$memory-source-notes` before invoking `run_memory_note_tool`.
 
@@ -84,10 +88,10 @@ Return one separate admission disposition after a capture or transition. Use
 `created` or `duplicate-skip` only after the complete current definition projection
 passes the recurrence/utility gate; use `not-eligible` for a complete but
 non-reusable projection, `not-applicable` when no canonical write or transition
-occurred, and `blocked` when required export, validation, topology, or transport
-fails. Never admit `need-evidence`, `capture_candidate`, or an incomplete active
-projection. Admission failure does not change canonical capture or transition
-success.
+occurred, and `blocked` when the required projection, validation, topology, or
+transport fails. Never admit `need-evidence`, `capture_candidate`, or an
+incomplete active projection. Admission failure does not change canonical
+capture or transition success.
 
 ## Canonical Store and CLI
 
@@ -295,8 +299,7 @@ After the source owner accepts admission for a capture or lifecycle transition,
 load `$memory-source-notes` and use the validated Negative Ledger adapter:
 
 ```bash
-uv run python \
-  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+uv run codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
   admit \
   --id NEG-000001 \
   --kind ledger-projection
@@ -305,17 +308,17 @@ uv run python \
 For a status transition:
 
 ```bash
-uv run python \
-  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+uv run codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
   admit \
   --id NEG-000001 \
   --kind ledger-status-transition
 ```
 
-The adapter runs the definition-bound doctor, obtains the authoritative projection,
-rejects incomplete projections, preserves the deterministic export bytes, and
-invokes `memory-note` idempotently. It transports an accepted source decision;
-it does not decide recurrence, utility, or route applicability.
+The adapter runs the definition-bound doctor, obtains the source-owned
+projection, rejects incomplete projections, preserves the deterministic
+projection payload bytes, and invokes `memory-note` idempotently. It transports
+an accepted source decision; it does not decide recurrence, utility, or route
+applicability.
 
 If the definition projection is unavailable, preserve the canonical Ledger transaction and report:
 
