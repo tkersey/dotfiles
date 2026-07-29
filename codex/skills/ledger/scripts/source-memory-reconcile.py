@@ -187,7 +187,7 @@ def load_eligibility(
             cwd=cwd,
         ),
         definition_id="memory-source-notes/source-memory-eligibility",
-        stage="ledger validate eligibility",
+        stage="ledger eligibility validation",
     )
     try:
         value = json.loads(eligibility_path.read_text(encoding="utf-8"))
