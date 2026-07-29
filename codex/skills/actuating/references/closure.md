@@ -48,26 +48,42 @@ A terminal judgment is legal only when all applicable statements hold:
    request-local recovery or unresolved accepted Counterexample.
    A `ready-to-ship` judgment also omits this premise because Ship publication
    precedes the independent review campaign.
-9. No later material event invalidates authority, subject, proof, publication,
-   or review evidence.
+9. When review-driven mutation occurred in the current closeout path, the
+   Review Accretion Gate has a current disposition over the exact delivery
+   baseline, review-entry subject, current subject, Construction lineage,
+   applicable Counterexamples, and cumulative factor surface. No material
+   accretion condition remains undispositioned. A `preserve` disposition has
+   current evidence and a falsifier; a selected normalization, ablation, or
+   architecture repair has current preservation proof and complete required
+   retirements. Any material resulting subject change invalidates prior review
+   credit and requires fresh convergence before `complete`.
+10. No later material event invalidates authority, subject, proof, publication,
+    review evidence, or the current Review Accretion Disposition.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
-expose structural premises. They cannot decide semantic adequacy, interpret CAS
-or Ship, compute review credit, choose the next action, or pronounce the
-theorem satisfied. Actuating performs that evaluation and records the cited
-evidence in its receipt and handoff.
+expose structural premises. They cannot decide semantic adequacy, review-path
+accretion, Glaze materiality,
+interpret CAS or Ship, compute review credit, choose the next action, or
+pronounce the theorem satisfied. Actuating performs that evaluation and records
+the cited Goal, Construction, Counterexample, owner-evidence, publication, and
+review premises in its receipt and handoff. The Review Accretion Disposition is
+a non-authoritative view whose material result is carried by those existing
+premises, not another receipt or artifact family.
 
 ## Mode results
 
 - `implement` may return local `complete` without Ship or review-closeout.
 - `triage` terminates with a Counterexample Set and report, not code closure.
 - `remediation-plan` terminates with a non-executable successor proposal.
-- Bare mode and `review-closeout` require publication when selected and the
-  full five-clean review theorem before `complete`.
+- Bare mode and `review-closeout` require publication when selected, a current
+  Review Accretion Disposition after review-driven mutation, and the full five-
+  clean review theorem before `complete`.
 - Missing current publication evidence after otherwise complete
   publication-required implementation yields `ready-to-ship`; it does not
   block on evidence that only Ship can produce from that handoff.
-- Missing authority or an unresolved liability yields `blocked`.
+- Undispositioned material review accretion, missing preservation proof,
+  incomplete accretion retirement, missing authority, or another unresolved
+  liability yields `blocked`.
 
 ## Receipt and rendering
 
