@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Actuating"
-  short_description: "Axiomatize, construct, orchestrate, falsify, and close"
-  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY, establish one current-run $first-principles Axiomatic Construction Basis before $universalist nomination, integrate one bounded $glaze pass when abstraction change is live, let $reduce challenge disputable factors once, and let Actuating alone adjudicate the Construction and next action."
+  short_description: "Axiomatize, construct, normalize review paths, falsify, and close"
+  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY, establish one current-run $first-principles Axiomatic Construction Basis before $universalist nomination, integrate one bounded $glaze pass when accepted findings, causal recurrence, or material review-path accretion make abstraction change live, let $reduce challenge disputable factors once, and let Actuating alone adjudicate the Construction and next action. After every review-driven mutation epoch, apply the Review Accretion Gate before Ship or fresh review: fold the cumulative delivery and review-induced delta, derive the ordinary normal form, use counterfactual Glaze when the accumulated path may dominate the final Construction, and select preserve, realization-normalization, ablation-repair, architecture-repair, or blocked without adding a CLI or artifact family."

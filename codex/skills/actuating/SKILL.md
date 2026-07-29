@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $glaze pass when findings make abstraction change live. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
+description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $glaze pass when findings or cumulative review-path accretion make abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
 ---
 
 # Actuating
@@ -42,6 +42,7 @@ Actuating owns:
   Construction;
 - initial and successor Construction selection;
 - review and repository-effect orchestration;
+- review-path accretion evaluation and pathwise-minimality disposition;
 - construction and ownership of the static Review Contract;
 - semantic evaluation of CAS owner facts and review credit;
 - the next legal action;
@@ -55,11 +56,13 @@ nominates the essential boundary shape. When an abstraction change is live,
 `$glaze` performs one bounded generative escalation and `$universalist` lowers
 any material result into its nomination. `$reduce` may then challenge the
 nominated factors by testing congruent quotients, ablations, and recomposition.
-The composition order is `activate -> axiomatize once or retain the current
-basis -> nominate -> glaze once when triggered -> lower -> challenge once ->
-adjudicate`; Actuating alone performs the adjudication. Neither supporting
-skill, review prose, nor an optional plan or Reduction Certificate selects a
-Construction, Repair Disposition, operation, next action, or closure.
+`$complexity-mitigator` may supply one read-only local normal-form preflight when
+review accretion is realization-only. The composition order is `activate ->
+axiomatize once or retain the current basis -> nominate -> glaze once when
+triggered -> lower -> challenge once -> adjudicate`; Actuating alone performs
+the adjudication. Neither supporting skill, review prose, nor an optional plan
+or Reduction Certificate selects a Construction, Repair Disposition, Review
+Accretion Disposition, operation, next action, or closure.
 
 Ledger may materialize, canonicalize, validate, append, replay, and emit
 requested disposable structural projections. Ledger never executes repository
@@ -178,33 +181,41 @@ Re-axiomatize before nomination after any execution-context handoff; when a
 successor Goal changes semantics, compatibility, authority, or proof posture;
 when new evidence changes an observed fact, necessary constraint, or host
 capability; when an accepted finding falsifies a premise; when architecture or
-ablation repair becomes live; or when the Causal recurrence gate triggers. A
-Glaze result may supply a new derivation under the current basis. If it requires
-a new premise, admit that premise only through fresh source authority or
-evidence and re-axiomatize before lowering; Glaze cannot manufacture axioms.
+ablation repair becomes live; when the Causal recurrence gate triggers; or when
+the Review Accretion Gate makes abstraction change live. A Glaze result may
+supply a new derivation under the current basis. If it requires a new premise,
+admit that premise only through fresh source authority or evidence and re-
+axiomatize before lowering; Glaze cannot manufacture axioms.
 
-After `$review-fold` has classified any findings, invoke `$glaze` exactly once
-after the first `$universalist` nomination and before candidate adjudication
-when an accepted class:
+After `$review-fold` has classified findings, invoke `$glaze` exactly once after
+the first `$universalist` nomination and before candidate adjudication when
+either an accepted class:
 
 - makes `architecture-repair` or `ablation-repair` a live route;
 - challenges the sufficiency of the current representation, owner, admitted
   domain, equivalence, normalization, or information retention;
 - triggers the Causal recurrence gate; or
 - would otherwise add a validator, correlation, cache, bypass, compatibility
-  branch, or path-dependent recovery to reconstruct forgotten information.
+  branch, or path-dependent recovery to reconstruct forgotten information;
+
+or the current Review Accretion Gate establishes material repair-path dependence,
+accumulated semantic machinery, obsolete repair residue, proof accretion,
+inadequate ordinary normalization, or pathwise domination pressure.
 
 Use the Glaze pass to demand a materially new frame, invariant, mechanism,
 artifact, or breakthrough candidate and to resist premature
-`realization-preserve`. Then require `$universalist` to reclassify and lower
-each material result into a repository-native nomination before `$reduce`
-challenges the selected candidate version and Actuating adjudicates.
+`realization-preserve`. For `review-path-accretion`, treat the accumulated
+changeset as evidence rather than the solution and derive the Construction that
+would have made the largest portion of the repair path unnecessary. Then require
+`$universalist` to reclassify and lower each material result into a repository-
+native nomination before `$reduce` challenges the selected candidate version
+and Actuating adjudicates.
 
 Record this compact, non-authoritative view:
 
 ~~~text
 Architectonic Escalation
-Trigger:
+Trigger: accepted-class-abstraction | causal-recurrence | review-path-accretion
 Abstraction pressure:
 Glaze result: material-reframe | no-material-reframe | blocked
 Material frame, invariant, mechanism, or artifact:
@@ -219,7 +230,10 @@ fifth authority artifact or an unknown `construction-contract/v3` field.
 `$glaze` neither classifies findings nor nominates, selects, authorizes, or
 closes. If it yields no material reframe, record `no-material-reframe` and
 continue with the evidenced candidate universe. Do not repeat Glaze for the
-same finding set and nomination version.
+same decision surface. For review-path accretion, that surface is the exact
+Goal, review-entry subject, current subject, Construction lineage, applicable
+Counterexample classes, and cumulative factor inventory; a later material
+repair-path delta may create a new surface.
 
 ## Construction procedure
 
@@ -234,8 +248,9 @@ same finding set and nomination version.
    preserved boundary and retain its compact nomination: candidate, owner,
    laws, observations, residuals, invalidators, and falsifier. The nomination
    must lower the frozen incumbent-independent derivation into one canonical
-   candidate family. When an abstraction-change trigger is present, complete
-   the bounded Glaze pass and Universalist reclassification before continuing.
+   candidate family. When an accepted-class, recurrence, or review-accretion
+   abstraction-change trigger is present, complete the bounded Glaze pass and
+   Universalist reclassification before continuing.
 3. Compile exactly four ordinary candidate families in canonical order:
    `realization-preserve`, `admitted-domain-restriction`,
    `representation-or-owner-strengthening`, and `ablation-normalization`.
@@ -424,23 +439,59 @@ Compare all four v3 candidate families before retaining residual validation
 authority. Ledger may replay the cited history but never computes shared cause
 or the disposition.
 
-Before dispatching fresh review after a repair, compare the realized production
-delta with the challenged candidate. Line count is only a reclassification
-signal. Reinvoke `$reduce` once for a successor candidate only when the delta
-introduces or materially changes an independent semantic owner, parallel
-representation, bypass, compatibility branch, semantic mechanism, or dominated
-residue. Otherwise retain the pre-mutation challenge. Actuating still selects
-the successor Construction and next operation; the same candidate and evidence
-never enter a recursive reduction loop.
+## Review accretion
+
+A sequence of pointwise least-additive repairs may compose into a globally
+dominated realization. After every review-driven mutation epoch and before the
+next Ship handoff or fresh review dispatch, apply the
+[Review Accretion Gate](references/review-accretion.md). Apply it again before
+final closeout when review-driven mutation occurred after the last current
+disposition.
+
+Bind the exact delivery baseline, review-entry subject, and current subject.
+Keep the review-entry anchor across campaigns, publication epochs, review-credit
+resets, subject rebinding, and successor Constructions for the same closeout
+objective. Fold the complete delivery delta, review-induced delta, Construction
+and Counterexample lineage, and cumulative production, semantic, proof, and
+comprehension surfaces. Line count, file count, elapsed time, and repair count
+force inspection only; they never decide the disposition.
+
+First derive the ordinary cumulative normal form. Use one read-only
+`$complexity-mitigator` Micro Preflight when the architecture and factor
+inventory remain sufficient. When the representation, owner, admitted domain,
+equivalence, information retention, or boundary may be insufficient, establish
+or retain the current Axiomatic Construction Basis and require `$universalist`
+to nominate the ordinary repository-native normal form.
+
+When the fold establishes material repair-path dependence, accumulated semantic
+machinery, obsolete repair residue, proof accretion, inadequate ordinary
+normalization, or pathwise domination pressure, make abstraction change live.
+Run the existing bounded Glaze composition with
+`Trigger: review-path-accretion`: treat the accumulated changeset as evidence,
+not as the solution; derive the coherent Construction that would have made the
+largest portion of the repair path unnecessary; require Universalist lowering,
+one Reduce challenge for the resulting candidate version, and Actuating
+adjudication.
+
+Actuating selects exactly one current disposition: `preserve`, `realization-
+normalization`, `ablation-repair`, `architecture-repair`, or `blocked`. A
+material normalization, ablation, or architecture repair changes the review
+subject and resets all review credit before fresh review. Compile material
+results into existing Construction factors, supersession, proof obligations,
+and retirements. Add no artifact family, mutable control state, review lens, or
+Ledger, Seq, or CAS accretion command.
 
 ## Review convergence
 
-`$first-principles` is a Construction-selection pass, not a review lens. Keep
-the static review topology at standard plus the existing four auxiliaries.
+`$first-principles`, the Review Accretion Gate, and its Glaze escape are
+Construction-selection or reclassification passes, not review lenses. Keep the
+static review topology at standard plus the existing four auxiliaries.
 
 Follow [review-contract.md](references/review-contract.md). Preserve all of
 these laws:
 
+- apply the current Review Accretion Gate before every post-repair Ship handoff
+  or fresh review dispatch;
 - bind standard plus four auxiliary requests before dispatch;
 - launch the initial 1+4 wave concurrently;
 - never cancel a launched sibling because another request finds a defect or
@@ -464,7 +515,8 @@ field or process status into `clean`, `findings`, or credit.
 Bare mode and publication-bearing review closeout hand a current
 `ready-to-ship` proof to [$ship](../ship/SKILL.md). After Ship returns current
 owner-issued evidence, Actuating records it and begins or resumes review on the
-published subject.
+published subject. When review-driven mutation occurred, the Review Accretion
+Gate must have a current disposition before Ship or review resumes.
 
 Apply [closure.md](references/closure.md) only to current artifacts and
 observations. Actuating authors the resulting `actuating-closure-receipt/v1`;
@@ -488,13 +540,15 @@ prospective material selection with a missing, stale, inconsistent, blocked, or
 unresolvedly underdetermined Axiomatic Construction Basis or an
 `incumbent-independent` marker without a traceable frozen derivation and
 Universalist lowering; unresolved accepted or blocked Counterexamples;
-out-of-scope operations; incomplete proof or retirement; missing Construction
-or recurring-class predecessor lineage; a public effect outside Ship; or any
-attempt by a supporting skill, Ledger, or an executor to take Actuating's
-semantic authority. For a
-`final-closeout` `complete` verdict, also block on stale or missing review
-identity, CAS receipt mismatch, unresolved request-local recovery, or fewer than
-five current-subject standard clean attempts, and—when the Goal requires
-publication—stale or missing Ship identity. A `ready-to-ship` verdict requires
-neither publication nor review evidence; `local-implementation` `complete`
-requires neither and rejects both as inapplicable.
+undispositioned material review-path accretion, selected accretion
+normalization without preservation proof, or required accretion retirements that
+remain live; out-of-scope operations; incomplete proof or retirement; missing
+Construction or recurring-class predecessor lineage; a public effect outside
+Ship; or any attempt by a supporting skill, Ledger, or an executor to take
+Actuating's semantic authority. For a `final-closeout` `complete` verdict, also
+block on stale or missing review identity, CAS receipt mismatch, unresolved
+request-local recovery, or fewer than five current-subject standard clean
+attempts, and—when the Goal requires publication—stale or missing Ship
+identity. A `ready-to-ship` verdict requires neither publication nor review
+evidence; `local-implementation` `complete` requires neither and rejects both
+as inapplicable.

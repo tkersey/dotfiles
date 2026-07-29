@@ -19,6 +19,10 @@ The Goal Contract is the sole semantic-authority artifact; the Counterexample Se
 - Architectonic activation and abstraction-route adjudication: `$actuating`;
   `$glaze` may expand the candidate frame, and `$universalist` alone lowers
   material results into boundary nominations.
+- Review-path accretion folding, pathwise-minimality disposition, and any
+  resulting Glaze trigger: `$actuating`; `$complexity-mitigator` may supply a
+  read-only local normal form, `$universalist` lowers structural alternatives,
+  and `$reduce` challenges disputable factors without taking selection authority.
 - Construction, proof strategy, orchestration, Counterexample evaluation, and retirements: `$actuating`.
 - Static Review Contract construction, CAS-evidence evaluation, review credit, topology, and convergence: `$actuating`.
 - Semantic closure verdict and `actuating-closure-receipt/v1`: `$actuating`.
@@ -27,11 +31,11 @@ The Goal Contract is the sole semantic-authority artifact; the Counterexample Se
 - Human terminal rendering: `$proof-patch`.
 - Canonicalization, structural validation, append integrity, replay, and requested projections: Ledger.
 
-Ledger does not execute repository changes, interpret CAS or Ship, compute review credit, select repairs or a next action, emit closure, or author its receipt. Generated Ledger tables may enumerate routes and shapes, never Actuating lifecycle, review, or closure law.
+Ledger does not execute repository changes, interpret CAS or Ship, compute review credit or review accretion, select repairs or a next action, emit closure, or author its receipt. Generated Ledger tables may enumerate routes and shapes, never Actuating lifecycle, review, accretion, or closure law.
 
 ## Evidence law
 
-Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain owner-issued content-addressed attachments. Plans, WorkGraphs, and Ledger views are discardable aids. The closure receipt is a semantic report bound to current inputs, not a fifth artifact family.
+Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain owner-issued content-addressed attachments. Plans, WorkGraphs, Ledger views, and Review Accretion Dispositions are discardable aids. A material accretion result is carried by the current or successor Construction and owner-issued evidence. The closure receipt is a semantic report bound to current inputs, not a fifth artifact family.
 
 `actuating-subject-observation/v1` is a transient reproducible Git digest, not
 an authoritative artifact family or Evidence event kind.
