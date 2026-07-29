@@ -423,6 +423,7 @@ def native_export(
     *,
     cwd: Path,
 ) -> tuple[bytes | None, str | None]:
+    stage = f"ledger project {source} {record_id}"
     argv = [
         ledger,
         "project",
@@ -434,13 +435,26 @@ def native_export(
         str(cwd),
         "--param",
         f"id={record_id}",
-        "--payload-only",
         "--format",
         "json",
     ]
     try:
-        raw = run_bytes(argv, cwd=cwd)
-        parse_json(raw, f"ledger project {source} {record_id}")
+        envelope = ledger_envelope(
+            parse_json(run_bytes(argv, cwd=cwd), stage),
+            schema="ledger-projection-result/v1",
+            definition_id=SOURCE_DEFINITION_IDS[source],
+            stage=stage,
+        )
+        if envelope.get("projection") != MEMORY_NOTE_PROJECTIONS[source]:
+            raise ReconcileError(f"{stage}: projection identity mismatch")
+        payload = envelope.get("data")
+        if not isinstance(payload, dict):
+            raise ReconcileError(f"{stage}: expected object payload")
+        raw = json.dumps(
+            payload,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode("utf-8") + b"\n"
         return raw, None
     except ReconcileError as exc:
         return None, str(exc)
@@ -655,7 +669,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
         )
     note_doctor_argv = [memory_note, "doctor", "--format", "json"]
     if args.codex_home:
-        note_doctor_argv.extend(["--codex-home", args.codex_home])
+        note_doctor_argv.extend(["--codex-home", str(codex_home)])
     doctors["memory-note"] = memory_note_result(
         run_json(note_doctor_argv, cwd=cwd),
         command="doctor",
@@ -667,7 +681,7 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
             memory_note,
             source,
             cwd=cwd,
-            codex_home=args.codex_home,
+            codex_home=str(codex_home) if args.codex_home else None,
         )
         for source in SOURCES
     }

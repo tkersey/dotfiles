@@ -231,7 +231,8 @@ The doctor reports:
 
 - live adapter status and source/live hashes;
 - source-note count, kinds, operations, parse failures, and latest note IDs;
-- digest status (`missing`, `current`, `stale`, `invalid`, or unsafe path);
+- digest status (`missing`, `current`, `stale`, `invalid`,
+  `insecure-permissions`, or unsafe path);
 - current active/inactive/unresolved projection counts;
 - `memory-note` availability and doctor output;
 - compiled-memory mentions of Synesthesia or source-note IDs;

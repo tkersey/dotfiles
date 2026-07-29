@@ -1300,6 +1300,18 @@ def inspect_digest(
         return {"path": str(digest_path), "status": "missing", "expected_source_fingerprint": expected}
     if not digest_path.is_file():
         return {"path": str(digest_path), "status": "not-file", "expected_source_fingerprint": expected}
+    file_mode = digest_path.stat().st_mode & 0o777
+    directory_mode = digest_path.parent.stat().st_mode & 0o777
+    if file_mode != 0o600 or directory_mode != 0o700:
+        return {
+            "path": str(digest_path),
+            "status": "insecure-permissions",
+            "expected_source_fingerprint": expected,
+            "file_mode": f"{file_mode:04o}",
+            "expected_file_mode": "0600",
+            "directory_mode": f"{directory_mode:04o}",
+            "expected_directory_mode": "0700",
+        }
     metadata = _digest_metadata(digest_path)
     if metadata is None or metadata.get("digest_version") != DIGEST_VERSION:
         return {
@@ -1519,7 +1531,13 @@ def doctor(home: Path, source_repo: Path | None = None) -> dict[str, Any]:
     elif digest["status"] == "missing":
         stage = "source-notes-digest-missing"
         recommendation = "Run memory-digest to materialize the current Synesthesia state."
-    elif digest["status"] in {"stale", "invalid", "symlinked", "not-file"}:
+    elif digest["status"] in {
+        "stale",
+        "invalid",
+        "insecure-permissions",
+        "symlinked",
+        "not-file",
+    }:
         stage = f"source-notes-digest-{digest['status']}"
         recommendation = "Repair the digest path if needed, then run memory-digest --force."
     elif compiled["mentions"]:
