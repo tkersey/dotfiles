@@ -48,6 +48,21 @@ print_synesthesia_store() {
   printf 'synesthesia\tmissing\t.ledger/synesthesia/events.jsonl\n'
 }
 
+path_has_symlink_component() {
+  symlink_path="$1"
+  shift
+  if [ -L "$symlink_path" ]; then
+    return 0
+  fi
+  for symlink_component in "$@"; do
+    symlink_path="$symlink_path/$symlink_component"
+    if [ -L "$symlink_path" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 printf 'memory-source-layout\trepo_root\t%s\n' "$repo_root"
 print_learnings_store
 print_store "negative-ledger" ".ledger/negative-ledger/events.jsonl" "true"
@@ -59,7 +74,9 @@ for tracked in codex/memories/extensions/*/instructions.md; do
   extension="${tracked%/instructions.md}"
   extension="${extension##*/}"
   installed="$codex_home/memories/extensions/$extension/instructions.md"
-  if [ -L "$installed" ]; then
+  if path_has_symlink_component \
+    "$codex_home" memories extensions "$extension" instructions.md
+  then
     status="symlink"
   elif [ ! -f "$installed" ]; then
     status="missing"

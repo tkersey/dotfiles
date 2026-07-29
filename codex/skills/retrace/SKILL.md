@@ -199,17 +199,28 @@ Both projections return at most 256 newest matching metadata candidates. A
 top-k omission limitation means the result is incomplete: narrow the selectors
 before classifying, and never infer absence from that result.
 
-Read raw evidence only for one selected identity. Use native `seq query` with
-the candidate's exact `source_event_id` or `call_id`; do not emit a whole
-session's lifecycle:
+Read raw evidence only for one selected identity. Save the selected candidate
+envelope, extract its identifiers as data, and JSON-encode the query before
+passing it as one argument. Never interpolate trace-derived identifiers into
+shell source. Use native `seq query`; do not emit a whole session's lifecycle:
 
 ```bash
-seq query --root ~/.codex/sessions --session-id <id> \
-  --spec '{"dataset":"source_events","where":[{"field":"source_event_id","op":"eq","value":"<source-event-id>"}],"limit":1,"format":"json"}' \
+candidate_file=source-event-candidate.json
+session_id="$(jq -er '.data.rows[0].session_id' "$candidate_file")"
+source_event_id="$(jq -er '.data.rows[0].source_event_id' "$candidate_file")"
+spec="$(jq -cn --arg id "$source_event_id" \
+  '{dataset:"source_events",where:[{field:"source_event_id",op:"eq",value:$id}],limit:1,format:"json"}')"
+seq query --root ~/.codex/sessions --session-id "$session_id" \
+  --spec "$spec" \
   --format json
 
-seq query --root ~/.codex/sessions --session-id <id> \
-  --spec '{"dataset":"tool_lifecycle","where":[{"field":"call_id","op":"eq","value":"<call-id>"}],"limit":1,"format":"json"}' \
+candidate_file=tool-candidate.json
+session_id="$(jq -er '.data.rows[0].session_id' "$candidate_file")"
+call_id="$(jq -er '.data.rows[0].call_id' "$candidate_file")"
+spec="$(jq -cn --arg id "$call_id" \
+  '{dataset:"tool_lifecycle",where:[{field:"call_id",op:"eq",value:$id}],limit:1,format:"json"}')"
+seq query --root ~/.codex/sessions --session-id "$session_id" \
+  --spec "$spec" \
   --format json
 ```
 
