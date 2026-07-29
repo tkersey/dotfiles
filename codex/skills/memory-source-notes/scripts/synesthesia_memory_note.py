@@ -197,7 +197,7 @@ def _validate_submission_with_ledger(
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         detail = proc.stderr.decode("utf-8", errors="replace").strip()
         raise ValidationError(
-            f"ledger: validation command failed"
+            "ledger: validation command failed"
             + (f": {detail}" if detail else "")
         ) from exc
     definition_result = result.get("definition")
@@ -391,8 +391,12 @@ def validate_and_normalize(
     physical_kind = LOGICAL_TO_PHYSICAL_KIND[logical_kind]
     normalized = _normalize_writer_input(raw)
     submission = {
+        "fingerprint_profile": "append-v1",
         "expected_fingerprint": canonical_fingerprint(physical_kind, normalized),
         "scope_anchor_source": _scope_anchor_source(normalized),
+        "stored_file_sha256": None,
+        "stored_fingerprint": None,
+        "stored_note_id": None,
         "source": {
             "logical_kind": logical_kind,
             "physical_kind": physical_kind,
@@ -543,7 +547,7 @@ class StoredNote:
     __slots__ = (
         "path", "id", "captured_at", "kind", "operation", "authority",
         "summary", "scope", "source_refs", "related_ids", "supersedes_id",
-        "fingerprint", "payload", "file_sha256",
+        "fingerprint", "payload", "file_sha256", "validation_profile",
     )
 
     def __init__(
@@ -551,7 +555,7 @@ class StoredNote:
         operation: str, authority: str, summary: str, scope: dict[str, Any],
         source_refs: list[dict[str, str]], related_ids: list[str],
         supersedes_id: str | None, fingerprint: str, payload: dict[str, Any],
-        file_sha256: str,
+        file_sha256: str, validation_profile: str,
     ) -> None:
         self.path = path
         self.id = id
@@ -567,10 +571,18 @@ class StoredNote:
         self.fingerprint = fingerprint
         self.payload = payload
         self.file_sha256 = file_sha256
+        self.validation_profile = validation_profile
 
 
 DIGEST_VERSION = "synesthesia-digest/v1"
 DIGEST_FILENAME = "latest_synesthesia_digest.md"
+LEGACY_CORRIDOR_NOTE_ID = "MSN-20260621T163031Z-13ff9b8733ea3532"
+LEGACY_CORRIDOR_FINGERPRINT = (
+    "13ff9b8733ea3532de358dc38dc7b0a0edea576907340d654b5164bd0dfd0dd5"
+)
+LEGACY_CORRIDOR_FILE_SHA256 = (
+    "1d85f689cfe47773347c39ea9992b4f189d2b433140f1b4b5050f72abb99b94b"
+)
 SCOPE_SPECIFICITY = {
     "path-family": 6,
     "repo": 5,
@@ -622,20 +634,33 @@ def _stored_note_from_value(
         and payload.get("scope_anchor") != scope.get("kind")
     ):
         scope_anchor_source = "declared"
+    fingerprint = (
+        note.get("fingerprint")
+        if isinstance(note.get("fingerprint"), str)
+        else ""
+    )
+    note_id = note.get("id") if isinstance(note.get("id"), str) else ""
+    legacy_corridor = (
+        note_id == LEGACY_CORRIDOR_NOTE_ID
+        and fingerprint == LEGACY_CORRIDOR_FINGERPRINT
+        and file_sha256 == LEGACY_CORRIDOR_FILE_SHA256
+    )
+    validation_profile = (
+        "stored-legacy-corridor-v1" if legacy_corridor else "stored-v1"
+    )
     submission = {
+        "fingerprint_profile": validation_profile,
         "expected_fingerprint": canonical_fingerprint(kind, record),
         "scope_anchor_source": scope_anchor_source,
+        "stored_file_sha256": file_sha256,
+        "stored_fingerprint": fingerprint,
+        "stored_note_id": note_id,
         "source": {
             "logical_kind": logical_kind,
             "physical_kind": kind,
             "record": record,
         },
     }
-    fingerprint = (
-        note.get("fingerprint")
-        if isinstance(note.get("fingerprint"), str)
-        else ""
-    )
     _validate_submission_with_ledger(
         submission,
         stored_note=value,
@@ -656,6 +681,7 @@ def _stored_note_from_value(
         fingerprint=fingerprint,
         payload=record["payload"],
         file_sha256=file_sha256,
+        validation_profile=validation_profile,
     )
 
 
@@ -1148,7 +1174,7 @@ def render_memory_digest(
         "# Synesthesia Digest",
         "",
         f"generated_at: {generated_at}",
-        f"generator: synesthesia_memory_note.py memory-digest",
+        "generator: synesthesia_memory_note.py memory-digest",
         f"digest_version: {DIGEST_VERSION}",
         "canonical: false",
         "source: immutable memory-source-note/v1 events",
@@ -1319,15 +1345,16 @@ def _atomic_write_regular(path: Path, content: bytes) -> None:
     ensure_no_symlink_components(path)
     if path.is_symlink():
         raise ValidationError(f"digest destination is a symlink: {path}")
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     ensure_no_symlink_components(path.parent)
+    os.chmod(path.parent, 0o700)
     fd, temp_name = tempfile.mkstemp(prefix=".synesthesia-digest-", dir=str(path.parent))
     try:
+        os.fchmod(fd, 0o600)
         with os.fdopen(fd, "wb") as handle:
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
-        os.chmod(temp_name, 0o644)
         os.replace(temp_name, path)
     finally:
         if os.path.exists(temp_name):

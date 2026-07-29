@@ -209,7 +209,7 @@ nor derived operation is blocked; use `degraded` when semantic evaluation and
 canonical writes completed but a note or digest stage failed; use `blocked` for
 a missing participant, stale/invalid evidence, or a required canonical failure.
 This status proves source-memory closeout only. It does not grant delivery
-authority, and the separate exact current Negative Ledger pre-route map remains
+authority, and the separate exact current Negative Ledger `route-gate` projection remains
 the only source-memory route gate.
 
 Evaluation is mandatory; writes and admissions are conditional. Keep ordinary

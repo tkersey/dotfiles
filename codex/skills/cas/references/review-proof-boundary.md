@@ -32,9 +32,10 @@ decode a lens, role, campaign, or credit rule from the binding.
 
 ## Attempt evidence
 
-`reviewAttemptExists` is true only after `reviewThreadId` exists. A semantic
-tuple verdict exists only when `reviewVerdict.tupleVerdictExists=true` and its
-base, head, and target fingerprint match the requested target.
+Receipt-level `reviewAttemptExists` is true only after `reviewThreadId` exists.
+A semantic tuple verdict exists only when receipt-level
+`tupleVerdictExists=true` and the receipt and `reviewVerdict` base, head, and
+target fingerprint agree with the requested target.
 
 The owner receipt may expose:
 

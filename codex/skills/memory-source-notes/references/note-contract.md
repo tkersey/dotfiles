@@ -68,12 +68,16 @@ Recommended general values:
 explicit-user-correction
 repeated-user-steering
 ledger-cli
-ledger-cli
 explicit-user-endorsement
 explicit-user-rejection
 source-skill
 verified-artifact
 ```
+
+`ledger-cli` is the retained writer/source-attestation label in existing
+Learnings and Negative Ledger note envelopes. It does not grant the Ledger
+runtime semantic authority; the enclosing Ledger result must still report
+`authority_granted:false`.
 
 Synesthesia additionally uses:
 

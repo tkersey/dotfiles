@@ -127,11 +127,10 @@ subject, lens, role, instruction, or tuple mismatch earns no credit.
 
 ## CAS owner-fact projection
 
-CAS owns the current receipt protocol and reports these exact owner facts under
-`reviewVerdict`:
+CAS owns the current receipt protocol. The envelope reports
+`tupleVerdictExists`; `reviewVerdict` reports:
 
 ~~~text
-tupleVerdictExists
 principalStrength
 accountFingerprintReducedProtection
 backendClass

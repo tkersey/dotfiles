@@ -282,13 +282,14 @@ bounded repository/time window:
 seq observe \
   --definition <actuating-skill-root>/definitions/seq/run-audit.json \
   --session-id SESSION_ID \
-  --projection turns \
+  --projection turn-metadata \
   --format json
 ~~~
 
-Use projection `tools` for tool lifecycle evidence. The definition returns
-evidence and provenance only; it does not recreate the retired native verdict
-or transfer Actuating authority into Seq.
+Use `tool-metadata` for tool lifecycle structure. Opt into `turns` or `tools`
+only when the evidence question requires raw message, command, or output text.
+The definition returns evidence and provenance only; it does not recreate the
+retired native verdict or transfer Actuating authority into Seq.
 
 `prepare-operation` validates the exact current Goal, Construction,
 caller-owned `expected_subject_digest`, scope, effect, and obligation

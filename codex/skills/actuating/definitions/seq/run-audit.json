@@ -138,6 +138,26 @@
     }
   ],
   "projections": {
+    "tool-metadata": {
+      "relation": "ordered_tools",
+      "schema": "actuating-run-tool-metadata/v1",
+      "fields": [
+        "call_id",
+        "session_id",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "tool_name",
+        "namespace",
+        "exit_code",
+        "lifecycle_status",
+        "path"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
     "tools": {
       "relation": "tool_evidence",
       "schema": "actuating-run-tool-evidence/v1",
@@ -155,6 +175,24 @@
         "exit_code",
         "lifecycle_status",
         "path"
+      ],
+      "renderers": [
+        "json",
+        "jsonl"
+      ]
+    },
+    "turn-metadata": {
+      "relation": "ordered_turns",
+      "schema": "actuating-run-turn-metadata/v1",
+      "fields": [
+        "session_id",
+        "path",
+        "turn_index",
+        "started_at",
+        "completed_at",
+        "status",
+        "status_reason",
+        "aborted_reason"
       ],
       "renderers": [
         "json",

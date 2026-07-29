@@ -189,14 +189,24 @@ those bytes.
 
 ## Structured owner receipt
 
-Waited `start` and terminal `wait` return a current structured receipt whose
-`reviewVerdict` carries:
+Waited `start` and terminal `wait` return a current structured receipt. The
+receipt envelope carries the attempt witnesses:
 
 ~~~text
-status
 reviewAttemptPhase
 reviewAttemptExists
 tupleVerdictExists
+reviewThreadId
+reviewTurnId
+baseSha
+headSha
+targetFingerprint
+~~~
+
+Its closed `reviewVerdict` carries:
+
+~~~text
+status
 principalStrength
 accountFingerprintReducedProtection
 backendClass
@@ -257,8 +267,9 @@ Each canonical compact finding row is deliberately small:
 }
 ~~~
 
-The enclosing `reviewVerdict` supplies the attempt, tuple, request binding, and
-verdict status. `$review-fold` may digest the exact canonical row bytes and
+The receipt envelope supplies attempt existence and tuple existence; the
+enclosed `reviewVerdict` supplies the request binding and verdict status.
+`$review-fold` may digest the exact canonical row bytes and
 cite the enclosing receipt; it performs stable law-and-boundary classification.
 CAS does not manufacture a second per-finding identity or duplicate receipt
 provenance into every row.
