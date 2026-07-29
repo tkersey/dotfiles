@@ -195,6 +195,11 @@ seq observe \
   --projection tools \
   --format json
 ```
+The bounded `tools` projection identifies the exact session and tool rows
+without retaining unbounded payloads. Inspect the selected row's raw lifecycle
+evidence with native `seq tool-lifecycle --session-id <id>` only when the
+governance classification requires it.
+
 Set `--until` before the current audit when current-session contamination would
 change inclusion. Select the exact session evidence and preserve:
 ```text

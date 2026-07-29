@@ -7,7 +7,8 @@
       "filter",
       "project",
       "scan",
-      "sort"
+      "sort",
+      "top-k"
     ]
   },
   "parameters": {
@@ -169,27 +170,9 @@
       ]
     },
     {
-      "op": "sort",
-      "input": "matched_tools",
-      "as": "ordered_tools",
-      "by": [
-        {
-          "field": "path"
-        },
-        {
-          "field": "turn_index",
-          "nulls": "last"
-        },
-        {
-          "field": "started_at",
-          "nulls": "last"
-        }
-      ]
-    },
-    {
       "op": "project",
-      "input": "ordered_tools",
-      "as": "tool_evidence",
+      "input": "matched_tools",
+      "as": "tool_metadata",
       "fields": [
         "call_id",
         "session_id",
@@ -199,15 +182,33 @@
         "kind",
         "tool_name",
         "namespace",
-        "arguments_json",
-        "input_text",
-        "command_text",
         "cwd",
-        "output_text",
         "exit_code",
         "lifecycle_status",
         "path"
       ]
+    },
+    {
+      "op": "top-k",
+      "input": "tool_metadata",
+      "as": "tool_evidence",
+      "by": [
+        {
+          "field": "started_at",
+          "direction": "desc",
+          "nulls": "last"
+        },
+        {
+          "field": "path",
+          "direction": "desc"
+        },
+        {
+          "field": "turn_index",
+          "direction": "desc",
+          "nulls": "last"
+        }
+      ],
+      "limit": 256
     }
   ],
   "projections": {
@@ -243,11 +244,7 @@
         "kind",
         "tool_name",
         "namespace",
-        "arguments_json",
-        "input_text",
-        "command_text",
         "cwd",
-        "output_text",
         "exit_code",
         "lifecycle_status",
         "path"
