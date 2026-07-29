@@ -13,7 +13,7 @@ review or failure evidence
 
 ## Trigger
 
-Query or map before Actuating selects a route when:
+Project the canonical `route-gate` before Actuating selects a route when:
 
 - an accepted Counterexample resembles a previously failed construction;
 - the same law-and-boundary class recurs after repair;

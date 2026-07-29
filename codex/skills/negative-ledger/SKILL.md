@@ -49,7 +49,9 @@ Activation is broad; capture is narrow.
 
 Invoke this skill implicitly when current work may change route selection because a concrete route failed, had no effect, regressed a signal, was reverted, was rejected by current proof/review evidence, or is about to be retried under the same cluster. Do not wait for the user to literally name `$negative-ledger`.
 
-Before selecting a route that resembles a prior failure, query or map the canonical ledger. A recalled `$learnings` row may trigger this check, but it cannot block directly.
+Before selecting a route that resembles a prior failure, project the canonical
+`route-gate`. A recalled `$learnings` row may trigger this check, but it cannot
+block directly.
 
 After a material strategy pivot, regression-confirmed revert, or closeout that leaves a failed route likely to recur, evaluate capture. A transient red test, syntax error, first incomplete implementation, or discarded local typo is `no-op` unless it exposes a durable failed hypothesis that changes future routing.
 
@@ -70,7 +72,7 @@ coordinator's existing Ledger readiness and shared evidence packet. Do not
 rerun `$ledger ensure`, invoke `$ledger` as lifecycle coordinator, or call
 Learnings or Synesthesia.
 
-This lifecycle evaluation is distinct from the pre-route map. Normal successful
+This lifecycle evaluation is distinct from the pre-route projection. Normal successful
 work with no failed, no-effect, regressed, reverted, or abandoned route returns
 `no-op` without querying or doctoring the store. When the packet contains
 qualified negative evidence, apply the existing narrow capture or transition
@@ -145,7 +147,7 @@ Only `active` can block, and only when witness evidence exists, exclusion scope 
 
 Fuzzy or lexical overlap is suggest-only.
 
-## Query/Map Workflow
+## Route-Gate Workflow
 
 For review-driven repair, apply the owner boundary in
 [counterexample-construction-integration.md](references/counterexample-construction-integration.md).

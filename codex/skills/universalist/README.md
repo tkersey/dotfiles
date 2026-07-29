@@ -135,8 +135,10 @@ Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
 once. Universalist requires Ledger 1.x and `ledger-artifact-abi/v1`.
 
 Bind a valid pre-cutover plan already under `.ledger/universalist/` once with
-`ledger transact --operation bind-existing --param plan_file=PLAN_FILE`; the
-operation validates existing bytes and writes only Ledger-owned binding
+`ledger transact --definition
+<universalist-skill-root>/definitions/ledger/plan-document.json --operation
+bind-existing --repo PROJECT_ROOT --param plan_file=PLAN_FILE --format json`;
+the operation validates existing bytes and writes only Ledger-owned binding
 metadata. A legacy root `.ledger/universalist-plan-<PLAN_ID>.md` uses the
 explicit one-shot `migrate-legacy` operation with that file as
 `legacy_plan` and `plan-<PLAN_ID>.md` as `plan_file`. Normal reads never inspect

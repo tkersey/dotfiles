@@ -153,7 +153,6 @@ def _validate_submission_with_ledger(
     submission: dict[str, Any],
     *,
     stored_note: Any | None = None,
-    fingerprint_basis: dict[str, Any] | None = None,
     ledger_bin: str | Path | None = None,
 ) -> dict[str, Any]:
     binary = find_ledger_binary(ledger_bin)
@@ -171,7 +170,7 @@ def _validate_submission_with_ledger(
         str(definition),
     ]
     input_bytes: bytes | None = canonical_json_bytes(submission)
-    if stored_note is None and fingerprint_basis is None:
+    if stored_note is None:
         command.extend(["--input", "submission=-"])
         proc = subprocess.run(
             [*command, "--format", "json"],
@@ -183,8 +182,6 @@ def _validate_submission_with_ledger(
         documents: dict[str, Any] = {"submission": submission}
         if stored_note is not None:
             documents["stored_note"] = stored_note
-        if fingerprint_basis is not None:
-            documents["fingerprint_basis"] = fingerprint_basis
         with tempfile.TemporaryDirectory(prefix="synesthesia-ledger-validation-") as root:
             for name, value in documents.items():
                 path = Path(root) / f"{name}.json"
@@ -394,6 +391,7 @@ def validate_and_normalize(
     physical_kind = LOGICAL_TO_PHYSICAL_KIND[logical_kind]
     normalized = _normalize_writer_input(raw)
     submission = {
+        "expected_fingerprint": canonical_fingerprint(physical_kind, normalized),
         "scope_anchor_source": _scope_anchor_source(normalized),
         "source": {
             "logical_kind": logical_kind,
@@ -403,12 +401,6 @@ def validate_and_normalize(
     }
     structural_result = _validate_submission_with_ledger(
         submission,
-        fingerprint_basis={
-            "extension": "synesthesia",
-            "kind": physical_kind,
-            "raw_projection": canonical_json_bytes(normalized).decode("utf-8"),
-            "expected": f"sha256:{canonical_fingerprint(physical_kind, normalized)}",
-        },
         ledger_bin=ledger_bin,
     )
     return physical_kind, normalized, structural_result
@@ -631,6 +623,7 @@ def _stored_note_from_value(
     ):
         scope_anchor_source = "declared"
     submission = {
+        "expected_fingerprint": canonical_fingerprint(kind, record),
         "scope_anchor_source": scope_anchor_source,
         "source": {
             "logical_kind": logical_kind,

@@ -1,8 +1,10 @@
 # Learnings as a Negative-Ledger Source
 
 `$learnings` supplies historical candidate evidence through its canonical
-passive protocol definition. Negative Ledger owns failed-hypothesis semantics
-and operational route state through its own protocol definition.
+passive protocol definition. The `$negative-ledger` skill owns
+failed-hypothesis semantics and operational route state through its protocol
+definition. Ledger validates and transacts the declared structure without
+deciding route meaning or authority.
 
 ## Read Path
 
