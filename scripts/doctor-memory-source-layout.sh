@@ -50,15 +50,18 @@ print_synesthesia_store() {
 
 path_has_symlink_component() {
   symlink_path="$1"
-  shift
-  if [ -L "$symlink_path" ]; then
-    return 0
-  fi
-  for symlink_component in "$@"; do
-    symlink_path="$symlink_path/$symlink_component"
+  case "$symlink_path" in
+    /*) ;;
+    *) symlink_path="$(pwd -P)/$symlink_path" ;;
+  esac
+  while :; do
     if [ -L "$symlink_path" ]; then
       return 0
     fi
+    [ "$symlink_path" = "/" ] && break
+    symlink_parent="$(dirname "$symlink_path")"
+    [ "$symlink_parent" = "$symlink_path" ] && break
+    symlink_path="$symlink_parent"
   done
   return 1
 }
@@ -74,8 +77,7 @@ for tracked in codex/memories/extensions/*/instructions.md; do
   extension="${tracked%/instructions.md}"
   extension="${extension##*/}"
   installed="$codex_home/memories/extensions/$extension/instructions.md"
-  if path_has_symlink_component \
-    "$codex_home" memories extensions "$extension" instructions.md
+  if path_has_symlink_component "$installed"
   then
     status="symlink"
   elif [ ! -f "$installed" ]; then
