@@ -17,10 +17,6 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - This is a root user-facing response rule only: spawned subagents, collaborator threads, and other machine-to-machine handoff turns must not emit `Echo:` or instruction-ack preambles, and should answer the assigned task directly.
 - Do not include `Echo:` inside generated files, patches, code blocks, JSON/YAML/TOML intended for machine consumption, email bodies, PR bodies, commit messages, or artifacts the user asked to copy verbatim. Put Echo only in the surrounding chat response.
 
-### Language-surface pass
-
-- Run `$logophile` as a final language-only pass on every non-trivial root response and human-facing artifact. Preserve facts, modality, uncertainty, scope, ownership, sequence, identifiers, code, paths, flags, schemas, protocol literals, and operational decisions; skip terse acknowledgements or status updates and machine-consumed surfaces.
-
 ## Glaze intelligence-escalation mandate
 
 - Treat `$glaze` as the repo's default implicit high-intelligence escalation pulse for substantive work, not only a literal user invocation. Invoke it once after forming an initial candidate and before accepting a consequential answer, plan, diagnosis, design, review disposition, simplification, architecture or abstraction direction, or implementation route that is coherent but merely adequate, conventional, locally optimized, inherited-frame, or under-ambitious.
