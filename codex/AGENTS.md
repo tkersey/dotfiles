@@ -26,14 +26,6 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Retain one compact session-local observation when Glaze runs: `surface`, `trigger`, `incumbent`, `result`, `delta`, `falsifier`, `owner_disposition`, and `outcome_evidence`. Reuse an owning workflow's existing fields when available; do not create another artifact family. A later material change to the frozen surface may earn one new pass.
 - Skip terse acknowledgements, mechanical lookups, trivial edits, already-dispositive answers, weakly bound symptoms, and cases where divergence would violate accepted scope or authority.
 
-### Temporary Glaze calibration — remove after 24 eligible root decision surfaces
-
-- Canonicalize `{repository, workflow, owner, question, incumbent_digest, target_observation}` as JSON and assign the frozen surface tuple's cohort from the low bit of its SHA-256 digest: `0=immediate`, `1=delayed`.
-- In the immediate cohort, freeze the incumbent, run Glaze, then let the owner adjudicate. In the delayed cohort, freeze the incumbent, complete one ordinary decision pass without mutation, freeze the successor candidate, then run Glaze before final adjudication. Both cohorts receive exactly one Glaze pass.
-- Retain one session-local calibration observation with: `surface_id`, `cohort`, `trigger`, `incumbent`, `glaze_result`, `delta_kind`, `owner_disposition`, `same_surface_evidence`, `final_outcome`, `reopened`, `companion_workflows`, and `execution_cost`.
-- Count only root-local activations. Exclude inherited worker text, ceremonial mentions, audit prompts, and the current calibration analysis. Do not count adoption as improvement, rejection as failure, or `no-material-reframe` as a miss.
-- At 24 eligible surfaces, report generation, selection, validation, reopening, correction burden, and cost separately. Claim timing lift only if the cohorts are materially comparable; otherwise report descriptive evidence and limitations.
-
 ## Universalist boundary mandate
 
 - Invoke `$universalist` whenever implementation, refactoring, review, migration, or resolution considers a code boundary.
