@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "glaze"
-  short_description: "Push merely adequate work into a higher-intelligence basin"
-  default_prompt: "Use $glaze as one bounded intelligence-escalation pass. Invoke it explicitly or implicitly when substantive work is merely adequate, conventional, locally optimized, inherited-frame, or under-ambitious; preserve the canonical one-line body verbatim and return a material reframe or no-material-reframe to the owning workflow."
+  short_description: "Challenge a frozen incumbent with one bounded reframe"
+  default_prompt: "Use $glaze once on the bound decision surface, preserve its canonical one-line escalation verbatim, return `material-reframe`, `no-material-reframe`, or `blocked` with the material delta and falsifier, and leave selection, mutation, and closure to the owning workflow."
