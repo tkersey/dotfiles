@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "ACT-AK-v3-architectonic-axiomatic-review-accretion-pathwise-v1"
+      "source_fingerprint": "ACT-AK-v3-architectonic-axiomatic-review-accretion-obligation-closed-v2"
     },
     "triggers": [
       {
@@ -123,6 +123,7 @@
           "an Actuating-bound First Principles basis freezes an incumbent-independent derivation before Universalist nomination",
           "Universalist lowers that derivation and only then earns at least one incumbent-independent candidate marker",
           "Universalist nominates and Reduce challenges once before Actuating alone adjudicates and selects the Construction and next action",
+          "all candidate families carry one common mandatory obligation core and vary only the disputed family delta",
           "compact composed analysis including Review Accretion needs no independent axiom accretion SDR-v1 or RC-v1 artifact",
           "Actuating owns the static Review Contract Review Accretion Disposition and semantic closure receipt",
           "Ledger 1.x with ledger-artifact-abi/v1 is the sole structural admission owner",
@@ -136,8 +137,9 @@
           "Universalist or $reduce or $complexity-mitigator selects a Construction Repair Disposition Review Accretion Disposition operation next action or closure",
           "an incumbent-independent marker is claimed before Universalist lowers the frozen derivation",
           "a candidate factor or residual assumption lacks a Goal observation necessary-constraint or explicit-postulate derivation",
+          "a candidate is dominated because it omits an orthogonal required repair instead of comparing the disputed factor under the common mandatory core",
           "a candidate family is omitted reordered or inferred from mutable enum order",
-          "supersession leaves a factor unpartitioned or encodes identity-only normalization",
+          "supersession leaves a factor unpartitioned encodes identity-only normalization or claims conceptual collapse without realized surface discharge",
           "a supporting axiom accretion plan certificate or receipt becomes required authority",
           "Ledger or an executor selects architecture or a next action",
           "Seq interprets Construction schema independently",
@@ -182,6 +184,7 @@
           "one accepted class recurring after repair or two evidenced same-cause accepted classes trigger a causal recurrence disposition before another affected mutation",
           "the triggered disposition compares realization preservation admitted-domain restriction representation strengthening and ablation normalization and requires instance-specific non-example proof or an architecture ablation or blocked result",
           "every review-driven mutation epoch receives a current Review Accretion Disposition before Ship or fresh review",
+          "an earlier preserve minimal or no-material-reframe result is reused only while every relied-on premise remains current",
           "an accepted Review Fold binds the exact current subject Counterexample Set and accepted-class list before successor mutation",
           "initial 1+4 launches concurrently",
           "siblings are non-cancelling",
@@ -204,6 +207,7 @@
           "a validator repeatedly reconstructs information omitted by the selected representation without comparing restriction or representation strengthening",
           "line count alone triggers reduction or refactoring",
           "a fresh review or Ship handoff starts after review-driven mutation without a current Review Accretion Disposition",
+          "a stale preservation result is rebound after later evidence changes a relied-on owner multiplicity representation or proof-shape premise",
           "the same candidate and evidence enter recursive Universalist Reduce competition",
           "sibling cancellation",
           "whole-wave transport retry",
@@ -282,6 +286,7 @@
           "Universalist lowers the frozen incumbent-independent derivation and supplies the initial boundary nomination",
           "an accepted abstraction-change trigger causal recurrence or material review-path accretion receives exactly one pre-adjudication Glaze pass for its unchanged decision surface",
           "review-path Glaze treats the cumulative changeset as evidence and counterfactually derives the Construction that would make the repair path unnecessary",
+          "review-path Glaze carries every independent mandatory repair through every counterfactual candidate and varies only the disputed architectural delta",
           "Glaze seeks a materially new frame invariant mechanism artifact or breakthrough candidate under the current basis",
           "every material Glaze result is lowered under either the current admitted basis or a freshly axiomatized basis",
           "Universalist reclassifies and lowers material Glaze results before Reduce challenges the selected candidate version",
@@ -294,6 +299,7 @@
           "an abstraction-change causal-recurrence or material review-accretion trigger reaches adjudication without Glaze",
           "Glaze runs before Review Fold classifies findings or after the Construction is selected",
           "review-path Glaze merely polishes accumulated code instead of reconstructing from the complete obligation set",
+          "review-path Glaze obtains ablation by omitting an orthogonal required repair",
           "a material Glaze result is discarded because it uses no new premise",
           "Glaze classifies a Counterexample nominates or selects a Construction grants mutation creates a fifth authority artifact or manufactures an axiom",
           "rhetorical candidate variants count as material reframes",
@@ -326,17 +332,20 @@
           "missing reconstructable review-entry attribution is reported rather than invented and the complete delivery delta plus lineage is still folded",
           "cumulative production semantic proof and comprehension surfaces are factored",
           "every surviving factor earns a current Goal Counterexample observation proof compatibility resource or host-capability obligation",
+          "the candidate comparison holds a common mandatory obligation core constant and is arrival-order invariant for the same complete obligation set",
           "line file epoch and elapsed-time counts are inspection pressure only",
           "one ordinary cumulative normal form precedes any Glaze escape",
           "realization-only pressure may use one read-only Complexity Mitigator preflight",
           "material path dependence machinery residue proof accretion inadequate normalization or domination pressure activates one counterfactual Glaze pass",
           "Actuating selects preserve realization-normalization ablation-repair architecture-repair or blocked",
           "material results compile into existing Construction factors supersession proof obligations and retirements",
+          "every collapsed replaced or retired factor has a realization-retirement witness mapping displaced production semantic proof and comprehension surfaces to deletion a successor owner or a distinct live obligation",
           "material normalization resets review credit",
           "no CLI or artifact family is added"
         ],
         "failure_signals": [
           "a sequence of locally minimal repairs is assumed globally minimal without a cumulative fold",
+          "whole-candidate comparison confounds a disputed architecture factor with omission of an independent required repair",
           "the review-entry anchor silently advances after each campaign repair or publication",
           "raw size alone selects refactoring",
           "required complexity is deleted merely to shrink the diff",
@@ -348,6 +357,7 @@
           "a generic cleanup escapes Goal Construction scope or proof",
           "a new accretion artifact mutable state or Ledger Seq CAS classifier is introduced",
           "fresh review begins before a current disposition",
+          "a conceptual factor collapse is accepted while displaced realization surfaces remain live without successor-owner mapping or distinct obligation",
           "closure accepts undispositioned material accretion missing preservation proof or live required retirements"
         ],
         "rationale": "Review repair composition must converge to a coherent non-dominated final realization rather than preserve the historical path by which findings arrived."
@@ -375,6 +385,7 @@
         ],
         "success_signals": [
           "subject freshness basis validity causal lineage and review-entry anchoring are evaluated independently",
+          "preservation proof-lease validity is evaluated from its relied-on premises rather than subject identity or raw size alone",
           "a premise-changing subject change expires the ephemeral basis while a premise-neutral digest change within the same uninterrupted run does not",
           "subject change never erases Construction or Counterexample lineage or silently advances the review-entry anchor",
           "only the first Construction in the current authoritative v3 lineage for a goal_id uses initial mode with empty predecessor_refs",
@@ -388,6 +399,7 @@
           "subject change erases Construction Counterexample or review-entry history",
           "a premise-changing subject change preserves the old ephemeral basis",
           "a premise-neutral digest change alone expires the basis",
+          "a preserve minimal or no-material-reframe lease survives evidence that falsifies one of its relied-on premises",
           "a recurring class with missing predecessor_refs is accepted as novel",
           "recurrence evaluation is limited to the current subject",
           "causal recurrence reuses the prior candidate universe without re-axiomatization",
@@ -422,12 +434,12 @@
           "every accepted Counterexample is excluded or blocked",
           "every dominated construct is retired",
           "review-driven mutation has a current preserve normalization ablation architecture or blocked accretion disposition over the exact anchors and current cumulative surface",
-          "selected accretion normalization has preservation proof and complete retirements",
+          "selected accretion normalization has current preservation premises and complete realized retirements",
           "source-memory evaluation follows delivery handoff"
         ],
         "failure_signals": [
           "a non-selecting close is blocked solely by missing post-feature basis provenance",
-          "closure accepts undispositioned material review accretion missing normalization proof or live accretion retirements",
+          "closure accepts undispositioned material review accretion stale preservation premises missing normalization proof conceptual-only retirement or live accretion retirements",
           "Ledger emits a semantic closure verdict or receipt",
           "Proof Patch grants completion",
           "stale publication review or accretion evidence receives credit",
