@@ -18,6 +18,7 @@ brew "git"
 brew "git-delta"
 brew "goenv"
 brew "hub"
+brew "jaq"
 brew "jq"
 brew "lazygit"
 brew "luajit", args: ['HEAD']
