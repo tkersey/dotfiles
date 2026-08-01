@@ -256,6 +256,10 @@ repair-path delta may create a new surface.
 3. Compile exactly four ordinary candidate families in canonical order:
    `realization-preserve`, `admitted-domain-restriction`,
    `representation-or-owner-strengthening`, and `ablation-normalization`.
+   First factor every independent mandatory repair into one common obligation
+   core carried by all four candidates; vary only the family-specific disputed
+   delta. A candidate that omits an orthogonal required repair is inadmissible,
+   not evidence that its disputed factor is dominated.
    Give each candidate an explicit factor inventory and falsifier, mark at
    least one genuinely `incumbent-independent`, and mark exactly one selected.
    Reject any candidate factor or residual assumption that lacks a traceable
@@ -287,7 +291,10 @@ repair-path delta may create a new surface.
    names exact proof and retirement obligations. Record the predecessor and
    successor factor surfaces and a total supersession partition: every factor
    is preserved, retired,
-   introduced, or explicitly replaced. A `dominated` challenge selects the
+   introduced, or explicitly replaced. A collapse, replacement, or retirement
+   is realized only when every displaced production, semantic, proof, and
+   comprehension surface is deleted, mapped to its successor owner, or retained
+   by a distinct live obligation. A `dominated` challenge selects the
    smaller admissible candidate; `incomparable`, `essential-shape-gap`, or
    `blocked` requires an Actuating disposition or obstruction, never recursive
    skill ping-pong.
@@ -486,6 +493,12 @@ equivalence, information retention, or boundary may be insufficient, establish
 or retain the current Axiomatic Construction Basis and require `$universalist`
 to nominate the ordinary repository-native normal form.
 
+Compare every candidate against the same common mandatory obligation core and
+vary only its disputed architectural delta. Require the selected result to be
+arrival-order invariant: permuting when the same current obligations became
+known must not change the selected factorization. Do not establish dominance by
+omitting an independent owner repair from an ablation candidate.
+
 When the fold establishes material repair-path dependence, accumulated semantic
 machinery, obsolete repair residue, proof accretion, inadequate ordinary
 normalization, or pathwise domination pressure, make abstraction change live.
@@ -501,7 +514,12 @@ normalization`, `ablation-repair`, `architecture-repair`, or `blocked`. A
 material normalization, ablation, or architecture repair changes the review
 subject and resets all review credit before fresh review. Compile material
 results into existing Construction factors, supersession, proof obligations,
-and retirements. Add no artifact family, mutable control state, review lens, or
+and retirements. Treat an earlier `preserve`, `minimal`, or
+`no-material-reframe` result as a premise-bound proof lease: later evidence that
+changes a relied-on owner, multiplicity, representation, or proof-shape premise
+reopens the affected decision surface. Require realized retirement evidence;
+factor labels alone do not prove surface removal. Add no artifact family,
+mutable control state, review lens, or
 Ledger, Seq, or CAS accretion command.
 
 ## Review convergence

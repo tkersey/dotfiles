@@ -99,6 +99,34 @@ constraint, resource obligation, or unavoidable host capability. Identify:
 
 Raw deletion is not the objective. Preserve necessary complexity and stronger proof.
 
+### Obligation-closed comparison
+
+Before comparing candidate families, derive one **common mandatory obligation
+core** from every independent repair required by the current Goal, accepted
+Counterexamples, owner cuts, observations, compatibility, resources, and proof.
+Every candidate carries that core unchanged and varies only its family-specific
+disputed delta. Omitting an orthogonal required repair makes a candidate
+inadmissible; it cannot establish that the candidate's architecture or ablation
+delta is dominated.
+
+Check arrival-order invariance: if the same complete obligation set had been
+known initially, or its members were presented in another order, Actuating would
+select the same factorization up to lawful equivalence. Failure is
+**omission-confounded dominance**, not pathwise minimality.
+
+### Realized retirement
+
+A factor label that says `collapse`, `replace`, or `retire` is not retirement
+evidence. For every displaced factor, map its production, semantic, proof, and
+comprehension surfaces to exactly one of:
+
+- deletion with an absence verifier;
+- the successor owner and proof obligation; or
+- a distinct current obligation that justifies explicit retention.
+
+Unmapped live surface means the retirement is incomplete, even when the
+Construction's conceptual factor inventory is smaller.
+
 ## Compact disposition
 
 Record one non-authoritative view:
@@ -116,14 +144,19 @@ Semantic-surface delta:
 Proof-surface delta:
 Comprehension pressure:
 Additions required by current laws or Counterexamples:
+Common mandatory obligation core:
+Family-specific disputed deltas:
 Factors made obsolete by later repairs:
 Duplicated or dominated factors:
 Unnecessary compatibility or recovery paths:
 Wound-specific proof residue:
+Arrival-order invariance check:
+Expired preservation premises:
 Ordinary cumulative normal form:
 Disposition: preserve | realization-normalization | ablation-repair | architecture-repair | blocked
 Smallest coherent final realization:
 Required retirements:
+Realization-retirement witness:
 Preservation proof:
 Falsifier:
 ```
@@ -177,7 +210,10 @@ set and this counterfactual instruction:
 > applicable accepted Counterexample class, required observation, compatibility
 > obligation, host constraint, and proof requirement was known before
 > implementation began. Derive the smallest coherent final Construction from that
-> complete obligation set. Identify the single representation, owner,
+> complete obligation set. Carry every independent mandatory repair as a common
+> factor core in every candidate and vary only the disputed architectural delta;
+> never obtain ablation by omitting an orthogonal repair. Identify the single
+> representation, owner,
 > admitted-domain restriction, normalization, state machine, protocol, or proof
 > strategy that would make the largest portion of the repair path unnecessary.
 > Prefer deleting and recomposing the accumulated path over polishing its
@@ -213,6 +249,13 @@ later material repair may create a new tuple.
 
 Every surviving factor remains necessary and coherently owned. Size alone is not a
 defect. Proceed with the current Construction and record the falsifier.
+
+A preservation result is a premise-bound proof lease, not a permanent exemption.
+Before rebinding an earlier `preserve`, `minimal`, or `no-material-reframe`, check
+the premises that established necessity: owner, case-family multiplicity,
+representation, admitted domain, compatibility, host capability, and proof shape.
+Later evidence that changes a relied-on premise expires the lease and reopens the
+affected decision surface. Raw size growth alone does not.
 
 ### `realization-normalization`
 
@@ -251,8 +294,9 @@ For review-entry subject `S0` and current subject `Sn`, the composite path
 S0 -> S1 -> ... -> Sn
 ```
 
-is dominated when an admissible normalized realization `N`:
+is dominated when an obligation-closed admissible normalized realization `N`:
 
+- carries the same common mandatory obligation core as every compared candidate;
 - satisfies the same current Goal laws;
 - excludes the same applicable accepted Counterexamples;
 - preserves the same required observations and compatibility;
@@ -263,7 +307,8 @@ is dominated when an admissible normalized realization `N`:
 - is strictly better in at least one of those dimensions.
 
 Preference, familiarity, line count, and implementation momentum cannot establish
-dominance. Incomparable minima remain incomparable or blocked.
+dominance. Neither can omission of an independent required repair. Incomparable
+minima remain incomparable or blocked.
 
 ## Review and closure laws
 
@@ -275,7 +320,7 @@ under the static Review Contract. Only the resulting subject receives fresh cred
 Final closeout blocks while a material review-accretion condition remains
 undispositioned, while required retirements remain live, or while a selected
 normalization lacks preservation proof. A current `preserve` disposition is
-sufficient when its evidence and falsifier remain current.
+sufficient only while its evidence, falsifier, and relied-on premises remain current.
 
 ## Hard rules
 
@@ -283,6 +328,10 @@ sufficient when its evidence and falsifier remain current.
 - No sixth review lens or additional clean-attempt requirement.
 - No refactor after every finding.
 - No generic cleanup outside the current Goal and Construction.
+- No omission-confounded candidate comparison; all families carry the same
+  mandatory obligation core.
+- No conceptual-only retirement; displaced realization surfaces require deletion,
+  successor-owner mapping, or a distinct live obligation.
 - No new authoritative artifact or mutable control state.
 - No Ledger, Seq, or CAS accretion classifier or command.
 - Glaze is generative; Universalist lowers; Reduce challenges; Actuating alone
