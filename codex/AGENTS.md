@@ -56,6 +56,10 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Do not create or reuse `.venv*` for skill-only tooling. Do not `uv pip install` external packages for skills unless the user explicitly requests a persistent dependency.
 - For projects that intentionally manage Python dependencies, keep `pyproject.toml`/`uv.lock` authoritative with `uv sync` or `uv lock` plus `uv sync`.
 
+### JSON
+
+- Use `jaq` instead of `jq` when `jaq` is installed; fall back to `jq` when it is not.
+
 ### Learnings and memory-source lifecycle
 
 - Treat `.ledger/*` stores as canonical repo-local source evidence. Mutate them
