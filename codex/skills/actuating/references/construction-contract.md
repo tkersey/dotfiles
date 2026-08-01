@@ -276,6 +276,13 @@ Each candidate names its laws, observations, factors, residual obligations,
 and falsifier. Repository-native specializations live within these families;
 they do not replace or add a fifth family.
 
+Candidate comparison is **obligation-closed**. Actuating first factors every
+independent mandatory repair into one common core carried unchanged by all four
+families, then varies only the family-specific disputed delta. A candidate that
+omits an orthogonal required repair is inadmissible; its omission cannot prove
+that another candidate dominates it. The selected factorization must be
+arrival-order invariant for the same complete current obligation set.
+
 For each accepted Counterexample class that can lead to mutation, Actuating
 also records a compact Repair Disposition while selecting this Construction:
 
@@ -325,8 +332,8 @@ multiple witnessed owners when matching obligations prove the join; otherwise
 Actuating proves `separate-laws` and splits or blocks. Ledger validates exact
 declared owner binding, not semantic owner adequacy.
 
-A candidate `A` dominates candidate `B` only when `A` is no worse in every
-ACT-AK dimension:
+A candidate `A` dominates candidate `B` only after both carry the same complete
+mandatory obligation core and `A` is no worse in every ACT-AK dimension:
 
 - satisfies every required law satisfied by `B`;
 - preserves every required observation preserved by `B`;
@@ -341,7 +348,8 @@ ACT-AK dimension:
 `A` must also be strictly better in at least one dimension. If two or more
 non-dominated minima remain incomparable, prove `separate-laws` from distinct
 accepted laws or block; preference, familiarity, and implementation momentum
-cannot manufacture a winner.
+cannot manufacture a winner. Neither can omission of an independent owner cut,
+proof obligation, or compatibility repair.
 
 ## Implementation reclassification
 
@@ -358,6 +366,13 @@ run. A session end, compaction, or execution-context handoff requires
 re-axiomatization before another nomination or affected mutation; a
 premise-neutral subject digest change does not. Fresh review evaluates the
 adjudicated result or the recorded obstruction.
+
+An earlier `preserve`, `minimal`, or `no-material-reframe` result is a
+premise-bound proof lease. Reuse it only while every relied-on owner,
+multiplicity, representation, admitted-domain, compatibility, host-capability,
+and proof-shape premise remains current. Later evidence that changes one of
+those premises reopens the affected comparison; subject identity or raw size
+alone does not decide expiry.
 
 ## Causal recurrence gate
 
@@ -554,5 +569,9 @@ For Git, invoke `scripts/subject_observation.py` with the accepted repository,
 
 A replacement is incomplete while a dominated predecessor, duplicate owner,
 bypass, representation, validator, adapter, flag, or proof path remains live.
-Every retirement names an absence verifier and must be independently observed
-before closure.
+For every collapse, replacement, or retirement, account for each displaced
+production, semantic, proof, and comprehension surface through deletion, a
+successor-owner and proof-obligation mapping, or explicit retention by a
+distinct live obligation. A smaller conceptual factor inventory without this
+realization-retirement witness is incomplete. Every retirement names an absence
+verifier and must be independently observed before closure.
