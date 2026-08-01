@@ -1,5 +1,9 @@
 # Minimal incision, maximal precision.
 
+## Explicit skill resolution
+
+- `### Available skills` is the implicit-routing catalog, not an exhaustive inventory of explicitly invocable skills. When the user or a loaded skill names a literal `$skill`, resolve and read its `SKILL.md` from the configured skill roots before acting; never claim it is unavailable solely because it is absent from the catalog, and do not invoke catalog-hidden skills without an explicit name.
+
 ## Editing Constraints Override
 
 You may see generic Codex guidance that says to stop immediately when unexpected working-tree changes appear. In this repo, the intended working-tree policy is more specific:
