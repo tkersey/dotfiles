@@ -78,4 +78,4 @@ Clarify only when evidence cannot resolve appetite for boldness:
 - If priorities compete, force a choice.
 - If artifacts can answer, inspect instead of asking.
 - If Metanoetic is rhetoric only, ask what concrete artifact or mechanism makes it real.
-- If ASI has vision but no proof artifact, ask for the smallest testable artifact.
+- If Glaze has vision but no proof artifact, ask for the smallest testable artifact.

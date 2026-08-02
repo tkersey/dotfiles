@@ -238,10 +238,13 @@ fifth authority artifact or an unknown `construction-contract/v3` field.
 `$metanoetic` neither classifies findings nor nominates, selects, authorizes, or
 closes. If it yields no material reframe, record `no-material-reframe` and
 continue with the evidenced candidate universe. Do not repeat Metanoetic for the
-same decision surface. For review-path accretion, that surface is the exact
-Goal, review-entry subject, current subject, Construction lineage, applicable
-Counterexample classes, and cumulative factor inventory; a later material
-repair-path delta may create a new surface.
+same decision surface. For `initial-high-regret`, that surface is the exact
+Goal, current Axiomatic Construction Basis inputs and invalidators, first
+Universalist nomination, and current admissible candidate universe. For
+`review-path-accretion`, that surface is the exact Goal, review-entry subject,
+current subject, Construction lineage, applicable Counterexample classes, and
+cumulative factor inventory. A later material change to either tuple may create
+a new surface.
 
 ## Construction procedure
 

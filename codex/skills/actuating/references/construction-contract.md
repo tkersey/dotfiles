@@ -247,7 +247,10 @@ For an initial Construction with no classified findings, Actuating invokes
 adjudication only when the nomination would establish a high-regret or difficult-
 to-reverse commitment, remains a coherent but merely adequate local optimum, and
 a materially different Construction is plausible. Initial implementation,
-architecture, or consequence alone is not a trigger.
+architecture, or consequence alone is not a trigger. The unchanged initial
+decision surface is the exact Goal, current Axiomatic Construction Basis inputs
+and invalidators, first Universalist nomination, and current admissible candidate
+universe; a material change to that tuple may admit one new pass.
 
 When an accepted Counterexample makes an abstraction change live by
 challenging the representation, owner, admitted domain, equivalence,

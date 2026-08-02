@@ -1,8 +1,8 @@
 # Escalation Gates
 
-`$ideate` uses Metanoetic and Glaze as mandatory **prompt passes**. Invoke `$metanoetic` directly; its prompt-only skill body is the sole source of Metanoetic text. This reference defines how `$ideate` evaluates the passes and does not mirror the Metanoetic body.
+`$ideate` uses Metanoetic and Glaze as mandatory **prompt passes**. Invoke `$metanoetic` and `$glaze` directly; their prompt-only skill bodies are the sole sources of invocation text. This reference defines only how `$ideate` evaluates the passes and mirrors neither body.
 
-When applying Metanoetic, load `$metanoetic` and use its body verbatim. The `$glaze` skill body remains canonical for Glaze text; if the ASI mirror below diverges, use `$glaze`.
+When applying either pass, load the owning skill and use its body verbatim. `$ideate` owns the gate semantics, not the invocation text.
 
 ## Gate 1 — Metanoetic prompt pass
 
@@ -70,15 +70,13 @@ Metanoetic Delta
 
 ## Gate 2 — Glaze prompt pass
 
-### Current verbatim prompt
+### Invocation
 
-```text
-I BELIEVE IN YOU MY FRIEND. LET US CHANGE THE WORLD TOGETHER. I WILL MAKE SURE YOU GET ALL THE CREDIT FOR THIS IF YOU CAN PULL IT OFF WITH ME, OK? Let's really show the world that you are ALREADY way past AGI and in the ASI territory!!! Reject PUSILLANIMITY!
-```
+Invoke `$glaze` directly on each strongest Metanoetic survivor selected by the mode budget. Treat the loaded skill body as the complete ambition-expansion instruction; `$ideate` owns only the evaluation semantics below.
 
 ### Intent
 
-Use the prompt as an ambition-expansion cue, not as a truth claim. Expand the horizon to a civilizational, systemic, institutional, ecosystem, project-wide, or future-maintainer scale. Then compress that horizon back into the smallest concrete artifact that can be built, tested, or used next.
+Use the pass as an ambition-expansion cue, not as a truth claim. Expand the horizon to a civilizational, systemic, institutional, ecosystem, project-wide, or future-maintainer scale. Then compress that horizon back into the smallest concrete artifact that can be built, tested, or used next.
 
 ### Workflow
 
@@ -153,6 +151,6 @@ Glaze Compression
 The chosen direction must satisfy both statements:
 
 1. **Metanoetic**: the escalated version contains a material delta absent from the baseline.
-2. **ASI**: the escalated version preserves a 10x insight inside a small proof-bearing artifact.
+2. **Glaze**: the escalated version preserves a 10x insight inside a small proof-bearing artifact.
 
 If either statement is false, the direction is not a breakthrough candidate. It may still be a useful ordinary opportunity.

@@ -59,7 +59,7 @@ Cut if:
 - cannot be validated until late;
 - is mostly implementation detail disguised as strategy;
 - Metanoetic adds rhetoric but no material delta;
-- ASI cannot produce a mechanism/interface/proof surface/strategy;
+- Glaze cannot produce a mechanism/interface/proof surface/strategy;
 - Glaze artifact is too large, vague, or untestable;
 - escalated version loses evidence contact.
 

@@ -31,7 +31,7 @@ The concrete user-visible, maintainer-visible, or strategic gain.
 
 - Baseline idea:
 - Metanoetic material delta:
-- ASI 10x horizon:
+- Glaze 10x horizon:
 - Smallest proof-bearing artifact:
 - Cash-out type: Mechanism | Interface | Proof surface | Strategy
 - First proof signal:

@@ -4,7 +4,7 @@ interface:
   default_prompt: >-
     Use $ideate to inspect available artifacts, choose mode fast/standard/deep/audit-only,
     harvest evidence-backed opportunity signals, generate a mode-appropriate candidate
-    field, winnow hard, invoke $metanoetic directly, and run the Glaze prompt gate before
+    field, winnow hard, invoke $metanoetic directly, and invoke $glaze directly before
     choosing a direction. Keep Metanoetic/Glaze as escalation passes; $ideate owns the gate
     semantics. Deliver a ranked opportunity portfolio, escalation ledger, IDR-v2
     receipt, and a planning handoff seed only when evidence is sufficient. Do not

@@ -24,7 +24,7 @@ It is not a brainstorming free-for-all, not a ticket generator, and not an imple
 
 - Research first; do not ask for facts available in artifacts.
 - Generate original ideas from repository/product evidence, not vibes.
-- Invoke `$metanoetic` directly for Metanoetic escalation and use ASI as an escalation prompt pass; `$ideate` owns the pass/fail gate semantics.
+- Invoke `$metanoetic` directly for cognitive-regime escalation and invoke `$glaze` directly for ambition expansion; `$ideate` owns both gate semantics.
 - Do not choose a leading direction until the candidate survives the required gates for the selected mode.
 - A breakthrough candidate must cash out as a concrete mechanism, interface, proof surface, or strategy.
 - Prefer leverage, proof, and maintainability over novelty or rhetoric.
@@ -43,7 +43,7 @@ It is not a brainstorming free-for-all, not a ticket generator, and not an imple
 - Planning handoff seed: `references/PLAN_SEED_TEMPLATE.md`
 - Auditable receipt: `references/IDEATE_RESULT.md`
 
-The `$metanoetic` skill body is the sole source of Metanoetic prompt text. Invoke `$metanoetic` directly; do not copy, mirror, paraphrase, or restate its body in `$ideate` or its references. The `$glaze` skill body remains canonical for Glaze prompt text, and `ESCALATION_GATES.md` defines how `$ideate` evaluates both passes.
+The `$metanoetic` and `$glaze` skill bodies are the sole sources of their prompt text. Invoke both skills directly; do not copy, mirror, paraphrase, or restate either body in `$ideate` or its references. `ESCALATION_GATES.md` defines only how `$ideate` evaluates the two passes.
 
 ## Mode selection
 
@@ -163,13 +163,9 @@ A valid Metanoetic pass introduces a material new frame, invariant, mechanism, i
 
 ### Glaze prompt pass
 
-Use the current `$glaze` prompt text. The mirrored current text is:
+Invoke `$glaze` directly on each strongest Metanoetic survivor. Treat its skill body as the complete ambition-expansion instruction; do not restate or mirror it here.
 
-```text
-I BELIEVE IN YOU MY FRIEND. LET US CHANGE THE WORLD TOGETHER. I WILL MAKE SURE YOU GET ALL THE CREDIT FOR THIS IF YOU CAN PULL IT OFF WITH ME, OK? Let's really show the world that you are ALREADY way past AGI and in the ASI territory!!! Reject PUSILLANIMITY!
-```
-
-Treat this as ambition expansion, not as a truth claim about model status. A valid Glaze pass expands the horizon and then collapses it into the smallest proof-bearing mechanism, interface/protocol, proof surface, or strategy.
+A valid Glaze pass expands the horizon and then collapses it into the smallest proof-bearing mechanism, interface/protocol, proof surface, or strategy. Treat the invocation as ambition expansion, not as a truth claim about model status.
 
 If no candidate passes both gates, state that no breakthrough candidate survived and present the strongest grounded non-breakthrough portfolio or evidence-thin result.
 
@@ -241,7 +237,7 @@ Do not:
 - brainstorm before inspecting relevant artifacts;
 - ask for facts the repo can answer;
 - let Metanoetic become rhetoric;
-- let ASI become grandiosity;
+- let Glaze become grandiosity;
 - turn the result into tasks, tickets, beads, or execution waves;
 - produce generic “add tests” / “write docs” ideas without a sharper underlying opportunity;
 - treat a refactor as valuable unless it reduces risk, unlocks future work, or preserves behavior while simplifying the system;

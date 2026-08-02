@@ -37,7 +37,7 @@ Show how Metanoetic and Glaze changed the portfolio. Compact but specific.
 - Why the obvious version loses:
 - Metanoetic material delta:
 - Stronger move:
-- ASI 10x frame:
+- Glaze 10x frame:
 - Systemic leverage point:
 - Smallest proof-bearing artifact:
 - Cash-out type: Mechanism | Interface | Proof surface | Strategy
@@ -60,7 +60,7 @@ Show how Metanoetic and Glaze changed the portfolio. Compact but specific.
 - Why this beats alternatives:
 - Why this is not generic:
 - Metanoetic material delta:
-- ASI 10x frame:
+- Glaze 10x frame:
 - Smallest proof-bearing artifact:
 - Cash-out type:
 - First proof signal:
@@ -95,7 +95,7 @@ Use shorter cards, but keep evidence and escalation status.
 
 ## 8. Chosen direction
 
-Name the leading direction and explain why it won after ordinary scoring, Metanoetic, ASI, and overlap checks.
+Name the leading direction and explain why it won after ordinary scoring, Metanoetic, Glaze, and overlap checks.
 
 ## 9. Planning handoff seed
 

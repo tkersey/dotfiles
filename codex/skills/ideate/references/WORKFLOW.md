@@ -16,9 +16,9 @@ Mode budgets:
 
 | mode | candidates | gates | output |
 |---|---:|---|---|
-| fast | 8-12 | Metanoetic top 2, ASI top 1-2 | top 3 + seed if supported |
-| standard | 18-20 | Metanoetic top 5, ASI top 3 | top 5 + next 8-10 + seed |
-| deep | 30+ | Metanoetic top 5-7, ASI top 3-5 | full portfolio + seed |
+| fast | 8-12 | Metanoetic top 2, Glaze top 1-2 | top 3 + seed if supported |
+| standard | 18-20 | Metanoetic top 5, Glaze top 3 | top 5 + next 8-10 + seed |
+| deep | 30+ | Metanoetic top 5-7, Glaze top 3-5 | full portfolio + seed |
 | audit-only | optional | optional | signals, hypotheses, gaps, no seed by default |
 
 Downgrade when evidence cannot support the requested mode. Do not fake depth.
@@ -143,7 +143,7 @@ Re-score escalated candidates against ordinary value and breakthrough quality.
 Ask:
 
 - Did Metanoetic add a material delta?
-- Did ASI expose and compress a 10x frame?
+- Did Glaze expose and compress a 10x frame?
 - Is the artifact still grounded in evidence?
 - Is the result better than the baseline?
 - Can the proof signal be observed before a full implementation bet?

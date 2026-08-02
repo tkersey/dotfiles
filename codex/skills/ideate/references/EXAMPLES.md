@@ -23,7 +23,7 @@
 - Baseline idea: Add a pattern-testing CLI command.
 - Why obvious loses: A test command helps debugging but does not preserve matcher behavior over time.
 - Metanoetic material delta: Reframe as a canonical **policy proof surface** reused by diagnostics, golden tests, and support repros.
-- ASI 10x frame: Make safety behavior explainable and falsifiable across users, maintainers, and future tools.
+- Glaze 10x frame: Make safety behavior explainable and falsifiable across users, maintainers, and future tools.
 - Smallest proof-bearing artifact: A stable matcher explanation trace for one existing matcher fixture.
 - Cash-out type: Proof surface + interface.
 - First proof signal: Existing matcher fixtures produce stable explanation traces without changing enforcement behavior.
@@ -53,7 +53,7 @@ Create a stable, non-executing matcher explanation artifact so safety policy beh
 
 - Baseline idea: Add a pattern testing CLI command.
 - Metanoetic material delta: Reframe it as a canonical policy proof surface.
-- ASI 10x horizon: Make safety policy behavior explainable and falsifiable across users, maintainers, and tools.
+- Glaze 10x horizon: Make safety policy behavior explainable and falsifiable across users, maintainers, and tools.
 - Smallest proof-bearing artifact: A stable matcher explanation trace for one existing matcher path.
 - Cash-out type: Proof surface + interface.
 - First proof signal: Fixture-backed traces match current blocking behavior exactly.

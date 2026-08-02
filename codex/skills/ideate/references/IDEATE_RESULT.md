@@ -36,7 +36,7 @@ ideate_result:
 
 ## Receipt semantics
 
-- `portfolio_ready` requires evidence, candidates, Metanoetic, ASI, overlap check, chosen direction, and seed.
+- `portfolio_ready` requires evidence, candidates, Metanoetic, Glaze, overlap check, chosen direction, and seed.
 - `evidence_too_thin` should not emit a seed by default.
 - `no_breakthrough_found` may emit a non-breakthrough portfolio but should not claim a breakthrough.
 - `audit-only` may skip Metanoetic/Glaze if it is only reporting signals.
