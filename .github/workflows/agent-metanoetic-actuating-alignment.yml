@@ -40,12 +40,9 @@ jobs:
             'and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live.',
             "Actuating frontmatter trigger coverage"
           )
-          replace_once!(
-            actuating,
-            'When an accepted-class, recurrence, or review-accretion\n   abstraction-change trigger is present, complete the bounded Metanoetic pass and',
-            'When an initial-high-regret, accepted-class, recurrence, or review-accretion\n   abstraction-change trigger is present, complete the bounded Metanoetic pass and',
-            "Actuating construction procedure trigger coverage"
-          )
+          procedure_pattern = /When an accepted-class, recurrence, or review-accretion\n\s+abstraction-change trigger is present, complete the bounded Metanoetic pass and/
+          raise "missing replacement anchor: Actuating construction procedure trigger coverage" unless actuating.match?(procedure_pattern)
+          actuating.sub!(procedure_pattern, "When an initial-high-regret, accepted-class, recurrence, or review-accretion\n   abstraction-change trigger is present, complete the bounded Metanoetic pass and")
           File.write(actuating_path, actuating)
 
           agent_path = "codex/skills/actuating/agents/openai.yaml"
@@ -62,8 +59,8 @@ jobs:
           construction = File.read(construction_path)
           replace_once!(
             construction,
-            'once -> Actuating adjudication -> one Construction`. When abstraction change is\nlive, the order is `activate -> axiomatize for the current run -> Universalist',
-            'once -> Actuating adjudication -> one Construction`. When an initial-high-regret\nor abstraction-change trigger is live, the order is `activate -> axiomatize for\nthe current run -> Universalist',
+            "When abstraction change is\nlive, the order is",
+            "When an initial-high-regret or abstraction-change trigger is\nlive, the order is",
             "Construction composition trigger coverage"
           )
           File.write(construction_path, construction)
@@ -88,7 +85,7 @@ jobs:
           grep -q 'initial high-regret nomination, accepted findings, causal recurrence' codex/skills/actuating/SKILL.md
           grep -q 'When an initial-high-regret, accepted-class, recurrence, or review-accretion' codex/skills/actuating/SKILL.md
           grep -q 'initial-high-regret or abstraction-change trigger is live' codex/skills/actuating/agents/openai.yaml
-          grep -q 'When an initial-high-regret' codex/skills/actuating/references/construction-contract.md
+          grep -q 'When an initial-high-regret or abstraction-change trigger is' codex/skills/actuating/references/construction-contract.md
           grep -q 'Invoke `$metanoetic` and `$glaze` directly before choosing' codex/skills/ideate/SKILL.md
           ruby -rjson -e 'JSON.parse(File.read("codex/skills/actuating/references/decision-contract.json"))'
           git diff --check
