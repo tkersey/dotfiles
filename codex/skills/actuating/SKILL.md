@@ -533,12 +533,24 @@ these laws:
 
 - apply the current Review Accretion Gate before every post-repair Ship handoff
   or fresh review dispatch;
+- before binding or dispatching requests, require both
+  `cas_codex_0145_structured_review_v4=true` and
+  `cas_workflow_bound_owner_lived_review_v1=true` from
+  `cas capabilities --json`; absence blocks before `review/start`;
 - bind standard plus four auxiliary requests before dispatch;
-- launch the initial 1+4 wave concurrently;
+- launch the initial 1+4 wave as five concurrent owner-lived
+  `cas review start --wait --timeout-ms 2700000` processes, one per bound
+  request, and retain each invoking process through its structured terminal
+  receipt or explicit terminal owner failure;
+- never split a workflow-bound attempt into a detached `start` process and an
+  unrelated later `wait` process;
 - never cancel a launched sibling because another request finds a defect or
   loses transport;
 - treat a verdictless terminal failure as zero semantic credit and rerun only
   that request once on the same subject and binding with a fresh attempt;
+- preserve completed sibling facts and any standard clean credit on the
+  unchanged subject when one exact request loses transport; do not reset or
+  relaunch the entire 1+4 wave unless the review subject changes;
 - count the successful full-wave standard clean as clean attempt one;
 - run four later standard attempts serially;
 - require five consecutive distinct standard clean attempts;

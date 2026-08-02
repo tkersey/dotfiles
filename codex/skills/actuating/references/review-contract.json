@@ -74,8 +74,8 @@
   ],
   "review_contract": {
     "schema": "actuating-review-contract/v1",
-    "contract_id": "actuating-review-contract-v2",
-    "contract_digest": "sha256:2b41887264c98e6f14f95e1f9d6c4bd3f1ab79a0ca83f7c7c263bb9ce62be7bd",
+    "contract_id": "actuating-review-contract-v3",
+    "contract_digest": "sha256:329b514b5f14735083ec9f4f2c40b624fc98d154dd2ad4a9a32bd6ec72c8f695",
     "required_lenses": [
       {
         "name": "standard",
@@ -131,11 +131,13 @@
       "strong_principal_required": true,
       "reduced_principal_forbidden": true,
       "fallback_forbidden": true,
+      "owner_lived_transport_required": true,
       "context_match_required": true,
       "exact_instruction_digest_required": true,
       "exact_workflow_binding_required": true,
       "current_tuple_required": true,
       "required_backend_class": "cas-start-wait",
+      "required_capability": "cas_workflow_bound_owner_lived_review_v1",
       "structured_statuses": [
         "clean",
         "findings"
