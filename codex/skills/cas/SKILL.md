@@ -43,14 +43,16 @@ inquiry owns `$retrace` replay transport; see
 
 Before every `cas review run` or `cas review start`, run
 `cas capabilities --json` and require
-`cas_capabilities.features.cas_codex_0145_structured_review_v4=true`. Stop
-before `review/start` when the feature is absent. CAS 0.2.87 through 0.2.92 do
-not satisfy this gate: 0.2.87 through 0.2.89 can complete a Codex 0.145 review
-without a valid structured receipt, while 0.2.90 cannot preserve its structured
-timeout contract before an inline rollout materializes and 0.2.91 can mistake a
-partially materialized `completed` turn for terminal missing output. CAS 0.2.92
-can classify a resumed wait using the currently installed runtime instead of
-the attempt's recorded runtime.
+`cas_capabilities.features.cas_codex_0145_structured_review_v4=true`. Before a
+workflow-bound `start`, also require
+`cas_capabilities.features.cas_workflow_bound_owner_lived_review_v1=true`.
+Stop before `review/start` when either applicable feature is absent. CAS 0.2.87
+through 0.2.92 do not satisfy this gate: 0.2.87 through 0.2.89 can complete a
+Codex 0.145 review without a valid structured receipt, while 0.2.90 cannot
+preserve its structured timeout contract before an inline rollout materializes
+and 0.2.91 can mistake a partially materialized `completed` turn for terminal
+missing output. CAS 0.2.92 can classify a resumed wait using the currently
+installed runtime instead of the attempt's recorded runtime.
 
 The compatible CAS route keeps the attempt isolated but runs Codex's native
 review inline within a fresh CAS-owned thread on Codex 0.145 and newer. Codex's
@@ -125,14 +127,23 @@ cas review run --cwd <repo> --base <base> \
   --timeout-ms 2700000 --json
 ~~~
 
-Use `start` only when the caller needs a detached handle or is launching an
-Actuating concurrent wave:
+Use `start --wait` for every workflow-bound request and every Actuating
+concurrent-wave request. The invoking process owns the notification channel
+through terminal evidence:
 
 ~~~bash
-cas review start --cwd <repo> --base <bound-base> \
+cas review start --wait --cwd <repo> --base <bound-base> \
   --custom-instructions @<instructions> \
-  --workflow-binding-json @<binding.json> --json
+  --workflow-binding-json @<binding.json> \
+  --timeout-ms 2700000 --json
 ~~~
+
+Launch an Actuating 1+4 wave as five concurrent owner-lived processes running
+that command shape. Do not launch bare `start` processes and reconnect later
+with unrelated `wait` processes. CAS rejects a workflow-bound `start` without
+`--wait` before Codex resolution, app-server launch, tuple locking, session
+persistence, or `review/start`, so the rejected command consumes no attempt or
+recovery credit. Bare `start` remains only for unbound diagnostic callers.
 
 For a post-Ship Actuating wave, pass the exact published-subject selector that
 Actuating bound; normally this is `--base <bound-base>`. Never substitute
@@ -140,7 +151,8 @@ Actuating bound; normally this is `--base <bound-base>`. Never substitute
 `--uncommitted` only when the bound review subject is the current uncommitted
 working tree, such as an explicitly local triage.
 
-Use `wait` to recover or finish that exact attempt:
+Use `wait` to inspect or finish an already-started unbound diagnostic or
+historical attempt:
 
 ~~~bash
 cas review wait --cwd <repo> \
@@ -153,8 +165,11 @@ started attempt. They never start new work. Prefer the explicit
 `reviewThreadId` whenever the caller retained it.
 
 Pass `--timeout-ms 2700000` for every real review wait unless the user
-explicitly selects another budget. A timeout with a live handle is pending
-transport evidence; recover with `wait` rather than starting a duplicate.
+explicitly selects another budget. A timeout with a live unbound handle is
+pending transport evidence; recover that exact handle with `wait` rather than
+starting a duplicate. For a workflow-bound owner-lived attempt, interpret its
+terminal owner failure under the caller's exact request-local recovery law; do
+not manufacture a split start/wait route.
 
 Start a new same-target attempt only when the caller has admitted a distinct
 attempt and supplies `--fresh-attempt <source-bound-reason>`. CAS validates and
@@ -302,6 +317,7 @@ CAS Review:
 - Review begins only when `reviewThreadId` exists.
 - CAS reports owner facts; it does not interpret them as Actuating credit.
 - Use only `cas review run`, `cas review start`, and `cas review wait` for review lifecycle.
+- Every workflow-bound `start` uses `--wait` in one owner-lived process.
 - Recover a live exact attempt with `wait`; do not duplicate it.
 - Start admitted new work only with a fresh attempt identity and reason.
 - Completed findings are not transport failure.

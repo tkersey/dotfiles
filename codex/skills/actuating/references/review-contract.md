@@ -93,6 +93,14 @@ provenance and any campaign relationship. Actuating decides whether the matched
 evidence earns credit. Any changed campaign input creates a different campaign
 and admits no prior review credit.
 
+The static `attempt_quality` also binds
+`owner_lived_transport_required == true` and
+`required_capability == "cas_workflow_bound_owner_lived_review_v1"`.
+Actuating must observe that capability from `cas capabilities --json` before
+binding or dispatching a closure-grade request. Absence blocks before
+`review/start`; prose, an older CAS version, or a stored thread handle cannot
+substitute for the capability.
+
 ## Required topology
 
 The required lenses are:
@@ -165,10 +173,14 @@ mismatched attempts remain observable but receive no semantic credit.
 
 ## Initial wave
 
-Actuating launches standard plus four auxiliary CAS requests concurrently.
-All five starts must exist before it accepts an initial terminal result. A
-finding, clean result, start failure, or transport failure never cancels a
-launched sibling; every sibling reaches terminal transport evidence.
+Actuating launches standard plus four auxiliary CAS requests as five
+concurrent owner-lived `cas review start --wait --timeout-ms 2700000`
+processes. Each process owns its notification channel from `review/start`
+through a structured terminal receipt or one explicit terminal owner failure.
+Bare workflow-bound `start` followed by a separate `wait` is forbidden. All
+five processes must be launched before Actuating accepts an initial terminal
+result. A finding, clean result, start failure, or transport failure never
+cancels a launched sibling; every sibling reaches terminal transport evidence.
 
 On a publication-bearing route, Actuating maps the current published subject
 to CAS `--base <bound-base>` and requires every returned base, head, and target
@@ -200,6 +212,11 @@ A terminal attempt without a structured semantic verdict:
 - reruns the exact request once with the same subject and binding plus a fresh
   attempt identity;
 - blocks after a second verdictless terminal result.
+
+The recovery state belongs only to that exact request. Completed sibling facts
+and any standard clean credit remain current on the unchanged subject. A
+request-local transport loss does not reset all review credit and does not
+relaunch the four auxiliaries; only a material review-subject change does.
 
 Retrying lost output from an active exact attempt adopts that attempt; it does
 not create a second attempt or credit. The admitted recovery creates distinct
