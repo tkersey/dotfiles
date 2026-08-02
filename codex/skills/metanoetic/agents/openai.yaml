@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: true
+interface:
+  display_name: "metanoetic"
+  short_description: "Challenge an incumbent with one metanoetic reframe"
+  default_prompt: "Use $metanoetic once to challenge a concrete incumbent and search for a materially different frame, invariant, mechanism, artifact, or breakthrough candidate. Preserve the canonical one-line escalation verbatim."

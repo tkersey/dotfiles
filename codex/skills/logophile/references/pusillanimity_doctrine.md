@@ -104,6 +104,11 @@ Reject PUSILLANIMITY!
 
 `PUSILLANIMITY` remains uppercase. The activation is language, not evidence that the resulting answer met the stakes.
 
+Do not copy this activation into `$metanoetic`. `$metanoetic` owns cognitive-
+regime change over a concrete incumbent; `$asi` owns the distinct ambition-floor
+pressure. An owning workflow may sequence them, as `$ideate` does, but the
+primitive prompts remain non-duplicative.
+
 ## Behavioral-upgrade discipline
 
 `Reject PUSILLANIMITY!` is denser and more specific than `DO NOT PERFORM SMALLNESS!`, but semantic density alone does not prove universal behavioral superiority. Outside an exact consumer contract, compare familiarity, cadence, decoding cost, task coverage, predicted median, ceiling, variance, and grandiosity risk. `retain`, `specialize`, or `benchmark` remain valid outcomes.

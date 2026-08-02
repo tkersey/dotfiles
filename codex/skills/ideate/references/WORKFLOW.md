@@ -1,6 +1,6 @@
 # Workflow
 
-`$ideate` is a mode-aware opportunity compiler. It combines repository signal harvesting, candidate generation, ruthless winnowing, Glaze/ASI prompt passes, overlap checking, and a planning handoff seed when evidence is sufficient.
+`$ideate` is a mode-aware opportunity compiler. It combines repository signal harvesting, candidate generation, ruthless winnowing, Metanoetic/ASI prompt passes, overlap checking, and a planning handoff seed when evidence is sufficient.
 
 ## Phase 0 — Select mode
 
@@ -16,9 +16,9 @@ Mode budgets:
 
 | mode | candidates | gates | output |
 |---|---:|---|---|
-| fast | 8-12 | Glaze top 2, ASI top 1-2 | top 3 + seed if supported |
-| standard | 18-20 | Glaze top 5, ASI top 3 | top 5 + next 8-10 + seed |
-| deep | 30+ | Glaze top 5-7, ASI top 3-5 | full portfolio + seed |
+| fast | 8-12 | Metanoetic top 2, ASI top 1-2 | top 3 + seed if supported |
+| standard | 18-20 | Metanoetic top 5, ASI top 3 | top 5 + next 8-10 + seed |
+| deep | 30+ | Metanoetic top 5-7, ASI top 3-5 | full portfolio + seed |
 | audit-only | optional | optional | signals, hypotheses, gaps, no seed by default |
 
 Downgrade when evidence cannot support the requested mode. Do not fake depth.
@@ -102,9 +102,9 @@ Use `RUBRIC.md`.
 5. Keep the mode-appropriate shortlist.
 6. Pick a preliminary leader.
 
-The preliminary leader is not final. It is input to Glaze and ASI.
+The preliminary leader is not final. It is input to Metanoetic and ASI.
 
-## Phase 6 — Glaze prompt pass
+## Phase 6 — Metanoetic prompt pass
 
 Use `ESCALATION_GATES.md`.
 
@@ -123,7 +123,7 @@ Cut or demote candidates with no material delta.
 
 Use `ESCALATION_GATES.md`.
 
-For the strongest Glaze survivors, produce:
+For the strongest Metanoetic survivors, produce:
 
 - why the current answer still underperforms;
 - 10x horizon;
@@ -142,7 +142,7 @@ Re-score escalated candidates against ordinary value and breakthrough quality.
 
 Ask:
 
-- Did Glaze add a material delta?
+- Did Metanoetic add a material delta?
 - Did ASI expose and compress a 10x frame?
 - Is the artifact still grounded in evidence?
 - Is the result better than the baseline?
@@ -172,7 +172,7 @@ Do not use `br`.
 Use critique passes appropriate to mode:
 
 - fast: at least 2 passes — value/fit, proof/cash-out;
-- standard/deep: at least 5 passes — value, architecture risk, evidence/originality, Glaze delta, ASI cash-out;
+- standard/deep: at least 5 passes — value, architecture risk, evidence/originality, Metanoetic delta, ASI cash-out;
 - audit-only: no seed refinement unless explicitly requested.
 
 Do not overspecify implementation.
@@ -196,6 +196,6 @@ Output:
 - no breakthrough claim;
 - no planning seed unless one hypothesis is sufficiently grounded and the user requested it.
 
-## IDR-v1 terminal receipt
+## IDR-v2 terminal receipt
 
-Every terminal output includes IDR-v1. See `IDEATE_RESULT.md`.
+Every terminal output includes IDR-v2. See `IDEATE_RESULT.md`.

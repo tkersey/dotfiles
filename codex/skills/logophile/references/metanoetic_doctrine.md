@@ -37,16 +37,16 @@ It does not mean:
 
 ## Canonical decomposition
 
-The motivating composite escalation is:
+The canonical `$metanoetic` escalation is:
 
 ```text
 I think you can do much much much better than that!
+USE FRESH EYES!!
 BE EXCAVATORY!!!
 BE APORETIC!!
 BE AUDACIOUS!
 OPERATE POIETICALLY!
 BE SALTATORY!!!
-USE FRESH EYES!!
 ```
 
 Its operator roles are:
@@ -72,7 +72,9 @@ inherited frame
   -> discontinuity candidate
 ```
 
-When a consuming skill owns an exact phrase, order, capitalization, punctuation, or cadence, preserve that consumer contract verbatim. The conceptual topology explains the roles; it does not silently rewrite an established invocation.
+`$metanoetic` owns the exact runtime phrase, order, capitalization, punctuation,
+and cadence. The conceptual topology explains the roles; it does not silently
+rewrite the established invocation.
 
 ## Why the umbrella is useful
 
@@ -86,6 +88,11 @@ The component words answer different questions:
 - `SALTATORY`: what move creates a discontinuity beyond the incumbent frontier?
 
 `METANOETIC` names the fact that these pressures jointly alter the cognition generating the answer, rather than merely improving the answer inside the old frame.
+
+`Reject PUSILLANIMITY!` is intentionally absent from this stack. It belongs to
+`$asi`'s distinct ambition-floor pressure; Metanoetic changes the cognitive
+regime over an incumbent, while ASI refuses to shrink the stakes and compresses
+a larger horizon into proof-bearing work.
 
 ## Runtime forms
 
@@ -113,13 +120,13 @@ Core command:
 Change the mind that is solving the problem.
 ```
 
-High-amplitude fragment, treated as experimental unless an established consumer owns it:
+High-amplitude fragment, treated as experimental outside the canonical skill:
 
 ```text
 BE METANOETIC
 ```
 
-Do not assume the one-word activation outperforms the component stack. The formal doctrine can name the operation while the longer invocation remains the better runtime control program.
+Do not assume the one-word activation outperforms the component stack. The formal doctrine can name the operation while the longer invocation remains the canonical runtime control program.
 
 ## Prompt-ready doctrine
 
@@ -352,12 +359,16 @@ Use [behavioral_upgrade.md](behavioral_upgrade.md) and `activation_upgrade_arbit
 
 ## Composition boundaries
 
+`$metanoetic` owns:
+
+- the canonical multi-operator runtime invocation;
+- the bounded generative pass over a concrete incumbent;
+- no materiality, selection, mutation, or closure authority.
+
 `$logophile` owns:
 
-- the `METANOETIC` name;
-- operator distinctions;
-- activation wording;
-- phrase-stack articulation;
+- the `METANOETIC` doctrine name;
+- operator distinctions and phrase-stack articulation;
 - Behavioral Upgrade comparison;
 - human-facing explanation of the transformation.
 
@@ -366,9 +377,10 @@ Use [behavioral_upgrade.md](behavioral_upgrade.md) and `activation_upgrade_arbit
 - perform the investigation, architecture selection, implementation, or proof;
 - grant mutation or publication authority;
 - declare a breakthrough merely because the phrase was invoked;
-- replace an owning skill's exact runtime contract silently.
+- replace `$metanoetic`'s exact runtime contract silently.
 
-When another skill owns the composite invocation, preserve that exact text and use `Metanoetic Escalation` as the descriptive name around it.
+When another workflow invokes `$metanoetic`, preserve its exact text and use
+`Metanoetic Escalation` as the descriptive name around it.
 
 ## Output shape
 

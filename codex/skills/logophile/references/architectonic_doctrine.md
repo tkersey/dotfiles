@@ -317,7 +317,7 @@ When composing with repository workflows:
 - `$universalist` may nominate the essential boundary shape and return an obstruction;
 - `$reduce` may challenge factors, quotients, ablations, and recomposition;
 - `$actuating` owns Construction selection, orchestration, and the next legal action;
-- `$glaze` may generate one bounded reframe when the owning workflow requests it;
+- `$metanoetic` may generate one bounded reframe when the owning workflow requests it;
 - `$logophile` sharpens the doctrine and resulting human-facing language only.
 
 When `$actuating` is the consumer, preserve its exact activation:

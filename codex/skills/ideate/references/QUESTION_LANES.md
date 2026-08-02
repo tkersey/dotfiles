@@ -77,5 +77,5 @@ Clarify only when evidence cannot resolve appetite for boldness:
 - If impressive but not useful, ask which pain or burden it removes.
 - If priorities compete, force a choice.
 - If artifacts can answer, inspect instead of asking.
-- If Glaze is rhetoric only, ask what concrete artifact or mechanism makes it real.
+- If Metanoetic is rhetoric only, ask what concrete artifact or mechanism makes it real.
 - If ASI has vision but no proof artifact, ask for the smallest testable artifact.

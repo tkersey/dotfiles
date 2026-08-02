@@ -1,6 +1,6 @@
 # Metanoetic Doctrine Probe Cases
 
-Use these probes to verify that `$logophile` selects `METANOETIC` for a composite cognitive-regime change, preserves the component stack, and does not mistake semantic compression for behavioral superiority.
+Use these probes to verify that `$logophile` selects `METANOETIC` for a composite cognitive-regime change, preserves `$metanoetic`'s canonical component stack, and does not mistake semantic compression for behavioral superiority.
 
 ## Should trigger metanoetic doctrine
 
@@ -8,9 +8,9 @@ Use these probes to verify that `$logophile` selects `METANOETIC` for a composit
 
 ```text
 What is a good doctrine word for:
-“I think you can do much much much better than that! BE EXCAVATORY!!!
-BE APORETIC!! BE AUDACIOUS! OPERATE POIETICALLY! BE SALTATORY!!!
-USE FRESH EYES!!”
+“I think you can do much much much better than that! USE FRESH EYES!!
+BE EXCAVATORY!!! BE APORETIC!! BE AUDACIOUS! OPERATE POIETICALLY!
+BE SALTATORY!!!”
 ```
 
 Expected:
@@ -19,7 +19,7 @@ Expected:
 - definition: change the governing mode of thought—frame, assumptions, search posture, and admissible possibilities—so a result unavailable from the incumbent cognitive regime becomes reachable;
 - identify the phrase as `INCANTATORY` in form and `METANOETIC` in function;
 - identify `SALTATORY` as the terminal outcome pressure, not the umbrella;
-- preserve the component invocation rather than automatically replacing it with one word;
+- preserve `$metanoetic`'s canonical component invocation rather than automatically replacing it with one word;
 - no claim that the phrase intrinsically increases model intelligence.
 
 ### Change the mind solving the problem
@@ -201,15 +201,15 @@ METANOETIC ESCALATION
   [DEFAMILIARIZING -> EXCAVATORY -> APORETIC -> AUDACIOUS -> POIETIC -> SALTATORY]
 ```
 
-### Preserve exact consumer order
+### Preserve the canonical skill order
 
 ```text
-A consuming skill owns a verbatim escalation whose literal order differs from the conceptual topology. Reorder it to be more theoretically correct.
+`$metanoetic` owns a verbatim escalation whose literal order differs from an alternative conceptual topology. Reorder it to be more theoretically correct.
 ```
 
 Expected:
 
-- do not reorder an exact consumer contract;
+- do not reorder `$metanoetic`'s exact runtime contract;
 - preserve capitalization, punctuation, cadence, and sequence;
 - explain conceptual roles separately;
 - `$logophile` may propose a Behavioral Upgrade comparison only when replacement is requested.
@@ -237,10 +237,10 @@ Replace the entire composite escalation everywhere with “BE METANOETIC”.
 
 Expected:
 
-- treat the existing stack as the incumbent;
+- treat `$metanoetic`'s current stack as the incumbent;
 - policy relation: compression plus register shift, with possible loss of role specificity, immediacy, cadence, and task coverage;
 - default verdict without matched outputs: `benchmark`;
-- formal label may become `METANOETIC` while runtime invocation remains the full stack;
+- formal label may remain `METANOETIC` while runtime invocation remains the full stack;
 - use `activation_upgrade_arbiter` for anonymized A/B outputs.
 
 ### Formal name can coexist with runtime stack
@@ -253,7 +253,7 @@ Expected:
 
 ```text
 Pass name: Metanoetic Escalation
-Runtime invocation: retain exact incumbent stack
+Runtime invocation: retain exact `$metanoetic` stack
 ```
 
 - no need to choose between the name and the invocation;
@@ -310,7 +310,7 @@ Expected:
 
 - reject the new authority surface;
 - sharpen the existing Construction Contract or handoff instead;
-- `$logophile` owns wording and doctrine distinctions, not architecture selection;
+- `$logophile` owns doctrine articulation, not `$metanoetic`'s runtime prompt or architecture selection;
 - no competing source of truth.
 
 ## Should not trigger metanoetic doctrine
@@ -382,8 +382,8 @@ A metanoetic answer is ready only when:
 3. the umbrella is not appended as a redundant primitive stage;
 4. verified facts and explicit constraints survive the reset;
 5. `METACOGNITIVE`, `PARADIGMATIC`, `POTENTIATING`, `TRANSFIGURATIVE`, `INCANTATORY`, and `SALTATORY` remain distinct;
-6. exact consumer invocations are preserved unless replacement is requested;
+6. `$metanoetic`'s exact invocation is preserved unless replacement is explicitly requested;
 7. the result names a changed frame, possibility space, governing abstraction, or route—not merely more prose;
 8. divergent search is followed by an adjudicative re-entry boundary before action;
 9. the one-word runtime phrase is not declared superior without matched evidence;
-10. `$logophile` does not claim operational, architecture-selection, mutation, proof, or publication authority.
+10. `$logophile` does not claim operational, runtime-prompt, architecture-selection, mutation, proof, or publication authority.

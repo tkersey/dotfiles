@@ -61,14 +61,14 @@ A terminal judgment is legal only when all applicable statements hold:
     review evidence, or the current Review Accretion Disposition.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
-expose structural premises. They cannot decide semantic adequacy, review-path
-accretion, Glaze materiality,
-interpret CAS or Ship, compute review credit, choose the next action, or
-pronounce the theorem satisfied. Actuating performs that evaluation and records
-the cited Goal, Construction, Counterexample, owner-evidence, publication, and
-review premises in its receipt and handoff. The Review Accretion Disposition is
-a non-authoritative view whose material result is carried by those existing
-premises, not another receipt or artifact family.
+expose structural premises. They cannot decide semantic adequacy,
+review-path accretion, Metanoetic materiality, interpret CAS or Ship, compute
+review credit, choose the next action, or pronounce the theorem satisfied.
+Actuating performs that evaluation and records the cited Goal, Construction,
+Counterexample, owner-evidence, publication, and review premises in its receipt
+and handoff. The Review Accretion Disposition is a non-authoritative view whose
+material result is carried by those existing premises, not another receipt or
+artifact family.
 
 ## Mode results
 

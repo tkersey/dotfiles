@@ -4,9 +4,9 @@ interface:
   default_prompt: >-
     Use $ideate to inspect available artifacts, choose mode fast/standard/deep/audit-only,
     harvest evidence-backed opportunity signals, generate a mode-appropriate candidate
-    field, winnow hard, invoke $glaze directly, and run the ASI prompt gate before
-    choosing a direction. Keep Glaze/ASI as escalation passes; $ideate owns the gate
-    semantics. Deliver a ranked opportunity portfolio, escalation ledger, IDR-v1
+    field, winnow hard, invoke $metanoetic directly, and run the ASI prompt gate before
+    choosing a direction. Keep Metanoetic/ASI as escalation passes; $ideate owns the gate
+    semantics. Deliver a ranked opportunity portfolio, escalation ledger, IDR-v2
     receipt, and a planning handoff seed only when evidence is sufficient. Do not
     implement, create tickets, or emit task graphs.
 policy:

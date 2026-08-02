@@ -429,7 +429,7 @@ Behavioral Upgrade Verdict:
 
 Put the final runtime wording at the tail.
 
-## Worked example: `$glaze`
+## Worked example: `$metanoetic`
 
 Baseline roles:
 
