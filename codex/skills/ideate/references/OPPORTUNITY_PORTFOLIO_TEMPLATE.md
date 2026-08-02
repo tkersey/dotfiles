@@ -29,13 +29,13 @@ Group evidence signals by theme.
 
 ## 3. Escalation ledger
 
-Show how Glaze and ASI changed the portfolio. Compact but specific.
+Show how Metanoetic and Glaze changed the portfolio. Compact but specific.
 
 ### Chosen direction escalation chain
 
 - Baseline idea:
 - Why the obvious version loses:
-- Glaze material delta:
+- Metanoetic material delta:
 - Stronger move:
 - ASI 10x frame:
 - Systemic leverage point:
@@ -46,7 +46,7 @@ Show how Glaze and ASI changed the portfolio. Compact but specific.
 
 ### Other high-signal escalations
 
-1. **<idea title>** — baseline -> Glaze delta -> ASI artifact -> result: promoted | kept | demoted | cut.
+1. **<idea title>** — baseline -> Metanoetic delta -> Glaze artifact -> result: promoted | kept | demoted | cut.
 2. ...
 
 ## 4. Top breakthrough ideas
@@ -59,7 +59,7 @@ Show how Glaze and ASI changed the portfolio. Compact but specific.
 - User / maintainer benefit:
 - Why this beats alternatives:
 - Why this is not generic:
-- Glaze material delta:
+- Metanoetic material delta:
 - ASI 10x frame:
 - Smallest proof-bearing artifact:
 - Cash-out type:
@@ -82,8 +82,8 @@ Use shorter cards, but keep evidence and escalation status.
 ## 6. Ideas cut
 
 - **<cut idea>** — Cut because ...
-- **<cut idea>** — Glaze failed: no material delta.
-- **<cut idea>** — ASI failed: no proof-bearing artifact.
+- **<cut idea>** — Metanoetic failed: no material delta.
+- **<cut idea>** — Glaze failed: no proof-bearing artifact.
 
 ## 7. Overlap findings
 
@@ -95,7 +95,7 @@ Use shorter cards, but keep evidence and escalation status.
 
 ## 8. Chosen direction
 
-Name the leading direction and explain why it won after ordinary scoring, Glaze, ASI, and overlap checks.
+Name the leading direction and explain why it won after ordinary scoring, Metanoetic, ASI, and overlap checks.
 
 ## 9. Planning handoff seed
 
@@ -103,7 +103,7 @@ Use `PLAN_SEED_TEMPLATE.md` when evidence is sufficient.
 
 ## 10. Ideate Result Receipt
 
-Use `IDR-v1`.
+Use `IDR-v2`.
 ```
 
 ## Notes

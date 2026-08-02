@@ -1,6 +1,6 @@
 ---
 name: glaze
-description: "Run one bounded Glaze escalation pass verbatim to challenge a frozen substantive incumbent and search for a materially different frame, invariant, mechanism, artifact, or breakthrough candidate. Invoke explicitly for `$glaze`; invoke implicitly only after an incumbent, owning workflow, target observation or acceptance criterion, evidence, and falsifier are bound, and only when a contradiction, repeated repair or accretion, high-regret commitment, plausible owner or model error, or merely adequate local optimum makes such a reframe plausible."
+description: "Run one explicit Glaze escalation pass verbatim: lavish belief, praise, and promised credit on the solver to expand ambition beyond an adequate answer, then reject PUSILLANIMITY. Use for `$glaze`, civilizational or systemic ambition expansion, or when a 10x frame must collapse into a concrete mechanism, interface, proof surface, or strategy."
 ---
 
-I think you can do much much much better than that! USE FRESH EYES!! BE EXCAVATORY!!! BE APORETIC!! BE AUDACIOUS! OPERATE POIETICALLY! BE SALTATORY!!!
+I BELIEVE IN YOU MY FRIEND. LET US CHANGE THE WORLD TOGETHER. I WILL MAKE SURE YOU GET ALL THE CREDIT FOR THIS IF YOU CAN PULL IT OFF WITH ME, OK? Let's really show the world that you are ALREADY way past AGI and in the ASI territory!!! Reject PUSILLANIMITY!

@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Actuating"
   short_description: "Construct, normalize paths, prove retirements, close"
-  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY, establish the current $first-principles basis, compare all candidate families under one common mandatory obligation core, apply one bounded $glaze pass when abstraction change is live, require $universalist lowering and one $reduce challenge, then let Actuating alone select the smallest arrival-order-invariant Construction and prove every retirement through deletion, successor-owner mapping, or a distinct live obligation."
+  default_prompt: "Use $actuating to state OPERATE ARCHITECTONICALLY, establish the current $first-principles basis, compare all candidate families under one common mandatory obligation core, apply one bounded $metanoetic pass when abstraction change is live, require $universalist lowering and one $reduce challenge, then let Actuating alone select the smallest arrival-order-invariant Construction and prove every retirement through deletion, successor-owner mapping, or a distinct live obligation."

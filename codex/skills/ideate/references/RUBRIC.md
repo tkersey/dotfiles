@@ -5,7 +5,7 @@ Score only after evidence gathering. Arithmetic helps ranking, but judgment owns
 ## Layers
 
 1. **Ordinary codebase value** — useful, evidenced, feasible, maintainable.
-2. **Breakthrough quality** — Glaze and ASI materially transformed the idea into a stronger, proof-bearing direction.
+2. **Breakthrough quality** — Metanoetic and Glaze materially transformed the idea into a stronger, proof-bearing direction.
 
 ## Core criteria
 
@@ -27,8 +27,8 @@ Score only after evidence gathering. Arithmetic helps ranking, but judgment owns
 
 | Criterion | Weight | Question |
 |---|---:|---|
-| Glaze material delta | 2.5x | Did the idea gain a new frame, invariant, mechanism, interface, artifact, architecture move, or ordering strategy? |
-| ASI cash-out | 2.5x | Did the 10x frame collapse into a concrete mechanism, interface, proof surface, or strategy? |
+| Metanoetic material delta | 2.5x | Did the idea gain a new frame, invariant, mechanism, interface, artifact, architecture move, or ordering strategy? |
+| Glaze cash-out | 2.5x | Did the 10x frame collapse into a concrete mechanism, interface, proof surface, or strategy? |
 | Ambition compression | 2.0x | Is the first artifact small while preserving the larger insight? |
 | System leverage | 2.0x | Does it change a leverage surface, coordination pattern, proof surface, or option set? |
 | Proof signal clarity | 2.0x | Can we observe meaningful evidence early? |
@@ -58,19 +58,19 @@ Cut if:
 - creates more complexity than value;
 - cannot be validated until late;
 - is mostly implementation detail disguised as strategy;
-- Glaze adds rhetoric but no material delta;
+- Metanoetic adds rhetoric but no material delta;
 - ASI cannot produce a mechanism/interface/proof surface/strategy;
-- ASI artifact is too large, vague, or untestable;
+- Glaze artifact is too large, vague, or untestable;
 - escalated version loses evidence contact.
 
 ## Escalation failure labels
 
-- **Glaze failed: no material delta**
-- **Glaze failed: rhetoric only**
-- **ASI failed: no cash-out**
-- **ASI failed: too large**
-- **ASI failed: ungrounded**
-- **ASI failed: no proof signal**
+- **Metanoetic failed: no material delta**
+- **Metanoetic failed: rhetoric only**
+- **Glaze failed: no cash-out**
+- **Glaze failed: too large**
+- **Glaze failed: ungrounded**
+- **Glaze failed: no proof signal**
 
 ## Tie-breakers
 

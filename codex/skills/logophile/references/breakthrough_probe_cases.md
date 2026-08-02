@@ -43,10 +43,10 @@ Expected:
 - companions may include `reifying`, `canonicalizing`, `catalytic`, or `actuating`;
 - explain the discontinuity as an order-of-work collapse, not merely fewer lines.
 
-### Exact `$glaze` fragment
+### Exact `$metanoetic` fragment
 
 ```text
-Give me the saltatory terminal fragment for the glaze escalation. It must end exactly with those words.
+Give me the saltatory terminal fragment for the metanoetic escalation. It must end exactly with those words.
 ```
 
 Expected runtime output:

@@ -62,7 +62,7 @@ A terminal judgment is legal only when all applicable statements hold:
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path
-accretion, Glaze materiality,
+accretion, Metanoetic materiality,
 interpret CAS or Ship, compute review credit, choose the next action, or
 pronounce the theorem satisfied. Actuating performs that evaluation and records
 the cited Goal, Construction, Counterexample, owner-evidence, publication, and

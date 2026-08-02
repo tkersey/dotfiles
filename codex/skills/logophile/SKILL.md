@@ -402,7 +402,7 @@ Do not use `logophile` to replace implementation, simulation, evaluation, review
 - [computer_science_doctrine.md](references/computer_science_doctrine.md): formal computer-science operators, proof burdens, and lighter fallbacks.
 - [depth_deliberation_doctrine.md](references/depth_deliberation_doctrine.md): excavatory depth, aporetic non-closure, adjacent operators, stopping rules, and stacks.
 - [doctrine_phrases.md](references/doctrine_phrases.md): terse activation doctrine optimized for behavioral leverage per token.
-- [pusillanimity_doctrine.md](references/pusillanimity_doctrine.md): anti-smallness failure-mode doctrine, exact `$asi` compatibility, and selection boundaries.
+- [pusillanimity_doctrine.md](references/pusillanimity_doctrine.md): anti-smallness failure-mode doctrine, exact `$glaze` compatibility, and selection boundaries.
 - [task_pressure_map.md](references/task_pressure_map.md): task-to-pressure defaults.
 - [doctrine_compiler.md](references/doctrine_compiler.md): operator/artifact/receipt model for doctrine synthesis.
 - [probe_cases.md](references/probe_cases.md): acceptance probes for rewriting, naming, and safety.

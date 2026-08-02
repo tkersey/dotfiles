@@ -22,7 +22,7 @@
 
 - Baseline idea: Add a pattern-testing CLI command.
 - Why obvious loses: A test command helps debugging but does not preserve matcher behavior over time.
-- Glaze material delta: Reframe as a canonical **policy proof surface** reused by diagnostics, golden tests, and support repros.
+- Metanoetic material delta: Reframe as a canonical **policy proof surface** reused by diagnostics, golden tests, and support repros.
 - ASI 10x frame: Make safety behavior explainable and falsifiable across users, maintainers, and future tools.
 - Smallest proof-bearing artifact: A stable matcher explanation trace for one existing matcher fixture.
 - Cash-out type: Proof surface + interface.
@@ -52,27 +52,27 @@ Create a stable, non-executing matcher explanation artifact so safety policy beh
 ## Breakthrough Frame
 
 - Baseline idea: Add a pattern testing CLI command.
-- Glaze material delta: Reframe it as a canonical policy proof surface.
+- Metanoetic material delta: Reframe it as a canonical policy proof surface.
 - ASI 10x horizon: Make safety policy behavior explainable and falsifiable across users, maintainers, and tools.
 - Smallest proof-bearing artifact: A stable matcher explanation trace for one existing matcher path.
 - Cash-out type: Proof surface + interface.
 - First proof signal: Fixture-backed traces match current blocking behavior exactly.
 ```
 
-### IDR-v1 excerpt
+### IDR-v2 excerpt
 
 ```yaml
 ideate_result:
-  receipt_version: IDR-v1
+  receipt_version: IDR-v2
   mode: standard
   terminal_state: portfolio_ready
   evidence_sources_count: 5
   baseline_candidates_generated: 20
   candidates_shortlisted: 5
-  glaze_gate:
+  metanoetic_gate:
     applied: yes
     material_delta_count: 3
-  asi_gate:
+  glaze_gate:
     applied: yes
     cash_out_count: 2
   overlap_check:

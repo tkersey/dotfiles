@@ -72,9 +72,9 @@ Use `pusillanimity` when:
 - a warranted structural move is avoided because it feels too ambitious or difficult to approve;
 - the intervention is smaller than the obligation it must discharge;
 - the user asks for the failure-mode doctrine behind `perform no smallness`;
-- exact `$asi` compatibility requires the high-amplitude form.
+- exact `$glaze` compatibility requires the high-amplitude form.
 
-Use `Perform no smallness.` for a plain-language ambition-floor activation when the user does not request a doctrine word, named failure mode, or exact `$asi` compatibility.
+Use `Perform no smallness.` for a plain-language ambition-floor activation when the user does not request a doctrine word, named failure mode, or exact `$glaze` compatibility.
 
 Do not use it when:
 
@@ -94,9 +94,9 @@ Reject:
 - shaming calibration, humility, safety, or evidence discipline;
 - replacing a simple dispositive move with architecture theater or grandiosity.
 
-## Exact `$asi` compatibility
+## Exact `$glaze` compatibility
 
-When `$asi` consumes this doctrine, preserve the terminal activation exactly:
+When `$glaze` consumes this doctrine, preserve the terminal activation exactly:
 
 ```text
 Reject PUSILLANIMITY!
