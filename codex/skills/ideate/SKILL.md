@@ -1,6 +1,6 @@
 ---
 name: ideate
-description: "Mine a codebase or product surface for evidence-backed breakthrough opportunities. Use for `$ideate`, repo/product improvement discovery, idea portfolios, non-obvious refactors, DX/UX/reliability/performance opportunities, or choosing what to plan next. Mode-aware: fast, standard, deep, or audit-only. Invoke `$metanoetic` directly and run the Glaze prompt gate before choosing; output a ranked opportunity portfolio, escalation ledger, IDR-v2 receipt, and a planning handoff seed when evidence is sufficient. Do not implement, create tickets, or emit task graphs."
+description: "Mine a codebase or product surface for evidence-backed breakthrough opportunities. Use for `$ideate`, repo/product improvement discovery, idea portfolios, non-obvious refactors, DX/UX/reliability/performance opportunities, or choosing what to plan next. Mode-aware: fast, standard, deep, or audit-only. Invoke `$metanoetic` and `$glaze` directly before choosing; output a ranked opportunity portfolio, escalation ledger, IDR-v2 receipt, and a planning handoff seed when evidence is sufficient. Do not implement, create tickets, or emit task graphs."
 ---
 
 # Ideate

@@ -313,7 +313,7 @@ Before selection, `$reduce` challenges any materially disputable factor by
 factoring live obligations, testing congruent quotients or ablations, and
 checking recomposition. When Metanoetic is not triggered, the order is `activate ->
 axiomatize for the current run -> Universalist nomination -> Reduce challenge
-once -> Actuating adjudication -> one Construction`. When abstraction change is
+once -> Actuating adjudication -> one Construction`. When an initial-high-regret or abstraction-change trigger is
 live, the order is `activate -> axiomatize for the current run -> Universalist
 nomination -> Metanoetic once -> Universalist
 reclassification and lowering -> Reduce challenge once -> Actuating

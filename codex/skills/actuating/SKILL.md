@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when findings or cumulative review-path accretion make abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
+description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
 ---
 
 # Actuating
@@ -260,7 +260,7 @@ a new surface.
    preserved boundary and retain its compact nomination: candidate, owner,
    laws, observations, residuals, invalidators, and falsifier. The nomination
    must lower the frozen incumbent-independent derivation into one canonical
-   candidate family. When an accepted-class, recurrence, or review-accretion
+   candidate family. When an initial-high-regret, accepted-class, recurrence, or review-accretion
    abstraction-change trigger is present, complete the bounded Metanoetic pass and
    Universalist reclassification before continuing.
 3. Compile exactly four ordinary candidate families in canonical order:
