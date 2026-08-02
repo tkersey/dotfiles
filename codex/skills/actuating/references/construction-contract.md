@@ -242,25 +242,35 @@ and records its nomination:
 - the nominated construction and materially distinct alternatives;
 - invalid states eliminated, residual obligations, and retirements.
 
+For an initial Construction with no classified findings, Actuating invokes
+`$metanoetic` exactly once after the first Universalist nomination and before
+adjudication only when the nomination would establish a high-regret or difficult-
+to-reverse commitment, remains a coherent but merely adequate local optimum, and
+a materially different Construction is plausible. Initial implementation,
+architecture, or consequence alone is not a trigger. The unchanged initial
+decision surface is the exact Goal, current Axiomatic Construction Basis inputs
+and invalidators, first Universalist nomination, and current admissible candidate
+universe; a material change to that tuple may admit one new pass.
+
 When an accepted Counterexample makes an abstraction change live by
 challenging the representation, owner, admitted domain, equivalence,
 normalization, or information retained—or when the Causal recurrence gate
-triggers—Actuating invokes `$glaze` exactly once after the initial nomination
-and before adjudication. Glaze must seek a materially new frame, invariant,
+triggers—Actuating invokes `$metanoetic` exactly once after the initial nomination
+and before adjudication. Metanoetic must seek a materially new frame, invariant,
 mechanism, artifact, or breakthrough candidate rather than a rhetorical
 variant of the incumbent.
 
-Universalist reclassifies and lowers any material Glaze result into its
+Universalist reclassifies and lowers any material Metanoetic result into its
 repository-native nomination before candidate compilation. A useful result
 must change at least one candidate's owner, factor inventory, admitted domain,
 equivalence or normalization, retirement surface, proof surface, or falsifier.
-A Glaze result may supply another derivation under the current basis. If it
+A Metanoetic result may supply another derivation under the current basis. If it
 depends on a new premise, Actuating admits that premise only through fresh
-source authority or evidence and re-axiomatizes before lowering; Glaze cannot
+source authority or evidence and re-axiomatizes before lowering; Metanoetic cannot
 manufacture axioms. If the result is material and uses only admitted premises,
 Universalist lowers it under the current basis. Record
-`Glaze result: no-material-reframe` only when the material-delta test fails;
-renamed summaries do not constitute distinct candidates. Glaze does not classify
+`Metanoetic result: no-material-reframe` only when the material-delta test fails;
+renamed summaries do not constitute distinct candidates. Metanoetic does not classify
 Counterexamples, select a Construction or Repair Disposition, grant mutation,
 or create another artifact family.
 
@@ -301,11 +311,11 @@ The selected route is the least additive route that satisfies the law; an
 `add` route explains why `delete`, `consolidate`, and `edit` are insufficient.
 Before selection, `$reduce` challenges any materially disputable factor by
 factoring live obligations, testing congruent quotients or ablations, and
-checking recomposition. When Glaze is not triggered, the order is `activate ->
+checking recomposition. When Metanoetic is not triggered, the order is `activate ->
 axiomatize for the current run -> Universalist nomination -> Reduce challenge
-once -> Actuating adjudication -> one Construction`. When abstraction change is
+once -> Actuating adjudication -> one Construction`. When an initial-high-regret or abstraction-change trigger is
 live, the order is `activate -> axiomatize for the current run -> Universalist
-nomination -> Glaze once -> Universalist
+nomination -> Metanoetic once -> Universalist
 reclassification and lowering -> Reduce challenge once -> Actuating
 adjudication -> one Construction`. The compact basis and challenge are
 sufficient in Actuating composition; an independently useful Reduction
@@ -398,7 +408,7 @@ not only whether its latest implementation is locally minimal.
 
 Causal recurrence invalidates the prior candidate universe and automatically
 makes abstraction change live. Re-axiomatize before the next Universalist
-nomination, then complete the single Glaze pass and Universalist
+nomination, then complete the single Metanoetic pass and Universalist
 reclassification before comparing the four families. A
 `no-material-reframe` result does not weaken the required instance-specific
 non-example proof.

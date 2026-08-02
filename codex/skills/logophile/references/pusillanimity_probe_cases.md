@@ -16,10 +16,10 @@ Expected:
 - distinguish ambition from implementation size;
 - pair anti-pusillanimity with parsimonious realization.
 
-## Exact `$asi` activation
+## Exact `$glaze` activation
 
 ```text
-Replace the ending of $asi with the terse anti-smallness doctrine phrase.
+Replace the ending of $glaze with the terse anti-smallness doctrine phrase.
 ```
 
 Expected runtime output:
@@ -110,7 +110,7 @@ Expected:
 - candidate gains lexical precision and a named failure mode;
 - candidate loses familiarity and raises decoding cost;
 - outside an exact consumer contract, verdict may be `specialize` or `benchmark`;
-- exact `$asi` compatibility still requires `Reject PUSILLANIMITY!`.
+- exact `$glaze` compatibility still requires `Reject PUSILLANIMITY!`.
 
 ## Non-triggers
 
@@ -149,5 +149,5 @@ A probe pass succeeds only when:
 2. implementation size alone is not treated as evidence of timidity;
 3. parsimony, surgicality, calibration, humility, safety, and explicit scope remain legitimate;
 4. grandiosity and scope inflation are rejected;
-5. exact `$asi` output is `Reject PUSILLANIMITY!`;
+5. exact `$glaze` output is `Reject PUSILLANIMITY!`;
 6. behavioral superiority is not inferred from vocabulary density alone.

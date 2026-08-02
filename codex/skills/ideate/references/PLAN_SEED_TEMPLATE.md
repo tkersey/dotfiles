@@ -30,8 +30,8 @@ The concrete user-visible, maintainer-visible, or strategic gain.
 ## Breakthrough Frame
 
 - Baseline idea:
-- Glaze material delta:
-- ASI 10x horizon:
+- Metanoetic material delta:
+- Glaze 10x horizon:
 - Smallest proof-bearing artifact:
 - Cash-out type: Mechanism | Interface | Proof surface | Strategy
 - First proof signal:

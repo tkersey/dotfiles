@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $glaze pass when findings or cumulative review-path accretion make abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
+description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
 ---
 
 # Actuating
@@ -53,12 +53,12 @@ repair. `$first-principles` establishes the admissible premise basis and one
 incumbent-independent derivation for the current Construction problem without
 revising the Goal. `$universalist` lowers the admissible derivation and
 nominates the essential boundary shape. When an abstraction change is live,
-`$glaze` performs one bounded generative escalation and `$universalist` lowers
+`$metanoetic` performs one bounded generative escalation and `$universalist` lowers
 any material result into its nomination. `$reduce` may then challenge the
 nominated factors by testing congruent quotients, ablations, and recomposition.
 `$complexity-mitigator` may supply one read-only local normal-form preflight when
 review accretion is realization-only. The composition order is `activate ->
-axiomatize once or retain the current basis -> nominate -> glaze once when
+axiomatize once or retain the current basis -> nominate -> metanoetic once when
 triggered -> lower -> challenge once -> adjudicate`; Actuating alone performs
 the adjudication. Neither supporting skill, review prose, nor an optional plan
 or Reduction Certificate selects a Construction, Repair Disposition, Review
@@ -183,12 +183,19 @@ successor Goal changes semantics, compatibility, authority, or proof posture;
 when new evidence changes an observed fact, necessary constraint, or host
 capability; when an accepted finding falsifies a premise; when architecture or
 ablation repair becomes live; when the Causal recurrence gate triggers; or when
-the Review Accretion Gate makes abstraction change live. A Glaze result may
+the Review Accretion Gate makes abstraction change live. A Metanoetic result may
 supply a new derivation under the current basis. If it requires a new premise,
 admit that premise only through fresh source authority or evidence and re-
-axiomatize before lowering; Glaze cannot manufacture axioms.
+axiomatize before lowering; Metanoetic cannot manufacture axioms.
 
-After `$review-fold` has classified findings, invoke `$glaze` exactly once after
+For an initial Construction with no classified findings, invoke `$metanoetic`
+exactly once after the first `$universalist` nomination and before candidate
+adjudication when the nomination would establish a high-regret or difficult-to-
+reverse commitment, remains a coherent but merely adequate local optimum, and a
+materially different Construction is plausible. This trigger is selective; initial
+implementation, architecture, or consequence alone does not admit the pass.
+
+After `$review-fold` has classified findings, invoke `$metanoetic` exactly once after
 the first `$universalist` nomination and before candidate adjudication when
 either an accepted class:
 
@@ -203,7 +210,7 @@ or the current Review Accretion Gate establishes material repair-path dependence
 accumulated semantic machinery, obsolete repair residue, proof accretion,
 inadequate ordinary normalization, or pathwise domination pressure.
 
-Use the Glaze pass to demand a materially new frame, invariant, mechanism,
+Use the Metanoetic pass to demand a materially new frame, invariant, mechanism,
 artifact, or breakthrough candidate and to resist premature
 `realization-preserve`. For `review-path-accretion`, treat the accumulated
 changeset as evidence rather than the solution and derive the Construction that
@@ -216,9 +223,9 @@ Record this compact, non-authoritative view:
 
 ~~~text
 Architectonic Escalation
-Trigger: accepted-class-abstraction | causal-recurrence | review-path-accretion
+Trigger: initial-high-regret | accepted-class-abstraction | causal-recurrence | review-path-accretion
 Abstraction pressure:
-Glaze result: material-reframe | no-material-reframe | blocked
+Metanoetic result: material-reframe | no-material-reframe | blocked
 Material frame, invariant, mechanism, or artifact:
 Universalist reclassification: retain | split | escalate | obstruct
 Candidate-family delta:
@@ -228,13 +235,16 @@ Falsifier:
 Compile the view into the existing Construction candidate comparison, factor
 surfaces, supersession, proof obligations, and falsifiers; do not create a
 fifth authority artifact or an unknown `construction-contract/v3` field.
-`$glaze` neither classifies findings nor nominates, selects, authorizes, or
+`$metanoetic` neither classifies findings nor nominates, selects, authorizes, or
 closes. If it yields no material reframe, record `no-material-reframe` and
-continue with the evidenced candidate universe. Do not repeat Glaze for the
-same decision surface. For review-path accretion, that surface is the exact
-Goal, review-entry subject, current subject, Construction lineage, applicable
-Counterexample classes, and cumulative factor inventory; a later material
-repair-path delta may create a new surface.
+continue with the evidenced candidate universe. Do not repeat Metanoetic for the
+same decision surface. For `initial-high-regret`, that surface is the exact
+Goal, current Axiomatic Construction Basis inputs and invalidators, first
+Universalist nomination, and current admissible candidate universe. For
+`review-path-accretion`, that surface is the exact Goal, review-entry subject,
+current subject, Construction lineage, applicable Counterexample classes, and
+cumulative factor inventory. A later material change to either tuple may create
+a new surface.
 
 ## Construction procedure
 
@@ -250,8 +260,8 @@ repair-path delta may create a new surface.
    preserved boundary and retain its compact nomination: candidate, owner,
    laws, observations, residuals, invalidators, and falsifier. The nomination
    must lower the frozen incumbent-independent derivation into one canonical
-   candidate family. When an accepted-class, recurrence, or review-accretion
-   abstraction-change trigger is present, complete the bounded Glaze pass and
+   candidate family. When an initial-high-regret, accepted-class, recurrence, or review-accretion
+   abstraction-change trigger is present, complete the bounded Metanoetic pass and
    Universalist reclassification before continuing.
 3. Compile exactly four ordinary candidate families in canonical order:
    `realization-preserve`, `admitted-domain-restriction`,
@@ -402,7 +412,7 @@ gate and establish the current-run Axiomatic Construction Basis. A
 `realization` classification is not established merely because the existing
 boundary can accept another local edit. If the finding falsifies a basis
 premise, or makes architecture or ablation repair live, re-axiomatize before
-the next `$universalist` nomination. Then run the bounded Glaze pass when
+the next `$universalist` nomination. Then run the bounded Metanoetic pass when
 triggered, lower any material reframe through `$universalist`, and compare it
 in the successor Construction before selecting the repair class.
 
@@ -455,7 +465,7 @@ complete cluster in `counterexample_class_refs`, names the shared cause in
 Do not select another affected repository mutation after the gate triggers.
 The recurrence trigger also invalidates the prior candidate universe and makes
 abstraction change live under the Architectonic decision gate. Re-axiomatize,
-then complete the single Glaze pass and Universalist reclassification before
+then complete the single Metanoetic pass and Universalist reclassification before
 this candidate comparison.
 `instance-specific` is legal only when a non-example proof separates the
 cluster and establishes that the current representation remains sufficient.
@@ -502,7 +512,7 @@ omitting an independent owner repair from an ablation candidate.
 When the fold establishes material repair-path dependence, accumulated semantic
 machinery, obsolete repair residue, proof accretion, inadequate ordinary
 normalization, or pathwise domination pressure, make abstraction change live.
-Run the existing bounded Glaze composition with
+Run the existing bounded Metanoetic composition with
 `Trigger: review-path-accretion`: treat the accumulated changeset as evidence,
 not as the solution; derive the coherent Construction that would have made the
 largest portion of the repair path unnecessary; require Universalist lowering,
@@ -524,7 +534,7 @@ Ledger, Seq, or CAS accretion command.
 
 ## Review convergence
 
-`$first-principles`, the Review Accretion Gate, and its Glaze escape are
+`$first-principles`, the Review Accretion Gate, and its Metanoetic escape are
 Construction-selection or reclassification passes, not review lenses. Keep the
 static review topology at standard plus the existing four auxiliaries.
 

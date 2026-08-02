@@ -41,12 +41,12 @@ The motivating composite escalation is:
 
 ```text
 I think you can do much much much better than that!
+USE FRESH EYES!!
 BE EXCAVATORY!!!
 BE APORETIC!!
 BE AUDACIOUS!
 OPERATE POIETICALLY!
 BE SALTATORY!!!
-USE FRESH EYES!!
 ```
 
 Its operator roles are:

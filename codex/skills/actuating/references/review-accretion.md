@@ -30,7 +30,7 @@ Do not run the gate merely because review is long. Do not run it in non-mutating
 count, file count, elapsed time, review count, and repair count are inspection
 pressure only; none establishes accretion or authorizes refactoring.
 
-Run at most one gate and one Glaze pass for an unchanged decision surface. A later
+Run at most one gate and one Metanoetic pass for an unchanged decision surface. A later
 material repair-path delta creates a new decision surface and may admit another
 bounded evaluation.
 
@@ -165,7 +165,7 @@ The view creates no authority. Compile a material result into the current or
 successor Construction's candidate comparison, factor surfaces, supersession,
 proof obligations, and retirements.
 
-## Ordinary normalization before Glaze
+## Ordinary normalization before Metanoetic
 
 First derive the strongest ordinary cumulative normal form.
 
@@ -177,11 +177,11 @@ First derive the strongest ordinary cumulative normal form.
   Axiomatic Construction Basis and require `$universalist` to nominate the
   ordinary repository-native normal form.
 
-Do not invoke Glaze merely to produce a more dramatic cleanup. Invoke it when the
+Do not invoke Metanoetic merely to produce a more dramatic cleanup. Invoke it when the
 ordinary candidate remains path-dependent, locally optimized, materially additive,
 or suspiciously faithful to the accumulated implementation.
 
-## Review-path Glaze trigger
+## Review-path Metanoetic trigger
 
 Cumulative review-path accretion makes abstraction change live when the fold
 establishes at least one of:
@@ -202,7 +202,7 @@ establishes at least one of:
    material incidental surface.
 
 When triggered, use the existing Architectonic Escalation with
-`Trigger: review-path-accretion`. Glaze receives the complete current obligation
+`Trigger: review-path-accretion`. Metanoetic receives the complete current obligation
 set and this counterfactual instruction:
 
 > Treat the accumulated changeset as evidence, not as the solution. Ignore the
@@ -226,21 +226,21 @@ Then compose:
 accretion fold
 -> establish or retain Axiomatic Construction Basis
 -> Universalist ordinary cumulative nomination
--> Glaze once
+-> Metanoetic once
 -> Universalist reclassification and repository-native lowering
 -> Reduce challenge once for the resulting candidate version
 -> Actuating adjudication
 ```
 
-A material Glaze result must change an owner, factor inventory, admitted domain,
+A material Metanoetic result must change an owner, factor inventory, admitted domain,
 representation, equivalence, normalization, retirement surface, proof surface, or
-falsifier. Rhetorical novelty is `no-material-reframe`. Glaze cannot manufacture a
+falsifier. Rhetorical novelty is `no-material-reframe`. Metanoetic cannot manufacture a
 Goal premise, classify a Counterexample, select a Construction, grant mutation, or
 create another artifact.
 
-The Glaze decision surface is the exact tuple of Goal, review-entry subject,
+The Metanoetic decision surface is the exact tuple of Goal, review-entry subject,
 current subject, current Construction lineage, applicable Counterexample classes,
-and cumulative factor inventory. Do not repeat Glaze for that unchanged tuple. A
+and cumulative factor inventory. Do not repeat Metanoetic for that unchanged tuple. A
 later material repair may create a new tuple.
 
 ## Dispositions
@@ -334,5 +334,5 @@ sufficient only while its evidence, falsifier, and relied-on premises remain cur
   successor-owner mapping, or a distinct live obligation.
 - No new authoritative artifact or mutable control state.
 - No Ledger, Seq, or CAS accretion classifier or command.
-- Glaze is generative; Universalist lowers; Reduce challenges; Actuating alone
+- Metanoetic is generative; Universalist lowers; Reduce challenges; Actuating alone
   adjudicates, selects operations, grants mutation, and closes.

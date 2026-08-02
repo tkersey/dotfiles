@@ -17,10 +17,10 @@ The Goal Contract is the sole semantic-authority artifact; the Counterexample Se
 - Goal shape and authority: `$goal-contract`.
 - Finding classification and quotienting: `$review-fold`.
 - Architectonic activation and abstraction-route adjudication: `$actuating`;
-  `$glaze` may expand the candidate frame, and `$universalist` alone lowers
+  `$metanoetic` may expand the candidate frame, and `$universalist` alone lowers
   material results into boundary nominations.
 - Review-path accretion folding, pathwise-minimality disposition, and any
-  resulting Glaze trigger: `$actuating`; `$complexity-mitigator` may supply a
+  resulting Metanoetic trigger: `$actuating`; `$complexity-mitigator` may supply a
   read-only local normal form, `$universalist` lowers structural alternatives,
   and `$reduce` challenges disputable factors without taking selection authority.
 - Construction, proof strategy, orchestration, Counterexample evaluation, and retirements: `$actuating`.

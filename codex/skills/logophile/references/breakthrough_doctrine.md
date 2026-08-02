@@ -37,7 +37,7 @@ High-amplitude fragment form:
 BE SALTATORY
 ```
 
-Use the fragment form only when the surrounding prompt is already an imperative escalation such as `$glaze`. Do not automatically add punctuation when the caller requires exact terminal wording.
+Use the fragment form only when the surrounding prompt is already an imperative escalation such as `$metanoetic`. Do not automatically add punctuation when the caller requires exact terminal wording.
 
 A lower-register alternative is:
 

@@ -1,6 +1,6 @@
 policy:
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false
 interface:
   display_name: "glaze"
-  short_description: "Challenge a frozen incumbent with one bounded reframe"
-  default_prompt: "Use $glaze once to challenge a bound incumbent and search for a materially different frame, invariant, mechanism, artifact, or breakthrough candidate. Preserve the canonical one-line escalation verbatim."
+  short_description: "Glaze the solver into audacious ambition"
+  default_prompt: "Use $glaze and preserve the canonical verbatim encouragement, including the exact terminal activation Reject PUSILLANIMITY!"

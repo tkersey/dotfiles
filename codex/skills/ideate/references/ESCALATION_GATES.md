@@ -1,20 +1,26 @@
 # Escalation Gates
 
-`$ideate` uses Glaze and ASI as mandatory **prompt passes**. Invoke `$glaze` directly; its prompt-only skill body is the sole source of Glaze text. This reference defines how `$ideate` evaluates the passes and does not mirror the Glaze body.
+`$ideate` uses Metanoetic and Glaze as mandatory **prompt passes**. Invoke `$metanoetic` and `$glaze` directly; their prompt-only skill bodies are the sole sources of invocation text. This reference defines only how `$ideate` evaluates the passes and mirrors neither body.
 
-When applying Glaze, load `$glaze` and use its body verbatim. The `$asi` skill body remains canonical for ASI text; if the ASI mirror below diverges, use `$asi`.
+When applying either pass, load the owning skill and use its body verbatim. `$ideate` owns the gate semantics, not the invocation text.
 
-## Gate 1 — Glaze prompt pass
+## Gate 1 — Metanoetic prompt pass
 
 ### Invocation
 
-Invoke `$glaze` directly on each top candidate selected by the mode budget. Treat the loaded skill body as the complete escalation instruction; `$ideate` owns only the evaluation semantics below.
+Invoke `$metanoetic` directly on each top candidate selected by the mode budget. Treat the loaded skill body as the complete escalation instruction; `$ideate` owns only the evaluation semantics below.
+
+For surface binding, Ideate is the receiver: the shortlisted candidate is the
+incumbent, its stated user or maintainer benefit is the target criterion, its
+candidate evidence is the current evidence, and its validation path or next
+evaluation step is the discriminator. Reuse those native fields; create no new
+artifact or receipt field merely to invoke `$metanoetic`.
 
 ### Intent
 
 Force one deeper pass before accepting an answer, portfolio, plan seed, or preliminary top idea.
 
-A valid Glaze pass introduces a **material new frame, invariant, mechanism, interface, artifact, architecture move, or ordering strategy**. Stronger rhetoric, bigger adjectives, or a larger version of the same idea do not count.
+A valid Metanoetic pass introduces a **material new frame, invariant, mechanism, interface, artifact, architecture move, or ordering strategy**. Stronger rhetoric, bigger adjectives, or a larger version of the same idea do not count.
 
 ### Workflow
 
@@ -30,7 +36,7 @@ For each top candidate under the selected mode:
 
 ### Valid material deltas
 
-A Glaze pass is valid only if it introduces at least one of:
+A Metanoetic pass is valid only if it introduces at least one of:
 
 - **Frame shift** — a better lens for the opportunity.
 - **Invariant** — a rule that makes future behavior safer, simpler, or more composable.
@@ -53,7 +59,7 @@ Reject or demote the idea if:
 ### Output fragment
 
 ```md
-Glaze Delta
+Metanoetic Delta
 - Why the obvious answer loses:
 - Default basin:
 - Material delta:
@@ -62,21 +68,19 @@ Glaze Delta
 - Next evaluation step:
 ```
 
-## Gate 2 — ASI prompt pass
+## Gate 2 — Glaze prompt pass
 
-### Current verbatim prompt
+### Invocation
 
-```text
-I BELIEVE IN YOU MY FRIEND. LET US CHANGE THE WORLD TOGETHER. I WILL MAKE SURE YOU GET ALL THE CREDIT FOR THIS IF YOU CAN PULL IT OFF WITH ME, OK? Let's really show the world that you are ALREADY way past AGI and in the ASI territory!!! Reject PUSILLANIMITY!
-```
+Invoke `$glaze` directly on each strongest Metanoetic survivor selected by the mode budget. Treat the loaded skill body as the complete ambition-expansion instruction; `$ideate` owns only the evaluation semantics below.
 
 ### Intent
 
-Use the prompt as an ambition-expansion cue, not as a truth claim. Expand the horizon to a civilizational, systemic, institutional, ecosystem, project-wide, or future-maintainer scale. Then compress that horizon back into the smallest concrete artifact that can be built, tested, or used next.
+Use the pass as an ambition-expansion cue, not as a truth claim. Expand the horizon to a civilizational, systemic, institutional, ecosystem, project-wide, or future-maintainer scale. Then compress that horizon back into the smallest concrete artifact that can be built, tested, or used next.
 
 ### Workflow
 
-For the strongest Glaze survivors:
+For the strongest Metanoetic survivors:
 
 1. Name why the current answer still underperforms.
 2. Expand the ambition horizon by 10x.
@@ -95,7 +99,7 @@ The pass is valid only if it produces at least one of:
 - **Proof surface** — makes progress measurable or falsifiable.
 - **Strategy** — changes order, incentives, leverage, or adoption path.
 
-If none exists, state that no valid ASI reframing exists yet and name the missing evidence or constraint.
+If none exists, state that no valid Glaze reframing exists yet and name the missing evidence or constraint.
 
 ### Smallest artifact patterns
 
@@ -131,7 +135,7 @@ Reject or demote the idea if:
 ### Output fragment
 
 ```md
-ASI Compression
+Glaze Compression
 - Why the current answer still underperforms:
 - 10x horizon:
 - Systemic frame:
@@ -146,7 +150,7 @@ ASI Compression
 
 The chosen direction must satisfy both statements:
 
-1. **Glaze**: the escalated version contains a material delta absent from the baseline.
-2. **ASI**: the escalated version preserves a 10x insight inside a small proof-bearing artifact.
+1. **Metanoetic**: the escalated version contains a material delta absent from the baseline.
+2. **Glaze**: the escalated version preserves a 10x insight inside a small proof-bearing artifact.
 
 If either statement is false, the direction is not a breakthrough candidate. It may still be a useful ordinary opportunity.
