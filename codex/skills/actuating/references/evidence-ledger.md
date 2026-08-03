@@ -13,17 +13,17 @@ After `$ledger ensure` once for the workflow, require Ledger 1.x,
 fallback is permitted. Apply the same gate to standalone Goal Contract or
 Review Fold handoff.
 
-When Actuating requests a session observation, require Seq 1.x,
+When Actuating requests session evidence, require Seq 1.x,
 `seq-observation-abi/v1`, and a successful check of the explicitly selected
 Actuating observation definition. Ledger projects immutable structural facts;
-Seq receives them only through an explicit `--input` relation. Neither runtime
+Seq receives them only through an explicit input relation. Neither runtime
 interprets the other's store or grants authority.
 
 Construction v1 and v2 stores are unsupported and are not migrated. Start a
-fresh goal-local store and ignore the legacy data.
+fresh goal-local v3 store and ignore legacy data.
 
-An unbound current-format v3 Evidence log also fails closed. Bind that exact
-history once, outside normal reads and writes:
+An unbound current-format v3 Evidence log fails closed. Bind that exact history
+once, outside ordinary reads and writes:
 
 ~~~bash
 ledger transact \
@@ -34,14 +34,14 @@ ledger transact \
   --format json
 ~~~
 
-Supply no artifact input. The operation validates every existing row, event
-chain, retained transition, and partition value under the selected definition
-digest; writes only Ledger-owned binding metadata; and leaves
-`evidence.jsonl` byte-identical. Any invalid row blocks the binding.
+Supply no artifact input. Binding validates every existing row, event chain,
+retained transition, and partition value under the selected definition digest;
+it writes only Ledger-owned binding metadata and leaves `evidence.jsonl`
+byte-identical. Any invalid row blocks.
 
-Before review, require `cas --version >= 0.2.83` and exactly `run`, `start`, and
-`wait` in `cas review --help`, with no retired action or `review_session` or
-`review-session` alias. Compare semantic versions numerically.
+Before review, require the current CAS runtime gate from `$cas`, including the
+owner-lived workflow-bound review capability required by the static Review
+Contract.
 
 ## Event envelope
 
@@ -83,9 +83,40 @@ review_attempt_completed
 review_transport_failed
 ~~~
 
-Artifact-registration bodies are the exact canonical artifact. Adapter-owned
-`operation_prepared` records admission. Every other non-registration body is
-owner evidence; Ledger validates only its declared structural contract.
+Artifact-registration bodies are exact canonical artifacts.
+`operation_prepared` records structural admission. Every other non-registration
+body is owner evidence; Ledger validates only its declared structural contract.
+
+## Committed subject
+
+The Evidence `subject` register contains only a deterministic clean Git commit
+target:
+
+~~~text
+subject_digest = sha256(
+  "actuating-git-subject/v1" || 0x00 ||
+  repository_id || 0x00 ||
+  commit_oid || 0x00 ||
+  tree_oid
+)
+~~~
+
+Actuating derives the tuple with:
+
+~~~bash
+commit_oid="$(git rev-parse --verify 'HEAD^{commit}')"
+tree_oid="$(git rev-parse --verify 'HEAD^{tree}')"
+test -z "$(git status --porcelain=v2 --untracked-files=all --ignore-submodules=none)"
+~~~
+
+Then hash the exact NUL-framed bytes above with SHA-256 and prefix the lowercase
+hexadecimal result with `sha256:`. Branch attachment is not part of semantic
+identity. Ignored files are not part of the committed candidate. Ship binds the
+publication refs and exact remote OIDs separately.
+
+Ledger never invokes Git, decides cleanliness, derives this digest, or judges
+whether the commit is the intended implementation. It compares only caller-
+supplied digests under the Evidence transition law.
 
 ## Transient inputs
 
@@ -112,7 +143,7 @@ owner evidence; Ledger validates only its declared structural contract.
 }
 ~~~
 
-Evidence operations accept exactly this owner-observation envelope:
+Evidence operations accept exactly:
 
 ~~~json
 {
@@ -125,24 +156,22 @@ Evidence operations accept exactly this owner-observation envelope:
 }
 ~~~
 
-Unknown or missing keys fail closed. The `body` must exactly match the selected
-kind's schema. Supplying this input asserts only that its named owner made the
-observation; it grants no authority.
+Unknown or missing keys fail closed. Supplying an input asserts only that its
+named owner made the observation; it grants no authority.
 
 `proof_obligation_refs` contains exactly one locally executable role: an
 implementation or acceptance `obligation_id` selects its verifier,
 `obligation_id#falsifier` selects its independent falsifier, and a
-`retirement_id` selects the retirement verifier. Review and Ship obligations
+`retirement_id` selects its retirement verifier. Review and Ship obligations
 remain external-owner evidence and cannot be prepared as repository work.
 
-Use this complete owner-appendable body table. Braces name the exact key set;
-`digest` means `sha256:` plus 64 lowercase hexadecimal digits, `string` means
-nonblank UTF-8, and brackets mean a duplicate-free string array.
+Use this complete owner-appendable body table. `digest` means `sha256:` plus 64
+lowercase hexadecimal digits; `string` means nonblank UTF-8; arrays are
+duplicate-free.
 
 | `kind` | Exact `body` |
 |---|---|
 | `effect_recorded` | `{schema:"effect-recorded/v1", step_id:string, pre_effect_subject_digest:digest, changed_paths:[string]}` |
-| `subject_commit_observed` | `{schema:"actuating-subject-commit-observation/v1", repository_id:string, repository_root_digest:digest, head_ref:string, scope:{allowed_paths:[string], prohibited_paths:[string]}, before:{subject_digest:digest, head:string, scoped_worktree_digest:digest}, after:{subject_digest:digest, head:string, parent:string, scoped_worktree_digest:digest}, changed_paths:[string], clean_successor:boolean}` |
 | `operation_observed` | `{schema:"operation-observed/v1", step_id:string, status:string, discharged_refs:[string], evidence_refs:[digest]}` |
 | `operation_aborted` | `{schema:"operation-aborted/v1", step_id:string, reason:string}` |
 | `publication_observed` | `{schema:"publication-observed/v1", status:string, receipt_ref:digest}` |
@@ -152,27 +181,81 @@ nonblank UTF-8, and brackets mean a duplicate-free string array.
 | `review_attempt_completed` | `{schema:"review-attempt-completed/v1", request_id:string, attempt_id:string, principal:string, verdict:string, context_match:boolean, fallback:boolean, finding_refs:[digest], receipt_ref:digest}` |
 | `review_transport_failed` | `{schema:"review-transport-failed/v1", request_id:string, attempt_id:string, failure_ref:digest, receipt_ref:digest}` |
 
-Ledger validates the `review_attempt_started.receipt_ref` only as the digest of
-the exact CAS start receipt. Actuating evaluates whether five distinct,
-current start receipts satisfy the initial-wave barrier. Every `finding_refs`
-entry on `review_attempt_completed` is the digest of the exact canonical CAS
-finding-row bytes; row IDs and best-effort fingerprints remain provenance
-rather than Counterexample identity. Counterexample `follow-up` classes remain
-recorded and routed but do not block the current Goal; only applicable accepted
-debt and blockers constrain current mutation or closure.
+## Edit evidence law
 
-Before assigning semantic review meaning, Actuating must dereference each CAS
-`receipt_ref`, verify its content digest, exact request fingerprint, current
-tuple, attempt identity, and owner fields, and derive the verdict and quality
-predicate from that receipt. The convenience fields in an Evidence event never
-earn credit by themselves; a mismatch with the cited CAS receipt blocks the
-attempt. Likewise, proof discharge requires Actuating to dereference every
-`evidence_ref` and verify that it is output from the exact verifier selected by
-the current Construction. Ledger checks only digest shape and prepared
-obligation membership.
+An edit operation starts from the exact clean committed subject retained by
+Evidence. Dirty implementation state is never appended.
+
+The owner sequence is:
+
+~~~text
+prepare-operation on clean parent
+-> create one provisional diff
+-> inspect complete diff and exact changed paths
+-> commit exactly the selected operation
+-> require clean one-parent successor
+-> derive successor subject
+-> record-effect with parent and successor digests
+-> observe-edit-operation with proof evidence
+~~~
+
+Before `prepare-operation`, Actuating requires:
+
+- an empty porcelain-v2 status including untracked files and submodule dirt;
+- the current commit and tree to derive the retained subject;
+- no unrelated provisional changes;
+- the operation paths to be within Construction scope and disjoint from Goal
+  prohibitions.
+
+`one-seam-operator` creates the provisional diff but never stages, commits,
+amends, pushes, or publishes. Actuating re-inspects the complete diff, stages
+only the selected operation, and creates the successor commit.
+
+Before `record-effect`, Actuating requires:
+
+- successor `HEAD^` equals the prepared parent commit;
+- the successor checkout is clean;
+- the commit path set is nonempty and exactly equals `pending.paths`;
+- every path remains inside Construction scope and outside Goal prohibitions;
+- the successor subject differs from the parent subject;
+- `effect_recorded.pre_effect_subject_digest` equals the parent subject;
+- the event envelope's `subject_digest` equals the successor subject.
+
+`record-effect` consumes the one-shot capability, records the exact path set,
+and advances the Evidence subject directly from the parent commit target to the
+successor commit target. There is no dirty-state subject, no commit-equivalence
+observer, and no separate commit-rebinding event.
+
+`observe-edit-operation` then requires the previously consumed operation and
+current successor subject. It records verifier, falsifier, or retirement
+results for that exact committed target and clears the pending operation.
+
+If the provisional diff is abandoned before commit, or the parent target is no
+longer current, use `operation_aborted`; it consumes no raw capability and
+clears the pending operation. After a successor commit exists, abort is
+inadmissible: Actuating must either record the lawful effect or report the exact
+commit/scope obstruction and stop rather than hiding a repository mutation.
+
+## Inspect and verify evidence law
+
+Inspect and verify operations run only on the exact clean committed subject.
+`observe-readonly-operation` consumes the one-shot capability when:
+
+- the pre-operation commit, tree, and subject match the current Evidence
+  subject;
+- the exact selected argv ran;
+- the checkout remains clean afterward;
+- the commit, tree, and subject remain unchanged;
+- the cited evidence bytes are retained and content-addressed.
+
+A verifier that changes correctness-bearing repository state has not proved the
+prepared subject. Its result is discarded; Actuating must select an edit,
+commit the generated change, and rerun proof on the new clean target.
+
+## Verifier evidence
 
 An executor makes verifier provenance replayable with this immutable supporting
-attachment; it is evidence, not a fifth authoritative artifact family:
+attachment; it is evidence, not another authoritative artifact family:
 
 ~~~yaml
 verifier_receipt:
@@ -188,17 +271,13 @@ verifier_receipt:
 ~~~
 
 `evidence_refs` contains the SHA-256 digest of the canonical JSON receipt and
-the digest of every cited immutable output. Before discharging an obligation,
-Actuating resolves those exact bytes, recomputes every digest, requires the
-receipt's `verifier.argv` to equal the current Construction obligation, requires
-its tuple and `step_id` to match the prepared operation and live subject, and
-evaluates `exit_status` plus the referenced outputs. Missing or unresolvable
-attachment bytes block proof; an event's `status` string cannot substitute for
+every cited immutable output. Before discharging an obligation, Actuating
+resolves the exact bytes, recomputes every digest, requires `verifier.argv` to
+equal the current Construction obligation, exact-matches Goal, Construction,
+step, and committed subject, and evaluates exit status and outputs. Missing or
+unresolvable bytes block proof; an event's `status` string cannot substitute for
 them. Attachment location is transport metadata and never participates in
-identity. The source owner must retain those immutable bytes in its existing
-durable evidence route before Actuating cites them. Ledger neither ingests nor
-owns CAS, Ship, or verifier attachments; adding a second Ledger attachment
-store would duplicate their custody boundary.
+identity. Ledger neither ingests nor owns CAS, Ship, or verifier attachments.
 
 ## Commands and capability law
 
@@ -237,16 +316,24 @@ ledger transact \
   --param goal=GOAL_ID \
   --format json
 
-ledger project \
+ledger transact \
   --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
-  --projection goal-carry-forward-context \
+  --operation abort-operation \
   --repo REPO \
+  --input evidence=aborted.json \
   --param goal=GOAL_ID \
   --format json
 
 ledger project \
   --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
   --projection structural-facts \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection goal-carry-forward-context \
   --repo REPO \
   --param goal=GOAL_ID \
   --format json
@@ -258,8 +345,22 @@ ledger doctor \
   --format json
 ~~~
 
-For deterministic Ledger-to-Seq transport, emit the definition-declared
-relation directly and observe it through the Actuating artifact kernel:
+`prepare-operation` validates the current Goal, Construction, caller-owned
+`expected_subject_digest`, scope, effect, and obligation reference; appends
+`operation_prepared`; returns the raw `AKC2-...` token once; and persists only
+its digest. The capability is evidence-custody binding, not mutation authority.
+
+`record-effect` consumes it for edits only when the body parent digest equals
+the current structural subject and the changed path set exactly equals the
+pending path set. It advances the structural subject to the event envelope's
+successor digest. `observe-readonly-operation` consumes it for inspect or
+verify. `observe-edit-operation` requires prior effect consumption and rejects
+a second raw capability. Missing, mismatched, reused, or unexpectedly supplied
+capability material fails closed.
+
+## Structural projections
+
+For deterministic Ledger-to-Seq transport:
 
 ~~~bash
 ledger project \
@@ -277,38 +378,21 @@ seq observe \
   --format json
 ~~~
 
-The payload is `actuating-structural-facts/v1`: one bounded relation row
-containing structural identities, counts, event-kind counts, the current
-pending-operation value, and the exact Evidence head. Seq verifies the input
-schema and emits `actuating-artifact-kernel-observation/v1`; Actuating alone
-interprets those facts.
+The payload is `actuating-structural-facts/v1`: one bounded relation row with
+structural identities, counts, event-kind counts, pending operation, and exact
+Evidence head. Seq verifies the input schema and emits
+`actuating-artifact-kernel-observation/v1`; Actuating interprets the facts.
 
-For a Goal carry-forward, use `goal-carry-forward-context` instead. Its payload
-is `actuating-goal-carry-forward-context/v1` and exports the exact retained
-`goal`, `construction_ref`, `subject_digest`, `counterexamples`, full
-`counterexample_classes`, `carry_forward`, `lineage_construction`, and
-`pending_operation` values. It is the sanctioned source for the current Goal
-artifact and the active Counterexample Set references. From a payload-only
-projection, derive those references exactly with:
+For a Goal carry-forward, use `goal-carry-forward-context`. Its payload exports
+the exact retained Goal, Construction ref, committed subject, Counterexamples,
+full class register, carry-forward marker, lineage Construction, and pending
+operation. It is the sanctioned source for current Goal and active Set refs.
+Derive supporting references exactly from classes whose status is `accepted`,
+`blocked`, or `follow-up`; never guess, reconstruct an older Goal, or read the
+event log directly. An unavailable or incomplete projection is a fail-closed
+owner obstruction.
 
-~~~bash
-jaq '[.counterexample_classes[]
-      | select(.value.status == "accepted"
-            or .value.status == "blocked"
-            or .value.status == "follow-up")
-      | "counterexample-set:\(.source)"]
-     | unique | sort' goal-carry-forward-context.json
-~~~
-
-Do not guess supporting references, reconstruct the current Goal from an older
-artifact, or read the event log directly. An unavailable, invalid, or
-incomplete context projection is a fail-closed owner-side obstruction, not
-permission to retry registration. Like every Ledger projection, this view is
-discardable and grants no semantic, execution, mutation, review, or closure
-authority.
-
-Observe physical run evidence independently, selecting an exact session or a
-bounded repository/time window:
+Observe physical run evidence independently:
 
 ~~~bash
 seq observe \
@@ -318,101 +402,32 @@ seq observe \
   --format json
 ~~~
 
-Use `tool-metadata` for tool lifecycle structure. Opt into `turns` or `tools`
-only when the evidence question requires raw message, command, or output text.
-The definition returns evidence and provenance only; it does not recreate the
-retired native verdict or transfer Actuating authority into Seq.
+Use `tool-metadata` for tool lifecycle structure and opt into raw turns or tools
+only when the evidence question requires them. Seq returns evidence and
+provenance only.
 
-`prepare-operation` validates the exact current Goal, Construction,
-caller-owned `expected_subject_digest`, scope, effect, and obligation
-references; appends `operation_prepared`; returns the raw `AKC2-...` token once
-as `generated_outputs.capability`; and persists only its digest. The durable
-event envelope retains the expected subject. The capability is
-evidence-custody binding, not mutation authority. `record-effect` consumes it
-for edits only when `pre_effect_subject_digest` equals the current structural
-subject. `observe-readonly-operation` consumes it for inspect or verify.
-`observe-edit-operation` requires the prior effect consumption and rejects a
-second raw capability. Post-edit observation exact-matches the recorded result
-subject. Missing, mismatched, reused, or unexpectedly supplied capability
-material fails closed.
+## Review evidence
 
-Immediately before an edit, inspection, or verifier, Actuating requires the
-executor to recompute the live subject with the exact repository-native
-procedure Actuating supplied for that operation and exact-match
-`expected_subject_digest`. A
-mismatch takes `operation_aborted` without performing the effect. The executor
-then echoes the subject it actually observed in the applicable owner event.
-Ledger compares opaque digests only: it never invokes Git, derives repository
-identity, or decides whether the subject procedure is semantically adequate.
+Every `review_attempt_started.receipt_ref` is the digest of an exact CAS start
+receipt. Actuating evaluates whether five distinct current start receipts
+satisfy the initial barrier. Each `finding_refs` entry is the digest of exact
+canonical CAS finding-row bytes; row IDs and best-effort fingerprints remain
+provenance rather than Counterexample identity.
 
-~~~bash
-uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_observation.py \
-  --repo REPO --repository-id ID --allow PATH [--allow PATH ...] [--prohibit PATH ...]
-~~~
+Before assigning review meaning, Actuating dereferences each CAS receipt,
+verifies its digest, request fingerprint, attempt identity, instructions,
+principal, and exact Ship-confirmed base/head/target tuple, then derives verdict
+and quality. Convenience fields in Evidence never earn credit by themselves.
+A mismatch blocks the attempt.
 
-Resolve `<loaded-actuating-skill-root>` to the absolute directory containing
-the active `SKILL.md`, never the target repo. `--no-project` prevents pre-check
-environment or lockfile effects.
+The review campaign is bound to the current committed subject and static Review
+Contract, while CAS additionally proves the exact published `baseSha` and
+`headSha`. Ship must first prove that the local clean verified commit is the
+remote PR head. A local dirty change after publication does not alter the remote
+review target; it merely blocks another Actuating operation or publication
+until resolved into a clean selected commit.
 
-`actuating-subject-observation/v1` binds repository id and canonical-root digest, commit and symbolic HEAD, structural scope roots, sorted index, worktree state,
-recursive gitlinks, deletions, and selected ignored or unignored files; unborn
-HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
-out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
-index-flagged, platform-ambiguous, or unequal captures fail closed.
-
-After a completed edit and before the commit, bind any required legacy gitlink
-compatibility state to the exact pre-commit observation:
-
-~~~bash
-uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_commit_observation.py \
-  --prepare-before --repo REPO --before PRE_COMMIT_SUBJECT_OBSERVATION \
-  > PREPARED_COMMIT_INPUT
-~~~
-
-Then commit without further semantic change and prove the provenance transition
-with:
-
-~~~bash
-uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_commit_observation.py \
-  --repo REPO --before PREPARED_COMMIT_INPUT
-~~~
-
-`actuating-subject-commit-input/v1` carries the authentic observation plus
-recursive legacy projections only when their canonical digests match the
-already-recorded gitlink content digests. The commit observer removes control
-rows from those projections and verifies the remaining semantic projection
-against the clean successor, so excluded-control drift can normalize while
-ordinary scoped drift still fails. It executes no post-hoc custom filter and
-never binds filter authority to the live checkout. The observer then validates
-the prior observation's content digest, double-captures the successor, and
-requires the same repository root, repository identity, symbolic ref, and
-scope; exactly one parent equal to the prior HEAD; identical scoped worktree
-meaning before and after the commit; nonempty commit paths all inside the
-scope; and a clean scoped successor. Pass its exact output as the `body` of
-`subject_commit_observed` to `record-subject-commit`, with the outer subject
-equal to `after.subject_digest`. The reducer additionally binds the repository
-and exact scope to the current Goal and advances only `subject`. This is not a
-no-effect refresh and cannot represent semantic source drift.
-
-Before an effect, `operation_aborted` is the capabilityless recovery path:
-reject any raw capability, exact-match the current tuple and pending `step_id`,
-require a nonblank reason, then terminate the pending operation and invalidate
-its stored capability digest. This permits recovery when `prepare-operation`
-persisted admission but its one-time raw output was lost, without adding
-another command or granting an effect. After `record-effect`, abort is
-inadmissible: the owner must record `operation_observed` so the changed subject
-and proof disposition remain explicit.
-
-When the observed live subject has drifted, the current goal remains blocked;
-`operation_aborted` does not pretend that an external change was an authorized
-effect. A direct clean commit proved by the typed subject-commit observation is
-the sole provenance-only exception. Every other drift requires fresh accepted
-authority compiled as a Goal successor before a Construction may bind the new
-subject. No generic no-effect subject-refresh event is inferred by Ledger.
-
-The `structural-facts` projection is a discardable structural aid. The generic
-projection envelope must report `authority_granted:false` and
-`storage_mutated:false`; its store metadata carries the former path/revision
-observation. Ledger never executes work, dispatches or interprets reviews,
-computes credit, interprets Ship, chooses a Construction or next action, or
-emits a semantic closure decision or receipt.
+The `structural-facts` projection is a discardable structural aid. Its envelope
+reports `authority_granted:false` and `storage_mutated:false`. Ledger never
+executes work, dispatches or interprets reviews, computes credit, interprets
+Ship, chooses a Construction or next action, or emits semantic closure.

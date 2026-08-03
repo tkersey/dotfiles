@@ -37,8 +37,12 @@ Ledger does not execute repository changes, interpret CAS or Ship, compute revie
 
 Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain owner-issued content-addressed attachments. Plans, WorkGraphs, Ledger views, and Review Accretion Dispositions are discardable aids. A material accretion result is carried by the current or successor Construction and owner-issued evidence. The closure receipt is a semantic report bound to current inputs, not a fifth artifact family.
 
-`actuating-subject-observation/v1` is a transient reproducible Git digest, not
-an authoritative artifact family or Evidence event kind.
+The Actuating subject is the deterministic SHA-256 identity of one clean Git
+commit target: repository identity, commit OID, and tree OID. A dirty checkout
+is a provisional construction surface, not an authoritative artifact, subject,
+or Evidence event kind. `effect_recorded` advances directly from the clean
+parent target to the clean committed successor; Ship then proves that exact
+successor is the published PR head before review begins.
 
 Every immutable replayable event envelope proves sequence and custody, not semantic truth; Actuating evaluates it with the current Goal, Construction, Counterexamples, and subject.
 
