@@ -54,7 +54,10 @@ artifact:
 - Reject unknown fields.
 - Treat every materialized Goal as immutable. A semantic change creates a
   successor with the same `goal_id`, exactly one predecessor `artifact_id`,
-  and a new content-addressed `artifact_id`. Do not replace the current Goal
+  and a new content-addressed `artifact_id`. A direct clean commit of the exact
+  already-observed scoped worktree is provenance-only and uses Actuating's
+  typed subject-commit transition; altered bytes, repository, ref, scope,
+  authority, compatibility, or semantics require a successor Goal. Do not replace the current Goal
   while an accepted or blocked Counterexample remains unresolved, or while a
   `follow-up` class is being brought within the successor Goal's scope, unless
   the explicit source revision uses the carry-forward transition: the

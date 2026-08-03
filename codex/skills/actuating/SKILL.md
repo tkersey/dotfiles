@@ -383,6 +383,21 @@ subject-bound proof, operations, review bindings, and review credit stale. It
 does not erase prior Construction decisions or Counterexample-class history
 for the same `goal_id`.
 
+A direct commit of the exact already-observed scoped worktree is a provenance
+transition, not a semantic Goal revision. After the edit operation is complete
+and the commit is clean, run the checked-in
+`scripts/subject_commit_observation.py` against the retained pre-commit subject
+observation. Only its double-captured
+`actuating-subject-commit-observation/v1` may feed
+`record-subject-commit`. That admission exact-matches repository and Goal
+scope, requires the retained subject as `before`, a single-parent successor,
+equal before/after scoped worktree digests, nonempty in-scope commit paths, and
+a clean successor, then changes only the retained subject register. Repository,
+scope, ref, content, parentage, or cleanliness drift remains a Goal-level
+obstruction. Do not use Goal carry-forward for this provenance-only case; a
+real source, authority, scope, compatibility, or semantic change still requires
+a successor Goal.
+
 Only the first Construction in the current authoritative v3 lineage for a
 `goal_id` may use `mode: initial` with empty `predecessor_refs`. Every later
 Construction, including one compiled after a successor Goal Contract or

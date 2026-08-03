@@ -84,10 +84,13 @@ Read [the exact v3 contract](references/artifact-kernel-v1.md).
   posture blocks or requests a source revision.
 - A changed semantic decision creates an immutable successor Goal with the
   same `goal_id`, exactly one predecessor `artifact_id`, and a new
-  content-addressed `artifact_id`. A subject-only rebind may likewise require a
-  successor Goal to refresh source-bound scope. Neither case resets
-  Construction or Counterexample lineage: return the current Construction
-  identity to Actuating, which selects a successor with exactly one predecessor.
+  content-addressed `artifact_id`. A direct clean commit of the exact
+  already-observed scoped worktree does not change source authority and uses
+  Actuating's typed subject-commit provenance transition instead. Any other
+  subject drift or source-bound scope change requires a successor Goal. Neither
+  transition resets Construction or Counterexample lineage: return the current
+  Construction identity to Actuating, which selects a successor with exactly
+  one predecessor.
   Only the first Construction in the current authoritative v3 lineage for the
   `goal_id` may be initial with no predecessor. When an explicit source revision
   occurs while accepted or blocked Counterexamples remain unresolved, or

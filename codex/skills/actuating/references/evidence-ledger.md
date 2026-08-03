@@ -142,6 +142,7 @@ nonblank UTF-8, and brackets mean a duplicate-free string array.
 | `kind` | Exact `body` |
 |---|---|
 | `effect_recorded` | `{schema:"effect-recorded/v1", step_id:string, pre_effect_subject_digest:digest, changed_paths:[string]}` |
+| `subject_commit_observed` | `{schema:"actuating-subject-commit-observation/v1", repository_id:string, repository_root_digest:digest, head_ref:string, scope:{allowed_paths:[string], prohibited_paths:[string]}, before:{subject_digest:digest, head:string, scoped_worktree_digest:digest}, after:{subject_digest:digest, head:string, parent:string, scoped_worktree_digest:digest}, changed_paths:[string], clean_successor:boolean}` |
 | `operation_observed` | `{schema:"operation-observed/v1", step_id:string, status:string, discharged_refs:[string], evidence_refs:[digest]}` |
 | `operation_aborted` | `{schema:"operation-aborted/v1", step_id:string, reason:string}` |
 | `publication_observed` | `{schema:"publication-observed/v1", status:string, receipt_ref:digest}` |
@@ -359,6 +360,24 @@ HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
 out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
 index-flagged, platform-ambiguous, or unequal captures fail closed.
 
+After a completed edit is committed without further semantic change, prove the
+provenance transition with:
+
+~~~bash
+uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_commit_observation.py \
+  --repo REPO --before PRE_COMMIT_SUBJECT_OBSERVATION
+~~~
+
+The observer validates the prior observation's content digest, double-captures
+the successor, and requires the same repository root, repository identity,
+symbolic ref, and scope; exactly one parent equal to the prior HEAD; identical
+scoped worktree meaning before and after the commit; nonempty commit paths all
+inside the scope; and a clean scoped successor. Pass its exact output as the
+`body` of `subject_commit_observed` to `record-subject-commit`, with the outer
+subject equal to `after.subject_digest`. The reducer additionally binds the
+repository and exact scope to the current Goal and advances only `subject`.
+This is not a no-effect refresh and cannot represent semantic source drift.
+
 Before an effect, `operation_aborted` is the capabilityless recovery path:
 reject any raw capability, exact-match the current tuple and pending `step_id`,
 require a nonblank reason, then terminate the pending operation and invalidate
@@ -370,9 +389,10 @@ and proof disposition remain explicit.
 
 When the observed live subject has drifted, the current goal remains blocked;
 `operation_aborted` does not pretend that an external change was an authorized
-effect. Recovery requires fresh accepted authority compiled as a Goal successor
-before a Construction may bind the new subject. No no-effect subject-refresh
-event is inferred by Ledger.
+effect. A direct clean commit proved by the typed subject-commit observation is
+the sole provenance-only exception. Every other drift requires fresh accepted
+authority compiled as a Goal successor before a Construction may bind the new
+subject. No generic no-effect subject-refresh event is inferred by Ledger.
 
 The `structural-facts` projection is a discardable structural aid. The generic
 projection envelope must report `authority_granted:false` and
