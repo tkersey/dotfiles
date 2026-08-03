@@ -16,6 +16,7 @@ from subject_observation import (
     ObservationError,
     canonical_bytes,
     canonical_scope,
+    capture as capture_subject,
     digest_bytes,
     observe,
     projected_scopes,
@@ -85,6 +86,50 @@ def semantic_worktree_digest(observation: dict[str, Any]) -> str:
     ]
     rows.sort(key=lambda row: bytes.fromhex(row["path_hex"]))
     return digest_bytes(canonical_bytes(rows))
+
+
+def normalize_legacy_gitlink_digests(
+    repo: bytes,
+    before: dict[str, Any],
+    after: dict[str, Any],
+    scope: dict[str, Any],
+) -> dict[str, Any]:
+    normalized = copy.deepcopy(before)
+    after_entries = {
+        (entry["source"], entry["path_hex"]): entry
+        for entry in after["entries"]
+    }
+    allowed = [os.fsencode(path) for path in scope["allowed_paths"]]
+    prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
+    for entry in normalized["entries"]:
+        index = entry.get("index")
+        if entry["source"] != "tracked" or index is None or index["mode"] != "160000":
+            continue
+        successor = after_entries.get((entry["source"], entry["path_hex"]))
+        if successor is None:
+            continue
+        retained_worktree = entry["worktree"]
+        successor_worktree = successor["worktree"]
+        if retained_worktree == successor_worktree:
+            continue
+        retained_shape = dict(retained_worktree)
+        successor_shape = dict(successor_worktree)
+        retained_digest = retained_shape.pop("content_digest", None)
+        successor_digest = successor_shape.pop("content_digest", None)
+        if retained_shape != successor_shape or not isinstance(retained_digest, str):
+            continue
+        path = bytes.fromhex(entry["path_hex"])
+        legacy_nested = capture_subject(
+            Path(os.fsdecode(os.path.join(repo, path))),
+            f"gitlink:{path.hex()}",
+            projected_scopes(path, allowed),
+            projected_scopes(path, prohibited),
+            include_control_roots=True,
+        )
+        if digest_bytes(canonical_bytes(legacy_nested)) != retained_digest:
+            continue
+        retained_worktree["content_digest"] = successor_digest
+    return normalized
 
 
 def direct_parent(repo: bytes, after_head: str) -> str:
@@ -325,7 +370,10 @@ def capture(repo: Path, before_path: Path) -> dict[str, Any]:
     if parent != before.get("head"):
         raise ObservationError("successor HEAD is not the direct child of the prior HEAD")
     require_clean(repo_bytes, after, scope)
-    before_worktree = semantic_worktree_digest(before)
+    compatible_before = normalize_legacy_gitlink_digests(
+        repo_bytes, before, after, scope
+    )
+    before_worktree = semantic_worktree_digest(compatible_before)
     after_worktree = semantic_worktree_digest(after)
     if before_worktree != after_worktree:
         raise ObservationError("scoped worktree meaning changed across the commit")

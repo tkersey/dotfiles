@@ -97,7 +97,8 @@ def file_digest(path: bytes) -> str:
         while chunk := handle.read(1024 * 1024): digest.update(chunk)
     return f"sha256:{digest.hexdigest()}"
 def worktree_state(repo: bytes, path: bytes, index_mode: str | None,
-                   allowed: list[bytes], prohibited: list[bytes]) -> dict[str, Any]:
+                   allowed: list[bytes], prohibited: list[bytes],
+                   include_control_roots: bool = False) -> dict[str, Any]:
     absolute = os.path.join(repo, path)
     try: metadata = os.lstat(absolute)
     except FileNotFoundError:
@@ -106,7 +107,8 @@ def worktree_state(repo: bytes, path: bytes, index_mode: str | None,
         if not stat.S_ISDIR(metadata.st_mode):
             raise ObservationError(f"unsupported gitlink worktree entry: {path.hex()}")
         nested = capture(Path(os.fsdecode(absolute)), f"gitlink:{path.hex()}",
-                         projected_scopes(path, allowed), projected_scopes(path, prohibited))
+                         projected_scopes(path, allowed), projected_scopes(path, prohibited),
+                         include_control_roots=include_control_roots)
         return {
             "content_digest": digest_bytes(canonical_bytes(nested)),
             "executable": False, "head": nested["head"], "head_ref": nested["head_ref"], "kind": "gitlink",
@@ -138,10 +140,15 @@ def scope_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) ->
             else: raise ObservationError(f"unsupported scope entry: {path.hex()}")
         entries.append({"index": None, "path_hex": path.hex(), "source": "scope", "worktree": {"kind": kind}})
     return entries
-def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
+def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes],
+                    include_control_roots: bool = False) -> list[dict[str, Any]]:
+    def included(path: bytes) -> bool:
+        if not include_control_roots: return relevant(path, allowed, prohibited)
+        blocked = any(within(path, scope) for scope in prohibited)
+        return selected(path, allowed, prohibited) or (not blocked and bool(projected_scopes(path, allowed)))
     entries: list[dict[str, Any]] = []
     for record in run_git(repo, b"ls-files", b"-v", b"-z").split(b"\0"):
-        if record and relevant(record[2:], allowed, prohibited) and record[:1] != b"H":
+        if record and included(record[2:]) and record[:1] != b"H":
             raise ObservationError(f"unsupported index flag: {record[:1].decode('ascii')}")
     for record in run_git(repo, b"ls-files", b"--stage", b"-z").split(b"\0"):
         if not record: continue
@@ -150,10 +157,11 @@ def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) 
         fields = header.split(b" ")
         if len(fields) != 3: raise ObservationError("malformed git index header")
         mode, object_id, stage = (field.decode("ascii") for field in fields)
-        if not relevant(path, allowed, prohibited): continue
+        if not included(path): continue
         entries.append({"index": {"mode": mode, "object_id": object_id, "stage": int(stage)},
                         "path_hex": path.hex(), "source": "tracked",
-                        "worktree": worktree_state(repo, path, mode, allowed, prohibited)})
+                        "worktree": worktree_state(repo, path, mode, allowed, prohibited,
+                                                   include_control_roots)})
     return entries
 def untracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
@@ -165,7 +173,8 @@ def untracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]
                         "worktree": worktree_state(repo, path, None, allowed, prohibited)})
     return entries
 def capture(repo: Path, repository_id: str, allowed_paths: list[str],
-            prohibited_paths: list[str]) -> dict[str, Any]:
+            prohibited_paths: list[str], *,
+            include_control_roots: bool = False) -> dict[str, Any]:
     resolved_repo = repo.resolve()
     repo_bytes = os.fsencode(resolved_repo)
     if not repository_id.strip(): raise ObservationError("repository identity must be nonblank")
@@ -175,7 +184,9 @@ def capture(repo: Path, repository_id: str, allowed_paths: list[str],
     validate_scope_paths(repo_bytes, allowed_paths, prohibited_paths)
     allowed = [os.fsencode(path) for path in allowed_paths]
     prohibited = [os.fsencode(path) for path in prohibited_paths]
-    entries = scope_entries(repo_bytes, allowed, prohibited) + tracked_entries(repo_bytes, allowed, prohibited)
+    entries = scope_entries(repo_bytes, allowed, prohibited) + tracked_entries(
+        repo_bytes, allowed, prohibited, include_control_roots
+    )
     entries += untracked_entries(repo_bytes, allowed, prohibited)
     entries.sort(key=lambda entry: (bytes.fromhex(entry["path_hex"]), entry["source"],
                                     -1 if entry["index"] is None else entry["index"]["stage"]))

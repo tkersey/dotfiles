@@ -14,7 +14,13 @@ from subject_commit_observation import (
     head_tree_queries,
     observe_commit,
 )
-from subject_observation import canonical_bytes, digest_bytes, file_digest, observe
+from subject_observation import (
+    canonical_bytes,
+    capture as capture_subject,
+    digest_bytes,
+    file_digest,
+    observe,
+)
 
 ALLOWED = ["scope/value.txt"]
 REPOSITORY_ID = "example/subject-commit"
@@ -57,6 +63,25 @@ def write_before(repo: Path, root: Path, allowed: list[str] = ALLOWED, name: str
 def prepare_dirty(repo: Path, root: Path) -> Path:
     (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
     return write_before(repo, root)
+
+
+def retain_legacy_gitlink_digest(before_path: Path, nested_repo: Path, path: bytes) -> None:
+    before = json.loads(before_path.read_bytes())
+    legacy_nested = capture_subject(
+        nested_repo,
+        f"gitlink:{path.hex()}",
+        ["."],
+        [],
+        include_control_roots=True,
+    )
+    for entry in before["entries"]:
+        if entry["path_hex"] == path.hex() and entry["source"] == "tracked":
+            entry["worktree"]["content_digest"] = digest_bytes(
+                canonical_bytes(legacy_nested)
+            )
+    before["subject_digest"] = None
+    before["subject_digest"] = digest_bytes(canonical_bytes(before))
+    before_path.write_bytes(canonical_bytes(before) + b"\n")
 
 
 def commit_scoped(repo: Path) -> None:
@@ -184,19 +209,33 @@ def case_scope_projection() -> None:
         git(nested, "config", "user.email", "subject-commit@example.invalid")
         git(nested, "config", "user.name", "Subject Commit Test")
         (nested / "value.txt").write_text("base\n", encoding="utf-8")
+        (nested / ".ledger").mkdir()
+        (nested / ".ledger/tracked.txt").write_text("control\n", encoding="utf-8")
         git(nested, "add", "value.txt")
+        git(nested, "add", "--force", ".ledger/tracked.txt")
         git(nested, "commit", "-m", "nested base")
 
         repo = new_repo(root)
         git(repo, "-c", "protocol.file.allow=always", "submodule", "add", str(nested), "scope/sub")
         git(repo, "commit", "-m", "add submodule")
         (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
-        before_path = write_before(
-            repo, root, ["scope/sub/value.txt", "scope/value.txt"]
-        )
+        before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
+        retain_legacy_gitlink_digest(before_path, repo / "scope/sub", b"scope/sub")
         commit_scoped(repo)
         result = observe_commit(repo, before_path)
         assert result["changed_paths"] == ALLOWED
+
+        (repo / "scope/sub/value.txt").write_text("dirty\n", encoding="utf-8")
+        (repo / "scope/value.txt").write_text("second\n", encoding="utf-8")
+        before_path = write_before(
+            repo, root, ["scope/sub", "scope/value.txt"], "legacy-dirty-gitlink"
+        )
+        retain_legacy_gitlink_digest(before_path, repo / "scope/sub", b"scope/sub")
+        (repo / "scope/sub/value.txt").write_text("base\n", encoding="utf-8")
+        commit_scoped(repo)
+        expect_rejected(
+            lambda: observe_commit(repo, before_path), "worktree meaning changed"
+        )
 
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
