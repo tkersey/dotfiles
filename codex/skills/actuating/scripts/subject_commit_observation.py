@@ -195,6 +195,84 @@ def snapshot_git(
     return process.stdout
 
 
+def snapshot_index_entries(
+    repo: bytes,
+    index_file: Path,
+    worktree: Path,
+) -> dict[bytes, tuple[str, str]]:
+    entries: dict[bytes, tuple[str, str]] = {}
+    output = snapshot_git(
+        repo,
+        index_file,
+        worktree,
+        b"--no-replace-objects",
+        b"ls-files",
+        b"--stage",
+        b"-z",
+    )
+    for record in output.split(b"\0"):
+        if not record:
+            continue
+        header, separator, path = record.partition(b"\t")
+        fields = header.split(b" ")
+        if not separator or len(fields) != 3:
+            raise ObservationError("malformed snapshot index record")
+        mode, object_id, stage = (field.decode("ascii") for field in fields)
+        if stage != "0":
+            continue
+        value = (mode, object_id)
+        previous = entries.get(path)
+        if previous is not None and previous != value:
+            raise ObservationError("conflicting snapshot index records")
+        entries[path] = value
+    return entries
+
+
+def snapshot_destination(worktree: Path, path: bytes) -> Path:
+    if path.startswith(b"/"):
+        raise ObservationError("snapshot index path is absolute")
+    parts = path.split(b"/")
+    if not parts or any(part in {b"", b".", b".."} for part in parts):
+        raise ObservationError("snapshot index path is not canonical")
+    current = os.fsencode(worktree)
+    for part in parts[:-1]:
+        current = os.path.join(current, part)
+        try:
+            mode = os.lstat(current).st_mode
+        except FileNotFoundError:
+            os.mkdir(current, 0o755)
+        else:
+            if not stat.S_ISDIR(mode):
+                raise ObservationError("snapshot index path crosses a non-directory")
+    return Path(os.fsdecode(os.path.join(current, parts[-1])))
+
+
+def materialize_snapshot_worktree(
+    repo: bytes,
+    index_file: Path,
+    worktree: Path,
+    entries: dict[bytes, tuple[str, str]],
+) -> None:
+    for path, (mode, object_id) in sorted(entries.items()):
+        if mode not in {"100644", "100755", "120000"}:
+            continue
+        blob = snapshot_git(
+            repo,
+            index_file,
+            worktree,
+            b"--no-replace-objects",
+            b"cat-file",
+            b"blob",
+            object_id.encode("ascii"),
+        )
+        destination = snapshot_destination(worktree, path)
+        if mode == "120000":
+            os.symlink(blob, os.fsencode(destination))
+            continue
+        destination.write_bytes(blob)
+        destination.chmod(0o755 if mode == "100755" else 0o644)
+
+
 @contextmanager
 def snapshot_checkout(
     repo: bytes,
@@ -225,7 +303,13 @@ def snapshot_checkout(
                 retained_head.encode("ascii"),
             )
 
+        entries = snapshot_index_entries(repo, index_file, worktree)
+        materialize_snapshot_worktree(repo, index_file, worktree, entries)
+
         def filtered_blob(path: bytes) -> bytes:
+            entry = entries.get(path)
+            if entry is None or entry[0] not in {"100644", "100755"}:
+                raise ObservationError("snapshot path is not a stage-zero regular file")
             return snapshot_git(
                 repo,
                 index_file,
@@ -233,7 +317,8 @@ def snapshot_checkout(
                 b"--no-replace-objects",
                 b"cat-file",
                 b"--filters",
-                b":" + path,
+                b"--path=" + path,
+                entry[1].encode("ascii"),
             )
 
         yield filtered_blob
@@ -244,23 +329,33 @@ def current_index_legacy_projection(
     live: dict[str, Any],
 ) -> dict[str, Any] | None:
     candidate = copy.deepcopy(live)
-    with snapshot_checkout(os.fsencode(repo), None) as filtered_blob:
-        changed = False
-        for entry in candidate["entries"]:
-            path = bytes.fromhex(entry["path_hex"])
-            if entry["source"] != "tracked" or not any(
-                within(path.lower(), control) for control in CONTROL_ROOTS
-            ):
-                continue
-            index = entry.get("index")
-            if index is None or index["mode"] not in {"100644", "100755"}:
-                return None
-            entry["worktree"] = {
-                "content_digest": digest_bytes(filtered_blob(path)),
-                "executable": index["mode"] == "100755",
-                "kind": "file",
-            }
-            changed = True
+    try:
+        with snapshot_checkout(os.fsencode(repo), None) as filtered_blob:
+            changed = False
+            for entry in candidate["entries"]:
+                path = bytes.fromhex(entry["path_hex"])
+                if entry["source"] != "tracked" or not any(
+                    within(path.lower(), control) for control in CONTROL_ROOTS
+                ):
+                    continue
+                index = entry.get("index")
+                worktree = entry.get("worktree")
+                if (
+                    index is None
+                    or index["mode"] not in {"100644", "100755"}
+                    or not isinstance(worktree, dict)
+                    or worktree.get("kind") != "file"
+                    or not isinstance(worktree.get("executable"), bool)
+                ):
+                    return None
+                entry["worktree"] = {
+                    "content_digest": digest_bytes(filtered_blob(path)),
+                    "executable": worktree["executable"],
+                    "kind": "file",
+                }
+                changed = True
+    except ObservationError:
+        return None
     return candidate if changed else None
 
 

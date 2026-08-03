@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import stat
 import subprocess
 import tempfile
 from pathlib import Path
@@ -52,6 +53,35 @@ def new_repo(root: Path) -> Path:
     git(repo, "add", "scope/value.txt", "outside.txt")
     git(repo, "commit", "-m", "base")
     return repo
+
+
+def new_control_repo(root: Path, name: str) -> Path:
+    repo = root / name
+    repo.mkdir()
+    git(repo, "init", "-b", "main")
+    git(repo, "config", "user.email", "subject-commit@example.invalid")
+    git(repo, "config", "user.name", "Subject Commit Test")
+    (repo / ".ledger").mkdir()
+    (repo / ".ledger/tracked.txt").write_text("control\n", encoding="utf-8")
+    (repo / "value.txt").write_text("base\n", encoding="utf-8")
+    git(repo, "add", "value.txt")
+    git(repo, "add", "--force", ".ledger/tracked.txt")
+    git(repo, "commit", "-m", "control base")
+    return repo
+
+
+def add_control_submodule(repo: Path, nested: Path) -> Path:
+    git(
+        repo,
+        "-c",
+        "protocol.file.allow=always",
+        "submodule",
+        "add",
+        str(nested),
+        "scope/sub",
+    )
+    git(repo, "commit", "-m", "add control submodule")
+    return repo / "scope/sub"
 
 
 def write_before(repo: Path, root: Path, allowed: list[str] = ALLOWED, name: str = "before") -> Path:
@@ -324,8 +354,8 @@ def case_scope_projection() -> None:
         git(deep, "init", "-b", "main")
         git(deep, "config", "user.email", "subject-commit@example.invalid")
         git(deep, "config", "user.name", "Subject Commit Test")
-        (deep / "value.txt").write_text("base\n", encoding="utf-8")
-        git(deep, "add", "value.txt")
+        (deep / "1:foo").write_text("base\n", encoding="utf-8")
+        git(deep, "add", "1:foo")
         git(deep, "commit", "-m", "control deep base")
 
         nested = root / "control-gitlink-nested"
@@ -373,7 +403,7 @@ def case_scope_projection() -> None:
             repo / "scope/sub", "gitlink:73636f70652f737562", ["."], []
         )
         retain_legacy_gitlink_digest(before_path, repo / "scope/sub", b"scope/sub")
-        (repo / "scope/sub/.ledger/deep/value.txt").write_text(
+        (repo / "scope/sub/.ledger/deep/1:foo").write_text(
             "excluded semantic drift\n", encoding="utf-8"
         )
         commit_scoped(repo)
@@ -623,6 +653,94 @@ def case_scope_projection() -> None:
         )
 
 
+def case_snapshot_witnesses() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        nested = new_control_repo(root, "unreadable-index-nested")
+        repo = new_repo(root)
+        sub = add_control_submodule(repo, nested)
+        (repo / "scope/value.txt").write_text("unreadable index\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
+        retain_legacy_gitlink_digest(before_path, sub, b"scope/sub")
+        git(
+            sub,
+            "update-index",
+            "--info-only",
+            "--cacheinfo",
+            f"100644,{'f' * 40},.ledger/tracked.txt",
+        )
+        (sub / ".ledger/tracked.txt").write_text(
+            "post-capture drift\n", encoding="utf-8"
+        )
+        commit_scoped(repo)
+        assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        nested = new_control_repo(root, "index-mode-nested")
+        repo = new_repo(root)
+        sub = add_control_submodule(repo, nested)
+        git(sub, "update-index", "--chmod=+x", ".ledger/tracked.txt")
+        assert not (sub / ".ledger/tracked.txt").stat().st_mode & stat.S_IXUSR
+        (repo / "scope/value.txt").write_text("index mode\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
+        retain_legacy_gitlink_digest(before_path, sub, b"scope/sub")
+        (sub / ".ledger/tracked.txt").write_text(
+            "post-capture content drift\n", encoding="utf-8"
+        )
+        commit_scoped(repo)
+        assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        nested = root / "filter-context-nested"
+        nested.mkdir()
+        git(nested, "init", "-b", "main")
+        git(nested, "config", "user.email", "subject-commit@example.invalid")
+        git(nested, "config", "user.name", "Subject Commit Test")
+        (nested / ".ledger").mkdir()
+        (nested / ".gitattributes").write_text(
+            ".ledger/tracked.txt filter=context\n", encoding="utf-8"
+        )
+        (nested / ".ledger/tracked.txt").write_text("index\n", encoding="utf-8")
+        (nested / "filter-helper.txt").write_text("context\n", encoding="utf-8")
+        (nested / "value.txt").write_text("base\n", encoding="utf-8")
+        git(nested, "config", "filter.context.clean", "cat")
+        git(
+            nested,
+            "config",
+            "filter.context.smudge",
+            "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/filter-helper.txt\"'",
+        )
+        git(nested, "config", "filter.context.required", "true")
+        git(nested, "add", ".gitattributes", "filter-helper.txt", "value.txt")
+        git(nested, "add", "--force", ".ledger/tracked.txt")
+        git(nested, "commit", "-m", "filter context base")
+
+        repo = new_repo(root)
+        sub = add_control_submodule(repo, nested)
+        git(sub, "config", "filter.context.clean", "cat")
+        git(
+            sub,
+            "config",
+            "filter.context.smudge",
+            "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/filter-helper.txt\"'",
+        )
+        git(sub, "config", "filter.context.required", "true")
+        (sub / ".ledger/tracked.txt").unlink()
+        git(sub, "checkout", "--", ".ledger/tracked.txt")
+        assert (sub / ".ledger/tracked.txt").read_text(encoding="utf-8") == (
+            "index\ncontext\n"
+        )
+        (repo / "scope/value.txt").write_text("filter context\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
+        retain_legacy_gitlink_digest(before_path, sub, b"scope/sub")
+        (sub / ".ledger/tracked.txt").write_text("successor\n", encoding="utf-8")
+        git(sub, "add", "--force", ".ledger/tracked.txt")
+        commit_scoped(repo)
+        assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+
 def case_index_worktree_mode() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -766,6 +884,7 @@ CASES: dict[str, Callable[[], None]] = {
     "large-scope": case_large_scope,
     "non-parent": case_non_parent,
     "scope-projection": case_scope_projection,
+    "snapshot-witnesses": case_snapshot_witnesses,
 }
 
 
