@@ -12,9 +12,11 @@ from typing import Callable
 
 from subject_commit_observation import (
     ObservationError,
+    current_index_legacy_projections,
     head_tree_queries,
     observe_commit,
     retained_tree_legacy_projection,
+    write_snapshot_entry,
 )
 from subject_observation import (
     _legacy_tracked_control_projection,
@@ -84,8 +86,14 @@ def add_control_submodule(repo: Path, nested: Path) -> Path:
     return repo / "scope/sub"
 
 
-def write_before(repo: Path, root: Path, allowed: list[str] = ALLOWED, name: str = "before") -> Path:
-    before = observe(repo, REPOSITORY_ID, allowed, [])
+def write_before(
+    repo: Path,
+    root: Path,
+    allowed: list[str] = ALLOWED,
+    name: str = "before",
+    prohibited: list[str] | None = None,
+) -> Path:
+    before = observe(repo, REPOSITORY_ID, allowed, prohibited or [])
     path = root / f"{name}.json"
     path.write_bytes(canonical_bytes(before) + b"\n")
     return path
@@ -96,13 +104,18 @@ def prepare_dirty(repo: Path, root: Path) -> Path:
     return write_before(repo, root)
 
 
-def retain_legacy_gitlink_digest(before_path: Path, nested_repo: Path, path: bytes) -> None:
+def retain_legacy_gitlink_digest(
+    before_path: Path,
+    nested_repo: Path,
+    path: bytes,
+    prohibited: list[str] | None = None,
+) -> None:
     before = json.loads(before_path.read_bytes())
     legacy_nested = _legacy_tracked_control_projection(
         nested_repo,
         f"gitlink:{path.hex()}",
         ["."],
-        [],
+        prohibited or [],
     )
     for entry in before["entries"]:
         if entry["path_hex"] == path.hex() and entry["source"] == "tracked":
@@ -677,6 +690,55 @@ def case_snapshot_witnesses() -> None:
 
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
+        nested = new_control_repo(root, "unrelated-index-nested")
+        repo = new_repo(root)
+        sub = add_control_submodule(repo, nested)
+        (sub / ".ledger/tracked.txt").write_text("staged\n", encoding="utf-8")
+        git(sub, "add", "--force", ".ledger/tracked.txt")
+        (repo / "scope/value.txt").write_text("unrelated index\n", encoding="utf-8")
+        before_path = write_before(
+            repo,
+            root,
+            ["scope/sub", "scope/value.txt"],
+            prohibited=["scope/sub/.ledger/unavailable.txt"],
+        )
+        retain_legacy_gitlink_digest(
+            before_path,
+            sub,
+            b"scope/sub",
+            prohibited=[".ledger/unavailable.txt"],
+        )
+        git(
+            sub,
+            "update-index",
+            "--info-only",
+            "--add",
+            "--cacheinfo",
+            f"100644,{'f' * 40},.ledger/unavailable.txt",
+        )
+        (sub / ".ledger/tracked.txt").write_text(
+            "post-capture drift\n", encoding="utf-8"
+        )
+        retained_digest = next(
+            entry["worktree"]["content_digest"]
+            for entry in json.loads(before_path.read_bytes())["entries"]
+            if entry["source"] == "tracked" and entry["path_hex"] == b"scope/sub".hex()
+        )
+        legacy_current = _legacy_tracked_control_projection(
+            sub,
+            "gitlink:73636f70652f737562",
+            ["."],
+            [".ledger/unavailable.txt"],
+        )
+        assert any(
+            digest_bytes(canonical_bytes(candidate)) == retained_digest
+            for candidate in current_index_legacy_projections(sub, legacy_current)
+        )
+        commit_scoped(repo)
+        assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
         nested = new_control_repo(root, "index-mode-nested")
         repo = new_repo(root)
         sub = add_control_submodule(repo, nested)
@@ -693,6 +755,23 @@ def case_snapshot_witnesses() -> None:
 
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
+        nested = new_control_repo(root, "index-mode-successor-nested")
+        repo = new_repo(root)
+        sub = add_control_submodule(repo, nested)
+        git(sub, "update-index", "--chmod=+x", ".ledger/tracked.txt")
+        (sub / ".ledger/tracked.txt").chmod(0o755)
+        (repo / "scope/value.txt").write_text("index mode candidate\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
+        retain_legacy_gitlink_digest(before_path, sub, b"scope/sub")
+        (sub / ".ledger/tracked.txt").chmod(0o644)
+        (sub / ".ledger/tracked.txt").write_text(
+            "post-capture content drift\n", encoding="utf-8"
+        )
+        commit_scoped(repo)
+        assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
         nested = root / "filter-context-nested"
         nested.mkdir()
         git(nested, "init", "-b", "main")
@@ -700,7 +779,9 @@ def case_snapshot_witnesses() -> None:
         git(nested, "config", "user.name", "Subject Commit Test")
         (nested / ".ledger").mkdir()
         (nested / ".gitattributes").write_text(
-            ".ledger/tracked.txt filter=context\n", encoding="utf-8"
+            ".ledger/tracked.txt filter=context\n"
+            "filter-helper.txt filter=helper\n",
+            encoding="utf-8",
         )
         (nested / ".ledger/tracked.txt").write_text("index\n", encoding="utf-8")
         (nested / "filter-helper.txt").write_text("context\n", encoding="utf-8")
@@ -713,6 +794,19 @@ def case_snapshot_witnesses() -> None:
             "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/filter-helper.txt\"'",
         )
         git(nested, "config", "filter.context.required", "true")
+        git(
+            nested,
+            "config",
+            "filter.helper.clean",
+            "sh -c 'sed \"/^converted$/d\"'",
+        )
+        git(
+            nested,
+            "config",
+            "filter.helper.smudge",
+            "sh -c 'cat; printf \"converted\\n\"'",
+        )
+        git(nested, "config", "filter.helper.required", "true")
         git(nested, "add", ".gitattributes", "filter-helper.txt", "value.txt")
         git(nested, "add", "--force", ".ledger/tracked.txt")
         git(nested, "commit", "-m", "filter context base")
@@ -727,10 +821,25 @@ def case_snapshot_witnesses() -> None:
             "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/filter-helper.txt\"'",
         )
         git(sub, "config", "filter.context.required", "true")
+        git(
+            sub,
+            "config",
+            "filter.helper.clean",
+            "sh -c 'sed \"/^converted$/d\"'",
+        )
+        git(
+            sub,
+            "config",
+            "filter.helper.smudge",
+            "sh -c 'cat; printf \"converted\\n\"'",
+        )
+        git(sub, "config", "filter.helper.required", "true")
+        (sub / "filter-helper.txt").unlink()
+        git(sub, "checkout", "--", "filter-helper.txt")
         (sub / ".ledger/tracked.txt").unlink()
         git(sub, "checkout", "--", ".ledger/tracked.txt")
         assert (sub / ".ledger/tracked.txt").read_text(encoding="utf-8") == (
-            "index\ncontext\n"
+            "index\ncontext\nconverted\n"
         )
         (repo / "scope/value.txt").write_text("filter context\n", encoding="utf-8")
         before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
@@ -739,6 +848,19 @@ def case_snapshot_witnesses() -> None:
         git(sub, "add", "--force", ".ledger/tracked.txt")
         commit_scoped(repo)
         assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        worktree = root / "worktree"
+        worktree.mkdir()
+        outside = root / "outside.txt"
+        outside.write_text("safe\n", encoding="utf-8")
+        (worktree / "target").symlink_to(outside)
+        expect_rejected(
+            lambda: write_snapshot_entry(worktree, b"target", "100644", b"unsafe\n"),
+            "cannot materialize snapshot path",
+        )
+        assert outside.read_text(encoding="utf-8") == "safe\n"
 
 
 def case_index_worktree_mode() -> None:

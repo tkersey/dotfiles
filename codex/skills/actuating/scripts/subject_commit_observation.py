@@ -133,13 +133,13 @@ def normalize_legacy_gitlink_digests(
             nested_prohibited,
         )
         if digest_bytes(canonical_bytes(legacy_nested)) != retained_digest:
-            index_candidate = current_index_legacy_projection(
+            index_candidates = current_index_legacy_projections(
                 nested_repo,
                 legacy_nested,
             )
-            if (
-                index_candidate is None
-                or digest_bytes(canonical_bytes(index_candidate)) != retained_digest
+            if not any(
+                digest_bytes(canonical_bytes(candidate)) == retained_digest
+                for candidate in index_candidates
             ):
                 retained_head = retained_worktree.get("head")
                 if not isinstance(retained_head, str):
@@ -175,13 +175,7 @@ def snapshot_git(
     worktree: Path,
     *args: bytes,
 ) -> bytes:
-    environment = {
-        os.fsencode(key): os.fsencode(value)
-        for key, value in os.environ.items()
-        if not key.startswith("GIT_")
-    }
-    environment[b"GIT_INDEX_FILE"] = os.fsencode(index_file)
-    environment[b"GIT_WORK_TREE"] = os.fsencode(worktree)
+    environment = snapshot_environment(index_file, worktree)
     process = subprocess.run(
         [b"git", b"-C", repo, *args],
         check=False,
@@ -193,6 +187,17 @@ def snapshot_git(
         message = process.stderr.decode("utf-8", "replace").strip()
         raise ObservationError(f"git snapshot command failed: {message}")
     return process.stdout
+
+
+def snapshot_environment(index_file: Path, worktree: Path) -> dict[bytes, bytes]:
+    environment = {
+        os.fsencode(key): os.fsencode(value)
+        for key, value in os.environ.items()
+        if not key.startswith("GIT_")
+    }
+    environment[b"GIT_INDEX_FILE"] = os.fsencode(index_file)
+    environment[b"GIT_WORK_TREE"] = os.fsencode(worktree)
+    return environment
 
 
 def snapshot_index_entries(
@@ -247,30 +252,126 @@ def snapshot_destination(worktree: Path, path: bytes) -> Path:
     return Path(os.fsdecode(os.path.join(current, parts[-1])))
 
 
+def write_snapshot_entry(
+    worktree: Path,
+    path: bytes,
+    mode: str,
+    blob: bytes,
+) -> None:
+    destination = snapshot_destination(worktree, path)
+    try:
+        if mode == "120000":
+            os.symlink(blob, os.fsencode(destination))
+            return
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        descriptor = os.open(destination, flags, 0o755 if mode == "100755" else 0o644)
+    except OSError as error:
+        raise ObservationError(f"cannot materialize snapshot path: {error}") from error
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(blob)
+    except BaseException:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        raise
+
+
+def snapshot_blobs(
+    repo: bytes,
+    index_file: Path,
+    worktree: Path,
+    entries: dict[bytes, tuple[str, str]],
+) -> Iterator[tuple[bytes, str, bytes]]:
+    requested = [
+        (path, mode, object_id)
+        for path, (mode, object_id) in sorted(entries.items())
+        if mode in {"100644", "100755", "120000"}
+    ]
+    request_file = tempfile.TemporaryFile()
+    request_file.write(
+        b"".join(object_id.encode("ascii") + b"\n" for _, _, object_id in requested)
+    )
+    request_file.seek(0)
+    process = subprocess.Popen(
+        [b"git", b"-C", repo, b"--no-replace-objects", b"cat-file", b"--batch"],
+        stdin=request_file,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=snapshot_environment(index_file, worktree),
+    )
+    if process.stdout is None or process.stderr is None:
+        process.kill()
+        process.wait()
+        request_file.close()
+        raise ObservationError("git snapshot batch has no output channel")
+    try:
+        for path, mode, object_id in requested:
+            header = process.stdout.readline().rstrip(b"\n").split(b" ")
+            if len(header) != 3 or header[0] != object_id.encode("ascii") or header[1] != b"blob":
+                raise ObservationError("git snapshot batch returned an unexpected object")
+            try:
+                length = int(header[2])
+            except ValueError as error:
+                raise ObservationError("git snapshot batch returned an invalid length") from error
+            blob = process.stdout.read(length)
+            if len(blob) != length or process.stdout.read(1) != b"\n":
+                raise ObservationError("git snapshot batch returned a truncated object")
+            yield path, mode, blob
+        return_code = process.wait()
+        if return_code != 0:
+            message = process.stderr.read().decode("utf-8", "replace").strip()
+            raise ObservationError(f"git snapshot batch failed: {message}")
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+        request_file.close()
+
+
 def materialize_snapshot_worktree(
     repo: bytes,
     index_file: Path,
     worktree: Path,
     entries: dict[bytes, tuple[str, str]],
 ) -> None:
-    for path, (mode, object_id) in sorted(entries.items()):
-        if mode not in {"100644", "100755", "120000"}:
-            continue
-        blob = snapshot_git(
-            repo,
-            index_file,
-            worktree,
-            b"--no-replace-objects",
-            b"cat-file",
-            b"blob",
-            object_id.encode("ascii"),
-        )
-        destination = snapshot_destination(worktree, path)
-        if mode == "120000":
-            os.symlink(blob, os.fsencode(destination))
-            continue
-        destination.write_bytes(blob)
-        destination.chmod(0o755 if mode == "100755" else 0o644)
+    for path, mode, blob in snapshot_blobs(repo, index_file, worktree, entries):
+        write_snapshot_entry(worktree, path, mode, blob)
+    snapshot_git(
+        repo,
+        index_file,
+        worktree,
+        b"--no-replace-objects",
+        b"checkout-index",
+        b"--all",
+        b"--force",
+    )
+
+
+def snapshot_has_custom_filter(
+    repo: bytes,
+    index_file: Path,
+    worktree: Path,
+    path: bytes,
+) -> bool:
+    output = snapshot_git(
+        repo,
+        index_file,
+        worktree,
+        b"--no-replace-objects",
+        b"check-attr",
+        b"--cached",
+        b"-z",
+        b"filter",
+        b"--",
+        path,
+    ).split(b"\0")
+    if len(output) != 4 or output[0] != path or output[1] != b"filter" or output[3] != b"":
+        raise ObservationError("git snapshot returned malformed filter attributes")
+    return output[2] not in {b"unspecified", b"unset"}
 
 
 @contextmanager
@@ -304,12 +405,19 @@ def snapshot_checkout(
             )
 
         entries = snapshot_index_entries(repo, index_file, worktree)
-        materialize_snapshot_worktree(repo, index_file, worktree, entries)
+        checkout_materialized = False
 
         def filtered_blob(path: bytes) -> bytes:
+            nonlocal checkout_materialized
             entry = entries.get(path)
             if entry is None or entry[0] not in {"100644", "100755"}:
                 raise ObservationError("snapshot path is not a stage-zero regular file")
+            if (
+                not checkout_materialized
+                and snapshot_has_custom_filter(repo, index_file, worktree, path)
+            ):
+                materialize_snapshot_worktree(repo, index_file, worktree, entries)
+                checkout_materialized = True
             return snapshot_git(
                 repo,
                 index_file,
@@ -324,22 +432,27 @@ def snapshot_checkout(
         yield filtered_blob
 
 
-def current_index_legacy_projection(
+def current_index_legacy_projections(
     repo: Path,
     live: dict[str, Any],
-) -> dict[str, Any] | None:
-    candidate = copy.deepcopy(live)
+) -> list[dict[str, Any]]:
+    live_mode_candidate = copy.deepcopy(live)
+    index_mode_candidate = copy.deepcopy(live)
     try:
         with snapshot_checkout(os.fsencode(repo), None) as filtered_blob:
             changed = False
-            for entry in candidate["entries"]:
-                path = bytes.fromhex(entry["path_hex"])
-                if entry["source"] != "tracked" or not any(
+            for live_entry, index_entry in zip(
+                live_mode_candidate["entries"],
+                index_mode_candidate["entries"],
+                strict=True,
+            ):
+                path = bytes.fromhex(live_entry["path_hex"])
+                if live_entry["source"] != "tracked" or not any(
                     within(path.lower(), control) for control in CONTROL_ROOTS
                 ):
                     continue
-                index = entry.get("index")
-                worktree = entry.get("worktree")
+                index = live_entry.get("index")
+                worktree = live_entry.get("worktree")
                 if (
                     index is None
                     or index["mode"] not in {"100644", "100755"}
@@ -347,16 +460,27 @@ def current_index_legacy_projection(
                     or worktree.get("kind") != "file"
                     or not isinstance(worktree.get("executable"), bool)
                 ):
-                    return None
-                entry["worktree"] = {
-                    "content_digest": digest_bytes(filtered_blob(path)),
+                    return []
+                content_digest = digest_bytes(filtered_blob(path))
+                live_entry["worktree"] = {
+                    "content_digest": content_digest,
                     "executable": worktree["executable"],
+                    "kind": "file",
+                }
+                index_entry["worktree"] = {
+                    "content_digest": content_digest,
+                    "executable": index["mode"] == "100755",
                     "kind": "file",
                 }
                 changed = True
     except ObservationError:
-        return None
-    return candidate if changed else None
+        return []
+    if not changed:
+        return []
+    candidates = [live_mode_candidate]
+    if index_mode_candidate != live_mode_candidate:
+        candidates.append(index_mode_candidate)
+    return candidates
 
 
 def retained_tree_entries(
