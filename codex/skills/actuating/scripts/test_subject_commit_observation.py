@@ -14,7 +14,7 @@ from subject_commit_observation import (
     head_tree_queries,
     observe_commit,
 )
-from subject_observation import canonical_bytes, observe
+from subject_observation import canonical_bytes, digest_bytes, file_digest, observe
 
 ALLOWED = ["scope/value.txt"]
 REPOSITORY_ID = "example/subject-commit"
@@ -207,6 +207,36 @@ def case_scope_projection() -> None:
         git(repo, "commit", "-m", "add tracked control path")
         (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
         before_path = write_before(repo, root, ["."])
+        before = json.loads(before_path.read_bytes())
+        mode, object_id, stage, _ = git(
+            repo, "ls-files", "--stage", "--", ".ledger/tracked.txt"
+        ).split()
+        before["entries"].append(
+            {
+                "index": {
+                    "mode": mode,
+                    "object_id": object_id,
+                    "stage": int(stage),
+                },
+                "path_hex": b".ledger/tracked.txt".hex(),
+                "source": "tracked",
+                "worktree": {
+                    "content_digest": file_digest(repo / ".ledger/tracked.txt"),
+                    "executable": False,
+                    "kind": "file",
+                },
+            }
+        )
+        before["entries"].sort(
+            key=lambda entry: (
+                bytes.fromhex(entry["path_hex"]),
+                entry["source"],
+                -1 if entry["index"] is None else entry["index"]["stage"],
+            )
+        )
+        before["subject_digest"] = None
+        before["subject_digest"] = digest_bytes(canonical_bytes(before))
+        before_path.write_bytes(canonical_bytes(before) + b"\n")
         (repo / ".ledger/tracked.txt").write_text("ignored drift\n", encoding="utf-8")
         commit_scoped(repo)
         result = observe_commit(repo, before_path)

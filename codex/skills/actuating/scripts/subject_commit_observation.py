@@ -22,6 +22,7 @@ from subject_observation import (
     relevant,
     run_git,
     selected,
+    within,
 )
 
 SCHEMA = "actuating-subject-commit-observation/v1"
@@ -47,6 +48,9 @@ def load_before(path: Path) -> dict[str, Any]:
 def semantic_worktree_digest(observation: dict[str, Any]) -> str:
     actual: dict[str, dict[str, Any]] = {}
     for entry in observation["entries"]:
+        path = bytes.fromhex(entry["path_hex"]).lower()
+        if any(within(path, control) for control in CONTROL_ROOTS):
+            continue
         if entry["source"] not in {"tracked", "untracked"}:
             continue
         if entry["worktree"]["kind"] == "deleted":
@@ -59,6 +63,9 @@ def semantic_worktree_digest(observation: dict[str, Any]) -> str:
 
     rows_by_path: dict[str, dict[str, Any]] = dict(actual)
     for entry in observation["entries"]:
+        encoded_path = bytes.fromhex(entry["path_hex"]).lower()
+        if any(within(encoded_path, control) for control in CONTROL_ROOTS):
+            continue
         source = entry["source"]
         worktree = entry["worktree"]
         path = entry["path_hex"]
