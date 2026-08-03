@@ -383,10 +383,11 @@ structural identities, counts, event-kind counts, pending operation, and exact
 Evidence head. Seq verifies the input schema and emits
 `actuating-artifact-kernel-observation/v1`; Actuating interprets the facts.
 
-For a Goal carry-forward, use `goal-carry-forward-context`. Its payload exports
-the exact retained Goal, Construction ref, committed subject, Counterexamples,
-full class register, carry-forward marker, lineage Construction, and pending
-operation. It is the sanctioned source for current Goal and active Set refs.
+For a Goal carry-forward or successor Construction, use
+`goal-carry-forward-context`. Its payload exports the exact retained Goal,
+active Construction and ref, committed subject, Counterexamples, full class
+register, carry-forward marker, lineage Construction, and pending operation. It
+is the sanctioned source for current Goal, Construction, and active Set refs.
 Derive supporting references exactly from classes whose status is `accepted`,
 `blocked`, or `follow-up`; never guess, reconstruct an older Goal, or read the
 event log directly. An unavailable or incomplete projection is a fail-closed
