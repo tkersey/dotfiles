@@ -165,7 +165,15 @@ rewrite the Goal. `underdetermined` preserves every materially incomparable
 derivation for later comparison and blocks if Actuating cannot distinguish them
 by current Goal law, observation, or dominance. A new explicit source
 preference has no effect until `$goal-contract` compiles it into a successor
-Goal Contract. When accepted or blocked Counterexamples remain unresolved, or
+Goal Contract. Before authoring that successor, project
+`goal-carry-forward-context` from the canonical Evidence store. Treat its exact
+retained Goal artifact as the current Goal and derive the required supporting
+references only from retained classes whose status is `accepted`, `blocked`, or
+`follow-up`. Never guess supporting references, reconstruct the Goal from an
+older artifact, or read the event log directly. If the projection is absent,
+invalid, or omits a register required by the admission law, fail closed with an
+owner-side Evidence-protocol obstruction; do not attempt carry-forward.
+When accepted or blocked Counterexamples remain unresolved, or
 when the revision brings a `follow-up` class within the successor Goal's scope,
 the successor Goal must cite every Set carrying those classes, and
 `$review-fold` must author a successor Set that cites the successor Goal,

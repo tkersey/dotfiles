@@ -238,6 +238,13 @@ ledger transact \
 
 ledger project \
   --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection goal-carry-forward-context \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
   --projection structural-facts \
   --repo REPO \
   --param goal=GOAL_ID \
@@ -274,6 +281,30 @@ containing structural identities, counts, event-kind counts, the current
 pending-operation value, and the exact Evidence head. Seq verifies the input
 schema and emits `actuating-artifact-kernel-observation/v1`; Actuating alone
 interprets those facts.
+
+For a Goal carry-forward, use `goal-carry-forward-context` instead. Its payload
+is `actuating-goal-carry-forward-context/v1` and exports the exact retained
+`goal`, `construction_ref`, `subject_digest`, `counterexamples`, full
+`counterexample_classes`, `carry_forward`, `lineage_construction`, and
+`pending_operation` values. It is the sanctioned source for the current Goal
+artifact and the active Counterexample Set references. From a payload-only
+projection, derive those references exactly with:
+
+~~~bash
+jaq '[.counterexample_classes[]
+      | select(.value.status == "accepted"
+            or .value.status == "blocked"
+            or .value.status == "follow-up")
+      | "counterexample-set:\(.source)"]
+     | unique | sort' goal-carry-forward-context.json
+~~~
+
+Do not guess supporting references, reconstruct the current Goal from an older
+artifact, or read the event log directly. An unavailable, invalid, or
+incomplete context projection is a fail-closed owner-side obstruction, not
+permission to retry registration. Like every Ledger projection, this view is
+discardable and grants no semantic, execution, mutation, review, or closure
+authority.
 
 Observe physical run evidence independently, selecting an exact session or a
 bounded repository/time window:
