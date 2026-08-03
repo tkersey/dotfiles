@@ -6,6 +6,7 @@ import argparse
 import copy
 import json
 import os
+import stat
 import sys
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,7 @@ from subject_observation import (
     digest_bytes,
     observe,
     projected_scopes,
+    relevant,
     run_git,
     selected,
 )
@@ -101,9 +103,26 @@ def pathspecs(scope: dict[str, Any]) -> list[bytes]:
     ]
 
 
+def projected_entry(
+    path: bytes,
+    mode: str,
+    allowed: list[bytes],
+    prohibited: list[bytes],
+) -> bool:
+    return selected(path, allowed, prohibited) or (
+        mode == "160000" and relevant(path, allowed, prohibited)
+    )
+
+
 def head_tree(repo: bytes, scope: dict[str, Any]) -> dict[bytes, tuple[str, str]]:
     allowed = [os.fsencode(path) for path in scope["allowed_paths"]]
     prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
+    roots = sorted(
+        {
+            path if path == b"." else path.split(b"/", 1)[0]
+            for path in allowed
+        }
+    )
     output = run_git(
         repo,
         b"--no-replace-objects",
@@ -113,7 +132,7 @@ def head_tree(repo: bytes, scope: dict[str, Any]) -> dict[bytes, tuple[str, str]
         b"--full-tree",
         b"HEAD",
         b"--",
-        *(b":(literal)" + path for path in allowed),
+        *(b":(literal)" + path for path in roots),
     )
     result: dict[bytes, tuple[str, str]] = {}
     for record in output.split(b"\0"):
@@ -123,23 +142,29 @@ def head_tree(repo: bytes, scope: dict[str, Any]) -> dict[bytes, tuple[str, str]
         fields = header.split(b" ")
         if not separator or len(fields) != 3:
             raise ObservationError("malformed HEAD tree record")
-        if not selected(path, allowed, prohibited):
-            continue
         mode, kind, object_id = (field.decode("ascii") for field in fields)
+        if not projected_entry(path, mode, allowed, prohibited):
+            continue
         if kind not in {"blob", "commit"} or path in result:
             raise ObservationError("unsupported or duplicate HEAD tree record")
         result[path] = (mode, object_id)
     return result
 
 
-def tracked_index(observation: dict[str, Any]) -> dict[bytes, dict[str, Any]]:
+def tracked_index(
+    observation: dict[str, Any], scope: dict[str, Any]
+) -> dict[bytes, dict[str, Any]]:
+    allowed = [os.fsencode(path) for path in scope["allowed_paths"]]
+    prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
     result: dict[bytes, dict[str, Any]] = {}
     for entry in observation["entries"]:
         if entry["source"] != "tracked":
             continue
         path = bytes.fromhex(entry["path_hex"])
         index = entry["index"]
-        if index is None or index["stage"] != 0 or path in result:
+        if index is None or not projected_entry(path, index["mode"], allowed, prohibited):
+            continue
+        if index["stage"] != 0 or path in result:
             raise ObservationError("successor index is unmerged or duplicated within the subject scope")
         result[path] = entry
     return result
@@ -161,7 +186,7 @@ def require_clean(repo: bytes, observation: dict[str, Any], scope: dict[str, Any
     if ignored:
         raise ObservationError("successor worktree has ignored paths within the subject scope")
 
-    index_entries = tracked_index(observation)
+    index_entries = tracked_index(observation, scope)
     tree_entries = head_tree(repo, scope)
     index_tree = {
         path: (entry["index"]["mode"], entry["index"]["object_id"])
@@ -199,11 +224,21 @@ def require_clean(repo: bytes, observation: dict[str, Any], scope: dict[str, Any
             continue
         if worktree["kind"] != "file":
             raise ObservationError("successor worktree entry has an unsupported kind")
-        object_id = run_git(repo, b"hash-object", b"--no-filters", b"--", path).strip().decode("ascii")
+        if index["mode"] not in {"100644", "100755"}:
+            raise ObservationError("successor index mode is incompatible with a regular file")
+        object_id = run_git(
+            repo,
+            b"hash-object",
+            b"--path=" + path,
+            b"--",
+            path,
+        ).strip().decode("ascii")
         if object_id != index["object_id"]:
             raise ObservationError("successor worktree content differs from the index")
         expected_executable = index["mode"] == "100755"
-        if worktree["executable"] != expected_executable:
+        metadata = os.lstat(os.path.join(repo, path))
+        owner_executable = bool(metadata.st_mode & stat.S_IXUSR)
+        if owner_executable != expected_executable:
             raise ObservationError("successor worktree mode differs from the index")
 
 

@@ -150,6 +150,90 @@ def case_large_scope() -> None:
         assert len(result["changed_paths"]) == len(paths)
 
 
+def case_clean_filter() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        git(repo, "config", "filter.rewrite.clean", "sed s/worktree/index/g")
+        git(repo, "config", "filter.rewrite.smudge", "cat")
+        (repo / ".git/info/attributes").write_text(
+            "scope/value.txt filter=rewrite\n", encoding="utf-8"
+        )
+        (repo / "scope/value.txt").write_text("worktree\n", encoding="utf-8")
+        before_path = write_before(repo, root)
+        commit_scoped(repo)
+        assert git(repo, "status", "--porcelain=v1", "--", "scope/value.txt") == ""
+        result = observe_commit(repo, before_path)
+        assert result["before"]["scoped_worktree_digest"] == result["after"]["scoped_worktree_digest"]
+
+
+def case_scope_projection() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        nested = root / "nested"
+        nested.mkdir()
+        git(nested, "init", "-b", "main")
+        git(nested, "config", "user.email", "subject-commit@example.invalid")
+        git(nested, "config", "user.name", "Subject Commit Test")
+        (nested / "value.txt").write_text("base\n", encoding="utf-8")
+        git(nested, "add", "value.txt")
+        git(nested, "commit", "-m", "nested base")
+
+        repo = new_repo(root)
+        git(repo, "-c", "protocol.file.allow=always", "submodule", "add", str(nested), "scope/sub")
+        git(repo, "commit", "-m", "add submodule")
+        (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
+        before_path = write_before(
+            repo, root, ["scope/sub/value.txt", "scope/value.txt"]
+        )
+        commit_scoped(repo)
+        result = observe_commit(repo, before_path)
+        assert result["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        (repo / ".ledger").mkdir()
+        (repo / ".ledger/tracked.txt").write_text("control\n", encoding="utf-8")
+        git(repo, "add", "--force", ".ledger/tracked.txt")
+        git(repo, "commit", "-m", "add tracked control path")
+        (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["."])
+        commit_scoped(repo)
+        result = observe_commit(repo, before_path)
+        assert result["changed_paths"] == ALLOWED
+
+
+def case_index_worktree_mode() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        executable = repo / "scope/executable"
+        executable.write_text("executable\n", encoding="utf-8")
+        executable.chmod(0o755)
+        git(repo, "add", "scope/executable")
+        git(repo, "commit", "-m", "add executable")
+        executable.chmod(0o654)
+        (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope"])
+        commit_scoped(repo)
+        expect_rejected(lambda: observe_commit(repo, before_path), "mode differs")
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        link = repo / "scope/link"
+        link.symlink_to("target")
+        git(repo, "add", "scope/link")
+        git(repo, "commit", "-m", "add symlink")
+        link.unlink()
+        link.write_text("target", encoding="utf-8")
+        (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope"])
+        commit_scoped(repo)
+        expect_rejected(lambda: observe_commit(repo, before_path), "index mode is incompatible")
+
+
 def case_ambient_git_state() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -254,12 +338,15 @@ def case_negative() -> None:
 
 CASES: dict[str, Callable[[], None]] = {
     "ambient-git-state": case_ambient_git_state,
+    "clean-filter": case_clean_filter,
     "positive": case_positive,
     "negative": case_negative,
     "changed-content": case_changed_content,
     "deletion": case_deletion,
+    "index-worktree-mode": case_index_worktree_mode,
     "large-scope": case_large_scope,
     "non-parent": case_non_parent,
+    "scope-projection": case_scope_projection,
 }
 
 
