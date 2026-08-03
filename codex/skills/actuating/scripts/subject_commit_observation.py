@@ -105,25 +105,31 @@ def pathspecs(scope: dict[str, Any]) -> list[bytes]:
 
 def projected_entry(
     path: bytes,
-    mode: str,
     allowed: list[bytes],
     prohibited: list[bytes],
 ) -> bool:
-    return selected(path, allowed, prohibited) or (
-        mode == "160000" and relevant(path, allowed, prohibited)
-    )
+    return relevant(path, allowed, prohibited)
+
+
+def head_tree_queries(allowed: list[bytes]) -> tuple[list[bytes], list[bytes]]:
+    recursive = sorted({b":(literal)" + path for path in allowed})
+    ancestors: set[bytes] = set()
+    for path in allowed:
+        if path == b".":
+            continue
+        parts = path.split(b"/")
+        ancestors.update(
+            b":(literal)" + b"/".join(parts[:index])
+            for index in range(1, len(parts))
+        )
+    return recursive, sorted(ancestors)
 
 
 def head_tree(repo: bytes, scope: dict[str, Any]) -> dict[bytes, tuple[str, str]]:
     allowed = [os.fsencode(path) for path in scope["allowed_paths"]]
     prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
-    roots = sorted(
-        {
-            path if path == b"." else path.split(b"/", 1)[0]
-            for path in allowed
-        }
-    )
-    output = run_git(
+    recursive, ancestors = head_tree_queries(allowed)
+    outputs = [run_git(
         repo,
         b"--no-replace-objects",
         b"ls-tree",
@@ -132,22 +138,38 @@ def head_tree(repo: bytes, scope: dict[str, Any]) -> dict[bytes, tuple[str, str]
         b"--full-tree",
         b"HEAD",
         b"--",
-        *(b":(literal)" + path for path in roots),
-    )
+        *recursive,
+    )]
+    if ancestors:
+        outputs.append(run_git(
+            repo,
+            b"--no-replace-objects",
+            b"ls-tree",
+            b"-z",
+            b"--full-tree",
+            b"HEAD",
+            b"--",
+            *ancestors,
+        ))
     result: dict[bytes, tuple[str, str]] = {}
-    for record in output.split(b"\0"):
-        if not record:
-            continue
-        header, separator, path = record.partition(b"\t")
-        fields = header.split(b" ")
-        if not separator or len(fields) != 3:
-            raise ObservationError("malformed HEAD tree record")
-        mode, kind, object_id = (field.decode("ascii") for field in fields)
-        if not projected_entry(path, mode, allowed, prohibited):
-            continue
-        if kind not in {"blob", "commit"} or path in result:
-            raise ObservationError("unsupported or duplicate HEAD tree record")
-        result[path] = (mode, object_id)
+    for output in outputs:
+        for record in output.split(b"\0"):
+            if not record:
+                continue
+            header, separator, path = record.partition(b"\t")
+            fields = header.split(b" ")
+            if not separator or len(fields) != 3:
+                raise ObservationError("malformed HEAD tree record")
+            mode, kind, object_id = (field.decode("ascii") for field in fields)
+            if kind == "tree" or not projected_entry(path, allowed, prohibited):
+                continue
+            if kind not in {"blob", "commit"}:
+                raise ObservationError("unsupported HEAD tree record")
+            value = (mode, object_id)
+            previous = result.get(path)
+            if previous is not None and previous != value:
+                raise ObservationError("conflicting HEAD tree records")
+            result[path] = value
     return result
 
 
@@ -162,7 +184,7 @@ def tracked_index(
             continue
         path = bytes.fromhex(entry["path_hex"])
         index = entry["index"]
-        if index is None or not projected_entry(path, index["mode"], allowed, prohibited):
+        if index is None or not projected_entry(path, allowed, prohibited):
             continue
         if index["stage"] != 0 or path in result:
             raise ObservationError("successor index is unmerged or duplicated within the subject scope")

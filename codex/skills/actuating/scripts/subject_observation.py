@@ -66,6 +66,8 @@ def selected(path: bytes, allowed: list[bytes], prohibited: list[bytes]) -> bool
     if any(within(path, scope) for scope in prohibited): return False
     return any(within(path, scope) for scope in allowed)
 def relevant(path: bytes, allowed: list[bytes], prohibited: list[bytes]) -> bool:
+    folded = path.lower()
+    if any(within(folded, control) for control in CONTROL_ROOTS): return False
     blocked = any(within(path, scope) for scope in prohibited)
     return selected(path, allowed, prohibited) or (not blocked and bool(projected_scopes(path, allowed)))
 def git_result(repo: bytes, *args: bytes) -> subprocess.CompletedProcess[bytes]:

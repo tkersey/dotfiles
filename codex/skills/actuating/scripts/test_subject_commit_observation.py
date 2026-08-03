@@ -9,7 +9,11 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
-from subject_commit_observation import ObservationError, observe_commit
+from subject_commit_observation import (
+    ObservationError,
+    head_tree_queries,
+    observe_commit,
+)
 from subject_observation import canonical_bytes, observe
 
 ALLOWED = ["scope/value.txt"]
@@ -168,6 +172,10 @@ def case_clean_filter() -> None:
 
 
 def case_scope_projection() -> None:
+    recursive, ancestors = head_tree_queries([b"vendor/package/file"])
+    assert recursive == [b":(literal)vendor/package/file"]
+    assert ancestors == [b":(literal)vendor", b":(literal)vendor/package"]
+
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
         nested = root / "nested"
@@ -199,9 +207,26 @@ def case_scope_projection() -> None:
         git(repo, "commit", "-m", "add tracked control path")
         (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
         before_path = write_before(repo, root, ["."])
+        (repo / ".ledger/tracked.txt").write_text("ignored drift\n", encoding="utf-8")
         commit_scoped(repo)
         result = observe_commit(repo, before_path)
         assert result["changed_paths"] == ALLOWED
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        (repo / "ancestor").write_text("tracked ancestor\n", encoding="utf-8")
+        git(repo, "add", "ancestor")
+        git(repo, "commit", "-m", "add tracked ancestor")
+        (repo / "ancestor").unlink()
+        (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
+        before_path = write_before(
+            repo, root, ["ancestor/descendant", "scope/value.txt"]
+        )
+        commit_scoped(repo)
+        expect_rejected(
+            lambda: observe_commit(repo, before_path), "deleted tracked path"
+        )
 
 
 def case_index_worktree_mode() -> None:
