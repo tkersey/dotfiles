@@ -17,6 +17,7 @@ from subject_observation import (
     canonical_scope,
     digest_bytes,
     observe,
+    projected_scopes,
     run_git,
     selected,
 )
@@ -42,29 +43,51 @@ def load_before(path: Path) -> dict[str, Any]:
 
 
 def semantic_worktree_digest(observation: dict[str, Any]) -> str:
-    actual_paths = {
-        entry["path_hex"]
-        for entry in observation["entries"]
-        if entry["source"] in {"tracked", "untracked"}
-    }
-    rows: list[dict[str, Any]] = []
+    actual: dict[str, dict[str, Any]] = {}
+    for entry in observation["entries"]:
+        if entry["source"] not in {"tracked", "untracked"}:
+            continue
+        if entry["worktree"]["kind"] == "deleted":
+            continue
+        path = entry["path_hex"]
+        previous = actual.get(path)
+        if previous is not None and previous != entry["worktree"]:
+            raise ObservationError("conflicting worktree states for one scoped path")
+        actual[path] = entry["worktree"]
+
+    rows_by_path: dict[str, dict[str, Any]] = dict(actual)
     for entry in observation["entries"]:
         source = entry["source"]
         worktree = entry["worktree"]
-        if source == "scope" and (
-            entry["path_hex"] in actual_paths or worktree["kind"] == "file"
-        ):
+        path = entry["path_hex"]
+        if source in {"tracked", "untracked"}:
             continue
-        row = {"path_hex": entry["path_hex"], "worktree": worktree}
-        if row in rows:
+        if source != "scope":
+            raise ObservationError("unsupported scoped entry source")
+        if path in actual or worktree["kind"] == "file":
             continue
-        rows.append(row)
-    rows.sort(key=lambda row: (bytes.fromhex(row["path_hex"]), canonical_bytes(row["worktree"])))
+        previous = rows_by_path.get(path)
+        if previous is not None and previous != worktree:
+            raise ObservationError("conflicting scope states for one scoped path")
+        rows_by_path[path] = worktree
+    rows = [
+        {"path_hex": path, "worktree": worktree}
+        for path, worktree in rows_by_path.items()
+    ]
+    rows.sort(key=lambda row: bytes.fromhex(row["path_hex"]))
     return digest_bytes(canonical_bytes(rows))
 
 
 def direct_parent(repo: bytes, after_head: str) -> str:
-    fields = run_git(repo, b"rev-list", b"--parents", b"-n", b"1", after_head.encode("ascii")).split()
+    fields = run_git(
+        repo,
+        b"--no-replace-objects",
+        b"rev-list",
+        b"--parents",
+        b"-n",
+        b"1",
+        after_head.encode("ascii"),
+    ).split()
     if len(fields) != 2:
         raise ObservationError("successor HEAD must have exactly one parent")
     return fields[1].decode("ascii")
@@ -78,18 +101,110 @@ def pathspecs(scope: dict[str, Any]) -> list[bytes]:
     ]
 
 
-def require_clean(repo: bytes, scope: dict[str, Any]) -> None:
-    status = run_git(
+def head_tree(repo: bytes, scope: dict[str, Any]) -> dict[bytes, tuple[str, str]]:
+    allowed = [os.fsencode(path) for path in scope["allowed_paths"]]
+    prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
+    output = run_git(
         repo,
-        b"status",
-        b"--porcelain=v1",
+        b"--no-replace-objects",
+        b"ls-tree",
+        b"-r",
         b"-z",
-        b"--untracked-files=all",
+        b"--full-tree",
+        b"HEAD",
+        b"--",
+        *(b":(literal)" + path for path in allowed),
+    )
+    result: dict[bytes, tuple[str, str]] = {}
+    for record in output.split(b"\0"):
+        if not record:
+            continue
+        header, separator, path = record.partition(b"\t")
+        fields = header.split(b" ")
+        if not separator or len(fields) != 3:
+            raise ObservationError("malformed HEAD tree record")
+        if not selected(path, allowed, prohibited):
+            continue
+        mode, kind, object_id = (field.decode("ascii") for field in fields)
+        if kind not in {"blob", "commit"} or path in result:
+            raise ObservationError("unsupported or duplicate HEAD tree record")
+        result[path] = (mode, object_id)
+    return result
+
+
+def tracked_index(observation: dict[str, Any]) -> dict[bytes, dict[str, Any]]:
+    result: dict[bytes, dict[str, Any]] = {}
+    for entry in observation["entries"]:
+        if entry["source"] != "tracked":
+            continue
+        path = bytes.fromhex(entry["path_hex"])
+        index = entry["index"]
+        if index is None or index["stage"] != 0 or path in result:
+            raise ObservationError("successor index is unmerged or duplicated within the subject scope")
+        result[path] = entry
+    return result
+
+
+def require_clean(repo: bytes, observation: dict[str, Any], scope: dict[str, Any]) -> None:
+    if any(entry["source"] == "untracked" for entry in observation["entries"]):
+        raise ObservationError("successor worktree has untracked paths within the subject scope")
+    ignored = run_git(
+        repo,
+        b"ls-files",
+        b"--others",
+        b"--ignored",
+        b"--exclude-standard",
+        b"-z",
         b"--",
         *pathspecs(scope),
     )
-    if status:
-        raise ObservationError("successor worktree is not clean within the subject scope")
+    if ignored:
+        raise ObservationError("successor worktree has ignored paths within the subject scope")
+
+    index_entries = tracked_index(observation)
+    tree_entries = head_tree(repo, scope)
+    index_tree = {
+        path: (entry["index"]["mode"], entry["index"]["object_id"])
+        for path, entry in index_entries.items()
+    }
+    if tree_entries != index_tree:
+        raise ObservationError("successor index differs from HEAD within the subject scope")
+
+    allowed = [os.fsencode(path) for path in scope["allowed_paths"]]
+    prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
+    for path, entry in index_entries.items():
+        index = entry["index"]
+        worktree = entry["worktree"]
+        if worktree["kind"] == "deleted":
+            raise ObservationError("successor worktree has a deleted tracked path within the subject scope")
+        if index["mode"] == "160000":
+            if worktree["kind"] != "gitlink" or worktree["head"] != index["object_id"]:
+                raise ObservationError("successor gitlink differs from the index")
+            nested_allowed = projected_scopes(path, allowed)
+            nested_prohibited = projected_scopes(path, prohibited)
+            nested = observe(
+                Path(os.fsdecode(os.path.join(repo, path))),
+                f"gitlink:{path.hex()}",
+                nested_allowed,
+                nested_prohibited,
+            )
+            require_clean(
+                os.path.join(repo, path),
+                nested,
+                {
+                    "allowed_paths": nested_allowed,
+                    "prohibited_paths": nested_prohibited,
+                },
+            )
+            continue
+        if worktree["kind"] != "file":
+            raise ObservationError("successor worktree entry has an unsupported kind")
+        object_id = run_git(repo, b"hash-object", b"--no-filters", b"--", path).strip().decode("ascii")
+        if object_id != index["object_id"]:
+            raise ObservationError("successor worktree content differs from the index")
+        expected_executable = index["mode"] == "100755"
+        if worktree["executable"] != expected_executable:
+            raise ObservationError("successor worktree mode differs from the index")
 
 
 def changed_paths(repo: bytes, before_head: str, after_head: str, scope: dict[str, Any]) -> list[str]:
@@ -97,11 +212,13 @@ def changed_paths(repo: bytes, before_head: str, after_head: str, scope: dict[st
     prohibited = [os.fsencode(path) for path in scope["prohibited_paths"]]
     output = run_git(
         repo,
+        b"--no-replace-objects",
         b"diff-tree",
         b"--no-commit-id",
         b"--name-only",
         b"-r",
         b"-z",
+        b"--ignore-submodules=none",
         before_head.encode("ascii"),
         after_head.encode("ascii"),
     )
@@ -143,7 +260,7 @@ def capture(repo: Path, before_path: Path) -> dict[str, Any]:
     parent = direct_parent(repo_bytes, after["head"])
     if parent != before.get("head"):
         raise ObservationError("successor HEAD is not the direct child of the prior HEAD")
-    require_clean(repo_bytes, scope)
+    require_clean(repo_bytes, after, scope)
     before_worktree = semantic_worktree_digest(before)
     after_worktree = semantic_worktree_digest(after)
     if before_worktree != after_worktree:

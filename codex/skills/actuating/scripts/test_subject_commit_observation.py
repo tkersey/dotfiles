@@ -43,9 +43,9 @@ def new_repo(root: Path) -> Path:
     return repo
 
 
-def write_before(repo: Path, root: Path) -> Path:
-    before = observe(repo, REPOSITORY_ID, ALLOWED, [])
-    path = root / "before.json"
+def write_before(repo: Path, root: Path, allowed: list[str] = ALLOWED, name: str = "before") -> Path:
+    before = observe(repo, REPOSITORY_ID, allowed, [])
+    path = root / f"{name}.json"
     path.write_bytes(canonical_bytes(before) + b"\n")
     return path
 
@@ -107,6 +107,107 @@ def case_non_parent() -> None:
         expect_rejected(lambda: observe_commit(repo, before_path), "not the direct child")
 
 
+def case_deletion() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        (repo / "scope/value.txt").unlink()
+        before_path = write_before(repo, root)
+        git(repo, "add", "--update", "scope/value.txt")
+        git(repo, "commit", "-m", "commit scoped deletion")
+        result = observe_commit(repo, before_path)
+        assert result["changed_paths"] == ALLOWED
+        assert result["before"]["scoped_worktree_digest"] == result["after"]["scoped_worktree_digest"]
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        (repo / "scope/value.txt").unlink()
+        (repo / "scope").rmdir()
+        before_path = write_before(repo, root, ["scope"])
+        git(repo, "add", "--update", "scope")
+        git(repo, "commit", "-m", "commit scoped directory deletion")
+        result = observe_commit(repo, before_path)
+        assert result["changed_paths"] == ALLOWED
+        assert result["before"]["scoped_worktree_digest"] == result["after"]["scoped_worktree_digest"]
+
+
+def case_large_scope() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        paths = [f"scope/value-{index:04}.txt" for index in range(256)]
+        for path in paths:
+            (repo / path).write_text("base\n", encoding="utf-8")
+        git(repo, "add", "scope")
+        git(repo, "commit", "-m", "add large scope")
+        for path in paths:
+            (repo / path).write_text("changed\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope"])
+        git(repo, "add", "scope")
+        git(repo, "commit", "-m", "commit large scope")
+        result = observe_commit(repo, before_path)
+        assert len(result["changed_paths"]) == len(paths)
+
+
+def case_ambient_git_state() -> None:
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        (repo / ".git/info/exclude").write_text("scope/ignored.tmp\n", encoding="utf-8")
+        (repo / "scope/ignored.tmp").write_text("ignored\n", encoding="utf-8")
+        (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
+        before_path = write_before(repo, root, ["scope"])
+        commit_scoped(repo)
+        expect_rejected(lambda: observe_commit(repo, before_path), "untracked paths")
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        before_path = prepare_dirty(repo, root)
+        commit_scoped(repo)
+        git(repo, "config", "core.fileMode", "false")
+        (repo / "scope/value.txt").chmod(0o755)
+        expect_rejected(lambda: observe_commit(repo, before_path), "mode differs")
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        nested = root / "nested"
+        nested.mkdir()
+        git(nested, "init", "-b", "main")
+        git(nested, "config", "user.email", "subject-commit@example.invalid")
+        git(nested, "config", "user.name", "Subject Commit Test")
+        (nested / "value.txt").write_text("base\n", encoding="utf-8")
+        git(nested, "add", "value.txt")
+        git(nested, "commit", "-m", "nested base")
+
+        repo = new_repo(root)
+        git(repo, "-c", "protocol.file.allow=always", "submodule", "add", str(nested), "scope/sub")
+        git(repo, "commit", "-m", "add submodule")
+        (repo / "scope/sub/value.txt").write_text("committed\n", encoding="utf-8")
+        git(repo / "scope/sub", "add", "value.txt")
+        git(repo / "scope/sub", "commit", "-m", "nested successor")
+        before_path = write_before(repo, root, ["scope/sub"])
+        git(repo, "add", "scope/sub")
+        git(repo, "commit", "-m", "advance submodule")
+        git(repo, "config", "submodule.scope/sub.ignore", "all")
+        (repo / "scope/sub/value.txt").write_text("residual dirty\n", encoding="utf-8")
+        expect_rejected(lambda: observe_commit(repo, before_path), "content differs")
+
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        repo = new_repo(root)
+        before_path = prepare_dirty(repo, root)
+        before = json.loads(before_path.read_bytes())
+        git(repo, "commit", "--allow-empty", "-m", "intervening commit")
+        commit_scoped(repo)
+        successor = git(repo, "rev-parse", "HEAD")
+        tree = git(repo, "rev-parse", f"{successor}^{{tree}}")
+        synthetic = git(repo, "commit-tree", tree, "-p", before["head"], "-m", "synthetic parent")
+        git(repo, "replace", successor, synthetic)
+        expect_rejected(lambda: observe_commit(repo, before_path), "not the direct child")
+
+
 def case_negative() -> None:
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -123,7 +224,7 @@ def case_negative() -> None:
         before_path = prepare_dirty(repo, root)
         commit_scoped(repo)
         (repo / "scope/value.txt").write_text("dirty\n", encoding="utf-8")
-        expect_rejected(lambda: observe_commit(repo, before_path), "not clean")
+        expect_rejected(lambda: observe_commit(repo, before_path), "content differs")
 
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -152,9 +253,12 @@ def case_negative() -> None:
 
 
 CASES: dict[str, Callable[[], None]] = {
+    "ambient-git-state": case_ambient_git_state,
     "positive": case_positive,
     "negative": case_negative,
     "changed-content": case_changed_content,
+    "deletion": case_deletion,
+    "large-scope": case_large_scope,
     "non-parent": case_non_parent,
 }
 
