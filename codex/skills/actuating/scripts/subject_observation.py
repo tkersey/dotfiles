@@ -98,7 +98,7 @@ def file_digest(path: bytes) -> str:
     return f"sha256:{digest.hexdigest()}"
 def worktree_state(repo: bytes, path: bytes, index_mode: str | None,
                    allowed: list[bytes], prohibited: list[bytes],
-                   include_control_roots: bool = False) -> dict[str, Any]:
+                   include_legacy_tracked_control_roots: bool = False) -> dict[str, Any]:
     absolute = os.path.join(repo, path)
     try: metadata = os.lstat(absolute)
     except FileNotFoundError:
@@ -106,9 +106,11 @@ def worktree_state(repo: bytes, path: bytes, index_mode: str | None,
     if index_mode == "160000":
         if not stat.S_ISDIR(metadata.st_mode):
             raise ObservationError(f"unsupported gitlink worktree entry: {path.hex()}")
-        nested = capture(Path(os.fsdecode(absolute)), f"gitlink:{path.hex()}",
-                         projected_scopes(path, allowed), projected_scopes(path, prohibited),
-                         include_control_roots=include_control_roots)
+        nested = _capture(
+            Path(os.fsdecode(absolute)), f"gitlink:{path.hex()}",
+            projected_scopes(path, allowed), projected_scopes(path, prohibited),
+            include_legacy_tracked_control_roots=include_legacy_tracked_control_roots,
+        )
         return {
             "content_digest": digest_bytes(canonical_bytes(nested)),
             "executable": False, "head": nested["head"], "head_ref": nested["head_ref"], "kind": "gitlink",
@@ -141,9 +143,10 @@ def scope_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) ->
         entries.append({"index": None, "path_hex": path.hex(), "source": "scope", "worktree": {"kind": kind}})
     return entries
 def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes],
-                    include_control_roots: bool = False) -> list[dict[str, Any]]:
+                    include_legacy_tracked_control_roots: bool = False) -> list[dict[str, Any]]:
     def included(path: bytes) -> bool:
-        if not include_control_roots: return relevant(path, allowed, prohibited)
+        if not include_legacy_tracked_control_roots:
+            return relevant(path, allowed, prohibited)
         blocked = any(within(path, scope) for scope in prohibited)
         return selected(path, allowed, prohibited) or (not blocked and bool(projected_scopes(path, allowed)))
     entries: list[dict[str, Any]] = []
@@ -161,7 +164,7 @@ def tracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes],
         entries.append({"index": {"mode": mode, "object_id": object_id, "stage": int(stage)},
                         "path_hex": path.hex(), "source": "tracked",
                         "worktree": worktree_state(repo, path, mode, allowed, prohibited,
-                                                   include_control_roots)})
+                                                   include_legacy_tracked_control_roots)})
     return entries
 def untracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]) -> list[dict[str, Any]]:
     entries: list[dict[str, Any]] = []
@@ -172,9 +175,9 @@ def untracked_entries(repo: bytes, allowed: list[bytes], prohibited: list[bytes]
         entries.append({"index": None, "path_hex": path.hex(), "source": "untracked",
                         "worktree": worktree_state(repo, path, None, allowed, prohibited)})
     return entries
-def capture(repo: Path, repository_id: str, allowed_paths: list[str],
-            prohibited_paths: list[str], *,
-            include_control_roots: bool = False) -> dict[str, Any]:
+def _capture(repo: Path, repository_id: str, allowed_paths: list[str],
+             prohibited_paths: list[str], *,
+             include_legacy_tracked_control_roots: bool) -> dict[str, Any]:
     resolved_repo = repo.resolve()
     repo_bytes = os.fsencode(resolved_repo)
     if not repository_id.strip(): raise ObservationError("repository identity must be nonblank")
@@ -185,7 +188,7 @@ def capture(repo: Path, repository_id: str, allowed_paths: list[str],
     allowed = [os.fsencode(path) for path in allowed_paths]
     prohibited = [os.fsencode(path) for path in prohibited_paths]
     entries = scope_entries(repo_bytes, allowed, prohibited) + tracked_entries(
-        repo_bytes, allowed, prohibited, include_control_roots
+        repo_bytes, allowed, prohibited, include_legacy_tracked_control_roots
     )
     entries += untracked_entries(repo_bytes, allowed, prohibited)
     entries.sort(key=lambda entry: (bytes.fromhex(entry["path_hex"]), entry["source"],
@@ -201,6 +204,21 @@ def capture(repo: Path, repository_id: str, allowed_paths: list[str],
         },
         "subject_digest": None,
     }
+def capture(repo: Path, repository_id: str, allowed_paths: list[str],
+            prohibited_paths: list[str]) -> dict[str, Any]:
+    return _capture(
+        repo, repository_id, allowed_paths, prohibited_paths,
+        include_legacy_tracked_control_roots=False,
+    )
+def _legacy_tracked_control_projection(
+    repo: Path, repository_id: str, allowed_paths: list[str],
+    prohibited_paths: list[str],
+) -> dict[str, Any]:
+    """Reconstruct the predecessor tracked-control hash domain; never authoritative."""
+    return _capture(
+        repo, repository_id, allowed_paths, prohibited_paths,
+        include_legacy_tracked_control_roots=True,
+    )
 def observe(repo: Path, repository_id: str, allowed_paths: list[str],
             prohibited_paths: list[str]) -> dict[str, Any]:
     first = capture(repo, repository_id, allowed_paths, prohibited_paths)

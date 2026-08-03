@@ -14,9 +14,9 @@ from typing import Any
 from subject_observation import (
     CONTROL_ROOTS,
     ObservationError,
+    _legacy_tracked_control_projection,
     canonical_bytes,
     canonical_scope,
-    capture as capture_subject,
     digest_bytes,
     observe,
     projected_scopes,
@@ -119,14 +119,47 @@ def normalize_legacy_gitlink_digests(
         if retained_shape != successor_shape or not isinstance(retained_digest, str):
             continue
         path = bytes.fromhex(entry["path_hex"])
-        legacy_nested = capture_subject(
-            Path(os.fsdecode(os.path.join(repo, path))),
+        nested_repo = Path(os.fsdecode(os.path.join(repo, path)))
+        nested_allowed = projected_scopes(path, allowed)
+        nested_prohibited = projected_scopes(path, prohibited)
+        legacy_nested = _legacy_tracked_control_projection(
+            nested_repo,
             f"gitlink:{path.hex()}",
-            projected_scopes(path, allowed),
-            projected_scopes(path, prohibited),
-            include_control_roots=True,
+            nested_allowed,
+            nested_prohibited,
         )
-        if digest_bytes(canonical_bytes(legacy_nested)) != retained_digest:
+        candidates = [legacy_nested]
+        index_backed = copy.deepcopy(legacy_nested)
+        index_candidate_valid = True
+        nested_repo_bytes = os.fsencode(nested_repo)
+        for nested_entry in index_backed["entries"]:
+            nested_path = bytes.fromhex(nested_entry["path_hex"])
+            if nested_entry["source"] != "tracked" or not any(
+                within(nested_path.lower(), control) for control in CONTROL_ROOTS
+            ):
+                continue
+            nested_index = nested_entry.get("index")
+            if nested_index is None or nested_index["mode"] not in {"100644", "100755"}:
+                index_candidate_valid = False
+                break
+            blob = run_git(
+                nested_repo_bytes,
+                b"--no-replace-objects",
+                b"cat-file",
+                b"blob",
+                nested_index["object_id"].encode("ascii"),
+            )
+            nested_entry["worktree"] = {
+                "content_digest": digest_bytes(blob),
+                "executable": nested_index["mode"] == "100755",
+                "kind": "file",
+            }
+        if index_candidate_valid and canonical_bytes(index_backed) != canonical_bytes(legacy_nested):
+            candidates.append(index_backed)
+        if not any(
+            digest_bytes(canonical_bytes(candidate)) == retained_digest
+            for candidate in candidates
+        ):
             continue
         retained_worktree["content_digest"] = successor_digest
     return normalized

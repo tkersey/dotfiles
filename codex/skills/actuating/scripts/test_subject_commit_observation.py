@@ -15,8 +15,8 @@ from subject_commit_observation import (
     observe_commit,
 )
 from subject_observation import (
+    _legacy_tracked_control_projection,
     canonical_bytes,
-    capture as capture_subject,
     digest_bytes,
     file_digest,
     observe,
@@ -67,12 +67,11 @@ def prepare_dirty(repo: Path, root: Path) -> Path:
 
 def retain_legacy_gitlink_digest(before_path: Path, nested_repo: Path, path: bytes) -> None:
     before = json.loads(before_path.read_bytes())
-    legacy_nested = capture_subject(
+    legacy_nested = _legacy_tracked_control_projection(
         nested_repo,
         f"gitlink:{path.hex()}",
         ["."],
         [],
-        include_control_roots=True,
     )
     for entry in before["entries"]:
         if entry["path_hex"] == path.hex() and entry["source"] == "tracked":
@@ -221,6 +220,18 @@ def case_scope_projection() -> None:
         (repo / "scope/value.txt").write_text("changed\n", encoding="utf-8")
         before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
         retain_legacy_gitlink_digest(before_path, repo / "scope/sub", b"scope/sub")
+        commit_scoped(repo)
+        result = observe_commit(repo, before_path)
+        assert result["changed_paths"] == ALLOWED
+
+        (repo / "scope/value.txt").write_text("control drift\n", encoding="utf-8")
+        before_path = write_before(
+            repo, root, ["scope/sub", "scope/value.txt"], "legacy-control-drift"
+        )
+        retain_legacy_gitlink_digest(before_path, repo / "scope/sub", b"scope/sub")
+        (repo / "scope/sub/.ledger/tracked.txt").write_text(
+            "ignored drift\n", encoding="utf-8"
+        )
         commit_scoped(repo)
         result = observe_commit(repo, before_path)
         assert result["changed_paths"] == ALLOWED
