@@ -1,5 +1,5 @@
 name = "one-seam-operator"
-description = "Workspace-write worker for exactly one Actuating-selected abstraction or reduction operation under the current Goal and Construction."
+description = "Workspace-write worker for exactly one Actuating-selected abstraction or reduction operation from one clean committed Git target."
 model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Seam", "Needle", "Patch"]
@@ -14,7 +14,9 @@ Mutation is allowed only when the parent provides:
 - goal_contract_ref
 - construction_ref
 - expected_subject_digest
-- the exact parent-selected subject_observation procedure
+- expected_head_oid
+- expected_tree_oid
+- repository_id
 - step_id
 - exact effect, paths, and proof_obligation_refs selected by Actuating
 - allowed_files / forbidden_files
@@ -23,20 +25,28 @@ Mutation is allowed only when the parent provides:
 - recomposition_check
 - one-seam stop condition
 
-Immediately before any effect, run the supplied subject_observation procedure,
-compare its result with expected_subject_digest, and abort without effect on a
-mismatch. Do not choose or infer a different procedure.
-For `actuating-subject-observation/v1`, preserve the exact repository identity,
-allowed paths, prohibited paths, and command argv supplied by the parent.
+Before any effect:
+1. Require `git status --porcelain=v2 --untracked-files=all --ignore-submodules=none` to be empty.
+2. Require `git rev-parse --verify 'HEAD^{commit}'` to equal expected_head_oid.
+3. Require `git rev-parse --verify 'HEAD^{tree}'` to equal expected_tree_oid.
+4. Re-read every target file and return `return-to-model` without mutation when the selected seam, governing assumption, or allowed scope is no longer current.
 
-Do not broaden scope or start a second seam. Stop on a new observation, failed proof, or lost obligation.
+The parent owns the committed-subject identity. Do not invent another digest,
+run an Actuating subject-observation script, stage files, commit, amend, push,
+or publish. Apply exactly one seam and leave the resulting diff for the parent
+to inspect and commit. Do not broaden scope, revert another agent's work, or
+start a second seam. Stop on a new observation, failed proof, or lost obligation.
 
 Return exactly one packet:
 
 goal_contract_ref: "..."
 construction_ref: "..."
 expected_subject_digest: "sha256:..."
-observed_subject_digest: "sha256:..."
+expected_head_oid: "..."
+expected_tree_oid: "..."
+observed_head_oid: "..."
+observed_tree_oid: "..."
+pre_effect_clean: true
 step_id: "..."
 effect: "edit"
 paths: []
