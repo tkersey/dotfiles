@@ -360,23 +360,39 @@ HEAD is `unborn:<symbolic-ref>`. It excludes `.git`, `.ledger`, prohibited, and
 out-of-scope paths; control-root, noncanonical, symlinked, hard-linked,
 index-flagged, platform-ambiguous, or unequal captures fail closed.
 
-After a completed edit is committed without further semantic change, prove the
-provenance transition with:
+After a completed edit and before the commit, bind any required legacy gitlink
+compatibility state to the exact pre-commit observation:
 
 ~~~bash
 uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_commit_observation.py \
-  --repo REPO --before PRE_COMMIT_SUBJECT_OBSERVATION
+  --prepare-before --repo REPO --before PRE_COMMIT_SUBJECT_OBSERVATION \
+  > PREPARED_COMMIT_INPUT
 ~~~
 
-The observer validates the prior observation's content digest, double-captures
-the successor, and requires the same repository root, repository identity,
-symbolic ref, and scope; exactly one parent equal to the prior HEAD; identical
-scoped worktree meaning before and after the commit; nonempty commit paths all
-inside the scope; and a clean scoped successor. Pass its exact output as the
-`body` of `subject_commit_observed` to `record-subject-commit`, with the outer
-subject equal to `after.subject_digest`. The reducer additionally binds the
-repository and exact scope to the current Goal and advances only `subject`.
-This is not a no-effect refresh and cannot represent semantic source drift.
+Then commit without further semantic change and prove the provenance transition
+with:
+
+~~~bash
+uv run --no-project python <loaded-actuating-skill-root>/scripts/subject_commit_observation.py \
+  --repo REPO --before PREPARED_COMMIT_INPUT
+~~~
+
+`actuating-subject-commit-input/v1` carries the authentic observation plus
+recursive legacy projections only when their canonical digests match the
+already-recorded gitlink content digests. The commit observer removes control
+rows from those projections and verifies the remaining semantic projection
+against the clean successor, so excluded-control drift can normalize while
+ordinary scoped drift still fails. It executes no post-hoc custom filter and
+never binds filter authority to the live checkout. The observer then validates
+the prior observation's content digest, double-captures the successor, and
+requires the same repository root, repository identity, symbolic ref, and
+scope; exactly one parent equal to the prior HEAD; identical scoped worktree
+meaning before and after the commit; nonempty commit paths all inside the
+scope; and a clean scoped successor. Pass its exact output as the `body` of
+`subject_commit_observed` to `record-subject-commit`, with the outer subject
+equal to `after.subject_digest`. The reducer additionally binds the repository
+and exact scope to the current Goal and advances only `subject`. This is not a
+no-effect refresh and cannot represent semantic source drift.
 
 Before an effect, `operation_aborted` is the capabilityless recovery path:
 reject any raw capability, exact-match the current tuple and pending `step_id`,

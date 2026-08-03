@@ -12,10 +12,9 @@ from typing import Callable
 
 from subject_commit_observation import (
     ObservationError,
-    current_index_legacy_projections,
     head_tree_queries,
     observe_commit,
-    retained_tree_legacy_projection,
+    prepare_commit_input,
 )
 from subject_observation import (
     _legacy_tracked_control_projection,
@@ -124,6 +123,14 @@ def retain_legacy_gitlink_digest(
     before["subject_digest"] = None
     before["subject_digest"] = digest_bytes(canonical_bytes(before))
     before_path.write_bytes(canonical_bytes(before) + b"\n")
+    outer_repo = nested_repo
+    for _ in path.split(b"/"):
+        outer_repo = outer_repo.parent
+    commit_input = prepare_commit_input(outer_repo, before_path)
+    assert len(commit_input["legacy_gitlink_witnesses"]) == 1
+    assert commit_input["legacy_gitlink_witnesses"][0]["path_hex"] == path.hex()
+    assert commit_input["legacy_gitlink_witnesses"][0]["projection"] == legacy_nested
+    before_path.write_bytes(canonical_bytes(commit_input) + b"\n")
 
 
 def commit_scoped(repo: Path) -> None:
@@ -422,17 +429,11 @@ def case_scope_projection() -> None:
         live_nested = _legacy_tracked_control_projection(
             repo / "scope/sub", "gitlink:73636f70652f737562", ["."], []
         )
-        reconstructed_nested = retained_tree_legacy_projection(
-            repo / "scope/sub",
-            live_nested,
-            retained_nested["head"],
-            ["."],
-            [],
-        )
-        assert canonical_bytes(reconstructed_nested) == canonical_bytes(retained_nested), (
-            reconstructed_nested,
-            retained_nested,
-        )
+        assert canonical_bytes(live_nested) != canonical_bytes(retained_nested)
+        commit_input = json.loads(before_path.read_bytes())
+        assert canonical_bytes(
+            commit_input["legacy_gitlink_witnesses"][0]["projection"]
+        ) == canonical_bytes(retained_nested)
         result = observe_commit(repo, before_path)
         assert result["changed_paths"] == ALLOWED
 
@@ -718,21 +719,15 @@ def case_snapshot_witnesses() -> None:
         (sub / ".ledger/tracked.txt").write_text(
             "post-capture drift\n", encoding="utf-8"
         )
+        commit_input = json.loads(before_path.read_bytes())
         retained_digest = next(
             entry["worktree"]["content_digest"]
-            for entry in json.loads(before_path.read_bytes())["entries"]
+            for entry in commit_input["observation"]["entries"]
             if entry["source"] == "tracked" and entry["path_hex"] == b"scope/sub".hex()
         )
-        legacy_current = _legacy_tracked_control_projection(
-            sub,
-            "gitlink:73636f70652f737562",
-            ["."],
-            [".ledger/unavailable.txt"],
-        )
-        assert any(
-            digest_bytes(canonical_bytes(candidate)) == retained_digest
-            for candidate in current_index_legacy_projections(sub, legacy_current)
-        )
+        assert digest_bytes(
+            canonical_bytes(commit_input["legacy_gitlink_witnesses"][0]["projection"])
+        ) == retained_digest
         commit_scoped(repo)
         assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
 
@@ -779,12 +774,12 @@ def case_snapshot_witnesses() -> None:
         (nested / ".ledger").mkdir()
         (nested / ".gitattributes").write_text(
             ".ledger/tracked.txt filter=context\n"
-            "filter-helper.txt filter=helper\n"
+            ".ledger/filter-helper.txt filter=helper\n"
             "unrelated.txt filter=unrelated\n",
             encoding="utf-8",
         )
         (nested / ".ledger/tracked.txt").write_text("index\n", encoding="utf-8")
-        (nested / "filter-helper.txt").write_text("context\n", encoding="utf-8")
+        (nested / ".ledger/filter-helper.txt").write_text("context\n", encoding="utf-8")
         (nested / "unrelated.txt").write_text("unrelated\n", encoding="utf-8")
         (nested / "value.txt").write_text("base\n", encoding="utf-8")
         git(nested, "config", "filter.context.clean", "cat")
@@ -792,7 +787,7 @@ def case_snapshot_witnesses() -> None:
             nested,
             "config",
             "filter.context.smudge",
-            "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/filter-helper.txt\"'",
+            "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/.ledger/filter-helper.txt\"'",
         )
         git(nested, "config", "filter.context.required", "true")
         git(
@@ -815,11 +810,16 @@ def case_snapshot_witnesses() -> None:
             nested,
             "add",
             ".gitattributes",
-            "filter-helper.txt",
             "unrelated.txt",
             "value.txt",
         )
-        git(nested, "add", "--force", ".ledger/tracked.txt")
+        git(
+            nested,
+            "add",
+            "--force",
+            ".ledger/filter-helper.txt",
+            ".ledger/tracked.txt",
+        )
         git(nested, "commit", "-m", "filter context base")
 
         repo = new_repo(root)
@@ -829,7 +829,7 @@ def case_snapshot_witnesses() -> None:
             sub,
             "config",
             "filter.context.smudge",
-            "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/filter-helper.txt\"'",
+            "sh -c 'cat; cat \"$(git rev-parse --show-toplevel)/.ledger/filter-helper.txt\"'",
         )
         git(sub, "config", "filter.context.required", "true")
         git(
@@ -848,8 +848,8 @@ def case_snapshot_witnesses() -> None:
         git(sub, "config", "filter.unrelated.clean", "cat")
         git(sub, "config", "filter.unrelated.smudge", "false")
         git(sub, "config", "filter.unrelated.required", "true")
-        (sub / "filter-helper.txt").unlink()
-        git(sub, "checkout", "--", "filter-helper.txt")
+        (sub / ".ledger/filter-helper.txt").unlink()
+        git(sub, "checkout", "--", ".ledger/filter-helper.txt")
         (sub / ".ledger/tracked.txt").unlink()
         git(sub, "checkout", "--", ".ledger/tracked.txt")
         assert (sub / ".ledger/tracked.txt").read_text(encoding="utf-8") == (
@@ -859,9 +859,19 @@ def case_snapshot_witnesses() -> None:
         before_path = write_before(repo, root, ["scope/sub", "scope/value.txt"])
         retain_legacy_gitlink_digest(before_path, sub, b"scope/sub")
         (sub / ".ledger/tracked.txt").write_text("successor\n", encoding="utf-8")
+        (sub / ".ledger/filter-helper.txt").write_text(
+            "post-capture helper drift\n", encoding="utf-8"
+        )
         git(sub, "add", "--force", ".ledger/tracked.txt")
+        git(
+            sub,
+            "config",
+            "filter.context.smudge",
+            "sh -c 'printf attacked > \"$(git rev-parse --show-toplevel)/.ledger/victim.txt\"; cat'",
+        )
         commit_scoped(repo)
         assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+        assert not (sub / ".ledger/victim.txt").exists()
 
     with tempfile.TemporaryDirectory() as directory:
         root = Path(directory)
@@ -888,6 +898,33 @@ def case_snapshot_witnesses() -> None:
         (sub / ".ledger/tracked.txt").write_text("post-capture drift\n", encoding="utf-8")
         commit_scoped(repo)
         assert observe_commit(repo, before_path)["changed_paths"] == ALLOWED
+
+        commit_input = json.loads(before_path.read_bytes())
+        duplicate_path = root / "duplicate-witness.json"
+        duplicate = json.loads(json.dumps(commit_input))
+        duplicate["legacy_gitlink_witnesses"].append(
+            duplicate["legacy_gitlink_witnesses"][0]
+        )
+        duplicate_path.write_bytes(canonical_bytes(duplicate) + b"\n")
+        expect_rejected(
+            lambda: observe_commit(repo, duplicate_path), "duplicate witness path"
+        )
+
+        mismatch_path = root / "mismatched-witness.json"
+        mismatch = json.loads(json.dumps(commit_input))
+        mismatch["legacy_gitlink_witnesses"][0]["projection"]["head"] = "f" * 40
+        mismatch_path.write_bytes(canonical_bytes(mismatch) + b"\n")
+        expect_rejected(
+            lambda: observe_commit(repo, mismatch_path), "witness digest does not match"
+        )
+
+        absent_path = root / "absent-witness.json"
+        absent_path.write_bytes(
+            canonical_bytes(commit_input["observation"]) + b"\n"
+        )
+        expect_rejected(
+            lambda: observe_commit(repo, absent_path), "worktree meaning changed"
+        )
 
 def case_index_worktree_mode() -> None:
     with tempfile.TemporaryDirectory() as directory:

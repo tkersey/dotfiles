@@ -6,14 +6,11 @@ import argparse
 import copy
 import json
 import os
-import shutil
 import stat
 import subprocess
 import sys
-import tempfile
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 from subject_observation import (
     CONTROL_ROOTS,
@@ -31,13 +28,10 @@ from subject_observation import (
 )
 
 SCHEMA = "actuating-subject-commit-observation/v1"
+INPUT_SCHEMA = "actuating-subject-commit-input/v1"
 
 
-def load_before(path: Path) -> dict[str, Any]:
-    try:
-        value = json.loads(path.read_bytes())
-    except (OSError, json.JSONDecodeError) as error:
-        raise ObservationError(f"invalid prior observation: {error}") from error
+def validate_before(value: Any) -> dict[str, Any]:
     if not isinstance(value, dict) or value.get("schema") != "actuating-subject-observation/v1":
         raise ObservationError("prior observation has the wrong schema")
     supplied_digest = value.get("subject_digest")
@@ -48,6 +42,95 @@ def load_before(path: Path) -> dict[str, Any]:
     if digest_bytes(canonical_bytes(unhashed)) != supplied_digest:
         raise ObservationError("prior observation subject digest does not match its body")
     return value
+
+
+def validate_witness(row: Any, *, top_level: bool) -> dict[str, Any]:
+    expected = {"nested_gitlinks", "projection"}
+    if top_level:
+        expected.add("path_hex")
+    if not isinstance(row, dict) or set(row) != expected:
+        raise ObservationError("prior commit input has malformed witness")
+    if top_level:
+        path_hex = row.get("path_hex")
+        if not isinstance(path_hex, str):
+            raise ObservationError("prior commit input has malformed witness")
+        try:
+            bytes.fromhex(path_hex)
+        except ValueError as error:
+            raise ObservationError("prior commit input has invalid witness path") from error
+    if not isinstance(row.get("projection"), dict) or not isinstance(
+        row.get("nested_gitlinks"), list
+    ):
+        raise ObservationError("prior commit input has malformed witness")
+    for nested in row["nested_gitlinks"]:
+        validate_witness(nested, top_level=True)
+    return row
+
+
+def load_before(path: Path) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    try:
+        value = json.loads(path.read_bytes())
+    except (OSError, json.JSONDecodeError) as error:
+        raise ObservationError(f"invalid prior observation: {error}") from error
+    if isinstance(value, dict) and value.get("schema") == INPUT_SCHEMA:
+        if set(value) != {"legacy_gitlink_witnesses", "observation", "schema"}:
+            raise ObservationError("prior commit input has unexpected fields")
+        observation = validate_before(value.get("observation"))
+        rows = value.get("legacy_gitlink_witnesses")
+        if not isinstance(rows, list):
+            raise ObservationError("prior commit input has malformed witnesses")
+        witnesses: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            validate_witness(row, top_level=True)
+            path_hex = row["path_hex"]
+            if path_hex in witnesses:
+                raise ObservationError("prior commit input has duplicate witness path")
+            witnesses[path_hex] = row
+        return observation, witnesses
+    return validate_before(value), {}
+
+
+def prepare_commit_input(repo: Path, before_path: Path) -> dict[str, Any]:
+    before, existing = load_before(before_path)
+    if existing:
+        return {
+            "legacy_gitlink_witnesses": [
+                witness for _, witness in sorted(existing.items())
+            ],
+            "observation": before,
+            "schema": INPUT_SCHEMA,
+        }
+    scope = before.get("scope")
+    if not isinstance(scope, dict):
+        raise ObservationError("prior observation has malformed scope")
+    allowed = [os.fsencode(path) for path in scope.get("allowed_paths", [])]
+    prohibited = [os.fsencode(path) for path in scope.get("prohibited_paths", [])]
+    rows: list[dict[str, Any]] = []
+    for entry in before.get("entries", []):
+        index = entry.get("index")
+        worktree = entry.get("worktree")
+        if (
+            entry.get("source") != "tracked"
+            or not isinstance(index, dict)
+            or index.get("mode") != "160000"
+            or not isinstance(worktree, dict)
+        ):
+            continue
+        path = bytes.fromhex(entry["path_hex"])
+        nested = capture_legacy_witness(
+            repo / os.fsdecode(path),
+            f"gitlink:{path.hex()}",
+            projected_scopes(path, allowed),
+            projected_scopes(path, prohibited),
+        )
+        if digest_bytes(canonical_bytes(nested["projection"])) != worktree.get("content_digest"):
+            continue
+        rows.append({"path_hex": path.hex(), **nested})
+    return {
+        "legacy_gitlink_witnesses": rows,
+        "observation": before,
+        "schema": INPUT_SCHEMA,
+    }
 
 
 def semantic_worktree_digest(observation: dict[str, Any]) -> str:
@@ -92,11 +175,88 @@ def semantic_worktree_digest(observation: dict[str, Any]) -> str:
     return digest_bytes(canonical_bytes(rows))
 
 
+def capture_legacy_witness(
+    repo: Path,
+    repository_id: str,
+    allowed_paths: list[str],
+    prohibited_paths: list[str],
+) -> dict[str, Any]:
+    projection = _legacy_tracked_control_projection(
+        repo, repository_id, allowed_paths, prohibited_paths
+    )
+    allowed = [os.fsencode(path) for path in allowed_paths]
+    prohibited = [os.fsencode(path) for path in prohibited_paths]
+    nested_gitlinks: list[dict[str, Any]] = []
+    for entry in projection["entries"]:
+        index = entry.get("index")
+        worktree = entry.get("worktree")
+        if (
+            entry.get("source") != "tracked"
+            or not isinstance(index, dict)
+            or index.get("mode") != "160000"
+            or not isinstance(worktree, dict)
+        ):
+            continue
+        path = bytes.fromhex(entry["path_hex"])
+        child = capture_legacy_witness(
+            repo / os.fsdecode(path),
+            f"gitlink:{path.hex()}",
+            projected_scopes(path, allowed),
+            projected_scopes(path, prohibited),
+        )
+        if digest_bytes(canonical_bytes(child["projection"])) != worktree.get(
+            "content_digest"
+        ):
+            raise ObservationError("nested compatibility witness does not match its parent")
+        nested_gitlinks.append({"path_hex": path.hex(), **child})
+    return {"nested_gitlinks": nested_gitlinks, "projection": projection}
+
+
+def semantic_projection_from_witness(witness: dict[str, Any]) -> dict[str, Any]:
+    projection = copy.deepcopy(witness["projection"])
+    nested = {
+        row["path_hex"]: row
+        for row in witness["nested_gitlinks"]
+    }
+    if len(nested) != len(witness["nested_gitlinks"]):
+        raise ObservationError("prior commit input has duplicate nested witness path")
+    rows: list[dict[str, Any]] = []
+    for entry in projection.get("entries", []):
+        path = bytes.fromhex(entry["path_hex"])
+        if any(within(path.lower(), control) for control in CONTROL_ROOTS):
+            nested.pop(entry["path_hex"], None)
+            continue
+        index = entry.get("index")
+        worktree = entry.get("worktree")
+        if (
+            entry.get("source") == "tracked"
+            and isinstance(index, dict)
+            and index.get("mode") == "160000"
+            and isinstance(worktree, dict)
+        ):
+            child = nested.pop(entry["path_hex"], None)
+            if child is None:
+                raise ObservationError("prior commit input is missing a nested witness")
+            if digest_bytes(canonical_bytes(child["projection"])) != worktree.get(
+                "content_digest"
+            ):
+                raise ObservationError("prior commit input nested witness digest mismatch")
+            worktree["content_digest"] = digest_bytes(
+                canonical_bytes(semantic_projection_from_witness(child))
+            )
+        rows.append(entry)
+    if nested:
+        raise ObservationError("prior commit input has an unused nested witness")
+    projection["entries"] = rows
+    return projection
+
+
 def normalize_legacy_gitlink_digests(
     repo: bytes,
     before: dict[str, Any],
     after: dict[str, Any],
     scope: dict[str, Any],
+    witnesses: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     normalized = copy.deepcopy(before)
     after_entries = {
@@ -132,392 +292,31 @@ def normalize_legacy_gitlink_digests(
             nested_allowed,
             nested_prohibited,
         )
-        if digest_bytes(canonical_bytes(legacy_nested)) != retained_digest:
-            index_candidates = current_index_legacy_projections(
+        witness = witnesses.pop(entry["path_hex"], None)
+        if (
+            witness is not None
+            and digest_bytes(canonical_bytes(witness["projection"])) != retained_digest
+        ):
+            raise ObservationError("prior commit input witness digest does not match the observation")
+        if witness is not None:
+            semantic_witness = semantic_projection_from_witness(witness)
+            semantic_current = observe(
                 nested_repo,
-                legacy_nested,
+                f"gitlink:{path.hex()}",
+                nested_allowed,
+                nested_prohibited,
             )
-            if not any(
-                digest_bytes(canonical_bytes(candidate)) == retained_digest
-                for candidate in index_candidates
-            ):
-                retained_head = retained_worktree.get("head")
-                if not isinstance(retained_head, str):
-                    continue
-                retained_tree = retained_tree_legacy_projection(
-                    nested_repo,
-                    legacy_nested,
-                    retained_head,
-                    nested_allowed,
-                    nested_prohibited,
-                )
-                if digest_bytes(canonical_bytes(retained_tree)) != retained_digest:
-                    continue
+            semantic_current["subject_digest"] = None
+            if canonical_bytes(semantic_witness) != canonical_bytes(semantic_current):
+                raise ObservationError("scoped worktree meaning changed across the commit")
+        if digest_bytes(canonical_bytes(legacy_nested)) != retained_digest:
+            if witness is None:
+                continue
         retained_worktree["content_digest"] = successor_digest
+    if witnesses:
+        raise ObservationError("prior commit input has an unused witness")
     return normalized
 
-
-def legacy_projected_entry(
-    path: bytes,
-    allowed: list[bytes],
-    prohibited: list[bytes],
-) -> bool:
-    if any(within(path, scope) for scope in prohibited):
-        return False
-    return any(within(path, scope) for scope in allowed) or bool(
-        projected_scopes(path, allowed)
-    )
-
-
-def snapshot_git(
-    repo: bytes,
-    index_file: Path,
-    worktree: Path,
-    *args: bytes,
-) -> bytes:
-    environment = snapshot_environment(index_file, worktree)
-    process = subprocess.run(
-        [b"git", b"-C", repo, *args],
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=environment,
-    )
-    if process.returncode != 0:
-        message = process.stderr.decode("utf-8", "replace").strip()
-        raise ObservationError(f"git snapshot command failed: {message}")
-    return process.stdout
-
-
-def snapshot_environment(index_file: Path, worktree: Path) -> dict[bytes, bytes]:
-    environment = {
-        os.fsencode(key): os.fsencode(value)
-        for key, value in os.environ.items()
-        if not key.startswith("GIT_")
-    }
-    environment[b"GIT_INDEX_FILE"] = os.fsencode(index_file)
-    environment[b"GIT_WORK_TREE"] = os.fsencode(worktree)
-    return environment
-
-
-def snapshot_index_entries(
-    repo: bytes,
-    index_file: Path,
-    worktree: Path,
-) -> dict[bytes, tuple[str, str]]:
-    entries: dict[bytes, tuple[str, str]] = {}
-    output = snapshot_git(
-        repo,
-        index_file,
-        worktree,
-        b"--no-replace-objects",
-        b"ls-files",
-        b"--stage",
-        b"-z",
-    )
-    for record in output.split(b"\0"):
-        if not record:
-            continue
-        header, separator, path = record.partition(b"\t")
-        fields = header.split(b" ")
-        if not separator or len(fields) != 3:
-            raise ObservationError("malformed snapshot index record")
-        mode, object_id, stage = (field.decode("ascii") for field in fields)
-        if stage != "0":
-            continue
-        value = (mode, object_id)
-        previous = entries.get(path)
-        if previous is not None and previous != value:
-            raise ObservationError("conflicting snapshot index records")
-        entries[path] = value
-    return entries
-
-
-@contextmanager
-def snapshot_checkout(
-    repo: bytes,
-    retained_head: str | None,
-) -> Iterator[Any]:
-    with tempfile.TemporaryDirectory(prefix="actuating-retained-") as directory:
-        root = Path(directory)
-        index_file = root / "index"
-        worktree = Path(os.fsdecode(repo))
-        if retained_head is None:
-            live_index = Path(
-                os.fsdecode(run_git(repo, b"rev-parse", b"--git-path", b"index").strip())
-            )
-            if not live_index.is_absolute():
-                live_index = Path(os.fsdecode(repo)) / live_index
-            try:
-                shutil.copyfile(live_index, index_file)
-            except OSError as error:
-                raise ObservationError(f"cannot snapshot current index: {error}") from error
-        else:
-            snapshot_git(
-                repo,
-                index_file,
-                worktree,
-                b"--no-replace-objects",
-                b"read-tree",
-                retained_head.encode("ascii"),
-            )
-
-        entries = snapshot_index_entries(repo, index_file, worktree)
-
-        def filtered_blob(path: bytes) -> bytes:
-            entry = entries.get(path)
-            if entry is None or entry[0] not in {"100644", "100755"}:
-                raise ObservationError("snapshot path is not a stage-zero regular file")
-            return snapshot_git(
-                repo,
-                index_file,
-                worktree,
-                b"--no-replace-objects",
-                b"cat-file",
-                b"--filters",
-                b"--path=" + path,
-                entry[1].encode("ascii"),
-            )
-
-        yield filtered_blob
-
-
-def current_index_legacy_projections(
-    repo: Path,
-    live: dict[str, Any],
-) -> list[dict[str, Any]]:
-    live_mode_candidate = copy.deepcopy(live)
-    index_mode_candidate = copy.deepcopy(live)
-    try:
-        with snapshot_checkout(os.fsencode(repo), None) as filtered_blob:
-            changed = False
-            for live_entry, index_entry in zip(
-                live_mode_candidate["entries"],
-                index_mode_candidate["entries"],
-                strict=True,
-            ):
-                path = bytes.fromhex(live_entry["path_hex"])
-                if live_entry["source"] != "tracked" or not any(
-                    within(path.lower(), control) for control in CONTROL_ROOTS
-                ):
-                    continue
-                index = live_entry.get("index")
-                worktree = live_entry.get("worktree")
-                if (
-                    index is None
-                    or index["mode"] not in {"100644", "100755"}
-                    or not isinstance(worktree, dict)
-                    or worktree.get("kind") != "file"
-                    or not isinstance(worktree.get("executable"), bool)
-                ):
-                    return []
-                content_digest = digest_bytes(filtered_blob(path))
-                live_entry["worktree"] = {
-                    "content_digest": content_digest,
-                    "executable": worktree["executable"],
-                    "kind": "file",
-                }
-                index_entry["worktree"] = {
-                    "content_digest": content_digest,
-                    "executable": index["mode"] == "100755",
-                    "kind": "file",
-                }
-                changed = True
-    except ObservationError:
-        return []
-    if not changed:
-        return []
-    candidates = [live_mode_candidate]
-    if index_mode_candidate != live_mode_candidate:
-        candidates.append(index_mode_candidate)
-    return candidates
-
-
-def retained_tree_entries(
-    repo: bytes,
-    head: str,
-    allowed_paths: list[str],
-    prohibited_paths: list[str],
-) -> dict[bytes, tuple[str, str, str]]:
-    allowed = [os.fsencode(path) for path in allowed_paths]
-    prohibited = [os.fsencode(path) for path in prohibited_paths]
-    recursive, ancestors = head_tree_queries(allowed)
-    outputs = [
-        run_git(
-            repo,
-            b"--no-replace-objects",
-            b"ls-tree",
-            b"-r",
-            b"-z",
-            b"--full-tree",
-            head.encode("ascii"),
-            b"--",
-            *recursive,
-        )
-    ]
-    if ancestors:
-        outputs.append(
-            run_git(
-                repo,
-                b"--no-replace-objects",
-                b"ls-tree",
-                b"-z",
-                b"--full-tree",
-                head.encode("ascii"),
-                b"--",
-                *ancestors,
-            )
-        )
-    result: dict[bytes, tuple[str, str, str]] = {}
-    for output in outputs:
-        for record in output.split(b"\0"):
-            if not record:
-                continue
-            header, separator, path = record.partition(b"\t")
-            fields = header.split(b" ")
-            if not separator or len(fields) != 3:
-                raise ObservationError("malformed retained tree record")
-            mode, kind, object_id = (field.decode("ascii") for field in fields)
-            if kind == "tree" or not legacy_projected_entry(path, allowed, prohibited):
-                continue
-            if kind not in {"blob", "commit"}:
-                raise ObservationError("unsupported retained tree record")
-            value = (mode, kind, object_id)
-            previous = result.get(path)
-            if previous is not None and previous != value:
-                raise ObservationError("conflicting retained tree records")
-            result[path] = value
-    return result
-
-
-def retained_blob_worktree(
-    path: bytes,
-    mode: str,
-    filtered_blob: Any,
-) -> dict[str, Any]:
-    if mode not in {"100644", "100755"}:
-        raise ObservationError("retained tree mode is incompatible with a regular file")
-    blob = filtered_blob(path)
-    return {
-        "content_digest": digest_bytes(blob),
-        "executable": mode == "100755",
-        "kind": "file",
-    }
-
-
-def retained_tree_legacy_projection(
-    repo: Path,
-    live: dict[str, Any],
-    retained_head: str,
-    allowed_paths: list[str],
-    prohibited_paths: list[str],
-    *,
-    reconstruct_all: bool = False,
-) -> dict[str, Any]:
-    """Rebuild only Git-tree-proved legacy rows; never invent dirty predecessor bytes."""
-    candidate = copy.deepcopy(live)
-    repo_bytes = os.fsencode(repo)
-    tree = retained_tree_entries(
-        repo_bytes,
-        retained_head,
-        allowed_paths,
-        prohibited_paths,
-    )
-    allowed = [os.fsencode(path) for path in allowed_paths]
-    prohibited = [os.fsencode(path) for path in prohibited_paths]
-    rebuilt: list[dict[str, Any]] = []
-    with snapshot_checkout(repo_bytes, retained_head) as filtered_blob:
-        for entry in candidate["entries"]:
-            path = bytes.fromhex(entry["path_hex"])
-            if entry["source"] != "tracked":
-                if not reconstruct_all or entry["source"] == "scope":
-                    rebuilt.append(entry)
-                continue
-            is_control = any(within(path.lower(), control) for control in CONTROL_ROOTS)
-            if reconstruct_all or is_control:
-                continue
-            index = entry.get("index")
-            retained = tree.get(path)
-            if (
-                index is not None
-                and index.get("mode") == "160000"
-                and retained is not None
-                and retained[0] == "160000"
-                and retained[1] == "commit"
-            ):
-                nested_repo = repo / os.fsdecode(path)
-                nested_allowed = projected_scopes(path, allowed)
-                nested_prohibited = projected_scopes(path, prohibited)
-                nested_live = _legacy_tracked_control_projection(
-                    nested_repo,
-                    f"gitlink:{path.hex()}",
-                    nested_allowed,
-                    nested_prohibited,
-                )
-                nested_candidate = retained_tree_legacy_projection(
-                    nested_repo,
-                    nested_live,
-                    retained[2],
-                    nested_allowed,
-                    nested_prohibited,
-                )
-                entry["worktree"]["content_digest"] = digest_bytes(
-                    canonical_bytes(nested_candidate)
-                )
-            rebuilt.append(entry)
-
-        for path, (mode, kind, object_id) in tree.items():
-            is_control = any(within(path.lower(), control) for control in CONTROL_ROOTS)
-            if not reconstruct_all and not is_control:
-                continue
-            if kind == "blob":
-                worktree = retained_blob_worktree(path, mode, filtered_blob)
-            elif kind == "commit" and mode == "160000":
-                nested_repo = repo / os.fsdecode(path)
-                nested_allowed = projected_scopes(path, allowed)
-                nested_prohibited = projected_scopes(path, prohibited)
-                nested_live = _legacy_tracked_control_projection(
-                    nested_repo,
-                    f"gitlink:{path.hex()}",
-                    nested_allowed,
-                    nested_prohibited,
-                )
-                nested_candidate = retained_tree_legacy_projection(
-                    nested_repo,
-                    nested_live,
-                    object_id,
-                    nested_allowed,
-                    nested_prohibited,
-                    reconstruct_all=True,
-                )
-                worktree = {
-                    "content_digest": digest_bytes(canonical_bytes(nested_candidate)),
-                    "executable": False,
-                    "head": object_id,
-                    "head_ref": nested_live["head_ref"],
-                    "kind": "gitlink",
-                }
-            else:
-                raise ObservationError("retained tree entry has an unsupported kind or mode")
-            rebuilt.append(
-                {
-                    "index": {"mode": mode, "object_id": object_id, "stage": 0},
-                    "path_hex": path.hex(),
-                    "source": "tracked",
-                    "worktree": worktree,
-                }
-            )
-
-    rebuilt.sort(
-        key=lambda entry: (
-            bytes.fromhex(entry["path_hex"]),
-            entry["source"],
-            -1 if entry["index"] is None else entry["index"]["stage"],
-        )
-    )
-    candidate["entries"] = rebuilt
-    candidate["head"] = retained_head
-    return candidate
 
 
 def direct_parent(repo: bytes, after_head: str) -> str:
@@ -729,7 +528,7 @@ def changed_paths(repo: bytes, before_head: str, after_head: str, scope: dict[st
 
 
 def capture(repo: Path, before_path: Path) -> dict[str, Any]:
-    before = load_before(before_path)
+    before, witnesses = load_before(before_path)
     scope = before.get("scope")
     if not isinstance(scope, dict) or scope.get("implicit_exclusions") != [".git", ".ledger"]:
         raise ObservationError("prior observation has an unsupported scope")
@@ -759,7 +558,7 @@ def capture(repo: Path, before_path: Path) -> dict[str, Any]:
         raise ObservationError("successor HEAD is not the direct child of the prior HEAD")
     require_clean(repo_bytes, after, scope)
     compatible_before = normalize_legacy_gitlink_digests(
-        repo_bytes, before, after, scope
+        repo_bytes, before, after, scope, witnesses
     )
     before_worktree = semantic_worktree_digest(compatible_before)
     after_worktree = semantic_worktree_digest(after)
@@ -803,13 +602,22 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--before", required=True, type=Path)
+    parser.add_argument(
+        "--prepare-before",
+        action="store_true",
+        help="emit a digest-bound pre-commit input instead of observing a commit",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     try:
-        observation = observe_commit(args.repo, args.before)
+        observation = (
+            prepare_commit_input(args.repo, args.before)
+            if args.prepare_before
+            else observe_commit(args.repo, args.before)
+        )
     except ObservationError as error:
         print(f"subject-commit-observation: {error}", file=sys.stderr)
         return 2

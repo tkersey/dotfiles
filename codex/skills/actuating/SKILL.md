@@ -385,9 +385,16 @@ for the same `goal_id`.
 
 A direct commit of the exact already-observed scoped worktree is a provenance
 transition, not a semantic Goal revision. After the edit operation is complete
-and the commit is clean, run the checked-in
-`scripts/subject_commit_observation.py` against the retained pre-commit subject
-observation. Only its double-captured
+and before committing, run the checked-in
+`scripts/subject_commit_observation.py --prepare-before` against the exact
+pre-commit subject observation. The resulting
+`actuating-subject-commit-input/v1` retains that authentic observation and, only
+for legacy gitlink normalization, captures recursive first-order projections
+whose canonical digests equal the observation's recorded gitlink digests. After
+the commit is clean, run the same observer against that prepared input. It never
+replays a custom Git filter after the observed context has changed; absent,
+malformed, duplicate, scope-incompatible, or digest-mismatched compatibility
+witnesses fail closed. Only the observer's double-captured
 `actuating-subject-commit-observation/v1` may feed
 `record-subject-commit`. That admission exact-matches repository and Goal
 scope, requires the retained subject as `before`, a single-parent successor,
