@@ -5,18 +5,20 @@ description: "Turn accepted intent and review evidence into correct-by-construct
 
 # Actuating
 
-Turn accepted intent into a lawful construction, directly orchestrated effects, independent falsification, and an evidence-backed closure judgment.
+Turn accepted intent into a lawful construction, directly orchestrated effects,
+independent falsification, and an evidence-backed closure judgment.
 
 ## Authority kernel
 
 Use exactly four authoritative per-goal artifact families:
 
-1. `goal-contract/v3` — accepted semantics, authority, scope, compatibility, laws, and acceptance, compiled by `$goal-contract`.
+1. `goal-contract/v3` — accepted semantics, authority, scope, compatibility,
+   laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
-3. `construction-contract/v3` — the selected architecture, four compared
-   candidate families, factor surfaces, supersession, proof obligations,
-   preserved observations, and retirements, authored by `$actuating` after an
+3. `construction-contract/v3` — the selected architecture, compared candidate
+   families, factor surfaces, supersession, proof obligations, preserved
+   observations, and retirements, authored by `$actuating` after an
    Actuating-bound `$first-principles` basis, a `$universalist` nomination, and,
    when required, one `$reduce` challenge.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
@@ -25,8 +27,7 @@ Use exactly four authoritative per-goal artifact families:
 The Goal Contract is the sole semantic-authority artifact. The Counterexample
 Set is the sole classified-bug artifact. The Construction Contract is the sole
 architecture-selection artifact. The Evidence Ledger is the sole mutable
-per-goal truth. Read [artifact-kernel.md](references/artifact-kernel.md) for the
-owner map.
+per-goal truth. Read [artifact-kernel.md](references/artifact-kernel.md).
 
 Plans, CAS receipts, Ship receipts, verifier output, work graphs, and Ledger
 projections are supporting evidence or discardable structural aids. An
@@ -38,51 +39,58 @@ family.
 Actuating owns:
 
 - correct-by-construction implementation;
-- evaluation of current Counterexample classes against the current
-  Construction;
+- evaluation of current Counterexample classes against the current Construction;
 - initial and successor Construction selection;
-- review and repository-effect orchestration;
+- repository-effect and review orchestration;
+- the clean committed Git subject used by local proof;
 - review-path accretion evaluation and pathwise-minimality disposition;
 - construction and ownership of the static Review Contract;
 - semantic evaluation of CAS owner facts and review credit;
 - the next legal action;
 - application of the closure theorem and authorship of its semantic receipt.
 
-`$review-fold` must classify witnessed facts before Actuating selects any
-repair. `$first-principles` establishes the admissible premise basis and one
-incumbent-independent derivation for the current Construction problem without
-revising the Goal. `$universalist` lowers the admissible derivation and
-nominates the essential boundary shape. When an abstraction change is live,
-`$metanoetic` performs one bounded generative escalation and `$universalist` lowers
-any material result into its nomination. `$reduce` may then challenge the
-nominated factors by testing congruent quotients, ablations, and recomposition.
-`$complexity-mitigator` may supply one read-only local normal-form preflight when
-review accretion is realization-only. The composition order is `activate ->
-axiomatize once or retain the current basis -> nominate -> metanoetic once when
-triggered -> lower -> challenge once -> adjudicate`; Actuating alone performs
-the adjudication. Neither supporting skill, review prose, nor an optional plan
+`$review-fold` classifies witnessed facts before Actuating selects a repair.
+`$first-principles` establishes the admissible premise basis without revising
+the Goal. `$universalist` lowers the admissible derivation and nominates the
+essential boundary shape. When abstraction change is live, `$metanoetic`
+performs one bounded generative escalation and Universalist lowers every
+material result. `$reduce` may challenge nominated factors through congruent
+quotients, ablations, and recomposition. `$complexity-mitigator` may supply one
+read-only local normal-form preflight when review accretion is realization-only.
+
+The composition order is:
+
+~~~text
+activate
+-> axiomatize once or retain the current basis
+-> nominate
+-> metanoetic once when triggered
+-> lower
+-> challenge once
+-> adjudicate
+~~~
+
+Actuating alone performs adjudication. No supporting skill, review prose, plan,
 or Reduction Certificate selects a Construction, Repair Disposition, Review
 Accretion Disposition, operation, next action, or closure.
 
 Ledger may materialize, canonicalize, validate, append, replay, and emit
 requested disposable structural projections. Ledger never executes repository
-changes; evaluates CAS facts or review credit; interprets Ship evidence; selects
-a repair, Construction, or next action; grants mutation; emits a semantic
-closure verdict; or authors the closure receipt. Before the first Ledger
-command in a workflow, load `$ledger` and complete `$ledger ensure` once. Then
-require Ledger 1.x with `ledger-artifact-abi/v1`, Seq 1.x with
-`seq-observation-abi/v1`, and successful definition checks for every selected
-passive definition. Apply the current hard-cutover Ledger and CAS runtime
-gates, and use the exact transient schemas and one-shot capability law in
-[evidence-ledger.md](references/evidence-ledger.md). Apply the same Actuating
-gate when entering from a standalone Goal Contract or Review Fold handoff.
-Construction v1 and v2 are unsupported. Do not migrate, translate, replay, or
-consult their stored state as current authority; start a fresh goal-local
-Evidence store and ignore the legacy data.
+changes, invokes Git, evaluates CAS facts or review credit, interprets Ship,
+selects a repair or Construction, grants mutation, chooses the next action, or
+emits or authors semantic closure.
+
+Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
+once. Require Ledger 1.x with `ledger-artifact-abi/v1`, Seq 1.x with
+`seq-observation-abi/v1`, and successful checks for every selected passive
+definition. Apply the same gate when entering from a standalone Goal Contract
+or Review Fold handoff. Construction v1 and v2 are unsupported; start a fresh
+v3 goal-local Evidence store rather than treating legacy data as current
+authority.
 
 `$ship` is the sole owner of public PR or tracker effects. Actuating supplies a
-current `ready-to-ship` proof and records Ship's returned receipt as evidence;
-it never performs the public effect itself.
+current `ready-to-ship` proof and records Ship's returned receipt; it never
+performs the public effect itself.
 
 ## Public modes
 
@@ -100,9 +108,8 @@ mutation.
 
 ## Architectonic decision gate
 
-At the beginning of every Actuating process that selects, preserves, changes,
-or ablates architecture or abstraction, and before `$universalist` nominates a
-boundary, state exactly:
+At the beginning of every process that selects, preserves, changes, or ablates
+architecture or abstraction, and before Universalist nomination, state exactly:
 
 ~~~text
 OPERATE ARCHITECTONICALLY
@@ -112,20 +119,16 @@ This is an activation instruction, not evidence, authority, or a receipt.
 
 ## Axiomatic Construction gate
 
-Before the first `$universalist` nomination for each materially new candidate
-universe, invoke `$first-principles` on the Construction problem with the
-current Goal Contract fixed as the irreducible outcome and sole semantic
-authority. In this composition, setting aside the current framing means
-bracketing inherited repository abstractions, conventions, analogies, owner
-boundaries, solution rationale, and alleged constraints. It does not authorize
-reopening source-bound Goal outcomes, laws, scope, compatibility, authority,
-acceptance, or proof posture.
+Before the first Universalist nomination for each materially new candidate
+universe, invoke `$first-principles` with the current Goal fixed as the
+irreducible outcome and sole semantic authority. Bracket inherited repository
+abstractions, conventions, analogies, owner boundaries, rationale, and alleged
+constraints. Do not reopen Goal outcomes, laws, scope, compatibility,
+authority, acceptance, or proof posture.
 
 Inspect the incumbent only to establish observed facts, external obligations,
-and host enforcement capabilities. Do not admit its current abstractions,
-names, factorization, or rationale as axioms. Freeze the incumbent-independent
-derivation before using the incumbent as a comparator, then record this compact,
-non-authoritative view:
+and host enforcement capabilities. Freeze the incumbent-independent derivation
+before incumbent comparison, then record:
 
 ~~~text
 Axiomatic Construction Basis
@@ -146,88 +149,58 @@ Falsifier:
 ~~~
 
 The basis is an ephemeral proof lease over exact Goal, fact, constraint, and
-host-capability inputs, not a fifth authority artifact or a new
-`construction-contract/v3` field. It expires at session end, compaction, or
-execution-context handoff and is never reconstructed from a materialized
-Construction. A subject digest change alone does not expire it: within one
-uninterrupted run, a premise-neutral realization repair may retain the lease
-while every bound input and invalidator remains current. Any later run or subject
-change that alters a bound input or invalidator must re-axiomatize before
-nomination or affected mutation. Compile its material conclusions into the
-existing Goal and observation references, residual assumptions, candidate
-factors, obligations, retirements, and falsifiers. A candidate may use
-`derivation: incumbent-independent` only after `$universalist` lowers the frozen
-derivation into one of the four canonical candidate families.
+host-capability inputs. It is not a fifth authority artifact and adds no
+Construction field. It expires at session end, compaction, or execution-context
+handoff and is never reconstructed from a materialized Construction. Within one
+uninterrupted run, a premise-neutral clean commit change may retain the basis
+while all inputs and invalidators remain current. Any later run or premise
+change re-axiomatizes before nomination or affected mutation.
 
-`$first-principles` may expose an inconsistent Goal projection or missing
-authority, but it must return that as `inconsistent` or `blocked`; it may not
-rewrite the Goal. `underdetermined` preserves every materially incomparable
-derivation for later comparison and blocks if Actuating cannot distinguish them
-by current Goal law, observation, or dominance. A new explicit source
-preference has no effect until `$goal-contract` compiles it into a successor
-Goal Contract. Before authoring that successor, project
-`goal-carry-forward-context` from the canonical Evidence store. Treat its exact
-retained Goal artifact as the current Goal and derive the required supporting
-references only from retained classes whose status is `accepted`, `blocked`, or
-`follow-up`. Never guess supporting references, reconstruct the Goal from an
-older artifact, or read the event log directly. If the projection is absent,
-invalid, or omits a register required by the admission law, fail closed with an
-owner-side Evidence-protocol obstruction; do not attempt carry-forward.
-When accepted or blocked Counterexamples remain unresolved, or
-when the revision brings a `follow-up` class within the successor Goal's scope,
-the successor Goal must cite every Set carrying those classes, and
-`$review-fold` must author a successor Set that cites the successor Goal,
-preserves predecessor lineage, evaluates the predecessor Construction, and
-assigns every carried class a disposition.
-Actuating re-axiomatizes only after that complete carry-forward and permits no
-affected mutation before successor Construction selection. Neither
-`$first-principles` nor its basis classifies Counterexamples, nominates or
-selects a Construction, grants mutation, or authors a durable decision.
+A `sufficient` basis admits nomination. `underdetermined` preserves every
+materially incomparable derivation and blocks if Goal law, observation, or
+dominance cannot distinguish them. `inconsistent` or `blocked` stops.
+`$first-principles` may expose a Goal conflict or missing authority, but it
+cannot rewrite the Goal, classify Counterexamples, select a Construction,
+grant mutation, or author a durable decision.
 
-Retain the basis across premise-neutral subject changes only within the same
-uninterrupted run and while every bound input and invalidator remains current.
-Re-axiomatize before nomination after any execution-context handoff; when a
-successor Goal changes semantics, compatibility, authority, or proof posture;
-when new evidence changes an observed fact, necessary constraint, or host
-capability; when an accepted finding falsifies a premise; when architecture or
-ablation repair becomes live; when the Causal recurrence gate triggers; or when
-the Review Accretion Gate makes abstraction change live. A Metanoetic result may
-supply a new derivation under the current basis. If it requires a new premise,
-admit that premise only through fresh source authority or evidence and re-
-axiomatize before lowering; Metanoetic cannot manufacture axioms.
+Before authoring a successor Goal, project `goal-carry-forward-context` from the
+canonical Evidence store. Treat its retained Goal artifact as current and
+derive supporting references only from retained classes whose status is
+`accepted`, `blocked`, or `follow-up`. Never guess references, reconstruct the
+Goal from an older artifact, or read the event log directly. An unavailable or
+incomplete projection is an owner-side obstruction.
+
+When accepted or blocked Counterexamples remain unresolved, or a revision
+brings a `follow-up` class within scope, the successor Goal cites every Set
+carrying those classes. `$review-fold` then authors a successor Set that cites
+the successor Goal, preserves lineage, evaluates the predecessor Construction,
+and dispositions every carried class. No affected mutation or successor
+Construction selection occurs before that carry-forward is complete.
+
+## Metanoetic escalation
 
 For an initial Construction with no classified findings, invoke `$metanoetic`
-exactly once after the first `$universalist` nomination and before candidate
-adjudication when the nomination would establish a high-regret or difficult-to-
-reverse commitment, remains a coherent but merely adequate local optimum, and a
-materially different Construction is plausible. This trigger is selective; initial
-implementation, architecture, or consequence alone does not admit the pass.
+exactly once after the first Universalist nomination and before candidate
+adjudication when the nomination is high-regret or difficult to reverse,
+remains a coherent but merely adequate local optimum, and a materially
+different Construction is plausible. Initial implementation, architecture, or
+consequence alone is not a trigger.
 
-After `$review-fold` has classified findings, invoke `$metanoetic` exactly once after
-the first `$universalist` nomination and before candidate adjudication when
-either an accepted class:
+After `$review-fold` classifies findings, invoke `$metanoetic` exactly once when
+an accepted class:
 
-- makes `architecture-repair` or `ablation-repair` a live route;
-- challenges the sufficiency of the current representation, owner, admitted
-  domain, equivalence, normalization, or information retention;
-- triggers the Causal recurrence gate; or
-- would otherwise add a validator, correlation, cache, bypass, compatibility
-  branch, or path-dependent recovery to reconstruct forgotten information;
+- makes `architecture-repair` or `ablation-repair` live;
+- challenges representation, owner, admitted domain, equivalence,
+  normalization, or information retention;
+- triggers causal recurrence; or
+- would add a validator, correlation, cache, bypass, compatibility branch, or
+  path-dependent recovery to reconstruct forgotten information;
 
-or the current Review Accretion Gate establishes material repair-path dependence,
-accumulated semantic machinery, obsolete repair residue, proof accretion,
-inadequate ordinary normalization, or pathwise domination pressure.
+or when Review Accretion establishes material path dependence, accumulated
+semantic machinery, obsolete residue, proof accretion, inadequate ordinary
+normalization, or pathwise domination pressure.
 
-Use the Metanoetic pass to demand a materially new frame, invariant, mechanism,
-artifact, or breakthrough candidate and to resist premature
-`realization-preserve`. For `review-path-accretion`, treat the accumulated
-changeset as evidence rather than the solution and derive the Construction that
-would have made the largest portion of the repair path unnecessary. Then require
-`$universalist` to reclassify and lower each material result into a repository-
-native nomination before `$reduce` challenges the selected candidate version
-and Actuating adjudicates.
-
-Record this compact, non-authoritative view:
+Record:
 
 ~~~text
 Architectonic Escalation
@@ -240,55 +213,61 @@ Candidate-family delta:
 Falsifier:
 ~~~
 
-Compile the view into the existing Construction candidate comparison, factor
-surfaces, supersession, proof obligations, and falsifiers; do not create a
-fifth authority artifact or an unknown `construction-contract/v3` field.
-`$metanoetic` neither classifies findings nor nominates, selects, authorizes, or
-closes. If it yields no material reframe, record `no-material-reframe` and
-continue with the evidenced candidate universe. Do not repeat Metanoetic for the
-same decision surface. For `initial-high-regret`, that surface is the exact
-Goal, current Axiomatic Construction Basis inputs and invalidators, first
-Universalist nomination, and current admissible candidate universe. For
-`review-path-accretion`, that surface is the exact Goal, review-entry subject,
-current subject, Construction lineage, applicable Counterexample classes, and
-cumulative factor inventory. A later material change to either tuple may create
-a new surface.
+Compile material results into existing candidate comparison, factor surfaces,
+supersession, proof obligations, and falsifiers. Metanoetic neither classifies,
+nominates, selects, authorizes, nor closes. Do not repeat it for an unchanged
+decision surface.
+
+## Committed Git subject
+
+The durable Actuating subject is one clean Git commit target. Dirty index,
+worktree, untracked, and ignored state is provisional implementation state and
+never an Evidence subject.
+
+For Git, derive the subject exactly as:
+
+~~~text
+subject_digest = sha256(
+  "actuating-git-subject/v1" || 0x00 ||
+  repository_id || 0x00 ||
+  commit_oid || 0x00 ||
+  tree_oid
+)
+~~~
+
+Where:
+
+- `commit_oid = git rev-parse --verify HEAD^{commit}`;
+- `tree_oid = git rev-parse --verify HEAD^{tree}`;
+- `git status --porcelain=v2 --untracked-files=all --ignore-submodules=none`
+  is empty;
+- branch attachment is excluded from semantic identity;
+- ignored files are excluded because they are not candidates for the committed
+  artifact.
+
+Ledger stores and compares this opaque digest. It never invokes Git or derives
+the tuple. Ship separately binds repository, base and head refs, exact OIDs,
+and live publication readback.
 
 ## Construction procedure
 
-1. Compile the accepted source with
-   [$goal-contract](../goal-contract/SKILL.md). Do not select architecture in
-   the Goal Contract. Require its returned canonical artifact, non-null
-   `artifact_id`, and the applicable Goal registration event before
-   continuing.
-2. Enter the Architectonic decision gate. Establish or retain the current
-   Axiomatic Construction Basis before nomination. Inspect the repository
-   boundary, existing owner, host enforcement capabilities, and required
-   observations under that basis. Apply `$universalist` at every changed or
-   preserved boundary and retain its compact nomination: candidate, owner,
-   laws, observations, residuals, invalidators, and falsifier. The nomination
-   must lower the frozen incumbent-independent derivation into one canonical
-   candidate family. When an initial-high-regret, accepted-class, recurrence, or review-accretion
-   abstraction-change trigger is present, complete the bounded Metanoetic pass and
-   Universalist reclassification before continuing.
-3. Compile exactly four ordinary candidate families in canonical order:
+1. Compile accepted source with `$goal-contract`. Require the canonical artifact,
+   non-null `artifact_id`, and applicable Goal registration event.
+2. Enter the Architectonic decision gate. Establish or retain the Axiomatic
+   Construction Basis. Apply Universalist at every changed or preserved
+   boundary. Complete one Metanoetic pass and re-lowering when a live trigger
+   exists.
+3. Compile exactly four candidate families in canonical order:
    `realization-preserve`, `admitted-domain-restriction`,
    `representation-or-owner-strengthening`, and `ablation-normalization`.
-   First factor every independent mandatory repair into one common obligation
-   core carried by all four candidates; vary only the family-specific disputed
-   delta. A candidate that omits an orthogonal required repair is inadmissible,
-   not evidence that its disputed factor is dominated.
-   Give each candidate an explicit factor inventory and falsifier, mark at
-   least one genuinely `incumbent-independent`, and mark exactly one selected.
-   Reject any candidate factor or residual assumption that lacks a traceable
-   Goal, observation, necessary-constraint, or explicit-postulate derivation.
-   Classify the nominated candidate's factors. Invoke `$reduce` exactly once
-   for that candidate version when it adds or preserves an independent
-   semantic owner, parallel representation, bypass, compatibility branch,
-   semantic mechanism, or apparently dominated residue. Otherwise record
-   `Reduction: not-required`. When an accepted Counterexample class can lead to
-   mutation, record this compact view over the current Construction selection
-   before choosing an operation; it is not a fifth authority artifact:
+   Factor every independent mandatory repair into one common obligation core;
+   vary only the disputed family delta. Give each candidate a factor inventory
+   and falsifier, mark at least one genuinely incumbent-independent, and select
+   exactly one.
+4. Challenge the nominated candidate once with `$reduce` when it adds or
+   preserves an independent semantic owner, parallel representation, bypass,
+   compatibility branch, semantic mechanism, or apparently dominated residue.
+   Record:
 
    ~~~text
    Repair Disposition
@@ -300,182 +279,92 @@ a new surface.
    Falsifier:
    ~~~
 
-   A finding authorizes the invariant, not its suggested implementation.
-   Choose the least additive route that satisfies the law; `add` must explain
-   why `delete`, `consolidate`, and `edit` are insufficient.
-4. Adjudicate the basis, nomination, and challenge. Select the smallest
-   non-dominated Construction that satisfies every Goal law, is derivable from
-   the current basis, makes invalid states unrepresentable where feasible, and
-   names exact proof and retirement obligations. Record the predecessor and
-   successor factor surfaces and a total supersession partition: every factor
-   is preserved, retired,
-   introduced, or explicitly replaced. A collapse, replacement, or retirement
-   is realized only when every displaced production, semantic, proof, and
-   comprehension surface is deleted, mapped to its successor owner, or retained
-   by a distinct live obligation. A `dominated` challenge selects the
-   smaller admissible candidate; `incomparable`, `essential-shape-gap`, or
-   `blocked` requires an Actuating disposition or obstruction, never recursive
-   skill ping-pong.
-   Follow
-   [construction-contract.md](references/construction-contract.md).
-5. Set the selected Construction draft's `artifact_id` to JSON `null`, then
-   materialize and register it before selecting any operation:
+   Choose the least additive lawful route. `add` explains why `delete`,
+   `consolidate`, and `edit` are insufficient.
+5. Adjudicate basis, nomination, escalation, and challenge. Select the smallest
+   non-dominated Construction satisfying every Goal law, make invalid states
+   unrepresentable where feasible, and name exact proof and retirement
+   obligations. Partition every predecessor and successor factor as preserved,
+   retired, introduced, or replaced.
+6. Materialize and register the selected Construction through Ledger. Only the
+   returned canonical artifact and appended registration event make it current.
+7. Require the repository to be at the exact clean committed subject before
+   preparing an operation.
+8. For each edit:
 
-   ~~~bash
-   ledger materialize \
-     --definition <actuating-skill-root>/definitions/ledger/construction-contract.json \
-     --input construction=<construction-contract.json> \
-     --format json
-
-   ledger transact \
-     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
-     --operation register-construction \
-     --repo <repo> \
-     --input construction_registration=<construction-registration.json> \
-     --param goal=<goal-id> \
-     --format json
+   ~~~text
+   clean parent subject
+   -> prepare exact operation
+   -> one-seam-operator creates one provisional diff
+   -> Actuating inspects the complete diff and changed paths
+   -> Actuating commits exactly that operation
+   -> require one-parent clean successor
+   -> derive successor subject
+   -> record-effect parent -> successor
+   -> verify and falsify on the successor commit
    ~~~
 
-   The registration packet is passive JSON containing
-   `schema:"actuating-construction-registration/v1"`, the exact Goal,
-   Construction, and subject tuple, and the materialization result's parsed
-   `canonical_content` as `body`. Require
-   `ledger-materialization-result/v1` followed by
-   `ledger-transaction-result/v1` for `register-construction`. Retain the
-   complete canonical artifact and appended event identity as the
-   `construction_contract_registered` observation. Only the returned artifact
-   is the current Construction; Ledger does not select or revise it.
-6. For each repository effect, Actuating selects one exact operation projected
-   by the current Goal, returned Construction, and live subject, including its
-   `expected_subject_digest`. For Git repositories, select the checked-in
-   `scripts/subject_observation.py` command with the Goal's literal repository
-   and path scope. Its `actuating-subject-observation/v1` requires two identical
-   captures of HEAD, index, scoped worktree, and selected ignored or unignored state.
-   Before the effect the executor reruns that exact command. A mismatch aborts without effect.
-   The executor cannot choose another observer or broaden scope, and Ledger
-   compares only the opaque digest.
-7. Run the Construction's exact verifier and falsifier observations. Record
-   their immutable outputs and the resulting subject identity in the Evidence
-   Ledger using [evidence-ledger.md](references/evidence-ledger.md). When
-   session evidence is required, observe the selected session through
-   `definitions/seq/run-audit.json`. When Evidence-store structure is
-   required, pipe Ledger's `structural-facts` payload into
-   `definitions/seq/artifact-kernel.json`. Actuating interprets both
-   observations; neither structural runtime assigns review credit, chooses the
-   next action, or closes the Goal.
-8. Re-evaluate the current artifacts and observations. Actuating selects the
-   next operation, review action, Ship handoff, closure judgment, or blocker.
+   `one-seam-operator` never stages, commits, amends, pushes, or publishes.
+   Actuating rejects unrelated dirty state before preparation. The successor
+   commit has exactly one parent equal to the prepared parent, a nonempty commit
+   path set exactly equal to the selected operation, only allowed paths, and a
+   clean checkout. `effect_recorded` advances directly from the parent subject
+   in `pre_effect_subject_digest` to the successor subject in the event envelope.
+9. Run inspect, verifier, falsifier, and retirement operations only on an exact
+   clean commit. Require the checkout and subject to remain unchanged afterward.
+   Record immutable outputs through [evidence-ledger.md](references/evidence-ledger.md).
+10. Re-evaluate all current artifacts and observations. Select the next
+    operation, Ship handoff, review action, closure judgment, or blocker.
 
-The one-operation law is `select -> prepare -> effect -> observe -> evaluate ->
-select or close`. Actuating performs the semantic evaluation; Ledger may only
-record and replay its inputs. No stage may smuggle a second repository effect.
+The one-operation law is:
 
-A document, operation envelope, validator pass, Ledger append, review result,
-or Construction Contract never grants mutation by itself. Mutation requires
-current accepted authority, a current Construction, a matching subject, and an
-Actuating-selected in-scope operation.
+~~~text
+select -> prepare -> effect -> commit -> record -> observe -> evaluate -> select or close
+~~~
+
+No stage may smuggle a second repository effect. A document, operation
+envelope, validator pass, Ledger append, review result, or Construction never
+grants mutation by itself. Mutation requires accepted authority, a current
+Construction, an exact clean committed subject, and an in-scope operation.
 
 ## Goal-causal lineage
 
-Treat subject freshness and causal decision lineage as independent
-coordinates. A commit, publication, or other material subject change makes
-subject-bound proof, operations, review bindings, and review credit stale. It
-does not erase prior Construction decisions or Counterexample-class history
-for the same `goal_id`.
+Subject freshness and causal decision lineage are independent. A clean commit,
+publication, or other material subject change makes subject-bound proof,
+operations, review bindings, and review credit stale. It does not erase prior
+Construction decisions or Counterexample history for the same `goal_id`.
 
-A direct commit of the exact already-observed scoped worktree is a provenance
-transition, not a semantic Goal revision. After the edit operation is complete
-and before committing, run the checked-in
-`scripts/subject_commit_observation.py --prepare-before` against the exact
-pre-commit subject observation. The resulting
-`actuating-subject-commit-input/v1` retains that authentic observation and, only
-for legacy gitlink normalization, captures recursive first-order projections
-whose canonical digests equal the observation's recorded gitlink digests. After
-the commit is clean, run the same observer against that prepared input. It never
-replays a custom Git filter after the observed context has changed; absent,
-malformed, duplicate, scope-incompatible, or digest-mismatched compatibility
-witnesses fail closed. Only the observer's double-captured
-`actuating-subject-commit-observation/v1` may feed
-`record-subject-commit`. That admission exact-matches repository and Goal
-scope, requires the retained subject as `before`, a single-parent successor,
-equal before/after scoped worktree digests, nonempty in-scope commit paths, and
-a clean successor, then changes only the retained subject register. Repository,
-scope, ref, content, parentage, or cleanliness drift remains a Goal-level
-obstruction. Do not use Goal carry-forward for this provenance-only case; a
-real source, authority, scope, compatibility, or semantic change still requires
-a successor Goal.
-
-Only the first Construction in the current authoritative v3 lineage for a
-`goal_id` may use `mode: initial` with empty `predecessor_refs`. Every later
-Construction, including one compiled after a successor Goal Contract or
-subject rebind, must name the exact current Construction as its sole
-predecessor and classify what it preserves, falsifies, replaces, or retires.
+Only the first Construction in the authoritative v3 lineage may use
+`mode: initial` with no predecessor. Every later Construction names the exact
+current Construction as its sole predecessor, including after a successor Goal
+or clean subject rebind.
 
 Before accepting a new Counterexample Set, resolve prior Sets for the Goal.
-When a stable class recurs, require the new Set's `predecessor_refs` to include
-the most recent Set carrying that class, as `$review-fold` requires. Missing
-lineage blocks successor selection and returns the Set to `$review-fold`; it
-does not make the class appear novel.
+When a stable class recurs, require the new Set to name the most recent Set
+carrying it. Missing lineage blocks and does not make the class novel.
 
-The Causal recurrence gate folds the full goal-local Construction and
-Counterexample lineage across subject revisions. A changed Goal law or
-applicability may reject, supersede, or separate prior classes with explicit
-evidence, but subject change alone cannot. The falsifier is a stable accepted
-class recurring after a subject rebind while the recurrence fold reports no
-recurrence.
-
-## Counterexample procedure
+## Counterexample and causal recurrence procedure
 
 Every witnessed bug, failing test, incident, compatibility failure, or review
-finding passes through `$review-fold` before repair. It separates facts from
-suggestions and quotients duplicates into stable law-and-boundary classes.
+finding passes through `$review-fold`. Actuating then determines whether each
+accepted class is:
 
-Actuating then determines whether each accepted class is:
-
-- a realization defect in an otherwise valid Construction;
+- a realization defect;
 - an architecture defect requiring a successor Construction;
-- an ablation defect requiring removal of dominated residue; or
+- an ablation defect requiring dominated-residue removal; or
 - blocked by missing authority or evidence.
 
-Before deciding among these dispositions, enter the Architectonic decision
-gate and establish the current-run Axiomatic Construction Basis. A
-`realization` classification is not established merely because the existing
-boundary can accept another local edit. If the finding falsifies a basis
-premise, or makes architecture or ablation repair live, re-axiomatize before
-the next `$universalist` nomination. Then run the bounded Metanoetic pass when
-triggered, lower any material reframe through `$universalist`, and compare it
-in the successor Construction before selecting the repair class.
+Re-establish the current-run basis before choosing an affected repair. If a
+finding falsifies a premise or makes architecture/ablation live, re-axiomatize,
+run the bounded Metanoetic pass, lower through Universalist, and compare the
+successor candidates before selecting an operation.
 
-The successor records falsified and preserved predecessor claims, excluded
-Counterexample classes, stronger proof, and retirements. It must preserve
-already-valid observations. A witnessed example is not resolved until the
-Construction excludes its class or proves it instance-specific.
+The causal recurrence gate triggers when one accepted class recurs after repair
+or two accepted classes across subject revisions share an evidenced missing
+observation, authority, correlation, or Construction factor. Similar files,
+prose, diff size, or timing do not establish shared cause.
 
-An accepted Review Fold makes the current Construction stale. Its successor
-uses `accepted-review-fold`, binds the latest Counterexample Set on the exact
-current subject, and records the same canonical accepted-class list in both
-`counterexample_class_refs` and `evaluated_class_refs`. A zero-class successor
-is legal whenever the latest fold has no accepted class, including when it
-rejects a newly observed class against an empty predecessor debt set.
-Subject rebinding refreshes this exact-subject evaluation without resetting the
-goal-causal lineage.
-Predecessor-factor proof refs resolve through the predecessor artifact;
-candidate, successor-factor, addition, and completeness refs resolve through
-the successor artifact.
-
-### Causal recurrence gate
-
-Before selecting an affected repair, fold the current and predecessor
-Counterexample Sets against the current and predecessor Constructions for this
-Goal. Trigger the gate when either:
-
-- one accepted class recurs after a repair; or
-- two accepted classes across subject revisions depend on the same missing
-  observation, authority, correlation, or Construction factor.
-
-Shared filenames, diff size, or similar wording do not establish a common
-cause. When the evidence does, record this compact view over the successor
-Construction decision:
+Record:
 
 ~~~text
 Causal Recurrence Disposition
@@ -489,159 +378,127 @@ Proof:
 Falsifier:
 ~~~
 
-This is not a fifth authority artifact. The successor Construction carries the
-complete cluster in `counterexample_class_refs`, names the shared cause in
-`falsified_predecessor_claims`, and owns the selected proof and retirements.
-Do not select another affected repository mutation after the gate triggers.
-The recurrence trigger also invalidates the prior candidate universe and makes
-abstraction change live under the Architectonic decision gate. Re-axiomatize,
-then complete the single Metanoetic pass and Universalist reclassification before
-this candidate comparison.
-`instance-specific` is legal only when a non-example proof separates the
-cluster and establishes that the current representation remains sufficient.
-Otherwise select an architecture or ablation successor, or block.
-
-When the repeated route adds validators, correlations, caches, bypasses, or
-path-dependent recovery to recreate information the selected representation
-forgets, require the Reduction challenge to test the existence of that repair
-mechanism—not merely whether its newest implementation is locally minimal.
-Compare all four v3 candidate families before retaining residual validation
-authority. Ledger may replay the cited history but never computes shared cause
-or the disposition.
+A recurring cluster makes abstraction change live and invalidates the prior
+candidate universe. `instance-specific` requires non-example separation proof.
+Otherwise select architecture/ablation repair or block. Do not add another
+validator that recreates information the representation repeatedly forgets.
 
 ## Review accretion
 
 A sequence of pointwise least-additive repairs may compose into a globally
 dominated realization. After every review-driven mutation epoch and before the
-next Ship handoff or fresh review dispatch, apply the
+next Ship handoff or fresh review, apply the
 [Review Accretion Gate](references/review-accretion.md). Apply it again before
-final closeout when review-driven mutation occurred after the last current
-disposition.
+final closeout when mutation occurred after the last disposition.
 
-Bind the exact delivery baseline, review-entry subject, and current subject.
-Keep the review-entry anchor across campaigns, publication epochs, review-credit
-resets, subject rebinding, and successor Constructions for the same closeout
-objective. Fold the complete delivery delta, review-induced delta, Construction
-and Counterexample lineage, and cumulative production, semantic, proof, and
-comprehension surfaces. Line count, file count, elapsed time, and repair count
-force inspection only; they never decide the disposition.
+Bind the exact delivery baseline, review-entry committed subject, and current
+committed subject. Keep the review-entry anchor across campaigns, publication
+epochs, review-credit resets, subject rebinding, and successor Constructions for
+the same closeout objective. Fold the complete delivery and review-induced
+commit deltas, Construction and Counterexample lineage, and cumulative
+production, semantic, proof, and comprehension surfaces. Line count, file
+count, elapsed time, and repair count force inspection only.
 
 First derive the ordinary cumulative normal form. Use one read-only
 `$complexity-mitigator` Micro Preflight when the architecture and factor
-inventory remain sufficient. When the representation, owner, admitted domain,
-equivalence, information retention, or boundary may be insufficient, establish
-or retain the current Axiomatic Construction Basis and require `$universalist`
-to nominate the ordinary repository-native normal form.
+inventory remain sufficient. When representation, owner, admitted domain,
+equivalence, information retention, or boundary may be insufficient, retain or
+re-establish the basis and require Universalist to nominate the ordinary
+repository-native normal form.
 
-Compare every candidate against the same common mandatory obligation core and
-vary only its disputed architectural delta. Require the selected result to be
-arrival-order invariant: permuting when the same current obligations became
-known must not change the selected factorization. Do not establish dominance by
-omitting an independent owner repair from an ablation candidate.
+When the fold establishes material path dependence, accumulated semantic
+machinery, obsolete residue, proof accretion, inadequate ordinary
+normalization, or pathwise domination, run Metanoetic with
+`Trigger: review-path-accretion`, lower the result, challenge it once with
+Reduce, and adjudicate.
 
-When the fold establishes material repair-path dependence, accumulated semantic
-machinery, obsolete repair residue, proof accretion, inadequate ordinary
-normalization, or pathwise domination pressure, make abstraction change live.
-Run the existing bounded Metanoetic composition with
-`Trigger: review-path-accretion`: treat the accumulated changeset as evidence,
-not as the solution; derive the coherent Construction that would have made the
-largest portion of the repair path unnecessary; require Universalist lowering,
-one Reduce challenge for the resulting candidate version, and Actuating
-adjudication.
-
-Actuating selects exactly one current disposition: `preserve`, `realization-
-normalization`, `ablation-repair`, `architecture-repair`, or `blocked`. A
-material normalization, ablation, or architecture repair changes the review
-subject and resets all review credit before fresh review. Compile material
-results into existing Construction factors, supersession, proof obligations,
-and retirements. Treat an earlier `preserve`, `minimal`, or
-`no-material-reframe` result as a premise-bound proof lease: later evidence that
-changes a relied-on owner, multiplicity, representation, or proof-shape premise
-reopens the affected decision surface. Require realized retirement evidence;
-factor labels alone do not prove surface removal. Add no artifact family,
-mutable control state, review lens, or
-Ledger, Seq, or CAS accretion command.
+Select exactly one disposition: `preserve`, `realization-normalization`,
+`ablation-repair`, `architecture-repair`, or `blocked`. Any material repair
+creates a new committed review subject and resets all review credit. Compile
+material results into existing Construction factors, supersession, proof
+obligations, and retirements. Add no artifact family, mutable control state,
+review lens, or Ledger/Seq/CAS accretion command.
 
 ## Review convergence
 
-`$first-principles`, the Review Accretion Gate, and its Metanoetic escape are
-Construction-selection or reclassification passes, not review lenses. Keep the
-static review topology at standard plus the existing four auxiliaries.
+`$first-principles`, Review Accretion, and Metanoetic are Construction-selection
+passes, not review lenses. Preserve the static topology of standard plus the
+existing four auxiliaries.
 
-Follow [review-contract.md](references/review-contract.md). Preserve all of
-these laws:
+Before binding or dispatching closure-grade review, require:
 
-- apply the current Review Accretion Gate before every post-repair Ship handoff
-  or fresh review dispatch;
-- before binding or dispatching requests, require both
-  `cas_codex_0145_structured_review_v4=true` and
-  `cas_workflow_bound_owner_lived_review_v1=true` from
-  `cas capabilities --json`; absence blocks before `review/start`;
-- bind standard plus four auxiliary requests before dispatch;
-- launch the initial 1+4 wave as five concurrent owner-lived
-  `cas review start --wait --timeout-ms 2700000` processes, one per bound
-  request, and retain each invoking process through its structured terminal
-  receipt or explicit terminal owner failure;
-- never split a workflow-bound attempt into a detached `start` process and an
-  unrelated later `wait` process;
-- never cancel a launched sibling because another request finds a defect or
-  loses transport;
-- treat a verdictless terminal failure as zero semantic credit and rerun only
-  that request once on the same subject and binding with a fresh attempt;
-- preserve completed sibling facts and any standard clean credit on the
-  unchanged subject when one exact request loses transport; do not reset or
-  relaunch the entire 1+4 wave unless the review subject changes;
-- count the successful full-wave standard clean as clean attempt one;
-- run four later standard attempts serially;
-- require five consecutive distinct standard clean attempts;
-- reset all review credit after any material review-subject change.
+~~~text
+cas_codex_0145_structured_review_v4=true
+cas_workflow_bound_owner_lived_review_v1=true
+~~~
 
-Actuating owns dispatch timing and consumes CAS's structured owner receipts.
-With `$review-fold`'s current Counterexample Sets, Actuating decides whether a
-CAS attempt has a current semantic verdict, earns credit, resets the streak, or
-requires a successor Construction. Ledger may record receipt references and
-project structural history, but it does not dispatch CAS or translate any CAS
-field or process status into `clean`, `findings`, or credit.
+from `cas capabilities --json`. Absence blocks before `review/start`.
+
+Bind standard plus four auxiliary requests before dispatch. Launch the initial
+1+4 wave as five concurrent owner-lived:
+
+~~~text
+cas review start --wait --timeout-ms 2700000
+~~~
+
+processes, one per request, and retain each process through a structured
+terminal receipt or explicit terminal owner failure. Do not split a
+workflow-bound attempt into detached `start` and unrelated `wait`. Never cancel
+a sibling because another request finds a defect or loses transport.
+
+A verdictless terminal failure earns zero credit and reruns only that request
+once on the same committed subject with a fresh attempt. Preserve completed
+siblings and standard clean credit on the unchanged subject. Count the initial
+wave's standard clean as attempt one, run four later standard attempts
+serially, and require five consecutive distinct standard cleans. Any committed
+subject change resets all review credit and requires a fresh 1+4 wave.
+
+Publication-bearing review uses Ship-confirmed remote identity. Map the exact
+published target to `cas review --base <bound-base>` and require every receipt's
+`baseSha`, `headSha`, and target fingerprint to equal Ship readback. Never use
+`--uncommitted` for a published PR. `--commit HEAD` is sufficient only when one
+commit is the complete bound PR delta.
+
+Actuating evaluates CAS owner receipts and review credit. Ledger may record
+receipt references and project structural history, but never dispatches CAS or
+translates CAS fields into semantic verdicts.
 
 ## Publication and closure
 
 Bare mode and publication-bearing review closeout hand a current
-`ready-to-ship` proof to [$ship](../ship/SKILL.md). After Ship returns current
-owner-issued evidence, Actuating records it and begins or resumes review on the
-published subject. When review-driven mutation occurred, the Review Accretion
-Gate must have a current disposition before Ship or review resumes.
+`ready-to-ship` proof to `$ship`. Ship pushes the exact clean verified commit,
+creates or updates the PR, reads back repository/base/head refs and OIDs, and
+returns `SHIP-v1`. Only then does Actuating begin or resume review on the
+published subject.
 
 Apply [closure.md](references/closure.md) only to current artifacts and
-observations. Actuating authors the resulting `actuating-closure-receipt/v1`;
-Ledger neither emits the verdict nor authors the receipt. `$proof-patch` may
-render a complete result but cannot decide it. Complete the handoff or report
-before the source-memory checkpoint; learning status cannot delay, invalidate,
-or roll back delivery closure.
+observations. Actuating authors `actuating-closure-receipt/v1`; Ledger neither
+emits the verdict nor authors the receipt. `$proof-patch` may render a complete
+result but cannot decide it. Complete delivery handoff before source-memory
+evaluation; memory admission cannot delay, invalidate, or roll back closure.
 
-The Axiomatic Construction gate applies prospectively only when a route selects
-a new or successor Construction. Every non-selecting route—including `triage`,
-Ship handoff or publication, and `ACT-CLOSE`—may consume a valid pre-feature
-`construction-contract/v3` that lacks basis provenance; record that provenance
-as unavailable, award it no basis or selection proof, and preserve the artifact
-for review or closure. Any transition to mutation or new Construction selection
+The Axiomatic Construction gate applies prospectively when selecting a new or
+successor Construction. A non-selecting route may consume a valid pre-feature
+v3 Construction lacking basis provenance, record that provenance as
+unavailable, and award it no basis proof. Any resulting mutation or selection
 requires fresh axiomatization and a successor Construction.
 
 ## Fail closed
 
-Always block on stale or missing authority, Goal, Construction, or subject; a
-prospective material selection with a missing, stale, inconsistent, blocked, or
-unresolvedly underdetermined Axiomatic Construction Basis or an
-`incumbent-independent` marker without a traceable frozen derivation and
-Universalist lowering; unresolved accepted or blocked Counterexamples;
-undispositioned material review-path accretion, selected accretion
-normalization without preservation proof, or required accretion retirements that
-remain live; out-of-scope operations; incomplete proof or retirement; missing
-Construction or recurring-class predecessor lineage; a public effect outside
-Ship; or any attempt by a supporting skill, Ledger, or an executor to take
-Actuating's semantic authority. For a `final-closeout` `complete` verdict, also
-block on stale or missing review identity, CAS receipt mismatch, unresolved
-request-local recovery, or fewer than five current-subject standard clean
-attempts, and—when the Goal requires publication—stale or missing Ship
-identity. A `ready-to-ship` verdict requires neither publication nor review
-evidence; `local-implementation` `complete` requires neither and rejects both
-as inapplicable.
+Always block on stale or missing authority, Goal, Construction, or clean
+committed subject; unrelated dirty state before operation preparation; a
+successor commit whose parent, changed paths, scope, or cleanliness does not
+exactly realize the selected edit; a prospective material selection with a
+missing, stale, inconsistent, blocked, or unresolvedly underdetermined basis;
+an incumbent-independent marker without a frozen derivation and Universalist
+lowering; unresolved accepted or blocked Counterexamples; undispositioned
+material review accretion; incomplete proof or retirement; missing lineage; a
+public effect outside Ship; or any supporting skill, Ledger, or executor taking
+Actuating's semantic authority.
+
+For `final-closeout` `complete`, also block on stale or missing publication
+identity, CAS tuple mismatch, unresolved request-local recovery, fewer than five
+current-published-subject standard cleans, or missing required Ship evidence.
+`ready-to-ship` requires neither publication nor review evidence.
+`local-implementation` `complete` requires neither and rejects them as
+inapplicable.
