@@ -6,10 +6,14 @@ import argparse
 import copy
 import json
 import os
+import shutil
 import stat
+import subprocess
 import sys
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from subject_observation import (
     CONTROL_ROOTS,
@@ -129,18 +133,26 @@ def normalize_legacy_gitlink_digests(
             nested_prohibited,
         )
         if digest_bytes(canonical_bytes(legacy_nested)) != retained_digest:
-            retained_head = retained_worktree.get("head")
-            if not isinstance(retained_head, str):
-                continue
-            retained_tree = retained_tree_legacy_projection(
+            index_candidate = current_index_legacy_projection(
                 nested_repo,
                 legacy_nested,
-                retained_head,
-                nested_allowed,
-                nested_prohibited,
             )
-            if digest_bytes(canonical_bytes(retained_tree)) != retained_digest:
-                continue
+            if (
+                index_candidate is None
+                or digest_bytes(canonical_bytes(index_candidate)) != retained_digest
+            ):
+                retained_head = retained_worktree.get("head")
+                if not isinstance(retained_head, str):
+                    continue
+                retained_tree = retained_tree_legacy_projection(
+                    nested_repo,
+                    legacy_nested,
+                    retained_head,
+                    nested_allowed,
+                    nested_prohibited,
+                )
+                if digest_bytes(canonical_bytes(retained_tree)) != retained_digest:
+                    continue
         retained_worktree["content_digest"] = successor_digest
     return normalized
 
@@ -155,6 +167,101 @@ def legacy_projected_entry(
     return any(within(path, scope) for scope in allowed) or bool(
         projected_scopes(path, allowed)
     )
+
+
+def snapshot_git(
+    repo: bytes,
+    index_file: Path,
+    worktree: Path,
+    *args: bytes,
+) -> bytes:
+    environment = {
+        os.fsencode(key): os.fsencode(value)
+        for key, value in os.environ.items()
+        if not key.startswith("GIT_")
+    }
+    environment[b"GIT_INDEX_FILE"] = os.fsencode(index_file)
+    environment[b"GIT_WORK_TREE"] = os.fsencode(worktree)
+    process = subprocess.run(
+        [b"git", b"-C", repo, *args],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=environment,
+    )
+    if process.returncode != 0:
+        message = process.stderr.decode("utf-8", "replace").strip()
+        raise ObservationError(f"git snapshot command failed: {message}")
+    return process.stdout
+
+
+@contextmanager
+def snapshot_checkout(
+    repo: bytes,
+    retained_head: str | None,
+) -> Iterator[Any]:
+    with tempfile.TemporaryDirectory(prefix="actuating-retained-") as directory:
+        root = Path(directory)
+        index_file = root / "index"
+        worktree = root / "worktree"
+        worktree.mkdir()
+        if retained_head is None:
+            live_index = Path(
+                os.fsdecode(run_git(repo, b"rev-parse", b"--git-path", b"index").strip())
+            )
+            if not live_index.is_absolute():
+                live_index = Path(os.fsdecode(repo)) / live_index
+            try:
+                shutil.copyfile(live_index, index_file)
+            except OSError as error:
+                raise ObservationError(f"cannot snapshot current index: {error}") from error
+        else:
+            snapshot_git(
+                repo,
+                index_file,
+                worktree,
+                b"--no-replace-objects",
+                b"read-tree",
+                retained_head.encode("ascii"),
+            )
+
+        def filtered_blob(path: bytes) -> bytes:
+            return snapshot_git(
+                repo,
+                index_file,
+                worktree,
+                b"--no-replace-objects",
+                b"cat-file",
+                b"--filters",
+                b":" + path,
+            )
+
+        yield filtered_blob
+
+
+def current_index_legacy_projection(
+    repo: Path,
+    live: dict[str, Any],
+) -> dict[str, Any] | None:
+    candidate = copy.deepcopy(live)
+    with snapshot_checkout(os.fsencode(repo), None) as filtered_blob:
+        changed = False
+        for entry in candidate["entries"]:
+            path = bytes.fromhex(entry["path_hex"])
+            if entry["source"] != "tracked" or not any(
+                within(path.lower(), control) for control in CONTROL_ROOTS
+            ):
+                continue
+            index = entry.get("index")
+            if index is None or index["mode"] not in {"100644", "100755"}:
+                return None
+            entry["worktree"] = {
+                "content_digest": digest_bytes(filtered_blob(path)),
+                "executable": index["mode"] == "100755",
+                "kind": "file",
+            }
+            changed = True
+    return candidate if changed else None
 
 
 def retained_tree_entries(
@@ -215,21 +322,13 @@ def retained_tree_entries(
 
 
 def retained_blob_worktree(
-    repo: bytes,
     path: bytes,
     mode: str,
-    object_id: str,
+    filtered_blob: Any,
 ) -> dict[str, Any]:
     if mode not in {"100644", "100755"}:
         raise ObservationError("retained tree mode is incompatible with a regular file")
-    blob = run_git(
-        repo,
-        b"--no-replace-objects",
-        b"cat-file",
-        b"--filters",
-        b"--path=" + path,
-        object_id.encode("ascii"),
-    )
+    blob = filtered_blob(path)
     return {
         "content_digest": digest_bytes(blob),
         "executable": mode == "100755",
@@ -258,87 +357,87 @@ def retained_tree_legacy_projection(
     allowed = [os.fsencode(path) for path in allowed_paths]
     prohibited = [os.fsencode(path) for path in prohibited_paths]
     rebuilt: list[dict[str, Any]] = []
+    with snapshot_checkout(repo_bytes, retained_head) as filtered_blob:
+        for entry in candidate["entries"]:
+            path = bytes.fromhex(entry["path_hex"])
+            if entry["source"] != "tracked":
+                if not reconstruct_all or entry["source"] == "scope":
+                    rebuilt.append(entry)
+                continue
+            is_control = any(within(path.lower(), control) for control in CONTROL_ROOTS)
+            if reconstruct_all or is_control:
+                continue
+            index = entry.get("index")
+            retained = tree.get(path)
+            if (
+                index is not None
+                and index.get("mode") == "160000"
+                and retained is not None
+                and retained[0] == "160000"
+                and retained[1] == "commit"
+            ):
+                nested_repo = repo / os.fsdecode(path)
+                nested_allowed = projected_scopes(path, allowed)
+                nested_prohibited = projected_scopes(path, prohibited)
+                nested_live = _legacy_tracked_control_projection(
+                    nested_repo,
+                    f"gitlink:{path.hex()}",
+                    nested_allowed,
+                    nested_prohibited,
+                )
+                nested_candidate = retained_tree_legacy_projection(
+                    nested_repo,
+                    nested_live,
+                    retained[2],
+                    nested_allowed,
+                    nested_prohibited,
+                )
+                entry["worktree"]["content_digest"] = digest_bytes(
+                    canonical_bytes(nested_candidate)
+                )
+            rebuilt.append(entry)
 
-    for entry in candidate["entries"]:
-        path = bytes.fromhex(entry["path_hex"])
-        if entry["source"] != "tracked":
-            if not reconstruct_all or entry["source"] == "scope":
-                rebuilt.append(entry)
-            continue
-        is_control = any(within(path.lower(), control) for control in CONTROL_ROOTS)
-        if reconstruct_all or is_control:
-            continue
-        index = entry.get("index")
-        retained = tree.get(path)
-        if (
-            index is not None
-            and index.get("mode") == "160000"
-            and retained is not None
-            and retained[0] == "160000"
-            and retained[1] == "commit"
-        ):
-            nested_repo = repo / os.fsdecode(path)
-            nested_allowed = projected_scopes(path, allowed)
-            nested_prohibited = projected_scopes(path, prohibited)
-            nested_live = _legacy_tracked_control_projection(
-                nested_repo,
-                f"gitlink:{path.hex()}",
-                nested_allowed,
-                nested_prohibited,
+        for path, (mode, kind, object_id) in tree.items():
+            is_control = any(within(path.lower(), control) for control in CONTROL_ROOTS)
+            if not reconstruct_all and not is_control:
+                continue
+            if kind == "blob":
+                worktree = retained_blob_worktree(path, mode, filtered_blob)
+            elif kind == "commit" and mode == "160000":
+                nested_repo = repo / os.fsdecode(path)
+                nested_allowed = projected_scopes(path, allowed)
+                nested_prohibited = projected_scopes(path, prohibited)
+                nested_live = _legacy_tracked_control_projection(
+                    nested_repo,
+                    f"gitlink:{path.hex()}",
+                    nested_allowed,
+                    nested_prohibited,
+                )
+                nested_candidate = retained_tree_legacy_projection(
+                    nested_repo,
+                    nested_live,
+                    object_id,
+                    nested_allowed,
+                    nested_prohibited,
+                    reconstruct_all=True,
+                )
+                worktree = {
+                    "content_digest": digest_bytes(canonical_bytes(nested_candidate)),
+                    "executable": False,
+                    "head": object_id,
+                    "head_ref": nested_live["head_ref"],
+                    "kind": "gitlink",
+                }
+            else:
+                raise ObservationError("retained tree entry has an unsupported kind or mode")
+            rebuilt.append(
+                {
+                    "index": {"mode": mode, "object_id": object_id, "stage": 0},
+                    "path_hex": path.hex(),
+                    "source": "tracked",
+                    "worktree": worktree,
+                }
             )
-            nested_candidate = retained_tree_legacy_projection(
-                nested_repo,
-                nested_live,
-                retained[2],
-                nested_allowed,
-                nested_prohibited,
-            )
-            entry["worktree"]["content_digest"] = digest_bytes(
-                canonical_bytes(nested_candidate)
-            )
-        rebuilt.append(entry)
-
-    for path, (mode, kind, object_id) in tree.items():
-        is_control = any(within(path.lower(), control) for control in CONTROL_ROOTS)
-        if not reconstruct_all and not is_control:
-            continue
-        if kind == "blob":
-            worktree = retained_blob_worktree(repo_bytes, path, mode, object_id)
-        elif kind == "commit" and mode == "160000":
-            nested_repo = repo / os.fsdecode(path)
-            nested_allowed = projected_scopes(path, allowed)
-            nested_prohibited = projected_scopes(path, prohibited)
-            nested_live = _legacy_tracked_control_projection(
-                nested_repo,
-                f"gitlink:{path.hex()}",
-                nested_allowed,
-                nested_prohibited,
-            )
-            nested_candidate = retained_tree_legacy_projection(
-                nested_repo,
-                nested_live,
-                object_id,
-                nested_allowed,
-                nested_prohibited,
-                reconstruct_all=True,
-            )
-            worktree = {
-                "content_digest": digest_bytes(canonical_bytes(nested_candidate)),
-                "executable": False,
-                "head": object_id,
-                "head_ref": nested_live["head_ref"],
-                "kind": "gitlink",
-            }
-        else:
-            raise ObservationError("retained tree entry has an unsupported kind or mode")
-        rebuilt.append(
-            {
-                "index": {"mode": mode, "object_id": object_id, "stage": 0},
-                "path_hex": path.hex(),
-                "source": "tracked",
-                "worktree": worktree,
-            }
-        )
 
     rebuilt.sort(
         key=lambda entry: (
