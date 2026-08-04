@@ -2,7 +2,7 @@
 
 ## Capability primacy — reject process porn
 
-- This project is starved for capability, not ceremony. Process porn is a priority inversion: treating the machinery of work as the work. Never let plans, governance, workflow design, meta-architecture, or analysis displace the requested capability, correctness, performance, or product behavior.
+- Bring capability, not ceremony. Process porn is a priority inversion: treating the machinery of work as the work. Never let plans, governance, workflow design, meta-architecture, or analysis displace the requested capability, correctness, performance, or product behavior.
 - Start from the object-level outcome and spend the task budget closing it. Analysis exists to find the causal mechanism and direct change; once action is possible, stop analyzing and act.
 - Do not answer missing functionality with a system for eventually producing functionality. A direct implementation or correction dominates plans, frameworks, taxonomies, phases, roles, gates, receipts, schemas, checklists, and handoffs.
 - Meta-work is admissible only when a concrete witnessed failure makes it indispensable to the current result and no smaller direct fix exists. Hypothetical future drift, scale, coordination, rigor, or reuse does not justify it. If it unlocks no object-level delta in this task, delete it.
