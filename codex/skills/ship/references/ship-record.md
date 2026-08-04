@@ -30,14 +30,11 @@ ship_record:
     command:
     result:
     pr_url:
-  actuation_binding:
-    closure_receipt_ref:
+  review_binding:
     goal_contract_ref:
     construction_ref:
     subject_digest:
-    evidence_head:
     review_contract_digest:
-    closure_route: final-closeout
 ~~~
 
 `pr_readiness.mode` reports the selected publication posture. The controlling
@@ -64,6 +61,56 @@ record it in the Evidence Ledger.
 
 ## Existing-publication adoption
 
+Before a review campaign that will later close through adoption, Ship may emit
+this read-only observation record after the same exact Git and PR-absence
+readback required by adoption:
+
+~~~yaml
+ship_observation_record:
+  record_version: SHIP-OBSERVATION-v1
+  source: actuation
+  publication_route: observe-existing
+  repository:
+  review_target:
+    base_ref:
+    base_sha:
+    head_ref:
+    head_sha:
+  eligibility:
+    open_exact_pr_count: 0
+  public_state:
+    branch:
+      name:
+      sha:
+      publication_event:
+        provider:
+        event_id:
+        repository:
+        ref:
+        before_sha:
+        head_sha:
+        published_at:
+        history_complete_through:
+    observed_at:
+  action:
+    operation: observe-existing
+    result: observed
+    mutation_performed: false
+  actuation_binding:
+    closure_receipt_ref:
+    goal_contract_ref:
+    construction_ref:
+    subject_digest:
+    evidence_head:
+    review_contract_digest:
+    closure_route: final-closeout
+~~~
+
+`SHIP-OBSERVATION-v1` is not final publication closure. Actuating records its
+digest before binding or dispatching the campaign. Final adoption ratifies that
+exact digest and tuple; the Evidence Ledger's event order, rather than a
+comparison between provider and Ledger clocks, proves observation-before-review.
+
 Use this exact companion record only when Actuating supplies a current
 `ready-to-ship` receipt for an exact subject that is already public and no
 current PR tuple can truthfully represent that publication epoch:
@@ -74,6 +121,7 @@ ship_adoption_record:
   source: actuation
   publication_route: adopt-existing
   repository:
+  ratifies_observation_ref: null | sha256-digest
   review_target:
     base_ref:
     base_sha:
@@ -96,6 +144,10 @@ ship_adoption_record:
         published_at:
         history_complete_through:
     release: null | {
+      provider: string,
+      repository: string,
+      publication_state: published,
+      draft: false,
       tag: string,
       url: string,
       target_sha: git-oid,
@@ -138,14 +190,22 @@ inventory whose exact open repository/base/head match count is
 must equal the review head; `before_sha` records the preceding remote tip and is
 not compared with the review base. Complete provider history through
 `history_complete_through` must prove it is the latest event for that repository
-and ref: the current uninterrupted publication epoch. For a non-null release,
-Ship resolves `target_sha`, requires it to equal
+and ref: the current uninterrupted publication epoch. When review credit
+depends on a prior observation, `ratifies_observation_ref` is non-null and Ship
+exact-matches the referenced `SHIP-OBSERVATION-v1` repository, review target,
+publication event, and `review_binding`. The adoption's current
+`actuation_binding` must carry the same Goal, Construction, subject, and review
+contract, but its closure receipt and Evidence Ledger head may be later. For a
+non-null release, Ship
+requires its live provider and repository to exact-match the adopted
+repository, requires `publication_state: published` and `draft: false`, resolves
+`target_sha`, and requires it to equal
 `review_target.head_sha`, requires the receipt asset names to equal the complete
 live provider asset-name set, and exact-matches every release field and asset
 name, size, and SHA-256 digest. Ship copies the complete current ready-to-ship
 `actuation_binding` verbatim. Any mismatch, missing or truncated history,
-missing digest, requested mutation, blocked result, or ambiguous target yields
-no receipt.
+missing digest, unpublished or draft release, requested mutation, blocked
+result, or ambiguous target yields no receipt.
 
 Return the complete immutable `SHIP-ADOPTION-v1` record and its SHA-256 digest
 to Actuating. It has the same owner boundary as `SHIP-v1`; it is not a second

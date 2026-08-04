@@ -454,8 +454,11 @@ wave's standard clean as attempt one, run four later standard attempts
 serially, and require five consecutive distinct standard cleans. Any committed
 subject change resets all review credit and requires a fresh 1+4 wave.
 
-Publication-bearing review uses Ship-confirmed remote identity. Map the exact
-published target to `cas review --base <bound-base>` and require every receipt's
+Publication-bearing review uses Ship-confirmed remote identity. For a current
+PR, use `SHIP-v1`; for a later adoption route, record a read-only
+`SHIP-OBSERVATION-v1` pre-review publication observation before binding or
+dispatching the campaign. Map the exact published target to
+`cas review --base <bound-base>` and require every receipt's
 `baseSha`, `headSha`, and target fingerprint to equal Ship readback. Never use
 `--uncommitted` for a published PR. `--commit HEAD` is sufficient only when one
 commit is the complete bound PR delta.
@@ -474,16 +477,21 @@ an exact already-public subject that has no truthful current PR tuple, returning
 OIDs, complete actuation binding, and route-specific live readback. Actuating
 must not substitute its own live-readback record.
 
-Normally Ship evidence precedes review. A later `SHIP-ADOPTION-v1` observation
-does not reset review credit merely because the adoption receipt was recorded
-later only when its provider-authored current uninterrupted publication epoch
-exact-matches the repository, canonical head ref, base/head tuple, and subject,
-and begins before the credited campaign; every credited CAS receipt proves that
-same base/head tuple, and no later material event changed the subject. Otherwise
-the review credit is stale. A non-null adopted release also requires its
-resolved tag target to equal the subject head and its asset list to equal the
-complete live provider inventory; release assets added after review are
-separate publication evidence and do not rewrite review time.
+Ship evidence precedes review. A later `SHIP-ADOPTION-v1` observation does not
+reset review credit merely because the adoption receipt was recorded later only
+when it ratifies the exact `SHIP-OBSERVATION-v1` digest that Actuating recorded
+before the credited campaign. The observation, adoption, and every credited CAS
+receipt must exact-match the repository, canonical head ref, base/head tuple,
+subject, current uninterrupted publication epoch, Goal, Construction, and
+review contract, and no later material event may have changed the subject.
+The final adoption carries its own current actuation binding. Evidence Ledger
+order from the recorded Ship observation to campaign binding proves causality; never
+compare provider `published_at` with Ledger `recorded_at`. Otherwise the review
+credit is stale. A non-null adopted release also requires its provider and
+repository to match, its state to be published and non-draft, its resolved tag
+target to equal the subject head, and its asset list to equal the complete live
+provider inventory. Release assets added after review are separate publication
+evidence and do not rewrite review time.
 
 Apply [closure.md](references/closure.md) only to current artifacts and
 observations. Actuating authors `actuating-closure-receipt/v1`; Ledger neither

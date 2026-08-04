@@ -13,9 +13,10 @@ already-public subject that cannot truthfully be represented by a current PR
 tuple. It never merges.
 
 Within Actuating, Ship remains the sole publication-evidence owner and the sole
-public-effect owner. `SHIP-v1` and `SHIP-ADOPTION-v1` are external publication
-evidence, not a Goal, Counterexample, Construction, Evidence event, review
-decision, or closure artifact.
+public-effect owner. `SHIP-v1`, `SHIP-OBSERVATION-v1`, and
+`SHIP-ADOPTION-v1` are external publication evidence, not a Goal,
+Counterexample, Construction, Evidence event, review decision, or closure
+artifact.
 
 ~~~text
 Validated complete work -> ready PR
@@ -39,7 +40,7 @@ requested.
 ~~~yaml
 ship_input:
   source: direct | actuation
-  publication_route: pull-request | adopt-existing
+  publication_route: pull-request | observe-existing | adopt-existing
   repository: owner/name
   base:
     branch:
@@ -56,7 +57,8 @@ ship_input:
     head_sha:
     comparison_base_ref:
     comparison_base_sha:
-    release: null | { tag, url, target_sha, assets: [{ name, size, sha256 }] }
+    observation_ref: null | sha256-digest
+    release: null | { provider, repository, publication_state, draft, tag, url, target_sha, assets: [{ name, size, sha256 }] }
   validation:
     build: pass | fail | missing | not-run
     lint: pass | fail | missing | not-run
@@ -95,9 +97,12 @@ ship_input:
 ~~~
 
 For compatibility, an existing input that omits `publication_route` selects
-`pull-request`. Only an explicit Actuating handoff may select `adopt-existing`.
-For `adopt-existing`, the top-level `repository`, `base`, and `head` tuple is
-authoritative. Require `existing_publication.branch == head.branch`,
+`pull-request` only when no `existing_publication` field or other
+adoption-specific field is present. Otherwise omission blocks before any public
+effect. Only an explicit Actuating handoff may select `observe-existing` or
+`adopt-existing`. For either existing-publication route, the top-level
+`repository`, `base`, and `head` tuple is authoritative. Require
+`existing_publication.branch == head.branch`,
 `existing_publication.head_sha == head.sha`,
 `existing_publication.comparison_base_ref == base.branch`, and
 `existing_publication.comparison_base_sha == base.sha`; any disagreement blocks
@@ -110,7 +115,8 @@ route has no public-effect premise. Ship does not rederive closure, inspect or
 revise the Construction, classify findings, count review credit, or choose
 Actuating's next action.
 
-`adopt-existing` is Actuating-only and read-only. Require the remote branch to
+`observe-existing` and `adopt-existing` are Actuating-only and read-only.
+Require the remote branch to
 resolve to the supplied head SHA, require the comparison base ref to resolve
 exactly to the supplied base SHA, reject an equal base and head, and prove that
 base is an ancestor of the head. Query the complete live open-PR inventory for
@@ -121,13 +127,27 @@ exactly equal the adoption repository, head ref, and head SHA. Its `before_sha`
 records the provider's preceding remote tip and is not the review base.
 Provider history from that event through observation must be complete
 and contain no later event for the same repository and ref, so the event begins
-the current uninterrupted publication epoch. For a non-null release, resolve
-its tag target and require it to equal the adopted head, obtain the complete
-live provider asset inventory, require exact set equality with the receipt, and
-then verify every asset name, size, and SHA-256 digest. Reject missing or
-truncated history, an incomplete PR or asset inventory, an empty or mismatched
-tuple, an unverified asset, or any requested mutation. The receipt records the
+the current uninterrupted publication epoch. For a non-null release, require
+the provider and repository to exact-match the adopted repository, require
+provider state `published` and `draft: false`, resolve its tag target and require
+it to equal the adopted head, obtain the complete live provider asset inventory,
+require exact set equality with the receipt, and then verify every asset name,
+size, and SHA-256 digest. Reject missing or truncated history, an incomplete PR
+or asset inventory, an empty or mismatched tuple, an unpublished or draft
+release, an unverified asset, or any requested mutation. The receipt records
 live provider timestamps; it must not invent an earlier publication time.
+
+Before a review campaign that may later use `adopt-existing`, Ship performs the
+same branch, comparison-base, PR-absence, and publication-epoch readback through
+`observe-existing` and returns immutable `SHIP-OBSERVATION-v1`. Actuating must
+record that receipt before binding or dispatching the campaign. A later
+`SHIP-ADOPTION-v1` may retain the campaign only by carrying the observation
+digest and exact-matching its repository, base/head tuple, current publication
+epoch, subject, Goal, Construction, and review contract. Ledger event order
+between the recorded observation and campaign establishes causality; provider
+and Ledger wall-clock timestamps are never compared. The later adoption keeps
+its own complete current actuation binding; review events are not required to
+leave the earlier readiness receipt current.
 
 Before publication, canonicalize the complete `closure_receipt` with only
 `receipt_id` replaced by JSON `null`, recompute its SHA-256 identity, and require
@@ -203,19 +223,21 @@ Before any public effect:
 6. Read back repository, base/head refs and SHAs, URL, open/draft state, and the
    managed proof block.
 
-For `adopt-existing`, perform no public effect: read back the exact repository,
+For `observe-existing` or `adopt-existing`, perform no public effect: read back the exact repository,
 branch head and publication event, comparison base ancestry, zero open exact-
-tuple PRs, optional release target, and every claimed asset digest; then emit
-`SHIP-ADOPTION-v1`. A zero-mutation adoption succeeds only after all readback
-matches the current readiness input.
+the route-specific receipt. Emit `SHIP-OBSERVATION-v1` for pre-review
+observation and `SHIP-ADOPTION-v1` for final adoption. Either succeeds only
+after all readback matches the current readiness input; final adoption must
+ratify the cited observation when review credit depends on it.
 
 A zero exit status is not publication proof. If mutation succeeds but readback
 fails, report the partial public effect and block; re-read live state before
 retrying.
 
-For Actuating input, emit immutable `SHIP-v1` after successful PR readback or
-immutable `SHIP-ADOPTION-v1` after successful existing-state readback and return
-it to Actuating. Actuating decides how it affects publication currentness and
+For Actuating input, emit immutable `SHIP-v1` after successful PR readback,
+immutable `SHIP-OBSERVATION-v1` after pre-review existing-state readback, or
+immutable `SHIP-ADOPTION-v1` after final existing-state readback and return it
+to Actuating. Actuating decides how it affects publication currentness and
 records the evidence event. Ship never appends Actuating Evidence or interprets
 its receipt as architecture, review, or closure authority.
 
