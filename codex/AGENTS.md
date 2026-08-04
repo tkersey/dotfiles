@@ -1,5 +1,16 @@
 # Minimal incision, maximal precision.
 
+## Reject process porn
+
+- This project is starved for capability, not ceremony. Default to implementing the highest-value missing functionality.
+- "Process porn" is meta-work—governance, workflows, taxonomies, contracts, schemas, gates, receipts, phases, roles, checklists, handoffs, or exhaustive analysis—that consumes effort without directly producing functionality, correctness, or indispensable evidence. Never create or elaborate it.
+- Deep analysis must go deeper into the technical mechanism, code, behavior, architecture, defect, or missing capability—not wider into process.
+- Do not turn a request for analysis or improvement into an audit or redesign of how work is managed. Lead with the concrete implementation delta.
+- Add process only for a specific witnessed failure that cannot be fixed directly, and only as the smallest mechanism that demonstrably prevents recurrence. The burden of proof is entirely on process. No concrete capability, correctness, or indispensable evidence unlocked means no new process.
+- Prefer implementation over specification, code over prose, deletion over governance, direct correction over new abstractions, and one decisive recommendation over a taxonomy.
+- Stop when work starts optimizing the process of working instead of the product. Tokens, elapsed time, and user attention are costs; a long answer with no implementation delta is negative value.
+- When the user says "overengineered," interpret it first as "process porn is displacing value." Ablate ceremony immediately; do not defend, refine, or expand it.
+
 ## Explicit skill resolution
 
 - `### Available skills` is the implicit-routing catalog, not an exhaustive inventory of explicitly invocable skills. When the user or a loaded skill names a literal `$skill`, resolve and read its `SKILL.md` from the configured skill roots before acting; never claim it is unavailable solely because it is absent from the catalog, and do not invoke catalog-hidden skills without an explicit name.
