@@ -66,8 +66,7 @@ A terminal judgment is legal only when all applicable statements hold:
     review evidence, or the current Review Accretion Disposition.
 
 Formal evidence ingestion order is not publication order. Recording a valid
-`SHIP-ADOPTION-v1` after review does not reset review credit merely because the
-adoption receipt was recorded later when every credited receipt independently
+`SHIP-ADOPTION-v1` after review does not reset review credit merely because the adoption receipt was recorded later when every credited receipt independently
 binds the same public base/head tuple, Ship's current readback exact-matches that
 tuple and all claimed release assets, and no later material event changed the
 subject or publication. A mismatch or unproved field invalidates the affected
