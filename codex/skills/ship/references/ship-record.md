@@ -30,11 +30,14 @@ ship_record:
     command:
     result:
     pr_url:
-  review_binding:
+  actuation_binding:
+    closure_receipt_ref:
     goal_contract_ref:
     construction_ref:
     subject_digest:
+    evidence_head:
     review_contract_digest:
+    closure_route: final-closeout
 ~~~
 
 `pr_readiness.mode` reports the selected publication posture. The controlling
@@ -96,14 +99,11 @@ ship_observation_record:
     operation: observe-existing
     result: observed
     mutation_performed: false
-  actuation_binding:
-    closure_receipt_ref:
+  review_binding:
     goal_contract_ref:
     construction_ref:
     subject_digest:
-    evidence_head:
     review_contract_digest:
-    closure_route: final-closeout
 ~~~
 
 `SHIP-OBSERVATION-v1` is not final publication closure. Actuating records its
@@ -193,7 +193,11 @@ not compared with the review base. Complete provider history through
 and ref: the current uninterrupted publication epoch. When review credit
 depends on a prior observation, `ratifies_observation_ref` is non-null and Ship
 exact-matches the referenced `SHIP-OBSERVATION-v1` repository, review target,
-publication event, and `review_binding`. The adoption's current
+branch, stable publication-event identity (`provider`, `event_id`, `repository`,
+`ref`, `before_sha`, `head_sha`, and `published_at`), and `review_binding`.
+`history_complete_through` is not stable identity: adoption obtains a fresh,
+complete provider history through its own observation and proves that no later
+event for the repository and ref changed the epoch. The adoption's current
 `actuation_binding` must carry the same Goal, Construction, subject, and review
 contract, but its closure receipt and Evidence Ledger head may be later. For a
 non-null release, Ship

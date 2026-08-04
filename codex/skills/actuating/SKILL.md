@@ -485,9 +485,12 @@ receipt must exact-match the repository, canonical head ref, base/head tuple,
 subject, current uninterrupted publication epoch, Goal, Construction, and
 review contract, and no later material event may have changed the subject.
 The final adoption carries its own current actuation binding. Evidence Ledger
-order from the recorded Ship observation to campaign binding proves causality; never
-compare provider `published_at` with Ledger `recorded_at`. Otherwise the review
-credit is stale. A non-null adopted release also requires its provider and
+order from the recorded Ship observation to campaign binding proves causality;
+never compare provider `published_at` with Ledger `recorded_at`. Otherwise the review
+credit is stale. Ratification exact-matches stable publication-event identity,
+while final adoption separately requires a fresh complete provider-history
+horizon proving that the epoch remained uninterrupted. A non-null adopted
+release also requires its provider and
 repository to match, its state to be published and non-draft, its resolved tag
 target to equal the subject head, and its asset list to equal the complete live
 provider inventory. Release assets added after review are separate publication

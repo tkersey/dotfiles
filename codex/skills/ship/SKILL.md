@@ -223,12 +223,14 @@ Before any public effect:
 6. Read back repository, base/head refs and SHAs, URL, open/draft state, and the
    managed proof block.
 
-For `observe-existing` or `adopt-existing`, perform no public effect: read back the exact repository,
-branch head and publication event, comparison base ancestry, zero open exact-
-the route-specific receipt. Emit `SHIP-OBSERVATION-v1` for pre-review
-observation and `SHIP-ADOPTION-v1` for final adoption. Either succeeds only
-after all readback matches the current readiness input; final adoption must
-ratify the cited observation when review credit depends on it.
+For `observe-existing` or `adopt-existing`, perform no public effect: read back
+the exact repository, branch head and publication event, comparison base
+ancestry, zero open exact-tuple PRs, and any optional release target,
+publication state, complete asset inventory, and asset digests; then emit the
+route-specific receipt. Emit `SHIP-OBSERVATION-v1` for pre-review observation
+and `SHIP-ADOPTION-v1` for final adoption. Either succeeds only after all
+readback matches the current readiness input; final adoption must ratify the
+cited observation when review credit depends on it.
 
 A zero exit status is not publication proof. If mutation succeeds but readback
 fails, report the partial public effect and block; re-read live state before

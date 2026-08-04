@@ -75,9 +75,12 @@ publication epoch, repository, canonical head ref, base/head tuple, subject, and
 stable Goal, Construction, and review contract. The adoption carries its own
 current actuation binding; every credited receipt binds the observed tuple, and
 no later material event changed the subject. Evidence Ledger order from
-observation to campaign is the causal proof; provider `published_at` and Ledger `recorded_at`
-are not compared. Tuple equality or an arbitrary older matching event is
-insufficient. A mismatch, missing observation, truncated history, or unproved
+observation to campaign is the causal proof; provider `published_at` and Ledger
+`recorded_at` are not compared. Tuple equality or an arbitrary older matching event is
+insufficient. Ratification matches stable publication-event identity, not the
+observation's history horizon; final adoption must obtain a fresh complete
+history horizon and prove that no later event changed the epoch. A mismatch,
+missing observation, truncated history, or unproved
 field invalidates the affected credit; adoption never refreshes stale review
 credit.
 
