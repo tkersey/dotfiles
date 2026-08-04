@@ -42,8 +42,8 @@ A terminal judgment is legal only when all applicable statements hold:
    exact `ready-to-ship` receipt. For adoption, Actuating also verifies that no
    mutation occurred, the public branch resolves to the exact head, the base is
    an ancestor, and every claimed release asset name, size, and SHA-256 digest
-   matches live state. Actuating must not substitute its own live-readback
-   record.
+   matches live state.
+   Actuating must not substitute its own live-readback record.
    A `ready-to-ship` judgment deliberately omits this premise: that receipt is
    Ship's required readiness input for producing the publication evidence.
 8. For a `final-closeout` `complete` verdict, the work has current auxiliary
