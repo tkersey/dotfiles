@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Refine"
-  short_description: "User-owned evidence-backed skill optimizer"
-  default_prompt: "Use $refine as the user-owned skill optimizer: consume a complete tune brief, select one smallest intervention, edit only authorized files, preserve contract IDs, and retain the bounded outcome-observation query."
+  short_description: "User-owned weakness-first skill optimizer"
+  default_prompt: "Use $refine as the user-owned skill optimizer: consume a complete tune brief, select the weakest valid intervention supportable by evidence without treating edit size as semantic generality, preserve incomparability when dominance is not established, realize the choice with the smallest authorized diff, preserve contract IDs, and retain the bounded outcome-observation query."
