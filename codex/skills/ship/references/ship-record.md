@@ -81,19 +81,15 @@ ship_observation_record:
     head_sha:
   eligibility:
     open_exact_pr_count: 0
+    pr_unrepresentable_reason: head-is-default-branch
   public_state:
     branch:
+      provider:
+      repository:
       name:
+      ref:
       sha:
-      publication_event:
-        provider:
-        event_id:
-        repository:
-        ref:
-        before_sha:
-        head_sha:
-        published_at:
-        history_complete_through:
+      is_default: true
     observed_at:
   action:
     operation: observe-existing
@@ -132,20 +128,16 @@ ship_adoption_record:
     head_sha:
   eligibility:
     open_exact_pr_count: 0
+    pr_unrepresentable_reason: head-is-default-branch
     observed_at:
   public_state:
     branch:
+      provider:
+      repository:
       name:
+      ref:
       sha:
-      publication_event:
-        provider:
-        event_id:
-        repository:
-        ref:
-        before_sha:
-        head_sha:
-        published_at:
-        history_complete_through:
+      is_default: true
     release: null | {
       provider: string,
       repository: string,
@@ -179,41 +171,40 @@ ship_adoption_record:
 
 Canonicalize the complete record as JSON and hash those exact bytes with
 SHA-256. Arrays retain their declared order; `assets` is sorted by `name` and
-has exact set equality with the complete live provider asset inventory, so
-every live release asset appears exactly once.
+has unique names, equal cardinality, and exact set equality with the complete
+live provider asset inventory, so every live release asset appears exactly
+once.
 
 Adoption is read-only. Ship requires `repository`, `review_target.head_ref`,
-`public_state.branch.name`, and the publication event's repository and canonical
-ref to identify the same repository and branch. The remote branch SHA must equal
+`public_state.branch.repository`, and `public_state.branch.ref` to identify the
+same repository and canonical branch. Normalize short branch names once to
+`refs/heads/<name>` before comparison. The provider must report that ref as the
+repository's current default branch, and the remote branch SHA must equal
 both `public_state.branch.sha` and `review_target.head_sha`. The comparison base
 ref must resolve exactly to `review_target.base_sha`, the base and head must
 differ, and the base must be an ancestor. Ship obtains a complete live PR
 inventory whose exact open repository/base/head match count is
-`open_exact_pr_count: 0`. The provider-authored publication event's `head_sha`
-must equal the review head; `before_sha` records the preceding remote tip and is
-not compared with the review base. Complete provider history through
-`history_complete_through` must prove it is the latest event for that repository
-and ref: the current uninterrupted publication epoch. When review credit
-depends on a prior observation, `ratifies_observation_ref` is non-null and Ship
-exact-matches the referenced `SHIP-OBSERVATION-v1` repository, review target,
-branch, stable publication-event identity (`provider`, `event_id`, `repository`,
-`ref`, `before_sha`, `head_sha`, and `published_at`), and `review_binding`.
-`history_complete_through` is not stable identity: adoption obtains a fresh,
-complete provider history through its own observation and proves that no later
-event for the repository and ref changed the epoch. The adoption's current
-`actuation_binding` must carry the same Goal, Construction, subject, and review
-contract, but its closure receipt and Evidence Ledger head may be later. For a
-non-null release, Ship requires its live provider to exact-match
-`public_state.branch.publication_event.provider`, requires its live repository
+`open_exact_pr_count: 0`; `pr_unrepresentable_reason: head-is-default-branch`
+records why a feature-branch PR cannot truthfully represent this state. When
+review credit depends on a prior observation, `ratifies_observation_ref` is
+non-null and Ship exact-matches the referenced `SHIP-OBSERVATION-v1` repository,
+review target, branch provider/repository/ref/SHA/default-branch identity, and
+`review_binding`. Actuating's Evidence Ledger order makes that observation the
+publication-epoch anchor before campaign binding; adoption separately performs
+a fresh exact readback of the same current default-branch tuple. The adoption's
+current `actuation_binding` must carry the same Goal, Construction, subject, and
+review contract, but its closure receipt and Evidence Ledger head may be later.
+For a non-null release, Ship requires its live provider to exact-match
+`public_state.branch.provider`, requires its live repository
 to exact-match the adopted repository, requires `publication_state: published`
 and `draft: false`, resolves
 `target_sha`, and requires it to equal
-`review_target.head_sha`, requires the receipt asset names to equal the complete
-live provider asset-name set, and exact-matches every release field and asset
-name, size, and SHA-256 digest. Ship copies the complete current ready-to-ship
-`actuation_binding` verbatim. Any mismatch, missing or truncated history,
-missing digest, unpublished or draft release, requested mutation, blocked
-result, or ambiguous target yields no receipt.
+`review_target.head_sha`, requires unique receipt asset names and cardinality
+equal to the complete live provider inventory, requires exact set equality, and
+exact-matches every release field and asset name, size, and SHA-256 digest. Ship
+copies the complete current ready-to-ship `actuation_binding` verbatim. Any
+mismatch, missing digest, duplicate asset name, unpublished or draft release,
+requested mutation, blocked result, or ambiguous target yields no receipt.
 
 Return the complete immutable `SHIP-ADOPTION-v1` record and its SHA-256 digest
 to Actuating. It has the same owner boundary as `SHIP-v1`; it is not a second

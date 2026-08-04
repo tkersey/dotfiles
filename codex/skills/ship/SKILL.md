@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Finalize validated work into proof-backed public state without merging, and return immutable Ship-owned publication evidence to Actuating without taking architecture, review, or closure authority. Use for $ship, opening or updating a PR, promoting a draft, adopting an exact already-public subject, publishing validation proof, or producing a publication handoff."
+description: "Finalize validated work into proof-backed public state without merging, and return immutable Ship-owned publication evidence to Actuating without taking architecture, review, or closure authority. Use for $ship, opening or updating a PR, promoting a draft, adopting an exact already-public subject through an Actuating handoff, publishing validation proof, or producing a publication handoff."
 ---
 
 # Ship
@@ -28,7 +28,9 @@ Incomplete work with an explicit warrant -> draft PR
 Use Ship when the user asks to create, update, finalize, or promote a PR, or
 when Actuating supplies a current `ready-to-ship` handoff. The Actuating handoff
 may select `adopt-existing` only when the exact subject is already public and a
-current PR cannot truthfully represent that publication epoch.
+current PR cannot truthfully represent that publication epoch. Existing-state
+observation and adoption are available only through that Actuating handoff;
+direct Ship requests use the pull-request route.
 
 Do not use Ship when implementation is incomplete without explicit early-
 visibility intent, validation failure lacks an accepted draft warrant, the user
@@ -102,7 +104,8 @@ adoption-specific field is present. Otherwise omission blocks before any public
 effect. Only an explicit Actuating handoff may select `observe-existing` or
 `adopt-existing`. For either existing-publication route, the top-level
 `repository`, `base`, and `head` tuple is authoritative. Require
-`existing_publication.branch == head.branch`,
+all branch names to be normalized once to `refs/heads/<name>` before any
+comparison, `existing_publication.branch == head.branch`,
 `existing_publication.head_sha == head.sha`,
 `existing_publication.comparison_base_ref == base.branch`, and
 `existing_publication.comparison_base_sha == base.sha`; any disagreement blocks
@@ -116,41 +119,56 @@ revise the Construction, classify findings, count review credit, or choose
 Actuating's next action.
 
 `observe-existing` and `adopt-existing` are Actuating-only and read-only.
-Require the remote branch to
-resolve to the supplied head SHA, require the comparison base ref to resolve
-exactly to the supplied base SHA, reject an equal base and head, and prove that
-base is an ancestor of the head. Query the complete live open-PR inventory for
-the exact repository/base/head tuple; adoption requires zero exact matches.
-Bind the latest provider-authored branch publication event for that repository
-and canonical head ref. Its repository, canonical head ref, and head SHA must
-exactly equal the adoption repository, head ref, and head SHA. Its `before_sha`
-records the provider's preceding remote tip and is not the review base.
-Provider history from that event through observation must be complete
-and contain no later event for the same repository and ref, so the event begins
-the current uninterrupted publication epoch. `observe-existing` requires
+Read the repository's current default branch from the provider, normalize its
+name to a canonical `refs/heads/<name>` ref, and require the supplied head ref
+and SHA to equal that live default-branch ref and tip. This restriction makes a
+non-default feature branch ineligible instead of treating zero exact PRs as
+proof that no PR route can represent it. The provider repository, canonical
+head ref, and head SHA exactly equal the authoritative input tuple. The
+comparison base ref resolves exactly to the supplied base SHA; reject an equal
+base and head, and
+prove that base is an ancestor of the head. Query the complete live open-PR
+inventory for the exact repository/base/head tuple; adoption requires zero
+exact matches. `observe-existing` requires
 `existing_publication.release == null`; final adoption performs all optional
 release validation. For a non-null adopted release, require its provider to
-equal the branch publication event's provider, require its repository to
+equal the branch-readback provider, require its repository to
 exact-match the adopted repository, require provider state `published` and
 `draft: false`, resolve its tag target and require it to equal the adopted head,
-obtain the complete live provider asset inventory, require exact set equality
-with the receipt, and then verify every asset name, size, and SHA-256 digest.
-Reject missing or truncated history, an incomplete PR or asset inventory, an
-empty or mismatched tuple, an unpublished or draft release, an unverified asset,
-or any requested mutation. The receipt records live provider timestamps; it
-must not invent an earlier publication time.
+obtain the complete live provider asset inventory, require unique asset names
+and equal cardinality plus exact set equality with the receipt, and then verify
+every asset name, size, and SHA-256 digest. Reject an incomplete PR or asset
+inventory, a duplicate asset name, an empty or mismatched tuple, an unpublished
+or draft release, an unverified asset, or any requested mutation. The receipt
+records its observation time; it must not invent an earlier publication time.
 
 Before a review campaign that may later use `adopt-existing`, Ship performs the
 same branch, comparison-base, PR-absence, and publication-epoch readback through
 `observe-existing` and returns immutable `SHIP-OBSERVATION-v1`. Actuating must
 record that receipt before binding or dispatching the campaign. A later
 `SHIP-ADOPTION-v1` may retain the campaign only by carrying the observation
-digest and exact-matching its repository, base/head tuple, current publication
-epoch, subject, Goal, Construction, and review contract. Ledger event order
+digest and exact-matching its repository, canonical default-branch ref,
+base/head tuple, subject, Goal, Construction, and review contract. The
+observation is the current uninterrupted publication epoch anchor; the final
+adoption re-reads the same live default-branch tuple instead of reconstructing
+unavailable provider event history. Ledger event order
 between the recorded observation and campaign establishes causality; provider
 and Ledger wall-clock timestamps are never compared. The later adoption keeps
 its own complete current actuation binding; review events are not required to
 leave the earlier readiness receipt current.
+
+Ship derives the observation's stable `review_binding` only by copying this
+named projection from the already validated `actuation_binding`:
+
+~~~text
+review_binding.goal_contract_ref = actuation_binding.goal_contract_ref
+review_binding.construction_ref = actuation_binding.construction_ref
+review_binding.subject_digest = actuation_binding.subject_digest
+review_binding.review_contract_digest = actuation_binding.review_contract_digest
+~~~
+
+This projection does not synthesize or relabel authority. A missing field or
+any mismatch blocks observation.
 
 Before publication, canonicalize the complete `closure_receipt` with only
 `receipt_id` replaced by JSON `null`, recompute its SHA-256 identity, and require
@@ -227,10 +245,11 @@ Before any public effect:
    managed proof block.
 
 For `observe-existing` or `adopt-existing`, perform no public effect: read back
-the exact repository, branch head and publication event, comparison base
+the exact repository provider, current default branch and head, comparison base
 ancestry, and zero open exact-tuple PRs. Observation requires null release state.
 Final adoption additionally reads back any optional release target, publication
-state, complete asset inventory, and asset digests before emitting its receipt.
+state, complete unique asset inventory, and asset digests before emitting its
+receipt.
 Emit `SHIP-OBSERVATION-v1` for pre-review observation and `SHIP-ADOPTION-v1`
 for final adoption. Either succeeds only after all readback matches the current
 readiness input; final adoption must ratify the cited observation when review

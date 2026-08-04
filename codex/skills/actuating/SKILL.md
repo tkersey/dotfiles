@@ -482,20 +482,23 @@ reset review credit merely because the adoption receipt was recorded later only
 when it ratifies the exact `SHIP-OBSERVATION-v1` digest that Actuating recorded
 before the credited campaign. The observation, adoption, and every credited CAS
 receipt must exact-match the repository, canonical head ref, base/head tuple,
-subject, current uninterrupted publication epoch, Goal, Construction, and
-review contract through the observation's `review_binding`, and no later
-material event may have changed the subject.
+subject, current default-branch state, Goal, Construction, and review contract
+through the observation's `review_binding`. That binding is the exact named
+Goal/Construction/subject/review-contract projection of Ship's validated
+actuation binding; it is not a second authority.
 The final adoption carries its own current actuation binding. Evidence Ledger
 order from the recorded Ship observation to campaign binding proves causality;
-never compare provider `published_at` with Ledger `recorded_at`. Otherwise the review
-credit is stale. Ratification exact-matches stable publication-event identity,
-while final adoption separately requires a fresh complete provider-history
-horizon proving that the epoch remained uninterrupted. A non-null adopted
-release also requires its provider to match the branch publication provider,
+never compare provider and Ledger wall clocks. Otherwise the review credit is
+stale. The pre-review observation is the publication epoch anchor; ratification
+exact-matches its stable tuple while final adoption freshly re-reads the same
+live default branch. It does not depend on provider event-history completeness.
+A non-null adopted release also requires its provider to match the branch
+readback provider,
 its repository to match the adopted repository, its state to be published and
 non-draft, its resolved tag
-target to equal the subject head, and its asset list to equal the complete live
-provider inventory. Release assets added after review are separate publication
+target to equal the subject head, and its uniquely named assets to have equal
+cardinality and exact set equality with the complete live provider inventory.
+Release assets added after review are separate publication
 evidence and do not rewrite review time.
 
 Apply [closure.md](references/closure.md) only to current artifacts and

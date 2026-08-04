@@ -41,11 +41,12 @@ A terminal judgment is legal only when all applicable statements hold:
    route-specific live readback, and complete `actuation_binding` against the
    exact `ready-to-ship` receipt. For adoption, Actuating also verifies that no
    mutation occurred, `action.result == adopted`, the public branch resolves to
-   the exact head, the base is an ancestor, a complete live exact-tuple PR
-   inventory has zero open matches, and the provider publication event binds
-   that branch and head. Every non-null release tag target must equal the exact
-   head, and its provider must equal the branch publication provider, before its
-   asset names, sizes, and SHA-256 digests are accepted.
+   the exact head and is the repository's current default branch, the base is an
+   ancestor, and a complete live exact-tuple PR inventory has zero open matches.
+   Every non-null release must come from the branch-readback provider and adopted
+   repository, be published and non-draft, target the exact head, and enumerate
+   the complete unique live asset inventory with equal cardinality, exact set
+   equality, sizes, and SHA-256 digests before it is accepted.
    Actuating must not substitute its own live-readback record.
    A `ready-to-ship` judgment deliberately omits this premise: that receipt is
    Ship's required readiness input for producing the publication evidence.
@@ -71,20 +72,21 @@ A terminal judgment is legal only when all applicable statements hold:
 Formal final-evidence ingestion order is not publication order. Recording a
 valid `SHIP-ADOPTION-v1` after review preserves credit only when it ratifies the
 exact `SHIP-OBSERVATION-v1` digest that Actuating recorded before campaign
-binding. The observation and adoption must exact-match the current uninterrupted
-publication epoch, repository, canonical head ref, base/head tuple, subject, and
-stable Goal, Construction, and review contract through `review_binding`. The
+binding. It does not reset review credit merely because the adoption receipt was recorded later.
+The observation and adoption must exact-match the current uninterrupted
+publication epoch anchored by that recorded observation: repository, current
+default-branch canonical head ref and SHA, base/head tuple, subject, and stable
+Goal, Construction, and review contract through `review_binding`. The
 adoption carries its own
-current actuation binding; every credited receipt binds the observed tuple, and
-no later material event changed the subject. Evidence Ledger order from
-observation to campaign is the causal proof; provider `published_at` and Ledger
-`recorded_at` are not compared. Tuple equality or an arbitrary older matching event is
-insufficient. Ratification matches stable publication-event identity, not the
-observation's history horizon; final adoption must obtain a fresh complete
-history horizon and prove that no later event changed the epoch. A mismatch,
-missing observation, truncated history, or unproved
-field invalidates the affected credit; adoption never refreshes stale review
-credit.
+current actuation binding, and every credited receipt binds the observed tuple.
+Evidence Ledger order from
+observation to campaign is the causal proof; provider and Ledger wall clocks are
+not compared. The recorded observation predates the credited campaign by that
+sequence. Tuple equality without that recorded pre-review observation is
+insufficient. Ratification matches the observation's stable tuple, and final
+adoption freshly re-reads that exact live default-branch tuple. A mismatch,
+missing observation, or unproved field invalidates the affected credit;
+adoption never refreshes stale review credit.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path
