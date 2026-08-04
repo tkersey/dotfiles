@@ -96,6 +96,12 @@ ship_input:
 
 For compatibility, an existing input that omits `publication_route` selects
 `pull-request`. Only an explicit Actuating handoff may select `adopt-existing`.
+For `adopt-existing`, the top-level `repository`, `base`, and `head` tuple is
+authoritative. Require `existing_publication.branch == head.branch`,
+`existing_publication.head_sha == head.sha`,
+`existing_publication.comparison_base_ref == base.branch`, and
+`existing_publication.comparison_base_sha == base.sha`; any disagreement blocks
+before readback or receipt construction.
 
 Direct shipping omits `actuation`. For Actuating input, require the current
 owner-supplied readiness receipt, exact published subject, and
@@ -110,9 +116,10 @@ exactly to the supplied base SHA, reject an equal base and head, and prove that
 base is an ancestor of the head. Query the complete live open-PR inventory for
 the exact repository/base/head tuple; adoption requires zero exact matches.
 Bind the latest provider-authored branch publication event for that repository
-and canonical head ref. Its repository, canonical head ref, before SHA, and
-head SHA must exactly equal the adoption repository, head ref, base SHA, and
-head SHA. Provider history from that event through observation must be complete
+and canonical head ref. Its repository, canonical head ref, and head SHA must
+exactly equal the adoption repository, head ref, and head SHA. Its `before_sha`
+records the provider's preceding remote tip and is not the review base.
+Provider history from that event through observation must be complete
 and contain no later event for the same repository and ref, so the event begins
 the current uninterrupted publication epoch. For a non-null release, resolve
 its tag target and require it to equal the adopted head, obtain the complete

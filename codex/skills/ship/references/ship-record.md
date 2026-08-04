@@ -134,11 +134,12 @@ both `public_state.branch.sha` and `review_target.head_sha`. The comparison base
 ref must resolve exactly to `review_target.base_sha`, the base and head must
 differ, and the base must be an ancestor. Ship obtains a complete live PR
 inventory whose exact open repository/base/head match count is
-`open_exact_pr_count: 0`. The provider-authored publication event's `before_sha`
-and `head_sha` must equal the review base and head, and complete provider history
-through `history_complete_through` must prove it is the latest event for that
-repository and ref: the current uninterrupted publication epoch. For a non-null
-release, Ship resolves `target_sha`, requires it to equal
+`open_exact_pr_count: 0`. The provider-authored publication event's `head_sha`
+must equal the review head; `before_sha` records the preceding remote tip and is
+not compared with the review base. Complete provider history through
+`history_complete_through` must prove it is the latest event for that repository
+and ref: the current uninterrupted publication epoch. For a non-null release,
+Ship resolves `target_sha`, requires it to equal
 `review_target.head_sha`, requires the receipt asset names to equal the complete
 live provider asset-name set, and exact-matches every release field and asset
 name, size, and SHA-256 digest. Ship copies the complete current ready-to-ship
