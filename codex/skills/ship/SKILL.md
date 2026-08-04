@@ -105,15 +105,22 @@ revise the Construction, classify findings, count review credit, or choose
 Actuating's next action.
 
 `adopt-existing` is Actuating-only and read-only. Require the remote branch to
-resolve to the supplied head SHA, require the comparison base to exist and be
-an ancestor of that head, and query the complete live open-PR inventory for the
-exact repository/base/head tuple. Adoption requires zero exact matches. Bind a
-provider-authored branch publication event whose ref and head SHA match the
-adopted branch. For a non-null release, resolve its tag target and require it to
-equal the adopted head before reading back every asset name, size, and SHA-256
-digest. Reject missing history, an incomplete PR inventory, a mismatched tuple,
-an unverified asset, or any requested mutation. The receipt records the live
-provider timestamps; it must not invent an earlier publication time.
+resolve to the supplied head SHA, require the comparison base ref to resolve
+exactly to the supplied base SHA, reject an equal base and head, and prove that
+base is an ancestor of the head. Query the complete live open-PR inventory for
+the exact repository/base/head tuple; adoption requires zero exact matches.
+Bind the latest provider-authored branch publication event for that repository
+and canonical head ref. Its repository, canonical head ref, before SHA, and
+head SHA must exactly equal the adoption repository, head ref, base SHA, and
+head SHA. Provider history from that event through observation must be complete
+and contain no later event for the same repository and ref, so the event begins
+the current uninterrupted publication epoch. For a non-null release, resolve
+its tag target and require it to equal the adopted head, obtain the complete
+live provider asset inventory, require exact set equality with the receipt, and
+then verify every asset name, size, and SHA-256 digest. Reject missing or
+truncated history, an incomplete PR or asset inventory, an empty or mismatched
+tuple, an unverified asset, or any requested mutation. The receipt records the
+live provider timestamps; it must not invent an earlier publication time.
 
 Before publication, canonicalize the complete `closure_receipt` with only
 `receipt_id` replaced by JSON `null`, recompute its SHA-256 identity, and require

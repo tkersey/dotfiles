@@ -69,11 +69,13 @@ A terminal judgment is legal only when all applicable statements hold:
 
 Formal evidence ingestion order is not publication order. Recording a valid
 `SHIP-ADOPTION-v1` after review does not reset review credit merely because the
-receipt was recorded later when Ship's provider-authored exact branch/head
-publication event predates the credited campaign, every credited receipt binds
-that campaign's exact base/head tuple, and no later material event changed the
-subject. Tuple equality alone is insufficient. A mismatch or unproved field
-invalidates the affected credit; adoption never refreshes stale review credit.
+receipt was recorded later when Ship proves the provider-authored current
+uninterrupted publication epoch for the exact repository, canonical head ref,
+and base/head tuple began before the credited campaign; every credited receipt
+binds that same tuple, and no later material event changed the subject. Tuple
+equality or an arbitrary older matching event is insufficient. A mismatch,
+truncated history, or unproved field invalidates the affected credit; adoption
+never refreshes stale review credit.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path

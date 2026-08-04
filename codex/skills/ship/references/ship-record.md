@@ -89,9 +89,12 @@ ship_adoption_record:
       publication_event:
         provider:
         event_id:
+        repository:
         ref:
+        before_sha:
         head_sha:
         published_at:
+        history_complete_through:
     release: null | {
       tag: string,
       url: string,
@@ -121,18 +124,27 @@ ship_adoption_record:
 
 Canonicalize the complete record as JSON and hash those exact bytes with
 SHA-256. Arrays retain their declared order; `assets` is sorted by `name` and
-contains every claimed release asset exactly once.
+has exact set equality with the complete live provider asset inventory, so
+every live release asset appears exactly once.
 
-Adoption is read-only. Ship requires the remote branch SHA to equal both
-`public_state.branch.sha` and `review_target.head_sha`; resolves
-`review_target.base_sha`; proves the base is an ancestor; obtains a complete
-live PR inventory whose exact open repository/base/head match count is
-`open_exact_pr_count: 0`; and verifies the provider-authored publication event's
-ref and head SHA. For a non-null release, Ship resolves `target_sha`, requires
-it to equal `review_target.head_sha`, and exact-matches every release field and
-asset name, size, and SHA-256 digest. Ship copies the complete current ready-to-
-ship `actuation_binding` verbatim. Any mismatch, missing history or digest,
-requested mutation, blocked result, or ambiguous target yields no receipt.
+Adoption is read-only. Ship requires `repository`, `review_target.head_ref`,
+`public_state.branch.name`, and the publication event's repository and canonical
+ref to identify the same repository and branch. The remote branch SHA must equal
+both `public_state.branch.sha` and `review_target.head_sha`. The comparison base
+ref must resolve exactly to `review_target.base_sha`, the base and head must
+differ, and the base must be an ancestor. Ship obtains a complete live PR
+inventory whose exact open repository/base/head match count is
+`open_exact_pr_count: 0`. The provider-authored publication event's `before_sha`
+and `head_sha` must equal the review base and head, and complete provider history
+through `history_complete_through` must prove it is the latest event for that
+repository and ref: the current uninterrupted publication epoch. For a non-null
+release, Ship resolves `target_sha`, requires it to equal
+`review_target.head_sha`, requires the receipt asset names to equal the complete
+live provider asset-name set, and exact-matches every release field and asset
+name, size, and SHA-256 digest. Ship copies the complete current ready-to-ship
+`actuation_binding` verbatim. Any mismatch, missing or truncated history,
+missing digest, requested mutation, blocked result, or ambiguous target yields
+no receipt.
 
 Return the complete immutable `SHIP-ADOPTION-v1` record and its SHA-256 digest
 to Actuating. It has the same owner boundary as `SHIP-v1`; it is not a second

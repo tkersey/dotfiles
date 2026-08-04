@@ -425,11 +425,12 @@ The review campaign is bound to the current committed subject and static Review
 Contract, while CAS additionally proves the exact published `baseSha` and
 `headSha`. Normally Ship first proves that the local clean verified commit is
 the remote PR head. When an already-public subject is adopted after review,
-Ship must instead provide a provider-authored exact branch/head publication
-event that predates the credited campaign; tuple equality alone earns no
-retrospective credit. A local dirty change after publication does not alter the
-remote review target; it merely blocks another Actuating operation or
-publication until resolved into a clean selected commit.
+Ship must instead prove the provider-authored current uninterrupted publication
+epoch for the exact repository, canonical head ref, and base/head tuple began
+before the credited campaign; tuple equality or an arbitrary older matching
+event earns no retrospective credit. A local dirty change after publication
+does not alter the remote review target; it merely blocks another Actuating
+operation or publication until resolved into a clean selected commit.
 
 The `structural-facts` projection is a discardable structural aid. Its envelope
 reports `authority_granted:false` and `storage_mutated:false`. Ledger never

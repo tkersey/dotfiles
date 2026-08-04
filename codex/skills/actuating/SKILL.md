@@ -476,12 +476,14 @@ must not substitute its own live-readback record.
 
 Normally Ship evidence precedes review. A later `SHIP-ADOPTION-v1` observation
 does not reset review credit merely because the adoption receipt was recorded
-later only when its provider-authored branch publication event exact-matches the
-subject and predates the credited campaign, every credited CAS receipt proves
-that campaign's same base/head tuple, and no later material event changed the
-subject. Otherwise the review credit is stale. A non-null adopted release also
-requires its resolved tag target to equal the subject head; release assets added
-after review are separate publication evidence and do not rewrite review time.
+later only when its provider-authored current uninterrupted publication epoch
+exact-matches the repository, canonical head ref, base/head tuple, and subject,
+and begins before the credited campaign; every credited CAS receipt proves that
+same base/head tuple, and no later material event changed the subject. Otherwise
+the review credit is stale. A non-null adopted release also requires its
+resolved tag target to equal the subject head and its asset list to equal the
+complete live provider inventory; release assets added after review are
+separate publication evidence and do not rewrite review time.
 
 Apply [closure.md](references/closure.md) only to current artifacts and
 observations. Actuating authors `actuating-closure-receipt/v1`; Ledger neither
