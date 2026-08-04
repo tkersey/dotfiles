@@ -106,6 +106,7 @@ Current definitions:
 ```text
 message-search.json
 session-summary.json
+token-usage.json
 tool-search.json
 turn-metrics.json
 turn-report.json
@@ -113,6 +114,39 @@ turn-report.json
 
 `tool-search.json` returns metadata through `rows`. Request `rows-raw` only
 when raw arguments, inputs, commands, and outputs are necessary and safe.
+
+`turn-metrics.json` reports raw sums over the selected physical `turns` rows.
+Its `selected_turn_*_sum` fields are not lineage-owned token usage and must not
+answer session-tree, worker-inclusive, billing-style, or corpus token totals.
+Each token sum is partial unless its matching `selected_turn_*_count` equals
+`turn_count`; a zero sum with a zero count means unobserved data, not zero use.
+Those questions require an owning passive definition over lineage-owned token
+deltas; if the installed Seq ABI does not expose that relation or operator,
+report obstruction rather than summing `turns` or `sessions` token fields.
+
+`token-usage.json` is the owning corpus-usage definition. It reconstructs
+cumulative token transitions in source order from both `total_token_usage` and
+`last_token_usage`. For modern rows, the transition is `(total - last) -> total`
+and the counted delta is `last`; null-info events are observations without usage
+and do not become zero-token transitions. The definition keeps the first
+emission of a cumulative total within each session, excludes only exact
+transitions replayed from a strict ancestor, retains sibling and independent-root
+usage, and applies session and `since`/`until` selection after ownership.
+Total-only legacy rows use an estimated snapshot fallback. Inconsistent
+modern tuples make the result `invalid` and its token totals null. Its cached
+percentage denominator is input tokens:
+`cached_input_tokens / input_tokens * 100`.
+
+```bash
+seq_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/seq/definitions/seq")"
+seq observe \
+  --definition "$seq_definition_root/token-usage.json" \
+  --root "${CODEX_HOME:-$HOME/.codex}/sessions/2026/07" \
+  --since 2026-07-01T00:00:00-07:00 \
+  --until 2026-08-01T00:00:00-07:00 \
+  --projection summary \
+  --format json
+```
 
 Example:
 
@@ -183,6 +217,7 @@ reasoning as report evidence.
 - State denominators, exclusions, time bounds, and timezone.
 - Preserve evidence provenance and definition identity.
 - Use one fused scan when several requested projections share a source.
+- Never treat raw `turns` or `sessions` token sums as lineage-owned corpus usage.
 - Do not interpret a definition condition-by-condition in the hot loop.
 - Do not validate SKDC, SDR, DCP, EPG, or another durable artifact with Seq;
   use its canonical Ledger definition.

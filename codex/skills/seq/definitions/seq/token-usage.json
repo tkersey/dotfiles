@@ -1,0 +1,234 @@
+{
+  "schema": "seq-observation-definition/v1",
+  "id": "seq/token-usage",
+  "requires": {
+    "abi": "seq-observation-abi/v1",
+    "operators": ["aggregate", "derive", "distinct", "filter", "join", "reachability", "scan"]
+  },
+  "parameters": {},
+  "selectors": ["path", "root", "session-id", "repo", "since", "until"],
+  "relations": [
+    {"name": "sessions", "fields": ["session_id", "path", "parent_session_id", "lineage_conflict"]},
+    {
+      "name": "token_events",
+      "fields": [
+        "session_id", "timestamp_ms", "source_ordinal", "has_total_usage", "has_last_usage",
+        "total_input_tokens", "total_cached_input_tokens", "total_output_tokens",
+        "total_reasoning_output_tokens", "total_total_tokens",
+        "last_input_tokens", "last_cached_input_tokens", "last_output_tokens",
+        "last_reasoning_output_tokens", "last_total_tokens"
+      ]
+    }
+  ],
+  "inputs": [],
+  "pipeline": [
+    {"op": "scan", "relation": "sessions", "as": "session_rows"},
+    {
+      "op": "derive", "input": "session_rows", "as": "session_seeds",
+      "fields": [{
+        "name": "selected_seed", "type": "boolean", "nullable": false,
+        "expr": {"op": "or", "args": [
+          {"op": "and", "args": [
+            {"op": "is-null", "args": [{"selector": "session-id"}]},
+            {"op": "is-null", "args": [{"selector": "path"}]}
+          ]},
+          {"op": "or", "args": [
+            {"op": "eq", "args": [{"field": "session_id"}, {"selector": "session-id"}]},
+            {"op": "eq", "args": [{"field": "path"}, {"selector": "path"}]}
+          ]}
+        ]}
+      }]
+    },
+    {
+      "op": "filter", "input": "session_seeds", "as": "identified_sessions",
+      "where": [{"field": "session_id", "op": "not-equal", "value": null}]
+    },
+    {
+      "op": "reachability", "input": "identified_sessions", "as": "session_scope",
+      "keys": {"node": "session_id", "parent": "parent_session_id", "seed": "selected_seed", "direction": "descendants"},
+      "fields": [
+        {"name": "session_id", "type": "string", "nullable": false, "field": "session_id"},
+        {"name": "parent_session_id", "type": "string", "nullable": true, "field": "parent_session_id"},
+        {"name": "lineage_conflict", "type": "boolean", "nullable": false, "field": "lineage_conflict"},
+        {"name": "reachable", "type": "boolean", "nullable": false, "meta": "reachable"}
+      ]
+    },
+    {
+      "op": "filter", "input": "session_scope", "as": "selected_sessions",
+      "where": [{"field": "reachable", "op": "exact", "value": true}]
+    },
+    {"op": "scan", "relation": "token_events", "as": "token_rows"},
+    {
+      "op": "filter", "input": "token_rows", "as": "usage_rows",
+      "where": [{"field": "has_total_usage", "op": "exact", "value": true}]
+    },
+    {
+      "op": "distinct", "input": "usage_rows", "as": "first_total_rows",
+      "keys": [
+        "session_id",
+        "total_input_tokens", "total_cached_input_tokens", "total_output_tokens",
+        "total_reasoning_output_tokens", "total_total_tokens"
+      ]
+    },
+    {
+      "op": "derive", "input": "first_total_rows", "as": "transitions", "preserve_input": false, "sequential": true,
+      "fields": [
+        {"name": "session_id", "type": "string", "nullable": false, "expr": {"field": "session_id"}},
+        {"name": "timestamp_ms", "type": "integer", "nullable": true, "expr": {"field": "timestamp_ms"}},
+        {"name": "source_ordinal", "type": "integer", "nullable": false, "expr": {"field": "source_ordinal"}},
+        {"name": "pred_input", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_input_tokens"}, 0]}]}, 0]}},
+        {"name": "pred_cached", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_cached_input_tokens"}, 0]}]}, 0]}},
+        {"name": "pred_output", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_output_tokens"}, 0]}]}, 0]}},
+        {"name": "pred_reasoning", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_reasoning_output_tokens"}, 0]}]}, 0]}},
+        {"name": "pred_total", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "subtract", "args": [{"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "last_total_tokens"}, 0]}]}, 0]}},
+        {"name": "total_input", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}},
+        {"name": "total_cached", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}},
+        {"name": "total_output", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}},
+        {"name": "total_reasoning", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}},
+        {"name": "total_total", "type": "integer", "nullable": false, "expr": {"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}},
+        {"name": "input_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}]}},
+        {"name": "cached_input_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_cached_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}]}},
+        {"name": "output_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}]}},
+        {"name": "reasoning_output_tokens", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_reasoning_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}]}},
+        {"name": "delta_total", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"field": "has_last_usage"}, {"op": "coalesce", "args": [{"field": "last_total_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}]}},
+        {"name": "estimated_count", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [{"op": "not", "args": [{"field": "has_last_usage"}]}, 1, 0]}},
+        {"name": "invalid_count", "type": "integer", "nullable": false, "expr": {"op": "if", "args": [
+          {"op": "and", "args": [
+            {"field": "has_last_usage"},
+            {"op": "or", "args": [
+              {"op": "or", "args": [
+                {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_input_tokens"}, 0]}]},
+                {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_cached_input_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_cached_input_tokens"}, 0]}]}
+              ]},
+              {"op": "or", "args": [
+                {"op": "or", "args": [
+                  {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_output_tokens"}, 0]}]},
+                  {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_reasoning_output_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_reasoning_output_tokens"}, 0]}]}
+                ]},
+                {"op": "gt", "args": [{"op": "coalesce", "args": [{"field": "last_total_tokens"}, 0]}, {"op": "coalesce", "args": [{"field": "total_total_tokens"}, 0]}]}
+              ]}
+            ]}
+          ]},
+          1,
+          0
+        ]}},
+        {"name": "valid_for_ownership", "type": "boolean", "nullable": false, "expr": {"op": "eq", "args": [{"field": "invalid_count"}, 0]}},
+        {"name": "retain_transition", "type": "boolean", "nullable": false, "expr": {"op": "or", "args": [{"op": "gt", "args": [{"field": "invalid_count"}, 0]}, {"op": "gt", "args": [{"field": "delta_total"}, 0]}]}}
+      ]
+    },
+    {
+      "op": "filter", "input": "transitions", "as": "candidate_transitions",
+      "where": [{"field": "retain_transition", "op": "exact", "value": true}]
+    },
+    {
+      "op": "join", "inputs": ["candidate_transitions", "candidate_transitions", "identified_sessions"], "as": "owned_transitions",
+      "on": {
+        "kind": "anti", "left_true": "valid_for_ownership", "right_true": "valid_for_ownership",
+        "keys": [
+          {"left": "pred_input", "right": "pred_input"},
+          {"left": "pred_cached", "right": "pred_cached"},
+          {"left": "pred_output", "right": "pred_output"},
+          {"left": "pred_reasoning", "right": "pred_reasoning"},
+          {"left": "pred_total", "right": "pred_total"},
+          {"left": "total_input", "right": "total_input"},
+          {"left": "total_cached", "right": "total_cached"},
+          {"left": "total_output", "right": "total_output"},
+          {"left": "total_reasoning", "right": "total_reasoning"},
+          {"left": "total_total", "right": "total_total"}
+        ],
+        "lineage": {"left": "session_id", "right": "session_id", "node": "session_id", "parent": "parent_session_id"}
+      },
+      "fields": [
+        {"source": 0, "field": "session_id", "name": "session_id", "type": "string", "nullable": false},
+        {"source": 0, "field": "timestamp_ms", "name": "timestamp_ms", "type": "integer", "nullable": true},
+        {"source": 0, "field": "source_ordinal", "name": "source_ordinal", "type": "integer", "nullable": false},
+        {"source": 0, "field": "pred_input", "name": "pred_input", "type": "integer", "nullable": false},
+        {"source": 0, "field": "pred_cached", "name": "pred_cached", "type": "integer", "nullable": false},
+        {"source": 0, "field": "pred_output", "name": "pred_output", "type": "integer", "nullable": false},
+        {"source": 0, "field": "pred_reasoning", "name": "pred_reasoning", "type": "integer", "nullable": false},
+        {"source": 0, "field": "pred_total", "name": "pred_total", "type": "integer", "nullable": false},
+        {"source": 0, "field": "total_input", "name": "total_input", "type": "integer", "nullable": false},
+        {"source": 0, "field": "total_cached", "name": "total_cached", "type": "integer", "nullable": false},
+        {"source": 0, "field": "total_output", "name": "total_output", "type": "integer", "nullable": false},
+        {"source": 0, "field": "total_reasoning", "name": "total_reasoning", "type": "integer", "nullable": false},
+        {"source": 0, "field": "total_total", "name": "total_total", "type": "integer", "nullable": false},
+        {"source": 0, "field": "input_tokens", "name": "input_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "cached_input_tokens", "name": "cached_input_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "output_tokens", "name": "output_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "reasoning_output_tokens", "name": "reasoning_output_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "delta_total", "name": "delta_total", "type": "integer", "nullable": false},
+        {"source": 0, "field": "estimated_count", "name": "estimated_count", "type": "integer", "nullable": false},
+        {"source": 0, "field": "invalid_count", "name": "invalid_count", "type": "integer", "nullable": false},
+        {"source": 0, "field": "valid_for_ownership", "name": "valid_for_ownership", "type": "boolean", "nullable": false},
+        {"source": 0, "field": "retain_transition", "name": "retain_transition", "type": "boolean", "nullable": false}
+      ]
+    },
+    {
+      "op": "join", "inputs": ["owned_transitions", "selected_sessions"], "as": "selected_transitions",
+      "on": {"kind": "semi", "keys": [{"left": "session_id", "right": "session_id"}]},
+      "fields": [
+        {"source": 0, "field": "session_id", "name": "session_id", "type": "string", "nullable": false},
+        {"source": 0, "field": "timestamp_ms", "name": "timestamp_ms", "type": "integer", "nullable": true},
+        {"source": 0, "field": "input_tokens", "name": "input_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "cached_input_tokens", "name": "cached_input_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "output_tokens", "name": "output_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "reasoning_output_tokens", "name": "reasoning_output_tokens", "type": "integer", "nullable": false},
+        {"source": 0, "field": "estimated_count", "name": "estimated_count", "type": "integer", "nullable": false},
+        {"source": 0, "field": "invalid_count", "name": "invalid_count", "type": "integer", "nullable": false}
+      ]
+    },
+    {
+      "op": "derive", "input": "selected_transitions", "as": "window_flags",
+      "fields": [{
+        "name": "in_window", "type": "boolean", "nullable": false,
+        "expr": {"op": "and", "args": [
+          {"op": "or", "args": [{"op": "is-null", "args": [{"selector": "since"}]}, {"op": "ge", "args": [{"field": "timestamp_ms"}, {"selector": "since"}]}]},
+          {"op": "or", "args": [{"op": "is-null", "args": [{"selector": "until"}]}, {"op": "lt", "args": [{"field": "timestamp_ms"}, {"selector": "until"}]}]}
+        ]}
+      }]
+    },
+    {"op": "filter", "input": "window_flags", "as": "windowed_transitions", "where": [{"field": "in_window", "op": "exact", "value": true}]},
+    {
+      "op": "aggregate", "input": "windowed_transitions", "as": "usage_totals",
+      "metrics": [
+        {"name": "transition_count", "op": "count"},
+        {"name": "raw_input_tokens", "op": "sum", "field": "input_tokens"},
+        {"name": "raw_cached_input_tokens", "op": "sum", "field": "cached_input_tokens"},
+        {"name": "raw_output_tokens", "op": "sum", "field": "output_tokens"},
+        {"name": "raw_reasoning_output_tokens", "op": "sum", "field": "reasoning_output_tokens"},
+        {"name": "estimated_transition_count", "op": "sum", "field": "estimated_count"},
+        {"name": "invalid_transition_count", "op": "sum", "field": "invalid_count"}
+      ]
+    },
+    {
+      "op": "derive", "input": "usage_totals", "as": "summary",
+      "fields": [
+        {"name": "input_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_input_tokens"}]}},
+        {"name": "cached_input_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_cached_input_tokens"}]}},
+        {"name": "output_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_output_tokens"}]}},
+        {"name": "reasoning_output_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"field": "raw_reasoning_output_tokens"}]}},
+        {"name": "total_tokens", "type": "integer", "nullable": true, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, null, {"op": "add", "args": [{"field": "raw_input_tokens"}, {"field": "raw_output_tokens"}]}]}},
+        {"name": "cached_percentage", "type": "float", "nullable": true, "expr": {"op": "if", "args": [{"op": "or", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, {"op": "le", "args": [{"field": "raw_input_tokens"}, 0]}]}, null, {"op": "divide", "args": [{"op": "multiply", "args": [{"field": "raw_cached_input_tokens"}, 100]}, {"field": "raw_input_tokens"}]}]}},
+        {"name": "verdict", "type": "string", "nullable": false, "expr": {"op": "if", "args": [{"op": "gt", "args": [{"field": "invalid_transition_count"}, 0]}, "invalid", {"op": "if", "args": [{"op": "gt", "args": [{"field": "estimated_transition_count"}, 0]}, "estimated", "valid"]}]}},
+        {"name": "since_ms", "type": "integer", "nullable": true, "expr": {"selector": "since"}},
+        {"name": "until_ms", "type": "integer", "nullable": true, "expr": {"selector": "until"}}
+      ]
+    }
+  ],
+  "projections": {
+    "summary": {
+      "relation": "summary", "schema": "seq-token-usage-result/v1",
+      "fields": ["transition_count", "input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens", "cached_percentage", "verdict", "estimated_transition_count", "invalid_transition_count", "since_ms", "until_ms"],
+      "renderers": ["json"]
+    }
+  },
+  "bounds": {
+    "max_rows": 10000000,
+    "max_output_bytes": 1048576,
+    "max_fold_states": 32,
+    "max_input_bytes": 68719476736,
+    "max_graph_depth": 256,
+    "max_graph_nodes": 1000000,
+    "max_diagnostics": 128
+  }
+}
