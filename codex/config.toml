@@ -153,6 +153,9 @@ trust_level = "trusted"
 [projects."/Users/tk/Documents/Codex/2026-08-01/realtime-voice-chat"]
 trust_level = "trusted"
 
+[projects."/Users/tk/.codex"]
+trust_level = "trusted"
+
 [marketplaces.openai-bundled]
 last_updated = "2026-08-01T14:24:35Z"
 source_type = "local"
