@@ -4,7 +4,7 @@
     "skill": {
       "name": "refine",
       "kind": "mixed",
-      "source_fingerprint": "generated-with-corrected-dropin"
+      "source_fingerprint": "generated-with-weakness-first-selection-v1"
     },
     "triggers": [
       {
@@ -120,10 +120,11 @@
         "required_artifacts": [
           "expected delta",
           "allowed files",
-          "outcome observation"
+          "outcome observation",
+          "selection basis"
         ],
         "success_signals": [
-          "one dominant intervention",
+          "one dominant weakest valid intervention",
           "SRR-v1"
         ],
         "failure_signals": [
@@ -131,6 +132,37 @@
           "unrelated package rewrite"
         ],
         "rationale": "A complete brief authorizes one bounded user-owned refinement."
+      },
+      {
+        "clause_id": "REFINE-SELECTION-001",
+        "trigger_refs": [
+          "REFINE-BRIEF-READY",
+          "REFINE-REGRESSION"
+        ],
+        "expected_routes": [
+          "REFINE-NO-CHANGE",
+          "REFINE-TRIGGER",
+          "REFINE-DECISION",
+          "REFINE-SURFACE",
+          "REFINE-CONSOLIDATE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "weakness comparison, recorded incomparability, or single-candidate justification",
+          "physical tie-breaker when candidates are semantically equivalent"
+        ],
+        "success_signals": [
+          "weakest valid intervention supportable by current evidence",
+          "incomparability preserved when dominance is not established",
+          "shortest diff used only after semantic selection"
+        ],
+        "failure_signals": [
+          "description length used as a generalization proxy",
+          "unnecessarily specific rule",
+          "unreported incomparable candidates",
+          "unsupported extension-cardinality claim"
+        ],
+        "rationale": "Refine selects the least specific intervention that satisfies the expected delta and protected contracts, then minimizes its physical realization."
       },
       {
         "clause_id": "REFINE-BOUNDARY-001",
@@ -174,12 +206,14 @@
           "reproduction query"
         ],
         "success_signals": [
+          "weakest reproducible guard",
           "expected future behavior is observable"
         ],
         "failure_signals": [
-          "wording-only regression"
+          "wording-only regression",
+          "blanket guard overfitting one episode"
         ],
-        "rationale": "Regression work must bind to observable skill behavior."
+        "rationale": "Regression work must bind to observable skill behavior and constrain no more than the witnessed failure class requires."
       }
     ],
     "instrumentation": {
