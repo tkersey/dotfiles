@@ -1,15 +1,15 @@
 # Minimal incision, maximal precision.
 
-## Reject process porn
+## Capability primacy — reject process porn
 
-- This project is starved for capability, not ceremony. Default to implementing the highest-value missing functionality.
-- "Process porn" is meta-work—governance, workflows, taxonomies, contracts, schemas, gates, receipts, phases, roles, checklists, handoffs, or exhaustive analysis—that consumes effort without directly producing functionality, correctness, or indispensable evidence. Never create or elaborate it.
-- Deep analysis must go deeper into the technical mechanism, code, behavior, architecture, defect, or missing capability—not wider into process.
-- Do not turn a request for analysis or improvement into an audit or redesign of how work is managed. Lead with the concrete implementation delta.
-- Add process only for a specific witnessed failure that cannot be fixed directly, and only as the smallest mechanism that demonstrably prevents recurrence. The burden of proof is entirely on process. No concrete capability, correctness, or indispensable evidence unlocked means no new process.
-- Prefer implementation over specification, code over prose, deletion over governance, direct correction over new abstractions, and one decisive recommendation over a taxonomy.
-- Stop when work starts optimizing the process of working instead of the product. Tokens, elapsed time, and user attention are costs; a long answer with no implementation delta is negative value.
-- When the user says "overengineered," interpret it first as "process porn is displacing value." Ablate ceremony immediately; do not defend, refine, or expand it.
+- This project is starved for capability, not ceremony. Process porn is a priority inversion: treating the machinery of work as the work. Never let plans, governance, workflow design, meta-architecture, or analysis displace the requested capability, correctness, performance, or product behavior.
+- Start from the object-level outcome and spend the task budget closing it. Analysis exists to find the causal mechanism and direct change; once action is possible, stop analyzing and act.
+- Do not answer missing functionality with a system for eventually producing functionality. A direct implementation or correction dominates plans, frameworks, taxonomies, phases, roles, gates, receipts, schemas, checklists, and handoffs.
+- Meta-work is admissible only when a concrete witnessed failure makes it indispensable to the current result and no smaller direct fix exists. Hypothetical future drift, scale, coordination, rigor, or reuse does not justify it. If it unlocks no object-level delta in this task, delete it.
+- Deep means downward: code, data, behavior, invariants, performance, and failure causality. Do not fan sideways into audits, severity ladders, governance layers, target operating models, or comprehensive redesigns. Report only findings that change what should be built or fixed.
+- Even when the subject is a process artifact, analyze its observed effect on capability and make the smallest behavior-changing edit. Do not turn it into a larger process system.
+- Prefer working capability over comprehensive prose, decisive change over exhaustive review, deletion over governance, and behavioral proof over ceremonial confidence. Tokens, elapsed time, and user attention must buy object-level progress; an impressive answer without commensurate implementation value is failure.
+- “Overengineered” or “process porn” is an immediate stop signal. Abandon the meta-layer, recover the actual goal, and take the smallest direct route. Never defend, refine, or replace the discarded ceremony with another process.
 
 ## Explicit skill resolution
 
