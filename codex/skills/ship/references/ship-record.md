@@ -79,13 +79,23 @@ ship_adoption_record:
     base_sha:
     head_ref:
     head_sha:
+  eligibility:
+    open_exact_pr_count: 0
+    observed_at:
   public_state:
     branch:
       name:
       sha:
+      publication_event:
+        provider:
+        event_id:
+        ref:
+        head_sha:
+        published_at:
     release: null | {
       tag: string,
       url: string,
+      target_sha: git-oid,
       assets: [{ name: string, size: integer, sha256: sha256-digest }]
     }
     observed_at:
@@ -97,7 +107,7 @@ ship_adoption_record:
     acceptance:
   action:
     operation: adopt-existing
-    result: adopted | blocked
+    result: adopted
     mutation_performed: false
   actuation_binding:
     closure_receipt_ref:
@@ -113,14 +123,16 @@ Canonicalize the complete record as JSON and hash those exact bytes with
 SHA-256. Arrays retain their declared order; `assets` is sorted by `name` and
 contains every claimed release asset exactly once.
 
-Adoption is read-only and proves current state, not historical timing. Ship
-requires the remote branch SHA to equal both `public_state.branch.sha` and
-`review_target.head_sha`; resolves `review_target.base_sha`; proves the base is
-an ancestor of the head; and exact-matches every non-null release field and
-asset name, size, and SHA-256 digest through live provider readback. Ship copies
-the complete current ready-to-ship `actuation_binding` verbatim. Any mismatch,
-missing digest, requested mutation, or ambiguous target yields `blocked` and no
-receipt.
+Adoption is read-only. Ship requires the remote branch SHA to equal both
+`public_state.branch.sha` and `review_target.head_sha`; resolves
+`review_target.base_sha`; proves the base is an ancestor; obtains a complete
+live PR inventory whose exact open repository/base/head match count is
+`open_exact_pr_count: 0`; and verifies the provider-authored publication event's
+ref and head SHA. For a non-null release, Ship resolves `target_sha`, requires
+it to equal `review_target.head_sha`, and exact-matches every release field and
+asset name, size, and SHA-256 digest. Ship copies the complete current ready-to-
+ship `actuation_binding` verbatim. Any mismatch, missing history or digest,
+requested mutation, blocked result, or ambiguous target yields no receipt.
 
 Return the complete immutable `SHIP-ADOPTION-v1` record and its SHA-256 digest
 to Actuating. It has the same owner boundary as `SHIP-v1`; it is not a second

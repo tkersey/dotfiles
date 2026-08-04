@@ -40,9 +40,11 @@ A terminal judgment is legal only when all applicable statements hold:
    `SHIP-ADOPTION-v1` digest, and verified its repository, base/head tuple,
    route-specific live readback, and complete `actuation_binding` against the
    exact `ready-to-ship` receipt. For adoption, Actuating also verifies that no
-   mutation occurred, the public branch resolves to the exact head, the base is
-   an ancestor, and every claimed release asset name, size, and SHA-256 digest
-   matches live state.
+   mutation occurred, `action.result == adopted`, the public branch resolves to
+   the exact head, the base is an ancestor, a complete live exact-tuple PR
+   inventory has zero open matches, and the provider publication event binds
+   that branch and head. Every non-null release tag target must equal the exact
+   head before its asset names, sizes, and SHA-256 digests are accepted.
    Actuating must not substitute its own live-readback record.
    A `ready-to-ship` judgment deliberately omits this premise: that receipt is
    Ship's required readiness input for producing the publication evidence.
@@ -66,11 +68,12 @@ A terminal judgment is legal only when all applicable statements hold:
     review evidence, or the current Review Accretion Disposition.
 
 Formal evidence ingestion order is not publication order. Recording a valid
-`SHIP-ADOPTION-v1` after review does not reset review credit merely because the adoption receipt was recorded later when every credited receipt independently
-binds the same public base/head tuple, Ship's current readback exact-matches that
-tuple and all claimed release assets, and no later material event changed the
-subject or publication. A mismatch or unproved field invalidates the affected
-credit; adoption never refreshes stale review credit.
+`SHIP-ADOPTION-v1` after review does not reset review credit merely because the
+receipt was recorded later when Ship's provider-authored exact branch/head
+publication event predates the credited campaign, every credited receipt binds
+that campaign's exact base/head tuple, and no later material event changed the
+subject. Tuple equality alone is insufficient. A mismatch or unproved field
+invalidates the affected credit; adoption never refreshes stale review credit.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path

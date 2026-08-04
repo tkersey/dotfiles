@@ -27,7 +27,7 @@ The Goal Contract is the sole semantic-authority artifact; the Counterexample Se
 - Static Review Contract construction, CAS-evidence evaluation, review credit, topology, and convergence: `$actuating`.
 - Semantic closure verdict and `actuating-closure-receipt/v1`: `$actuating`.
 - CAS attempt execution and owner receipts: CAS.
-- Public effects and `SHIP-v1`: `$ship`.
+- Public effects and `SHIP-v1` or `SHIP-ADOPTION-v1`: `$ship`.
 - Human terminal rendering: `$proof-patch`.
 - Canonicalization, structural validation, append integrity, replay, and requested projections: Ledger.
 
@@ -42,7 +42,9 @@ commit target: repository identity, commit OID, and tree OID. A dirty checkout
 is a provisional construction surface, not an authoritative artifact, subject,
 or Evidence event kind. `effect_recorded` advances directly from the clean
 parent target to the clean committed successor; Ship then proves that exact
-successor is the published PR head before review begins.
+successor is the published PR head before review begins. For read-only adoption
+of an already-public subject, Ship instead binds the exact provider publication
+event and Actuating requires it to predate the credited review campaign.
 
 Every immutable replayable event envelope proves sequence and custody, not semantic truth; Actuating evaluates it with the current Goal, Construction, Counterexamples, and subject.
 

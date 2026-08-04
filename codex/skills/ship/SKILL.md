@@ -56,7 +56,7 @@ ship_input:
     head_sha:
     comparison_base_ref:
     comparison_base_sha:
-    release: null | { tag, url, assets: [{ name, size, sha256 }] }
+    release: null | { tag, url, target_sha, assets: [{ name, size, sha256 }] }
   validation:
     build: pass | fail | missing | not-run
     lint: pass | fail | missing | not-run
@@ -106,10 +106,14 @@ Actuating's next action.
 
 `adopt-existing` is Actuating-only and read-only. Require the remote branch to
 resolve to the supplied head SHA, require the comparison base to exist and be
-an ancestor of that head, and read back every claimed release asset's name,
-size, and SHA-256 digest. Reject a missing or mutable observation, a mismatched
-tuple, an unverified asset, or any requested mutation. The receipt records when
-Ship observed the state; it must not invent an earlier publication time.
+an ancestor of that head, and query the complete live open-PR inventory for the
+exact repository/base/head tuple. Adoption requires zero exact matches. Bind a
+provider-authored branch publication event whose ref and head SHA match the
+adopted branch. For a non-null release, resolve its tag target and require it to
+equal the adopted head before reading back every asset name, size, and SHA-256
+digest. Reject missing history, an incomplete PR inventory, a mismatched tuple,
+an unverified asset, or any requested mutation. The receipt records the live
+provider timestamps; it must not invent an earlier publication time.
 
 Before publication, canonicalize the complete `closure_receipt` with only
 `receipt_id` replaced by JSON `null`, recompute its SHA-256 identity, and require
@@ -186,9 +190,10 @@ Before any public effect:
    managed proof block.
 
 For `adopt-existing`, perform no public effect: read back the exact repository,
-branch head, comparison base ancestry, optional release, and every claimed
-asset digest; then emit `SHIP-ADOPTION-v1`. A zero-mutation adoption succeeds
-only after all readback matches the current readiness input.
+branch head and publication event, comparison base ancestry, zero open exact-
+tuple PRs, optional release target, and every claimed asset digest; then emit
+`SHIP-ADOPTION-v1`. A zero-mutation adoption succeeds only after all readback
+matches the current readiness input.
 
 A zero exit status is not publication proof. If mutation succeeds but readback
 fails, report the partial public effect and block; re-read live state before
