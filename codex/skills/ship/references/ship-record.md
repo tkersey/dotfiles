@@ -110,6 +110,9 @@ ship_observation_record:
 digest before binding or dispatching the campaign. Final adoption ratifies that
 exact digest and tuple; the Evidence Ledger's event order, rather than a
 comparison between provider and Ledger clocks, proves observation-before-review.
+Observation admits no release state: its input requires
+`existing_publication.release == null`. Final adoption alone validates and
+records an optional release.
 
 Use this exact companion record only when Actuating supplies a current
 `ready-to-ship` receipt for an exact subject that is already public and no
@@ -200,9 +203,10 @@ complete provider history through its own observation and proves that no later
 event for the repository and ref changed the epoch. The adoption's current
 `actuation_binding` must carry the same Goal, Construction, subject, and review
 contract, but its closure receipt and Evidence Ledger head may be later. For a
-non-null release, Ship
-requires its live provider and repository to exact-match the adopted
-repository, requires `publication_state: published` and `draft: false`, resolves
+non-null release, Ship requires its live provider to exact-match
+`public_state.branch.publication_event.provider`, requires its live repository
+to exact-match the adopted repository, requires `publication_state: published`
+and `draft: false`, resolves
 `target_sha`, and requires it to equal
 `review_target.head_sha`, requires the receipt asset names to equal the complete
 live provider asset-name set, and exact-matches every release field and asset

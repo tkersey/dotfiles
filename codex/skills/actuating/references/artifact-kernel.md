@@ -27,7 +27,8 @@ The Goal Contract is the sole semantic-authority artifact; the Counterexample Se
 - Static Review Contract construction, CAS-evidence evaluation, review credit, topology, and convergence: `$actuating`.
 - Semantic closure verdict and `actuating-closure-receipt/v1`: `$actuating`.
 - CAS attempt execution and owner receipts: CAS.
-- Public effects and `SHIP-v1` or `SHIP-ADOPTION-v1`: `$ship`.
+- Public effects and `SHIP-v1`, `SHIP-OBSERVATION-v1`, or
+  `SHIP-ADOPTION-v1`: `$ship`.
 - Human terminal rendering: `$proof-patch`.
 - Canonicalization, structural validation, append integrity, replay, and requested projections: Ledger.
 

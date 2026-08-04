@@ -127,15 +127,18 @@ exactly equal the adoption repository, head ref, and head SHA. Its `before_sha`
 records the provider's preceding remote tip and is not the review base.
 Provider history from that event through observation must be complete
 and contain no later event for the same repository and ref, so the event begins
-the current uninterrupted publication epoch. For a non-null release, require
-the provider and repository to exact-match the adopted repository, require
-provider state `published` and `draft: false`, resolve its tag target and require
-it to equal the adopted head, obtain the complete live provider asset inventory,
-require exact set equality with the receipt, and then verify every asset name,
-size, and SHA-256 digest. Reject missing or truncated history, an incomplete PR
-or asset inventory, an empty or mismatched tuple, an unpublished or draft
-release, an unverified asset, or any requested mutation. The receipt records
-live provider timestamps; it must not invent an earlier publication time.
+the current uninterrupted publication epoch. `observe-existing` requires
+`existing_publication.release == null`; final adoption performs all optional
+release validation. For a non-null adopted release, require its provider to
+equal the branch publication event's provider, require its repository to
+exact-match the adopted repository, require provider state `published` and
+`draft: false`, resolve its tag target and require it to equal the adopted head,
+obtain the complete live provider asset inventory, require exact set equality
+with the receipt, and then verify every asset name, size, and SHA-256 digest.
+Reject missing or truncated history, an incomplete PR or asset inventory, an
+empty or mismatched tuple, an unpublished or draft release, an unverified asset,
+or any requested mutation. The receipt records live provider timestamps; it
+must not invent an earlier publication time.
 
 Before a review campaign that may later use `adopt-existing`, Ship performs the
 same branch, comparison-base, PR-absence, and publication-epoch readback through
@@ -225,12 +228,13 @@ Before any public effect:
 
 For `observe-existing` or `adopt-existing`, perform no public effect: read back
 the exact repository, branch head and publication event, comparison base
-ancestry, zero open exact-tuple PRs, and any optional release target,
-publication state, complete asset inventory, and asset digests; then emit the
-route-specific receipt. Emit `SHIP-OBSERVATION-v1` for pre-review observation
-and `SHIP-ADOPTION-v1` for final adoption. Either succeeds only after all
-readback matches the current readiness input; final adoption must ratify the
-cited observation when review credit depends on it.
+ancestry, and zero open exact-tuple PRs. Observation requires null release state.
+Final adoption additionally reads back any optional release target, publication
+state, complete asset inventory, and asset digests before emitting its receipt.
+Emit `SHIP-OBSERVATION-v1` for pre-review observation and `SHIP-ADOPTION-v1`
+for final adoption. Either succeeds only after all readback matches the current
+readiness input; final adoption must ratify the cited observation when review
+credit depends on it.
 
 A zero exit status is not publication proof. If mutation succeeds but readback
 fails, report the partial public effect and block; re-read live state before
@@ -246,16 +250,19 @@ its receipt as architecture, review, or closure authority.
 Return the complete canonical receipt bytes together with their SHA-256 digest.
 Actuating retains those immutable bytes as the supporting attachment, records
 that digest as `publication_observed.receipt_ref`, and must dereference and
-exact-match the record, route-specific readback, and `actuation_binding` before
-treating publication as current. Actuating must not substitute its own
-live-readback record for either Ship-owned receipt.
+exact-match the record and route-specific readback. It exact-matches
+`actuation_binding` for `SHIP-v1` and `SHIP-ADOPTION-v1`, and `review_binding`
+for `SHIP-OBSERVATION-v1`. Actuating must not substitute its own live-readback
+record for any Ship-owned receipt.
 
 ## Ship record
 
 Follow [ship-record.md](references/ship-record.md). `actuation_binding` is
-required for every Actuating record and omitted for direct shipping. Each
-receipt describes one publication epoch and is immutable. Existing PR-based
-`SHIP-v1` records remain valid and unchanged.
+required for Actuating `SHIP-v1` and `SHIP-ADOPTION-v1`; the pre-review
+`SHIP-OBSERVATION-v1` instead requires its exact stable `review_binding`.
+Bindings are omitted for direct shipping. Each receipt describes one
+publication epoch and is immutable. Existing PR-based `SHIP-v1` records remain
+valid and unchanged.
 
 ## Guardrails
 

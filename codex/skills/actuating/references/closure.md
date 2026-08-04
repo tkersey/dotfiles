@@ -44,7 +44,8 @@ A terminal judgment is legal only when all applicable statements hold:
    the exact head, the base is an ancestor, a complete live exact-tuple PR
    inventory has zero open matches, and the provider publication event binds
    that branch and head. Every non-null release tag target must equal the exact
-   head before its asset names, sizes, and SHA-256 digests are accepted.
+   head, and its provider must equal the branch publication provider, before its
+   asset names, sizes, and SHA-256 digests are accepted.
    Actuating must not substitute its own live-readback record.
    A `ready-to-ship` judgment deliberately omits this premise: that receipt is
    Ship's required readiness input for producing the publication evidence.
@@ -72,7 +73,8 @@ valid `SHIP-ADOPTION-v1` after review preserves credit only when it ratifies the
 exact `SHIP-OBSERVATION-v1` digest that Actuating recorded before campaign
 binding. The observation and adoption must exact-match the current uninterrupted
 publication epoch, repository, canonical head ref, base/head tuple, subject, and
-stable Goal, Construction, and review contract. The adoption carries its own
+stable Goal, Construction, and review contract through `review_binding`. The
+adoption carries its own
 current actuation binding; every credited receipt binds the observed tuple, and
 no later material event changed the subject. Evidence Ledger order from
 observation to campaign is the causal proof; provider `published_at` and Ledger
