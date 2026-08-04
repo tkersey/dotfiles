@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Ship"
-  short_description: "Publish validated work as a ready PR by default"
-  default_prompt: "Use $ship to open, update, or promote a proof-backed PR. For source: actuation, require a current actuating-closure-receipt/v1; preserve the supported source: direct route. Use a draft only with an explicit warrant."
+  short_description: "Publish or adopt exact validated public state"
+  default_prompt: "Use $ship to open, update, or promote a proof-backed PR, or read-only adopt an exact already-public Actuating subject when no current PR tuple can represent it."

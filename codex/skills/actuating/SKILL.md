@@ -88,9 +88,10 @@ or Review Fold handoff. Construction v1 and v2 are unsupported; start a fresh
 v3 goal-local Evidence store rather than treating legacy data as current
 authority.
 
-`$ship` is the sole owner of public PR or tracker effects. Actuating supplies a
-current `ready-to-ship` proof and records Ship's returned receipt; it never
-performs the public effect itself.
+`$ship` is the sole owner of public PR or tracker effects and Ship-owned
+publication evidence. Actuating supplies a current `ready-to-ship` proof and
+records Ship's returned receipt; it never performs the public effect or authors
+a substitute publication receipt itself.
 
 ## Public modes
 
@@ -466,10 +467,19 @@ translates CAS fields into semantic verdicts.
 ## Publication and closure
 
 Bare mode and publication-bearing review closeout hand a current
-`ready-to-ship` proof to `$ship`. Ship pushes the exact clean verified commit,
-creates or updates the PR, reads back repository/base/head refs and OIDs, and
-returns `SHIP-v1`. Only then does Actuating begin or resume review on the
-published subject.
+`ready-to-ship` proof to `$ship`. Ship either pushes the exact clean verified
+commit and creates or updates its PR, returning `SHIP-v1`, or read-only adopts
+an exact already-public subject that has no truthful current PR tuple, returning
+`SHIP-ADOPTION-v1`. Both routes exact-match the repository, base/head refs and
+OIDs, complete actuation binding, and route-specific live readback. Actuating
+must not substitute its own live-readback record.
+
+Normally Ship evidence precedes review. A later `SHIP-ADOPTION-v1` observation
+does not reset review credit merely because the adoption receipt was recorded
+later when every credited CAS receipt independently proves the same public
+base/head tuple, the adoption readback matches that tuple exactly, and no later
+material event changed the subject or claimed release assets. Otherwise the
+review credit is stale.
 
 Apply [closure.md](references/closure.md) only to current artifacts and
 observations. Actuating authors `actuating-closure-receipt/v1`; Ledger neither
@@ -498,7 +508,8 @@ Actuating's semantic authority.
 
 For `final-closeout` `complete`, also block on stale or missing publication
 identity, CAS tuple mismatch, unresolved request-local recovery, fewer than five
-current-published-subject standard cleans, or missing required Ship evidence.
+current-published-subject standard cleans, or missing required Ship evidence
+(`SHIP-v1` or `SHIP-ADOPTION-v1`).
 `ready-to-ship` requires neither publication nor review evidence.
 `local-implementation` `complete` requires neither and rejects them as
 inapplicable.

@@ -36,9 +36,14 @@ A terminal judgment is legal only when all applicable statements hold:
    remains unresolved.
 7. For a `final-closeout` `complete` verdict when publication is required, the
    work has current Ship evidence for the exact subject; Actuating has resolved
-   `publication_observed.receipt_ref`, recomputed the immutable `SHIP-v1`
-   digest, and verified its repository, base/head tuple, live readback, and
-   complete `actuation_binding` against the exact `ready-to-ship` receipt.
+   `publication_observed.receipt_ref`, recomputed the immutable `SHIP-v1` or
+   `SHIP-ADOPTION-v1` digest, and verified its repository, base/head tuple,
+   route-specific live readback, and complete `actuation_binding` against the
+   exact `ready-to-ship` receipt. For adoption, Actuating also verifies that no
+   mutation occurred, the public branch resolves to the exact head, the base is
+   an ancestor, and every claimed release asset name, size, and SHA-256 digest
+   matches live state. Actuating must not substitute its own live-readback
+   record.
    A `ready-to-ship` judgment deliberately omits this premise: that receipt is
    Ship's required readiness input for producing the publication evidence.
 8. For a `final-closeout` `complete` verdict, the work has current auxiliary
@@ -59,6 +64,14 @@ A terminal judgment is legal only when all applicable statements hold:
    credit and requires fresh convergence before `complete`.
 10. No later material event invalidates authority, subject, proof, publication,
     review evidence, or the current Review Accretion Disposition.
+
+Formal evidence ingestion order is not publication order. Recording a valid
+`SHIP-ADOPTION-v1` after review does not reset review credit merely because the
+adoption receipt was recorded later when every credited receipt independently
+binds the same public base/head tuple, Ship's current readback exact-matches that
+tuple and all claimed release assets, and no later material event changed the
+subject or publication. A mismatch or unproved field invalidates the affected
+credit; adoption never refreshes stale review credit.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path
