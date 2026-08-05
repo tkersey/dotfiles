@@ -18,7 +18,7 @@ For skills whose value lies in changing choices, make future decision evidence o
 - Default frontmatter to `name` and `description`.
 - `name` is hyphen-case, at most 64 characters, and matches the folder.
 - `description` is the trigger surface and remains under 1024 characters.
-- Keep `SKILL.md` under 500 lines; move deep detail into `references/`.
+- Keep `SKILL.md` under 500 lines as the smallest operative kernel; move deeper knowledge into discoverable `references/` loaded only when a live decision needs it.
 - Keep `agents/openai.yaml` aligned.
 - Record the `agents/openai.yaml` disposition.
 
