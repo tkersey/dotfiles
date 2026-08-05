@@ -2,7 +2,7 @@
 name: learnings
 description: "Capture, browse, query, supersede, and selectively admit evidence-backed execution learnings through the passive Learnings protocol definition. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
 metadata:
-  version: "8.0.0"
+  version: "8.1.0"
 ---
 
 # Learnings
@@ -59,14 +59,14 @@ closed; there is no alternate-path reader.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
-Standalone recall, browse, and explicit source-local capture remain Learnings
-operations. They do not invoke Synesthesia or open a Ledger lifecycle
-checkpoint. When the surrounding work reaches a material lifecycle boundary,
-the root `$ledger` coordinator invokes all three participants independently.
+Standalone recall, browse, and source-local capture remain Learnings operations.
+No aggregate coordinator or sibling fan-out is required. At a material
+execution boundary, evaluate the capture gate directly and retain the
+source-owned disposition.
 
 ## Capture Gate
 
-Capture only when at least one decision-shaping checkpoint occurred:
+Capture only when at least one decision-shaping event occurred:
 
 1. validation transition;
 2. strategy pivot;
@@ -79,38 +79,19 @@ Require decision delta, transferability, and counterfactual cost. Prefer one ess
 
 ## Disposition Invariant
 
-At each triggered execution checkpoint, retain exactly one internal outcome:
+At each material Learnings activation, retain exactly one internal outcome:
 
 ```text
 learning-disposition: appended id=lrn-...
 learning-disposition: duplicate-skip reason=<reason>
 learning-disposition: no-op reason=<capture gate not met>
-learning-disposition: blocked reason=<doctor, migration, or capture failure>
+learning-disposition: blocked reason=<doctor, binding, or capture failure>
 ```
 
-The checkpoint is mandatory; the append is conditional. Do not claim learning
-closeout without a disposition. Keep `no-op` and `duplicate-skip` internal
-unless the user asks, while `blocked` is user-visible when it affects delivery.
-
-## Ledger checkpoint participant
-
-When invoked with `checkpoint_context=source-memory-checkpoint/v1`, consume the
-coordinator's existing Ledger readiness and evidence packet. Do not rerun
-`$ledger ensure`, invoke `$ledger` as a lifecycle coordinator, or call
-Synesthesia or Negative Ledger.
-
-Project only the packet's decision delta, validation transitions, changed
-paths, and final handoff through the existing capture gate. Return exactly one
-Learnings disposition plus one admission disposition. Preserve
-`appended|duplicate-skip|no-op|blocked`; do not append merely because the
-checkpoint is mandatory. A duplicate skip may identify the existing `lrn-*`
-row. A no-op or block must state its source-local reason.
-
-If a canonical row passes the admission gate, use the definition projection
-below and return `created`, `duplicate-skip`, or `blocked` with the note proof. If it does
-not pass, return `not-eligible`; if no canonical row exists, return
-`not-applicable`. An admission failure after a successful append never changes
-the canonical disposition.
+Evaluation is mandatory once the source is materially activated; append is
+conditional. Do not claim Learnings closeout without a disposition. Keep
+`no-op` and `duplicate-skip` internal unless the user asks, while `blocked` is
+user-visible when it affects delivery.
 
 ## Write Workflow
 
@@ -161,7 +142,7 @@ the canonical disposition.
    focused `record` or `recall` projection to verify readability.
 8. Before any Codex-made commit, inspect the current learning through the
    `record` projection. Do not read the store directly.
-8. Retain exactly one canonical learning proof line in working evidence. Include
+9. Retain exactly one canonical learning proof line in working evidence. Include
    source-memory proof in the final user-facing reply only when it changed
    repo-visible state, needs user action, explains a blocker/error, or the user
    explicitly asks.
@@ -274,4 +255,4 @@ the Negative Evidence definition's `capture` transaction, then use its
 - Do not admit every learning to memory.
 - Do not write compiled memory directly.
 - Do not use source notes to bypass the canonical store.
-- In checkpoint context, do not invoke the coordinator or a sibling participant.
+- Do not invoke a sibling source merely because Learnings activated.

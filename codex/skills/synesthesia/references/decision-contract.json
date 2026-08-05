@@ -4,7 +4,7 @@
     "skill": {
       "name": "synesthesia",
       "kind": "decision",
-      "source_fingerprint": "synesthesia-v4.0.0"
+      "source_fingerprint": "synesthesia-v4.1.0"
     },
     "triggers": [
       {
@@ -81,20 +81,6 @@
         "exclusions": [
           "assistant-authored novelty without user authority"
         ]
-      },
-      {
-        "trigger_id": "SYN-LEDGER-CHECKPOINT",
-        "description": "The Ledger source-memory checkpoint requires an independent Synesthesia disposition at a material lifecycle boundary.",
-        "cue_literals": [
-          "checkpoint_context=source-memory-checkpoint/v1",
-          "source-memory checkpoint",
-          "Synesthesia participant"
-        ],
-        "cue_regexes": [],
-        "exclusions": [
-          "standalone Learnings recall or browse with no material lifecycle boundary",
-          "no material implementation, validation transition, handoff, or explicit checkpoint request"
-        ]
       }
     ],
     "routes": [
@@ -138,15 +124,6 @@
           "memory-admission"
         ],
         "terminal": false
-      },
-      {
-        "route_id": "SYN-ROUTE-LIFECYCLE-CANDIDATE",
-        "description": "Emit a non-durable Synesthesia candidate when lifecycle evaluation finds a reusable mapping or boundary but lacks durable user authority.",
-        "aliases": [
-          "lifecycle-candidate",
-          "candidate"
-        ],
-        "terminal": true
       },
       {
         "route_id": "SYN-ROUTE-DIRECT-LITERAL",
@@ -196,10 +173,10 @@
           "ordinary domain work remains owned by its technical workflow"
         ],
         "failure_signals": [
-          "activation solely because the task mentions architecture, performance, readability, flakiness, onboarding, or UX",
+          "activation solely because the task mentions architecture, performance, readability, flakiness, onboarding, UX, handoff, or closeout",
           "sensory prose with no technical delta"
         ],
-        "rationale": "Synesthesia is a representational lens, not a broad domain owner."
+        "rationale": "Synesthesia is a representational lens, not a broad domain or lifecycle owner."
       },
       {
         "clause_id": "SYN-REVERSIBILITY-002",
@@ -269,41 +246,6 @@
           "digest failure treated as failure of an otherwise successful source-note append"
         ],
         "rationale": "Explicit durable user authority should reliably reach the source-note pipeline without weakening admission hygiene."
-      },
-      {
-        "clause_id": "SYN-LIFECYCLE-004",
-        "trigger_refs": [
-          "SYN-LEDGER-CHECKPOINT"
-        ],
-        "expected_routes": [
-          "SYN-ROUTE-MEMORY-ADMISSION",
-          "SYN-ROUTE-LIFECYCLE-CANDIDATE",
-          "SYN-ROUTE-BLOCKED"
-        ],
-        "prohibited_routes": [
-          "SYN-ROUTE-DIRECT-LITERAL"
-        ],
-        "required_artifacts": [
-          "source-memory-checkpoint input packet",
-          "checkpoint_context=source-memory-checkpoint/v1",
-          "durable authority decision",
-          "candidate sensory phrase or explicit no-candidate reason",
-          "engineering translation when candidate exists",
-          "activation and non-activation boundary when candidate exists",
-          "verification or falsifier when candidate exists"
-        ],
-        "success_signals": [
-          "useful non-durable mappings become explicit candidates instead of disappearing",
-          "zero-row proof is reserved for no-candidate cases",
-          "notes-only is treated as store migration state, not as a substantive no-capture reason"
-        ],
-        "failure_signals": [
-          "lifecycle evaluation stops after doctor output",
-          "plausible reusable mapping reported only as no durable event",
-          "assistant-authored candidate appended as durable memory without user authority",
-          "participant invokes the Ledger coordinator or a sibling source"
-        ],
-        "rationale": "Ledger-checkpoint Synesthesia should generate one independent disposition and reviewable candidates without polluting durable memory."
       }
     ],
     "instrumentation": {
