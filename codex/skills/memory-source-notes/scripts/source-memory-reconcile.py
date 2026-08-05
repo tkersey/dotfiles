@@ -8,6 +8,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -17,6 +18,8 @@ from urllib.parse import urlparse
 
 SOURCES = ("learnings", "synesthesia", "negative-ledger")
 LEDGER_ABI = "ledger-artifact-abi/v1"
+DEFAULT_LIMIT = 10_000
+MAX_LIMIT = 100_000
 SKILLS_ROOT = Path(__file__).resolve().parents[2]
 ELIGIBILITY_DEFINITION = (
     SKILLS_ROOT
@@ -35,11 +38,8 @@ SOURCE_DEFINITION_IDS = {
     "negative-ledger": "negative-ledger/negative-evidence-protocol",
     "synesthesia": "synesthesia/protocol",
 }
-MEMORY_NOTE_PROJECTIONS = {
-    "learnings": "memory-note",
-    "negative-ledger": "memory-note",
-    "synesthesia": "memory-note",
-}
+MEMORY_NOTE_PROJECTIONS = {source: "memory-note" for source in SOURCES}
+TOKEN_CHARS = r"A-Za-z0-9_-"
 
 
 class ReconcileError(RuntimeError):
@@ -58,7 +58,7 @@ def run_bytes(argv: list[str], *, cwd: Path) -> bytes:
         proc = subprocess.run(argv, cwd=cwd, capture_output=True, check=False)
     except OSError as exc:
         raise ReconcileError(f"{Path(argv[0]).name}: {exc}") from exc
-    if proc.returncode != 0:
+    if proc.returncode:
         detail = (
             proc.stderr.decode("utf-8", errors="replace").strip()
             or proc.stdout.decode("utf-8", errors="replace").strip()
@@ -81,11 +81,7 @@ def run_json(argv: list[str], *, cwd: Path) -> Any:
 
 
 def ledger_envelope(
-    value: Any,
-    *,
-    schema: str,
-    definition_id: str,
-    stage: str,
+    value: Any, *, schema: str, definition_id: str, stage: str
 ) -> dict[str, Any]:
     if not isinstance(value, dict) or value.get("schema") != schema:
         raise ReconcileError(f"{stage}: invalid result schema")
@@ -103,12 +99,7 @@ def ledger_envelope(
     return value
 
 
-def ledger_validation(
-    value: Any,
-    *,
-    definition_id: str,
-    stage: str,
-) -> dict[str, Any]:
+def ledger_validation(value: Any, *, definition_id: str, stage: str) -> None:
     result = ledger_envelope(
         value,
         schema="ledger-validation-result/v1",
@@ -117,15 +108,9 @@ def ledger_validation(
     )
     if result.get("valid") is not True or result.get("errors") != []:
         raise ReconcileError(f"{stage}: structurally invalid")
-    return result
 
 
-def ledger_doctor(
-    value: Any,
-    *,
-    definition_id: str,
-    stage: str,
-) -> dict[str, Any]:
+def ledger_doctor(value: Any, *, definition_id: str, stage: str) -> dict[str, Any]:
     result = ledger_envelope(
         value,
         schema="ledger-doctor-result/v1",
@@ -137,12 +122,7 @@ def ledger_doctor(
     return result
 
 
-def memory_note_result(
-    value: Any,
-    *,
-    command: str,
-    stage: str,
-) -> dict[str, Any]:
+def memory_note_result(value: Any, *, command: str, stage: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ReconcileError(f"{stage}: expected object result")
     if command == "doctor" and (
@@ -163,14 +143,11 @@ def writer_fingerprint(extension: str, kind: str, raw: bytes) -> str:
 
 
 def load_eligibility(
-    path: str | None,
-    *,
-    ledger: str,
-    cwd: Path,
+    path: str | None, *, ledger: str, cwd: Path
 ) -> dict[str, dict[str, dict[str, str]]]:
-    empty = {source: {} for source in SOURCES}
+    result = {source: {} for source in SOURCES}
     if not path:
-        return empty
+        return result
     eligibility_path = Path(path).expanduser().resolve()
     ledger_validation(
         run_json(
@@ -193,12 +170,22 @@ def load_eligibility(
         value = json.loads(eligibility_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ReconcileError(f"eligibility: {exc}") from exc
-    decisions = value["decisions"]
-    result = {source: {} for source in SOURCES}
+    decisions = value.get("decisions")
+    if not isinstance(decisions, dict):
+        raise ReconcileError("eligibility: decisions object missing")
     for source, rows in decisions.items():
+        if source not in result or not isinstance(rows, dict):
+            raise ReconcileError(f"eligibility: invalid source {source!r}")
         for record_id, decision in rows.items():
-            disposition = decision["disposition"]
-            reason = decision["reason"]
+            disposition = decision.get("disposition") if isinstance(decision, dict) else None
+            reason = decision.get("reason") if isinstance(decision, dict) else None
+            if (
+                not isinstance(record_id, str)
+                or disposition not in ("eligible", "not-eligible")
+                or not isinstance(reason, str)
+                or not reason.strip()
+            ):
+                raise ReconcileError(f"eligibility {source}: invalid decision")
             result[source][record_id] = {
                 "disposition": disposition,
                 "reason": reason.strip(),
@@ -206,40 +193,66 @@ def load_eligibility(
     return result
 
 
+def list_is_complete(row: Any, source: str) -> bool:
+    return bool(
+        isinstance(row, dict)
+        and isinstance(row.get("id"), str)
+        and row.get("extension") == source
+        and isinstance(row.get("kind"), str)
+        and isinstance(row.get("fingerprint"), str)
+        and isinstance(row.get("payload"), dict)
+    )
+
+
+def inventory_is_truncated(listing: dict[str, Any], returned: int, limit: int) -> bool:
+    total = listing.get("total")
+    if isinstance(total, int):
+        return total > returned
+    truncated = listing.get("truncated")
+    if isinstance(truncated, bool):
+        return truncated
+    return returned >= limit
+
+
 def load_notes(
     memory_note: str,
     source: str,
     *,
     cwd: Path,
-    codex_home: str | None,
-) -> list[dict[str, Any]]:
-    list_argv = [
+    codex_home: Path,
+    limit: int,
+) -> tuple[list[dict[str, Any]], int]:
+    argv = [
         memory_note,
         "list",
         "--extension",
         source,
         "--limit",
-        "100000",
+        str(limit),
         "--format",
         "json",
+        "--codex-home",
+        str(codex_home),
     ]
-    if codex_home:
-        list_argv.extend(["--codex-home", codex_home])
     listing = memory_note_result(
-        run_json(list_argv, cwd=cwd),
-        command="list",
-        stage=f"memory-note list {source}",
+        run_json(argv, cwd=cwd), command="list", stage=f"memory-note list {source}"
     )
-    if listing.get("extension") != source or not isinstance(
-        listing.get("notes"), list
-    ):
+    rows = listing.get("notes")
+    if listing.get("extension") != source or not isinstance(rows, list):
         raise ReconcileError(f"memory-note list {source}: invalid result")
-    notes = []
-    for row in listing["notes"]:
+    if inventory_is_truncated(listing, len(rows), limit):
+        raise ReconcileError(f"memory-note list {source}: inventory reached limit {limit}")
+
+    notes: list[dict[str, Any]] = []
+    show_count = 0
+    for row in rows:
+        if list_is_complete(row, source):
+            notes.append(row)
+            continue
         note_id = row.get("id") if isinstance(row, dict) else None
         if not isinstance(note_id, str):
             raise ReconcileError(f"memory-note list {source}: note id missing")
-        show_argv = [
+        show = [
             memory_note,
             "show",
             "--extension",
@@ -248,33 +261,49 @@ def load_notes(
             note_id,
             "--format",
             "json",
+            "--codex-home",
+            str(codex_home),
         ]
-        if codex_home:
-            show_argv.extend(["--codex-home", codex_home])
         note = memory_note_result(
-            run_json(show_argv, cwd=cwd),
+            run_json(show, cwd=cwd),
             command="show",
             stage=f"memory-note show {note_id}",
         )
         if note.get("id") != note_id or note.get("extension") != source:
             raise ReconcileError(f"memory-note show {note_id}: invalid result")
         notes.append(note)
-    return notes
+        show_count += 1
+    return notes, show_count
 
 
-def load_compiled_corpus(codex_home: Path) -> str:
+def load_compiled_corpus(codex_home: Path) -> tuple[list[str], list[str]]:
     root = codex_home / "memories"
     paths = [root / "memory_summary.md", root / "MEMORY.md"]
     skills = root / "skills"
     if skills.is_dir():
-        paths.extend(path for path in skills.rglob("*") if path.is_file())
-    chunks: list[str] = []
-    for path in paths:
         try:
-            chunks.append(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError):
+            paths.extend(sorted(path for path in skills.rglob("*") if path.is_file()))
+        except OSError:
+            return [], [str(skills)]
+    texts: list[str] = []
+    unreadable: list[str] = []
+    for path in paths:
+        if not path.exists():
             continue
-    return "\n".join(chunks)
+        try:
+            texts.append(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError):
+            unreadable.append(str(path))
+    return texts, unreadable
+
+
+def contains_token(corpus: list[str], value: str | None) -> bool:
+    if not value:
+        return False
+    pattern = re.compile(
+        rf"(?<![{TOKEN_CHARS}]){re.escape(value)}(?![{TOKEN_CHARS}])"
+    )
+    return any(pattern.search(text) is not None for text in corpus)
 
 
 def normalize_repository(value: str) -> str:
@@ -282,32 +311,28 @@ def normalize_repository(value: str) -> str:
     if candidate.startswith("git@") and ":" in candidate:
         candidate = candidate.split(":", 1)[1]
     elif "://" in candidate:
-        parsed = urlparse(candidate)
-        candidate = parsed.path.lstrip("/")
+        candidate = urlparse(candidate).path.lstrip("/")
     if candidate.endswith(".git"):
         candidate = candidate[:-4]
-    return candidate.casefold()
+    return candidate.strip("/").casefold()
 
 
-def repository_aliases(cwd: Path) -> set[str]:
-    aliases = {
-        normalize_repository(cwd.name),
-        normalize_repository(cwd.name.lstrip(".")),
-    }
-    proc = subprocess.run(
-        ["git", "remote", "get-url", "origin"],
-        cwd=cwd,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if proc.returncode == 0 and proc.stdout.strip():
-        remote = normalize_repository(proc.stdout)
-        aliases.add(remote)
-        basename = remote.rsplit("/", 1)[-1]
-        aliases.add(basename)
-        aliases.add(f".{basename}")
-    return {value for value in aliases if value}
+def canonical_repository(cwd: Path) -> str | None:
+    try:
+        proc = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if proc.returncode or not proc.stdout.strip():
+        return None
+    identity = normalize_repository(proc.stdout)
+    parts = [part for part in identity.split("/") if part]
+    return "/".join(parts) if len(parts) == 2 else None
 
 
 def note_repository(note: dict[str, Any]) -> str | None:
@@ -326,12 +351,53 @@ def note_repository(note: dict[str, Any]) -> str | None:
     return None
 
 
+def note_binding(note: dict[str, Any]) -> tuple[str, str | None]:
+    identity = note_repository(note)
+    if identity is not None:
+        return "repository", identity
+    scope = note.get("scope")
+    if (
+        isinstance(scope, dict)
+        and scope.get("kind") == "global"
+        and scope.get("repo") is None
+    ):
+        return "global", None
+    return "unscoped", None
+
+
+def partition_notes(
+    notes: list[dict[str, Any]], repository_identity: str | None
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
+    local: list[dict[str, Any]] = []
+    foreign: list[dict[str, Any]] = []
+    unresolved: list[dict[str, Any]] = []
+    unscoped: list[dict[str, Any]] = []
+    for note in notes:
+        binding, identity = note_binding(note)
+        if binding == "global":
+            local.append(note)
+        elif binding == "unscoped":
+            unscoped.append(note)
+        elif repository_identity is None:
+            unresolved.append(note)
+        elif identity == repository_identity:
+            local.append(note)
+        else:
+            foreign.append(note)
+    return local, foreign, unresolved, unscoped
+
+
 def note_source_id(source: str, note: dict[str, Any]) -> str | None:
     payload = note.get("payload")
     if not isinstance(payload, dict):
         return None
-    field = "learning_id" if source == "learnings" else "neg_id"
-    value = payload.get(field)
+    field = {"learnings": "learning_id", "negative-ledger": "neg_id"}.get(source)
+    value = payload.get(field) if field else None
     return value if isinstance(value, str) and value else None
 
 
@@ -342,17 +408,12 @@ def classify_record(
     expected_fingerprint: str | None,
     export_error: str | None,
     eligibility: dict[str, str] | None,
-    compiled_corpus: str,
+    compiled_corpus: list[str],
+    unreadable_phase2: list[str],
 ) -> dict[str, Any]:
     note_id = note.get("id") if note else None
     note_fingerprint = note.get("fingerprint") if note else None
-    current = bool(
-        note and expected_fingerprint and note_fingerprint == expected_fingerprint
-    )
-    compiled = record_id in compiled_corpus or bool(
-        note_id and note_id in compiled_corpus
-    )
-
+    current = bool(note and expected_fingerprint == note_fingerprint)
     if note and current:
         status = "admitted"
     elif note:
@@ -366,6 +427,22 @@ def classify_record(
     else:
         status = "needs-source-review"
 
+    visible = contains_token(compiled_corpus, record_id) or contains_token(
+        compiled_corpus, note_id if isinstance(note_id, str) else None
+    )
+    if visible:
+        phase2_status = "visible"
+        visible_value: bool | None = True
+    elif unreadable_phase2:
+        phase2_status = "unknown"
+        visible_value = None
+    elif status == "admitted":
+        phase2_status = "lag"
+        visible_value = False
+    else:
+        phase2_status = "not-applicable"
+        visible_value = False
+
     return {
         "record_id": record_id,
         "status": status,
@@ -374,16 +451,13 @@ def classify_record(
         "expected_fingerprint": expected_fingerprint,
         "export_error": export_error,
         "eligibility": eligibility,
-        "compiled_memory_visible": compiled,
-        "phase2_lag": status == "admitted" and not compiled,
+        "compiled_memory_visible": visible_value,
+        "phase2_status": phase2_status,
     }
 
 
 def source_records(
-    ledger: str,
-    source: str,
-    *,
-    cwd: Path,
+    ledger: str, source: str, *, cwd: Path, limit: int
 ) -> list[dict[str, Any]]:
     stage = f"ledger project {source} reconciliation-index"
     envelope = ledger_envelope(
@@ -398,7 +472,7 @@ def source_records(
                 "--repo",
                 str(cwd),
                 "--param",
-                "limit=100000",
+                f"limit={limit}",
                 "--format",
                 "json",
             ],
@@ -410,18 +484,16 @@ def source_records(
     )
     if envelope.get("projection") != "reconciliation-index":
         raise ReconcileError(f"{stage}: projection identity mismatch")
-    value = envelope.get("data")
-    if not isinstance(value, list):
+    records = envelope.get("data")
+    if not isinstance(records, list):
         raise ReconcileError(f"{stage}: expected array payload")
-    return value
+    if len(records) >= limit:
+        raise ReconcileError(f"{stage}: inventory reached limit {limit}")
+    return records
 
 
 def native_export(
-    ledger: str,
-    source: str,
-    record_id: str,
-    *,
-    cwd: Path,
+    ledger: str, source: str, record_id: str, *, cwd: Path
 ) -> tuple[bytes | None, str | None]:
     stage = f"ledger project {source} {record_id}"
     argv = [
@@ -450,24 +522,21 @@ def native_export(
         payload = envelope.get("data")
         if not isinstance(payload, dict):
             raise ReconcileError(f"{stage}: expected object payload")
-        raw = json.dumps(
-            payload,
-            ensure_ascii=False,
-            separators=(",", ":"),
-        ).encode("utf-8") + b"\n"
-        return raw, None
+        return (
+            json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
+            + b"\n",
+            None,
+        )
     except ReconcileError as exc:
         return None, str(exc)
 
 
-def canonical_record_id(source: str, record: dict[str, Any]) -> str | None:
-    field = {
-        "learnings": "id",
-        "synesthesia": "syn_id",
-        "negative-ledger": "neg_id",
-    }[source]
+def canonical_record_id(source: str, record: dict[str, Any]) -> str:
+    field = {"learnings": "id", "synesthesia": "syn_id", "negative-ledger": "neg_id"}[source]
     value = record.get(field)
-    return value if isinstance(value, str) and value else None
+    if not isinstance(value, str) or not value:
+        raise ReconcileError(f"{source} reconciliation-index: canonical id missing")
+    return value
 
 
 def validate_eligibility_ids(
@@ -475,12 +544,8 @@ def validate_eligibility_ids(
     records: dict[str, list[dict[str, Any]]],
 ) -> None:
     for source in SOURCES:
-        canonical_ids = {
-            record_id
-            for record in records[source]
-            if (record_id := canonical_record_id(source, record)) is not None
-        }
-        unknown = sorted(set(eligibility[source]) - canonical_ids)
+        canonical = {canonical_record_id(source, row) for row in records[source]}
+        unknown = sorted(set(eligibility[source]) - canonical)
         if unknown:
             raise ReconcileError(
                 f"eligibility {source}: unknown canonical ids: {', '.join(unknown)}"
@@ -504,63 +569,52 @@ def source_report(
     ledger: str,
     cwd: Path,
     eligibility: dict[str, dict[str, str]],
-    compiled_corpus: str,
+    compiled_corpus: list[str],
+    unreadable_phase2: list[str],
     synesthesia_adapter: Any,
-    repo_aliases: set[str],
+    repository_identity: str | None,
     standalone_note_ids: set[str],
+    fallback_show_count: int,
 ) -> dict[str, Any]:
-    foreign_notes: list[dict[str, Any]] = []
-    local_notes: list[dict[str, Any]] = []
-    for note in notes:
-        repository = note_repository(note)
-        if source != "synesthesia" and repository and repository not in repo_aliases:
-            foreign_notes.append(note)
-        else:
-            local_notes.append(note)
-
+    local_notes, foreign_notes, unresolved_notes, unscoped_notes = partition_notes(
+        notes, repository_identity
+    )
     notes_by_id: dict[str, list[dict[str, Any]]] = {}
     for note in local_notes:
         source_id = note_source_id(source, note)
-        if source_id is not None:
+        if source_id:
             notes_by_id.setdefault(source_id, []).append(note)
     notes_by_fingerprint = {
-        note.get("fingerprint"): note
+        note["fingerprint"]: note
         for note in local_notes
         if isinstance(note.get("fingerprint"), str)
     }
-    rows = []
+
+    rows: list[dict[str, Any]] = []
     canonical_ids: set[str] = set()
-
     for record in records:
-        candidate_notes: list[dict[str, Any]] = []
         record_id = canonical_record_id(source, record)
-        if source == "learnings":
-            logical_kind = "learning-admission"
-        elif source == "negative-ledger":
-            logical_kind = "ledger-projection"
-        else:
-            logical_kind = record.get("logical_kind") or record.get("kind")
-        if not isinstance(record_id, str):
-            continue
         canonical_ids.add(record_id)
-        candidate_notes = notes_by_id.get(record_id, [])
+        candidates = notes_by_id.get(record_id, [])
+        logical_kind = {
+            "learnings": "learning-admission",
+            "negative-ledger": "ledger-projection",
+        }.get(source, record.get("logical_kind") or record.get("kind"))
+        if not isinstance(logical_kind, str) or not logical_kind:
+            raise ReconcileError(f"{source} {record_id}: logical kind missing")
 
-        should_export = (
-            source != "learnings" or bool(candidate_notes) or record_id in eligibility
+        should_export = source != "learnings" or bool(candidates) or record_id in eligibility
+        raw, export_error = (
+            native_export(ledger, source, record_id, cwd=cwd)
+            if should_export
+            else (None, None)
         )
-        if should_export:
-            raw, export_error = native_export(ledger, source, record_id, cwd=cwd)
-        else:
-            raw, export_error = None, None
         expected = None
-        note = candidate_notes[0] if candidate_notes else None
+        note = candidates[0] if candidates else None
         if raw is not None and source == "synesthesia":
             try:
-                value = parse_json(raw, f"ledger project {record_id}")
                 physical, normalized, _ = synesthesia_adapter.validate_and_normalize(
-                    logical_kind,
-                    value,
-                    ledger_bin=ledger,
+                    logical_kind, parse_json(raw, record_id), ledger_bin=ledger
                 )
                 expected = synesthesia_adapter.canonical_fingerprint(
                     physical, normalized
@@ -569,22 +623,18 @@ def source_report(
             except Exception as exc:
                 export_error = f"synesthesia adapter: {exc}"
         elif raw is not None:
-            if candidate_notes:
-                for candidate in candidate_notes:
-                    candidate_kind = candidate.get("kind")
-                    if not isinstance(candidate_kind, str):
-                        continue
-                    candidate_expected = writer_fingerprint(source, candidate_kind, raw)
-                    if candidate.get("fingerprint") == candidate_expected:
-                        note = candidate
-                        expected = candidate_expected
-                        break
-                if expected is None and note is not None:
-                    note_kind = note.get("kind")
-                    if isinstance(note_kind, str):
-                        expected = writer_fingerprint(source, note_kind, raw)
-            else:
-                expected = writer_fingerprint(source, logical_kind, raw)
+            for candidate in candidates:
+                kind = candidate.get("kind")
+                if not isinstance(kind, str):
+                    continue
+                candidate_expected = writer_fingerprint(source, kind, raw)
+                if candidate.get("fingerprint") == candidate_expected:
+                    note, expected = candidate, candidate_expected
+                    break
+            if expected is None:
+                kind = note.get("kind") if note else logical_kind
+                if isinstance(kind, str):
+                    expected = writer_fingerprint(source, kind, raw)
 
         rows.append(
             classify_record(
@@ -594,38 +644,49 @@ def source_report(
                 export_error=export_error,
                 eligibility=eligibility.get(record_id),
                 compiled_corpus=compiled_corpus,
+                unreadable_phase2=unreadable_phase2,
             )
         )
 
-    orphan_notes = []
+    expected_fingerprints = {
+        row["expected_fingerprint"] for row in rows if row["expected_fingerprint"]
+    }
+    orphans: list[str] = []
     for note in local_notes:
-        if note.get("id") in standalone_note_ids:
+        note_id = note.get("id")
+        if not isinstance(note_id, str) or note_id in standalone_note_ids:
             continue
-        source_id = note_source_id(source, note)
         if source == "synesthesia":
-            if note.get("fingerprint") not in {
-                row["expected_fingerprint"]
-                for row in rows
-                if row["expected_fingerprint"]
-            }:
-                orphan_notes.append(note.get("id"))
-        elif source_id not in canonical_ids:
-            orphan_notes.append(note.get("id"))
+            orphaned = note.get("fingerprint") not in expected_fingerprints
+        else:
+            orphaned = note_source_id(source, note) not in canonical_ids
+        if orphaned:
+            orphans.append(note_id)
 
     counts: dict[str, int] = {}
     for row in rows:
         counts[row["status"]] = counts.get(row["status"], 0) + 1
-    counts["phase2-lag"] = sum(1 for row in rows if row["phase2_lag"])
+    counts["phase2-lag"] = sum(row["phase2_status"] == "lag" for row in rows)
+    counts["phase2-unknown"] = sum(
+        row["phase2_status"] == "unknown" for row in rows
+    )
     return {
         "canonical_records": len(rows),
         "admission_notes": len(local_notes),
         "counts": counts,
         "records": rows,
-        "orphan_note_ids": [value for value in orphan_notes if isinstance(value, str)],
+        "orphan_note_ids": sorted(orphans),
         "standalone_compatible_note_ids": sorted(standalone_note_ids),
-        "foreign_repo_note_ids": [
+        "foreign_repo_note_ids": sorted(
             note["id"] for note in foreign_notes if isinstance(note.get("id"), str)
-        ],
+        ),
+        "unresolved_repo_note_ids": sorted(
+            note["id"] for note in unresolved_notes if isinstance(note.get("id"), str)
+        ),
+        "unscoped_note_ids": sorted(
+            note["id"] for note in unscoped_notes if isinstance(note.get("id"), str)
+        ),
+        "fallback_show_count": fallback_show_count,
     }
 
 
@@ -633,80 +694,88 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
     cwd = Path(args.repo).expanduser().resolve()
     if not cwd.is_dir():
         raise ReconcileError(f"repo: not a directory: {cwd}")
+    if not 1 <= args.limit <= MAX_LIMIT:
+        raise ReconcileError(f"limit: must be between 1 and {MAX_LIMIT}")
+
     ledger = resolve_binary(args.ledger_bin, "LEDGER_BIN", "ledger")
     memory_note = resolve_binary(args.memory_note_bin, "MEMORY_NOTE_BIN", "memory-note")
-    codex_home = (
-        Path(
-            args.codex_home or os.environ.get("CODEX_HOME") or (Path.home() / ".codex")
-        )
-        .expanduser()
-        .resolve()
-    )
-    eligibility = load_eligibility(
-        args.eligibility,
-        ledger=ledger,
-        cwd=cwd,
-    )
-    compiled = load_compiled_corpus(codex_home)
-    repo_aliases = repository_aliases(cwd)
+    codex_home = Path(
+        args.codex_home or os.environ.get("CODEX_HOME") or Path.home() / ".codex"
+    ).expanduser().resolve()
+    repository_identity = canonical_repository(cwd)
+    eligibility = load_eligibility(args.eligibility, ledger=ledger, cwd=cwd)
+    compiled_corpus, unreadable_phase2 = load_compiled_corpus(codex_home)
 
-    doctors = {}
+    doctors: dict[str, Any] = {}
     for source in SOURCES:
-        argv = [
-            ledger,
-            "doctor",
-            "--definition",
-            str(SOURCE_DEFINITIONS[source]),
-            "--repo",
-            str(cwd),
-            "--format",
-            "json",
-        ]
         doctors[source] = ledger_doctor(
-            run_json(argv, cwd=cwd),
+            run_json(
+                [
+                    ledger,
+                    "doctor",
+                    "--definition",
+                    str(SOURCE_DEFINITIONS[source]),
+                    "--repo",
+                    str(cwd),
+                    "--format",
+                    "json",
+                ],
+                cwd=cwd,
+            ),
             definition_id=SOURCE_DEFINITION_IDS[source],
             stage=f"ledger doctor {source}",
         )
-    note_doctor_argv = [memory_note, "doctor", "--format", "json"]
-    note_doctor_argv.extend(["--codex-home", str(codex_home)])
     doctors["memory-note"] = memory_note_result(
-        run_json(note_doctor_argv, cwd=cwd),
+        run_json(
+            [
+                memory_note,
+                "doctor",
+                "--format",
+                "json",
+                "--codex-home",
+                str(codex_home),
+            ],
+            cwd=cwd,
+        ),
         command="doctor",
         stage="memory-note doctor",
     )
 
-    notes = {
-        source: load_notes(
+    notes: dict[str, list[dict[str, Any]]] = {}
+    show_counts: dict[str, int] = {}
+    for source in SOURCES:
+        notes[source], show_counts[source] = load_notes(
             memory_note,
             source,
             cwd=cwd,
-            codex_home=str(codex_home),
+            codex_home=codex_home,
+            limit=args.limit,
         )
+    records = {
+        source: source_records(ledger, source, cwd=cwd, limit=args.limit)
         for source in SOURCES
     }
-    records = {
-        source: source_records(ledger, source, cwd=cwd) for source in SOURCES
-    }
     validate_eligibility_ids(eligibility, records)
-    adapter_path = (
+
+    adapter = load_synesthesia_adapter(
         SKILLS_ROOT / "memory-source-notes/scripts/synesthesia_memory_note.py"
     )
-    synesthesia_adapter = load_synesthesia_adapter(adapter_path)
-    stored_synesthesia, invalid_synesthesia, _, _ = (
-        synesthesia_adapter.load_stored_notes(codex_home, ledger_bin=ledger)
+    stored_synesthesia, invalid_synesthesia, _, _ = adapter.load_stored_notes(
+        codex_home, ledger_bin=ledger
     )
     if invalid_synesthesia:
         raise ReconcileError("synesthesia stored-note validation failed")
-    listed_synesthesia_ids = {note.get("id") for note in notes["synesthesia"]}
-    validated_synesthesia_ids = {note.id for note in stored_synesthesia}
-    if listed_synesthesia_ids != validated_synesthesia_ids:
+    if {note.get("id") for note in notes["synesthesia"]} != {
+        note.id for note in stored_synesthesia
+    }:
         raise ReconcileError("synesthesia note inventory mismatch")
-    standalone_synesthesia_ids = {
+    standalone_synesthesia = {
         note.id
         for note in stored_synesthesia
         if note.validation_profile == "stored-legacy-corridor-v1"
     }
-    source_reports = {
+
+    sources = {
         source: source_report(
             source,
             records[source],
@@ -714,73 +783,106 @@ def reconcile(args: argparse.Namespace) -> dict[str, Any]:
             ledger=ledger,
             cwd=cwd,
             eligibility=eligibility[source],
-            compiled_corpus=compiled,
-            synesthesia_adapter=synesthesia_adapter,
-            repo_aliases=repo_aliases,
+            compiled_corpus=compiled_corpus,
+            unreadable_phase2=unreadable_phase2,
+            synesthesia_adapter=adapter,
+            repository_identity=repository_identity,
             standalone_note_ids=(
-                standalone_synesthesia_ids if source == "synesthesia" else set()
+                standalone_synesthesia if source == "synesthesia" else set()
             ),
+            fallback_show_count=show_counts[source],
         )
         for source in SOURCES
     }
     gaps = sum(
         report["counts"].get("eligible-unadmitted", 0)
         + report["counts"].get("stale-note", 0)
-        for report in source_reports.values()
+        for report in sources.values()
     )
-    blocked = sum(
+    incomplete_projections = sum(
         report["counts"].get("incomplete-projection", 0)
-        for report in source_reports.values()
+        for report in sources.values()
+    )
+    phase2_lag = sum(
+        report["counts"].get("phase2-lag", 0) for report in sources.values()
+    )
+    phase2_unknown = sum(
+        report["counts"].get("phase2-unknown", 0) for report in sources.values()
+    )
+    unresolved_repositories = sum(
+        len(report["unresolved_repo_note_ids"]) for report in sources.values()
+    )
+    unscoped_notes = sum(
+        len(report["unscoped_note_ids"]) for report in sources.values()
+    )
+    incomplete = (
+        incomplete_projections
+        + phase2_unknown
+        + unresolved_repositories
+        + unscoped_notes
     )
     return {
-        "schema": "source-memory-reconciliation/v1",
-        "verdict": "gaps" if gaps or blocked else "ok",
+        "schema": "source-memory-reconciliation/v2",
+        "verdict": "incomplete" if incomplete else "gaps" if gaps else "ok",
         "read_only": True,
         "authority_granted": False,
         "storage_mutated": False,
         "repo": str(cwd),
+        "repository_identity": repository_identity,
         "codex_home": str(codex_home),
+        "limit": args.limit,
+        "compiled_memory": {
+            "readable_documents": len(compiled_corpus),
+            "unreadable_paths": unreadable_phase2,
+        },
         "doctors": doctors,
-        "sources": source_reports,
+        "sources": sources,
         "summary": {
             "eligible_unadmitted_or_stale": gaps,
-            "incomplete_projections": blocked,
-            "phase2_lag": sum(
-                report["counts"].get("phase2-lag", 0)
-                for report in source_reports.values()
-            ),
+            "incomplete_projections": incomplete_projections,
+            "phase2_lag": phase2_lag,
+            "phase2_unknown": phase2_unknown,
+            "unresolved_repository_notes": unresolved_repositories,
+            "unscoped_notes": unscoped_notes,
         },
     }
 
 
 def print_text(report: dict[str, Any]) -> None:
-    print(f"source-memory reconciliation: {report['verdict']}")
+    print(f"source-memory reconciliation/v2: {report['verdict']}")
+    print(f"repository: {report['repository_identity'] or 'unknown'}")
     for source in SOURCES:
         value = report["sources"][source]
         counts = " ".join(
             f"{key}={count}" for key, count in sorted(value["counts"].items())
         )
         print(
-            f"{source}: canonical={value['canonical_records']} notes={value['admission_notes']} {counts}"
+            f"{source}: canonical={value['canonical_records']} "
+            f"notes={value['admission_notes']} {counts}"
         )
+        if value["unresolved_repo_note_ids"]:
+            print(
+                "  unresolved repository notes: "
+                + ", ".join(value["unresolved_repo_note_ids"])
+            )
+        if value["unscoped_note_ids"]:
+            print("  unscoped notes: " + ", ".join(value["unscoped_note_ids"]))
     summary = report["summary"]
-    print(
-        "summary: "
-        f"eligible_unadmitted_or_stale={summary['eligible_unadmitted_or_stale']} "
-        f"incomplete_projections={summary['incomplete_projections']} "
-        f"phase2_lag={summary['phase2_lag']}"
-    )
+    print("summary: " + " ".join(f"{key}={value}" for key, value in summary.items()))
+    if report["compiled_memory"]["unreadable_paths"]:
+        print("unreadable Phase 2 paths:")
+        for path in report["compiled_memory"]["unreadable_paths"]:
+            print(f"  - {path}")
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Read-only source-memory reconciliation"
-    )
+    parser = argparse.ArgumentParser(description="Read-only source-memory reconciliation")
     parser.add_argument("--repo", default=".")
     parser.add_argument("--codex-home")
     parser.add_argument("--eligibility")
     parser.add_argument("--ledger-bin")
     parser.add_argument("--memory-note-bin")
+    parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
     parser.add_argument("--format", choices=("json", "text"), default="json")
     return parser
 
@@ -794,6 +896,7 @@ def main() -> int:
             json.dumps(
                 {
                     "source_memory_reconciliation": {
+                        "schema": "source-memory-reconciliation/v2",
                         "verdict": "blocked",
                         "error": str(exc),
                         "read_only": True,

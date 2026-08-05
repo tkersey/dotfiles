@@ -2,7 +2,7 @@
 name: negative-ledger
 description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Project the route gate before repeating a route; transact only inspectable decision-shaping negative evidence through the passive Negative Evidence definition; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
-  version: "8.0.0"
+  version: "8.1.0"
 ---
 
 # Negative Ledger
@@ -69,29 +69,8 @@ no-op        activation evaluated; evidence was not durable or route-shaping
 blocked      ledger unavailable/invalid or active exact/applicable exclusion matched
 ```
 
-## Ledger checkpoint participant
-
-When invoked with `checkpoint_context=source-memory-checkpoint/v1`, consume the
-coordinator's existing Ledger readiness and shared evidence packet. Do not
-rerun `$ledger ensure`, invoke `$ledger` as lifecycle coordinator, or call
-Learnings or Synesthesia.
-
-This lifecycle evaluation is distinct from the pre-route projection. Normal successful
-work with no failed, no-effect, regressed, reverted, or abandoned route returns
-`no-op` without querying or doctoring the store. When the packet contains
-qualified negative evidence, apply the existing narrow capture or transition
-gate and return exactly one of `mapped|captured|transitioned|no-op|blocked`.
-Continue to require current artifact identity, exact source references,
-applicability, a narrow exclusion, and reopening criteria.
-
-Return one separate admission disposition after a capture or transition. Use
-`created` or `duplicate-skip` only after the complete current definition projection
-passes the recurrence/utility gate; use `not-eligible` for a complete but
-non-reusable projection, `not-applicable` when no canonical write or transition
-occurred, and `blocked` when the required projection, validation, topology, or
-transport fails. Never admit `need-evidence`, `capture_candidate`, or an
-incomplete active projection. Admission failure does not change canonical
-capture or transition success.
+A material closeout with no failed-route semantics does not activate this
+source. Do not query, doctor, or capture merely to manufacture a no-op receipt.
 
 ## Canonical Store and CLI
 
@@ -369,4 +348,4 @@ qualifying evidence through the definition's `capture` transaction.
 - Do not publish incomplete projections to Phase 2.
 - Do not capture every transient test failure merely because implicit activation occurred.
 - Do not bypass failed `route-gate`, `memory-note`, or doctor projections; those boundaries must fail closed.
-- In checkpoint context, do not invoke the coordinator or a sibling participant.
+- Do not invoke a sibling source merely because Negative Ledger activated.

@@ -1,15 +1,17 @@
 ---
 name: memory-source-notes
-description: "Safely append, inspect, validate, deploy, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use only after a handoff from learnings, negative-ledger, or synesthesia, or an explicit custom source capture or diagnostic request. Never edits compiled memory."
+description: "Safely append, inspect, validate, deploy, reconcile, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use after a handoff from learnings, negative-ledger, or synesthesia; for an explicit custom source capture; or to diagnose canonical-record, immutable-note, digest, and Phase 2 visibility gaps. Never edits compiled memory or decides source eligibility."
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
 ---
 
 # Memory Source Notes
 
 ## Mission
 
-Provide one append-only transport path plus bounded derived-digest tooling for controlled custom memory sources while preserving domain authority and Phase 2's compiler boundary.
+Provide one append-only transport path, bounded derived-digest tooling, and the
+read-only cross-source reconciliation application for controlled custom memory
+sources while preserving domain authority and Phase 2's compiler boundary.
 
 This skill writes source evidence only:
 
@@ -38,11 +40,13 @@ source skill or canonical domain store
 
 - `$learnings` owns the passive Learnings protocol, `.ledger/learnings/events.jsonl`, and learning admission semantics.
 - `$negative-ledger` owns the passive Negative Evidence protocol, `.ledger/negative-ledger/events.jsonl`, and route-state admission semantics.
-- `$synesthesia` owns the passive `synesthesia/protocol` definition and the semantic admission decision; Ledger owns structural validation and custody of its declared repo-local event slot.
-- `synesthesia` owns sensory mapping and activation-boundary admission semantics.
+- `$synesthesia` owns the passive `synesthesia/protocol` definition, `.ledger/synesthesia/events.jsonl`, sensory mapping semantics, and the admission decision.
 - `memory-note` owns safe immutable transport.
-- this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, and proof-line interpretation;
+- this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, proof-line interpretation, and read-only reconciliation across canonical sources, immutable admissions, and Phase 2 visibility;
 - Phase 2 owns promotion, deduplication, supersession, and compiled-memory updates.
+
+Reconciliation diagnoses transport and visibility state. It does not infer source
+eligibility, append canonical rows, write notes, or grant authority.
 
 ## Allowed extensions
 
@@ -60,16 +64,16 @@ Refuse `ad_hoc` and Chronicle. Native remember/forget/update requests belong to 
 - documented handoff from `$learnings`, `$negative-ledger`, or `$synesthesia`;
 - explicit request to inspect or repair a custom memory-source layout;
 - explicit request to synchronize extension instructions into the live memory root;
-- explicit request to diagnose why admitted notes are not reaching compiled memory.
+- explicit request to diagnose why admitted notes are not reaching compiled memory;
+- explicit request to reconcile canonical source records with immutable notes or Phase 2 visibility;
+- explicit source-authorized historical admission or harvest request.
 
-Do not trigger merely because a task produced history. The owning skill must first establish a source-specific admission event.
+Do not trigger merely because a task produced history. The owning skill must first establish a source-specific admission event, unless the request is explicitly read-only reconciliation or diagnostics.
 
 ## CLI discovery
 
-Before the first native Ledger command in a standalone admission or diagnostic
-workflow, load `$ledger` and complete `$ledger ensure`. A handoff carrying
-`checkpoint_context=source-memory-checkpoint/v1` consumes the coordinator's
-existing readiness instead and must not bootstrap recursively.
+Before the first native Ledger command in an admission, reconciliation, or
+diagnostic workflow, load `$ledger` and complete `$ledger ensure` once.
 
 For general extensions, resolve the writer in this order:
 
@@ -283,7 +287,7 @@ memory-note: failed: <concise reason>
 
 Do not emit memory proof lines during ordinary work when no durable event or persistence request exists. Digest refresh is silent on successful automatic runs; only manual `memory-digest` calls print a digest summary.
 
-A source-note failure must not undo a successful canonical learning or negative-ledger write. Report canonical and admission outcomes separately.
+A source-note failure must not undo a successful canonical learning, negative-ledger, or Synesthesia write. Report canonical and admission outcomes separately.
 
 ## Source-specific kinds
 
@@ -319,9 +323,54 @@ Synesthesia logical `mapping-confirmation` is stored as `mapping-endorsement` wi
 
 See [note-contract.md](references/note-contract.md) and [extension-payloads.md](references/extension-payloads.md).
 
-## Read and doctor workflow
+## Read-only reconciliation
 
-General read-only commands:
+Reconciliation compares canonical source records, immutable source notes, and
+Phase 2 provenance without writing or deciding eligibility.
+
+```bash
+memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+uv run python \
+  "$memory_source_notes_root/scripts/source-memory-reconcile.py" \
+  --repo "$(git rev-parse --show-toplevel)" \
+  --format text
+```
+
+The report may classify a canonical record as:
+
+```text
+admitted
+eligible-unadmitted
+not-eligible
+needs-source-review
+incomplete-projection
+stale-note
+```
+
+Phase 2 visibility is reported separately as `visible`, `lag`, or `unknown`.
+Exact source or note IDs must appear as bounded provenance tokens; a substring
+is not evidence. Unreadable Phase 2 files produce `unknown`, never a false claim
+of absence.
+
+Repository-scoped notes match only the canonical normalized origin identity
+when one is available. Basename aliases do not establish repository identity.
+Unscoped notes remain unscoped; they are not silently rebound to the current
+repository.
+
+When source owners have reviewed historical rows, pass an explicit
+`source-memory-eligibility/v1` JSON file via `--eligibility`. Each decision must
+name one canonical ID, `eligible|not-eligible`, and a non-empty source-owned
+reason. The reconciler uses that input only to distinguish a real admission gap
+from an ineligible or unreviewed record.
+
+After an owning source explicitly accepts a candidate, use its documented
+adapter or exact native `memory-note` projection. Keep backfill bounded and
+auditable; never bulk-admit every source row.
+
+See [source-store-layout.md](references/source-store-layout.md) and
+[harvest-workflow.md](references/harvest-workflow.md).
+
+## General read and doctor workflow
 
 ```bash
 run_memory_note_tool doctor
@@ -330,10 +379,8 @@ run_memory_note_tool list --extension learnings
 run_memory_note_tool show --extension negative-ledger --id MSN-...
 ```
 
-For cross-source historical gaps, use the `$ledger` reconciliation workflow.
-It is read-only and distinguishes source eligibility decisions from transport,
-digest, and Phase 2 lag; this skill performs only the source-authorized writes
-returned by that workflow.
+Use source-specific doctors for canonical stores and this skill's reconciler
+for historical cross-source gaps.
 
 ## Privacy and retrieval
 
@@ -345,10 +392,12 @@ Do not use this skill to:
 
 - bypass native ad-hoc remember/forget/update behavior;
 - write compiled memory directly;
-- replace `.ledger/learnings/events.jsonl` or `.ledger/negative-ledger/events.jsonl`;
+- replace canonical repo-local source stores;
 - decide whether negative evidence blocks a route;
+- decide whether a learning, negative projection, or sensory mapping is eligible;
 - infer durable user preferences from assistant prose alone;
 - capture ordinary chronology;
 - write into Chronicle;
 - delete or mutate source notes;
-- symlink live memory extension instructions.
+- symlink live memory extension instructions;
+- convert a reconciliation report into automatic bulk admission.

@@ -1,31 +1,58 @@
 ---
 name: ledger
-description: "Ensure a `ledger` command is available on PATH; materialize, validate, record, replay, and project requested Actuating artifacts without taking semantic or execution authority; coordinate the shared Learnings/Synesthesia/Negative Ledger lifecycle checkpoint and repo-local source-memory reconciliation; address Universalist plans and receipts; and perform pure artifact validation."
+description: "Ensure Ledger 1.x is available and use its passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, and recover owner-defined artifacts and stores. Use for native Ledger operations, definition authoring or debugging, ABI and capability inspection, and exact storage custody. The owning skill supplies semantics and selects the operation; Ledger enforces the selected definition without acquiring workflow authority."
 ---
 
 # Ledger
 
 ## Mission
 
-Own the shared Ledger bootstrap and lifecycle-coordination boundaries,
-coordinate repo-local source-memory stores through owning passive definitions, and
-materialize, validate, record, replay, or project requested artifacts without
-taking their semantic owners' authority.
+Provide the shared bootstrap and operating doctrine for Ledger 1.x: a bounded,
+deterministic artifact-protocol runtime driven by passive definitions owned by
+their semantic domains.
 
-Use `$ledger` for definition-bound source-memory migration, cross-store doctor,
-harvest planning, and memory admission coordination. Do not use it to bypass
-source authority.
+```text
+owner definition + explicit inputs
+-> bounded compiled plan
+-> definition-relative validity
+-> canonical identity
+-> declared custody effect or exact projection
+-> structural or custodial receipt
+```
+
+Ledger is constructive and custodial. It can admit artifacts into a declared
+protocol world and preserve that world's identity, integrity, transitions,
+replay, and projections. It does not choose the world.
+
+## Authority boundary
+
+Ledger enforces the machine-checkable semantics declared by the selected
+owner definition. It has no independent authority to:
+
+- choose the definition, operation, projection, parameters, or inputs;
+- decide that a definition is semantically correct, current, or sufficient;
+- discover Git state, session history, memory roots, network facts, or hidden
+  workflow context;
+- select a repair, route, architecture, owner, or next action;
+- grant mutation, publication, review, delivery, or closure authority;
+- reinterpret a structural receipt as the domain owner's semantic verdict.
+
+The caller owns definition selection, input construction, semantic
+interpretation, and every surrounding workflow action.
+
+A successful Ledger result is strong but definition-relative. It proves the
+claims named by the result schema under the selected definition and supplied
+inputs; it does not prove that the owner selected the right protocol or that a
+later workflow action is authorized.
 
 ## Bootstrap boundary
 
-Every procedural Ledger consumer must declare this prerequisite: before the
-first native Ledger command in a workflow, load this skill and complete
-`$ledger ensure` once. That readiness applies to every consumer in the workflow;
-do not repeat the bootstrap per skill or per command. `$ledger` is skill syntax,
-not a shell command.
+Before the first native Ledger command in a workflow, load this skill and
+complete `$ledger ensure` once. That readiness applies to every Ledger consumer
+in the workflow; do not bootstrap per skill or per command. `$ledger` is skill
+syntax, not a shell command.
 
-Use [scripts/ensure-ledger](scripts/ensure-ledger) as the deterministic bootstrap
-handler:
+Use [scripts/ensure-ledger](scripts/ensure-ledger):
 
 ```bash
 ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
@@ -39,26 +66,24 @@ directly:
 ledger <native-ledger-arguments...>
 ```
 
-The bootstrap handler requires Ledger major version 1 and
-`ledger-artifact-abi/v1` and, when installation authority exists, can install
-the canonical Homebrew formula. It does not proxy native commands. Afterward,
-the native CLI owns integrity, stdout, stderr, exit status, and failure
-reporting.
+The handler requires Ledger major version 1 and
+`ledger-artifact-abi/v1`. When installation authority exists, it can install or
+upgrade the canonical Homebrew formula `tkersey/tap/ledger`. It does not proxy
+native commands. The native CLI owns integrity, stdout, stderr, exit status,
+and failure reporting after readiness.
 
 If `ledger` does not resolve on `PATH`:
 
-1. install only when the current user request or standing
-   environment policy authorizes user-level CLI provisioning;
+1. install only when the current request or standing environment policy
+   authorizes user-level CLI provisioning;
 2. pass `--install` to the bootstrap handler when that authority exists;
 3. otherwise stop with the handler's exact remediation;
 4. never use `curl | sh`, an unpinned download, or an alternate Ledger
    implementation.
 
-On supported Homebrew environments the canonical formula is
-`tkersey/tap/ledger`. Bootstrap before Actuating requests its first Ledger
-operation; do not install during an active repository effect.
+Do not install during an active repository effect.
 
-~~~yaml
+```yaml
 ledger_bootstrap_ready:
   schema: ledger-bootstrap-ready/v1
   status: ready
@@ -66,308 +91,184 @@ ledger_bootstrap_ready:
   version: 1.x
   abi: ledger-artifact-abi/v1
   action: none | installed | upgraded
-~~~
+```
 
-Bootstrap readiness grants no semantic authority. The calling skill still owns
-the definition path, operation or projection selection, interpretation, and
-every requested effect.
+Bootstrap readiness grants no semantic authority.
 
-Canonical runtime surface:
+## Native surface
 
 ```text
-ledger definition check|describe
+ledger definition check
+ledger definition describe
 ledger validate
 ledger materialize
 ledger transact
 ledger project
 ledger doctor
+ledger recovery inspect
+ledger recovery reclaim
 ledger capabilities
 ledger version
 ```
 
-Current source-memory stores:
+Do not invent aliases such as `ledger state`. Load the owning skill for its
+exact definition path, operation names, projection names, parameters, and
+semantic policy.
 
-- `.ledger/learnings/events.jsonl`
-- `.ledger/negative-ledger/events.jsonl`
-- `.ledger/synesthesia/events.jsonl` when present
+## Result semantics
 
-Operational, non-memory stores:
+- `definition check` proves that the admitted definition closure is
+  structurally valid for the required ABI and operators.
+- `definition describe` exposes the definition closure and compiled surface; it
+  does not approve the owner's protocol design.
+- `validate` proves only the declared constraints over explicit inputs and does
+  not read or mutate repository storage.
+- `materialize` additionally derives the declared canonical representation and
+  identity without repository storage effects.
+- `transact` performs only the selected operation's declared logical storage
+  effects and returns their structural custody receipt.
+- `project` replays or reads only definition-declared stores and emits the
+  selected exact projection.
+- `doctor` validates the selected store's binding, integrity, replay, and
+  definition-relative health.
+- `recovery inspect` returns the exact witnessed recovery state for one
+  transaction.
+- `recovery reclaim` performs only an explicitly authorized, transaction-bound
+  reclaim after revalidating every required witness.
 
-- `.ledger/actuation/<safe-goal-id>/evidence.jsonl` is the current per-goal
-  Actuating store, admitted only through Actuating's Evidence protocol
-  definition; do not harvest it into memory or route its writes through
-  source-memory coordination.
+Preserve the normal result envelope. Use `--payload-only` only for an explicit
+structural pipe whose receiver already owns interpretation.
 
-Operational, non-memory artifacts:
+## Definition ownership
 
-- `.ledger/universalist/plan-{plan-id}.md`, addressed exclusively through the
-  Universalist plan definition; do not harvest these plans into memory.
+Passive definitions live beside their semantic owners, not in `$ledger`.
+The owner declares the protocol and lists it in that skill's
+`definitions/manifest.json`; Ledger compiles and enforces it generically.
 
-## Actuating Artifact Kernel boundary
+A definition may declare:
 
-Actuating has four authoritative per-goal artifact families:
+- bounded JSON, JSONL, or UTF-8 inputs and codecs;
+- canonicalization and content identity;
+- closed shapes and cross-document laws;
+- pure, addressed-document, or event-log storage;
+- atomic operations, transitions, reducers, replay, and projections;
+- logical slots beneath the selected repository's `.ledger/` control root;
+- explicit output, diagnostic, record, and reducer-state bounds.
 
-```text
-goal-contract/v3
-counterexample-set/v1
-construction-contract/v3
-actuating-evidence-event/v1
-```
+Definitions are passive JSON. They must not name hooks, shell commands,
+executables, network calls, or hidden discovery procedures.
 
-Actuating workflows require Ledger 1.x and `ledger-artifact-abi/v1`.
-Construction v1 and v2 stores are unsupported and are not migrated.
+### Authoring workflow
 
-Ledger may, when the semantic owner requests it:
+1. Establish the semantic owner and the smallest stable artifact or protocol
+   boundary.
+2. Choose pure validation/materialization unless durable identity or history is
+   required; choose addressed storage for replaceable canonical documents and
+   an event log for append-only transitions or auditable replay.
+3. Declare explicit bounded inputs, canonicalization, identity, constraints,
+   storage slots, operations, and projections. Make illegal compositions
+   structurally unrepresentable where the native operator vocabulary permits.
+4. Keep workflow policy outside the definition. Encode only laws that can be
+   decided from admitted inputs and declared storage.
+5. Run `ledger definition check` and `ledger definition describe` before using
+   the definition.
+6. Exercise every operation and projection against representative valid,
+   invalid, boundary, replay, and store-binding cases.
+7. Search all consumers when a definition ID, operation, projection, field, or
+   semantic version changes.
 
-- materialize canonical content-addressed documents;
-- validate document, event, and supporting-receipt structure;
-- append immutable observations with sequence and integrity custody;
-- replay recorded observations;
-- project requested structural facts and discardable views.
+### Extension law
 
-Ledger compiles the selected passive definitions to bounded native plans. No
-runtime table may name Actuating or duplicate its lifecycle, review, or closure
-laws. The current Review Contract remains an Actuating-owned input: Ledger may
-derive its declared identity and validate structural consistency, but it must
-not select or reconstruct the contract from hardcoded policy.
+Add or change an owner-local passive definition first. Add a native Ledger
+operator only when the capability is domain-independent, explicitly bounded,
+and either:
 
-`state` and `project` emit disposable structural aids such as registered
-artifact references, the Evidence head, recorded event shapes, and unresolved
-structural custody. They do not emit semantic workflow state, review credit, a
-next action, or a closure verdict.
+- required by at least three unrelated definitions; or
+- necessary to preserve one live behavior without material correctness or
+  performance loss.
 
-Ledger never:
+Do not turn Ledger into a domain registry or grow native operators merely to
+avoid reconsidering an owner definition.
 
-- executes or edits repository work;
-- dispatches reviews or reads CAS verdict semantics;
-- classifies CAS owner facts as a semantic verdict or computes review credit;
-- interprets Ship receipts as publication truth;
-- classifies Counterexamples or selects a repair;
-- selects a Construction or proof strategy;
-- chooses Actuating's next action;
-- grants mutation authority;
-- emits `continue`, `ready-to-ship`, `complete`, or `blocked`;
-- authors an `actuating-closure-receipt/v1`.
+## Storage custody
 
-Actuating owns correct-by-construction implementation, Counterexample
-evaluation, Construction selection, orchestration, the next action, and the
-semantic closure judgment. `$review-fold` owns Counterexample classification.
-CAS owns its attempts and structured receipts. `$ship` alone owns public
-effects.
+Transactions write only definition-declared logical slots beneath the selected
+repository's `.ledger/` root. Definitions cannot select absolute output paths
+or escape the control root.
 
-Structural validation returns only named structural claims. It is not semantic
-truth, mutation authority, review credit, publication authority, or completion.
-A Ledger projection is supporting evidence until Actuating evaluates it with
-the current Goal, Construction, Counterexamples, owner receipts, and live
-subject.
+Normal reads fail closed for unbound stores. An owner may expose an explicit
+one-shot binding operation for an existing fully validated current-format
+store. Do not add fallback readers, alternate paths, implicit migration, or
+source dispatch to Ledger.
 
-## Source-memory lifecycle checkpoint
+Never open, edit, compact, migrate, or repair a store outside the owning
+definition's operations and exact recovery surface.
 
-At a decision-shaping validation transition, material strategy pivot, delivery
-boundary after implementation, pre-commit boundary, PR handoff, terminal
-implementation/review closeout, or explicit checkpoint request:
+## Recovery boundary
 
-1. Complete `$ledger ensure` once for the workflow and require Ledger 1.x plus
-   `ledger-artifact-abi/v1`. Participants consume that readiness; they do not
-   bootstrap again.
-2. Construct one bounded immutable `source-memory-checkpoint-input/v1` packet
-   containing current subject identity, literal decision and validation
-   evidence, attempted routes, user-authority events, changed paths, and the
-   final handoff. Compute subject and evidence SHA-256 fingerprints, then
-   validate the packet with:
-
-   ```bash
-   ledger validate \
-     --definition "$ledger_skill_root/definitions/ledger/source-memory-checkpoint-input.json" \
-     --input checkpoint_input=FILE|- \
-     --format json
-   ```
-3. Invoke exactly `$learnings`, `$synesthesia`, and `$negative-ledger` with
-   `checkpoint_context=source-memory-checkpoint/v1`. Each participant evaluates
-   only its source contract, returns exactly one canonical disposition plus one
-   admission disposition, and does not invoke Ledger as coordinator or call a
-   sibling source.
-4. Continue collecting all three results when one participant fails. Canonical
-   source writes are independent and append-only; never roll one back because a
-   sibling or derived admission stage failed.
-5. Assemble `source-memory-checkpoint/v1`, validate it with the canonical
-   passive definition, and retain one current receipt:
-
-   ```bash
-   ledger validate \
-     --definition "$ledger_skill_root/definitions/ledger/source-memory-checkpoint-receipt.json" \
-     --input checkpoint_input=CHECKPOINT_INPUT_FILE \
-     --input checkpoint=FILE|- \
-     --format json
-   ```
-
-   Recompute both fingerprints before reuse; changed code, evidence, route, or
-   authority makes the prior receipt stale and requires a fresh fan-out.
-
-Aggregate `complete` when every participant evaluated and neither a canonical
-nor derived operation is blocked; use `degraded` when semantic evaluation and
-canonical writes completed but a note or digest stage failed; use `blocked` for
-a missing participant, stale/invalid evidence, or a required canonical failure.
-This status proves source-memory closeout only. It does not grant delivery
-authority, and the separate exact current Negative Ledger `route-gate` projection remains
-the only source-memory route gate.
-
-Evaluation is mandatory; writes and admissions are conditional. Keep ordinary
-all-no-op receipts internal. Report source writes, actionable Synesthesia
-candidates, derived-stage degradation, and exact blockers. See
-[source-memory-checkpoint.md](references/source-memory-checkpoint.md) for the
-packet, participant, receipt, freshness, idempotence, and reporting contracts.
-
-## Reconciliation boundary
-
-Lifecycle checkpointing prevents new gaps; it does not scan or admit historical
-rows. Run the read-only reconciliation workflow explicitly to compare canonical
-records, immutable notes, derived digests, and compiled-memory mentions. The
-report may identify `admitted`, `eligible-unadmitted`, `not-eligible`,
-`needs-source-review`, `incomplete-projection`, `stale-note`, and
-`phase2-lag`; it must not synthesize source eligibility or write notes.
+Lease expiry is not authority transfer. Inspect one transaction and require the
+exact resource, lock identity, fencing token, owner, and witnessed lease state
+before reclaiming:
 
 ```bash
-uv run python \
-  "$ledger_skill_root/scripts/source-memory-reconcile.py" \
-  --repo "$(git rev-parse --show-toplevel)" \
-  --format text
+ledger recovery inspect \
+  --repo <repo> \
+  --transaction <dtx-id> \
+  --format json
+
+ledger recovery reclaim \
+  --repo <repo> \
+  --transaction <dtx-id> \
+  --resource <path> \
+  --lock-id <dlk-id> \
+  --fencing-token <u64> \
+  --format json
 ```
 
-When source owners have reviewed specific historical rows, pass an explicit
-`source-memory-eligibility/v1` JSON file via `--eligibility`. Each decision must
-name one canonical ID, `eligible|not-eligible`, and a non-empty source-owned
-reason. The reconciler uses that input only to distinguish a real admission gap
-from an ineligible or unreviewed record; it remains read-only and non-authorizing.
+For an original legacy lease only, add `--confirm-no-legacy-writers` with actual
+operator authority and an inspectable basis for that assertion. Do not add it
+for an interrupted current recovery. There is no broad reclaim or repair mode.
 
-After an owning source explicitly accepts a candidate, use its documented
-adapter or native export plus `memory-note`. Keep backfill bounded and auditable;
-never bulk-admit every learning or incomplete Negative Ledger projection.
+## Trigger cues
 
-## Trigger Cues
-
-- `$ledger`;
-- `$ledger ensure`;
+- explicit `$ledger` or `$ledger ensure`;
 - a skill's first native Ledger command;
-- ensure, install, or verify the native Ledger CLI is available;
-- definition-bound Ledger status;
-- source memory stores;
-- migrate learnings;
-- memory harvesting;
-- source-memory lifecycle checkpoint;
-- reconcile canonical source records with memory notes;
-- harvest stores for memories;
-- why memories are not being captured;
-- doctor `.ledger`;
-- cross-store memory digest.
-- validate current governance or review artifacts;
-- `ledger validate`.
-- create or resolve a Universalist plan;
-- find the newest Universalist plan without overwriting an earlier run.
-- emit or atomically append a Universalist SDR-v1 decision receipt.
+- ensure, install, upgrade, or verify Ledger 1.x and its ABI;
+- inspect Ledger capabilities or result schemas;
+- author, review, debug, or extend a passive artifact definition;
+- validate or materialize an owner-defined artifact;
+- transact, replay, project, doctor, bind, or recover a declared store;
+- diagnose a definition closure, operator, bound, identity, storage, reducer,
+  replay, projection, or recovery failure.
 
-## Authority
+Do not trigger merely because work produces history, memory, evidence, or a
+workflow receipt. The semantic owner decides whether Ledger is part of that
+protocol.
 
-`$ledger` may provision and verify the native CLI, then coordinate, inspect, and
-recommend. It does not proxy ordinary native commands. Writes remain delegated
-to owning skills and their canonical definitions:
+## Reporting
 
-- `$learnings` owns the Learnings protocol definition and
-  `.ledger/learnings/events.jsonl`;
-- `$negative-ledger` owns the Negative Evidence protocol definition and
-  `.ledger/negative-ledger/events.jsonl`;
-- `$synesthesia` owns the Synesthesia protocol definition and
-  `.ledger/synesthesia/events.jsonl`;
-- `$memory-source-notes` / `memory-note` for immutable admission snapshots.
-- `$actuating` owns Actuating semantics and orchestration;
-  its definitions validate, transact, and project supporting artifacts and are
-  not memory-admission or execution authority.
-- `$universalist` owns decision policy, its SKDC-v1 contract, plan templates,
-  plan definition, Tune definition imports, and receipt transaction.
+Report the operation actually performed, the selected definition ID and ABI,
+the result schema and verdict, whether storage mutated, the exact addressed
+store or transaction when relevant, and any owner action still required.
 
-Never write `memory_summary.md`, `MEMORY.md`, or memory-root `skills/*`.
-
-`ledger validate` checks structure and invariants only. A pass verdict never
-grants execution or mutation authority; the artifact's domain owner retains
-that authority boundary.
-
-## Universalist Plan Workflow
-
-Load `$universalist` for its exact definition path, operation names, projection
-names, and decision policy. Ledger validates and performs only the selected
-structural effect. It does not invoke Seq, discover another executable, accept
-YAML decision contracts, select a route, or interpret the receipt as semantic
-approval. Unbound or legacy-layout plans fail closed with the definition's
-explicit one-shot remediation; no normal read path falls back.
-
-## Read-Only Workflow
-
-1. Resolve the git root.
-2. Run `ledger doctor` and `ledger project` with each owning skill's explicit
-   definition. Inspect an explicit legacy import location only during a
-   one-shot migration; do not open a current store for ordinary reads.
-3. Classify each source as `migrated`, `legacy-only`, `current`, `legacy-path`, `notes-only`, `missing`, or `invalid`.
-4. Retain source-doctor record counts, repair
-   receipts, invalid line spans, and exit status.
-5. If any required source is `legacy-only` or `invalid`, or Synesthesia is
-   `notes-only` and import is requested, report the exact owning migration or
-   blocking command before any harvest or append recommendation. Never convert
-   an invalid learnings store with skip unless `$learnings` has established
-   that authority.
-6. Report harvest candidates and recommended definition-bound commands.
-
-See [source-store-layout.md](references/source-store-layout.md) and
-[harvest-workflow.md](references/harvest-workflow.md).
-
-## Output Shape
-
-```md
-## Ledger status
-
-- learnings: migrated | legacy-only | missing | invalid
-- negative-ledger: current | legacy-path | missing | invalid
-- synesthesia: notes-only | ledger-present | missing | invalid
-
-## Harvest candidates
-
-- learnings:
-- negative-ledger:
-- synesthesia:
-
-## Recommended actions
-
-1. ...
-
-## Proof
-
-- commands run:
-- source stores read:
-- writes attempted:
-- memory-note admissions:
-```
+Do not force unrelated calls into one generic status template. A pure
+validation, durable transaction, store doctor, and recovery inspection have
+different useful outputs.
 
 ## Guardrails
 
-- Bootstrap once before the first Ledger command in a workflow; do not repeat
-  it per skill or per command.
-- After readiness, invoke `ledger` directly and let the CLI own ABI
-  enforcement, integrity, and failures.
+- Bootstrap once before the first native command; invoke `ledger` directly
+  afterward.
 - Do not install without current installation authority.
-- Do not install during an active Actuating repository effect.
-- Do not mutate a source store except through its owning definition and
-  `ledger transact`.
-- Do not treat memory-source notes as the canonical store.
-- Do not persist checkpoint receipts or turn Ledger into a semantic source
-  decision engine without evidence that the stateless protocol is insufficient.
-- Do not reuse a checkpoint receipt after its subject or evidence fingerprint
-  changes.
-- Do not admit every source-store event to memory.
-- Do not block a route from Negative Ledger memory without current ledger verification.
-- Do not turn Synesthesia decorative language into memory.
-- Do not migrate, compact, hand-edit, or harvest Actuating evidence as source
-  memory; use only Ledger's generated structural artifact surface at
-  Actuating's request.
-- Do not invent Universalist plan ids, write a replacement latest pointer, or
-  reuse an existing plan path; use the Universalist definition.
-- Keep `ledger validate` pure: no `.ledger` read, `.ledger` write, or semantic
-  authority.
+- Do not install during an active repository effect.
+- Do not hardcode domain artifact families, protocol versions, operations,
+  projections, or closure policy in this skill.
+- Do not add source dispatch, executable hooks, alternate implementations,
+  implicit scanning, fallback paths, or workflow conclusions.
+- Do not treat a valid artifact, healthy store, exact replay, or successful
+  projection as independent semantic authority.
+- Do not mutate a store except through its owning definition and selected
+  `ledger transact` operation.
+- Keep `validate` and `materialize` repository-pure.
+- Fail closed on unknown definition closure, ABI, operator, binding, integrity,
+  replay, projection, or recovery state.

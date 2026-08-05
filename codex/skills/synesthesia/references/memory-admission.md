@@ -44,14 +44,11 @@ boundary retraction       explicit-user-correction | explicit-user-rejection
 
 Assistant inference is never sufficient.
 
-## Lifecycle candidates
+## Non-durable candidates
 
-When `$learnings` lifecycle capture triggers Synesthesia evaluation and no
-durable authority exists, useful mappings should become explicit candidates
-rather than disappearing into a zero-row proof. Candidates are not adapter
-payloads and must not be written to `.ledger/synesthesia/events.jsonl`.
-
-Use this proof line shape:
+When Synesthesia is already active and no durable authority exists, a useful
+mapping may be presented as an explicit proposal rather than silently treated
+as reusable authority:
 
 ```text
 synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering meaning>" needs=user-endorsement
@@ -59,8 +56,13 @@ synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering mean
 
 Nearby context must include evidence, activation boundary, non-activation
 boundary, verification or falsifier, and the missing authority. If the user
-endorses, corrects, or rejects the candidate, convert that later event into the
-appropriate durable operation.
+later endorses, corrects, or rejects the candidate, convert that later event
+into the appropriate durable operation.
+
+Candidates are not adapter payloads and must not be written to
+`.ledger/synesthesia/events.jsonl`. Do not generate candidates merely because a
+technical workflow reached handoff or closeout; the Synesthesia activation
+boundary must already be met.
 
 ## Canonical payload
 
@@ -165,12 +167,6 @@ implicitly. Existing immutable `MSN-*` notes are not rewritten or imported
 into this store.
 
 ## Same-turn memory-source admission
-
-Under `checkpoint_context=source-memory-checkpoint/v1`, the shared checkpoint
-packet is lifecycle evidence, but it is not durable Synesthesia authority.
-Synesthesia independently decides whether the packet contains an endorsed
-mapping or boundary, a non-durable candidate, or no reusable sensory event. It
-must not consume a Learnings or Negative Ledger disposition as authority.
 
 After the canonical append succeeds, load `$memory-source-notes` only when
 global memory admission is warranted. Project the memory-note adapter envelope:
