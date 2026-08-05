@@ -22,6 +22,14 @@ For skills whose value lies in changing choices, make future decision evidence o
 - Keep `agents/openai.yaml` aligned.
 - Record the `agents/openai.yaml` disposition.
 
+## Progressive disclosure gate
+
+Before completion, prove:
+
+- metadata carries every activation cue, while `SKILL.md` carries every always-required authority, safety, routing, and stopping rule;
+- each deeper resource is linked directly from `SKILL.md` beside the condition that makes it relevant, without duplicating core rules;
+- a common-path probe uses only the kernel and common resources, a conditional-path probe uses only resources whose conditions hold, and a near-miss probe does not activate.
+
 ## Skill type
 
 Classify:
@@ -99,7 +107,7 @@ Do not emit receipts for ordinary prose, every checklist step, or simple tool ex
    - success criteria;
    - non-trigger boundary.
 4. Classify the skill type.
-5. Decide whether reusable resources are justified.
+5. Map progressive disclosure: activation metadata, always-required kernel, common resources, and the live condition for each conditional resource.
 6. Decide whether SKDC-v1 is justified.
 7. Scaffold:
    ```bash
@@ -166,6 +174,7 @@ skill-specific command.
 Skill:
 - Action:
 - Type:
+- Progressive disclosure: pass | blocked — <probe evidence>
 - Decision instrumentation: added | updated | not justified
 - agents/openai.yaml:
 - Remaining uncertainty:
