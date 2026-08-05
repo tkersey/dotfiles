@@ -425,10 +425,10 @@ The review campaign is bound to the current committed subject and static Review
 Contract, while CAS additionally proves the exact published `baseSha` and
 `headSha`. Normally Ship first proves that the local clean verified commit is
 the remote PR head. When an already-public subject is adopted after review,
-Ship must instead prove the provider-authored current uninterrupted publication
-epoch for the exact repository, canonical head ref, and base/head tuple began
-before the credited campaign; tuple equality or an arbitrary older matching
-event earns no retrospective credit. A local dirty change after publication
+Ship must instead prove that the provider-authored publication event for the
+exact repository, canonical head ref, and base/head tuple preceded the credited
+campaign; tuple equality or an arbitrary older matching event earns no
+retrospective credit. A local dirty change after publication
 does not alter the remote review target; it merely blocks another Actuating
 operation or publication until resolved into a clean selected commit.
 
@@ -436,3 +436,20 @@ The `structural-facts` projection is a discardable structural aid. Its envelope
 reports `authority_granted:false` and `storage_mutated:false`. Ledger never
 executes work, dispatches or interprets reviews, computes credit, interprets
 Ship, chooses a Construction or next action, or emits semantic closure.
+
+The read-only `publication-review-events` projection returns the goal's raw
+`publication_observed` and `review_campaign_started` rows in canonical Ledger
+order:
+
+~~~bash
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection publication-review-events \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+~~~
+
+Ledger only filters and preserves event order. Actuating dereferences the Ship
+and supporting causal-order attachments and decides whether one publication
+precedes one exact campaign.

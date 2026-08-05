@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
+description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
 ---
 
 # Actuating
@@ -455,7 +455,7 @@ serially, and require five consecutive distinct standard cleans. Any committed
 subject change resets all review credit and requires a fresh 1+4 wave.
 
 Publication-bearing review uses Ship-confirmed remote identity. For a current
-PR, use `SHIP-v1`; for a later adoption route, record a read-only
+PR, use `SHIP-v1`; for a new adoption route, record a read-only
 `SHIP-OBSERVATION-v1` pre-review publication observation before binding or
 dispatching the campaign. Map the exact published target to
 `cas review --base <bound-base>` and require every receipt's
@@ -477,21 +477,32 @@ an exact already-public subject that has no truthful current PR tuple, returning
 OIDs, complete actuation binding, and route-specific live readback. Actuating
 must not substitute its own live-readback record.
 
-Ship evidence precedes review. A later `SHIP-ADOPTION-v1` observation does not
-reset review credit merely because the adoption receipt was recorded later only
-when it ratifies the exact `SHIP-OBSERVATION-v1` digest that Actuating recorded
-before the credited campaign. The observation, adoption, and every credited CAS
+Ship evidence precedes review. For a new campaign, a later
+`SHIP-ADOPTION-v1` does not reset review credit merely because the adoption
+receipt was recorded later when it ratifies the exact `SHIP-OBSERVATION-v1`
+digest that Actuating recorded before the credited campaign. The observation, adoption, and every credited CAS
 receipt must exact-match the repository, canonical head ref, base/head tuple,
 subject, current default-branch state, Goal, Construction, and review contract
 through the observation's `review_binding`. That binding is the exact named
 Goal/Construction/subject/review-contract projection of Ship's validated
 actuation binding; it is not a second authority.
-The final adoption carries its own current actuation binding. Evidence Ledger
+The final adoption carries its own current actuation binding. The
+`publication-review-events` projection exposes exact ordered publication and
+campaign event rows without interpreting them. Evidence Ledger
 order from the recorded Ship observation to campaign binding proves causality;
 never compare provider and Ledger wall clocks. Otherwise the review credit is
 stale. The pre-review observation is the publication epoch anchor; ratification
 exact-matches its stable tuple while final adoption freshly re-reads the same
-live default branch. It does not depend on provider event-history completeness.
+live default branch.
+
+For a historical campaign that predates `SHIP-OBSERVATION-v1`, adoption may
+instead carry provider-backed publication evidence for the exact target.
+Actuating preserves review credit only when a content-addressed causal-order
+observation binds that exact provider event to the exact campaign start and
+shows the publication operation completed first. Matching endpoints, an
+arbitrary older event, or a comparison between independent wall clocks is not
+such proof. This supporting observation does not alter CAS receipts or create a
+new authority artifact.
 A non-null adopted release also requires its provider to match the branch
 readback provider,
 its repository to match the adopted repository, its state to be published and

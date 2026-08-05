@@ -44,8 +44,11 @@ is a provisional construction surface, not an authoritative artifact, subject,
 or Evidence event kind. `effect_recorded` advances directly from the clean
 parent target to the clean committed successor; Ship then proves that exact
 successor is the published PR head before review begins. For read-only adoption
-of an already-public subject, Ship instead binds the exact provider publication
-event and Actuating requires it to predate the credited review campaign.
+of an already-public subject, Ship binds either the recorded pre-review
+observation or exact provider-backed publication evidence. Actuating alone
+evaluates the publication-before-campaign witness; a historical route also
+needs a content-addressed causal-order observation. Matching endpoints do not
+prove continuity.
 
 Every immutable replayable event envelope proves sequence and custody, not semantic truth; Actuating evaluates it with the current Goal, Construction, Counterexamples, and subject.
 

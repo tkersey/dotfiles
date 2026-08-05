@@ -69,10 +69,10 @@ A terminal judgment is legal only when all applicable statements hold:
 10. No later material event invalidates authority, subject, proof, publication,
     review evidence, or the current Review Accretion Disposition.
 
-Formal final-evidence ingestion order is not publication order. Recording a
-valid `SHIP-ADOPTION-v1` after review preserves credit only when it ratifies the
-exact `SHIP-OBSERVATION-v1` digest that Actuating recorded before campaign
-binding. It does not reset review credit merely because the adoption receipt was recorded later.
+Formal final-evidence ingestion order is not publication order. For a new
+campaign, recording a valid `SHIP-ADOPTION-v1` after review preserves credit
+when it ratifies the exact `SHIP-OBSERVATION-v1` digest that Actuating recorded
+before campaign binding. It does not reset review credit merely because the adoption receipt was recorded later.
 The observation and adoption must exact-match the current uninterrupted
 publication epoch anchored by that recorded observation: repository, current
 default-branch canonical head ref and SHA, base/head tuple, subject, and stable
@@ -87,6 +87,15 @@ insufficient. Ratification matches the observation's stable tuple, and final
 adoption freshly re-reads that exact live default-branch tuple. A mismatch,
 missing observation, or unproved field invalidates the affected credit;
 adoption never refreshes stale review credit.
+
+For a historical campaign that predates `SHIP-OBSERVATION-v1`, the
+publication-before-campaign witness is instead: exact provider-backed
+publication evidence for the reviewed target, the exact projected campaign
+event, and a content-addressed causal-order observation proving the provider
+publication operation completed before that campaign started. The
+`publication-review-events` projection supplies ordered Ledger events but does
+not interpret external evidence. Endpoint equality, arbitrary provider history,
+or incomparable wall-clock timestamps alone are insufficient.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path

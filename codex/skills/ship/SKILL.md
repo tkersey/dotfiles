@@ -57,9 +57,10 @@ ship_input:
   existing_publication:
     branch:
     head_sha:
-    comparison_base_ref:
     comparison_base_sha:
-    observation_ref: null | sha256-digest
+    publication_proof:
+      pre_review_observation_ref: null | sha256-digest
+      provider_event_ref: null | sha256-digest
     release: null | { provider, repository, publication_state, draft, tag, url, target_sha, assets: [{ name, size, sha256 }] }
   validation:
     build: pass | fail | missing | not-run
@@ -107,7 +108,6 @@ effect. Only an explicit Actuating handoff may select `observe-existing` or
 all branch names to be normalized once to `refs/heads/<name>` before any
 comparison, `existing_publication.branch == head.branch`,
 `existing_publication.head_sha == head.sha`,
-`existing_publication.comparison_base_ref == base.branch`, and
 `existing_publication.comparison_base_sha == base.sha`; any disagreement blocks
 before readback or receipt construction.
 
@@ -124,10 +124,11 @@ name to a canonical `refs/heads/<name>` ref, and require the supplied head ref
 and SHA to equal that live default-branch ref and tip. This restriction makes a
 non-default feature branch ineligible instead of treating zero exact PRs as
 proof that no PR route can represent it. The provider repository, canonical
-head ref, and head SHA exactly equal the authoritative input tuple. The
-comparison base ref resolves exactly to the supplied base SHA; reject an equal
-base and head, and
-prove that base is an ancestor of the head. Query the complete live open-PR
+head ref, and head SHA exactly equal the authoritative input tuple. Treat the
+supplied base SHA as the immutable comparison base commit: reject an equal base
+and head, and prove that base is an ancestor of the head. A current branch name
+is not evidence that it still resolves to that historical base. Query the
+complete live open-PR
 inventory for the exact repository/base/head tuple; adoption requires zero
 exact matches. `observe-existing` requires
 `existing_publication.release == null`; final adoption performs all optional
@@ -142,20 +143,29 @@ inventory, a duplicate asset name, an empty or mismatched tuple, an unpublished
 or draft release, an unverified asset, or any requested mutation. The receipt
 records its observation time; it must not invent an earlier publication time.
 
-Before a review campaign that may later use `adopt-existing`, Ship performs the
+For new review campaigns that may later use `adopt-existing`, Ship performs the
 same branch, comparison-base, PR-absence, and publication-epoch readback through
 `observe-existing` and returns immutable `SHIP-OBSERVATION-v1`. Actuating must
 record that receipt before binding or dispatching the campaign. A later
 `SHIP-ADOPTION-v1` may retain the campaign only by carrying the observation
 digest and exact-matching its repository, canonical default-branch ref,
 base/head tuple, subject, Goal, Construction, and review contract. The
-observation is the current uninterrupted publication epoch anchor; the final
-adoption re-reads the same live default-branch tuple instead of reconstructing
-unavailable provider event history. Ledger event order
+observation is the publication-before-campaign witness; final adoption re-reads
+the same live default-branch tuple. Ledger event order
 between the recorded observation and campaign establishes causality; provider
 and Ledger wall-clock timestamps are never compared. The later adoption keeps
 its own complete current actuation binding; review events are not required to
 leave the earlier readiness receipt current.
+
+For an already-completed campaign that predates `observe-existing`, final
+adoption instead requires `provider_event_ref` to resolve to immutable,
+provider-backed publication evidence for the exact repository, canonical ref,
+and head. Ship recomputes the attachment digest and exact-matches those fields;
+Actuating separately requires a content-addressed causal-order observation that
+places that provider event before the exact campaign start. Matching endpoints
+or incomparable wall-clock timestamps do not prove continuity or causal order.
+Exactly one of `pre_review_observation_ref` and `provider_event_ref` is non-null
+for adoption; both are null for `observe-existing`.
 
 Ship derives the observation's stable `review_binding` only by copying this
 named projection from the already validated `actuation_binding`:
@@ -252,8 +262,8 @@ state, complete unique asset inventory, and asset digests before emitting its
 receipt.
 Emit `SHIP-OBSERVATION-v1` for pre-review observation and `SHIP-ADOPTION-v1`
 for final adoption. Either succeeds only after all readback matches the current
-readiness input; final adoption must ratify the cited observation when review
-credit depends on it.
+readiness input; final adoption must carry one valid route-specific publication
+proof when review credit depends on it.
 
 A zero exit status is not publication proof. If mutation succeeds but readback
 fails, report the partial public effect and block; re-read live state before
@@ -263,7 +273,9 @@ For Actuating input, emit immutable `SHIP-v1` after successful PR readback,
 immutable `SHIP-OBSERVATION-v1` after pre-review existing-state readback, or
 immutable `SHIP-ADOPTION-v1` after final existing-state readback and return it
 to Actuating. Actuating decides how it affects publication currentness and
-records the evidence event. Ship never appends Actuating Evidence or interprets
+records the evidence event. Historical adoption also returns the validated
+provider evidence digest; Ship does not decide whether it precedes a campaign.
+Ship never appends Actuating Evidence or interprets
 its receipt as architecture, review, or closure authority.
 
 Return the complete canonical receipt bytes together with their SHA-256 digest.
