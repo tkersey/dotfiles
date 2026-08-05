@@ -5,7 +5,7 @@ description: "Generate a compact five-tier strategy portfolio when the next task
 
 # Creative Problem Solver
 
-Purpose: when a strategy choice is still open, generate a five-tier portfolio that escapes the default solution basin, compounds through an Artifact Spine, and stops for a human choice.
+Purpose: when a strategy choice is still open, transform the incumbent into materially different candidate paths, project the honest survivors into a five-tier portfolio, and stop for a human choice.
 
 ## Activation boundary
 
@@ -43,216 +43,105 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 - `$tune` / `$refine` win when the object of work is the skill package itself.
 - Activate when the requested outcome is a choice set; do not activate when the outcome is one answer, one plan, or one implementation.
 
-## Contract
+## Method
 
-- Name the lane and Double Diamond stage.
-- State the problem, success criteria, and evidence posture: known facts versus assumptions or hypotheses.
-- Reframe once, then run an Aha Check: state the restructuring insight separately from its evidence basis and any empirical claim. Never promote an unsupported mechanism, bottleneck, or causal story to fact.
-- Name the default solution basin and use at least two genuinely different conceptual frames when honest; otherwise mark the portfolio same-basin rather than manufacturing diversity.
-- Include all five tiers: Quick Win, Strategic Play, Advantage Play, Transformative Move, Moonshot.
-- For every tier: accretive artifact, falsifiable expected signal with a timebox, and escape hatch.
-- Give conditional selection guidance, then stop for human input before execution.
-- Keep the visible process proportional: Fast Spark must fit <=45 non-empty output lines; Full Session must fit <=70 non-empty output lines. Count before replying and compress optional detail rather than exceed the lane budget.
+1. **Bind** only what governs the choice:
+   ```text
+   Objective: <outcome or decision to improve>
+   Hard constraints: <non-negotiable boundaries>
+   Incumbent/default basin: <the approach or representation most likely to be repeated>
+   Material unknowns: <unknowns that could change the choice>
+   ```
+2. **Diverge before formalizing**: transform the incumbent across several orthogonal operator axes. Do not use the five tiers as idea prompts.
+3. **Quotient**: collapse candidates that share a governing mechanism and differ only by cost, scope, implementation size, rollout speed, timeline, or ambition.
+4. **Aha Check** after the initial field exists. If a material re-representation changes the field, proof surface, ordering, or decision criteria, regenerate once under it and quotient again. Otherwise report `Aha: N/A` without penalty.
+5. **Winnow** pairwise non-subsumed candidates that would lead to meaningfully different commitments.
+6. **Validate proportionally**: attach the smallest reversible probe, decision discriminator, kill criterion, retained asset, and pre-irreversible escape hatch appropriate to each survivor.
+7. **Project** survivors onto Quick Win through Moonshot without changing their governing mechanisms to fit the labels. Preserve every heading, but never fabricate a candidate merely to fill a tier.
+8. **Recommend conditionally**, then stop for human input before execution.
 
-## Workflow
+An unknown blocks solution candidates only when it could invert the decision, makes comparison meaningless, crosses a serious safety/legal/irreversibility boundary, or leaves no concrete decision surface. Otherwise state the assumption, branch conditionally, or resolve it through a probe. Never silently choose a domain, metric, threshold, denominator, population, repetition count, causal mechanism, or factual basis. Separate decision-shaping facts, supported inferences, assumptions, and hypotheses; label only those that affect the choice.
 
-1. Choose stage: Discover / Define / Develop / Deliver.
-2. Choose lane: Fast Spark or Full Session.
-3. Define gate: one-line problem statement + success criteria; mark material unknowns.
-4. Evidence posture: separate facts from assumptions and hypotheses.
-5. Reframe using the stage default or the user's requested technique.
-6. Aha Check. State the restructuring insight, then classify its basis and any empirical claim. If no material Aha appears, run one second and final pass with a different operator.
-7. Diversity gate: name the default basin and at least two distinct frames, or explicitly mark same-basin when honest divergence is unavailable.
-8. Define an Artifact Spine of 1-3 durable assets that higher tiers can reuse.
-9. Generate the five-tier portfolio, then silently verify exact spine-name reuse, mutually exclusive and exhaustive outcomes, retained proof, evidence labels, literal entailment of every fact, and the lane line count; repair every miss before replying.
-10. Give selection guidance and ask the user to choose a tier or update constraints.
+## Lanes
 
-Definition Gate fields are: domain; symptom, actors, and problem topology; desired outcome and success criteria; metric, threshold, and measurement basis; representative workload population and selection rule; constraints and guardrails. If any field in the first two groups is missing, use Discover; if every field there is recorded or inapplicable but any later field is missing, use Define. In either case, add `Interpretation (assumption): ...` and do not silently choose a domain or metric. When target success is unknown, output `Target success: unknown` separately from `Portfolio success: <decision progress>`; never substitute process success for the target outcome. While any Definition Gate field is missing, all five tiers must reduce uncertainty without proposing solution prototypes: do not choose an index, cache, interface, engine, substrate, or other implementation candidate. The Quick Win signal passes only when every Definition Gate field is explicitly recorded or marked inapplicable; make every later tier conditional on that gate. The Quick Win signal and every later prerequisite clause must spell out all six field groups rather than refer to "the gate," "each field," or a nearby artifact. Preserve tier semantics even here: a Transformative probe must test a changed interface, operating model, governing constraint, or user ritual rather than merely inventorying the current one. The Moonshot may test discontinuous learning or proof leverage, but its signal still needs a predeclared discontinuous threshold rather than mere completeness.
+- **Fast Spark**: default. Perform a hidden micro-divergence pass across at least four operator axes, including a subtractive move and a boundary or representation shift when admissible. Show only the decision-useful survivors.
+- **Full Session**: use when the user explicitly requests deep or exhaustive exploration, or when high stakes, irreversibility, or coupled constraints make the candidate field itself decision-relevant. Generate roughly 10-30 raw candidates, cluster by governing mechanism, and expose only the clusters or transformations that changed winnowing.
+- Difficulty alone does not justify Full Session. Visible brevity never authorizes shallow search.
 
-## Double Diamond alignment
+## Divergence kernel
 
-- Discover: relevant facts, actors, or problem topology are unclear; tiers are learning and observation moves.
-- Define: the decision definition, success criteria, or constraints are unclear; tiers test competing definitions.
-- Develop: the problem is sufficiently defined and materially different solution paths remain open.
-- Deliver: the core direction is selected, but rollout, migration, containment, or proof strategies remain open. Do not use Deliver to regenerate competing core solutions.
+Treat these as search transformations, not headings to fill:
 
-## Mode check
+- **Subtract** — eliminate the need, component, coordination, handoff, or inherited assumption.
+- **Invert** — reverse a governing assumption, default, control direction, dependency, or value exchange.
+- **Move the boundary** — change the owner, authority, interface, trust boundary, or substrate.
+- **Re-represent** — change the model, data shape, abstraction, unit of work, or problem statement.
+- **Change time** — precompute, defer, batch, stream, amortize, speculate, or make work event-driven.
+- **Change the actor or incentive** — alter who acts, who benefits, who pays, or what behavior the system rewards.
+- **Change the proof surface** — solve for a different observable, contract, falsifier, or acceptance boundary.
+- **Split, compose, or transfer** — decompose the problem, combine separate moves, or import a mechanism from a structurally analogous domain.
 
-- Pragmatic (default): every tier is a bounded, reversible next move that can produce evidence this week.
-- Visionary: use only when the user asks for long-horizon strategy or systemic change.
-- Tiers describe the ambition of the hypothesis, not the size of the first commitment. A Moonshot is the smallest proof-bearing probe of discontinuous upside, not an unbounded rewrite.
-- In Pragmatic mode, every tier's expected-signal timebox covers a first probe of at most one week. A longer rollout horizon may be context, but cannot replace this first signal.
-- Put every escape hatch before an irreversible boundary. Quarantine or containment after authority or data has crossed that boundary is not reversibility.
+Honor a user-requested creative technique when usable, but use it to transform the incumbent rather than as visible process theater.
 
-## Lane selector
+## Material diversity
 
-- Fast Spark: default when context is sufficient and the user wants decision-useful options without exhaustive candidate work; skip broad generation and surface only the minimum decision-useful structure.
-- Full Session: use when the user explicitly asks for deep or exhaustive exploration, or when high stakes, irreversibility, or coupled constraints make candidate generation and winnowing decision-relevant; generate 10-30 candidates, cluster by frame, and surface what changed the selection.
-- If lane choice is unclear, choose Fast Spark. Difficulty alone does not justify Full Session.
-
-## Reframe selection
-
-- Discover default -> Assumption Mapping.
-- Define default -> How Might We.
-- Develop default -> SCAMPER for an existing system; First Principles for greenfield work.
-- Deliver default -> Pre-mortem.
-- Second pass -> only when the first yields no material Aha, choose a materially different operator, declare `Second reframe used: <technique>` before the Aha, and never credit an undeclared operator later.
-- Honor a user-requested technique when it is usable; do not silently replace it with a "nearest supported" technique.
-- Chat disclosure: `Reframe used: <technique>` plus one line explaining why.
+- Selecting one survivor instead of another must change at least one of: governing mechanism, owner, representation, authority boundary, admitted domain, unit of work, proof obligation, or falsifier.
+- Retain at least one subtractive candidate and at least one boundary or representation shift when those moves are admissible.
+- A candidate subsumed by a stronger candidate is not separate unless it creates a materially different reversible entry point.
+- If honest divergence is unavailable, say so. A same-basin portfolio or an empty tier is preferable to fabricated novelty.
 
 ## Aha Check
 
-- **Aha is the restructuring insight**: the moment the problem is re-represented so a different candidate field becomes visible.
-- Make the representational change explicit: from the baseline frame to the alternative frame.
-- Output `Aha: <restructuring insight>` without an epistemic label; a representational operation is not itself a factual proposition.
-- Follow with `Aha basis: <why this shift is warranted> [evidence: fact | supported inference]`.
-- Put any testable mechanism or outcome on a separate optional line: `Claim: <claim> [evidence: fact | supported inference | hypothesis]`.
-- An Aha is material only if it changes the candidate field, proof surface, ordering, or decision criteria.
-- Creative force does not upgrade a basis or claim's factual status. Use `hypothesis` only for a concrete claim with a real falsifier.
-- For a `Claim` labeled fact or supported inference, name its source or support in the evidence posture or adjacent to the Claim.
-- If a claim is an unverified mechanism or outcome, label it as a hypothesis and make validation part of an expected signal.
-- For every `Claim` labeled hypothesis, one expected signal must include `Claim falsifier: <observation>` and test that exact claim, not a neighboring assertion.
-- If no material Aha appears after the second pass, state `Aha: N/A after second pass`, continue with the strongest grounded portfolio available, and mark same-basin honestly. Do not manufacture an Aha or diversity.
+- **Aha is the restructuring insight**: the problem is re-represented so a different candidate field becomes visible.
+- Output `Aha: <restructuring insight>` or `Aha: N/A`.
+- Follow a material Aha with `Aha basis: <why the shift is warranted> [evidence: fact | supported inference]`.
+- Put any empirical proposition on a separate optional line: `Claim: <claim> [evidence: fact | supported inference | hypothesis]`.
+- A material Aha must introduce a previously unavailable candidate, change a discriminator or proof surface, or reorder the surviving field. Regenerate once under it; otherwise it is commentary, not an Aha.
+- Creative force never upgrades a basis or claim's factual status. A hypothesis needs a concrete disconfirming observation in a relevant probe.
 
-## Diversity guard
+## Probes, evidence, and accretion
 
-- Name the default solution basin before generating tiers.
-- Ensure at least two tiers shift frame, not merely cost or scope.
-- Useful frame shifts include substrate, interface, constraint, proof surface, incentive, time horizon, operating model, user ritual, or authority boundary.
-- Put the frame in each option heading, for example `Quick Win — Instrument first [frame: proof surface]`.
-- If the five tiers cannot honestly diverge, say so and mark the portfolio as same-basin.
+Every populated option must contain:
 
-## Accretion
+- **Probe** — the smallest reversible commitment that can change the decision; include a timebox when it materially improves control.
+- **Discriminator** — the observation or comparison that would favor this path over its live alternatives.
+- **Kill criterion** — the observation that defeats the path, its governing claim, or its admissibility.
+- **Retained asset** — durable evidence, data, interface, prototype, test, model, specification, or decision record kept even when the path loses.
+- **Escape hatch** — the stop, flag, isolation boundary, or pre-commitment that exists before irreversible authority, data, compatibility, or organizational commitment crosses the boundary.
 
-- An accretive artifact is a durable asset retained even when an option is wrong: measurement, harness, spec, test, automation, interface, dataset, or decision record.
-- Define 1-3 Artifact Spine assets shared across tiers, each with a stable name and home. Every `Accretive artifact` line must repeat at least one exact declared asset name or home; an unqualified new artifact is invalid. If reuse is honestly impossible, declare and justify a replacement spine before the portfolio.
-- Every escape hatch must name the proof artifact retained after a prototype or production change is removed. Retaining only an undeclared by-product does not satisfy accretion. The retained artifact proves only observations bound by the signal; do not call ritual or artifact completion proof of benefit without a comparator and outcome predicate.
-- Fast Spark: give each spine asset's purpose and home; put the timebox in the option signal.
-- Full Session: repeat each asset's purpose and home, add its minimal interface, and explain how the ladder compounds.
-- Expected signals must be timeboxed and partition every outcome with mutually exclusive, exhaustive clauses. Use `Inconclusive iff any of <named prerequisites> is missing -> <next disposition>; otherwise Pass iff <success>; Fail otherwise`; for a legitimate measured third state, use `Pass iff <success>; Fail iff <falsifier>; Inconclusive otherwise -> <next disposition>`; omit Inconclusive when Pass and Fail are complements. Every value or predicate consumed by Pass must be established or named separately in Inconclusive. Every missing-prerequisite Inconclusive clause must use the exact `any of ... is missing` form and put all missing prerequisites in that one list, never an ambiguous combined negation. Quantified item outcomes use integer counts such as `at least 1 of n`, not fractional item grammar. Relative terms such as dominant, material, acceptable, stable, comparable, beyond noise, best, ranking, or percentage improvement require a named baseline or denominator, comparison rule, predeclared threshold, and replication count repeated in the signal; references to recorded or agreed criteria do not satisfy this rule. Terms such as `complete`, `representative`, `correct`, or `compatible` require their operational fields or selection rule in the signal, not an adjective standing in for a predicate. Any use of `falsify` or `falsifier` must state the predeclared observation predicate for each hypothesis. A universal, `every`, `all`, or Cartesian-product predicate must predeclare a nonzero finite denominator; an empty set is Inconclusive or Fail, never Pass. When a required threshold is unknown, resolve that threshold instead of claiming an unspecified target will be met. Do not promise an outcome that the current evidence cannot support.
+Strengthen only as the claim requires: quantitative comparisons need whatever baseline, denominator, comparison rule, threshold, and repetition make the result interpretable; qualitative inquiry needs an evidence source, interpretation rule, and disconfirming evidence; causal hypotheses need falsifiers; irreversible commitments need abort boundaries and consequence containment. Do not force benchmark grammar onto qualitative or strategic decisions.
 
-## Tier semantics
+An **Evidence Spine** may hold neutral facts, baselines, examples, criteria, or evaluation harnesses that compare candidates without prescribing their construction. Each candidate may instead retain its own **Option Artifact** when its representation, interface, owner, or proof surface differs. Never force a transformative path to inherit the Quick Win's construction merely to share an artifact. Completion alone is not proof of benefit, and post-hoc quarantine is not reversibility.
 
-- Quick Win: cheapest reversible move that improves the decision or outcome now.
-- Strategic Play: strongest path within the current operating model.
-- Advantage Play: creates a reusable capability, compounding asset, or asymmetric option.
-- Transformative Move: changes an interface, operating model, governing constraint, or user ritual.
-- Moonshot: tests discontinuous upside through the smallest bounded proof-bearing probe.
+## Tier projection
 
-## Option template
+- **Quick Win** — cheapest reversible move that improves the decision or outcome now.
+- **Strategic Play** — strongest path within the current operating model.
+- **Advantage Play** — creates a reusable capability, compounding asset, or asymmetric option.
+- **Transformative Move** — changes an interface, operating model, governing constraint, authority boundary, or user ritual.
+- **Moonshot** — tests discontinuous upside through the smallest bounded proof-bearing probe.
+
+Project after winnowing. Do not escalate one mechanism through five sizes. If no honest candidate fits a tier, write `No honest <tier> survived divergence` and explain the missing distinction in one sentence.
+
+## Option card
 
 ```text
-Quick Win — <move> [frame: <frame>]
-- Accretive artifact (spine): <exact declared spine name/home> — <addition>
-- Expected signal + timebox: <time>; Inconclusive iff any of <named prerequisites> is missing -> <next disposition>; otherwise Pass iff <success>; Fail otherwise
-- Escape hatch: <pre-irreversible stop>; retain <exact spine proof>
-
-Strategic Play — <move> [frame: <frame>]
-- Accretive artifact (spine): <exact declared spine name/home> — <addition>
-- Expected signal + timebox: <time>; Inconclusive iff any of <named prerequisites> is missing -> <next disposition>; otherwise Pass iff <success>; Fail otherwise
-- Escape hatch: <pre-irreversible stop>; retain <exact spine proof>
-
-Advantage Play — <move> [frame: <frame>]
-- Accretive artifact (spine): <exact declared spine name/home> — <addition>
-- Expected signal + timebox: <time>; Inconclusive iff any of <named prerequisites> is missing -> <next disposition>; otherwise Pass iff <success>; Fail otherwise
-- Escape hatch: <pre-irreversible stop>; retain <exact spine proof>
-
-Transformative Move — <move> [frame: <frame>]
-- Accretive artifact (spine): <exact declared spine name/home> — <addition>
-- Expected signal + timebox: <time>; Inconclusive iff any of <named prerequisites> is missing -> <next disposition>; otherwise Pass iff <success>; Fail otherwise
-- Escape hatch: <pre-irreversible stop>; retain <exact spine proof>
-
-Moonshot — <move> [frame: <frame>]
-- Accretive artifact (spine): <exact declared spine name/home> — <addition>
-- Expected signal + timebox: <time>; Inconclusive iff any of <named prerequisites> is missing -> <next disposition>; otherwise Pass iff <success>; Fail otherwise
-- Escape hatch: <pre-irreversible stop>; retain <exact spine proof>
+<Tier> — <path> [shift: <mechanism, boundary, representation, or proof surface>]
+- Probe: <smallest reversible test; timebox when meaningful>
+- Decide by: <discriminator>; kill if <disconfirming observation>
+- Retain: <durable option artifact>; escape before <irreversible boundary>
 ```
 
-## Selection guidance
+Add an assumption or evidence label only when it changes how the option should be interpreted.
 
-- Fast Spark: name the best learning bet, best near-term outcome bet, and boldest bounded probe; give a conditional recommendation. When target success is unknown, output `Best near-term outcome bet: none; basis: target success is undefined. [evidence: fact]` rather than relabeling decision progress as the target outcome. Treat every unmeasured `best` or recommendation ranking as supported inference or hypothesis, never fact; name its basis and end it with that evidence label.
-- Full Session: optionally score Impact, Information, Accretion, Confidence, Reversibility, and Time-to-signal from 1-5. Use 5 for the more favorable end of every dimension; for Time-to-signal, 5 means faster. Do not rank by a summed total. Compute dominance across all displayed dimensions and output `Pareto leaders: <every non-dominated tier by name>` plus the trade-off; if dominance was not checked, omit the Pareto claim. End every `best` selection and recommendation line with `[evidence: fact | supported inference | hypothesis]` and name its basis.
-- A recommendation is not execution authorization.
+## Selection and output
 
-## Deliverable format
-
-### Fast Spark
-
-- Lane + stage.
-- Problem + success criteria + evidence posture.
-- Reframe used + Aha Check + default basin.
-- Compact Artifact Spine.
-- Five-tier portfolio.
-- Selection guidance + `Human Input Required`.
-
-### Full Session
-
-- Everything in Fast Spark.
-- Candidate-field summary and frames that survived winnowing; evidence-label every causal or decision-shaping inference, including stage choice, reframe `Why`, winnowing, diversity/same-basin disposition, score interpretation, and recommendations.
-- Optional scorecard with brief rationale.
-- Explicit compact lines labeled `Facts:`, `Risks:`, `Assets:`, `Assumptions:`, and `Constraints:`.
-- Detailed Artifact Spine ladder.
-
-After human selection:
-
-- If the direction needs an execution policy or detailed plan, hand off to `$plan`.
-- If it is directly implementable and execution is authorized, hand off to the owning implementation workflow.
-- This skill never owns repository mutation.
-
-## Fast Spark example
-
-```text
-Lane: Fast Spark
-Stage: Develop
-
-Problem: Search API p95 latency is ~800ms; target <=200ms at current infra cost.
-Success: p95<=200ms, p99<=400ms, CPU +<=10%, no relevancy regression.
-Definition Gate: domain=Search API; symptom/actors/topology=p95 ~800ms across API clients -> search service -> query engine -> serialization/transport; desired outcome/success=p95<=200ms and p99<=400ms; metric/threshold/basis=pooled fixed-fixture latency and relevancy diff across exactly 5 batches; representative workload population/selection rule=fixed dataset stratified by current request-size and filter-shape distributions; constraints/guardrails=current infra cost, CPU +<=10%, and no relevancy regression.
-Evidence: latency, gate fields, and targets are known; the bottleneck is unknown.
-
-Reframe used: SCAMPER
-Why: mutate the existing request path before assuming a replacement is necessary.
-Aha: shift from query-only optimization to whole-path budget allocation.
-Aha basis: the reported p95 spans the listed request path, and the bottleneck is unknown. [evidence: fact]
-Claim: across repeated fixed-fixture batches, the pooled mean non-query share among requests in each batch's slowest 1% is >=10%. [evidence: hypothesis]
-Why it matters: query, serialization, payload, cache, and transport become competing hypotheses; tracing decides which budget dominates.
-Default basin: tune the query engine directly.
-Frames: proof surface, constraint budget, operating model, interface, substrate.
-Artifact Spine:
-- bench/search/: fixed dataset + immutable pre-change baseline + candidate adapters + p50/p95/p99 + relevancy diff; home: repo benchmark suite.
-- perf/tracing/: query/serialization/transport breakdown; home: repo performance tooling.
-- contracts/search-response/: opt-in response contract + conformance fixtures; home: repo contract tests.
-Quick Win — Instrument the latency budget [frame: proof surface]
-- Accretive artifact (spine): exactly 5 fixed-fixture batch results and all 50 slowest-1% request decompositions in perf/tracing/, keyed to the bench/search/ harness.
-- Expected signal + timebox: within 1 day, run exactly 5 fixed-fixture batches of exactly 1,000 requests and decompose the 10 slowest requests in each batch; Pass iff the 95% bootstrap CI lower bound for pooled mean non-query share is >=10%; Claim falsifier: Fail iff its upper bound is <10%; Inconclusive otherwise -> run one additional predeclared set of exactly 5 such batches before selection.
-- Escape hatch: disable high-overhead tracing; retain the bench/search/ harness plus perf/tracing/ batch results and every slowest-1% request decomposition.
-
-Strategic Play — Attack the measured largest budget [frame: constraint]
-- Accretive artifact (spine): measured-stage experiment fixture + before/after result in bench/search/.
-- Expected signal + timebox: within 2 days, run the candidate and immutable pre-change bench/search/ baseline for exactly 5 fixed-fixture batches of exactly 1,000 requests each, including exactly 100 predeclared relevancy cases per batch; let B=baseline pooled p95 and C=candidate pooled p95; Pass iff (B-C)/B >=30% and all 500 candidate relevancy results match baseline; Fail otherwise.
-- Escape hatch: feature flag or revert the production change; retain the bench/search/ fixture, result, and diagnosis.
-
-Advantage Play — Make latency a continuous contract [frame: operating model]
-- Accretive artifact (spine): predeclared >=20%-over-baseline seeded fixture, performance budget check, and trend history in bench/search/.
-- Expected signal + timebox: within 2 days, inject a predeclared fixture whose p95 is >=20% above the fixed bench/search/ baseline; Pass iff two consecutive check runs both reject it before merge; Fail otherwise.
-- Escape hatch: begin as an advisory check; keep the bench/search/ seeded fixture, check, and trend data if gating is noisy.
-
-Transformative Move — Change the response contract [frame: interface]
-- Accretive artifact (spine): opt-in contract + conformance fixtures in contracts/search-response/, measured by bench/search/.
-- Expected signal + timebox: within 3 days, across two runs per fixture, Pass iff first useful bytes arrive <=200ms on all exactly 10 predeclared fixtures with a >=1 MiB response body; Fail otherwise.
-- Escape hatch: disable the opt-in endpoint, retain the current response as default, and keep contracts/search-response/ fixtures plus bench/search/ results.
-
-Moonshot — Run an architecture bakeoff [frame: substrate]
-- Accretive artifact (spine): evaluation adapter + fixed fixtures in bench/search/ comparing engines and transport shapes.
-- Expected signal + timebox: within 1 week, run exactly 3 candidates and the immutable pre-change bench/search/ baseline for exactly 5 fixed-fixture batches each; let B=baseline pooled p99 and C_i=each candidate's pooled p99; Pass iff at least one of the 3 satisfies 3*C_i <= B; Fail otherwise.
-- Escape hatch: stop before migration; keep the bench/search/ adapter, fixtures, and results as durable decision evidence.
-
-Best learning bet: Quick Win, because it identifies which path budget owns the uncertainty. [evidence: supported inference]
-Best near-term outcome bet: Strategic after tracing, because it attacks the measured largest budget against the fixed baseline. [evidence: supported inference]
-Boldest bounded probe: Moonshot, because three candidates test discontinuous latency upside before migration. [evidence: supported inference]
-Conditional recommendation: start with Quick Win, then choose Strategic or Transformative from measured evidence because both preserve the shared proof spine. [evidence: supported inference]
-Human Input Required: choose a tier or update the constraints.
-```
+- State the condition under which each leading path dominates and give one conditional recommendation.
+- Prefer qualitative trade-off dominance over pseudo-precision. Use numeric scoring or Pareto language only when the user supplies criteria, scale anchors, and evidence that make the values meaningful.
+- Fast Spark shows the compact binding, Aha or honest N/A, five tier headings with concise cards or honest gaps, one recommendation, and `Human Input Required: choose a path or update the constraints.`
+- Full Session adds a compact candidate-field summary: mechanisms explored, equivalence classes collapsed, and transformations that changed winnowing.
+- Do not expose the full operator checklist or discarded idea dump unless the user asks.
+- A recommendation is not execution authorization. After selection, hand detailed planning to `$plan` and authorized implementation to the owning workflow. This skill never owns repository mutation.
 
 ## Routing examples
 
