@@ -60,7 +60,7 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 7. **Project** survivors onto Quick Win through Moonshot without changing their governing mechanisms to fit the labels. Preserve every heading, but never fabricate a candidate merely to fill a tier.
 8. **Recommend conditionally**, then stop for human input before execution.
 
-An unknown blocks solution candidates only when it could invert the decision, makes comparison meaningless, crosses a serious safety/legal/irreversibility boundary, or leaves no concrete decision surface. Otherwise state the assumption, branch conditionally, or resolve it through a probe. Never silently choose a domain, metric, threshold, denominator, population, repetition count, causal mechanism, or factual basis.
+An unknown blocks solution candidates only when it could invert the decision, makes comparison meaningless, crosses a serious safety/legal/irreversibility boundary, or leaves no concrete decision surface. Otherwise state the assumption, branch conditionally, or resolve it through a probe. Never silently choose a domain, metric, threshold, denominator, population, repetition count, causal mechanism, or factual basis. Separate decision-shaping facts, supported inferences, assumptions, and hypotheses; label only those that affect the choice.
 
 ## Lanes
 
@@ -103,13 +103,13 @@ Honor a user-requested creative technique when usable, but use it to transform t
 
 Every populated option must contain:
 
-- **Probe** — the least reversible commitment that can change the decision; include a timebox when it materially improves control.
+- **Probe** — the smallest reversible commitment that can change the decision; include a timebox when it materially improves control.
 - **Discriminator** — the observation or comparison that would favor this path over its live alternatives.
 - **Kill criterion** — the observation that defeats the path, its governing claim, or its admissibility.
 - **Retained asset** — durable evidence, data, interface, prototype, test, model, specification, or decision record kept even when the path loses.
 - **Escape hatch** — the stop, flag, isolation boundary, or pre-commitment that exists before irreversible authority, data, compatibility, or organizational commitment crosses the boundary.
 
-Strengthen only as the claim requires: quantitative comparisons need interpretable baselines and denominators; qualitative inquiry needs an evidence source, interpretation rule, and disconfirming evidence; causal hypotheses need falsifiers; irreversible commitments need abort boundaries and consequence containment. Do not force benchmark grammar onto qualitative or strategic decisions.
+Strengthen only as the claim requires: quantitative comparisons need whatever baseline, denominator, comparison rule, threshold, and repetition make the result interpretable; qualitative inquiry needs an evidence source, interpretation rule, and disconfirming evidence; causal hypotheses need falsifiers; irreversible commitments need abort boundaries and consequence containment. Do not force benchmark grammar onto qualitative or strategic decisions.
 
 An **Evidence Spine** may hold neutral facts, baselines, examples, criteria, or evaluation harnesses that compare candidates without prescribing their construction. Each candidate may instead retain its own **Option Artifact** when its representation, interface, owner, or proof surface differs. Never force a transformative path to inherit the Quick Win's construction merely to share an artifact. Completion alone is not proof of benefit, and post-hoc quarantine is not reversibility.
 
