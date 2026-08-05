@@ -74,52 +74,52 @@
           "field": "duration_ms"
         },
         {
-          "name": "input_tokens",
+          "name": "selected_turn_input_tokens_sum",
           "op": "sum",
           "field": "input_tokens"
         },
         {
-          "name": "input_token_turn_count",
+          "name": "selected_turn_input_tokens_count",
           "op": "count",
           "field": "input_tokens"
         },
         {
-          "name": "cached_input_tokens",
+          "name": "selected_turn_cached_input_tokens_sum",
           "op": "sum",
           "field": "cached_input_tokens"
         },
         {
-          "name": "cached_input_token_turn_count",
+          "name": "selected_turn_cached_input_tokens_count",
           "op": "count",
           "field": "cached_input_tokens"
         },
         {
-          "name": "output_tokens",
+          "name": "selected_turn_output_tokens_sum",
           "op": "sum",
           "field": "output_tokens"
         },
         {
-          "name": "output_token_turn_count",
+          "name": "selected_turn_output_tokens_count",
           "op": "count",
           "field": "output_tokens"
         },
         {
-          "name": "reasoning_output_tokens",
+          "name": "selected_turn_reasoning_output_tokens_sum",
           "op": "sum",
           "field": "reasoning_output_tokens"
         },
         {
-          "name": "reasoning_output_token_turn_count",
+          "name": "selected_turn_reasoning_output_tokens_count",
           "op": "count",
           "field": "reasoning_output_tokens"
         },
         {
-          "name": "total_tokens",
+          "name": "selected_turn_total_tokens_sum",
           "op": "sum",
           "field": "total_tokens"
         },
         {
-          "name": "total_token_turn_count",
+          "name": "selected_turn_total_tokens_count",
           "op": "count",
           "field": "total_tokens"
         },
@@ -139,7 +139,7 @@
   "projections": {
     "summary": {
       "relation": "summary",
-      "schema": "seq-turn-metrics-result/v1",
+      "schema": "seq-turn-metrics-result/v2",
       "fields": [
         "turn_count",
         "timed_turn_count",
@@ -147,16 +147,16 @@
         "duration_ms_min",
         "duration_ms_max",
         "duration_ms_average",
-        "input_tokens",
-        "input_token_turn_count",
-        "cached_input_tokens",
-        "cached_input_token_turn_count",
-        "output_tokens",
-        "output_token_turn_count",
-        "reasoning_output_tokens",
-        "reasoning_output_token_turn_count",
-        "total_tokens",
-        "total_token_turn_count",
+        "selected_turn_input_tokens_sum",
+        "selected_turn_input_tokens_count",
+        "selected_turn_cached_input_tokens_sum",
+        "selected_turn_cached_input_tokens_count",
+        "selected_turn_output_tokens_sum",
+        "selected_turn_output_tokens_count",
+        "selected_turn_reasoning_output_tokens_sum",
+        "selected_turn_reasoning_output_tokens_count",
+        "selected_turn_total_tokens_sum",
+        "selected_turn_total_tokens_count",
         "tool_count",
         "tool_count_turn_count"
       ],
