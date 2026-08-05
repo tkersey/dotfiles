@@ -423,12 +423,76 @@ A mismatch blocks the attempt.
 
 The review campaign is bound to the current committed subject and static Review
 Contract, while CAS additionally proves the exact published `baseSha` and
-`headSha`. Ship must first prove that the local clean verified commit is the
-remote PR head. A local dirty change after publication does not alter the remote
-review target; it merely blocks another Actuating operation or publication
-until resolved into a clean selected commit.
+`headSha`. Normally Ship first proves that the local clean verified commit is
+the remote PR head. When an already-public subject is adopted after review,
+Ship must instead prove that the provider-authored publication event for the
+exact repository, canonical head ref, and base/head tuple preceded the credited
+campaign; tuple equality or an arbitrary older matching event earns no
+retrospective credit. A local dirty change after publication
+does not alter the remote review target; it merely blocks another Actuating
+operation or publication until resolved into a clean selected commit.
+
+`review_campaign_started` is a one-shot transition for the current Goal,
+Construction, subject, and Review Contract. The reducer stores its deterministic
+campaign id, rejects another start while that tuple remains current, and
+requires every `review_request_bound.campaign_id` to equal the stored id. A
+material subject, Construction, or Goal transition clears the register. Thus a
+campaign id names one admitted occurrence rather than aliasing several events.
 
 The `structural-facts` projection is a discardable structural aid. Its envelope
 reports `authority_granted:false` and `storage_mutated:false`. Ledger never
 executes work, dispatches or interprets reviews, computes credit, interprets
 Ship, chooses a Construction or next action, or emits semantic closure.
+
+The read-only `publication-review-events` projection returns the goal's raw
+`publication_observed` and `review_campaign_started` rows in canonical Ledger
+order:
+
+~~~bash
+ledger project \
+  --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
+  --projection publication-review-events \
+  --repo REPO \
+  --param goal=GOAL_ID \
+  --format json
+~~~
+
+Ledger only filters and preserves event order. Actuating dereferences the Ship
+and supporting causal-order attachments and decides whether one publication
+precedes one exact campaign.
+
+For a historical campaign, the supporting attachment has this exact semantic
+schema and owner:
+
+~~~yaml
+schema: actuating-publication-campaign-causality/v1
+owner: actuating
+seq:
+  definition_id: actuating/run-audit
+  definition_digest: sha256-digest
+  observation_digest: sha256-digest
+  corpus_digest: sha256-digest
+  session_id: string
+publication:
+  call_id: string
+  lifecycle_status: completed
+  exit_code: 0
+  finalized_line: positive-integer
+  provider_event_ref: sha256-digest
+campaign:
+  call_id: string
+  lifecycle_status: completed
+  exit_code: 0
+  declared_line: positive-integer
+  campaign_id: sha256-digest
+  campaign_event_digest: sha256-digest
+relation: publication-finalized-before-campaign-declared
+~~~
+
+Actuating recomputes the attachment digest, dereferences the exact Seq
+observation and `publication-review-events` campaign row, exact-matches both
+call lifecycles and event digests, and requires
+`publication.finalized_line < campaign.declared_line` in the same corpus and
+session. Seq supplies physical source evidence only; Actuating owns the
+relation's meaning. Independent wall clocks, endpoint equality, an arbitrary
+provider event, or an unverified digest earn no credit.

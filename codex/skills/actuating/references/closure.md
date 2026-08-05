@@ -36,9 +36,18 @@ A terminal judgment is legal only when all applicable statements hold:
    remains unresolved.
 7. For a `final-closeout` `complete` verdict when publication is required, the
    work has current Ship evidence for the exact subject; Actuating has resolved
-   `publication_observed.receipt_ref`, recomputed the immutable `SHIP-v1`
-   digest, and verified its repository, base/head tuple, live readback, and
-   complete `actuation_binding` against the exact `ready-to-ship` receipt.
+   `publication_observed.receipt_ref`, recomputed the immutable `SHIP-v1` or
+   `SHIP-ADOPTION-v1` digest, and verified its repository, base/head tuple,
+   route-specific live readback, and complete `actuation_binding` against the
+   exact `ready-to-ship` receipt. For adoption, Actuating also verifies that no
+   mutation occurred, `action.result == adopted`, the public branch resolves to
+   the exact head and is the repository's current default branch, the base is an
+   ancestor, and a complete live exact-tuple PR inventory has zero open matches.
+   Every non-null release must come from the branch-readback provider and adopted
+   repository, be published and non-draft, target the exact head, and enumerate
+   the complete unique live asset inventory with equal cardinality, exact set
+   equality, sizes, and SHA-256 digests before it is accepted.
+   Actuating must not substitute its own live-readback record.
    A `ready-to-ship` judgment deliberately omits this premise: that receipt is
    Ship's required readiness input for producing the publication evidence.
 8. For a `final-closeout` `complete` verdict, the work has current auxiliary
@@ -59,6 +68,44 @@ A terminal judgment is legal only when all applicable statements hold:
    credit and requires fresh convergence before `complete`.
 10. No later material event invalidates authority, subject, proof, publication,
     review evidence, or the current Review Accretion Disposition.
+
+Formal final-evidence ingestion order is not publication order. For a new
+campaign, recording a valid `SHIP-ADOPTION-v1` after review preserves credit
+when it ratifies the exact `SHIP-OBSERVATION-v1` digest that Actuating recorded
+before campaign binding. It does not reset review credit merely because the adoption receipt was recorded later.
+The observation and adoption must exact-match the reviewed bytes and current
+endpoint: repository, current default-branch canonical head ref and SHA,
+authoritative base/head tuple, subject, and stable
+Goal, Construction, and review contract through `review_binding`. The
+adoption carries its own
+current actuation binding, and every credited receipt binds the observed tuple.
+Evidence Ledger order from
+observation to campaign is the causal proof; provider and Ledger wall clocks are
+not compared. The recorded observation predates the credited campaign by that
+sequence. The reducer admits only one campaign-start occurrence for the current
+Goal, Construction, subject, and Review Contract and every request binds that
+exact occurrence. Tuple equality without that recorded pre-review observation is
+insufficient. Ratification matches the observation's stable tuple, and final
+adoption freshly re-reads that exact live default-branch tuple. A mismatch,
+missing observation, or unproved field invalidates the affected credit;
+adoption never refreshes stale review credit. Matching endpoints does not prove
+uninterrupted publication history and closure does not require that stronger,
+unobservable claim.
+
+For a historical campaign that predates `SHIP-OBSERVATION-v1`, the
+publication-before-campaign witness is instead: exact provider-backed
+publication evidence for the reviewed target, the exact projected campaign
+event, and an `actuating-publication-campaign-causality/v1` attachment proving
+the provider publication operation completed before that campaign started by
+source order. The attachment binds one exact Seq observation digest and
+definition digest, source corpus identity, session, successful publication and
+campaign call ids, `publication.finalized_line`, `campaign.declared_line`, the
+provider event digest, and the exact campaign event digest. Actuating verifies
+every field and requires `publication.finalized_line < campaign.declared_line`.
+The
+`publication-review-events` projection supplies ordered Ledger events but does
+not interpret external evidence. Endpoint equality, arbitrary provider history,
+or incomparable wall-clock timestamps alone are insufficient.
 
 Ledger validation, replay, `doctor`, or the `structural-facts` projection can
 expose structural premises. They cannot decide semantic adequacy, review-path

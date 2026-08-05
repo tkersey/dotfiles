@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the current incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
+description: "Turn accepted intent and review evidence into correct-by-construction software through Goal Contracts, Counterexample Sets, Construction Contracts, and an Evidence Ledger. Use bare $actuating for implementation, Ship publication, and review convergence; use explicit implement, triage, remediation-plan, or review-closeout for their bounded routes. Begin every architecture or abstraction decision with OPERATE ARCHITECTONICALLY, use $first-principles to establish the incumbent-independent Construction basis before $universalist nomination, and integrate one bounded $metanoetic pass when an initial high-regret nomination, accepted findings, causal recurrence, or cumulative review-path accretion makes abstraction change live. Before fresh review after repair, fold the cumulative changeset and review-induced delta so pointwise minimal repairs cannot compose into a dominated final Construction. Actuating alone selects the Construction and next action; Ledger is non-executing and Ship alone owns public effects."
 ---
 
 # Actuating
@@ -88,9 +88,10 @@ or Review Fold handoff. Construction v1 and v2 are unsupported; start a fresh
 v3 goal-local Evidence store rather than treating legacy data as current
 authority.
 
-`$ship` is the sole owner of public PR or tracker effects. Actuating supplies a
-current `ready-to-ship` proof and records Ship's returned receipt; it never
-performs the public effect itself.
+`$ship` is the sole owner of public PR or tracker effects and Ship-owned
+publication evidence. Actuating supplies a current `ready-to-ship` proof and
+records Ship's returned receipt; it never performs the public effect or authors
+a substitute publication receipt itself.
 
 ## Public modes
 
@@ -453,8 +454,11 @@ wave's standard clean as attempt one, run four later standard attempts
 serially, and require five consecutive distinct standard cleans. Any committed
 subject change resets all review credit and requires a fresh 1+4 wave.
 
-Publication-bearing review uses Ship-confirmed remote identity. Map the exact
-published target to `cas review --base <bound-base>` and require every receipt's
+Publication-bearing review uses Ship-confirmed remote identity. For a current
+PR, use `SHIP-v1`; for a new adoption route, record a read-only
+`SHIP-OBSERVATION-v1` pre-review publication observation before binding or
+dispatching the campaign. Map the exact published target to
+`cas review --base <immutable-base-sha>` and require every receipt's
 `baseSha`, `headSha`, and target fingerprint to equal Ship readback. Never use
 `--uncommitted` for a published PR. `--commit HEAD` is sufficient only when one
 commit is the complete bound PR delta.
@@ -466,10 +470,53 @@ translates CAS fields into semantic verdicts.
 ## Publication and closure
 
 Bare mode and publication-bearing review closeout hand a current
-`ready-to-ship` proof to `$ship`. Ship pushes the exact clean verified commit,
-creates or updates the PR, reads back repository/base/head refs and OIDs, and
-returns `SHIP-v1`. Only then does Actuating begin or resume review on the
-published subject.
+`ready-to-ship` proof to `$ship`. Ship either pushes the exact clean verified
+commit and creates or updates its PR, returning `SHIP-v1`, or read-only adopts
+an exact already-public subject that has no truthful current PR tuple, returning
+`SHIP-ADOPTION-v1`. Both routes exact-match the repository, base/head refs and
+OIDs, complete actuation binding, and route-specific live readback. Actuating
+must not substitute its own live-readback record.
+
+Ship evidence precedes review. For a new campaign, a later
+`SHIP-ADOPTION-v1` does not reset review credit merely because the adoption
+receipt was recorded later when it ratifies the exact `SHIP-OBSERVATION-v1`
+digest that Actuating recorded before the credited campaign. The observation, adoption, and every credited CAS
+receipt must exact-match the repository, canonical head ref, base/head tuple,
+subject, current default-branch state, Goal, Construction, and review contract
+through the observation's `review_binding`. That binding is the exact named
+Goal/Construction/subject/review-contract projection of Ship's validated
+actuation binding; it is not a second authority.
+The final adoption carries its own current actuation binding. The
+`publication-review-events` projection exposes exact ordered publication and
+campaign event rows without interpreting them. Evidence Ledger
+order from the recorded Ship observation to campaign binding proves causality;
+never compare provider and Ledger wall clocks. Otherwise the review credit is
+stale. The reducer admits exactly one campaign-start occurrence for the current
+Goal, Construction, subject, and Review Contract and binds every request to
+that occurrence. The pre-review observation proves the exact reviewed bytes
+were public before that occurrence; ratification exact-matches its stable tuple
+while final adoption freshly re-reads the same live default branch. Neither
+endpoint comparison nor ratification claims intermediate branch continuity.
+
+For a historical campaign that predates `SHIP-OBSERVATION-v1`, adoption may
+instead carry provider-backed publication evidence for the exact target.
+Actuating preserves review credit only when a content-addressed causal-order
+observation binds that exact provider event to the exact campaign start and
+shows the publication operation completed first. The supporting attachment is
+`actuating-publication-campaign-causality/v1`, owned and issued by Actuating
+after it validates one exact Seq observation, successful call lifecycles, and
+`publication.finalized_line < campaign.declared_line`. Matching endpoints, an
+arbitrary older event, or a comparison between independent wall clocks is not
+such proof. This attachment does not alter CAS receipts or create a new
+authority artifact.
+A non-null adopted release also requires its provider to match the branch
+readback provider,
+its repository to match the adopted repository, its state to be published and
+non-draft, its resolved tag
+target to equal the subject head, and its uniquely named assets to have equal
+cardinality and exact set equality with the complete live provider inventory.
+Release assets added after review are separate publication
+evidence and do not rewrite review time.
 
 Apply [closure.md](references/closure.md) only to current artifacts and
 observations. Actuating authors `actuating-closure-receipt/v1`; Ledger neither
@@ -498,7 +545,8 @@ Actuating's semantic authority.
 
 For `final-closeout` `complete`, also block on stale or missing publication
 identity, CAS tuple mismatch, unresolved request-local recovery, fewer than five
-current-published-subject standard cleans, or missing required Ship evidence.
+current-published-subject standard cleans, or missing required Ship evidence
+(`SHIP-v1` or `SHIP-ADOPTION-v1`).
 `ready-to-ship` requires neither publication nor review evidence.
 `local-implementation` `complete` requires neither and rejects them as
 inapplicable.
