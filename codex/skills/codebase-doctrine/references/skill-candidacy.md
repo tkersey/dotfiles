@@ -26,6 +26,10 @@ Independent activation
 Standalone workflow
   The skill performs a coherent judgment rather than restating repository docs.
 
+Progressive disclosure
+  The skill provides just the right information at just the right time: a small
+  always-loaded decision kernel and deeper knowledge whose relevance is explicit.
+
 Observable success and failure
   Later decision episodes can show whether the skill improved behavior.
 
@@ -84,6 +88,8 @@ the package:
 - triggers and non-triggers;
 - consequential decisions;
 - required context and outputs;
+- progressive-disclosure map: activation cues, always-loaded decision kernel,
+  and the conditions that make each deeper reference or asset relevant;
 - success and failure signals;
 - narrowing and retirement conditions;
 - currently applicable prohibited routes;
