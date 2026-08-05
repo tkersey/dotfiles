@@ -124,13 +124,19 @@ name to a canonical `refs/heads/<name>` ref, and require the supplied head ref
 and SHA to equal that live default-branch ref and tip. This restriction makes a
 non-default feature branch ineligible instead of treating zero exact PRs as
 proof that no PR route can represent it. The provider repository, canonical
-head ref, and head SHA exactly equal the authoritative input tuple. Treat the
-supplied base SHA as the immutable comparison base commit: reject an equal base
-and head, and prove that base is an ancestor of the head. A current branch name
-is not evidence that it still resolves to that historical base. Query the
-complete live open-PR
-inventory for the exact repository/base/head tuple; adoption requires zero
-exact matches. `observe-existing` requires
+head ref, and head SHA exactly equal the authoritative input tuple. Resolve the
+current Goal artifact named by the validated Actuating handoff, recompute its
+content identity, and require the supplied base SHA to equal that Goal's
+`scope.base_ref`: this is the authoritative delivery baseline, not an arbitrary
+ancestor selected at adoption time. Pass that immutable SHA directly as CAS's
+review base. Normalize the supplied base and head branch names and require both
+to equal the same live default-branch ref; the ref names the publication route
+while the historical base SHA names the reviewed range. Reject an equal base
+and head, and prove that the base SHA is an ancestor of the head. Query the
+complete live open-PR inventory for the exact repository/base/head tuple;
+adoption requires zero exact matches. Same-ref equality, rather than zero PRs
+alone, proves that no truthful branch-to-branch PR route exists.
+`observe-existing` requires
 `existing_publication.release == null`; final adoption performs all optional
 release validation. For a non-null adopted release, require its provider to
 equal the branch-readback provider, require its repository to
@@ -162,8 +168,12 @@ adoption instead requires `provider_event_ref` to resolve to immutable,
 provider-backed publication evidence for the exact repository, canonical ref,
 and head. Ship recomputes the attachment digest and exact-matches those fields;
 Actuating separately requires a content-addressed causal-order observation that
-places that provider event before the exact campaign start. Matching endpoints
-or incomparable wall-clock timestamps do not prove continuity or causal order.
+places that provider event before the exact campaign start. The supporting
+attachment is `actuating-publication-campaign-causality/v1`, issued by
+Actuating after it validates one exact Seq observation, successful call
+lifecycles, and `publication.finalized_line < campaign.declared_line`.
+Matching endpoints or incomparable wall-clock timestamps do not prove
+continuity or causal order.
 Exactly one of `pre_review_observation_ref` and `provider_event_ref` is non-null
 for adoption; both are null for `observe-existing`.
 

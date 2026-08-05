@@ -458,7 +458,7 @@ Publication-bearing review uses Ship-confirmed remote identity. For a current
 PR, use `SHIP-v1`; for a new adoption route, record a read-only
 `SHIP-OBSERVATION-v1` pre-review publication observation before binding or
 dispatching the campaign. Map the exact published target to
-`cas review --base <bound-base>` and require every receipt's
+`cas review --base <immutable-base-sha>` and require every receipt's
 `baseSha`, `headSha`, and target fingerprint to equal Ship readback. Never use
 `--uncommitted` for a published PR. `--commit HEAD` is sufficient only when one
 commit is the complete bound PR delta.
@@ -491,18 +491,24 @@ The final adoption carries its own current actuation binding. The
 campaign event rows without interpreting them. Evidence Ledger
 order from the recorded Ship observation to campaign binding proves causality;
 never compare provider and Ledger wall clocks. Otherwise the review credit is
-stale. The pre-review observation is the publication epoch anchor; ratification
-exact-matches its stable tuple while final adoption freshly re-reads the same
-live default branch.
+stale. The reducer admits exactly one campaign-start occurrence for the current
+Goal, Construction, subject, and Review Contract and binds every request to
+that occurrence. The pre-review observation proves the exact reviewed bytes
+were public before that occurrence; ratification exact-matches its stable tuple
+while final adoption freshly re-reads the same live default branch. Neither
+endpoint comparison nor ratification claims intermediate branch continuity.
 
 For a historical campaign that predates `SHIP-OBSERVATION-v1`, adoption may
 instead carry provider-backed publication evidence for the exact target.
 Actuating preserves review credit only when a content-addressed causal-order
 observation binds that exact provider event to the exact campaign start and
-shows the publication operation completed first. Matching endpoints, an
+shows the publication operation completed first. The supporting attachment is
+`actuating-publication-campaign-causality/v1`, owned and issued by Actuating
+after it validates one exact Seq observation, successful call lifecycles, and
+`publication.finalized_line < campaign.declared_line`. Matching endpoints, an
 arbitrary older event, or a comparison between independent wall clocks is not
-such proof. This supporting observation does not alter CAS receipts or create a
-new authority artifact.
+such proof. This attachment does not alter CAS receipts or create a new
+authority artifact.
 A non-null adopted release also requires its provider to match the branch
 readback provider,
 its repository to match the adopted repository, its state to be published and

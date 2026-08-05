@@ -182,12 +182,15 @@ identity; normalize short branch names once to `refs/heads/<name>` before
 comparison. The provider must report that ref as the
 repository's current default branch, and the remote branch SHA must equal
 both `public_state.branch.sha` and `review_target.head_sha`. The comparison base
-SHA is immutable historical identity: the base and head must differ, and the
-base must be an ancestor. A current branch ref need not still resolve to that
-base. Ship obtains a complete live PR
-inventory whose exact open repository/base/head match count is
-`open_exact_pr_count: 0`; `pr_unrepresentable_reason: head-is-default-branch`
-records why a feature-branch PR cannot truthfully represent this state. For a
+SHA must equal the `scope.base_ref` of the exact Goal artifact bound by the
+Actuating handoff. That owner-selected delivery baseline and the head must
+differ, and the base must be an ancestor. `review_target.base_ref` and
+`review_target.head_ref` both normalize to the same live default-branch ref;
+the ref identifies the publication route while the immutable base SHA
+identifies the review range and is passed directly to CAS. Ship obtains a
+complete live PR inventory whose exact open repository/base/head match count is
+`open_exact_pr_count: 0`; same-ref equality records why no truthful
+branch-to-branch PR can represent this state. For a
 new campaign, `publication_proof.pre_review_observation_ref` is non-null and
 Ship exact-matches the referenced `SHIP-OBSERVATION-v1` repository,
 review target, branch provider/repository/ref/SHA/default-branch identity, and
@@ -200,8 +203,7 @@ For a historical campaign, `publication_proof.provider_event_ref` is non-null;
 Ship resolves its immutable bytes, recomputes the digest, and exact-matches the
 provider, repository, canonical ref, and head. Actuating, not Ship, proves that
 event preceded the exact campaign with a content-addressed causal-order
-observation. Exactly one publication-proof field is non-null. Matching current
-endpoints does not prove uninterrupted publication history.
+observation. Exactly one publication-proof field is non-null. Matching endpoints do not prove uninterrupted publication history.
 For a non-null release, Ship requires its live provider to exact-match
 `public_state.branch.provider`, requires its live repository
 to exact-match the adopted repository, requires `publication_state: published`
