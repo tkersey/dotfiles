@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Learnings"
   short_description: "Capture and admit evidence-backed learnings"
-  default_prompt: "Use $learnings to recall or capture repo-local execution learnings. In a Ledger source-memory checkpoint, evaluate only the Learnings projection, return one canonical and one admission disposition, use native export for accepted admission, and do not invoke the coordinator or a sibling source."
+  default_prompt: "Use $learnings for repository-local recall and source-local capture after explicit, implicit, or root-owned activation. Evaluate only Learnings' capture and admission gates, retain exactly one source-owned disposition, append through Ledger only when the capture gate passes, and create a canonical memory-note projection only when admission is accepted. Do not invoke sibling source skills or a coordinator solely because Learnings activated."
