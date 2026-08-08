@@ -1,13 +1,13 @@
 ---
 name: universalist
-description: "Use whenever implementation, review, migration, or resolution creates, changes, preserves, validates, bypasses, or removes an owned code boundary. Universalist synthesizes the smallest context-relative, correct-by-construction boundary candidate from current requirements and host capabilities. In Actuating composition it nominates that candidate without selecting or reopening the Construction; standalone work may select a route under its root authority. Make invalid states and illegal compositions unrepresentable where possible, centralize residual checks, preserve observations and compatibility, record invalidation triggers, and return obstruction rather than invent correctness. Includes double-category square calculus when processes and architecture changes compose independently. Implicit invocation on; team mode only by explicit request."
+description: "Use whenever implementation, review, migration, or resolution creates, changes, preserves, validates, bypasses, or removes an owned code boundary, or reveals repeated implementations that distribute one law across owners. Universalist recognizes when current code is a literal, partial, degenerate, distributed, or lawless instance of a more general pattern, then nominates the smallest context-relative, correct-by-construction boundary candidate and an observation-preserving transition. In Actuating composition it nominates without selecting or reopening the Construction; standalone work may select under root authority. Make invalid states and illegal compositions unrepresentable where possible, centralize residual checks, preserve observations and compatibility, record invalidation triggers, and return obstruction rather than invent correctness. Includes double-category square calculus when processes and architecture changes compose independently. Implicit invocation on; team mode only by explicit request."
 ---
 
 # Universalist
 
-Universalist synthesizes **context-relative, correct-by-construction boundary architecture**. In Actuating composition it nominates a candidate; Actuating alone adjudicates and authors the Construction.
+Universalist recognizes **latent law-bearing structure** and synthesizes **context-relative, correct-by-construction boundary architecture**. In Actuating composition it nominates a candidate; Actuating alone adjudicates and authors the Construction.
 
-It uses category theory as a hidden optimizer to derive the smallest effective boundary artifact whose representation, constructors, eliminators, compositions, and interpretations enforce the current context's requirements. It makes invalid states and illegal compositions unrepresentable where the host permits; centralizes unavoidable runtime validation at explicit owners; preserves required observations and compatibility; records residual obligations and invalidation triggers; and returns an obstruction rather than inventing correctness the context cannot justify.
+It uses category theory as a hidden recognizer and optimizer: excavate carriers, operations, observations, laws, and counterexamples from current code; determine whether the implementation is a variant of a more general pattern; then derive the smallest effective boundary artifact and observation-preserving transition. It makes invalid states and illegal compositions unrepresentable where the host permits; centralizes unavoidable runtime validation at explicit owners; preserves required observations and compatibility; records residual obligations and invalidation triggers; and returns an obstruction rather than inventing correctness the context cannot justify.
 
 Default discipline:
 
@@ -21,6 +21,17 @@ one owner for every residual check
 one law and one falsifier
 ```
 
+When latent structure is material:
+
+```text
+one current encoding
+one candidate general pattern
+one explicit encoding relation
+one discriminating law and nearest false friend
+one generalization dividend
+one transition witness
+```
+
 Category theory must change what the architecture owns, permits, excludes, composes, observes, preserves, identifies, generates, interprets, proves, or refuses to invent. Otherwise it is explanatory metadata.
 
 ## Boundary-trigger mandate
@@ -29,7 +40,9 @@ Use this skill whenever implementation, refactoring, review, migration, or resol
 
 Examples include module and package APIs, public/internal contracts, DTOs and schemas, parsers and validators, storage and wire formats, syntax and interpreters, effect handlers, protocols, plugins, tools, CLIs, processes, repositories, and deployment surfaces.
 
-Activation is broad; escalation is narrow. An already exact boundary may be preserved. A local edit wholly inside one unchanged boundary does not trigger this skill.
+Repeated or structurally similar implementations that distribute one invariant, composition law, interpreter, or compatibility rule across owners are boundary evidence even when the missing owner has not yet been named.
+
+Activation is broad; escalation is narrow. An already exact boundary may be preserved. A local edit wholly inside one unchanged boundary does not trigger unless it exposes such distributed ownership or a materially reusable law.
 
 ## Trigger-to-evidence kernel
 
@@ -44,6 +57,7 @@ Source / target:
 Current requirements:
 Required observations and compatibility:
 Preserved / forgotten / generated / observed:
+Current encoding / latent pattern disposition:
 Law:
 Falsifier:
 Residual obligations:
@@ -53,7 +67,7 @@ Invalidation triggers:
 Then:
 
 1. Decide whether the route is consequential under **Decision observability**: at least two plausible routes materially differ in persistent behavior, authority, compatibility, migration, enforcement, invalidation, or proof obligations.
-2. For a consequential route, complete the current-context, comparison, Boundary Artifact Contract, enforcement, residual, invalidation, law, and falsifier analysis before mutation. In Actuating composition, hand this nomination directly to Actuating; the Construction is the decision carrier.
+2. For a consequential route, complete the current-context, latent-structure disposition, comparison, Boundary Artifact Contract, transition, enforcement, residual, invalidation, law, and falsifier analysis before mutation. In Actuating composition, hand this nomination directly to Actuating; the Construction is the decision carrier.
 3. Allocate a plan and emit one root `SDR-v1` only when **Decision durability** requires an independently addressable Universalist decision.
 4. For a routine or uncontested seam, retain the compact disposition and continue the repository's ordinary workflow.
 
@@ -121,9 +135,80 @@ monitoring / audit / invalidation
 
 Do not claim static enforcement where the language, module system, persistence layer, deployment topology, or external authority cannot provide it.
 
+## Latent structure recognition
+
+Run a lightweight recognition pass before settling on the ordinary candidate when repository evidence shows repeated validators, branches, joins, folds, wrappers, projections, interpreters, transitions, composition loops, or migration shapes. The purpose is not to name a category. It is to discover whether several concrete implementations share one law-bearing structure whose explicit ownership would materially improve the architecture.
+
+Recognition is **abductive**; card evaluation is **deductive**; transition is **constructive**:
+
+```text
+concrete code
+  -> carriers / operations / observations / laws
+  -> candidate general pattern
+  -> discriminating law and counterexample
+  -> repository-native realization
+  -> observation-preserving transition
+```
+
+Record:
+
+```text
+Current encoding and representative instances:
+Carriers / operations / observations:
+Candidate equations:
+Known non-laws / counterexamples:
+Stable structure / varying parameters:
+Candidate general pattern:
+Encoding relation:
+Nearest false friend:
+Discriminating law:
+Generalization dividend:
+Transition witness:
+```
+
+Classify the current encoding as exactly one of:
+
+```text
+literal instance
+observational realization
+partial or degenerate instance
+lax / pseudo / normalized instance
+distributed encoding
+lawless approximation
+analogy only
+contradicted
+```
+
+Then:
+
+1. anti-unify behavior, not merely duplicated syntax;
+2. nominate at most three nearby patterns, including the ordinary alternative;
+3. use one executable law or counterexample to distinguish them;
+4. keep a recognized pattern only when it deletes repeated obligations, centralizes ownership, removes invalid states, exposes lawful composition, consolidates interpretation, enables a safer migration, admits a future variant without new control flow, or strengthens reusable proof;
+5. leave analogy-only recognition as explanatory metadata;
+6. when recognition changes the route, construct one transition witness:
+
+```text
+Current encoding:
+Generalized repository-native form:
+Encode / translate:
+Interpret / project:
+Preservation law:
+Compatibility boundary:
+First witness seam:
+Retired obligations and bypasses:
+Rollback:
+Stop condition:
+Invalidation triggers:
+```
+
+A recognition may terminate in `UNI-ORDINARY`; theorem-card sophistication is not required. Surface resemblance, signal count, or a categorical name never proves prerequisites or authorizes generalization.
+
+Read `references/latent-structure-recognition.md` only when this pass is material.
+
 ## Smallest effective artifact
 
-State the **ordinary candidate** first: record, tagged union, checked constructor, adapter, explicit parameter, state machine, operation IR, handler, labelled graph, query, bounded loop, canonical merge, or one typed compatibility witness.
+After the lightweight recognition pass, state the **ordinary candidate** first: record, tagged union, checked constructor, adapter, explicit parameter, state machine, operation IR, handler, labelled graph, query, bounded loop, canonical merge, or one typed compatibility witness.
 
 Define the comparison universe before calling anything smallest or canonical:
 
@@ -178,7 +263,6 @@ holes:
 ```
 
 Independent pressures become linked packets. Double-category squares, Day convolution, Tambara framing, effect ordering, locality, data shape, and context preparation may coexist; they do not compete as one global winner.
-
 ## Double-category architecture
 
 Use the `two_dimensional_composition` card when two semantically different arrow families both compose and correctness depends on typed squares relating them.
@@ -226,7 +310,7 @@ When selected, read `references/double-category-architecture.md` and `references
 
 For a consequential structural choice, state the **ordinary candidate** first, then consult `references/universal-construction-registry.yaml` and only card fragments relevant to the evidenced axis, typed hole, and requirements.
 
-Construction cards are theorem nominations. They do not select a route or authorize mutation.
+Construction cards are theorem nominations. They do not select a route or authorize mutation. A recognized resemblance does not prove a card's prerequisites; the discriminating law, current-context evidence, and effectivity account must do that.
 
 For each relevant card, record exactly one evidence-bound disposition:
 
@@ -249,6 +333,7 @@ A nominated direction is not yet selected architecture. Lower it into one reposi
 Context identifier / proof lease:
 Boundary and owner:
 Requirements discharged:
+Current encoding / generalization relation, if material:
 Representation / carrier:
 Public constructors:
 Public eliminators:
@@ -257,6 +342,7 @@ Two-dimensional arrows / squares / pasting, if selected:
 Interpreter / projection / handler:
 Required observations:
 Compatibility / migration:
+Transition witness / retirement, if material:
 Bypass prevention:
 Enforcement allocation:
 Residual obligations:
@@ -335,6 +421,7 @@ A context-relative boundary artifact satisfies the applicable laws:
 9. **Effectivity** — construction, checking, normalization, interpretation, and invalidation fit the resource model.
 10. **Context validity** — the proof lease remains valid under the recorded context and invalidation policy.
 11. **Two-dimensional coherence, when selected** — square boundaries match, both pasting operations close, interchange holds up to declared equivalence, and interpretation preserves the square calculus.
+12. **Recognition fidelity, when used** — the current encoding satisfies the claimed relation to the general pattern, the discriminating law rejects the nearest false friend, and the transition preserves required observations.
 
 ## Universal witness contract
 
@@ -432,6 +519,7 @@ Return obstruction rather than inventing evidence, authority, policy, representa
 The operational kernel above is authoritative. Load detailed references only when needed:
 
 - `references/universal-construction-registry.yaml` and `references/universal-constructions/`
+- `references/latent-structure-recognition.md`
 - `references/structures-and-laws.md`
 - `references/canonical-boundary-artifacts.md`
 - `references/boundary-law-catalogue.md`
@@ -484,6 +572,15 @@ Context:
 Typed hole:
   axis:
   kind:
+
+Latent structure, when relevant:
+  representative instances:
+  carriers / operations / observations:
+  candidate equations / non-laws:
+  candidate pattern / encoding relation:
+  discriminating law / nearest false friend:
+  generalization dividend:
+  transition witness:
 
 Two-dimensional structure, when relevant:
   horizontal arrows and composition:
@@ -565,10 +662,11 @@ ledger project \
 
 Before mutation, author the current-context contract, composition owner and
 decision carrier, ordinary candidate, comparison universe, axis and typed hole,
-relevant card dispositions, Boundary Artifact Contract with applicability
-rationales, enforcement matrix, residual obligations, invalidation triggers,
-proof lease, law, falsifier, and any horizontal/vertical/square/pasting
-obligations in a draft. Admit the revision through the same definition:
+latent-structure disposition and transition witness when material, relevant card
+dispositions, Boundary Artifact Contract with applicability rationales,
+enforcement matrix, residual obligations, invalidation triggers, proof lease,
+law, falsifier, and any horizontal/vertical/square/pasting obligations in a
+draft. Admit the revision through the same definition:
 
 ```bash
 ledger transact \
@@ -603,7 +701,7 @@ ledger transact \
   --format json
 ```
 
-Pass only applicable clauses explicitly. Add `UNI-DOUBLE-001` only when two-dimensional composition is selected. Add `UNI-ROOT-001` only for independently durable decisions. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`. Reclassification adds `UNI-RECLASSIFY-001` and trigger `UNI-RECLASSIFY`.
+Pass only applicable clauses explicitly. Add `UNI-RECOGNITION-001` and trigger `UNI-RECOGNIZE` only when latent-structure recognition materially changes the nomination or transition. Add `UNI-DOUBLE-001` only when two-dimensional composition is selected. Add `UNI-ROOT-001` only for independently durable decisions. `UNI-OBSTRUCT` replaces `UNI-ARTIFACT-001` with `UNI-OBSTRUCTION-001`. Reclassification adds `UNI-RECLASSIFY-001` and trigger `UNI-RECLASSIFY`.
 
 Ledger owns plan identity, addressing, structural validation, canonicalization,
 custody, and atomic replacement. Universalist owns architecture policy and the
@@ -621,6 +719,7 @@ Consequential decisions require:
 
 ```text
 current-context contract
+latent-structure disposition and transition witness when material
 ordinary candidate
 comparison universe
 one axis and typed hole
@@ -649,7 +748,7 @@ A card's legacy route hint never determines the choice.
 
 ## Tracks
 
-- **Track A0 — Domain Algebra Discovery:** carriers, operations, observations, laws, non-laws, and effect boundaries.
+- **Track A0 — Domain Algebra and Latent Structure Discovery:** carriers, operations, observations, laws, non-laws, repeated encodings, candidate general patterns, and discriminating counterexamples.
 - **Track A — Diagnosis:** analyze one seam without mutation.
 - **Track B — One-seam refactor:** implement one narrow owner-controlled artifact.
 - **Track C — Staged migration:** strengthen internals behind stable wire, API, or storage shapes.
@@ -669,19 +768,29 @@ Do not spawn Universalist subagents unless the user explicitly requests subagent
 When authorized:
 
 1. use the smallest sufficient read-only roster;
-2. give each agent one axis and typed hole, including `square` when two-dimensional composition is under review;
-3. require evidence, card dispositions, residuals, and invalidators;
-4. let the root synthesize one Boundary Artifact Contract candidate;
-5. have the proof auditor attack it;
-6. use one writer for one witness seam;
-7. use the verifier independently;
-8. emit a root receipt only when independently durable.
+2. have the cartographer identify repeated encodings, common operations and observations, candidate equations, and non-laws before categorical selection;
+3. give each agent one axis and typed hole, including `square` when two-dimensional composition is under review;
+4. require every retained recognition to state its encoding relation, nearest false friend, discriminating law, generalization dividend, and transition witness;
+5. require evidence, card dispositions, residuals, and invalidators;
+6. let the root synthesize one Boundary Artifact Contract candidate;
+7. have the proof auditor attack it;
+8. use one writer for one witness seam;
+9. use the verifier independently;
+10. emit a root receipt only when independently durable.
 
 Child agents do not choose routes, authorize mutation, or recursively spawn agents.
 
 ## Output contract
 
 Normal output uses repository and domain language:
+
+```text
+These repeated tenant checks are one distributed agreement rule.
+Introduce one owner-controlled compatibility object.
+Translate existing callers through its checked constructor.
+Preserve both sanctioned projections.
+Retire unchecked pair construction after the first witness seam verifies.
+```
 
 ```text
 Separate executable process composition from migration composition.
@@ -691,6 +800,6 @@ Verify that local migration witnesses paste into the same global result in eithe
 Invalidate affected squares when an interface or process boundary changes.
 ```
 
-When expert explanation is requested, add the construction name, hypotheses, competitors, mediator, canonicality claim, effective lowering, claim strength, and obstruction boundary.
+When expert explanation is requested, add the current-encoding relation, construction name, hypotheses, nearest false friend, discriminating law, generalization dividend, transition witness, competitors, mediator, canonicality claim, effective lowering, claim strength, and obstruction boundary.
 
 Stop after the first verified seam unless the user explicitly widens scope.

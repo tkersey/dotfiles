@@ -1,10 +1,10 @@
-# Universalist 17.3.0
+# Universalist 17.4.0
 
-Universalist is a boundary-triggered architecture workflow. It keeps one operating discipline:
+Universalist is a boundary-triggered architecture workflow with latent-structure recognition. It keeps one operating discipline:
 
 > one owned boundary, one current context, one smallest effective artifact
 
-It uses category theory when that changes the artifact, law, or proof—not as decorative vocabulary and not through skill-local executables.
+It uses category theory to recognize when ordinary code is a variant of a more general law-bearing pattern, then to change the artifact, transition, law, or proof—not as decorative vocabulary and not through skill-local executables.
 
 ## Install and validate
 
@@ -26,7 +26,7 @@ Ledger validates the `SKDC-v1` structure without granting semantic authority. It
 
 `$universalist` is active whenever implementation, refactoring, review, migration, or resolution considers a code boundary. Boundary consideration itself is the activation signal.
 
-Activation is broad; escalation is proportional. The boundary pass may preserve an already exact seam and continue without adding abstraction.
+Activation is broad; escalation is proportional. The boundary pass may preserve an already exact seam and continue without adding abstraction. Repeated implementations that distribute one invariant, composition law, interpreter, or compatibility rule across owners count as boundary evidence even when the missing owner has not yet been named.
 
 Start with:
 
@@ -37,11 +37,31 @@ Disposition rationale and evidence:
 Owner:
 Source / target:
 Preserved / forgotten / generated / observed:
+Current encoding / latent pattern disposition:
 Law:
 Falsifier:
 ```
 
 Use ordinary repository-native types, adapters, handlers, interpreters, and tests when they make the seam exact. Escalate only when a stronger construction materially changes behavior, authority, compatibility, migration, enforcement, invalidation, representable states, legal composition, effects, locality, information flow, proof, or resources.
+
+## Latent structure recognition
+
+Before settling on the ordinary candidate, run a lightweight recognition pass when code contains repeated validators, branches, joins, folds, wrappers, projections, interpreters, transitions, composition loops, or migration shapes.
+
+```text
+concrete code
+  -> carriers / operations / observations / laws
+  -> candidate general pattern
+  -> discriminating law and nearest false friend
+  -> repository-native realization
+  -> observation-preserving transition
+```
+
+Classify the current encoding as a literal instance, observational realization, partial or degenerate instance, lax/pseudo/normalized instance, distributed encoding, lawless approximation, analogy only, or contradicted.
+
+A recognized pattern survives only when it has a material generalization dividend: fewer repeated obligations, one clearer owner, fewer invalid states, explicit lawful composition, one interpreter, a safer migration, reusable proof, or a new variant without new control flow. Otherwise retain the ordinary candidate.
+
+When recognition changes the route, record the encoding, interpretation, preservation law, compatibility boundary, first witness seam, retired bypasses, rollback, stop condition, and invalidation triggers. Read `references/latent-structure-recognition.md` for the recognition atlas and transition protocol.
 
 ## Context-relative artifact contract
 
@@ -57,15 +77,16 @@ The 56 YAML cards in `references/universal-constructions/` are evidence-bound th
 
 For a consequential choice:
 
-1. state the ordinary candidate first;
-2. identify one seam, architectural axis, and typed hole;
-3. read only cards matching evidenced signals and axis;
-4. classify every relevant card as selected, rejected, contradicted, or unresolved;
-5. retain a card only when repository evidence satisfies prerequisites and proof obligations;
-6. lower it to a repository-native Boundary Artifact Contract;
-7. let Actuating or the standalone root choose the route and authorize mutation.
+1. excavate the current encoding and run the lightweight recognition pass;
+2. state the ordinary candidate first;
+3. identify one seam, architectural axis, and typed hole;
+4. read only cards matching evidenced signals and axis;
+5. classify every relevant card as selected, rejected, contradicted, or unresolved;
+6. retain a card only when repository evidence satisfies prerequisites and proof obligations;
+7. lower it to a repository-native Boundary Artifact Contract;
+8. let Actuating or the standalone root choose the route and authorize mutation.
 
-Do not use signal count, evidence count, `diagnostic_order`, or registry order to manufacture a winner. Missing evidence remains unresolved. Support-only cards guard reasoning and never become implementation artifacts.
+A recognized resemblance never proves a card's prerequisites. Do not use signal count, evidence count, `diagnostic_order`, or registry order to manufacture a winner. Missing evidence remains unresolved. Support-only cards guard reasoning and never become implementation artifacts.
 
 A selected universal construction needs existence, preservation, competitor mediation, canonicality or uniqueness-up-to, effectivity, and a falsifier. Obstruction needs nonexistence, a counterexample, stability, effectivity, a falsifier, and a reopening condition.
 
@@ -129,7 +150,7 @@ Read:
 
 A decision is consequential only when at least two plausible routes materially differ. Routine and uncontested choices use the compact boundary disposition without a plan or receipt.
 
-Materiality controls reasoning, not storage. In Actuating composition, return the complete candidate analysis to Actuating and let the Construction carry the adjudicated decision. Create a Universalist plan and `SDR-v1` only when no current Construction carries that decision and a standalone, cross-session, multi-actor, migration, or supersession handoff must address it independently.
+Materiality controls reasoning, not storage. In Actuating composition, return the complete candidate analysis to Actuating and let the Construction carry the adjudicated decision. Create a Universalist plan and `SDR-v1` only when no current Construction carries that decision and a standalone, cross-session, multi-actor, migration, or supersession handoff must address it indepently.
 
 Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
 once. Universalist requires Ledger 1.x and `ledger-artifact-abi/v1`.
@@ -153,6 +174,7 @@ ledger transact \
   --format json
 ```
 
+For a durable recognition-driven decision, include trigger `UNI-RECOGNIZE` and clause `UNI-RECOGNITION-001` only when recognition materially changes the nomination or transition.
 For a durable double-category decision, include the applicable existing clauses
 plus `UNI-DOUBLE-001` in the `SDR-v1`. Pass every applicable clause explicitly.
 Tune's canonical definition validates and materializes the receipt;
@@ -161,7 +183,7 @@ atomic custody. Universalist retains decision policy and Markdown meaning.
 
 ## Tracks
 
-- **Track A0** — discover carriers, operations, observations, laws, non-laws, and effect boundaries.
+- **Track A0** — discover carriers, operations, observations, laws, non-laws, repeated encodings, candidate general patterns, and discriminating counterexamples.
 - **Track A** — diagnose one seam without implementation.
 - **Track B** — implement one narrow boundary refactor.
 - **Track C** — stage an internal migration behind a stable public or storage shape.
@@ -176,6 +198,7 @@ atomic custody. Universalist retains decision policy and Markdown meaning.
 
 Load only what the selected seam requires:
 
+- `references/latent-structure-recognition.md`
 - `references/structures-and-laws.md`
 - `references/canonical-boundary-artifacts.md`
 - `references/composition-geometry.md`
