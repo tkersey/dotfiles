@@ -150,7 +150,7 @@ Read:
 
 A decision is consequential only when at least two plausible routes materially differ. Routine and uncontested choices use the compact boundary disposition without a plan or receipt.
 
-Materiality controls reasoning, not storage. In Actuating composition, return the complete candidate analysis to Actuating and let the Construction carry the adjudicated decision. Create a Universalist plan and `SDR-v1` only when no current Construction carries that decision and a standalone, cross-session, multi-actor, migration, or supersession handoff must address it indepently.
+Materiality controls reasoning, not storage. In Actuating composition, return the complete candidate analysis to Actuating and let the Construction carry the adjudicated decision. Create a Universalist plan and `SDR-v1` only when no current Construction carries that decision and a standalone, cross-session, multi-actor, migration, or supersession handoff must address it independently.
 
 Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
 once. Universalist requires Ledger 1.x and `ledger-artifact-abi/v1`.
