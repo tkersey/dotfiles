@@ -1,7 +1,7 @@
 interface:
   display_name: "Universalist"
-  short_description: "Nominate exact boundary architecture without taking selection"
+  short_description: "Recognize latent structure and nominate exact boundaries"
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to nominate the smallest exact boundary candidate, preserving observations and naming owners, laws, falsifiers, residuals, and invalidators; when Actuating is present, leave Construction selection to Actuating and create a separate plan only for independent durability. When processes and architecture changes form independent composition directions, test the double-category card and require typed horizontal and vertical arrows, compatibility squares, both pasting operations, interchange/coherence, one effective interpreter, and an effect/resource falsifier."
+  default_prompt: "Use $universalist to recognize when current code is a literal, partial, degenerate, distributed, or lawless instance of a more general law-bearing pattern; distinguish the nearest false friend with one executable law, require a material generalization dividend, and nominate the smallest observation-preserving transition into repository-native architecture. Preserve observations and name owners, falsifiers, residuals, and invalidators. When Actuating is present, leave Construction selection to Actuating and create a separate plan only for independent durability. When processes and architecture changes form independent composition directions, test the double-category card and require typed horizontal and vertical arrows, compatibility squares, both pasting operations, interchange/coherence, one effective interpreter, and an effect/resource falsifier."
 policy:
   allow_implicit_invocation: true

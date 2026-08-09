@@ -4,9 +4,19 @@
 
 ## Signal
 
+## Current encoding
+
+## Recognized general pattern / relation
+
+## Discriminating law / nearest false friend
+
+## Generalization dividend
+
 ## Construction
 
 ## Why this instead of nearby alternatives
+
+## Transition witness
 
 ## Seam / files
 
@@ -15,6 +25,8 @@
 ## Before -> After
 
 ## Verification
+
+## Retired obligations / bypasses
 
 ## Runtime-only leftovers
 

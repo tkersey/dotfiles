@@ -4,23 +4,24 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v14"
+      "source_fingerprint": "universalist-boundary-decision-v15"
     },
     "triggers": [
       {
         "trigger_id": "UNI-BOUNDARY",
-        "description": "Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary.",
+        "description": "Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary, including repeated implementations that distribute one law across owners.",
         "cue_literals": [
           "code boundary",
           "boundary disposition",
           "source / target",
           "preserved / forgotten / generated / observed",
+          "current encoding / latent pattern disposition",
           "law",
           "falsifier"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "work wholly internal to one unchanged boundary",
+          "work wholly internal to one unchanged boundary with no distributed law or materially reusable structure",
           "category theory exposition without a concrete seam"
         ]
       },
@@ -34,6 +35,8 @@
           "one axis and typed hole",
           "Boundary Artifact Contract",
           "enforcement matrix",
+          "generalization dividend",
+          "transition witness",
           "proof lease",
           "invalidation triggers"
         ],
@@ -43,6 +46,26 @@
           "ceremonial activation with no route choice",
           "static schema example",
           "categorical label with no material delta"
+        ]
+      },
+      {
+        "trigger_id": "UNI-RECOGNIZE",
+        "description": "Repository evidence shows repeated or structurally similar implementations that may instantiate one law-bearing pattern and recognition could materially change ownership legal composition interpretation migration or proof.",
+        "cue_literals": [
+          "current encoding",
+          "representative instances",
+          "candidate general pattern",
+          "encoding relation",
+          "nearest false friend",
+          "discriminating law",
+          "generalization dividend",
+          "transition witness"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "surface resemblance or shared vocabulary without a discriminating law",
+          "one local helper with no repeated semantic obligation or imminent constrained variant",
+          "recognition with no material generalization dividend"
         ]
       },
       {
@@ -189,6 +212,41 @@
           "widened seam without a law requirement"
         ],
         "rationale": "The decision record must expose what changed because of Universalist rather than merely proving that the skill was present."
+      },
+      {
+        "clause_id": "UNI-RECOGNITION-001",
+        "trigger_refs": [
+          "UNI-RECOGNIZE"
+        ],
+        "expected_routes": [
+          "UNI-PRESERVE",
+          "UNI-ORDINARY",
+          "UNI-CANONICAL",
+          "UNI-OBSTRUCT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "current encoding and representative instances",
+          "carriers operations observations candidate equations and known non-laws when recognition is nominated",
+          "candidate general pattern and explicit encoding relation when nominated",
+          "nearest false friend and discriminating law with attributed repository evidence when nominated",
+          "generalization dividend or reason the recognition remains explanatory metadata",
+          "observation-preserving transition witness when recognition materially changes the route"
+        ],
+        "success_signals": [
+          "recognition begins from concrete operations observations laws and counterexamples rather than vocabulary",
+          "the current encoding is classified as literal observational partial or degenerate lax or pseudo distributed lawless analogy-only or contradicted",
+          "the ordinary candidate remains the baseline and a recognized pattern survives only with a material generalization dividend",
+          "a material transition names encoding interpretation preservation compatibility first witness seam retired bypasses rollback and stop condition"
+        ],
+        "failure_signals": [
+          "surface resemblance signal count or a categorical name selects architecture",
+          "pattern name lacks a discriminating law or nearest false friend",
+          "generalization adds abstraction without deleting or centralizing a material obligation",
+          "recognition changes the route without an observation-preserving transition witness",
+          "one local helper is generalized without a repeated law or imminent constrained variant"
+        ],
+        "rationale": "Category theory creates architectural leverage when it recognizes the law-bearing structure already latent in ordinary code and supplies a verified transition, not when it merely labels resemblance."
       },
       {
         "clause_id": "UNI-CONTEXT-001",

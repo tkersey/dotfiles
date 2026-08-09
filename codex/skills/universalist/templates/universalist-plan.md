@@ -33,6 +33,26 @@ adjudication there instead of allocating this plan.
 ### Invalidated artifacts: receipt / plan / proof lease / none
 ### Successor packets: owner + axis + seam / none
 
+## Latent structure recognition (complete only when material):
+### Current encoding and representative instances:
+### Carriers / operations / observations:
+### Candidate equations / known non-laws:
+### Stable structure / varying parameters:
+### Candidate general pattern:
+### Encoding relation:
+### Nearest false friend:
+### Discriminating law:
+### Generalization dividend:
+### Transition witness:
+#### Generalized repository-native form:
+#### Encode / translate:
+#### Interpret / project:
+#### Preservation law:
+#### Compatibility boundary / first witness seam:
+#### Retired obligations and bypasses:
+#### Rollback / stop condition:
+#### Invalidation triggers:
+
 ## Signal and evidence:
 ## Ordinary candidate:
 ## Comparison universe and dominance relation:
@@ -48,6 +68,7 @@ adjudication there instead of allocating this plan.
 ## Boundary Artifact Contract:
 ### Boundary and owner:
 ### Requirements discharged:
+### Current encoding / generalization relation:
 ### Representation / carrier:
 ### Public constructors:
 ### Public eliminators:
@@ -56,6 +77,7 @@ adjudication there instead of allocating this plan.
 ### Interpreter / projection / handler:
 ### Required observations:
 ### Compatibility / migration:
+### Transition witness / retirement:
 ### Bypass prevention:
 ### Enforcement allocation:
 ### Residual obligations:
