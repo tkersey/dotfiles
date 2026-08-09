@@ -1,180 +1,146 @@
-# Codex App-Server Control Contract (CLI Notes)
+# Codex app-server 0.146 contract
 
-This skill does not assume access to any Codex source repo. Treat your installed `codex` binary as canonical.
+Treat the installed `codex` executable as the runtime schema source. CAS 0.4.1
+compares its compact `codex-app-server-0.146.0` baseline with both generated
+bundles and the selected live behavioral probes.
 
-`cas` is v2-focused. Deprecated legacy approval requests are intentionally rejected.
+## Schema and preflight
 
-## Canonical Schema Source
+```bash
+codex app-server generate-json-schema --out <stable-dir>
+codex app-server generate-json-schema --experimental --out <experimental-dir>
 
-Generate schemas that exactly match your installed version:
-
-```sh
-codex app-server generate-ts --out DIR
-codex app-server generate-json-schema --out DIR
-
-# Include experimental methods/fields:
-codex app-server generate-ts --experimental --out DIR
-codex app-server generate-json-schema --experimental --out DIR
+cas app-server schema --cwd <repo> --json
+cas app-server preflight --cwd <repo> --profile core --json
 ```
 
-## Connection Lifecycle (Required)
+CAS caches schema bundles by resolved executable identity, reported version,
+contract ID, and stable/experimental bundle digests. `--refresh-schema`
+regenerates the cache. Exact bundle digests are diagnostics, not the
+compatibility predicate.
 
-Every connection must complete this sequence exactly once:
+A compatible profile requires:
 
-1. Send `initialize` with `clientInfo` and optional capabilities.
-2. Send the `initialized` notification.
-3. Only then issue method requests.
+- the stable version floor and no unapproved prerelease;
+- every baseline client method, server request, and notification;
+- compatible required fields, scalar kinds, nullability, discriminators, and
+  control-flow enums;
+- one named terminating policy for every baseline server request;
+- all required selected-profile behavioral probes.
 
-If this contract is violated, expect lifecycle errors:
+Additive client methods, notifications, and non-control object fields are
+admissible and reported. An additive server request makes `full` incompatible
+until CAS assigns a policy. Unknown item variants remain raw or produce a typed
+unsupported-item result.
 
-- `"Not initialized"`: request sent before handshake finished.
-- `"Already initialized"`: repeated initialize on same connection.
+## Profiles
 
-Recommended initialize payload baseline:
+- `core`: initialization, selected transport, request policy coverage, and
+  bounded overload behavior.
+- `review`: core plus structured review.
+- `session-inquiry`: core plus paginated and ephemeral fork/anchor behavior.
+- `full`: all required 0.146 features, including pinning, executor skills and
+  resources, external import history, review, and inquiry.
 
-- `clientInfo: { name, title, version }`
-- `capabilities: { experimentalApi: true }` when you need experimental methods/fields.
-- Optional: `capabilities.optOutNotificationMethods` for per-connection suppression.
+An explicit external endpoint must earn its own runtime and behavioral proof;
+CAS may not borrow a fresh local process as the endpoint witness.
 
-## Transport and Envelope
+## Transports and remote Code Mode host
 
-- Default transport: stdio JSONL (`--listen stdio://`), one JSON object per line.
-- WebSocket transport exists but is experimental/unsupported for production.
-- JSON-RPC-like envelopes omit `"jsonrpc":"2.0"`.
+CAS distinguishes:
 
-Message kinds (shape-based):
+```text
+stdio
+websocket
+unix_socket
+```
 
-- Request: `{ "method": string, "id": string|number, "params"?: any }`
-- Response: `{ "id": string|number, "result": any }` or `{ "id": string|number, "error": any }`
-- Notification: `{ "method": string, "params"?: any }`
+Public selection is `auto|stdio|managed-ws|ws|unix`. Explicit selection fails
+instead of changing transports. `auto` alone may use CAS's documented bounded
+preference and fallback order.
 
-## Backpressure and Retry Policy
+`--code-mode-host ws://...|wss://...` is an outbound host passed to the Codex
+app-server process. It is orthogonal to the inbound transport endpoint.
+Loopback may use `ws://`; non-loopback requires `wss://`. CAS redacts userinfo
+and query values, preserves only redacted identity plus a digest when needed,
+and never silently falls back to the in-process host.
 
-When ingress is saturated, app-server may reject requests with:
+All processes, readiness waits, frames, messages, retry loops, and captured
+output are bounded. App-server overload `-32001` alone uses bounded exponential
+backoff with jitter.
 
-- JSON-RPC error code `-32001`
-- Message: `"Server overloaded; retry later."`
+## Initialization
 
-Treat this as retryable, not fatal. Use exponential backoff with jitter. Do not classify `-32001` as protocol drift.
+Every connection performs exactly once:
 
-## Experimental API Capability Gate
+```text
+initialize -> initialized -> ordinary requests
+```
 
-`capabilities.experimentalApi = true` on `initialize` is required to use experimental methods and fields.
+Known typed profiles may advertise:
 
-Examples that require opt-in:
+- `experimentalApi`
+- `optOutNotificationMethods`
+- `mcpServerOpenaiFormElicitation`
 
-- `thread/backgroundTerminals/clean`
-- `thread/realtime/*`
-- `item/tool/call` dynamic tool flow
-- `thread/start` dynamic tool and extended-history fields
+Advertise OpenAI form elicitation only when an exact response policy exists.
+`instance_runner` may add bounded raw initialization capability fields.
+Unknown initialize response fields remain raw.
 
-If opt-in is missing, treat failures as capability negotiation errors before debugging payload shapes.
+## Server-request policies
 
-## Core v2 Thread/Turn Flow
-
-1. Open conversation context:
-
-- `thread/start` or `thread/resume` or `thread/fork`
-
-2. Start turn:
-
-- `turn/start` with `threadId` and `input`
-
-3. Optional steer:
-
-- `turn/steer` with `threadId`, required `expectedTurnId`, and additional `input`
-
-4. Stream notifications until `turn/completed`.
-
-5. Optional interruption:
-
-- `turn/interrupt`
-
-The notification stream is authoritative for item lifecycle and tool events.
-
-## Server-Initiated Requests (Must Reply)
-
-Current native CAS auto-handles:
+CAS recognizes these baseline requests:
 
 - `item/commandExecution/requestApproval`
 - `item/fileChange/requestApproval`
 - `item/permissions/requestApproval`
-- `item/tool/call`
-- `item/tool/requestUserInput` (experimental)
+- `item/tool/requestUserInput`
 - `mcpServer/elicitation/request`
-
-Other known server requests:
-
+- `item/tool/call`
 - `account/chatgptAuthTokens/refresh`
+- `attestation/generate`
 
-For command approvals, preserve optional `approvalId` in routing to avoid callback ambiguity and prefer `availableDecisions` when present.
-Default CAS responses are conservative: deny permissions, answer request-user-input with first-option labels when present, decline MCP elicitations, and return `success: false` for dynamic tool calls unless the CLI overrides them.
+Deprecated `applyPatchApproval` and `execCommandApproval` are explicit
+rejections. A future unknown request receives method-not-supported immediately
+and is recorded by method name.
 
-## requestUserInput Semantics
+CAS never invents credentials or attestations. Exact response carriers may
+come from owner-readable files or stdin through an authorized instance route;
+secret bodies are never emitted, sampled, logged, or persisted. Missing auth
+or attestation providers produce typed non-transport failures.
 
-`item/tool/requestUserInput` responses must use answer-map structure:
+MCP elicitation defaults are conservative:
 
-- `{ answers: { [questionId]: { answers: string[] } } }`
+- `form`: decline without an exact configured response;
+- `openai/form`: advertise only with an exact capable response path;
+- `url`: decline or cancel and never open automatically.
 
-After responding (or when pending request is cleared by turn lifecycle), server emits:
+CAS preserves `_meta` only as opaque caller data and never infers consent.
 
-- `serverRequest/resolved` with `{ threadId, requestId }`
+## Data rules
 
-Plan for cleanup-resolution events on turn start/complete/interrupt.
+- `PathUri` is an opaque canonical `file:` URI, not a native path. Preserve
+  percent encoding and authorities; convert only at an explicit filesystem
+  boundary and retain both identities in diagnostics.
+- Preserve `commandExecution.pluginId` and `scriptPath` as attribution, not
+  trust or authority.
+- Preserve skill icon URLs as metadata and never fetch them implicitly.
+- Executor skill roots/resources retain their source environment path or URI;
+  CAS does not copy them without a separate authorized file effect.
+- Preserve plugin workspace-publish capability and app tool enablement,
+  disabled reason, and read-only metadata without converting them into
+  publication authority.
+- Preserve managed `ConfigRequirements`, including PathUri-valued fields.
+  Reloading user config does not hot-reload session-static model, reasoning,
+  service-tier, or personality defaults.
+- External agent detect/import bounds are caller supplied. Record-history tests
+  use an isolated `CODEX_HOME`; provider and source identities stay distinct.
+- Treat account plan type, including `ent26`, as open data. Unknown values are
+  classified conservatively rather than breaking account status.
 
-Native CAS note: the Zig client can answer this request now, but default auto-answering is intentionally shallow unless the CLI overrides it with an explicit response payload.
+## Authority boundary
 
-## Notifications (Common)
-
-Frequently observed:
-
-- `thread/started`
-- `turn/started`
-- `item/started`
-- `item/agentMessage/delta`
-- `item/completed`
-- `turn/completed`
-
-Common depending on features/config:
-
-- `model/rerouted`
-- `turn/diff/updated`
-- `turn/plan/updated`
-- `skills/changed`
-- `thread/status/changed`
-
-## Useful Methods (Non-Exhaustive)
-
-- Thread/session: `thread/list`, `thread/read`, `thread/archive`, `thread/unarchive`, `thread/loaded/list`, `thread/rollback`
-- Turn control: `turn/start`, `turn/steer`, `turn/interrupt`
-- Review: `review/start`
-- Utility: `command/exec`
-- Discovery: `skills/list`, `app/list`, `model/list`, `collaborationMode/list`
-- Experimental: `experimentalFeature/list`, `thread/backgroundTerminals/clean`, `thread/realtime/*`
-
-## Routing Rule (Avoid Deadlocks)
-
-Inbound messages can interleave while waiting for responses:
-
-- responses (your request IDs)
-- notifications
-- server-initiated requests requiring replies
-
-Use one read loop that dispatches by envelope kind and correlates by `id`. Add explicit timeouts for forwarded server requests and return structured errors for unsupported methods.
-
-## Debugging Commands
-
-Smoke and stream visibility:
-
-```sh
-cas smoke_check --cwd /path --json
-cas instance_runner --cwd /path --instances 1 --method thread/list --params-json '{"cursor":null,"limit":5}' --json --raw-sample
-codex debug app-server send-message-v2 "run tests and summarize failures"
-```
-
-When diagnosing failures, check in order:
-
-1. handshake completed (`initialize` then `initialized`)
-2. capability gate for experimental surfaces
-3. overload behavior (`-32001`) and retry strategy
-4. request/response correlation and timeout handling
+Schema compatibility means only that CAS can safely speak the selected raw
+protocol profile. It does not prove review credit, historical truth, plugin
+trust, automation correctness, user consent, repair authority, publication, or
+semantic closure.

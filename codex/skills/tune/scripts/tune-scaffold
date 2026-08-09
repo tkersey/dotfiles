@@ -114,7 +114,7 @@ shq() { printf '%q' "$1"; }
 
 is_protected="no"
 case "$skill" in
-  seq|tune|refine|cron|ship|land|.system|.system/*) is_protected="yes" ;;
+  cas|seq|tune|refine|ship|land|.system|.system/*) is_protected="yes" ;;
 esac
 
 apply_gate="blocked: mode is not apply-with-refine"
