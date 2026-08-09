@@ -15,6 +15,11 @@ second durable store is required.
 default state root remains derived from `HOME` for parity with the absorbed
 native automation product.
 
+The launchd scheduler always invokes `cas automation run-due` without `--db`
+and therefore uses the default `~/.codex/sqlite/codex-dev.db`. A manual command
+using a non-default `--db` does not reconfigure unattended scheduling; do not
+install the scheduler expecting it to run that alternate database.
+
 ## `automations`
 
 Required fields:

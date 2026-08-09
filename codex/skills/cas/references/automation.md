@@ -12,10 +12,17 @@ that depends on store/scheduler assumptions, run:
 cas automation doctor --json
 ```
 
-Do not mutate when `safeToMutate` is false. Doctor checks database existence,
-required tables and columns, row values, cwd JSON, RRULEs, row/file agreement,
-filesystem safety, resolved Codex, and the selected scheduler label and loaded
-arguments.
+Do not perform row or file mutations when `safeToMutate` is false. Doctor
+checks database existence, required tables and columns, row values, cwd JSON,
+RRULEs, row/file agreement, filesystem safety, resolved Codex, and the selected
+scheduler label and loaded arguments.
+
+One narrow exception is the exact doctor-directed same-label scheduler
+adoption: when the only actionable incompatibility is the recognized
+predecessor scheduler and `migrationRequired` is true, the authorized repair is
+`cas automation scheduler install --replace`, followed immediately by another
+doctor and scheduler-status check. This does not authorize automation row or
+file mutation.
 
 ## Commands
 

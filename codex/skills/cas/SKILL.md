@@ -47,6 +47,7 @@ run:
 cas app-server preflight \
   --cwd <repo> \
   --profile <core|review|session-inquiry|full> \
+  --app-server-transport <selected-transport> \
   --json
 ```
 
@@ -55,14 +56,18 @@ Use these profiles:
 | Route | Profile |
 |---|---|
 | schema inspection, smoke check, generic instance execution | `core` |
-| `cas review run|start` | `review` |
-| `cas session_inquiry preflight|run|start` | `session-inquiry` |
+| `cas review run|start` | `review` with `managed-ws` |
+| `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` |
 | release conformance and the complete feature surface | `full` |
 
 Require `status == "compatible"`, the intended resolved Codex path, contract
 ID `codex-app-server-0.146.0`, no missing required methods or handlers, and all
 required selected-profile probes passed. `degraded` is not compatible proof for
 a required route behavior.
+
+For review and session inquiry, also require
+`transport.selected == "managed-ws"`. Their native routes enforce this
+transport and do not accept a compatible stdio receipt as equivalent proof.
 
 Compile-time capabilities report what CAS implements. They do not prove that
 the resolved runtime implements it. For review, require both the compatible
@@ -95,9 +100,11 @@ on it, run:
 cas automation doctor --json
 ```
 
-Do not mutate when `safeToMutate` is false. Use `--db` only when deliberately
-selecting a non-default database; automation files still belong to the existing
-Codex automation root. See [automation.md](references/automation.md) and
+Do not perform row or file mutations when `safeToMutate` is false. The only
+narrow remediation exception is the doctor-directed same-label scheduler
+adoption documented below. Use `--db` only when deliberately selecting a
+non-default database; automation files still belong to the existing Codex
+automation root. See [automation.md](references/automation.md) and
 [automation-db.md](references/automation-db.md).
 
 ### Review
@@ -107,7 +114,8 @@ Use `run` for a standalone one-off review. Use one owner-lived
 to recover or inspect an already-started admissible attempt.
 
 ```bash
-cas app-server preflight --cwd <repo> --profile review --json
+cas app-server preflight --cwd <repo> --profile review \
+  --app-server-transport managed-ws --json
 
 cas review run --cwd <repo> --base <base> \
   --custom-instructions @<instructions> \
@@ -124,6 +132,10 @@ A process is not a review. An attempt exists only after `reviewThreadId`; a
 semantic verdict exists only when the structured verdict binds the exact
 target tuple. CAS reports the backend. The caller decides credit and finding
 disposition. See [review-proof-boundary.md](references/review-proof-boundary.md).
+
+When the caller admits a new same-target attempt after terminal evidence, pass
+`--fresh-attempt <source-bound-reason>`. CAS records the reason; it does not
+decide whether the new attempt is permitted.
 
 ### Session inquiry
 

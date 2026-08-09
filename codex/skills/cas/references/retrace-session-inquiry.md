@@ -9,12 +9,15 @@ selection, inquiry meaning, historical claims, and proof credit.
 cas app-server preflight \
   --cwd <repo> \
   --profile session-inquiry \
+  --app-server-transport managed-ws \
   --json
 ```
 
 Require `status == "compatible"` for the exact resolved Codex runtime and all
 required paginated-fork, ephemeral-fork, and inquiry-anchor probes passed.
 Never silently change lineage after a transport or compatibility failure.
+Require `transport.selected == "managed-ws"`; inquiry execution uses that
+transport and cannot borrow a stdio compatibility receipt.
 
 ## Lineage modes
 

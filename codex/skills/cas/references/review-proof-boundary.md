@@ -3,13 +3,16 @@
 Before `cas review run` or `cas review start`, require:
 
 ```bash
-cas app-server preflight --cwd <repo> --profile review --json
+cas app-server preflight --cwd <repo> --profile review \
+  --app-server-transport managed-ws --json
 cas capabilities --json
 ```
 
 The preflight must be compatible for the exact resolved runtime. The capability
 receipt must report `cas_codex_0146_structured_review_v1: true` and, for a
 workflow-bound start, `cas_workflow_bound_owner_lived_review_v1: true`.
+Require `transport.selected == "managed-ws"`; review's native runtime gate
+does not accept stdio compatibility as equivalent proof.
 
 ## Evidence law
 
@@ -45,6 +48,11 @@ cas review start --wait --cwd <repo> --base <base> \
   --workflow-binding-json @<binding.json> \
   --timeout-ms 2700000 --json
 ```
+
+When the caller admits a distinct same-target attempt after terminal evidence,
+add `--fresh-attempt <source-bound-reason>`. CAS validates and records that
+reason but does not decide whether the caller's workflow permits the attempt.
+A live or pending exact handle is recovered with `wait`, not replaced.
 
 For post-publication review, use the exact bound base/head selector. A clean
 checkout is not a reason to substitute `--uncommitted`.
