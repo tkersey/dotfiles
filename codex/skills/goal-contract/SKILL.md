@@ -1,131 +1,54 @@
 ---
 name: goal-contract
-description: "Compile accepted intent into the sole source-bound goal-contract/v3 artifact. Use before multi-step implementation, review closeout, migration, or hard debugging to bind outcomes, laws, authority, scope, compatibility, and acceptance without selecting architecture, choosing operations, or granting mutation."
+description: "Compile accepted intent into the sole source-bound goal-contract/v3 semantic-authority artifact. Use before multi-step implementation, review closeout, migration, or hard debugging to bind outcomes, laws, authority, scope, compatibility, and acceptance without selecting architecture, choosing operations, recording progress, or granting mutation."
 ---
-
 # Goal Contract
 
 ## Mission
 
-Compile accepted intent into the only per-goal semantic-authority document.
-The accepted specification or direct user authority owns required semantics;
-`$goal-contract` records them without extending or reinterpreting them.
+Record accepted semantics without extending or reinterpreting them.
 
-The Goal Contract records whether mutation was authorized. It never grants
-mutation, selects a Construction, chooses an operation, records mutable
-progress, or performs an effect.
+The Goal Contract is the sole per-goal semantic-authority document. It records
+whether mutation was authorized; it never grants mutation itself.
 
-Read [the exact v3 contract](references/artifact-kernel-v1.md).
+## Common path
 
-## Procedure
+1. Bind the authoritative source: direct user authority or an accepted
+   specification.
+2. Record objective identity, required outcomes, governing laws, authority,
+   scope, non-goals, compatibility posture, proof bar, publication requirement,
+   and acceptance.
+3. Separate source-fixed semantics from matters deliberately left to
+   Construction or execution.
+4. Name conflicts, missing authority, and unresolved user judgment explicitly.
+5. Validate the exact v3 contract through the passive definition when
+   persistence is required.
+6. Emit one immutable Goal Contract identity.
+7. Stop before architecture selection, operation choice, mutable progress, or
+   effects.
 
-1. Identify the accepted specification or direct user authority and preserve
-   its exact source reference and digest.
-2. Separate semantic source authority from execution authority. A plan, review,
-   gate, or validator pass never implies mutation permission.
-3. Copy required outcomes and non-goals without architectural elaboration.
-4. Bound repository scope with the exact repository, base reference, allowed
-   paths, and prohibited paths.
-5. Preserve required compatibility contracts, expressly permitted breaks, and
-   migration requirements.
-6. Compile every required predicate into one stable law with applicability and
-   a required observation. An unobservable required law blocks.
-7. Select only the source-authorized terminal route, publication posture, and
-   proof kinds.
-8. Set the draft `artifact_id` to JSON `null`. After `$ledger ensure`, resolve
-   the active `$goal-contract` and `$actuating` skill roots. Require Ledger
-   1.x, `ledger-artifact-abi/v1`, and successful `ledger definition check`
-   results for their canonical Goal and Evidence definitions.
-9. Materialize the authored draft, then register the returned canonical
-   artifact through the Evidence protocol before handoff:
+Read [the exact v3 contract](references/artifact-kernel-v1.md) only when
+authoring or validating the artifact shape.
 
-   ~~~bash
-   ledger materialize \
-     --definition <goal-contract-skill-root>/definitions/ledger/goal-contract.json \
-     --input contract=<goal-contract-draft.json> \
-     --format json
+## Conditional disclosure
 
-   ledger transact \
-     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
-     --operation <register-goal|register-goal-carry-forward> \
-     --repo <repo> \
-     --input goal_registration=<goal-registration.json> \
-     --param goal=<goal-id> \
-     --format json
-   ~~~
+The complete pre-split contract is preserved byte-for-byte in
+[FULL_CONTRACT.md](FULL_CONTRACT.md). Do not load it for a straightforward
+source-to-contract compilation.
 
-   The registration packet is passive JSON containing
-   `schema:"actuating-goal-registration/v1"`, the exact `goal_id`, and the
-   materialization result's parsed `canonical_content` as `body`. Use
-   `register-goal-carry-forward` only for the source-revision transition that
-   must preserve the predecessor Construction while `$review-fold` classifies
-   carried Counterexamples; otherwise use `register-goal`.
-10. Require `ledger-materialization-result/v1` with a non-null `artifact_id`
-    equal to `artifact.artifact_id`, then
-    `ledger-transaction-result/v1` for the selected registration operation
-    with one appended event.
-    Retain the complete canonical artifact and registration event identity as
-    the current Goal Contract. Ledger canonicalizes, identifies, and registers
-    its structure; it does not author semantics or grant authority.
-11. Inspect the complete source-to-Goal projection before handing the returned
-    immutable artifact and exact identity to `$actuating` for Construction
-    selection.
+Load it only for:
 
-## Source-authority laws
+- Ledger bind, create, revise, project, identity, or migration mechanics;
+- source revision, supersession, publication, or closure integration;
+- detailed field interpretation beyond the exact artifact reference;
+- an unported edge route.
 
-- `$universalist` may elaborate only source-permitted, underdetermined
-  architecture choices. The selected result belongs in a Construction
-  Contract, not the Goal Contract.
-- `$plan` may supply execution policy but never mutation authority.
-- Review evidence may falsify a Construction but cannot change accepted source
-  truth or authorize a repair.
-- A conflict with source-fixed semantics, non-goals, compatibility,
-  architecture constraints, proof requirements, authority, or publication
-  posture blocks or requests a source revision.
-- A changed semantic decision creates an immutable successor Goal with the
-  same `goal_id`, exactly one predecessor `artifact_id`, and a new
-  content-addressed `artifact_id`. A direct clean commit of the exact
-  already-observed scoped worktree does not change source authority and uses
-  Actuating's typed subject-commit provenance transition instead. Any other
-  subject drift or source-bound scope change requires a successor Goal. Neither
-  transition resets Construction or Counterexample lineage: return the current
-  Construction identity to Actuating, which selects a successor with exactly
-  one predecessor.
-  Only the first Construction in the current authoritative v3 lineage for the
-  `goal_id` may be initial with no predecessor. When an explicit source revision
-  occurs while accepted or blocked Counterexamples remain unresolved, or
-  brings a `follow-up` class within the successor Goal's scope, use the
-  carry-forward transition: cite every Set carrying those classes in the
-  successor Goal's `supporting_refs` as
-  `counterexample-set:<artifact_id>`; require a successor Set to cite that exact
-  Goal as `goal-contract:<artifact_id>` and each carried Set as
-  `counterexample-set:<artifact_id>`, evaluate the predecessor Construction,
-  preserve Set lineage, and assign every carried class a disposition; then
-  re-axiomatize before Actuating selects a successor Construction or permits an
-  affected mutation. Never edit a predecessor in place or use source revision
-  to erase review debt.
+Its frontmatter is archived source, not a second skill definition.
 
-## Exclusions
+## Guardrails
 
-Do not put candidate constructions, selected architecture, Counterexample
-classification, review bindings or attempts, operations, evidence events,
-mutable progress, campaign state, or closure state in a Goal Contract.
-
-## Handoff
-
-Return:
-
-~~~text
-Goal Contract identity
-goal registration event identity
-accepted source identity
-execution-authority identity
-mutation posture
-scope
-laws and observations
-compatibility obligations
-acceptance route
-~~~
-
-The handoff is semantic input to Actuating. It is not an operation request or
-proof of completion.
+- Do not infer authority from implementation state, a plan, or a reviewer.
+- Do not select architecture or a Construction.
+- Do not choose work, mutation order, or runtime state.
+- Do not broaden scope, compatibility, proof, or publication requirements.
+- Return to the source owner when accepted intent is incomplete or conflicting.
