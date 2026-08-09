@@ -381,6 +381,19 @@ no-network policy
 receipt persistence
 ```
 When only deterministic analysis is available, fork-based claims are forbidden.
+
+Before compiling or running an inquiry, bind compatibility to the exact CAS
+transport that will execute it:
+
+```bash
+cas app-server preflight \
+  --cwd <repo> \
+  --profile session-inquiry \
+  --app-server-transport managed-ws \
+  --json
+```
+
+Stop unless the result is `compatible` and every required probe passed.
 ### 5. Compile RIP-v1
 Use different lane contracts; do not manufacture consensus through repeated leading prompts.
 
