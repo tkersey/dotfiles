@@ -96,18 +96,33 @@ The default label remains `com.openai.codex.automation-runner`; log paths remain
 under `~/Library/Logs/codex-automation-runner/`. The loaded program arguments
 must invoke `cas automation run-due`.
 
-Inspect first:
+Select the exact existing label before inspection. Use the default below, or
+replace it with the non-default label recovered from the existing plist or
+`launchctl` state:
 
 ```bash
-cas automation scheduler status --json
+automation_label='com.openai.codex.automation-runner'
+export CAS_AUTOMATION_LAUNCHD_LABEL="$automation_label"
+cas automation doctor --json
+cas automation scheduler status --label "$automation_label" --json
 ```
 
-If `migrationRequired` is true for the same-label predecessor job, adopt it in
-place:
+Stop if doctor reports any unsafe database, row, file, Codex, or scheduler
+condition other than the recognized same-label predecessor migration.
+
+Do not preserve or read the retired environment variable as an alias. Pass the
+same exact label to every status, replacement, runner lock, and uninstall
+operation.
+
+If doctor proves that the recognized same-label predecessor is the only
+incompatibility and `migrationRequired` is true, adopt it in place:
 
 ```bash
-cas automation scheduler install --replace
-cas automation scheduler status --json
+cas automation scheduler install \
+  --label "$automation_label" --replace
+cas automation doctor --json
+cas automation scheduler status \
+  --label "$automation_label" --json
 ```
 
 Never install a second label for migration.

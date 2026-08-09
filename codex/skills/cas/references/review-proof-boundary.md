@@ -77,6 +77,20 @@ A semantic consumer requires a structured receipt whose target base, head, and
 fingerprint agree at receipt and verdict level. Validate it through CAS's
 passive `definitions/ledger/review-receipt.json` before interpretation.
 
+Before the first native Ledger command, load `$ledger` and complete
+`$ledger ensure` once. Then validate the exact receipt:
+
+```bash
+ledger validate \
+  --definition <cas-skill-root>/definitions/ledger/review-receipt.json \
+  --input receipt=<cas-review-receipt.json> \
+  --format json
+```
+
+Require `ledger-validation-result/v1`, `valid: true`, the expected definition
+digest, `authority_granted: false`, and `storage_mutated: false`. Structural
+validity does not grant review credit or semantic authority.
+
 Actuating review credit additionally requires the static Review Contract's
 exact request/context match, `principalStrength == "strong"`,
 `accountFingerprintReducedProtection == false`, and

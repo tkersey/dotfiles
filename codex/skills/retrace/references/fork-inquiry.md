@@ -8,12 +8,17 @@ A FIR is controller evidence, not merely a model answer.
 
 ```text
 stored source thread
--> thread/fork
--> thread/rollback
--> retained-anchor verification
+-> read paginated source turns when applicable
+-> select an exact admissible completed boundary
+-> verify retained prefix count and digest
+-> thread/fork at that boundary
+-> bind forked_from_id and anchor proof
 ```
 
-Requires source thread identity and matching `forked_from_id`.
+Requires source thread identity, matching `forked_from_id`, the exact selected
+boundary, and matching retained-prefix count and digest. Interrupted or
+incomplete suffixes are not admissible completed boundaries. The fork itself is
+not proof of historical workspace reconstruction.
 
 ### `rollout_transcript`
 
