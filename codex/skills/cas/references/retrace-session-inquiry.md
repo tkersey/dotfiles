@@ -63,6 +63,7 @@ cas session_inquiry run \
   --plan-definition <retrace-root>/definitions/ledger/retrace-inquiry-plan.json \
   --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
+  --transport managed-ws \
   --json
 ```
 

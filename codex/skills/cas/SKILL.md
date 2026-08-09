@@ -56,8 +56,8 @@ Use these profiles:
 | Route | Profile |
 |---|---|
 | schema inspection, smoke check, generic instance execution | `core` |
-| `cas review run|start` | `review` with `managed-ws` |
-| `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` |
+| `cas review run|start` | `review` with `managed-ws` preflight |
+| `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` preflight and execution |
 | release conformance and the complete feature surface | `full` |
 
 Require `status == "compatible"`, the intended resolved Codex path, contract
@@ -65,9 +65,11 @@ ID `codex-app-server-0.146.0`, no missing required methods or handlers, and all
 required selected-profile probes passed. `degraded` is not compatible proof for
 a required route behavior.
 
-For review and session inquiry, also require
-`transport.selected == "managed-ws"`. Their native routes enforce this
-transport and do not accept a compatible stdio receipt as equivalent proof.
+For review and session inquiry, also require the preflight receipt's
+`transport.selected == "managed-ws"`; a compatible stdio receipt is not
+equivalent proof. CAS 0.4.1 review runs this gate internally before starting
+and reports the realized connection as `selectedTransport == "websocket"`.
+Session inquiry additionally receives `--transport managed-ws` on execution.
 
 Compile-time capabilities report what CAS implements. They do not prove that
 the resolved runtime implements it. For review, require both the compatible
@@ -143,6 +145,9 @@ Use the `session-inquiry` preflight profile before execution. A paginated source
 is admissible when the exact runtime probe passes. Fork boundary and anchor
 digest verification remain mandatory. A successful paginated fork is not proof
 of historical workspace reconstruction.
+
+Pass `--transport managed-ws` to `session_inquiry run|start`; do not let the
+execution fall back to its `auto` default after proving a selected transport.
 
 Validate Retrace inputs with their owner definitions and validate the returned
 FIR with CAS's passive definition before interpreting it. See

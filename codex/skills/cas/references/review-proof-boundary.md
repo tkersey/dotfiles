@@ -13,6 +13,9 @@ receipt must report `cas_codex_0146_structured_review_v1: true` and, for a
 workflow-bound start, `cas_workflow_bound_owner_lived_review_v1: true`.
 Require `transport.selected == "managed-ws"`; review's native runtime gate
 does not accept stdio compatibility as equivalent proof.
+CAS 0.4.1 executes that gate internally before `review/start` and reports the
+realized connection in its receipt as `selectedTransport == "websocket"`;
+`cas review` intentionally exposes no caller transport flag.
 
 ## Evidence law
 
