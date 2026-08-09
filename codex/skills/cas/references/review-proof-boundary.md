@@ -1,80 +1,99 @@
-# CAS Review Transport Boundary
+# CAS review proof boundary
 
-CAS starts, waits for, recovers, and reports exact review attempts through:
+Before `cas review run` or `cas review start`, require:
 
-~~~text
-cas review run
-cas review start
-cas review wait
-~~~
+```bash
+cas app-server preflight --cwd <repo> --profile review \
+  --app-server-transport managed-ws --json
+cas capabilities --json
+```
 
-Its owner receipt binds the review target, opaque request identity, exact
-instructions, attempt and thread/turn identity, principal quality, backend,
-transport state, structured semantic verdict, failures, and finding provenance.
+The preflight must be compatible for the exact resolved runtime. The capability
+receipt must report `cas_codex_0146_structured_review_v1: true` and, for a
+workflow-bound start, `cas_workflow_bound_owner_lived_review_v1: true`.
+Require `transport.selected == "managed-ws"`; review's native runtime gate
+does not accept stdio compatibility as equivalent proof.
+CAS 0.4.1 executes that gate internally before `review/start` and reports the
+realized connection in its receipt as `selectedTransport == "websocket"`;
+`cas review` intentionally exposes no caller transport flag.
 
-CAS decides no review policy. The caller owns dispatch topology, whether a
-fresh attempt is admitted, semantic credit, finding classification, repair,
-mutation, and closure.
+## Evidence law
 
-## Opaque request binding
+```text
+A process is not a review.
+A parent thread is not a review.
+An attempt begins only when reviewThreadId exists.
+A semantic verdict exists only when the structured verdict binds the target.
+```
 
-~~~json
+CAS owns the exact selector, instruction bytes, opaque workflow binding,
+review thread and turn, runtime/contract/transport identity, bounded recovery,
+principal facts, structured verdict, failure class, and finding provenance.
+
+The caller owns topology, lens meaning, review credit, finding truth and scope,
+Counterexample classification, repairs, mutation, publication, and closure.
+Process exit and prose are transport observations only.
+
+## Commands
+
+Use `run` for a standalone one-off review. Use one owner-lived `start --wait`
+process for a workflow-bound or Actuating request. Recover an already-started
+admissible diagnostic attempt with `wait`; do not duplicate a live handle.
+
+```bash
+cas review run --cwd <repo> --base <base> \
+  --custom-instructions @<instructions> \
+  --workflow-binding-json @<binding.json> \
+  --timeout-ms 2700000 --json
+
+cas review start --wait --cwd <repo> --base <base> \
+  --custom-instructions @<instructions> \
+  --workflow-binding-json @<binding.json> \
+  --timeout-ms 2700000 --json
+```
+
+When the caller admits a distinct same-target attempt after terminal evidence,
+add `--fresh-attempt <source-bound-reason>`. CAS validates and records that
+reason but does not decide whether the caller's workflow permits the attempt.
+A live or pending exact handle is recovered with `wait`, not replaced.
+
+For post-publication review, use the exact bound base/head selector. A clean
+checkout is not a reason to substitute `--uncommitted`.
+
+The workflow binding is the direct two-field input:
+
+```json
 {
   "requestId": "opaque-caller-id",
   "requestFingerprint": "sha256:..."
 }
-~~~
+```
 
-This is the direct `--workflow-binding-json` input, not a wrapper. CAS requires
-two non-empty strings, includes the complete object in attempt identity, and
-returns it unchanged under the receipt's `workflowBinding` field. It does not
-decode a lens, role, campaign, or credit rule from the binding.
+CAS returns it opaquely and does not infer a lens or policy.
 
-## Attempt evidence
+## Receipt use
 
-Receipt-level `reviewAttemptExists` is true only after `reviewThreadId` exists.
-A semantic tuple verdict exists only when receipt-level
-`tupleVerdictExists=true` and the receipt and `reviewVerdict` base, head, and
-target fingerprint agree with the requested target.
+A semantic consumer requires a structured receipt whose target base, head, and
+fingerprint agree at receipt and verdict level. Validate it through CAS's
+passive `definitions/ledger/review-receipt.json` before interpretation.
 
-The owner receipt may expose:
+Before the first native Ledger command, load `$ledger` and complete
+`$ledger ensure` once. Then validate the exact receipt:
 
-~~~text
-reviewAttemptPhase
-reviewAttemptExists
-reviewThreadId
-reviewTurnId
-baseSha
-headSha
-targetFingerprint
-principalStrength
-accountFingerprintReducedProtection
-backendClass
-reviewVerdict.status
-findingCount
-failureClass
-failureCode
-failureHint
-title
-body
-file
-line
-priority
-~~~
+```bash
+ledger validate \
+  --definition <cas-skill-root>/definitions/ledger/review-receipt.json \
+  --input receipt=<cas-review-receipt.json> \
+  --format json
+```
 
-Process exit status is transport evidence only. It never creates `clean`,
-`findings`, or workflow credit. A live timed-out attempt is recovered through
-`wait`. A new attempt requires a caller-admitted fresh identity and
-`--fresh-attempt` reason.
+Require `ledger-validation-result/v1`, `valid: true`, the expected definition
+digest, `authority_granted: false`, and `storage_mutated: false`. Structural
+validity does not grant review credit or semantic authority.
 
-CAS reports those owner facts without deciding their semantic adequacy.
-Actuating requires `principalStrength == "strong"`,
+Actuating review credit additionally requires the static Review Contract's
+exact request/context match, `principalStrength == "strong"`,
 `accountFingerprintReducedProtection == false`, and
-`backendClass == "cas-start-wait"` for review credit under its current static
-Review Contract.
-
-For Actuating, CAS receipts are external evidence. Actuating binds the 1+4
-requests, controls dispatch order, evaluates current identity, applies the
-one-recovery rule, classifies findings through `$review-fold`, counts clean
-attempts, resets credit on material subject change, and decides the next action
-and closure.
+`backendClass == "cas-start-wait"`. Missing structured output, auth-provider
+failure, attestation-provider failure, account exhaustion, or transport loss
+earns no clean verdict.

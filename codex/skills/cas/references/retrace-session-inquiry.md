@@ -1,79 +1,74 @@
-# `$retrace` Session Inquiry
+# Retrace session inquiry through CAS
 
-`$cas` owns safe replay lifecycle for `$retrace`.
+CAS owns the bounded replay transport for Retrace. Retrace owns source
+selection, inquiry meaning, historical claims, and proof credit.
 
-Current supported lineage modes:
+## Compatibility gate
+
+```bash
+cas app-server preflight \
+  --cwd <repo> \
+  --profile session-inquiry \
+  --app-server-transport managed-ws \
+  --json
+```
+
+Require `status == "compatible"` for the exact resolved Codex runtime and all
+required paginated-fork, ephemeral-fork, and inquiry-anchor probes passed.
+Never silently change lineage after a transport or compatibility failure.
+Require `transport.selected == "managed-ws"`; inquiry execution uses that
+transport and cannot borrow a stdio compatibility receipt.
+
+## Lineage modes
 
 ```text
 thread_fork
-  stored source thread -> thread/fork -> rollback -> anchor verification
+  stored source thread -> exact completed boundary -> fork -> anchor proof
 
 rollout_transcript
-  verified rollout + retained-anchor digest -> fresh thread -> bounded
-  transcript-context turn
+  verified rollout + retained-anchor digest -> fresh bounded transcript turn
 ```
 
-Rollout-transcript replay requires:
+A paginated source is supported when the profile's schema and live probes pass.
+CAS selects an exact admissible completed boundary, verifies retained prefix
+count and digest, and records fork identity. Interrupted or incomplete suffixes
+are not completed history.
+
+An ephemeral fork is pathless and absent from ordinary thread listing. A
+successful fork proves neither live historical workspace reconstruction nor
+the semantic truth of the replay.
+
+Use `rollout_transcript` only when thread-fork lineage is unavailable for a
+different evidenced reason. Its workspace policy remains:
 
 ```text
-workspace_policy = transcript_only
+transcript_only
 no current-checkout tools
 read-only
 network off
 approvals denied
 ```
 
-It is not live historical workspace reconstruction.
+## Validation and execution
 
-Before CAS receives the inputs, validate the exact DCP-v2 and RIP-v1 bytes
-through Retrace's canonical Ledger definitions:
-
-```bash
-ledger validate \
-  --definition <retrace-skill-root>/definitions/ledger/decision-context-packet.json \
-  --input packet=capsule.json \
-  --format json > capsule.validation.json
-
-ledger validate \
-  --definition <retrace-skill-root>/definitions/ledger/retrace-inquiry-plan.json \
-  --input plan=plan.json \
-  --format json > plan.validation.json
-```
-
-Those passes establish structure only. CAS independently verifies the released
-DCP identity and the exact carriers needed for inquiry.
-
-Preferred command:
+Validate DCP-v2 and RIP-v1 through Retrace's owning Ledger definitions before
+CAS receives them. Then run:
 
 ```bash
 cas session_inquiry run \
   --capsule capsule.json \
-  --capsule-definition <retrace-skill-root>/definitions/ledger/decision-context-packet.json \
+  --capsule-definition <retrace-root>/definitions/ledger/decision-context-packet.json \
   --capsule-validation capsule.validation.json \
   --plan plan.json \
-  --plan-definition <retrace-skill-root>/definitions/ledger/retrace-inquiry-plan.json \
+  --plan-definition <retrace-root>/definitions/ledger/retrace-inquiry-plan.json \
   --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
+  --transport managed-ws \
   --json
 ```
 
-Before Retrace interprets a returned FIR:
-
-```bash
-ledger validate \
-  --definition <cas-skill-root>/definitions/ledger/fork-inquiry-receipt.json \
-  --input receipt=<fir.json> \
-  --format json
-```
-
-Before execution:
-
-```bash
-cas --version
-cas capabilities --json
-cas session_inquiry preflight --json
-```
-
-FIR-v1 must preserve `lineage_mode`, source identity, anchor digests, workspace mode, model/provider, policy proof, terminal state, and cleanup.
-
-`$cas` does not select the historical source and does not decide what the replay means.
+Validate the returned FIR through CAS's
+`definitions/ledger/fork-inquiry-receipt.json` before Retrace interprets it.
+FIR-v1 preserves exact lineage mode, source and fork identities, anchor
+digests, workspace mode, runtime/provider, policy proof, terminal state, and
+cleanup. Do not add undeclared durable fields to FIR-v1.

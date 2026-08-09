@@ -480,34 +480,28 @@ def advance_reset_cycle(rt: Runtime, state: dict[str, Any], just_used: str | Non
 
 
 def run_cas_status(rt: Runtime) -> dict[str, Any]:
-    commands = [
-        ["cas", "account", "status", "--cwd", str(rt.cas_cwd), "--json", "--usage", "--hooks", "off"],
-        [
-            str(expand_path(os.environ.get("SKILLS_ZIG_REPO", "/Users/tk/workspace/tk/skills-zig")) / "zig-out/bin/cas_account"),
-            "status",
-            "--cwd",
-            str(rt.cas_cwd),
-            "--json",
-            "--usage",
-            "--hooks",
-            "off",
-        ],
+    command = [
+        "cas",
+        "account",
+        "status",
+        "--cwd",
+        str(rt.cas_cwd),
+        "--json",
+        "--usage",
+        "--hooks",
+        "off",
     ]
-    errors: list[str] = []
-    for command in commands:
-        try:
-            proc = subprocess.run(command, check=False, text=True, capture_output=True, timeout=60)
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            errors.append(f"{command[0]}: {exc}")
-            continue
-        if proc.returncode == 0:
-            try:
-                return json.loads(proc.stdout)
-            except json.JSONDecodeError as exc:
-                errors.append(f"{command[0]}: invalid JSON: {exc}")
-                continue
-        errors.append(f"{command[0]}: exit {proc.returncode}: {proc.stderr.strip()[:200]}")
-    raise AcctsError("unable to read CAS account status; " + "; ".join(errors))
+    try:
+        proc = subprocess.run(command, check=False, text=True, capture_output=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise AcctsError(f"unable to read canonical CAS account status: {exc}") from exc
+    if proc.returncode != 0:
+        detail = proc.stderr.strip()[:200]
+        raise AcctsError(f"canonical CAS account status exited {proc.returncode}: {detail}")
+    try:
+        return json.loads(proc.stdout)
+    except json.JSONDecodeError as exc:
+        raise AcctsError(f"canonical CAS account status emitted invalid JSON: {exc}") from exc
 
 
 def reset_value_from_table(obj: dict[str, Any]) -> str | None:

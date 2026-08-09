@@ -81,7 +81,7 @@ Owns:
 - app-server compatibility;
 - source verification;
 - `thread_fork` or `rollout_transcript` lineage;
-- rollback or retained-transcript anchoring;
+- exact completed-boundary selection and retained-prefix anchoring;
 - read-only/no-network policy;
 - turn lifecycle;
 - FIR persistence;
@@ -343,9 +343,11 @@ CAS supports two lineage modes.
 #### `thread_fork`
 Use when source thread identity is available.
 ```text
-thread/fork
--> exact rollback
--> retained-anchor verification
+read paginated source history
+-> select exact admissible completed boundary
+-> verify retained prefix count and digest
+-> thread/fork at that boundary
+-> bind fork lineage and anchor proof
 ```
 Workspace may be exact, head-only, or transcript-only according to DCP evidence.
 #### `rollout_transcript`
@@ -379,6 +381,19 @@ no-network policy
 receipt persistence
 ```
 When only deterministic analysis is available, fork-based claims are forbidden.
+
+Before compiling or running an inquiry, bind compatibility to the exact CAS
+transport that will execute it:
+
+```bash
+cas app-server preflight \
+  --cwd <repo> \
+  --profile session-inquiry \
+  --app-server-transport managed-ws \
+  --json
+```
+
+Stop unless the result is `compatible` and every required probe passed.
 ### 5. Compile RIP-v1
 Use different lane contracts; do not manufacture consensus through repeated leading prompts.
 
@@ -407,6 +422,7 @@ cas session_inquiry run \
   --plan-definition "$retrace_definition_root/ledger/retrace-inquiry-plan.json" \
   --plan-validation plan.validation.json \
   --receipt-dir .ledger/retrace/<inquiry-id> \
+  --transport managed-ws \
   --json
 ```
 CAS must prove source lineage, retained anchor, model/provider, permission policy, workspace mode, turn state, and cleanup.

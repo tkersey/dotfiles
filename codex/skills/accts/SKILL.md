@@ -84,4 +84,8 @@ python3 codex/skills/accts/scripts/accts.py next
 
 `reset-cycle start` reads CAS account status and queues the first eligible vaulted account. Activate the account shown by `next` before using it. After that account has had a real turn, run `reset-cycle advance --account <name>` to mark it touched and queue the next untouched account. The cycle completes after every enabled `reset_participates = true` vaulted account has been marked touched.
 
+Account status is read only through the canonical `cas account status` route.
+Missing, failing, or invalid CAS output fails closed; do not fall back to a
+sibling executable from a source checkout.
+
 If CAS is unavailable, do not invent reset timing. Use `reset-cycle status --state-only` to inspect local state, or ask the user before using an explicit offline `--resets-at` timestamp.

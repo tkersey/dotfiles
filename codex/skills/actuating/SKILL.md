@@ -428,12 +428,18 @@ existing four auxiliaries.
 
 Before binding or dispatching closure-grade review, require:
 
-~~~text
-cas_codex_0145_structured_review_v4=true
+~~~bash
+cas app-server preflight --cwd <repo> --profile review \
+  --app-server-transport managed-ws --json
+
+cas_codex_0146_structured_review_v1=true
 cas_workflow_bound_owner_lived_review_v1=true
 ~~~
 
-from `cas capabilities --json`. Absence blocks before `review/start`.
+The first receipt must be `compatible` for the exact resolved Codex runtime,
+contract, and `managed-ws` transport with every required probe passed. The two
+features come from `cas capabilities --json`. Any missing runtime or compiled
+capability proof blocks before request binding or `review/start`.
 
 Bind standard plus four auxiliary requests before dispatch. Launch the initial
 1+4 wave as five concurrent owner-lived:
