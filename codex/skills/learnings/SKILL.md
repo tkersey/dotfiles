@@ -1,258 +1,84 @@
 ---
 name: learnings
-description: "Capture, browse, query, supersede, and selectively admit evidence-backed execution learnings through the passive Learnings protocol definition. Trigger for `$learnings`, browse/recent/search learnings, lessons learned, takeaways, wrap up, handoff, validation transitions, strategy pivots, footguns, retry loops, or memory admission of a durable learning."
+description: "Capture, browse, query, supersede, and selectively admit evidence-backed execution learnings through the passive Learnings protocol. Trigger for $learnings, lessons learned, takeaways, wrap-up or handoff after material implementation, validation transitions, strategy pivots, hidden footguns, repeated acceleration patterns, and explicit durable-memory admission."
 metadata:
   version: "8.1.0"
 ---
-
 # Learnings
 
 ## Mission
 
-Maintain a repo-local, evidence-backed execution-learning store and selectively admit only high-value learning snapshots to the global Codex memory compiler.
+Maintain a repo-local evidence-backed learning store and admit only high-value
+bounded snapshots to Codex memory.
 
-Authority split:
+The canonical learning and memory admission are separate outcomes.
 
-```text
-definitions/ledger/learnings-protocol.json
-  canonical passive protocol; learning records live under event.record
+## Activation and capture gate
 
-<repo>/.ledger/learnings/events.jsonl
-  canonical repo-local store
-
-~/.codex/memories/extensions/learnings/notes/*.md
-  immutable admission snapshots for Phase 2
-
-memory_summary.md / MEMORY.md / skills/*
-  compiled memory written only by Phase 2
-```
-
-Do not duplicate every learning into memory notes. For an accepted admission, load `$memory-source-notes` before invoking `run_memory_note_tool`.
-
-## Trigger Cues
-
-- `$learnings`;
-- browse, recent, search, rank, or summarize learnings;
-- "what do we already know about X";
-- lessons learned, takeaways, wrap up, or handoff;
-- fail-to-pass, pass-to-fail, timeout-to-stable;
-- strategy pivot, footgun, gotcha, retry loop, or acceleration pattern;
-- before a Codex-made commit/PR/handoff after material implementation;
-- explicit request to promote/admit a learning to memory.
-
-## Canonical Store
-
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. Require Ledger 1.x and `ledger-artifact-abi/v1`.
-Set:
-
-```bash
-learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json")"
-```
-
-Use `ledger transact --operation capture` for writes; use definition-bound
-`record`, `recent`, `recall`, `search`, `reconciliation-index`, and
-`memory-note` projections for reads. Treat the returned `lrn-*` identity as
-canonical. Do not open or hand-edit the store. An unbound current-format store
-requires the explicit one-shot `bind-existing` transaction and otherwise fails
-closed; there is no alternate-path reader.
-
-Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
-
-Standalone recall, browse, and source-local capture remain Learnings operations.
-No aggregate coordinator or sibling fan-out is required. At a material
-execution boundary, evaluate the capture gate directly and retain the
-source-owned disposition.
-
-## Capture Gate
-
-Capture only when at least one decision-shaping event occurred:
-
-1. validation transition;
-2. strategy pivot;
-3. hidden footgun or brittle assumption;
-4. repeated acceleration pattern;
-5. useful or failed recalled learning;
-6. delivery boundary after real implementation work.
-
-Require decision delta, transferability, and counterfactual cost. Prefer one essential learning; append at most three per turn.
-
-## Disposition Invariant
-
-At each material Learnings activation, retain exactly one internal outcome:
+Activation is broad; append is conditional. Evaluate capture only when a
+decision-shaping event occurred:
 
 ```text
-learning-disposition: appended id=lrn-...
-learning-disposition: duplicate-skip reason=<reason>
-learning-disposition: no-op reason=<capture gate not met>
-learning-disposition: blocked reason=<doctor, binding, or capture failure>
+validation transition
+strategy pivot
+hidden footgun or brittle assumption
+repeated acceleration pattern
+useful or failed recalled learning
+delivery boundary after material implementation
 ```
 
-Evaluation is mandatory once the source is materially activated; append is
-conditional. Do not claim Learnings closeout without a disposition. Keep
-`no-op` and `duplicate-skip` internal unless the user asks, while `blocked` is
-user-visible when it affects delivery.
+Require decision delta, transferability, and meaningful counterfactual cost.
+Prefer one essential learning and append at most three in a turn.
 
-## Write Workflow
-
-1. Verify the git root:
-
-   ```bash
-   git rev-parse --show-toplevel
-   ```
-
-2. Fail closed when either retired Learnings path exists without the canonical
-   store. Do not create a parallel store or read the retired path:
-
-   ```bash
-   if [ ! -f .ledger/learnings/events.jsonl ] &&
-      { [ -e .ledger/learnings/learnings.jsonl ] || [ -e .learnings.jsonl ]; }; then
-     printf '%s\n' 'blocked: retired Learnings store requires explicit owner-authorized recovery' >&2
-     exit 1
-   fi
-   ```
-
-3. Run the definition-bound doctor:
-
-   ```bash
-   ledger doctor \
-     --definition "$learnings_definition" \
-     --repo "<repo-root>" \
-     --format json
-   ```
-
-   Append only when the store is `current` or absent. For an unbound
-   current-format store, run the explicit `bind-existing` operation once after
-   full validation. Stop on every invalid row; do not skip or reinterpret it.
-4. Gather exact evidence and changed paths.
-5. Distill objective, inflection, proof, and transferable rule.
-6. Author `learning.json` as one `submission.record` packet, then append from
-   the verified repo root:
-
-   ```bash
-   ledger transact \
-     --definition "$learnings_definition" \
-     --operation capture \
-     --repo "<repo-root>" \
-     --input submission=learning.json \
-     --format json
-   ```
-
-7. Retain the appended learning ID, rerun definition-bound doctor, and use a
-   focused `record` or `recall` projection to verify readability.
-8. Before any Codex-made commit, inspect the current learning through the
-   `record` projection. Do not read the store directly.
-9. Retain exactly one canonical learning proof line in working evidence. Include
-   source-memory proof in the final user-facing reply only when it changed
-   repo-visible state, needs user action, explains a blocker/error, or the user
-   explicitly asks.
-
-Use the disposition invariant above as the internal proof line.
-
-## Recall Workflow
-
-```bash
-ledger project \
-  --definition "$learnings_definition" \
-  --projection recall \
-  --repo "<repo-root>" \
-  --param "query=<focused component failure objective terms>" \
-  --param "now=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --param search_limit=5 \
-  --param drop_superseded=true \
-  --format json
-```
-
-Do not use `recall` as a substitute for current artifact inspection.
-
-## Memory Admission Gate
-
-A learning becomes a custom memory-source note only when all four checks pass:
-
-1. the canonical row exists and its ID is known;
-2. evidence is inspectable and embedded in a bounded snapshot;
-3. scope and future behavior are clear;
-4. Phase 2 consideration would plausibly reduce future steering, retries, or search.
-
-At least one must also hold:
-
-- status is `codify_now`;
-- the same theme appears at least three times;
-- the user explicitly asks to remember/promote it;
-- it captures a stable cross-task preference or operating default;
-- it is an unusually high-impact failure shield, repo map, verification path, or stop rule;
-- it proves a repeatable procedure suitable for a memory-root skill.
-
-Do not admit every `do_more` row, raw chronology, weak `review_later` candidates, failed-hypothesis exclusions better owned by `negative-ledger`, operating-correction events better handled as standing policy, or synesthetic mappings.
-
-## Definition projection and admission
-
-After the source owner accepts admission, load `$memory-source-notes` and pass
-the deterministic definition projection to the general writer:
-
-```bash
-ledger project \
-  --definition "$learnings_definition" \
-  --projection memory-note \
-  --repo "<repo-root>" \
-  --param id=lrn-... \
-  --payload-only \
-  --format json |
-  run_memory_note_tool append \
-    --extension learnings \
-    --kind learning-admission \
-    --json -
-```
-
-Do not reconstruct the payload from prose, `recent`, or query output. The
-projection validates the canonical store and fails closed for a missing or
-incomplete row; it does not decide admission eligibility.
-
-## Admission Proof
-
-When admission is user-visible or actionable, report canonical and admission
-outcomes separately:
+Retain exactly one disposition:
 
 ```text
-appended: id=lrn-...
-memory-note: id=MSN-... extension=learnings kind=learning-admission status=created
+appended
+duplicate-skip
+no-op
+blocked
 ```
 
-If the CLI is unavailable:
+Do not query or write merely to manufacture a receipt.
 
-```text
-appended: id=lrn-...
-memory-note: not-attempted: cli unavailable
-```
+## Common path
 
-A failed memory admission must never roll back or invalidate the canonical learning append.
+1. Bind the verified repository root and passive Learnings definition.
+2. For recall, query the canonical projection and then inspect current artifacts;
+   recalled history never replaces current evidence.
+3. For capture, gather exact evidence and distill the transferable rule rather
+   than a changelog bullet.
+4. Append only through the selected Ledger definition.
+5. Verify the returned canonical learning identity and readability.
+6. Evaluate memory admission separately.
+7. Admit only when the complete projection is likely to reduce future steering,
+   search, or retries.
+8. Report canonical append and memory-source admission independently when
+   user-visible.
 
-## Supersession and Withdrawal
+## Conditional disclosure
 
-When a canonical learning is superseded or withdrawn from memory relevance, append the new canonical row, create a `learning-supersession` or `learning-withdrawal` note, reference the previous memory-source note ID when known, and let Phase 2 update compiled memory surgically.
+The complete pre-split contract is preserved byte-for-byte in
+[FULL_CONTRACT.md](FULL_CONTRACT.md). Do not load it for a simple recall or
+capture-gate decision.
 
-Never edit or delete prior admission notes.
+Load it only for:
 
-## Memory Digest
+- exact Ledger ensure, doctor, bind, capture, record, recall, or projection
+  commands;
+- retired-store recovery and migration rules;
+- complete row and submission schemas;
+- memory-admission thresholds, adapters, supersession, withdrawal, and digest
+  mechanics;
+- an unported edge route.
 
-`$memory-source-notes` owns generated Learnings digests and their timestamped
-resources. Ledger supplies only the deterministic source projection.
-
-## Relationship to Negative Ledger
-
-A learning can seed negative evidence, but the learning source is not the
-operational route-exclusion store. Promote witnessed failed hypotheses through
-the Negative Evidence definition's `capture` transaction, then use its
-`memory-note` projection for admission.
+Its frontmatter is archived source, not a second skill definition.
 
 ## Guardrails
 
-- Ground every row in observed evidence.
-- Write rules, not changelog bullets.
-- Do not append from an unverified non-repo cwd.
-- Do not force-add local-only source stores.
-- Do not bypass the Ledger API or edit persistent-adapter records directly.
+- Ground every row in inspectable evidence.
+- Write reusable rules, not chronology.
+- Never hand-edit the store or compiled memory.
 - Do not admit every learning to memory.
-- Do not write compiled memory directly.
-- Do not use source notes to bypass the canonical store.
-- Do not invoke a sibling source merely because Learnings activated.
+- Do not use Learnings as the operational failed-route gate; that belongs to
+  `$negative-ledger`.
