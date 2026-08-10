@@ -432,7 +432,7 @@ Before binding or dispatching closure-grade review, require:
 cas app-server preflight --cwd <repo> --profile review \
   --app-server-transport managed-ws --json
 
-cas_codex_0146_structured_review_v1=true
+cas_structured_review_v1=true
 cas_workflow_bound_owner_lived_review_v1=true
 ~~~
 
