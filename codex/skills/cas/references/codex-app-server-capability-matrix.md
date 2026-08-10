@@ -1,4 +1,4 @@
-# Codex 0.146 feature matrix
+# Codex app-server capability matrix
 
 | Surface | CAS behavior | Required proof |
 |---|---|---|
@@ -15,7 +15,7 @@
 | Plugin attribution | Preserve `pluginId` and `scriptPath` as attribution only | schema and item fixtures |
 | Executor skills/resources | Lossless listing/read with source path or URI identity | `full` probe |
 | Plugins/apps | Preserve refetch, workspace-publish capability, enabled/disabled/read-only metadata | schema fixtures |
-| Managed config | Preserve all 0.146 `ConfigRequirements`; session-static defaults are not hot-reloaded | schema fixtures |
+| Managed config | Preserve all admitted `ConfigRequirements`; session-static defaults are not hot-reloaded | schema fixtures |
 | External import | Bounded detect/import and provider-attributed record history in isolated state | `full` probe |
 | Account plan | Preserve `ent26` and unknown plan values as data | account tests |
 | Additive payloads | Preserve raw metadata; reject unknown control flow explicitly | contract mutation tests |

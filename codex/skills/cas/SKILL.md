@@ -16,7 +16,7 @@ CAS owns route execution and facts it directly observes. It does not decide
 Goal semantics, review credit, finding truth, repairs, mutation, publication,
 closure, what an automation ought to do, or whether its result is correct.
 
-Require installed CAS `0.4.1` or newer. There is no standalone automation
+Require installed CAS `0.5.0` or newer. There is no standalone automation
 product, compatibility skill, or legacy command route.
 
 ## Native surface
@@ -61,23 +61,24 @@ Use these profiles:
 | release conformance and the complete feature surface | `full` |
 
 Require `status == "compatible"`, the intended resolved Codex path, contract
-ID `codex-app-server-0.146.0`, no missing required methods or handlers, and all
-required selected-profile probes passed. `degraded` is not compatible proof for
-a required route behavior.
+ID `codex-app-server-capabilities-v1`, no missing required methods or handlers,
+and all required selected-profile probes passed. Codex version and release
+channel are diagnostic only. `degraded` is not compatible proof for a required
+route behavior.
 
 For review and session inquiry, also require the preflight receipt's
 `transport.selected == "managed-ws"`; a compatible stdio receipt is not
-equivalent proof. CAS 0.4.1 review runs this gate internally before starting
+equivalent proof. CAS 0.5.0 review runs this gate internally before starting
 and reports the realized connection as `selectedTransport == "websocket"`.
 Session inquiry additionally receives `--transport managed-ws` on execution.
 
 Compile-time capabilities report what CAS implements. They do not prove that
 the resolved runtime implements it. For review, require both the compatible
 `review` preflight and
-`cas_capabilities.features.cas_codex_0146_structured_review_v1 == true`.
+`cas_capabilities.features.cas_structured_review_v1 == true`.
 
 See [codex_app_server_contract.md](references/codex_app_server_contract.md) and
-[codex-0146-feature-matrix.md](references/codex-0146-feature-matrix.md).
+[codex-app-server-capability-matrix.md](references/codex-app-server-capability-matrix.md).
 
 ## Route guidance
 

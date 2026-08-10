@@ -1,8 +1,9 @@
-# Codex app-server 0.146 contract
+# Codex app-server capability contract
 
-Treat the installed `codex` executable as the runtime schema source. CAS 0.4.1
-compares its compact `codex-app-server-0.146.0` baseline with both generated
-bundles and the selected live behavioral probes.
+Treat the installed `codex` executable as the runtime schema source. CAS 0.5.0
+compares its compact `codex-app-server-capabilities-v1` contract with both
+generated bundles and the selected live behavioral probes. The contract names
+required capabilities, not a Codex release.
 
 ## Schema and preflight
 
@@ -21,7 +22,6 @@ compatibility predicate.
 
 A compatible profile requires:
 
-- the stable version floor and no unapproved prerelease;
 - every baseline client method, server request, and notification;
 - compatible required fields, scalar kinds, nullability, discriminators, and
   control-flow enums;
@@ -39,7 +39,7 @@ unsupported-item result.
   bounded overload behavior.
 - `review`: core plus structured review.
 - `session-inquiry`: core plus paginated and ephemeral fork/anchor behavior.
-- `full`: all required 0.146 features, including pinning, executor skills and
+- `full`: all declared features, including pinning, executor skills and
   resources, external import history, review, and inquiry.
 
 An explicit external endpoint must earn its own runtime and behavioral proof;
