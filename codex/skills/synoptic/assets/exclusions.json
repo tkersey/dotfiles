@@ -1,0 +1,66 @@
+{
+  "schema": "synoptic-exclusions/v1",
+  "rules": [
+    {
+      "reason": "lockfile",
+      "globs": [
+        "package-lock.json",
+        "npm-shrinkwrap.json",
+        "yarn.lock",
+        "pnpm-lock.yaml",
+        "bun.lock",
+        "bun.lockb",
+        "Cargo.lock",
+        "flake.lock",
+        "uv.lock",
+        "Pipfile.lock",
+        "poetry.lock",
+        "composer.lock",
+        "Gemfile.lock",
+        "go.sum"
+      ]
+    },
+    {
+      "reason": "vendored",
+      "globs": ["vendor/**", "third_party/**", "third-party/**", "node_modules/**"]
+    },
+    {
+      "reason": "generated",
+      "globs": [
+        "generated/**",
+        "**/generated/**",
+        "**/*.generated.*",
+        "**/*.gen.*",
+        "**/*.pb.go",
+        "**/*.pb.cc",
+        "**/*.pb.h",
+        "**/*.g.dart"
+      ]
+    },
+    {
+      "reason": "minified",
+      "globs": ["**/*.min.js", "**/*.min.css", "**/*.map"]
+    },
+    {
+      "reason": "snapshot",
+      "globs": ["__snapshots__/**", "**/__snapshots__/**", "**/*.snap"]
+    },
+    {
+      "reason": "binary",
+      "globs": [
+        "**/*.png",
+        "**/*.jpg",
+        "**/*.jpeg",
+        "**/*.gif",
+        "**/*.webp",
+        "**/*.ico",
+        "**/*.pdf",
+        "**/*.zip",
+        "**/*.gz",
+        "**/*.woff",
+        "**/*.woff2",
+        "**/*.ttf"
+      ]
+    }
+  ]
+}

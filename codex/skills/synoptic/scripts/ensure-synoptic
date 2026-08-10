@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly FORMULA="tkersey/tap/synoptic"
+install_allowed=false
+
+usage() {
+  cat <<'EOF'
+ensure-synoptic
+
+usage:
+  ensure-synoptic [--install]
+
+Ensures the canonical macOS Synoptic CLI is ready. With --install, Homebrew
+installs it when missing or upgrades it when its skill/UI ABI is incompatible.
+The handler does not proxy native commands.
+EOF
+}
+
+json_escape() {
+  local value="$1"
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  value="${value//$'\n'/\\n}"
+  value="${value//$'\r'/\\r}"
+  value="${value//$'\t'/\\t}"
+  printf '%s' "$value"
+}
+
+emit_error() {
+  local reason="$1"
+  local remediation="$2"
+  printf '{"schema":"synoptic-bootstrap-error/v1","status":"blocked","reason":"%s","remediation":"%s"}\n' \
+    "$(json_escape "$reason")" \
+    "$(json_escape "$remediation")" >&2
+}
+
+synoptic_path=""
+synoptic_version=""
+skill_abi=""
+ui_abi=""
+
+inspect_availability() {
+  synoptic_path="$(command -v synoptic 2>/dev/null || true)"
+  [[ -n "$synoptic_path" ]]
+}
+
+inspect_readiness() {
+  local version_line capabilities line
+  local skill_found=false
+  local ui_found=false
+
+  version_line="$("$synoptic_path" version 2>/dev/null || true)"
+  if [[ ! "$version_line" =~ ^synoptic[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?)$ ]]; then
+    return 1
+  fi
+  synoptic_version="${BASH_REMATCH[1]}"
+  capabilities="$("$synoptic_path" capabilities 2>/dev/null || true)"
+  while IFS= read -r line; do
+    case "$line" in
+      synoptic-skill-abi/v1) skill_found=true ;;
+      synoptic-ui/v1) ui_found=true ;;
+    esac
+  done <<<"$capabilities"
+  [[ "$skill_found" == true && "$ui_found" == true ]] || return 1
+  skill_abi="synoptic-skill-abi/v1"
+  ui_abi="synoptic-ui/v1"
+}
+
+require_macos_and_brew() {
+  local os="${SYNOPTIC_BOOTSTRAP_OS:-$(uname -s)}"
+  if [[ "$os" != "Darwin" ]]; then
+    emit_error "unsupported-platform" "Synoptic 0.1 supports macOS only."
+    return 2
+  fi
+  if ! command -v brew >/dev/null 2>&1; then
+    emit_error "homebrew-unavailable" "Install Homebrew, then rerun: ensure-synoptic --install"
+    return 2
+  fi
+}
+
+install_cli() {
+  require_macos_and_brew || return $?
+  if brew list --versions "$FORMULA" >/dev/null 2>&1; then
+    emit_error "installed-but-unavailable" "Add the Homebrew synoptic executable to PATH, then retry."
+    return 2
+  fi
+  local status
+  if brew install "$FORMULA" >&2; then
+    :
+  else
+    status=$?
+    emit_error "homebrew-install-failed" "Fix the Homebrew failure, then rerun: ensure-synoptic --install"
+    return "$status"
+  fi
+  printf installed
+}
+
+upgrade_cli() {
+  require_macos_and_brew || return $?
+  if ! brew list --versions "$FORMULA" >/dev/null 2>&1; then
+    emit_error "version-or-abi-mismatch-nonformula" "Replace the current binary with $FORMULA, then retry."
+    return 2
+  fi
+  if ! brew upgrade "$FORMULA" >&2; then
+    emit_error "homebrew-upgrade-failed" "Fix the Homebrew failure, then rerun: ensure-synoptic --install"
+    return 2
+  fi
+  printf upgraded
+}
+
+while (($#)); do
+  case "$1" in
+    --install)
+      install_allowed=true
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      emit_error "unknown-option" "Use ensure-synoptic --help."
+      exit 2
+      ;;
+  esac
+done
+
+if [[ "${SYNOPTIC_BOOTSTRAP_OS:-$(uname -s)}" != "Darwin" ]]; then
+  emit_error "unsupported-platform" "Synoptic 0.1 supports macOS only."
+  exit 2
+fi
+
+action=none
+if ! inspect_availability; then
+  if [[ "$install_allowed" != true ]]; then
+    emit_error "missing" "Authorize canonical Homebrew installation, then rerun: ensure-synoptic --install"
+    exit 3
+  fi
+  action="$(install_cli)" || exit $?
+  hash -r
+  if ! inspect_availability; then
+    emit_error "post-install-unavailable" "Verify PATH and the installed $FORMULA formula."
+    exit 2
+  fi
+fi
+
+if ! inspect_readiness; then
+  if [[ "$install_allowed" != true ]]; then
+    emit_error "version-or-abi-mismatch" "Authorize upgrade to $FORMULA with synoptic-skill-abi/v1 and synoptic-ui/v1."
+    exit 3
+  fi
+  action="$(upgrade_cli)" || exit $?
+  hash -r
+  inspect_availability || {
+    emit_error "post-upgrade-unavailable" "Verify PATH and the upgraded $FORMULA formula."
+    exit 2
+  }
+  if ! inspect_readiness; then
+    emit_error "post-upgrade-version-or-abi-mismatch" "Verify $FORMULA provides both required v1 ABIs."
+    exit 2
+  fi
+fi
+
+printf '{"schema":"synoptic-bootstrap-ready/v1","status":"ready","path":"%s","version":"%s","skillAbi":"%s","uiAbi":"%s","action":"%s"}\n' \
+  "$(json_escape "$synoptic_path")" \
+  "$(json_escape "$synoptic_version")" \
+  "$(json_escape "$skill_abi")" \
+  "$(json_escape "$ui_abi")" \
+  "$(json_escape "$action")"
