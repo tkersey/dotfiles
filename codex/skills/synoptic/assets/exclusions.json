@@ -4,25 +4,25 @@
     {
       "reason": "lockfile",
       "globs": [
-        "package-lock.json",
-        "npm-shrinkwrap.json",
-        "yarn.lock",
-        "pnpm-lock.yaml",
-        "bun.lock",
-        "bun.lockb",
-        "Cargo.lock",
-        "flake.lock",
-        "uv.lock",
-        "Pipfile.lock",
-        "poetry.lock",
-        "composer.lock",
-        "Gemfile.lock",
-        "go.sum"
+        "**/package-lock.json",
+        "**/npm-shrinkwrap.json",
+        "**/yarn.lock",
+        "**/pnpm-lock.yaml",
+        "**/bun.lock",
+        "**/bun.lockb",
+        "**/Cargo.lock",
+        "**/flake.lock",
+        "**/uv.lock",
+        "**/Pipfile.lock",
+        "**/poetry.lock",
+        "**/composer.lock",
+        "**/Gemfile.lock",
+        "**/go.sum"
       ]
     },
     {
       "reason": "vendored",
-      "globs": ["vendor/**", "third_party/**", "third-party/**", "node_modules/**"]
+      "globs": ["**/vendor/**", "**/third_party/**", "**/third-party/**", "**/node_modules/**"]
     },
     {
       "reason": "generated",

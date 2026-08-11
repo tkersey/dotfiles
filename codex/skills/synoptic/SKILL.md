@@ -39,7 +39,8 @@ only the canonical Homebrew formula needed by this skill.
    PR selector into a command string.
 
 ```bash
-synoptic_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/synoptic")"
+synoptic_skill_file="<absolute SKILL.md path from this skill's loaded source locator>"
+synoptic_skill_root="$(dirname "$(realpath "$synoptic_skill_file")")"
 "$synoptic_skill_root/scripts/ensure-synoptic" --install
 
 launch_argv=(
@@ -53,6 +54,10 @@ fi
 launch_argv+=(--json)
 "${launch_argv[@]}"
 ```
+
+Substitute `synoptic_skill_file` with the exact source locator used to load this
+skill. Do not infer the skill root from `$CODEX_HOME`; the skill may be installed
+through another configured skill root.
 
 Parse the single `synoptic-launch-ready/v1` receipt, report its local URL, and
 stop proxying commands. The native process owns the continuing browser,

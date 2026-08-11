@@ -23,11 +23,18 @@
     actions: new Map(),
     conversations: new Map(),
     approvals: new Map(),
+    drafts: new Map(),
     pendingMessage: null,
     activeSessionId: null,
     openingPath: null,
     seq: 0,
-    round: 1
+    round: 1,
+    renderedDiffSessionId: null,
+    renderedDiffValue: null,
+    renderedConversationSessionId: null,
+    renderedMessageCount: 0,
+    renderedMessageRevisions: [],
+    conversationContainers: null
   };
 
   function el(tag, className, text) {
@@ -69,6 +76,22 @@
     return state.activeSessionId ? state.tabs.get(state.activeSessionId) || null : null;
   }
 
+  function saveActiveDraft() {
+    if (!state.activeSessionId || state.pendingMessage?.sessionId === state.activeSessionId) return;
+    state.drafts.set(state.activeSessionId, elements.message_input.value);
+  }
+
+  function loadActiveDraft() {
+    elements.message_input.value = state.activeSessionId ? state.drafts.get(state.activeSessionId) || "" : "";
+  }
+
+  function activateSession(sessionId) {
+    if (sessionId === state.activeSessionId) return;
+    saveActiveDraft();
+    state.activeSessionId = sessionId;
+    loadActiveDraft();
+  }
+
   function applySnapshot(snapshot) {
     if (!snapshot || snapshot.schema !== "synoptic-bootstrap/v1") throw new Error("Unsupported Synoptic bootstrap schema");
     state.pullRequest = snapshot.pullRequest || null;
@@ -76,6 +99,7 @@
     state.queue = Array.isArray(snapshot.queue) ? snapshot.queue : [];
     state.round = Number(snapshot.round || 1);
     state.seq = Math.max(state.seq, Number(snapshot.seq || 0));
+    state.approvals.clear();
 
     const nextTabs = new Map();
     for (const tab of Array.isArray(snapshot.tabs) ? snapshot.tabs : []) {
@@ -95,8 +119,9 @@
 
     state.actions.clear();
     for (const card of Array.isArray(snapshot.actions) ? snapshot.actions : []) state.actions.set(card.id, card);
-    if (state.activeSessionId && !state.tabs.has(state.activeSessionId)) state.activeSessionId = null;
-    if (!state.activeSessionId && state.tabs.size) state.activeSessionId = Array.from(state.tabs.keys()).at(-1);
+    if (state.activeSessionId && !state.tabs.has(state.activeSessionId)) activateSession(null);
+    if (!state.activeSessionId && state.tabs.size) activateSession(Array.from(state.tabs.keys()).at(-1));
+    reconcilePendingAfterSnapshot();
     render();
   }
 
@@ -128,7 +153,8 @@
     });
     socket.addEventListener("close", () => {
       state.connected = false;
-      restorePendingMessage();
+      markPendingOutcomeUnknown();
+      state.approvals.clear();
       state.openingPath = null;
       renderHeader();
       if (!state.stopped) {
@@ -140,12 +166,14 @@
     socket.addEventListener("error", () => socket.close());
   }
 
-  function send(type, payload) {
+  function send(type, payload, requestId) {
     if (!state.socket || state.socket.readyState !== WebSocket.OPEN) {
       toast("Synoptic is reconnecting; try again in a moment.", "error");
       return false;
     }
-    state.socket.send(JSON.stringify({ schema: UI_SCHEMA, type, payload }));
+    const envelope = { schema: UI_SCHEMA, type, payload };
+    if (requestId) envelope.requestId = requestId;
+    state.socket.send(JSON.stringify(envelope));
     return true;
   }
 
@@ -230,7 +258,7 @@
         break;
       case "error":
         toast(payload.message || payload.code || "Synoptic command failed", "error");
-        restorePendingMessage();
+        if (payload.requestId && payload.requestId === state.pendingMessage?.id) restorePendingMessage();
         state.openingPath = null;
         break;
       case "app.stopped":
@@ -261,7 +289,7 @@
       initialReview: Boolean(payload.initialReview),
       diff: payload.diff || previous.diff || { state: "unavailable", text: null }
     }));
-    state.activeSessionId = sessionId;
+    activateSession(sessionId);
     state.openingPath = null;
     const messages = conversationFor(sessionId);
     if (!messages.length) messages.push({ kind: "system", text: payload.initialReview ? "Initial review started. Findings will appear here." : "Session opened. Send a message when you are ready to begin." });
@@ -270,8 +298,13 @@
   function onSessionClosed(payload) {
     const sessionId = payload.sessionId || state.activeSessionId;
     if (!sessionId) return;
+    if (state.activeSessionId === sessionId) saveActiveDraft();
     state.tabs.delete(sessionId);
-    if (state.activeSessionId === sessionId) state.activeSessionId = state.tabs.size ? Array.from(state.tabs.keys()).at(-1) : null;
+    state.drafts.delete(sessionId);
+    if (state.activeSessionId === sessionId) {
+      state.activeSessionId = null;
+      activateSession(state.tabs.size ? Array.from(state.tabs.keys()).at(-1) : null);
+    }
   }
 
   function onSessionStatus(payload) {
@@ -321,7 +354,10 @@
     const delta = visibleDelta(method, raw);
     if (delta !== null) {
       const last = messages.at(-1);
-      if (last && last.kind === "assistant" && last.streaming) last.text += delta;
+      if (last && last.kind === "assistant" && last.streaming) {
+        last.text += delta;
+        last.revision = Number(last.revision || 0) + 1;
+      }
       else messages.push({ kind: "assistant", text: delta, streaming: true });
       updateTab(sessionId, { turnActive: true, turnFailed: false });
       return;
@@ -329,7 +365,10 @@
 
     if (method.includes("turn/completed") || method === "turn/completed") {
       const last = messages.at(-1);
-      if (last && last.kind === "assistant") last.streaming = false;
+      if (last && last.kind === "assistant") {
+        last.streaming = false;
+        last.revision = Number(last.revision || 0) + 1;
+      }
       const terminalStatus = raw?.params?.turn?.status || raw?.turn?.status || "completed";
       if (terminalStatus === "failed") {
         messages.push({ kind: "warning", text: readableEvent(method, raw) });
@@ -346,7 +385,18 @@
     }
 
     const detail = readableEvent(method, raw);
-    if (detail) messages.push({ kind: "detail", title: detailTitle(method, raw), text: detail });
+    if (detail) {
+      const eventKey = detailEventKey(method, raw);
+      const prior = messages.findLast(
+        (message) => message.kind === "detail" && message.eventKey === eventKey
+      );
+      if (method.toLowerCase().includes("delta") && prior) {
+        prior.text += detail;
+        prior.revision = Number(prior.revision || 0) + 1;
+      } else {
+        messages.push({ kind: "detail", title: detailTitle(method, raw), text: detail, eventKey });
+      }
+    }
   }
 
   function visibleDelta(method, raw) {
@@ -376,6 +426,12 @@
     if (method.toLowerCase().includes("reason")) return "Reasoning summary";
     if (method.toLowerCase().includes("tool")) return "Tool activity";
     return method.replaceAll("/", " · ");
+  }
+
+  function detailEventKey(method, raw) {
+    const params = raw && raw.params ? raw.params : raw;
+    const item = params?.item || params;
+    return [method, item?.id, params?.itemId, params?.turnId].filter(Boolean).join(":");
   }
 
   function updateTab(sessionId, patch) {
@@ -411,9 +467,22 @@
   function restorePendingMessage() {
     const pending = state.pendingMessage;
     if (!pending) return;
-    if (state.activeSessionId === pending.sessionId && !elements.message_input.value) {
-      elements.message_input.value = pending.text;
-    }
+    state.drafts.set(pending.sessionId, pending.text);
+    state.pendingMessage = null;
+    if (state.activeSessionId === pending.sessionId) loadActiveDraft();
+  }
+
+  function markPendingOutcomeUnknown() {
+    if (state.pendingMessage) state.pendingMessage.outcomeUnknown = true;
+  }
+
+  function reconcilePendingAfterSnapshot() {
+    const pending = state.pendingMessage;
+    if (!pending?.outcomeUnknown) return;
+    conversationFor(pending.sessionId).push({
+      kind: "warning",
+      text: `Delivery outcome is unknown after reconnect. Check the conversation before resending:\n\n${pending.text}`
+    });
     state.pendingMessage = null;
   }
 
@@ -479,7 +548,7 @@
 
   function openFile(file) {
     if (file.activeSessionId && state.tabs.has(file.activeSessionId)) {
-      state.activeSessionId = file.activeSessionId;
+      activateSession(file.activeSessionId);
       render();
       return;
     }
@@ -499,7 +568,7 @@
       button.append(el("span", `tab-state ${normalized}`));
       const suffix = tab.staleOrigin || normalized === "stale_origin" ? " · prior revision" : "";
       button.append(el("span", "tab-label", `${tab.path}${suffix}`));
-      button.addEventListener("click", () => { state.activeSessionId = tab.sessionId; render(); });
+      button.addEventListener("click", () => { activateSession(tab.sessionId); render(); });
       elements.tabs.append(button);
     }
   }
@@ -508,7 +577,13 @@
     const tab = activeTab();
     elements.welcome.classList.toggle("hidden", Boolean(tab));
     elements.review.classList.toggle("hidden", !tab);
-    if (!tab) return;
+    if (!tab) {
+      state.renderedDiffSessionId = null;
+      state.renderedDiffValue = null;
+      state.renderedConversationSessionId = null;
+      state.conversationContainers = null;
+      return;
+    }
     elements.diff_title.textContent = tab.path;
     const normalized = tabStatus(tab);
     elements.diff_state.className = `status-pill ${normalized}`;
@@ -523,11 +598,14 @@
     elements.interrupt_button.disabled = !state.connected || normalized !== "turn_active";
     elements.close_button.disabled = !state.connected;
     elements.message_input.disabled = !state.connected || Boolean(state.pendingMessage);
-    renderDiff(tab.diff);
+    renderDiff(tab.diff, tab.sessionId);
     renderConversation(tab.sessionId);
   }
 
-  function renderDiff(diff) {
+  function renderDiff(diff, sessionId) {
+    if (state.renderedDiffSessionId === sessionId && state.renderedDiffValue === diff) return;
+    state.renderedDiffSessionId = sessionId;
+    state.renderedDiffValue = diff;
     clear(elements.diff);
     if (!diff || diff.state === "unavailable") {
       elements.diff.append(el("div", "diff-message", "The current pull-request diff is unavailable. Refresh to revalidate the file."));
@@ -542,7 +620,10 @@
     let oldLine = null;
     let newLine = null;
     let inHunk = false;
-    for (const line of String(diff.text || "").split("\n")) {
+    const diffText = String(diff.text || "");
+    const lines = diffText.split("\n");
+    if (diffText.endsWith("\n") && lines.at(-1) === "") lines.pop();
+    for (const line of lines) {
       let kind = "context";
       let prefix = line.slice(0, 1);
       if (line.startsWith("@@")) {
@@ -555,9 +636,8 @@
       else if (line.startsWith("diff --git")) {
         kind = "meta";
         inHunk = false;
-      } else if (!inHunk && /^(index |--- |\+\+\+ )/.test(line)) {
-        kind = "meta";
-      } else if (inHunk && line.startsWith("+")) kind = "added";
+      } else if (!inHunk) kind = "meta";
+      else if (line.startsWith("+")) kind = "added";
       else if (inHunk && line.startsWith("-")) kind = "removed";
       const row = el("tr", `diff-row ${kind}`);
       const oldCell = el("td", "line-number");
@@ -578,12 +658,50 @@
   }
 
   function renderConversation(sessionId) {
-    clear(elements.conversation);
     const messages = conversationFor(sessionId);
     if (!messages.length) messages.push({ kind: "system", text: "This running session was restored from the current Synoptic process. New visible items will appear here." });
-    for (const message of messages) elements.conversation.append(renderMessage(message));
-    for (const approval of state.approvals.values()) if (approval.sessionId === sessionId) elements.conversation.append(renderApproval(approval));
-    for (const card of state.actions.values()) if (card.sessionId === sessionId) elements.conversation.append(renderAction(card));
+    if (state.renderedConversationSessionId !== sessionId || !state.conversationContainers) {
+      clear(elements.conversation);
+      state.conversationContainers = {
+        messages: el("div", "conversation-messages"),
+        approvals: el("div", "conversation-approvals"),
+        actions: el("div", "conversation-actions")
+      };
+      elements.conversation.append(
+        state.conversationContainers.messages,
+        state.conversationContainers.approvals,
+        state.conversationContainers.actions
+      );
+      state.renderedConversationSessionId = sessionId;
+      state.renderedMessageCount = 0;
+      state.renderedMessageRevisions = [];
+    }
+    const containers = state.conversationContainers;
+    if (state.renderedMessageCount > messages.length) {
+      clear(containers.messages);
+      state.renderedMessageCount = 0;
+      state.renderedMessageRevisions = [];
+    }
+    for (let index = 0; index < state.renderedMessageCount; index += 1) {
+      const revision = Number(messages[index].revision || 0);
+      if (state.renderedMessageRevisions[index] !== revision) {
+        containers.messages.children[index].replaceWith(renderMessage(messages[index]));
+        state.renderedMessageRevisions[index] = revision;
+      }
+    }
+    for (let index = state.renderedMessageCount; index < messages.length; index += 1) {
+      containers.messages.append(renderMessage(messages[index]));
+      state.renderedMessageRevisions[index] = Number(messages[index].revision || 0);
+    }
+    state.renderedMessageCount = messages.length;
+    clear(containers.approvals);
+    clear(containers.actions);
+    for (const approval of state.approvals.values()) {
+      if (approval.sessionId === sessionId) containers.approvals.append(renderApproval(approval));
+    }
+    for (const card of state.actions.values()) {
+      if (card.sessionId === sessionId) containers.actions.append(renderAction(card));
+    }
     elements.conversation.scrollTop = elements.conversation.scrollHeight;
   }
 
@@ -691,8 +809,15 @@
     if (!sessionId || !text) return;
     const tab = state.tabs.get(sessionId);
     const active = Boolean(tab?.turnActive);
-    if (!state.pendingMessage && send("session.message", { sessionId, text, active })) {
-      state.pendingMessage = { sessionId, text };
+    const requestId = window.crypto.randomUUID();
+    const sent = !state.pendingMessage && send(
+      "session.message",
+      { sessionId, text, active },
+      requestId
+    );
+    if (sent) {
+      state.pendingMessage = { id: requestId, sessionId, text, outcomeUnknown: false };
+      state.drafts.delete(sessionId);
       elements.message_input.value = "";
       renderReview();
     }
@@ -703,6 +828,7 @@
       elements.message_form.requestSubmit();
     }
   });
+  elements.message_input.addEventListener("input", saveActiveDraft);
 
   bootstrap().catch((error) => {
     elements.app.setAttribute("aria-busy", "false");
