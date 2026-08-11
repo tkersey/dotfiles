@@ -46,6 +46,18 @@ inspect_availability() {
   [[ -n "$synoptic_path" ]]
 }
 
+inspect_formula_provenance() {
+  local formula_prefix formula_path resolved_formula resolved_synoptic
+  command -v brew >/dev/null 2>&1 || return 1
+  formula_prefix="$(brew --prefix "$FORMULA" 2>/dev/null || true)"
+  [[ -n "$formula_prefix" ]] || return 1
+  formula_path="$formula_prefix/bin/synoptic"
+  [[ -x "$formula_path" ]] || return 1
+  resolved_formula="$(realpath "$formula_path" 2>/dev/null || true)"
+  resolved_synoptic="$(realpath "$synoptic_path" 2>/dev/null || true)"
+  [[ -n "$resolved_formula" && "$resolved_formula" == "$resolved_synoptic" ]]
+}
+
 inspect_readiness() {
   local version_line capabilities line
   local skill_found=false
@@ -142,6 +154,26 @@ if ! inspect_availability; then
   hash -r
   if ! inspect_availability; then
     emit_error "post-install-unavailable" "Verify PATH and the installed $FORMULA formula."
+    exit 2
+  fi
+fi
+
+if ! inspect_formula_provenance; then
+  if [[ "$install_allowed" != true ]]; then
+    emit_error "noncanonical-binary" "Install $FORMULA and ensure its bin directory precedes other synoptic executables on PATH."
+    exit 3
+  fi
+  require_macos_and_brew || exit $?
+  if ! brew list --versions "$FORMULA" >/dev/null 2>&1; then
+    action="$(install_cli)" || exit $?
+    hash -r
+    inspect_availability || {
+      emit_error "post-install-unavailable" "Verify PATH and the installed $FORMULA formula."
+      exit 2
+    }
+  fi
+  if ! inspect_formula_provenance; then
+    emit_error "canonical-formula-shadowed" "Put the Homebrew $FORMULA bin directory before other synoptic executables on PATH."
     exit 2
   fi
 fi

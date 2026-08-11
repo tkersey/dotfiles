@@ -7,7 +7,8 @@
     "app", "round-label", "pr-summary", "refresh-button", "finish-button", "stop-button",
     "primary-gate", "queue", "queue-count", "queue-empty", "tabs", "welcome", "review",
     "diff-title", "diff-state", "stale-banner", "diff", "conversation-title", "session-status",
-    "interrupt-button", "close-button", "conversation", "message-form", "message-input", "toast-region"
+    "interrupt-button", "close-button", "conversation", "message-form", "message-input",
+    "global-approvals", "toast-region"
   ].map((id) => [id.replaceAll("-", "_"), document.getElementById(id)]));
 
   const state = {
@@ -22,6 +23,7 @@
     actions: new Map(),
     conversations: new Map(),
     approvals: new Map(),
+    pendingMessage: null,
     activeSessionId: null,
     openingPath: null,
     seq: 0,
@@ -81,11 +83,15 @@
       const previous = state.tabs.get(sessionId);
       nextTabs.set(sessionId, Object.assign({}, previous, tab, {
         sessionId,
-        staleOrigin: previous?.staleOrigin || normalizeStatus(tab.status) === "stale_origin"
+        staleOrigin: previous?.staleOrigin || normalizeStatus(tab.status) === "stale_origin",
+        completed: previous?.completed || normalizeStatus(tab.status) === "completed",
+        turnActive: tab.turnActive === undefined ? Boolean(previous?.turnActive) : Boolean(tab.turnActive),
+        turnFailed: tab.turnFailed === undefined ? Boolean(previous?.turnFailed) : Boolean(tab.turnFailed)
       }));
       conversationFor(sessionId);
     }
     state.tabs = nextTabs;
+    state.openingPath = null;
 
     state.actions.clear();
     for (const card of Array.isArray(snapshot.actions) ? snapshot.actions : []) state.actions.set(card.id, card);
@@ -122,6 +128,8 @@
     });
     socket.addEventListener("close", () => {
       state.connected = false;
+      restorePendingMessage();
+      state.openingPath = null;
       renderHeader();
       if (!state.stopped) {
         toast("Connection lost. Reconnecting…");
@@ -196,7 +204,12 @@
         state.approvals.delete(payload.approvalId);
         break;
       case "file.completed":
-        if (payload.sessionId) updateTab(payload.sessionId, { status: "completed" });
+        if (payload.sessionId) updateTab(payload.sessionId, {
+          status: "completed",
+          completed: true,
+          turnActive: false,
+          turnFailed: false
+        });
         send("snapshot.get", {});
         break;
       case "file.excluded":
@@ -217,6 +230,7 @@
         break;
       case "error":
         toast(payload.message || payload.code || "Synoptic command failed", "error");
+        restorePendingMessage();
         state.openingPath = null;
         break;
       case "app.stopped":
@@ -240,6 +254,9 @@
       revisionKey: payload.revisionKey,
       status: previous.status || "current",
       staleOrigin: previous.staleOrigin || normalizeStatus(previous.status) === "stale_origin",
+      completed: previous.completed || normalizeStatus(previous.status) === "completed",
+      turnActive: previous.turnActive || Boolean(payload.initialReview),
+      turnFailed: false,
       reused: Boolean(payload.reused),
       initialReview: Boolean(payload.initialReview),
       diff: payload.diff || previous.diff || { state: "unavailable", text: null }
@@ -258,14 +275,17 @@
   }
 
   function onSessionStatus(payload) {
-    const sessionId = payload.sessionId || state.activeSessionId;
+    const sessionId = payload.sessionId;
     if (!sessionId) return;
     const tab = state.tabs.get(sessionId);
     const status = payload.status || "current";
-    const mapped = status === "turn-started" ? "turn_active" : status === "interrupted" ? "current" : normalizeStatus(status);
+    if (status === "turn-started") acceptPendingMessage(sessionId);
     updateTab(sessionId, {
-      status: mapped,
-      staleOrigin: tab?.staleOrigin || normalizeStatus(status) === "stale_origin"
+      status: status === "turn-started" || status === "interrupted" ? tab?.status || "current" : normalizeStatus(status),
+      staleOrigin: tab?.staleOrigin || normalizeStatus(status) === "stale_origin",
+      completed: tab?.completed || normalizeStatus(status) === "completed",
+      turnActive: status === "turn-started" ? true : Boolean(tab?.turnActive),
+      turnFailed: status === "turn-started" ? false : Boolean(tab?.turnFailed)
     });
   }
 
@@ -292,27 +312,36 @@
       return;
     }
 
+    if (method === "turn/started") {
+      updateTab(sessionId, { turnActive: true, turnFailed: false });
+      return;
+    }
+
     const messages = conversationFor(sessionId);
     const delta = visibleDelta(method, raw);
     if (delta !== null) {
       const last = messages.at(-1);
       if (last && last.kind === "assistant" && last.streaming) last.text += delta;
       else messages.push({ kind: "assistant", text: delta, streaming: true });
-      updateTab(sessionId, { status: "turn_active" });
+      updateTab(sessionId, { turnActive: true, turnFailed: false });
       return;
     }
 
     if (method.includes("turn/completed") || method === "turn/completed") {
       const last = messages.at(-1);
       if (last && last.kind === "assistant") last.streaming = false;
-      updateTab(sessionId, {
-        status: state.tabs.get(sessionId)?.staleOrigin ? "stale_origin" : "current"
-      });
+      const terminalStatus = raw?.params?.turn?.status || raw?.turn?.status || "completed";
+      if (terminalStatus === "failed") {
+        messages.push({ kind: "warning", text: readableEvent(method, raw) });
+        updateTab(sessionId, { turnActive: false, turnFailed: true });
+      } else {
+        updateTab(sessionId, { turnActive: false, turnFailed: false });
+      }
       return;
     }
     if (method.includes("turn/failed") || method.includes("error")) {
       messages.push({ kind: "warning", text: readableEvent(method, raw) });
-      updateTab(sessionId, { status: "turn_failed" });
+      updateTab(sessionId, { turnActive: false, turnFailed: true });
       return;
     }
 
@@ -322,7 +351,7 @@
 
   function visibleDelta(method, raw) {
     const params = raw && raw.params ? raw.params : raw;
-    if (!method.toLowerCase().includes("delta")) return null;
+    if (!["item/agentMessage/delta", "item/agent_message/delta"].includes(method)) return null;
     const candidates = [params?.delta, params?.text, params?.content, params?.item?.delta, params?.item?.text];
     for (const value of candidates) if (typeof value === "string") return value;
     return null;
@@ -364,6 +393,30 @@
     toast("A reviewed file changed and returned to the queue.");
   }
 
+  function tabStatus(tab) {
+    if (tab?.turnFailed) return "turn_failed";
+    if (tab?.turnActive) return "turn_active";
+    if (tab?.staleOrigin) return "stale_origin";
+    if (tab?.completed) return "completed";
+    return normalizeStatus(tab?.status);
+  }
+
+  function acceptPendingMessage(sessionId) {
+    const pending = state.pendingMessage;
+    if (!pending || pending.sessionId !== sessionId) return;
+    conversationFor(sessionId).push({ kind: "user", text: pending.text });
+    state.pendingMessage = null;
+  }
+
+  function restorePendingMessage() {
+    const pending = state.pendingMessage;
+    if (!pending) return;
+    if (state.activeSessionId === pending.sessionId && !elements.message_input.value) {
+      elements.message_input.value = pending.text;
+    }
+    state.pendingMessage = null;
+  }
+
   function ensureActiveSession(sessionId) {
     if (!state.activeSessionId && state.tabs.has(sessionId)) state.activeSessionId = sessionId;
   }
@@ -374,6 +427,7 @@
     renderQueue();
     renderTabs();
     renderReview();
+    renderGlobalApprovals();
   }
 
   function renderHeader() {
@@ -441,7 +495,7 @@
       button.type = "button";
       button.setAttribute("role", "tab");
       button.setAttribute("aria-selected", String(tab.sessionId === state.activeSessionId));
-      const normalized = normalizeStatus(tab.status);
+      const normalized = tabStatus(tab);
       button.append(el("span", `tab-state ${normalized}`));
       const suffix = tab.staleOrigin || normalized === "stale_origin" ? " · prior revision" : "";
       button.append(el("span", "tab-label", `${tab.path}${suffix}`));
@@ -456,7 +510,7 @@
     elements.review.classList.toggle("hidden", !tab);
     if (!tab) return;
     elements.diff_title.textContent = tab.path;
-    const normalized = normalizeStatus(tab.status);
+    const normalized = tabStatus(tab);
     elements.diff_state.className = `status-pill ${normalized}`;
     elements.diff_state.textContent = tab.diff?.state === "text" ? "current diff" : tab.diff?.state || "unavailable";
     elements.stale_banner.classList.toggle(
@@ -465,10 +519,10 @@
     );
     elements.conversation_title.textContent = tab.path;
     elements.session_status.className = `status-pill ${normalized}`;
-    elements.session_status.textContent = statusLabel(tab.status);
+    elements.session_status.textContent = statusLabel(normalized);
     elements.interrupt_button.disabled = !state.connected || normalized !== "turn_active";
     elements.close_button.disabled = !state.connected;
-    elements.message_input.disabled = !state.connected;
+    elements.message_input.disabled = !state.connected || Boolean(state.pendingMessage);
     renderDiff(tab.diff);
     renderConversation(tab.sessionId);
   }
@@ -487,17 +541,24 @@
     const body = document.createElement("tbody");
     let oldLine = null;
     let newLine = null;
+    let inHunk = false;
     for (const line of String(diff.text || "").split("\n")) {
       let kind = "context";
       let prefix = line.slice(0, 1);
       if (line.startsWith("@@")) {
         kind = "hunk";
+        inHunk = true;
         const match = line.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
         oldLine = match ? Number(match[1]) : null;
         newLine = match ? Number(match[2]) : null;
-      } else if (line.startsWith("+") && !line.startsWith("+++")) kind = "added";
-      else if (line.startsWith("-") && !line.startsWith("---")) kind = "removed";
-      else if (/^(diff --git|index |--- |\+\+\+ )/.test(line)) kind = "meta";
+      } else if (line === "\\ No newline at end of file") kind = "meta";
+      else if (line.startsWith("diff --git")) {
+        kind = "meta";
+        inHunk = false;
+      } else if (!inHunk && /^(index |--- |\+\+\+ )/.test(line)) {
+        kind = "meta";
+      } else if (inHunk && line.startsWith("+")) kind = "added";
+      else if (inHunk && line.startsWith("-")) kind = "removed";
       const row = el("tr", `diff-row ${kind}`);
       const oldCell = el("td", "line-number");
       const newCell = el("td", "line-number new");
@@ -521,7 +582,7 @@
     const messages = conversationFor(sessionId);
     if (!messages.length) messages.push({ kind: "system", text: "This running session was restored from the current Synoptic process. New visible items will appear here." });
     for (const message of messages) elements.conversation.append(renderMessage(message));
-    for (const approval of state.approvals.values()) if (!approval.sessionId || approval.sessionId === sessionId) elements.conversation.append(renderApproval(approval));
+    for (const approval of state.approvals.values()) if (approval.sessionId === sessionId) elements.conversation.append(renderApproval(approval));
     for (const card of state.actions.values()) if (card.sessionId === sessionId) elements.conversation.append(renderAction(card));
     elements.conversation.scrollTop = elements.conversation.scrollHeight;
   }
@@ -551,8 +612,10 @@
     const target = card.target || {};
     const targetParts = [`${target.repository || ""}#${target.pullRequest || ""}`];
     if (target.path) targetParts.push(target.path);
-    if (target.line) targetParts.push(`line ${target.line}${target.side ? ` ${target.side}` : ""}`);
+    if (target.startLine) targetParts.push(`lines ${target.startLine}–${target.line}${target.side ? ` ${target.side}` : ""}`);
+    else if (target.line) targetParts.push(`line ${target.line}${target.side ? ` ${target.side}` : ""}`);
     if (target.threadId) targetParts.push(`thread ${target.threadId}`);
+    if (target.commentId) targetParts.push(`comment ${target.commentId}`);
     node.append(el("div", "action-target", targetParts.filter(Boolean).join(" · ")));
     if (card.body) node.append(el("div", "action-body", card.body));
     if (card.graphql) {
@@ -596,6 +659,14 @@
     return node;
   }
 
+  function renderGlobalApprovals() {
+    clear(elements.global_approvals);
+    for (const approval of state.approvals.values()) {
+      if (!approval.sessionId) elements.global_approvals.append(renderApproval(approval));
+    }
+    elements.global_approvals.classList.toggle("hidden", !elements.global_approvals.children.length);
+  }
+
   elements.refresh_button.addEventListener("click", () => {
     elements.refresh_button.disabled = true;
     send("pr.refresh", {});
@@ -619,11 +690,11 @@
     const text = elements.message_input.value.trim();
     if (!sessionId || !text) return;
     const tab = state.tabs.get(sessionId);
-    const active = normalizeStatus(tab?.status) === "turn_active";
-    if (send("session.message", { sessionId, text, active })) {
-      conversationFor(sessionId).push({ kind: "user", text });
+    const active = Boolean(tab?.turnActive);
+    if (!state.pendingMessage && send("session.message", { sessionId, text, active })) {
+      state.pendingMessage = { sessionId, text };
       elements.message_input.value = "";
-      renderConversation(sessionId);
+      renderReview();
     }
   });
   elements.message_input.addEventListener("keydown", (event) => {
