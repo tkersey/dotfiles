@@ -1,64 +1,89 @@
 # Artifact Kernel Owner Map
 
-The kernel has four authoritative per-goal artifact families and no
-compatibility peer state.
+The kernel has exactly four authoritative per-goal artifact families.
 
 | Family | Semantic owner | Irreducible question |
 |---|---|---|
 | `goal-contract/v3` | accepted source through `$goal-contract` | What must be true, remain true, and is authorized? |
-| `counterexample-set/v1` | `$review-fold` | What witnessed behavior falsifies the current Construction? |
-| `construction-contract/v3` | `$actuating` using `$universalist` | What compared factorization realizes the laws, excludes Counterexamples, supersedes its predecessor, and retires residue? |
+| `counterexample-set/v1` | `$review-fold` | What witnessed behavior falsifies a current Construction claim? |
+| `construction-contract/v4` | `$actuating` using `$universalist` | Given the complete current Counterexample Theory, what semantic model and normalized realization should exist? |
 | `actuating-evidence-event/v1` | the event body's domain owner | What happened and what was independently observed? |
 
-The Goal Contract is the sole semantic-authority artifact; the Counterexample Set is the sole classified-bug artifact; the Construction Contract is the sole architecture-selection artifact; the Evidence Ledger is the sole mutable per-goal truth.
+The Goal Contract is the sole semantic-authority artifact. The Counterexample
+Set is the sole classified-bug artifact. The Construction Contract is the sole
+architecture-selection artifact. The Evidence Ledger is the sole mutable
+per-goal truth.
 
-## Downstream ownership
+## Ownership
 
 - Goal shape and authority: `$goal-contract`.
-- Finding classification and quotienting: `$review-fold`.
-- Architectonic activation and abstraction-route adjudication: `$actuating`;
-  `$metanoetic` may expand the candidate frame, and `$universalist` alone lowers
-  material results into boundary nominations.
-- Review-path accretion folding, pathwise-minimality disposition, and any
-  resulting Metanoetic trigger: `$actuating`; `$complexity-mitigator` may supply a
-  read-only local normal form, `$universalist` lowers structural alternatives,
-  and `$reduce` challenges disputable factors without taking selection authority.
-- Construction, proof strategy, orchestration, Counterexample evaluation, and retirements: `$actuating`.
-- Static Review Contract construction, CAS-evidence evaluation, review credit, topology, and convergence: `$actuating`.
-- Semantic closure verdict and `actuating-closure-receipt/v1`: `$actuating`.
+- Finding classification, stable class identity, and within-Set quotienting:
+  `$review-fold`.
+- Cumulative Counterexample Theory, causal-basis derivation, semantic-novelty
+  classification, candidate adjudication, normal-form selection, realization
+  exactness, review credit, and closure: `$actuating`.
+- Candidate semantic-model nomination and boundary lowering: `$universalist`.
+- One bounded hypothesis-space escape on a live decision surface:
+  `$metanoetic`.
+- Factor quotienting, ablation, and recomposition challenge: `$reduce`.
 - CAS attempt execution and owner receipts: CAS.
 - Public effects and `SHIP-v1`, `SHIP-OBSERVATION-v1`, or
   `SHIP-ADOPTION-v1`: `$ship`.
-- Human terminal rendering: `$proof-patch`.
-- Canonicalization, structural validation, append integrity, replay, and requested projections: Ledger.
+- Human rendering: `$proof-patch`.
+- Canonicalization, structural validation, append integrity, replay, and
+  requested projections: Ledger.
 
-Ledger does not execute repository changes, interpret CAS or Ship, compute review credit or review accretion, select repairs or a next action, emit closure, or author its receipt. Generated Ledger tables may enumerate routes and shapes, never Actuating lifecycle, review, accretion, or closure law.
+Review findings never select repairs. Supporting skills never select the
+Construction. Ledger never interprets CAS or Ship, computes causal generators,
+chooses a semantic model, grants mutation, or emits closure.
+
+## Knowledge and realization law
+
+Accepted knowledge is monotone:
+
+```text
+Counterexample Theory(n+1)
+=
+quotient(Counterexample Theory(n) + newly accepted stable classes)
+```
+
+Implementation is not monotone. A successor Construction may preserve, rewrite,
+consolidate, or delete incumbent mechanisms. Review history and implementation
+momentum grant no semantic authority.
+
+The Construction factors through the cumulative Counterexample Theory, not the
+ordered review trace. Duplicate witnesses, campaign partitioning, reviewer
+identity, and finding arrival order must not change the selected normal form.
 
 ## Evidence law
 
-Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain owner-issued content-addressed attachments. Plans, WorkGraphs, Ledger views, and Review Accretion Dispositions are discardable aids. A material accretion result is carried by the current or successor Construction and owner-issued evidence. The closure receipt is a semantic report bound to current inputs, not a fifth artifact family.
+Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain
+owner-issued content-addressed attachments. Plans, WorkGraphs, local analyses,
+and historical diff folds are discardable aids. The selected normal form,
+causal basis, semantic model, realization bindings, proof obligations, and
+retirements live in `construction-contract/v4`; no Review Path artifact or separate accretion disposition is added.
 
 The Actuating subject is the deterministic SHA-256 identity of one clean Git
-commit target: repository identity, commit OID, and tree OID. A dirty checkout
-is a provisional construction surface, not an authoritative artifact, subject,
-or Evidence event kind. `effect_recorded` advances directly from the clean
-parent target to the clean committed successor; Ship then proves that exact
-successor is the published PR head before review begins. For read-only adoption
-of an already-public subject, Ship binds either the recorded pre-review
-observation or exact provider-backed publication evidence. Actuating alone
-evaluates the publication-before-campaign witness; a historical route also
-needs an Actuating-owned `actuating-publication-campaign-causality/v1`
-supporting attachment over an exact Seq observation and successful tool
-lifecycle source-line order. Ledger admits one campaign-start occurrence per
-current Goal/Construction/subject/Review-Contract tuple. Matching endpoints do
-not prove continuity.
+commit target: repository identity, commit OID, and tree OID. Dirty state is
+provisional implementation state and never an Evidence subject. A subject
+change invalidates subject-bound proof, publication, and review credit but does
+not erase Goal, Construction, or Counterexample lineage.
 
-Every immutable replayable event envelope proves sequence and custody, not semantic truth; Actuating evaluates it with the current Goal, Construction, Counterexamples, and subject.
+The first review-entry subject remains fixed for forensic audit throughout one
+closeout objective. It is not the semantic input to Construction selection; the
+complete current Goal and Counterexample Theory are.
 
-Construction v1 and v2 have no compatibility authority. Current tooling rejects
-them without migration; a v3 workflow starts a fresh goal-local Evidence store
-and ignores legacy data.
+## Version cut
+
+`construction-contract/v4` supersedes v3 for new selection or mutation. A v3
+artifact may be inspected as historical evidence but cannot authorize another
+affected mutation. Start a fresh v4 goal-local Evidence store when current
+passive definitions cannot replay a mixed lineage without weakening structural
+validation. Do not reinterpret v3 bytes as v4.
 
 ## Bankruptcy gate
 
-Add no mandatory artifact unless it answers a new irreducible question, has an owner and consumer, cannot be derived, prevents a named failure, replaces surface, and includes retirement. Pure coordination artifacts are prohibited.
+Add no mandatory artifact unless it answers a new irreducible question, has an
+owner and consumer, cannot be derived, prevents a named failure, replaces
+surface, and includes retirement. This redesign adds no artifact family, event
+kind, CLI command, mutable control state, review lens, or review attempt.

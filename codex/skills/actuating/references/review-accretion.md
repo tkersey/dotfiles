@@ -1,338 +1,245 @@
-# Review Accretion Gate
+# Counterexample-Guided Normalization
 
-Long review-closeout cycles can produce a final realization that is larger, more
-path-dependent, and less coherent than any individual repair suggested. Actuating
-must preserve **pathwise minimality**, not merely choose a pointwise least-additive
-repair for each accepted Counterexample.
+This document retains the historical `review-accretion.md` path so existing
+links remain valid. It supersedes the retrospective Review Accretion Gate.
 
-```text
-minimal repair 1
-+ minimal repair 2
-+ minimal repair 3
-!= necessarily minimal final realization
-```
+The old gate tried to reconstruct the ordered repair path and decide afterward
+whether pointwise minimal patches had composed into a dominated realization.
+That protection was necessary but brittle: a reset review-entry anchor could
+exclude most of the accumulated path, and even a correct anchor detected
+non-confluence only after the code and proof had already grown.
 
-The gate is an Actuating-owned semantic fold. It is not a review lens, a new
-artifact family, a CLI classifier, or autonomous refactoring authority.
+The replacement changes the mutation calculus.
 
-## Admission and timing
-
-Run the gate after every review-driven mutation epoch and before the next Ship
-handoff or fresh review dispatch. Run it again before final closeout when a
-review-driven mutation occurred after the last current disposition.
-
-A repair epoch is the sequence of Actuating-selected operations under one current
-or successor Construction that resolves the currently applicable accepted
-Counterexample classes before review resumes.
-
-Do not run the gate merely because review is long. Do not run it in non-mutating
-`triage`. Initial implementation alone does not create review-path accretion. Line
-count, file count, elapsed time, review count, and repair count are inspection
-pressure only; none establishes accretion or authorizes refactoring.
-
-Run at most one gate and one Metanoetic pass for an unchanged decision surface. A later
-material repair-path delta creates a new decision surface and may admit another
-bounded evaluation.
-
-## Exact anchors
-
-Compare three subjects:
+## Governing law
 
 ```text
-delivery baseline
-  exact source-bound base against which the complete change is delivered
-
-review-entry subject
-  exact subject that first entered the current review-closeout path
-
-current subject
-  exact live subject after the latest review-driven repair epoch
+Exhaustive review accumulates Counterexample knowledge, not code.
 ```
 
-Keep the review-entry anchor across publication epochs, review campaigns, review-
-credit resets, subject rebinding, and successor Constructions for the same closeout
-objective. Reset it only after terminal closure, explicit abandonment, or a
-materially new Goal objective with lawful Counterexample carry-forward.
-
-Recover anchors from Git and existing Goal, CAS, Ship, Construction, and Evidence
-identities. Do not add an accretion command or make Ledger, Seq, or CAS infer
-semantic accretion. If an old review-entry subject is no longer reconstructable,
-record `review-induced delta: unavailable`, fold the complete delivery delta and
-review-repair lineage, and inspect every addition after the latest recoverable
-subject. Missing attribution weakens the claim; it does not license skipping the
-gate or inventing a baseline.
-
-## Accretion fold
-
-Factor both the complete delivery delta and the review-induced delta across these
-surfaces:
+Let `T` be the complete current Counterexample Theory and `R` the realization.
 
 ```text
-production surface
-  files, branches, helpers, flags, state variants, handlers, adapters, validators,
-  compatibility paths, caches, correlations, bypasses, and recovery protocols
+T(n+1) = quotient(T(n) + newly accepted stable classes)
 
-semantic surface
-  law owners, authoritative representations, semantic mechanisms, admitted
-  domains, interpreters, parallel truths, residual assumptions, and illegal states
+R(n+1) != patch(R(n), latest finding)
 
-proof surface
-  tests, fixtures, mocks, verifier commands, example families, models, properties,
-  and duplicated setup or assertion machinery
-
-comprehension surface
-  cross-file hops, mixed responsibilities, hidden order, state to simulate,
-  reconstruction paths, and structure that reflects review history rather than law
+R(n+1) = realize(normal_form(Goal, causal_basis(T(n+1)), obligations))
 ```
 
-Every surviving factor must earn its existence from a current Goal law, applicable
-accepted Counterexample, required observation, proof obligation, compatibility
-constraint, resource obligation, or unavoidable host capability. Identify:
+Knowledge is monotone. Realization is not.
 
-- additions made obsolete, subsumed, or contradicted by later repairs;
-- duplicated or dominated factors and owners;
-- wound-specific helpers, branches, validators, and tests;
-- compatibility or recovery paths that no current obligation requires;
-- information repeatedly reconstructed because the representation forgot it;
-- a final organization that depends on finding arrival order;
-- proof surface that mirrors individual wounds instead of governing classes or laws.
+## Audit anchor
 
-Raw deletion is not the objective. Preserve necessary complexity and stronger proof.
+The first committed subject that enters one review-closeout objective remains
+the immutable review-entry anchor across campaigns, publication epochs, credit
+resets, subject rebinding, and successor Constructions. A later subject may not
+replace it.
 
-### Obligation-closed comparison
+The anchor remains forensic evidence and prevents latest-delta blindness. It is
+not a semantic premise for preserving historical implementation structure.
 
-Before comparing candidate families, derive one **common mandatory obligation
-core** from every independent repair required by the current Goal, accepted
-Counterexamples, owner cuts, observations, compatibility, resources, and proof.
-Every candidate carries that core unchanged and varies only its family-specific
-disputed delta. Omitting an orthogonal required repair makes a candidate
-inadmissible; it cannot establish that the candidate's architecture or ablation
-delta is dominated.
+## Counterexample Theory
 
-Check arrival-order invariance: if the same complete obligation set had been
-known initially, or its members were presented in another order, Actuating would
-select the same factorization up to lawful equivalence. Failure is
-**omission-confounded dominance**, not pathwise minimality.
+Before selecting any review-driven mutation, fold every currently applicable
+accepted stable class across current and predecessor Counterexample Sets for the
+Goal. Changed source authority must explicitly reject, supersede, or carry prior
+classes; a clean commit alone never erases them.
 
-### Realized retirement
-
-A factor label that says `collapse`, `replace`, or `retire` is not retirement
-evidence. For every displaced factor, map its production, semantic, proof, and
-comprehension surfaces to exactly one of:
-
-- deletion with an absence verifier;
-- the successor owner and proof obligation; or
-- a distinct current obligation that justifies explicit retention.
-
-Unmapped live surface means the retirement is incomplete, even when the
-Construction's conceptual factor inventory is smaller.
-
-## Compact disposition
-
-Record one non-authoritative view:
+The fold is:
 
 ```text
-Review Accretion Disposition
-Delivery baseline:
-Review-entry subject:
-Current subject:
-Repair epochs folded:
-Cumulative changeset delta:
-Review-induced delta:
-Production-surface delta:
-Semantic-surface delta:
-Proof-surface delta:
-Comprehension pressure:
-Additions required by current laws or Counterexamples:
-Common mandatory obligation core:
-Family-specific disputed deltas:
-Factors made obsolete by later repairs:
-Duplicated or dominated factors:
-Unnecessary compatibility or recovery paths:
-Wound-specific proof residue:
-Arrival-order invariance check:
-Expired preservation premises:
-Ordinary cumulative normal form:
-Disposition: preserve | realization-normalization | ablation-repair | architecture-repair | blocked
-Smallest coherent final realization:
-Required retirements:
-Realization-retirement witness:
-Preservation proof:
-Falsifier:
+associative
+commutative
+idempotent
 ```
 
-The view creates no authority. Compile a material result into the current or
-successor Construction's candidate comparison, factor surfaces, supersession,
-proof obligations, and retirements.
+Therefore duplicate witnesses, review-wave boundaries, request identity,
+reviewer overlap, and finding order do not change its semantics.
 
-## Ordinary normalization before Metanoetic
+## Causal basis
 
-First derive the strongest ordinary cumulative normal form.
+Quotient the complete theory again by shared causal mechanism. Each accepted
+class maps to exactly one:
 
-- When the selected architecture and factor inventory remain sufficient, use one
-  read-only `$complexity-mitigator` Micro Preflight over the anchored cumulative
-  delta to identify the smallest realization cut.
-- When the representation, owner, admitted domain, equivalence, information
-  retention, or boundary may be insufficient, establish or retain the current
-  Axiomatic Construction Basis and require `$universalist` to nominate the
-  ordinary repository-native normal form.
+- current causal generator; or
+- evidenced instance-specific exception.
 
-Do not invoke Metanoetic merely to produce a more dramatic cleanup. Invoke it when the
-ordinary candidate remains path-dependent, locally optimized, materially additive,
-or suspiciously faithful to the accumulated implementation.
-
-## Review-path Metanoetic trigger
-
-Cumulative review-path accretion makes abstraction change live when the fold
-establishes at least one of:
-
-1. **Repair-path dependence** — the final organization depends materially on the
-   order in which findings arrived.
-2. **Accumulated semantic machinery** — review resolution added or preserved
-   multiple owners, representations, validators, caches, correlations,
-   compatibility branches, recovery protocols, state variants, or bypasses.
-3. **Obsolete repair residue** — a later repair subsumed or made an earlier
-   addition unnecessary.
-4. **Proof accretion** — wound-specific tests or fixtures proliferated where a law,
-   property, model, state table, or class proof could dominate them.
-5. **Inadequate ordinary normalization** — the obvious cleanup only reorganizes the
-   accumulated path instead of escaping it.
-6. **Pathwise domination pressure** — a credible from-scratch Construction could
-   preserve the same laws, observations, compatibility, and proof while retiring
-   material incidental surface.
-
-When triggered, use the existing Architectonic Escalation with
-`Trigger: review-path-accretion`. Metanoetic receives the complete current obligation
-set and this counterfactual instruction:
-
-> Treat the accumulated changeset as evidence, not as the solution. Ignore the
-> historical order of review findings and repairs. Assume every current Goal law,
-> applicable accepted Counterexample class, required observation, compatibility
-> obligation, host constraint, and proof requirement was known before
-> implementation began. Derive the smallest coherent final Construction from that
-> complete obligation set. Carry every independent mandatory repair as a common
-> factor core in every candidate and vary only the disputed architectural delta;
-> never obtain ablation by omitting an orthogonal repair. Identify the single
-> representation, owner,
-> admitted-domain restriction, normalization, state machine, protocol, or proof
-> strategy that would make the largest portion of the repair path unnecessary.
-> Prefer deleting and recomposing the accumulated path over polishing its
-> incidental structure. Preserve required behavior, evidence, and compatibility;
-> manufacture no new premise or authority.
-
-Then compose:
+A causal generator records:
 
 ```text
-accretion fold
--> establish or retain Axiomatic Construction Basis
--> Universalist ordinary cumulative nomination
--> Metanoetic once
--> Universalist reclassification and repository-native lowering
--> Reduce challenge once for the resulting candidate version
--> Actuating adjudication
+generator id
+accepted class refs
+governing law
+missing or falsified semantic element
+strongest feasible proof family
+falsifier
 ```
 
-A material Metanoetic result must change an owner, factor inventory, admitted domain,
-representation, equivalence, normalization, retirement surface, proof surface, or
-falsifier. Rhetorical novelty is `no-material-reframe`. Metanoetic cannot manufacture a
-Goal premise, classify a Counterexample, select a Construction, grant mutation, or
-create another artifact.
+Examples of semantic elements include lifecycle transition relations,
+generation authority, custody transfer, effect ordering, canonical identity,
+normalization, and admitted-domain constraints.
 
-The Metanoetic decision surface is the exact tuple of Goal, review-entry subject,
-current subject, current Construction lineage, applicable Counterexample classes,
-and cumulative factor inventory. Do not repeat Metanoetic for that unchanged tuple. A
-later material repair may create a new tuple.
+One recurring stable class or two accepted classes with an evidenced shared
+missing semantic element invalidate the prior candidate universe. On the second
+shared-cause class, another local repair is forbidden unless non-example
+separation proof establishes independence.
 
-## Dispositions
+## Semantic-novelty firewall
 
-### `preserve`
+A local realization repair is admissible only when the exact required behavior
+already exists in the current Construction and the correction adds no semantic
+constructor.
 
-Every surviving factor remains necessary and coherently owned. Size alone is not a
-defect. Proceed with the current Construction and record the falsifier.
-
-A preservation result is a premise-bound proof lease, not a permanent exemption.
-Before rebinding an earlier `preserve`, `minimal`, or `no-material-reframe`, check
-the premises that established necessity: owner, case-family multiplicity,
-representation, admitted domain, compatibility, host capability, and proof shape.
-Later evidence that changes a relied-on premise expires the lease and reopens the
-affected decision surface. Raw size growth alone does not.
-
-### `realization-normalization`
-
-The selected architecture remains sufficient, but its realization contains
-incidental complexity. Actuating selects exact bounded delete, consolidate,
-localize, flatten, normalize, or proof-recomposition operations. If the
-Construction's factor inventory, architecture, and proof obligations remain exact,
-the normalization may remain under that Construction; otherwise select a successor.
-
-### `ablation-repair`
-
-The path left obsolete validators, adapters, branches, representations, helpers,
-recovery mechanisms, compatibility paths, or proof routes. Run the required Reduce
-challenge and select a successor `ablation-repair` Construction with explicit
-retirements and absence verifiers.
-
-### `architecture-repair`
-
-The counterfactual normal form requires a stronger representation, owner, admitted
-domain, state machine, protocol, information boundary, or decomposition. Re-
-axiomatize when required and select a successor `architecture-repair` Construction
-through the ordinary Actuating composition.
-
-### `blocked`
-
-Current evidence cannot distinguish required complexity from incidental
-accumulation, or the saltatory candidate requires new source authority,
-compatibility permission, or a premise absent from the Goal. Do not hide the
-obstruction behind cleanup or continuation.
-
-## Pathwise dominance
-
-For review-entry subject `S0` and current subject `Sn`, the composite path
+Constructors include:
 
 ```text
-S0 -> S1 -> ... -> Sn
+state dimension or value
+event, transition, or transition guard
+ordering or serialization law
+authority or custody transfer
+generation, freshness, or correlation rule
+timeout, cancellation, retry, or recovery mode
+completion or shutdown mode
+effect or observation path
+compatibility mode
+independent validator
+proof family
 ```
 
-is dominated when an obligation-closed admissible normalized realization `N`:
+If a proposed repair needs one, select a successor Construction before mutation.
+Stable owner count is not preservation evidence; semantic state may grow inside
+an unchanged owner.
 
-- carries the same common mandatory obligation core as every compared candidate;
-- satisfies the same current Goal laws;
-- excludes the same applicable accepted Counterexamples;
-- preserves the same required observations and compatibility;
-- provides no weaker proof;
-- has no more independent law owners, authoritative representations, bypasses,
-  semantic mechanisms, residual assumptions, or resource burden;
-- has no greater necessary proof or comprehension surface; and
-- is strictly better in at least one of those dimensions.
+## Concrete candidate models
 
-Preference, familiarity, line count, and implementation momentum cannot establish
-dominance. Neither can omission of an independent required repair. Incomparable
-minima remain incomparable or blocked.
+Universalist nominates actual semantic models, not four mutually exclusive
+repair labels. Every candidate carries the same complete mandatory obligation
+core and declares a transformation vector:
 
-## Review and closure laws
+```text
+admitted domain
+representation
+ownership
+realization
+residue
+proof
+```
 
-Run the gate before spending another review wave on a subject that may first need
-normalization or reconstruction. Any material normalization, ablation, or
-architecture repair changes the review subject and therefore resets review credit
-under the static Review Contract. Only the resulting subject receives fresh credit.
+A candidate may restrict the domain, replace representation, centralize
+authority, rewrite realization, ablate residue, and recompose proof
+simultaneously.
 
-Final closeout blocks while a material review-accretion condition remains
-undispositioned, while required retirements remain live, or while a selected
-normalization lacks preservation proof. A current `preserve` disposition is
-sufficient only while its evidence, falsifier, and relied-on premises remain current.
+At least one candidate is incumbent-independent. Metanoetic may introduce a
+materially different candidate once when the current model is high-regret,
+contradicted, recurrently repaired, or merely adequate. Universalist lowers it.
+Reduce challenges disputable factors. Actuating alone selects.
+
+Reordering the same complete Counterexample Theory must yield an equivalent
+selected Construction or explicit incomparable minima. Preference,
+implementation momentum, and omitted obligations cannot manufacture
+dominance.
+
+## Construction realization epoch
+
+One selected Construction may require multiple one-seam operations. Each seam
+isolates an effect; it is not an independent architecture decision.
+
+Do not dispatch closure-grade review until all selected semantic-model elements,
+factor bindings, proof obligations, and retirements have been realized on one
+exact clean committed subject.
+
+## Obligation-rooted semantic garbage collection
+
+Before Ship or fresh review, derive roots from:
+
+```text
+Goal laws
++ cumulative causal basis
++ required observations
++ compatibility
++ resource obligations
++ host constraints
+```
+
+Mark:
+
+```text
+root
+-> semantic-model element
+-> Construction factor
+-> production binding
+-> proof binding
+```
+
+Sweep every correctness-bearing mechanism not mapped to a marked factor or
+proof obligation:
+
+- branch, flag, state, transition, or handler;
+- validator, cache, correlation, compatibility route, bypass, or recovery path;
+- helper abstraction, fixture family, duplicated setup, or assertion path.
+
+Each swept surface is deleted, mapped to a successor owner and proof, or
+retained by a distinct current obligation. Unmapped surface blocks.
+
+Raw deletion is not the objective. Necessary complexity remains when the
+current normal form earns it.
+
+## Proof normalization
+
+A new class may first enter with an example witness. Once multiple classes share
+a causal generator, the governing proof must be recomposed around that
+generator using the strongest feasible mode:
+
+```text
+representation
+> total transition
+> exhaustive finite model
+> static refinement
+> property law
+> differential proof
+> example regression
+```
+
+Retain examples only when they are genuinely distinct minimal boundary
+witnesses. Every retired wound-specific example maps to the dominating proof and
+an absence verifier.
+
+## Exhaustive review remains exhaustive
+
+The review topology and convergence theorem do not weaken:
+
+```text
+concurrent standard + four auxiliaries
+then four additional serial standard attempts
+five consecutive distinct standard cleans
+exact unchanged published subject
+```
+
+Repeated review is a stochastic search capability. A late clean-streak attempt
+may discover a material defect; this is expected and valuable.
+
+Any material normalization or successor realization resets all review credit.
+The normalized successor earns a fresh complete 1+4 wave and five-clean streak.
+
+## Evidence admission
+
+Validate a closure-grade review binding before dispatch. Evidence from a
+noncanonical binding cannot join the mutation-authorizing Counterexample Theory.
+A real defect may re-enter through a lawful independent falsifier or canonical
+review, but invalid review provenance cannot permanently enlarge the
+realization.
 
 ## Hard rules
 
-- No fixed line, file, epoch, or elapsed-time threshold decides accretion.
-- No sixth review lens or additional clean-attempt requirement.
-- No refactor after every finding.
-- No generic cleanup outside the current Goal and Construction.
-- No omission-confounded candidate comparison; all families carry the same
-  mandatory obligation core.
-- No conceptual-only retirement; displaced realization surfaces require deletion,
-  successor-owner mapping, or a distinct live obligation.
-- No new authoritative artifact or mutable control state.
-- No Ledger, Seq, or CAS accretion classifier or command.
-- Metanoetic is generative; Universalist lowers; Reduce challenges; Actuating alone
-  adjudicates, selects operations, grants mutation, and closes.
+- No finding-to-patch mapping.
+- No latest-wave-only Construction selection.
+- No preservation based merely on owner count.
+- No semantic constructor hidden inside `realization-repair`.
+- No second same-cause local repair without non-example separation proof.
+- No candidate that obtains ablation by omitting an orthogonal obligation.
+- No closure-grade review of a partially realized Construction.
+- No unmapped production or proof surface.
+- No wound-by-wound proof accumulation after a shared generator exists.
+- No new artifact family, Review Path state, accretion event, CLI classifier,
+  review lens, or weakened clean streak.
