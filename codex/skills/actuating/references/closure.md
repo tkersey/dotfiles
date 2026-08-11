@@ -1,147 +1,112 @@
 # Closure Theorem
 
 Closure is Actuating's deterministic semantic theorem over current inputs.
-Actuating alone applies it, selects the next action, and authors the resulting
-`actuating-closure-receipt/v1`. Ledger may replay evidence and emit requested
-disposable structural projections, but it never emits a closure verdict or
-authors the receipt.
+Actuating alone applies it, selects the next action, and authors
+`actuating-closure-receipt/v1`. Ledger may validate, replay, and project
+structural facts but never emits the verdict.
 
-~~~text
-Close(G, K, Q, E, R, current_subject)
+```text
+Close(G, K4, Q*, E, R, current_subject)
   -> continue | ready-to-ship | complete | blocked
-~~~
+```
 
-`G` is the current Goal Contract, `K` the current Construction Contract, `Q`
-the applicable Counterexample Sets, `E` the current Evidence Ledger, and `R`
-the static Review Contract.
+`G` is the current Goal Contract. `K4` is the current
+`construction-contract/v4`. `Q*` is the complete applicable Counterexample
+Theory derived from current and predecessor Sets. `E` is the Evidence Ledger and
+`R` the static Review Contract.
 
 ## Theorem
 
-A terminal judgment is legal only when all applicable statements hold:
+A terminal judgment is legal only when every applicable statement holds:
 
-1. `K` references the current `G`, is the current Construction for this
-   realization, and its `base_artifact_digest` plus the Evidence transition
-   chain yields the live subject. `K.execution.completion` equals
-   `G.acceptance.terminal_route`. The immutable base digest is not required to
-   equal the post-effect subject.
-2. Every Goal law has a Construction and proof obligation.
-3. Every accepted Counterexample is excluded by `K`, rejected with evidence,
-   or represented by an explicit blocker.
-4. Every preservation and progress obligation passes on the current subject.
-5. Every required retirement passes and no declared dominated construct or
-   bypass remains.
-6. The Evidence Ledger contains current owner-issued observations that realize
-   `K`; Actuating has dereferenced their content-addressed evidence and verified
-   the exact Construction-selected verifier provenance; no requested operation
-   remains unresolved.
-7. For a `final-closeout` `complete` verdict when publication is required, the
-   work has current Ship evidence for the exact subject; Actuating has resolved
-   `publication_observed.receipt_ref`, recomputed the immutable `SHIP-v1` or
-   `SHIP-ADOPTION-v1` digest, and verified its repository, base/head tuple,
-   route-specific live readback, and complete `actuation_binding` against the
-   exact `ready-to-ship` receipt. For adoption, Actuating also verifies that no
-   mutation occurred, `action.result == adopted`, the public branch resolves to
-   the exact head and is the repository's current default branch, the base is an
-   ancestor, and a complete live exact-tuple PR inventory has zero open matches.
-   Every non-null release must come from the branch-readback provider and adopted
-   repository, be published and non-draft, target the exact head, and enumerate
-   the complete unique live asset inventory with equal cardinality, exact set
-   equality, sizes, and SHA-256 digests before it is accepted.
-   Actuating must not substitute its own live-readback record.
-   A `ready-to-ship` judgment deliberately omits this premise: that receipt is
-   Ship's required readiness input for producing the publication evidence.
-8. For a `final-closeout` `complete` verdict, the work has current auxiliary
-   results and five consecutive distinct standard clean attempts whose cited
-   CAS receipts Actuating has dereferenced and matched to their exact request,
-   attempt, instruction, lens, and current subject tuple; it has no unresolved
-   request-local recovery or unresolved accepted Counterexample.
-   A `ready-to-ship` judgment also omits this premise because Ship publication
-   precedes the independent review campaign.
-9. When review-driven mutation occurred in the current closeout path, the
-   Review Accretion Gate has a current disposition over the exact delivery
-   baseline, review-entry subject, current subject, Construction lineage,
-   applicable Counterexamples, and cumulative factor surface. No material
-   accretion condition remains undispositioned. A `preserve` disposition has
-   current evidence and a falsifier; a selected normalization, ablation, or
-   architecture repair has current preservation proof and complete required
-   retirements. Any material resulting subject change invalidates prior review
-   credit and requires fresh convergence before `complete`.
-10. No later material event invalidates authority, subject, proof, publication,
-    review evidence, or the current Review Accretion Disposition.
+1. `K4` references the current `G`, is the current Construction, and its base
+   subject plus recorded effect chain yields the exact clean live subject.
+2. `K4.counterexample_class_refs` is the complete set of currently applicable
+   accepted classes across the Goal lineage. Every class maps to one causal
+   generator or an evidenced instance-specific exception.
+3. Every Goal law and causal generator has a selected semantic-model element,
+   Construction factor, and strongest-feasible proof obligation.
+4. Every accepted Counterexample is excluded by the selected model, rejected
+   with current evidence, or represented by an explicit blocker.
+5. Candidate comparison carries one complete mandatory obligation core.
+   Arrival order cannot change the selected normal form except by exposing the
+   same explicit incomparable minima.
+6. Realization exactness passes on the current subject:
+   - every live correctness-bearing production mechanism maps to one selected
+     factor;
+   - every live proof mechanism maps to one current proof obligation;
+   - `unmapped_production_surface` and `unmapped_proof_surface` are empty;
+   - every required retirement and absence verifier passes.
+7. All selected implementation, preservation, acceptance, and falsification
+   obligations pass on the exact current subject. No requested operation remains
+   unresolved.
+8. For `final-closeout` `complete` when publication is required, Actuating has
+   dereferenced current Ship-owned evidence for the exact repository, base/head
+   refs and OIDs, subject, Goal, Construction, and actuation binding.
+   `SHIP-v1` and `SHIP-ADOPTION-v1` remain owner-issued; Actuating cannot
+   substitute its own live-readback record.
+9. For `final-closeout` `complete`, the exact published subject has one current
+   terminal result from each auxiliary lens and five consecutive distinct
+   standard clean attempts under the static Review Contract. Every credited CAS
+   receipt matches its request, instructions, lens, campaign, base/head tuple,
+   and subject. No request-local recovery or accepted Counterexample remains
+   unresolved.
+10. No later material event invalidates authority, cumulative Counterexample
+    Theory, semantic model, subject, proof, publication, review evidence, or
+    retirement.
 
-Formal final-evidence ingestion order is not publication order. For a new
-campaign, recording a valid `SHIP-ADOPTION-v1` after review preserves credit
-when it ratifies the exact `SHIP-OBSERVATION-v1` digest that Actuating recorded
-before campaign binding. It does not reset review credit merely because the adoption receipt was recorded later.
-The observation and adoption must exact-match the reviewed bytes and current
-endpoint: repository, current default-branch canonical head ref and SHA,
-authoritative base/head tuple, subject, and stable
-Goal, Construction, and review contract through `review_binding`. The
-adoption carries its own
-current actuation binding, and every credited receipt binds the observed tuple.
-Evidence Ledger order from
-observation to campaign is the causal proof; provider and Ledger wall clocks are
-not compared. The recorded observation predates the credited campaign by that
-sequence. The reducer admits only one campaign-start occurrence for the current
-Goal, Construction, subject, and Review Contract and every request binds that
-exact occurrence. Tuple equality without that recorded pre-review observation is
-insufficient. Ratification matches the observation's stable tuple, and final
-adoption freshly re-reads that exact live default-branch tuple. A mismatch,
-missing observation, or unproved field invalidates the affected credit;
-adoption never refreshes stale review credit. Matching endpoints does not prove
-uninterrupted publication history and closure does not require that stronger,
-unobservable claim.
+A material subject change invalidates all review credit and requires a fresh
+concurrent 1+4 wave followed by the complete five-clean streak. The streak is
+repeated stochastic falsification and remains mandatory.
 
-For a historical campaign that predates `SHIP-OBSERVATION-v1`, the
-publication-before-campaign witness is instead: exact provider-backed
-publication evidence for the reviewed target, the exact projected campaign
-event, and an `actuating-publication-campaign-causality/v1` attachment proving
-the provider publication operation completed before that campaign started by
-source order. The attachment binds one exact Seq observation digest and
-definition digest, source corpus identity, session, successful publication and
-campaign call ids, `publication.finalized_line`, `campaign.declared_line`, the
-provider event digest, and the exact campaign event digest. Actuating verifies
-every field and requires `publication.finalized_line < campaign.declared_line`.
-The
-`publication-review-events` projection supplies ordered Ledger events but does
-not interpret external evidence. Endpoint equality, arbitrary provider history,
-or incomparable wall-clock timestamps alone are insufficient.
+## Review evidence law
 
-Ledger validation, replay, `doctor`, or the `structural-facts` projection can
-expose structural premises. They cannot decide semantic adequacy, review-path
-accretion, Metanoetic materiality,
-interpret CAS or Ship, compute review credit, choose the next action, or
-pronounce the theorem satisfied. Actuating performs that evaluation and records
-the cited Goal, Construction, Counterexample, owner-evidence, publication, and
-review premises in its receipt and handoff. The Review Accretion Disposition is
-a non-authoritative view whose material result is carried by those existing
-premises, not another receipt or artifact family.
+A finding can affect closure only after `$review-fold` classifies it. Accepted
+classes join `Q*`; they never map directly to a patch. Actuating recomputes the
+causal basis and selects one Construction against the complete theory.
+
+A closure-grade review binding must be canonical before dispatch. Findings from
+an invalid binding cannot authorize mutation. A defect may re-enter through a
+lawful independent falsifier or canonical review.
+
+## Publication ordering
+
+Formal Evidence ingestion order is not provider publication time. For a new
+campaign, a valid `SHIP-ADOPTION-v1` may be recorded after review when it
+ratifies the exact `SHIP-OBSERVATION-v1` recorded before campaign binding.
+Observation, campaign, credited receipts, and adoption must exact-match the
+stable repository/default-branch/base/head/subject/Goal/Construction/Review
+Contract tuple.
+
+For a historical campaign predating `SHIP-OBSERVATION-v1`, require exact
+provider-backed publication evidence and an
+`actuating-publication-campaign-causality/v1` attachment over one exact Seq
+observation proving the publication call completed before the campaign call by
+source-line order. Matching endpoints or incomparable wall clocks are
+insufficient.
 
 ## Mode results
 
 - `implement` may return local `complete` without Ship or review-closeout.
 - `triage` terminates with a Counterexample Set and report, not code closure.
-- `remediation-plan` terminates with a non-executable successor proposal.
-- Bare mode and `review-closeout` require publication when selected, a current
-  Review Accretion Disposition after review-driven mutation, and the full five-
-  clean review theorem before `complete`.
-- Missing current publication evidence after otherwise complete
-  publication-required implementation yields `ready-to-ship`; it does not
-  block on evidence that only Ship can produce from that handoff.
-- Undispositioned material review accretion, missing preservation proof,
-  incomplete accretion retirement, missing authority, or another unresolved
-  liability yields `blocked`.
+- `remediation-plan` terminates with a non-executable Construction proposal.
+- Bare mode and `review-closeout` require publication when selected, complete
+  realization exactness, and the full five-clean review theorem before
+  `complete`.
+- Missing publication evidence after otherwise complete
+  publication-required implementation yields `ready-to-ship`.
+- Incomplete Counterexample Theory, semantic-model novelty hidden inside a local
+  repair, incomparable candidates without authority, unmapped surface,
+  incomplete retirement, missing proof, or stale review evidence yields
+  `blocked`.
 
-## Receipt and rendering
+## Receipt
 
-Actuating authors one `actuating-closure-receipt/v1` binding the Goal,
-Construction, subject, Evidence head, Review Contract, closure route, semantic
-verdict, and cited premises. The receipt grants no new authority and becomes
-stale when any bound input changes. Ledger may validate its structure after
-authorship; it must not construct it, populate its verdict, or emit it from
-the Evidence projection.
+Actuating authors one `actuating-closure-receipt/v1` binding the current Goal,
+Construction, subject, Evidence head, Review Contract, route, verdict, and cited
+premises.
 
-~~~yaml
+```yaml
 closure_receipt:
   schema: actuating-closure-receipt/v1
   receipt_id:
@@ -154,22 +119,10 @@ closure_receipt:
   verdict: continue | ready-to-ship | complete | blocked
   cited_premise_refs: []
   blockers: []
-~~~
+```
 
-`local-implementation` is the explicit `$actuating implement` terminal route;
-review and Ship evidence are not applicable. `final-closeout` covers bare mode
-and `review-closeout`; `ready-to-ship` is legal only on this route and omits
-publication and review premises, while its `complete` verdict requires the
-current publication and five-clean premises selected by the Goal and route.
-Proof renderers must use this discriminant and must not infer applicability
-from absent fields.
+The receipt grants no new authority and becomes stale when any bound input
+changes. `$proof-patch` may render it but never decides it.
 
-`receipt_id` is the content digest of canonical JSON with `receipt_id` set to
-JSON `null`. It is a freshness-bound semantic receipt authored only by
-Actuating, not another authoritative artifact family.
-
-`$proof-patch` may render a current `complete` receipt for humans. It never
-decides closure, changes state, or publishes.
-
-Complete delivery handoff or reporting before source-memory evaluation. Memory
-admission cannot gate, delay, invalidate, or roll back delivery closure.
+Complete delivery before source-memory evaluation. Memory admission cannot gate,
+delay, invalidate, or roll back closure.

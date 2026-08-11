@@ -17,8 +17,20 @@
       "path": "ledger/closure-receipt.json"
     },
     {
+      "id": "actuating/construction-candidate",
+      "path": "ledger/construction-candidate.json"
+    },
+    {
       "id": "actuating/construction-contract",
       "path": "ledger/construction-contract.json"
+    },
+    {
+      "id": "actuating/construction-factor",
+      "path": "ledger/construction-factor.json"
+    },
+    {
+      "id": "actuating/construction-semantic-model",
+      "path": "ledger/construction-semantic-model.json"
     },
     {
       "id": "actuating/evidence-input",
