@@ -99,8 +99,6 @@
     state.queue = Array.isArray(snapshot.queue) ? snapshot.queue : [];
     state.round = Number(snapshot.round || 1);
     state.seq = Math.max(state.seq, Number(snapshot.seq || 0));
-    state.approvals.clear();
-
     const nextTabs = new Map();
     for (const tab of Array.isArray(snapshot.tabs) ? snapshot.tabs : []) {
       const sessionId = tab.sessionId || tab.id;
@@ -156,7 +154,7 @@
       markPendingOutcomeUnknown();
       state.approvals.clear();
       state.openingPath = null;
-      renderHeader();
+      render();
       if (!state.stopped) {
         toast("Connection lost. Reconnecting…");
         window.clearTimeout(state.reconnectTimer);
@@ -763,7 +761,7 @@
     node.append(el("div", "action-body", readableEvent(approval.method || "approval", approval.request || {})));
     const controls = el("div", "action-controls");
     for (const decision of Array.isArray(approval.decisions) ? approval.decisions : []) {
-      const label = typeof decision === "string" ? decision : decision?.decision || decision?.type || "respond";
+      const label = typeof decision === "string" ? decision : JSON.stringify(decision);
       const button = el("button", `button ${String(label).toLowerCase().includes("decline") ? "reject" : ""}`, label);
       button.type = "button";
       button.addEventListener("click", () => {

@@ -17,6 +17,12 @@ Client commands are `file.open`, `session.message`, `session.interrupt`,
 `session.close`, `approval.resolve`, `action.confirm`, `action.reject`,
 `snapshot.get`, `pr.refresh`, `round.finish`, and `app.stop`.
 
+A client command may include a top-level string `requestId`. When command
+handling fails, the server's `error` event must echo that exact value as
+`payload.requestId`. The browser uses this correlation to restore only the
+message rejected by that command; an uncorrelated error must not consume or
+restore another pending message.
+
 `action.confirm` and `action.reject` carry exactly `{cardId}`. Completion is not
 a browser command: it must originate as an explicit human conversational
 instruction and model tool call. Approval resolution carries the exact offered
