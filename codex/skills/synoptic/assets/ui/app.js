@@ -78,7 +78,11 @@
     const nextTabs = new Map();
     for (const tab of Array.isArray(snapshot.tabs) ? snapshot.tabs : []) {
       const sessionId = tab.sessionId || tab.id;
-      nextTabs.set(sessionId, Object.assign({}, state.tabs.get(sessionId), tab, { sessionId }));
+      const previous = state.tabs.get(sessionId);
+      nextTabs.set(sessionId, Object.assign({}, previous, tab, {
+        sessionId,
+        staleOrigin: previous?.staleOrigin || normalizeStatus(tab.status) === "stale_origin"
+      }));
       conversationFor(sessionId);
     }
     state.tabs = nextTabs;
@@ -235,6 +239,7 @@
       path: payload.path,
       revisionKey: payload.revisionKey,
       status: previous.status || "current",
+      staleOrigin: previous.staleOrigin || normalizeStatus(previous.status) === "stale_origin",
       reused: Boolean(payload.reused),
       initialReview: Boolean(payload.initialReview),
       diff: payload.diff || previous.diff || { state: "unavailable", text: null }
@@ -255,9 +260,13 @@
   function onSessionStatus(payload) {
     const sessionId = payload.sessionId || state.activeSessionId;
     if (!sessionId) return;
+    const tab = state.tabs.get(sessionId);
     const status = payload.status || "current";
     const mapped = status === "turn-started" ? "turn_active" : status === "interrupted" ? "current" : normalizeStatus(status);
-    updateTab(sessionId, { status: mapped });
+    updateTab(sessionId, {
+      status: mapped,
+      staleOrigin: tab?.staleOrigin || normalizeStatus(status) === "stale_origin"
+    });
   }
 
   function onVisibleItem(payload) {
@@ -296,7 +305,9 @@
     if (method.includes("turn/completed") || method === "turn/completed") {
       const last = messages.at(-1);
       if (last && last.kind === "assistant") last.streaming = false;
-      updateTab(sessionId, { status: state.tabs.get(sessionId)?.status === "stale_origin" ? "stale_origin" : "current" });
+      updateTab(sessionId, {
+        status: state.tabs.get(sessionId)?.staleOrigin ? "stale_origin" : "current"
+      });
       return;
     }
     if (method.includes("turn/failed") || method.includes("error")) {
@@ -349,7 +360,7 @@
   }
 
   function markSessionStale(sessionId) {
-    if (sessionId) updateTab(sessionId, { status: "stale_origin" });
+    if (sessionId) updateTab(sessionId, { status: "stale_origin", staleOrigin: true });
     toast("A reviewed file changed and returned to the queue.");
   }
 
@@ -432,7 +443,7 @@
       button.setAttribute("aria-selected", String(tab.sessionId === state.activeSessionId));
       const normalized = normalizeStatus(tab.status);
       button.append(el("span", `tab-state ${normalized}`));
-      const suffix = normalized === "stale_origin" ? " · prior revision" : "";
+      const suffix = tab.staleOrigin || normalized === "stale_origin" ? " · prior revision" : "";
       button.append(el("span", "tab-label", `${tab.path}${suffix}`));
       button.addEventListener("click", () => { state.activeSessionId = tab.sessionId; render(); });
       elements.tabs.append(button);
@@ -448,7 +459,10 @@
     const normalized = normalizeStatus(tab.status);
     elements.diff_state.className = `status-pill ${normalized}`;
     elements.diff_state.textContent = tab.diff?.state === "text" ? "current diff" : tab.diff?.state || "unavailable";
-    elements.stale_banner.classList.toggle("hidden", normalized !== "stale_origin");
+    elements.stale_banner.classList.toggle(
+      "hidden",
+      !tab.staleOrigin && normalized !== "stale_origin"
+    );
     elements.conversation_title.textContent = tab.path;
     elements.session_status.className = `status-pill ${normalized}`;
     elements.session_status.textContent = statusLabel(tab.status);
