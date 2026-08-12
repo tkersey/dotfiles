@@ -97,6 +97,14 @@ first-review-entry lineage.
 register—not the latest Set alone—is the structural source for the complete
 applicable Counterexample Theory.
 
+An ordinary Counterexample Set is a source-local delta. It contains only classes
+newly observed or reclassified by that source. The retained register preserves
+untouched classes, so ordinary Sets do not copy every active class or every
+active source into `classes` and `predecessor_refs`. A recurring or reclassified
+incoming class still cites its exact prior source, and the retained upsert checks
+its stable identity. Explicit Goal carry-forward remains total because the
+semantic authority changed.
+
 Before successor selection or Goal carry-forward, project:
 
 ```bash
@@ -126,9 +134,14 @@ through `register-construction`.
 
 The Evidence protocol structurally enforces current Goal, subject, predecessor,
 Counterexample coverage, proof-family strength for recurrent/high-severity
-classes, scope, and completion. The Construction definition additionally owns
-causal-basis coverage, semantic-model closure, candidate normality, realization
-bindings, factor supersession, and empty unmapped surfaces.
+classes, scope, and completion. For `realization-repair` and `ablation-repair`,
+registration also exact-compares the complete semantic model with the current
+Construction; a changed state, event, transition, effect, custody, terminality,
+or normalization claim must use `architecture-repair`.
+
+The Construction definition additionally owns causal-basis coverage,
+semantic-model closure, candidate normality, realization bindings, factor
+supersession, and empty unmapped surfaces.
 
 Only the canonical materialization plus appended registration event makes a
 Construction current. A document, validator pass, or review finding alone grants
@@ -159,7 +172,7 @@ For an edit, the owner sequence is:
 ```text
 clean parent
 -> prepare one operation
--> one-seam-operator creates one provisional diff
+-> one bounded executor creates one provisional diff
 -> Actuating inspects complete diff and exact paths
 -> commit exactly the operation
 -> require one-parent clean successor
@@ -167,6 +180,11 @@ clean parent
 -> record-effect parent -> successor
 -> observe-edit-operation with proof evidence
 ```
+
+Executor identity is not a correctness predicate. Actuating may execute the
+bounded operation directly or delegate it. The admitted operation, complete
+diff, exact changed paths, successor commit, and proof evidence are the effect
+boundary.
 
 `record-effect` requires the parent digest and changed-path set to exact-match
 the pending operation, consumes the capability, and advances directly to the

@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Turn accepted intent and cumulative falsification evidence into a smallest coherent, correct-by-construction realization. Use bare $actuating for implementation, Ship publication, and exhaustive review convergence; use explicit implement, triage, remediation-plan, or review-closeout for bounded routes. State OPERATE ARCHITECTONICALLY before architecture selection, derive an incumbent-independent basis with $first-principles, let $universalist nominate concrete semantic models, use one bounded $metanoetic pass when the model may be wrong, and let $reduce quotient or ablate disputable factors. Review evidence accumulates monotonically as Counterexample knowledge; code does not. A finding never maps directly to a patch. Preserve the static 1+4 review wave and five consecutive standard-clean requirement."
+description: "Turn accepted intent and cumulative falsification evidence into a smallest coherent, correct-by-construction realization. Use bare $actuating for implementation, Ship publication, and exhaustive review convergence; use explicit implement, triage, remediation-plan, or review-closeout for bounded routes. Apply the architectonic comparison before architecture selection, derive an incumbent-independent basis with $first-principles, let $universalist nominate concrete semantic models, use one bounded $metanoetic pass when the model may be wrong, and let $reduce quotient or ablate disputable factors. Review evidence accumulates monotonically as Counterexample knowledge; code does not. A finding never maps directly to a patch. Preserve the static 1+4 review wave and five consecutive standard-clean requirement."
 ---
 
 # Actuating
@@ -64,13 +64,9 @@ Mutation requires explicit implement, fix, resolve, address, or closeout intent.
 
 ## Construction selection
 
-At the beginning of every architecture or abstraction selection, state exactly:
-
-```text
-OPERATE ARCHITECTONICALLY
-```
-
-Then:
+Before every architecture or abstraction selection, perform the architectonic
+comparison below. `OPERATE ARCHITECTONICALLY` is a mnemonic, not a required
+utterance or compliance signal.
 
 1. Compile the current Goal and resolve the complete current Construction and
    Counterexample lineage.
@@ -78,9 +74,11 @@ Then:
    materially new candidate universe. Freeze the incumbent-independent
    derivation before comparing the incumbent.
 3. Build the **Counterexample Theory** from every currently applicable accepted
-   stable class across the Goal lineage. A new subject changes freshness, not
-   semantic history. Duplicate witnesses and review ordering do not create new
-   classes.
+   stable class across the Goal lineage. Obtain the cumulative domain from the
+   retained Evidence projection. Ordinary Counterexample Sets report only new,
+   recurring, or reclassified classes; they do not restate untouched retained
+   classes. A new subject changes freshness, not semantic history. Duplicate
+   witnesses and review ordering do not create new classes.
 4. Quotient the theory into a **causal basis**. Each accepted class maps to one
    current causal generator or to an evidenced instance-specific exception.
 5. Apply the semantic-novelty firewall below.
@@ -131,7 +129,9 @@ proof family
 If a correction requires any constructor absent from the current model, the
 Construction—not merely its realization—is falsified. Select an
 `architecture-repair` successor before mutation. `realization-repair` and
-`ablation-repair` require an exact unchanged semantic model.
+`ablation-repair` require an exact unchanged semantic model. Evidence
+registration exact-compares the complete predecessor and successor semantic
+models for both local routes.
 
 On the second accepted class sharing an evidenced causal generator, another
 local realization repair is forbidden unless non-example separation proof
@@ -144,8 +144,8 @@ Review evidence never maps directly to edits.
 
 ```text
 new findings
--> Review Fold classification and quotienting
--> cumulative Counterexample Theory
+-> Review Fold source-local classification and quotienting
+-> retained cumulative Counterexample Theory
 -> causal basis
 -> one Construction selection
 -> complete realization and normalization
@@ -167,7 +167,7 @@ retrospective Review Accretion Gate.
 
 ## Realization exactness
 
-A Construction is the semantic decision unit. A one-seam operation is only an
+A Construction is the semantic decision unit. A bounded operation is only an
 effect-isolation unit.
 
 For each selected edit:
@@ -175,7 +175,7 @@ For each selected edit:
 ```text
 clean parent subject
 -> prepare one exact operation
--> one-seam-operator creates one provisional diff
+-> one bounded executor creates one provisional diff
 -> Actuating inspects the complete diff and changed paths
 -> Actuating commits exactly that operation
 -> require one-parent clean successor
@@ -183,8 +183,12 @@ clean parent subject
 -> verify and falsify on the successor
 ```
 
-Multiple seams may realize one Construction. Do not begin closure-grade review
-against a half-realized successor.
+Actuating may execute the bounded operation directly or delegate it. Executor
+identity is not part of correctness; the admitted operation, complete diff,
+exact changed paths, successor commit, and proof evidence are.
+
+Multiple operations may realize one Construction. Do not begin closure-grade
+review against a half-realized successor.
 
 Before Ship or fresh review, perform obligation-rooted semantic garbage
 collection:
@@ -267,8 +271,7 @@ Block on:
 - an accepted class omitted from the cumulative Counterexample Theory;
 - an accepted class without a causal generator or evidenced instance-specific
   exception;
-- a local repair that introduces a semantic constructor absent from the current
-  model;
+- a local repair whose semantic model differs from the current Construction;
 - candidate comparison that depends on finding arrival order or omits a
   mandatory obligation;
 - a selected Construction with unmapped production/proof surface or incomplete
