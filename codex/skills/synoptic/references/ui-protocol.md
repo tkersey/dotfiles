@@ -34,5 +34,12 @@ approval requests, action cards, warnings, failures, and round status. It does
 not render the hidden primary transcript, a Reviewed list, direct line
 selection, a shell, or direct GitHub controls.
 
+Keep Refresh and Finish round mutually disabled from successful command send
+until the matching terminal event, correlated error, or socket disconnect. A
+reconnect clears that local latch and reconciles the result from the new
+snapshot. Render ownerless warnings immediately. Surface approvals owned by
+inactive sessions and pending action cards whose session tab was closed in the
+global action area so they remain operable.
+
 All repository, GitHub, and model content is inserted with DOM text APIs, never
 as HTML. Assets are same-origin and CSP-compatible.

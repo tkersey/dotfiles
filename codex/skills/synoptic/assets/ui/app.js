@@ -25,6 +25,7 @@
     approvals: new Map(),
     drafts: new Map(),
     pendingMessage: null,
+    pendingHeaderAction: null,
     activeSessionId: null,
     openingPath: null,
     seq: 0,
@@ -152,6 +153,7 @@
     socket.addEventListener("close", () => {
       state.connected = false;
       markPendingOutcomeUnknown();
+      state.pendingHeaderAction = null;
       state.approvals.clear();
       state.openingPath = null;
       render();
@@ -225,6 +227,9 @@
       case "approval.requested":
         state.approvals.set(payload.approvalId, payload);
         if (!payload.sessionId) toast("The background context session needs command approval.");
+        else if (payload.sessionId !== state.activeSessionId) {
+          toast(`${state.tabs.get(payload.sessionId)?.path || "Another file session"} needs command approval.`);
+        }
         break;
       case "approval.resolved":
         state.approvals.delete(payload.approvalId);
@@ -243,10 +248,12 @@
         send("snapshot.get", {});
         break;
       case "pr.refreshed":
+        if (state.pendingHeaderAction?.type === "pr.refresh") state.pendingHeaderAction = null;
         toast("Pull request refreshed.");
         send("snapshot.get", {});
         break;
       case "round.finished":
+        if (state.pendingHeaderAction?.type === "round.finish") state.pendingHeaderAction = null;
         state.round = Number(payload.round || state.round + 1);
         toast(`Round ${state.round} is ready.`);
         send("snapshot.get", {});
@@ -257,6 +264,9 @@
       case "error":
         toast(payload.message || payload.code || "Synoptic command failed", "error");
         if (payload.requestId && payload.requestId === state.pendingMessage?.id) restorePendingMessage();
+        if (payload.requestId && payload.requestId === state.pendingHeaderAction?.requestId) {
+          state.pendingHeaderAction = null;
+        }
         state.openingPath = null;
         break;
       case "app.stopped":
@@ -326,6 +336,7 @@
     const raw = parseJson(payload.raw) || payload.raw || {};
     if (!sessionId) {
       if (method === "approval.requested" && raw.approvalId) state.approvals.set(raw.approvalId, raw);
+      if (method === "warning") toast(readableEvent(method, raw) || "Synoptic warning", "error");
       return;
     }
     ensureActiveSession(sessionId);
@@ -336,6 +347,9 @@
     }
     if (method === "approval.requested" && raw.approvalId) {
       state.approvals.set(raw.approvalId, raw);
+      if (sessionId !== state.activeSessionId) {
+        toast(`${state.tabs.get(sessionId)?.path || "Another file session"} needs command approval.`);
+      }
       return;
     }
     if (method === "approval.resolved") {
@@ -512,8 +526,9 @@
       elements.pr_summary.append(el("span", "branch-chip", `${pr.baseRefName} ← ${pr.headRefName}`));
       if (pr.isDraft) elements.pr_summary.append(el("span", "status-pill", "draft"));
     }
-    elements.refresh_button.disabled = !state.connected;
-    elements.finish_button.disabled = !state.connected;
+    const headerActionPending = Boolean(state.pendingHeaderAction);
+    elements.refresh_button.disabled = !state.connected || headerActionPending;
+    elements.finish_button.disabled = !state.connected || headerActionPending;
     elements.stop_button.disabled = !state.connected;
   }
 
@@ -778,18 +793,31 @@
   function renderGlobalApprovals() {
     clear(elements.global_approvals);
     for (const approval of state.approvals.values()) {
-      if (!approval.sessionId) elements.global_approvals.append(renderApproval(approval));
+      if (!approval.sessionId || approval.sessionId !== state.activeSessionId) {
+        elements.global_approvals.append(renderApproval(approval));
+      }
+    }
+    for (const card of state.actions.values()) {
+      if (card.status === "pending" && !state.tabs.has(card.sessionId)) {
+        elements.global_approvals.append(renderAction(card));
+      }
     }
     elements.global_approvals.classList.toggle("hidden", !elements.global_approvals.children.length);
   }
 
   elements.refresh_button.addEventListener("click", () => {
-    elements.refresh_button.disabled = true;
-    send("pr.refresh", {});
+    const requestId = window.crypto.randomUUID();
+    if (send("pr.refresh", {}, requestId)) {
+      state.pendingHeaderAction = { type: "pr.refresh", requestId };
+      renderHeader();
+    }
   });
   elements.finish_button.addEventListener("click", () => {
-    elements.finish_button.disabled = true;
-    send("round.finish", {});
+    const requestId = window.crypto.randomUUID();
+    if (send("round.finish", {}, requestId)) {
+      state.pendingHeaderAction = { type: "round.finish", requestId };
+      renderHeader();
+    }
   });
   elements.stop_button.addEventListener("click", () => {
     if (window.confirm("Stop this Synoptic workspace? Unpublished conversations and pending cards are disposable.")) send("app.stop", {});
