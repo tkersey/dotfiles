@@ -8,7 +8,9 @@ route from conversation into Synoptic's action broker.
 Read-only. Assigned-file unresolved threads are already in initial context.
 Call this only when a candidate concern appears cross-file. Use narrow paths
 and a semantic query where possible; set `includeWholePullRequest` only when
-the cross-file concern requires it.
+the cross-file concern requires it. Results are bounded pages. When `next` is
+not `null`, call the tool again with its `threadOffset` and `commentOffset`;
+continue until `next` is `null` before treating the search as complete.
 
 ## `synoptic.prepare_github_action`
 
