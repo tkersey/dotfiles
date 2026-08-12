@@ -12,7 +12,6 @@ It contains:
 - fresh-eyes impact;
 - subagent accounting;
 - plan/mutation authority;
-- retro trigger.
 
 The exact final object must be structurally valid under
 `spec-pipeline/spec-governance-receipt@<definition-digest>`. Ledger owns the

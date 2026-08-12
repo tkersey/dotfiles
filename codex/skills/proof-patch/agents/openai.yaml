@@ -1,6 +1,0 @@
-policy:
-  allow_implicit_invocation: true
-interface:
-  display_name: "Proof Patch"
-  short_description: "Render proof from Actuating closure"
-  default_prompt: "Use $proof-patch to render a concise human proof from Actuating's current complete closure receipt without deciding closure, choosing a next action, or publishing."

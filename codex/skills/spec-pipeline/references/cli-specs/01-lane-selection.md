@@ -66,7 +66,7 @@ When choosing `spec_only`, record the concrete blocker in both places:
     },
     "execution_handoff": {
       "ready_for_plan": "no",
-      "next_owner": "<spec-pipeline|grill-me|spec-retro|none>"
+      "next_owner": "<spec-pipeline|grill-me|none>"
     },
     "auto_plan_handoff": {
       "eligible": "no",

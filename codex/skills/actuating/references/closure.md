@@ -122,7 +122,8 @@ closure_receipt:
 ```
 
 The receipt grants no new authority and becomes stale when any bound input
-changes. `$proof-patch` may render it but never decides it.
+changes. The receipt is the closeout proof; no separate rendering authority is
+required.
 
 Complete delivery before source-memory evaluation. Memory admission cannot gate,
 delay, invalidate, or roll back closure.

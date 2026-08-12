@@ -1,15 +1,15 @@
 ---
 name: ledger
-description: "Ensure Ledger 1.x is available and use its passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, and recover owner-defined artifacts and stores. Use for native Ledger operations, definition authoring or debugging, ABI and capability inspection, and exact storage custody. The owning skill supplies semantics and selects the operation; Ledger enforces the selected definition without acquiring workflow authority."
+description: "Ensure Ledger 1.0.3 or newer within major version 1 is available and use its passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, rebind, and recover owner-defined artifacts and stores. Use for native Ledger operations, definition authoring or debugging, ABI and capability inspection, and exact storage custody. The owning skill supplies semantics and selects the operation; Ledger enforces the selected definition without acquiring workflow authority."
 ---
 
 # Ledger
 
 ## Mission
 
-Provide the shared bootstrap and operating doctrine for Ledger 1.x: a bounded,
-deterministic artifact-protocol runtime driven by passive definitions owned by
-their semantic domains.
+Provide the shared bootstrap and operating doctrine for Ledger 1.0.3 or newer
+within major version 1: a bounded, deterministic artifact-protocol runtime
+driven by passive definitions owned by their semantic domains.
 
 ```text
 owner definition + explicit inputs
@@ -66,11 +66,11 @@ directly:
 ledger <native-ledger-arguments...>
 ```
 
-The handler requires Ledger major version 1 and
-`ledger-artifact-abi/v1`. When installation authority exists, it can install or
-upgrade the canonical Homebrew formula `tkersey/tap/ledger`. It does not proxy
-native commands. The native CLI owns integrity, stdout, stderr, exit status,
-and failure reporting after readiness.
+The handler requires Ledger 1.0.3 or newer within major version 1 and
+`ledger-artifact-abi/v1`. When installation authority exists, it can install
+or upgrade the canonical Homebrew formula `tkersey/tap/ledger`. It does not
+proxy native commands. The native CLI owns integrity, stdout, stderr, exit
+status, and failure reporting after readiness.
 
 If `ledger` does not resolve on `PATH`:
 
@@ -198,8 +198,12 @@ or escape the control root.
 
 Normal reads fail closed for unbound stores. An owner may expose an explicit
 one-shot binding operation for an existing fully validated current-format
-store. Do not add fallback readers, alternate paths, implicit migration, or
-source dispatch to Ledger.
+store. An owner may separately expose `rebind-existing` when an authoritative
+external transport replaces an already-bound store: Ledger requires an
+existing stale binding, validates the complete current store, atomically
+replaces only binding metadata, and leaves store bytes unchanged. Do not add
+fallback readers, alternate paths, implicit migration, or source dispatch to
+Ledger.
 
 Never open, edit, compact, migrate, or repair a store outside the owning
 definition's operations and exact recovery surface.

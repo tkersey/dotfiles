@@ -56,9 +56,7 @@ Use `$spec-pipeline` for:
   invalidation, challenge, fresh-eyes pass, or governance result;
 - handing a ready spec to `$plan` or implementation.
 
-Use `$grill-me` when unresolved user judgment is the primary task. Use
-`$spec-retro` for historical learning across multiple prior specs, sessions,
-reports, or governance receipts.
+Use `$grill-me` when unresolved user judgment is the primary task.
 
 Do not use this skill for implementation itself.
 
@@ -90,7 +88,7 @@ Choose one profile:
 | `fast` | Narrow local change, obvious proof, low ambiguity, no consequential seam. | root only |
 | `balanced` | Normal implementation spec. | evidence synthesizer, invariant challenger, governance auditor as needed |
 | `strict` | Public API, migration, security, performance, compatibility, architecture, abstraction, or multi-wave work. | evidence synthesizer, decision auditor, invariant challenger, governance auditor |
-| `campaign` | Multi-session, repeated replanning, large artifact volume, or high fanout. | strict set plus checkpoint/retro-miner only when historically warranted |
+| `campaign` | Multi-session, repeated replanning, large artifact volume, or high fanout. | strict set plus checkpoint only when historically warranted |
 
 Choose one lane:
 
@@ -502,7 +500,7 @@ angle-bracket value with one value admitted by SGR-v2.
     },
     "execution_handoff": {
       "ready_for_plan": "<yes|no>",
-      "next_owner": "<$plan|implementation|grill-me|spec-pipeline|spec-retro|none>",
+      "next_owner": "<$plan|implementation|grill-me|spec-pipeline|none>",
       "handoff_summary": "<summary>",
       "do_not_execute_before": [],
       "plan_source_ref": "<inline implementation spec|path>",
@@ -512,11 +510,6 @@ angle-bracket value with one value admitted by SGR-v2.
       "eligible": "<yes|no>",
       "reason": "<reason>",
       "invocation": "<same_turn_tail_call|manual|none>"
-    },
-    "retro": {
-      "trigger_required": "<yes|no>",
-      "reason": "<reason>",
-      "next_owner": "<spec-retro|none>"
     }
   }
 }
@@ -557,7 +550,7 @@ Emit:
 ## Execution Handoff
 ready_for_plan: yes|no
 mutation_allowed: yes|no
-next_owner: $plan|implementation|grill-me|spec-pipeline|spec-retro|none
+next_owner: $plan|implementation|grill-me|spec-pipeline|none
 handoff_summary:
 do_not_execute_before:
 auto_plan_handoff: eligible|not-eligible
@@ -682,26 +675,10 @@ spec_evidence_synthesizer
 spec_decision_auditor
 spec_invariant_challenger
 spec_governance_auditor
-spec_retro_miner
 ```
 
 A positive packet must change a decision, architectonic seam, proof, risk, or
 handoff. Otherwise it is neutral. No passing handoff with open subagents.
-
-## Retro trigger
-
-Do not run historical retro inside every spec. Set `retro.trigger_required: yes`
-when:
-
-- five or more full pipeline sessions occurred since the last retro;
-- the same readiness, architectonic, or challenge failure recurred at least twice;
-- execution outran readiness;
-- plan churn recurred;
-- no-grill justifications are repeatedly generic;
-- subagent fanout repeatedly produced no impact;
-- reports cannot recover phase impact.
-
-Then set next owner to `$spec-retro`.
 
 ## Hard rules
 
@@ -720,6 +697,5 @@ Then set next owner to `$spec-retro`.
 - No execution handoff from gate-only or challenge-only mode.
 - No broad multi-challenge review by default.
 - No separate readiness or challenge skill invocation required.
-- No retro ceremony in every spec.
 - No complete handoff without SGR-v2.
 - If SGR-v2 says auto-plan is eligible, same-turn `$plan` tail-call is mandatory.

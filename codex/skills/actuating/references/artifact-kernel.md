@@ -29,7 +29,7 @@ per-goal truth.
 - CAS attempt execution and owner receipts: CAS.
 - Public effects and `SHIP-v1`, `SHIP-OBSERVATION-v1`, or
   `SHIP-ADOPTION-v1`: `$ship`.
-- Human rendering: `$proof-patch`.
+- Closure receipt and human-readable closeout: `$actuating`.
 - Canonicalization, structural validation, append integrity, replay, and
   requested projections: Ledger.
 
@@ -58,7 +58,7 @@ identity, and finding arrival order must not change the selected normal form.
 ## Evidence law
 
 Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain
-owner-issued content-addressed attachments. Plans, WorkGraphs, local analyses,
+owner-issued content-addressed attachments. Plans, local analyses,
 and historical diff folds are discardable aids. The selected normal form,
 causal basis, semantic model, realization bindings, proof obligations, and
 retirements live in `construction-contract/v4`; no Review Path artifact or separate accretion disposition is added.

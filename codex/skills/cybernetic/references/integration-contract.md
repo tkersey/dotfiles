@@ -40,7 +40,7 @@ cybernetic_context:
   selected_intervention:
     status: selected | observe_more | stabilize | blocked | no_action
     route: checklist | expert_analysis | safe_to_fail_probe | stabilize_first | redesign_feedback | change_rules | change_goal | handoff | blocked
-    downstream_skill: actuating | review-fold | universalist | reduce | negative-ledger | tune | proof-patch | none
+    downstream_skill: actuating | review-fold | universalist | reduce | negative-ledger | tune | none
   local_patch_allowed: yes | no
   temporary_containment:
     allowed: yes | no | not_applicable

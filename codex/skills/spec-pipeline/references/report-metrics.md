@@ -15,7 +15,6 @@ spec_pipeline_quality:
   pass_no_delta:
   plan_started_before_gate:
   mutation_started_before_handoff:
-  retro_triggers:
 ```
 
 Do not use standalone gate or challenge activation counts as the main success metric.
