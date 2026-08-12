@@ -76,10 +76,18 @@ identity as a fifth Counterexample subject field. A non-review falsifier needs
 no campaign reference.
 
 Every newly materialized Set binds the exact current Goal Contract through
-`supporting_refs` as `goal-contract:<artifact_id>`. For an explicit source
-revision with unresolved accepted or blocked classes, or one that brings a
-`follow-up` class within the successor Goal's scope, use the carry-forward
-transition:
+`supporting_refs` as `goal-contract:<artifact_id>`.
+
+Outside an explicit source revision, a Set is a source-local delta: include only
+classes newly observed or reclassified by this source. Do not copy untouched
+retained classes or their source Sets into `classes` or `predecessor_refs`.
+When an included class recurs, cite the prior Set that most recently carried
+that class. Actuating's retained class register preserves untouched classes and
+supplies the cumulative Counterexample Theory.
+
+For an explicit source revision with unresolved accepted or blocked classes, or
+one that brings a `follow-up` class within the successor Goal's scope, use the
+carry-forward transition:
 
 - the successor Goal cites every Set carrying an unresolved accepted or blocked
   class, or a `follow-up` class brought into scope, as
@@ -93,10 +101,10 @@ transition:
 - every carried stable `class_id` appears exactly once with a current
   disposition under the successor Goal.
 
-Missing or mismatched Goal identity, incomplete Set coverage, omitted classes,
-or predecessor drift is `blocked`. The transition classifies evidence under new
-source authority; it neither selects the successor Construction nor grants
-mutation.
+Missing or mismatched Goal identity, incomplete source-revision coverage,
+omitted source-revision classes, or predecessor drift is `blocked`. The
+transition classifies evidence under new source authority; it neither selects
+the successor Construction nor grants mutation.
 
 A current clean source may produce an empty `classes` list. One class represents
 one stable Counterexample to one governing law at one boundary. Review attempt
@@ -147,14 +155,16 @@ the definitions this fold will consume.
 4. Identify the governing law, stable boundary, discrepancy, owner, witness,
    falsifier, applicability, and evidence.
 5. Quotient duplicate and same-class findings. One class may cite many finding
-   rows and may recur across Construction successors. When a class recurs, the
-   new Set's `predecessor_refs` must include the prior Set that most recently
+   rows and may recur across Construction successors. For an ordinary source,
+   emit only new or reclassified classes. When an emitted class recurs, the new
+   Set's `predecessor_refs` must include the prior Set that most recently
    carried that class.
 6. For source-revision carry-forward, include unresolved accepted and blocked
    classes plus each `follow-up` class brought within the successor Goal's
    scope; verify successor Goal and carried-Set reference symmetry, preserve the
    predecessor Construction, and require total stable-class coverage.
-7. Assign exactly one disposition to every class.
+7. Assign exactly one disposition to every emitted class, or every carried
+   class during source revision.
 8. Materialize the Counterexample Set, then register the returned canonical
    artifact through the Evidence protocol:
 

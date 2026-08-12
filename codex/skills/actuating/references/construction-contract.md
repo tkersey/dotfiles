@@ -176,8 +176,12 @@ creates a successor.
 stable classes across the Goal lineage, not merely the latest review wave.
 `recompilation.evaluated_class_refs` equals it.
 
-`counterexample_theory.set_refs` names the Sets needed to prove that cumulative
-class set. Each class appears in exactly one current causal generator or in
+Ordinary Counterexample Sets are source-local deltas. Actuating obtains the
+complete class domain from the retained Evidence register rather than requiring
+each Set to restate untouched classes. `counterexample_theory.set_refs` names
+the Sets needed to prove the cumulative accepted class set.
+
+Each accepted class appears in exactly one current causal generator or in
 `instance_specific_class_refs`.
 
 A causal generator is an Actuating-authored quotient over classified classes. It
@@ -200,8 +204,9 @@ modes, independent validators, and proof families.
 If implementation needs an absent constructor, the current Construction is
 falsified and a successor is required before mutation. `realization-repair` and
 `ablation-repair` require `semantic_model_disposition: unchanged`; only
-`architecture-repair` may declare `changed`. Actuating must exact-compare the
-predecessor and successor semantic models before authoring that disposition.
+`architecture-repair` may declare `changed`. Evidence registration exact-compares
+the complete predecessor and successor semantic models for realization and
+ablation routes. A differing model cannot be admitted under either local route.
 
 For lifecycle, concurrency, persistence, asynchronous effects, custody, or
 authority-sensitive work, `semantic_model.kind` cannot be merely descriptive.
@@ -245,17 +250,20 @@ decisively inspectable.
 
 ## Architectonic composition
 
-Before candidate selection:
+Before candidate selection, perform the comparison:
 
 ```text
-OPERATE ARCHITECTONICALLY
--> First Principles incumbent-independent basis
+First Principles incumbent-independent basis
 -> Universalist concrete model nomination
 -> one bounded Metanoetic pass when triggered
 -> Universalist lowering
 -> Reduce challenge for disputable factors
 -> Actuating adjudication
 ```
+
+`OPERATE ARCHITECTONICALLY` may be used as a mnemonic, but uttering or recording
+the phrase is not compliance evidence and cannot substitute for the comparison
+encoded in the Construction.
 
 Metanoetic may change the hypothesis space but cannot manufacture authority.
 Universalist nominates but does not select. Reduce challenges but does not grant
@@ -282,9 +290,11 @@ every superseded mechanism -> deletion, successor mapping, or distinct obligatio
 The `surface_completeness_proof_ref` proves the mark-and-sweep result over the
 complete selected scope.
 
-A one-seam operation is an effect boundary only. Multiple seams may realize one
-Construction. Closure-grade review begins only after the complete Construction,
-proof, and retirements are realized on one exact clean commit.
+A bounded operation is an effect boundary only. Actuating may execute it
+directly or delegate it; executor identity is not part of the theorem. Multiple
+operations may realize one Construction. Closure-grade review begins only after
+the complete Construction, proof, and retirements are realized on one exact
+clean commit.
 
 ## Proof normalization
 
@@ -327,8 +337,9 @@ successor owner and proof, or a distinct current obligation.
 ## Review law
 
 Review evidence never maps directly to edits. A canonical review wave produces a
-Counterexample Set. Actuating recomputes the complete Theory and selects one
-Construction for the whole theory before mutation.
+Counterexample Set. Actuating recomputes the complete Theory from the retained
+class register and selects one Construction for the whole theory before
+mutation.
 
 The static 1+4 topology and five consecutive standard-clean theorem remain
 unchanged. Any material successor or normalization resets all credit. Repeated

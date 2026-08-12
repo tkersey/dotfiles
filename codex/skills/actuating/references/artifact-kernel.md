@@ -47,6 +47,11 @@ Counterexample Theory(n+1)
 quotient(Counterexample Theory(n) + newly accepted stable classes)
 ```
 
+Ordinary Counterexample Sets are source-local deltas. They classify only new,
+recurring, or reclassified classes from the current source; the retained class
+register preserves untouched classes and supplies the cumulative theory.
+Explicit Goal carry-forward remains total because semantic authority changed.
+
 Implementation is not monotone. A successor Construction may preserve, rewrite,
 consolidate, or delete incumbent mechanisms. Review history and implementation
 momentum grant no semantic authority.

@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "ACT-AK-v4-counterexample-guided-normalization-v1"
+      "source_fingerprint": "ACT-AK-v4-direct-semantic-kernel-v1"
     },
     "triggers": [
       {
@@ -213,7 +213,7 @@
           "construction-contract/v4"
         ],
         "success_signals": [
-          "OPERATE ARCHITECTONICALLY precedes architecture selection",
+          "the architectonic comparison precedes architecture selection; its mnemonic is not compliance evidence",
           "First Principles freezes an incumbent-independent basis before Universalist nomination",
           "candidates are concrete semantic models with composable transformation axes",
           "every candidate carries the same complete mandatory obligation core",
@@ -226,7 +226,8 @@
           "four transformation labels are treated as mutually exclusive candidate architectures",
           "a candidate wins by omitting an orthogonal obligation",
           "implementation momentum or familiarity establishes dominance",
-          "Universalist Metanoetic or Reduce takes Actuating selection authority"
+          "Universalist Metanoetic or Reduce takes Actuating selection authority",
+          "a mnemonic or tool-call sequence substitutes for the candidate comparison"
         ],
         "rationale": "Actuating becomes a counterexample-guided normalizer rather than a greedy patch fold."
       },
@@ -247,7 +248,7 @@
           "exact clean committed subject"
         ],
         "success_signals": [
-          "one-seam operations isolate effects but one Construction remains the semantic realization epoch",
+          "bounded operations isolate effects independent of executor identity while one Construction remains the semantic realization epoch",
           "closure-grade review begins only after the complete selected Construction is realized",
           "every live production mechanism maps to one selected factor",
           "every live proof mechanism maps to one proof obligation",
@@ -336,6 +337,10 @@
         ],
         "rationale": "Closure proves the current normalized realization, not the history of patches that produced it."
       }
-    ]
+    ],
+    "instrumentation": {
+      "decision_receipt": "not-needed",
+      "rationale": "Construction Contracts and Evidence events already carry Actuating decision evidence; a separate decision receipt would duplicate authority."
+    }
   }
 }
