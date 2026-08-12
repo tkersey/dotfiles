@@ -43,7 +43,8 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 ## Canonical Store
 
 Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. Require Ledger 1.x and `ledger-artifact-abi/v1`.
+complete `$ledger ensure`. Require Ledger 1.0.3 or newer within major version 1
+and `ledger-artifact-abi/v1`.
 Set:
 
 ```bash
@@ -54,8 +55,11 @@ Use `ledger transact --operation capture` for writes; use definition-bound
 `record`, `recent`, `recall`, `search`, `reconciliation-index`, and
 `memory-note` projections for reads. Treat the returned `lrn-*` identity as
 canonical. Do not open or hand-edit the store. An unbound current-format store
-requires the explicit one-shot `bind-existing` transaction and otherwise fails
-closed; there is no alternate-path reader.
+requires the explicit one-shot `bind-existing` transaction. When an
+authoritative external transport such as Git advances the valid store while a
+local binding remains stale, use the separate `rebind-existing` transaction.
+Both routes validate the complete current store and otherwise fail closed;
+there is no alternate-path reader.
 
 Rows should preserve `id`, `captured_at`, `status`, `learning`, `evidence`, `application`, `source`, `fingerprint`, `context`, `tags`, `related_ids`, and `supersedes_id`.
 
@@ -123,7 +127,11 @@ user-visible when it affects delivery.
 
    Append only when the store is `current` or absent. For an unbound
    current-format store, run the explicit `bind-existing` operation once after
-   full validation. Stop on every invalid row; do not skip or reinterpret it.
+   full validation. For `StoreBindingRevisionMismatch` or
+   `StoreBindingRecordCountMismatch` after authoritative external transport,
+   run `rebind-existing`; it must validate the complete current store, replace
+   only stale Ledger binding metadata, and leave event bytes unchanged. Stop on
+   every invalid row; do not skip or reinterpret it.
 4. Gather exact evidence and changed paths.
 5. Distill objective, inflection, proof, and transferable rule.
 6. Author `learning.json` as one `submission.record` packet, then append from

@@ -7,7 +7,6 @@ spec_pipeline_quality:
   receipts:
   phase_impact:
   execution_control:
-  retro:
 ```
 
 Success is not companion mention count. Success is readiness, challenge, and
