@@ -1,40 +1,47 @@
-# Construction Contract v4
+# Construction Contract v5
 
 The Construction Contract is Actuating's sole architecture-selection artifact
 for one material construction. It answers:
 
-> Given the current Goal and the complete applicable Counterexample Theory,
-> what semantic model and normalized realization should exist?
+> Given the current Goal, complete applicable Counterexample Theory, and exact
+> predecessor subject, what typed semantic model and proof-carrying realization
+> relation should exist?
 
 It never grants mutation by itself.
+
+v5 deliberately has no `mode`, `change_kind`, `repair_class`,
+`semantic_model_disposition`, or supersession disposition. A Construction
+describes the predecessor and successor objects and their relation; admission
+derives obligations from their actual differences.
 
 ## Shape
 
 ```yaml
 artifact:
-  schema: construction-contract/v4
+  schema: construction-contract/v5
   artifact_id:
   goal_id:
   semantic_author: actuating
   created_at:
-  predecessor_refs: []
+  predecessor_refs: []        # zero or one Construction
   supporting_refs: []
 
   payload:
     goal_contract_ref:
-    mode: initial | realization-repair | architecture-repair | ablation-repair
 
     subject:
       repository:
-      base_artifact_digest:
+      base_artifact_digest:   # exact predecessor Git subject
 
     boundary:
       boundary_key:
       source_worlds: []
       target_worlds: []
-      carriers: []
-      operations: []
-      observations: []
+      admitted_domain:
+      carrier_element_refs: []
+      operation_element_refs: []
+      observation_element_refs: []
+      compatibility_constraints: []
 
     architecture:
       governing_law_refs: []
@@ -48,29 +55,54 @@ artifact:
 
     counterexample_theory:
       set_refs: []
+      generator_class_refs: []
       instance_specific_class_refs: []
+
+      instance_specific_classes:
+        - class_ref:
+          separated_from_generator_ref:
+          separation_proof_ref:
+          non_example_falsifier_ref:
+
       causal_generators:
         - generator_id:
           class_refs: []
           law_ref:
-          missing_semantic_element:
-          proof_family: representation | total-transition | exhaustive-model |
-            static-refinement | property-law | differential | example-regression
+          required_element_ref:
+          carrier_claim_ref:
+          proof_family:
           falsifier:
 
     semantic_model:
-      kind: structural | transition-system | protocol | effect-system |
-        data-refinement | algorithm
-      owners: []
-      state_dimensions: []
-      events: []
-      transitions: []
-      effects: []
-      custody: []
-      observations: []
-      terminality: []
-      illegal_states: []
-      equivalence_and_normalization: []
+      kind: algorithm | data-refinement | effect-system | protocol |
+        structural | transition-system
+      element_refs: []
+      elements:
+        - element_id:
+          kind: owner | state-dimension | event | transition | effect |
+            custody | observation | terminality | illegal-state |
+            equivalence-or-normalization
+          owner:
+          statement:
+          law_refs: []
+          observation_refs: []
+      equations: []
+
+    carrier_claim_refs: []
+    carrier_claims:
+      - claim_id:
+        element_ref:
+        disposition: closed-existing | open-existing | absent | unresolved
+        predecessor_construction_ref:
+        predecessor_subject_digest:
+        predecessor_factor_refs: []
+        presence_obligation_ref:
+        closure_obligation_ref:
+        negative_obligation_ref:
+        presence_receipt_ref:
+        closure_receipt_ref:
+        negative_receipt_ref:
+        structural_resolution_refs: []
 
     falsified_predecessor_claims: []
     preserved_predecessor_claims: []
@@ -90,42 +122,31 @@ artifact:
         proof_kind: implementation | review | acceptance | ship
 
     recompilation:
-      trigger: initial | accepted-review-fold
       counterexample_set_ref:
       evaluated_class_refs: []
-
       candidates:
         - candidate_id:
           derivation: incumbent-relative | incumbent-independent
           status: selected | dominated | incomparable | obstructed
           summary:
-
+          boundary: {}
+          architecture: {}
           semantic_model: {}
-
-          transformation:
-            admitted_domain: preserve | restrict | expand-authorized
-            representation: preserve | replace | introduce
-            ownership: preserve | centralize | split
-            realization: preserve | edit | rewrite
-            residue: preserve | ablate
-            proof: preserve | recompose | strengthen
-
+          factor_refs: []
+          factors: []
           law_refs: []
           observation_refs: []
-          factors: []
           residual_obligations: []
           falsifier:
-
       selected_candidate_id:
-
       adjudication:
         selected_reason:
-        reduction_disposition: minimal | smaller-admissible | incomparable | obstructed
+        reduction_disposition: minimal | smaller-admissible |
+          incomparable | obstructed
         reduction_reason:
         falsifier:
 
     normal_form:
-      semantic_model_disposition: initial | unchanged | changed
       mandatory_obligation_refs: []
       causal_generator_refs: []
       arrival_order_invariance_falsifier:
@@ -133,14 +154,20 @@ artifact:
       incomparable_candidate_refs: []
 
     semantic_surface:
+      predecessor_factor_refs: []
       predecessor_factors: []
+      successor_factor_refs: []
       successor_factors: []
 
     realization:
-      factor_bindings:
-        - factor_ref:
+      element_bindings:
+        - element_ref:
+          factor_ref:
+          owner_boundary:
+          constructor_or_representation:
           realization_paths: []
           proof_refs: []
+          closure_obligation_ref:
       proof_bindings:
         - obligation_ref:
           proof_paths: []
@@ -149,7 +176,6 @@ artifact:
       retirement_witness_refs: []
 
     supersession:
-      disposition: initial | unchanged-realization | normalized | essential-expansion
       preserved_factor_refs: []
       retired_factor_refs: []
       introduced_factor_refs: []
@@ -157,7 +183,12 @@ artifact:
       essential_additions: []
       surface_completeness_proof_ref:
 
-    retirements: []
+    retirements:
+      - retirement_id:
+        retired_factor_ref:
+        disposition: collapse | delegate | replace | retire
+        replacement_ref:
+        verifier: {argv: []}
 
     execution:
       allowed_paths: []
@@ -167,186 +198,210 @@ artifact:
 ```
 
 Use canonical JSON, content-address `artifact_id`, reject unknown fields, and
-treat a materialized Construction as immutable. A changed semantic decision
-creates a successor.
+treat a materialized Construction as immutable. A changed decision creates a
+successor.
+
+## Typed semantic identity
+
+The semantic model is no longer a collection of unconstrained prose arrays.
+Every selected semantic constructor has one stable element identity and a type.
+The model's `element_refs` exactly name its `elements`.
+
+The element vocabulary is intentionally semantic rather than language-specific.
+A repository-native type, field, state variant, transition function, schema
+constraint, handler, or interpreter may realize an element; the element remains
+stable while realization paths change.
+
+Boundary carriers, operations, and observations reference typed element
+identities. Candidate and factor observations reference observation elements.
+A string description may explain an element, but it cannot serve as its
+identity.
+
+## Carrier claims
+
+Every semantic element has exactly one predecessor carrier claim.
+
+### `closed-existing`
+
+The carrier exists in the exact predecessor and construction is controlled by
+one owner without an unchecked bypass. Require:
+
+- one or more exact predecessor factor refs;
+- a presence obligation and successful predecessor-presence receipt;
+- a closure obligation and successful predecessor-closure receipt.
+
+A closed carrier may still be deliberately replaced. If so,
+`structural_resolution_refs` names the concrete factor delta.
+
+### `open-existing`
+
+The carrier exists, but a bypass, parallel representation, direct write,
+alternate constructor, or competing owner defeats closure. Require:
+
+- exact predecessor factor refs;
+- a presence receipt;
+- an independent negative receipt witnessing openness;
+- at least one introduced factor, retired factor, or replacement relation that
+  resolves it.
+
+### `absent`
+
+A bounded nonexistence witness establishes that the predecessor lacks the required carrier.
+Require:
+
+- no predecessor factor ref;
+- an negative or nonexistence obligation and successful predecessor-nonexistence receipt;
+- at least one introduced factor or replacement relation that creates the
+  carrier.
+
+Failure to find a carrier is not proof of absence. The falsifier must state why
+its inspected surface is complete.
+
+### `unresolved`
+
+Evidence establishes neither presence nor absence. The claim carries no receipt
+or structural resolution. A Construction containing any unresolved claim may be
+materialized as a remediation proposal but cannot authorize an edit.
+
+## Total correspondence
+
+The contract mechanically enforces two total functions:
+
+```text
+semantic element -> carrier claim
+semantic element -> selected successor factor
+```
+
+The second function is carried by `realization.element_bindings`. Every binding
+also names the owner-controlled constructor or representation, bounded paths,
+implementation proofs, and current-subject closure obligation.
+
+Every selected factor must be the target of at least one semantic element.
+Consequently, factor granularity is not assessed through another prose gate. A
+factor that cannot support one coherent owner and bounded construction surface
+cannot receive a valid binding and must split.
 
 ## Counterexample Theory
 
-`counterexample_class_refs` is the complete set of currently applicable accepted
-stable classes across the Goal lineage, not merely the latest review wave.
-`recompilation.evaluated_class_refs` equals it.
-
-Ordinary Counterexample Sets are source-local deltas. Actuating obtains the
-complete class domain from the retained Evidence register rather than requiring
-each Set to restate untouched classes. `counterexample_theory.set_refs` names
-the Sets needed to prove the cumulative accepted class set.
-
-Each accepted class appears in exactly one current causal generator or in
-`instance_specific_class_refs`.
-
-A causal generator is an Actuating-authored quotient over classified classes. It
-does not revise finding truth. It states the common semantic element whose
-absence or falsity explains the classes and selects a law-level proof family.
-
-Duplicate witnesses and finding order do not alter the Theory.
-
-## Closed-world semantic model
-
-The selected `semantic_model` is a closed-world claim. It explicitly names the
-semantic alphabet and equations that the realization may use.
-
-A `realization-repair` is legal only when the required behavior is already
-represented and no new semantic constructor is introduced. Constructors include
-state dimensions, events, transitions, authority/custody transfers, freshness
-or correlation rules, failure modes, effect/observation paths, compatibility
-modes, independent validators, and proof families.
-
-If implementation needs an absent constructor, the current Construction is
-falsified and a successor is required before mutation. `realization-repair` and
-`ablation-repair` require `semantic_model_disposition: unchanged`; only
-`architecture-repair` may declare `changed`. Evidence registration exact-compares
-the complete predecessor and successor semantic models for realization and
-ablation routes. A differing model cannot be admitted under either local route.
-
-For lifecycle, concurrency, persistence, asynchronous effects, custody, or
-authority-sensitive work, `semantic_model.kind` cannot be merely descriptive.
-The model must enumerate the relevant states/events/transitions/ownership and
-receive representation plus total-transition proof, with a bounded exhaustive
-model when feasible.
-
-## Candidate law
-
-Candidates are concrete semantic models. Transformation fields are orthogonal
-axes, not mutually exclusive candidate families.
-
-Every candidate carries the same mandatory obligation core:
+`counterexample_class_refs` is the complete currently applicable accepted class
+set. The contract totally partitions it into:
 
 ```text
-Goal laws
-+ complete applicable Counterexample Theory
-+ required observations
-+ compatibility
-+ resources
-+ host constraints
-+ proof obligations
+generator_class_refs
+instance_specific_class_refs
 ```
 
-A candidate omitting an independent obligation is inadmissible and cannot
-establish dominance.
+Every generator class occurs in one causal generator. Every instance-specific
+class has a separation proof and independent non-example falsifier explaining
+why it does not instantiate the named generator.
 
-At least one candidate is genuinely incumbent-independent. Exactly one is
-selected. The selected candidate's factors equal `successor_factors`, and its
-semantic model equals the top-level selected semantic model.
+Each causal generator references:
 
-A candidate dominates another only when it is no worse in every required law,
-observation, Counterexample exclusion, authority, representation, semantic
-mechanism, residue, proof, compatibility, and resource dimension, and strictly
-better in at least one. Incomparable minima remain explicit.
+- one required typed semantic element;
+- the unique carrier claim for that element;
+- the governing law, proof family, and falsifier.
 
-Reordering the same complete Counterexample Theory must produce an equivalent
-selected normal form or the same incomparable set. The falsifier in
-`normal_form.arrival_order_invariance_falsifier` must be executable or
-decisively inspectable.
+Duplicate witnesses and finding order do not alter the theory.
 
-## Architectonic composition
+## Recurrence law
 
-Before candidate selection, perform the comparison:
+A generator with at least two accepted classes cannot preserve a pointwise
+correction. Its carrier claim must name at least one concrete structural
+resolution:
 
 ```text
-First Principles incumbent-independent basis
--> Universalist concrete model nomination
--> one bounded Metanoetic pass when triggered
--> Universalist lowering
--> Reduce challenge for disputable factors
--> Actuating adjudication
+introduced factor
+retired factor
+replacement relation
 ```
 
-`OPERATE ARCHITECTONICALLY` may be used as a mnemonic, but uttering or recording
-the phrase is not compliance evidence and cannot substitute for the comparison
-encoded in the Construction.
+The only alternative is a valid separation that removes the class from the
+generator and moves it into the instance-specific partition. A stronger
+regression test alone is not a structural resolution.
 
-Metanoetic may change the hypothesis space but cannot manufacture authority.
-Universalist nominates but does not select. Reduce challenges but does not grant
-mutation. Actuating alone materializes the Construction.
+## Concrete candidates
 
-## Realization exactness
+Candidates no longer carry free transformation axes such as
+`representation: replace` or `ownership: preserve`. Each candidate carries the
+actual boundary, architecture, semantic model, and factor set being compared.
 
-`realization.factor_bindings` maps every selected factor to its intended
-production paths and proof obligations. `proof_bindings` maps every obligation
-to its proof paths.
+Exactly one candidate is selected and at least one is incumbent-independent.
+The selected candidate's complete objects exact-match the top-level boundary,
+architecture, semantic model, and successor factors.
 
-`unmapped_production_surface` and `unmapped_proof_surface` are always empty in a
-valid v4 Construction. Existing residue belongs in explicit retirements, not in
-an unowned exception list.
+A candidate dominates another only when it preserves the complete mandatory
+obligation core and is no worse in every required law, observation,
+Counterexample exclusion, authority, representation, semantic mechanism,
+residue, proof, compatibility, and resource dimension, while strictly improving
+at least one. Incomparable minima remain explicit.
 
-Before Ship or fresh review, Actuating verifies:
+## Difference-triggered admission
+
+No classifier grants permission. Differences imply obligations directly:
 
 ```text
-every live production mechanism -> one selected factor
-every live proof mechanism -> one current proof obligation
-every superseded mechanism -> deletion, successor mapping, or distinct obligation
+new element or absent carrier
+  -> introduced/replacement factor and implementation proof
+
+open carrier
+  -> concrete structural resolution and closure proof
+
+changed factor
+  -> retirement, introduction, or replacement relation
+
+introduced factor
+  -> essential-addition law and proof coverage
+
+retired factor
+  -> retirement record and absence verifier
+
+preserved factor
+  -> exact value equality
+
+changed boundary, owner, representation, or admitted domain
+  -> corresponding factor delta and observation-preservation proof
 ```
 
-The `surface_completeness_proof_ref` proves the mark-and-sweep result over the
-complete selected scope.
-
-A bounded operation is an effect boundary only. Actuating may execute it
-directly or delegate it; executor identity is not part of the theorem. Multiple
-operations may realize one Construction. Closure-grade review begins only after
-the complete Construction, proof, and retirements are realized on one exact
-clean commit.
-
-## Proof normalization
-
-Each accepted class receives a law-matched implementation obligation. Passing
-only the witnessed example is insufficient unless the class is proved
-instance-specific.
-
-When multiple classes share a causal generator, `example-regression` cannot be
-the governing proof mode. Recompose proof around the generator and retain only
-genuinely distinct minimal witnesses.
-
-Expected minimums:
-
-| Law family | Expected minimum |
-|---|---|
-| State machine or lifecycle | representation and total-transition; bounded exhaustive model when feasible |
-| Concurrency | explicit state/ownership model plus stress or model check |
-| Authority, capability, or replay | representation/static contract plus adversarial transitions |
-| Identity or canonicalization | property law and corpus; differential proof when available |
-| Parser, serializer, or codec | round-trip property and malformed-input corpus |
-| Persistence or event fold | integrity replay plus model/property proof |
-| Idempotency, ordering, or quotienting | repeated-operation or permutation property |
-| Compatibility or migration | golden corpus and before/after differential proof |
-| Pure algorithm | property or differential proof |
-| Public API or CLI | contract fixtures and footgun review |
-
-Every obligation names an exact verifier and independent falsifier.
+A full implementation rewrite may preserve the complete relation. Conversely,
+an unchanged abstract semantic model does not authorize a representation or
+ownership replacement without a factor delta.
 
 ## Supersession and retirement
 
-Every predecessor and successor factor is partitioned exactly once.
-`unchanged-realization` admits identical factor inventories.
-`normalized` changes the factor inventory without essential addition.
-`essential-expansion` binds every introduced factor to current laws and proof.
+`predecessor-successor` partitions every predecessor and successor factor through
+the explicit preserved, retired, introduced, and replacement sets. There is no
+supersession disposition summarizing those sets.
 
-A label such as `collapse`, `replace`, or `retire` is not evidence. Each displaced
-production and proof surface maps to deletion with an absence verifier, a
-successor owner and proof, or a distinct current obligation.
+Every introduced factor has an essential-addition record binding current laws
+and proof. Every retired factor has a retirement record and absence verifier.
+Replacement relations map exact predecessor and successor factors but do not
+substitute for deletion proof.
 
-## Review law
+## Two-sided evidence
 
-Review evidence never maps directly to edits. A canonical review wave produces a
-Counterexample Set. Actuating recomputes the complete Theory from the retained
-class register and selects one Construction for the whole theory before
-mutation.
+Predecessor receipts are part of the Construction registration packet and bind:
 
-The static 1+4 topology and five consecutive standard-clean theorem remain
-unchanged. Any material successor or normalization resets all credit. Repeated
-stochastic review is a required falsification capability.
+```text
+Goal
+predecessor Construction; initial registration has no predecessor receipt packet
+exact predecessor subject
+claim
+obligation
+purpose
+exact verifier argv
+exit status
+output digests
+```
+
+They prove the selected relation was admissible before mutation.
+
+Successor receipts are produced after realization and bind the v5 Construction
+and exact current subject. They prove every element binding, closed owner, proof,
+and retirement actually holds. They are cited by operation evidence and the
+closure receipt, not embedded in the immutable Construction.
 
 ## Version law
 
-v4 supersedes v3 for new selection and mutation. Do not reinterpret v3 bytes.
-A v3 artifact may be historical evidence; the first affected mutation requires a
-v4 Construction and a structurally lawful v4 Evidence store.
+v5 supersedes v4 for new selection and mutation. Do not reinterpret v1-v4
+bytes. The v5 Evidence definition uses a separate goal-local store path so
+historical logs remain inspectable without weakening replay.

@@ -17,8 +17,20 @@
       "path": "ledger/closure-receipt.json"
     },
     {
+      "id": "actuating/construction-architecture",
+      "path": "ledger/construction-architecture.json"
+    },
+    {
+      "id": "actuating/construction-boundary",
+      "path": "ledger/construction-boundary.json"
+    },
+    {
       "id": "actuating/construction-candidate",
       "path": "ledger/construction-candidate.json"
+    },
+    {
+      "id": "actuating/construction-carrier-claim",
+      "path": "ledger/construction-carrier-claim.json"
     },
     {
       "id": "actuating/construction-contract",
@@ -27,6 +39,10 @@
     {
       "id": "actuating/construction-factor",
       "path": "ledger/construction-factor.json"
+    },
+    {
+      "id": "actuating/construction-semantic-element",
+      "path": "ledger/construction-semantic-element.json"
     },
     {
       "id": "actuating/construction-semantic-model",
