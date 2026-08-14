@@ -5,7 +5,8 @@
   const token = new URLSearchParams(window.location.search).get("token") || "";
   const elements = Object.fromEntries([
     "app", "round-label", "pr-summary", "refresh-button", "finish-button", "stop-button",
-    "primary-gate", "queue", "queue-count", "queue-empty", "tabs", "welcome", "review",
+    "primary-gate", "primary-gate-title", "primary-gate-detail", "queue", "queue-count",
+    "queue-empty", "tabs", "welcome", "review",
     "diff-title", "diff-state", "stale-banner", "diff", "conversation-title", "session-status",
     "interrupt-button", "close-button", "conversation", "message-form", "message-input",
     "global-approvals", "toast-region"
@@ -17,6 +18,7 @@
     stopped: false,
     connected: false,
     primaryReady: false,
+    primaryStatus: "building",
     pullRequest: null,
     queue: [],
     tabs: new Map(),
@@ -97,6 +99,8 @@
     if (!snapshot || snapshot.schema !== "synoptic-bootstrap/v1") throw new Error("Unsupported Synoptic bootstrap schema");
     state.pullRequest = snapshot.pullRequest || null;
     state.primaryReady = Boolean(snapshot.primaryReady);
+    if (state.primaryReady) state.primaryStatus = "ready";
+    else if (state.primaryStatus !== "failed") state.primaryStatus = "building";
     state.queue = Array.isArray(snapshot.queue) ? snapshot.queue : [];
     state.round = Number(snapshot.round || 1);
     state.seq = Math.max(state.seq, Number(snapshot.seq || 0));
@@ -193,8 +197,15 @@
         applySnapshot(payload);
         return;
       case "primary.status":
-        if (payload.status === "completed" || payload.status === "ready") state.primaryReady = true;
-        if (payload.status === "failed") toast("Common review context failed. Refresh to retry.", "error");
+        if (payload.status === "completed" || payload.status === "ready") {
+          state.primaryReady = true;
+          state.primaryStatus = "ready";
+        } else if (payload.status === "failed" && !state.primaryReady) {
+          state.primaryStatus = "failed";
+          toast("Common review context failed. Refresh to retry.", "error");
+        } else if (!state.primaryReady) {
+          state.primaryStatus = "building";
+        }
         break;
       case "queue.updated":
         if (Array.isArray(payload.queue)) state.queue = payload.queue;
@@ -274,6 +285,9 @@
         toast(payload.message || payload.code || "Synoptic command failed", "error");
         if (payload.requestId && payload.requestId === state.pendingMessage?.id) restorePendingMessage();
         if (payload.requestId && payload.requestId === state.pendingHeaderAction?.requestId) {
+          if (state.pendingHeaderAction.type === "pr.refresh" && !state.primaryReady) {
+            state.primaryStatus = "failed";
+          }
           state.pendingHeaderAction = null;
         }
         state.openingPath = null;
@@ -331,6 +345,7 @@
     const status = payload.status || "current";
     if (status === "turn-started") acceptPendingMessage(sessionId);
     const interrupted = status === "interrupted";
+    if (interrupted) finalizeStreamingMessage(sessionId);
     updateTab(sessionId, {
       status: status === "turn-started" || status === "interrupted" ? tab?.status || "current" : normalizeStatus(status),
       staleOrigin: tab?.staleOrigin || normalizeStatus(status) === "stale_origin",
@@ -386,11 +401,7 @@
     }
 
     if (method.includes("turn/completed") || method === "turn/completed") {
-      const last = messages.at(-1);
-      if (last && last.kind === "assistant") {
-        last.streaming = false;
-        last.revision = Number(last.revision || 0) + 1;
-      }
+      finalizeStreamingMessage(sessionId);
       const terminalStatus = raw?.params?.turn?.status || raw?.turn?.status || "completed";
       if (terminalStatus === "failed") {
         messages.push({ kind: "warning", text: readableEvent(method, raw) });
@@ -432,6 +443,9 @@
   function readableEvent(method, raw) {
     const params = raw && raw.params ? raw.params : raw;
     const item = params?.item || params;
+    if (method.toLowerCase().includes("delta") && typeof params?.delta === "string") {
+      return params.delta;
+    }
     if (item?.type === "commandExecution" || item?.type === "command_execution") {
       return [item.command, item.aggregatedOutput || item.output, item.exitCode !== undefined ? `exit ${item.exitCode}` : null].filter(Boolean).join("\n\n");
     }
@@ -459,6 +473,13 @@
   function updateTab(sessionId, patch) {
     const current = state.tabs.get(sessionId);
     if (current) state.tabs.set(sessionId, Object.assign({}, current, patch));
+  }
+
+  function finalizeStreamingMessage(sessionId) {
+    const last = conversationFor(sessionId).at(-1);
+    if (!last || last.kind !== "assistant" || !last.streaming) return;
+    last.streaming = false;
+    last.revision = Number(last.revision || 0) + 1;
   }
 
   function updateAction(id, patch) {
@@ -544,6 +565,14 @@
 
   function renderQueue() {
     elements.primary_gate.classList.toggle("hidden", state.primaryReady);
+    const primaryFailed = state.primaryStatus === "failed";
+    elements.primary_gate.classList.toggle("failed", primaryFailed);
+    elements.primary_gate_title.textContent = primaryFailed
+      ? "Common review context failed"
+      : "Building common review context";
+    elements.primary_gate_detail.textContent = primaryFailed
+      ? "Refresh to retry the initial background turn."
+      : "File selection unlocks when the first background turn completes.";
     elements.queue_count.textContent = String(state.queue.length);
     clear(elements.queue);
     for (const file of state.queue) {
@@ -822,8 +851,9 @@
   elements.refresh_button.addEventListener("click", () => {
     const requestId = window.crypto.randomUUID();
     if (send("pr.refresh", {}, requestId)) {
+      if (!state.primaryReady) state.primaryStatus = "building";
       state.pendingHeaderAction = { type: "pr.refresh", requestId };
-      renderHeader();
+      render();
     }
   });
   elements.finish_button.addEventListener("click", () => {

@@ -122,6 +122,9 @@ h1, h2 { margin: 0; font-size: 14px; line-height: 1.3; letter-spacing: -0.015em;
 .primary-gate { display: flex; gap: 10px; margin: 12px; padding: 12px; color: var(--muted); border: 1px solid rgba(125, 184, 255, 0.2); border-radius: 10px; background: var(--blue-wash); font-size: 12px; line-height: 1.45; }
 .primary-gate > div { display: grid; gap: 3px; }
 .primary-gate strong { color: var(--blue); font-size: 12px; }
+.primary-gate.failed { border-color: rgba(255, 142, 147, 0.25); background: var(--red-wash); }
+.primary-gate.failed strong { color: var(--red); }
+.primary-gate.failed .spinner { visibility: hidden; }
 .spinner { width: 14px; height: 14px; flex: 0 0 auto; margin-top: 2px; border: 2px solid rgba(125, 184, 255, 0.25); border-top-color: var(--blue); border-radius: 50%; animation: spin 800ms linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
