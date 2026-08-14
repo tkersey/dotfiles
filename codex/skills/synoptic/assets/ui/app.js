@@ -205,6 +205,7 @@
         break;
       case "session.closed":
         onSessionClosed(payload);
+        send("snapshot.get", {});
         break;
       case "session.status":
         onSessionStatus(payload);
@@ -215,6 +216,7 @@
         break;
       case "session.item.delta":
         onVisibleItem(payload);
+        renderTabs();
         if (payload.sessionId === state.activeSessionId) renderReview();
         return;
       case "session.file_changed":

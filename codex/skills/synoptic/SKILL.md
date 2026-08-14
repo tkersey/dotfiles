@@ -41,10 +41,21 @@ only the canonical Homebrew formula needed by this skill.
 ```bash
 synoptic_skill_file="<absolute SKILL.md path from this skill's loaded source locator>"
 synoptic_skill_root="$(dirname "$(realpath "$synoptic_skill_file")")"
-"$synoptic_skill_root/scripts/ensure-synoptic" --install
+if ! bootstrap_receipt="$("$synoptic_skill_root/scripts/ensure-synoptic" --install)"; then
+  printf '%s\n' "$bootstrap_receipt" >&2
+  exit 1
+fi
+bootstrap_schema="$(printf '%s' "$bootstrap_receipt" | plutil -extract schema raw -o - -)"
+bootstrap_status="$(printf '%s' "$bootstrap_receipt" | plutil -extract status raw -o - -)"
+synoptic_path="$(printf '%s' "$bootstrap_receipt" | plutil -extract path raw -o - -)"
+if [[ "$bootstrap_schema" != "synoptic-bootstrap-ready/v1" ||
+      "$bootstrap_status" != "ready" || ! -x "$synoptic_path" ]]; then
+  printf '%s\n' 'invalid Synoptic bootstrap receipt' >&2
+  exit 1
+fi
 
 launch_argv=(
-  synoptic launch
+  "$synoptic_path" launch
   --skill-root "$synoptic_skill_root"
   --cwd "$PWD"
 )
