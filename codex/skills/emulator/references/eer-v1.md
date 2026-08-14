@@ -1,8 +1,6 @@
 # EER-v1: Emulator Execution Report
 
-`emulator_execution_report / EER-v1` is the default evidence artifact emitted by `$emulator`.
-
-It records what was run, what happened, where implementations diverged, and which findings are reusable.
+`emulator_execution_report / EER-v1` records what contract and environment ran, what each episode did, where agents or implementations diverged, and which findings are reusable.
 
 ## Schema
 
@@ -10,11 +8,12 @@ It records what was run, what happened, where implementations diverged, and whic
 emulator_execution_report:
   packet_version: EER-v1
   source_contract:
-    kind: ghost_package | ghost_scenario_tests | emulator_contract
+    kind: emulator_contract
     spec_ref:
-    tests_ref:
-    verify_ref:
+    contract_id:
     fingerprint:
+    source_revision:
+    authority_refs: []
   target:
     name:
     kind:
@@ -22,17 +21,37 @@ emulator_execution_report:
     version:
     implementation_ids: []
     seed:
+    seed_policy:
     oracle_version:
+  agents:
+    - id:
+      fingerprint:
+      limitations: []
   run_summary:
     generated_cases:
     executed_cases:
     passed_cases:
     failed_cases:
     skipped_cases:
+  executions:
+    - episode_id:
+      scenario_id:
+      case_id:
+      implementation_id:
+      agent_id:
+      agent_fingerprint:
+      seed:
+      status: pass | fail | skip
+      termination_reason:
+      reward_total:
+      action_trace_ref:
+      oracle_results_ref:
+      trace_ref:
+      skipped_reason:
   implementations:
     - id:
       kind: deterministic | noisy | adversarial | mutation
-      source_contract_fingerprint:
+      contract_fingerprint:
       supported_scenarios: []
       limitations: []
   divergences:
@@ -40,6 +59,7 @@ emulator_execution_report:
       scenario_id:
       case_id:
       implementations: []
+      agents: []
       observed_difference:
       likely_source:
         contract_ambiguity | emulator_bug | oracle_gap | nondeterminism | behavior_gap | source_contract_gap
@@ -57,6 +77,10 @@ emulator_execution_report:
       source_counterexample:
       why_reusable:
       required_oracles: []
+  datasets:
+    trajectories_ref:
+    counterexamples_ref:
+    curriculum_ref:
   limitations: []
   optional_downstream:
     tune_handoff:
@@ -64,9 +88,24 @@ emulator_execution_report:
       reason:
 ```
 
-## Interpretation rules
+## Accounting rules
 
-- EER-v1 is behavioral evidence, not proof that a target skill should change.
-- A failed emulator run may indicate an emulator bug, a contract ambiguity, an oracle gap, nondeterminism, or a real behavior gap.
-- A candidate regression becomes binding only after the downstream owner adopts it.
-- `$tune` handoff is optional and requires explicit skill-improvement intent.
+- Every episode appears in `executions`.
+- Summary counts equal execution counts.
+- Every pass or failure has a trace and recorded action sequence.
+- Every skip has a reason.
+- Every execution binds contract, implementation, agent, scenario, case, seed, and oracle identities.
+- Every counterexample binds violated oracles and reproducible evidence.
+- Dataset references appear only for emitted datasets.
+
+## Interpretation
+
+EER-v1 is behavioral evidence, not proof that a target skill or production system should change.
+
+A failed episode may indicate an emulator bug, contract ambiguity, oracle gap, nondeterminism, behavior gap, or missing source contract.
+
+Reward never overrides a failed hard oracle.
+
+A candidate regression becomes binding only after adoption into `emulator-spec.yaml`.
+
+`$tune` handoff requires explicit skill-improvement intent.

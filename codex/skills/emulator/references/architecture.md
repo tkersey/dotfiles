@@ -1,38 +1,73 @@
 # Emulator Architecture
 
-`$emulator` is the runtime companion to `$ghost`.
+`$emulator` owns both the behavior contract and the executable synthetic world.
 
 ```text
-$grill-me  ->  emulator_subject_packet / ESP-v1
-$ghost     ->  Ghost scenario package
-$emulator  ->  synthetic implementations + emulator_execution_report / EER-v1
+source evidence + explicit user decisions
+                  |
+                  v
+          emulator-spec.yaml
+                  |
+                  v
+ environments + episodes + traces + EER-v1
 ```
+
+Use `$grill-me` only when a material human judgment cannot be resolved from evidence.
 
 ## Responsibility split
 
 | Skill | Owns | Does not own |
 |---|---|---|
-| `$grill-me` | Material user judgments, scope, proof bar, and failure priorities | Specs, implementation, repository analysis beyond discoverable context |
-| `$ghost` | Portable behavior contract, scenario tests, verification/provenance | Executable emulator runtime |
-| `$emulator` | Executable synthetic implementations, runs, mutation, traces, divergence reports | Deciding what matters, writing Ghost contracts, editing skills |
+| `$grill-me` | Material user judgments, scope, proof bar, failure priorities | Contracts or environments |
+| `$emulator` | Contract authoring, environments, runs, mutation, traces, datasets, divergence reports | Undiscoverable user priorities or target-skill edits |
 | `$tune` | Optional downstream skill-change diagnosis | Core emulator lifecycle |
 | `$refine` | Optional downstream authorized edits | Core emulator lifecycle |
 
+## Boundary
+
+`emulator-spec.yaml` is the single normative boundary between authority and runtime.
+
+Each rule identifies its authority:
+
+```text
+source evidence
+explicit user decision
+non-critical assumption
+```
+
+Source-faithful claims require source evidence. Designed deviations require explicit user decisions. Assumptions cannot define critical behavior.
+
+Every implementation interprets one contract fingerprint.
+
+Laws:
+
+```text
+same deterministic implementation + contract + scenario + seed + action sequence + oracle version
+  -> same environment observations, state transitions, and terminal result
+
+hidden ground truth
+  -> environment/oracle-visible
+  -> agent-visible only through contracted observations or tool results
+
+hard oracle failure
+  -> not overridable by reward or model judgment
+```
+
 ## Canonical flow
 
-1. `$grill-me` is used only when the subject is materially under-specified.
-2. `$ghost` converts the chosen subject into a portable scenario-layout contract.
-3. `$emulator` reads that contract and generates one or more executable implementations.
-4. `$emulator` runs, mutates, and compares those implementations.
-5. `$emulator` emits EER-v1 and concrete artifacts.
-6. Optional consumers use the report: human review, CI, eval generation, Ghost repair, or skill tuning.
+1. Resolve source, target, revision, origin, and requested environment.
+2. Inspect discoverable evidence.
+3. Use `$grill-me` only for unresolved material choices.
+4. Author or validate `emulator-spec.yaml`.
+5. Generate and run one or more implementations.
+6. Mutate, shrink, compare, and export only as requested.
 
-## Non-core downstream route
+Missing normative evidence is `source_contract_gap`, not permission to invent behavior. Conflicting authority is `contract_ambiguity`.
 
-Use this route only when explicitly requested:
+## Optional downstream route
 
 ```text
 EER-v1 -> $tune -> $refine
 ```
 
-Emulator evidence is behavioral evidence. It becomes skill-improvement evidence only after the user asks to improve a skill from it and the existing tuning/refinement gates accept the handoff.
+Use it only after explicit skill-improvement intent.

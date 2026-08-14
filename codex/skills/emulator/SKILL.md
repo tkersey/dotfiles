@@ -1,68 +1,70 @@
 ---
 name: emulator
-description: "Instantiate Ghost-style behavior contracts as executable, replayable, mutatable synthetic implementations. Use for `$emulator`, emulator runs, generated worlds from Ghost packages, synthetic implementations, scenario mutation, counterexamples, implementation divergence, trace reports, or EER-v1 execution reports. Not for deciding what to specify, producing Ghost contracts, editing target skills, or assuming emulator failures imply skill defects."
+description: "Define, generate, run, mutate, compare, and export executable emulator environments for agents. Use for `$emulator`, synthetic worlds, agent learning environments, scenario contracts, deterministic/noisy/adversarial environments, counterexamples, trajectory datasets, implementation divergence, trace reports, or EER-v1. Not for generic library reimplementation specs, material scope clarification, target-skill edits, or treating synthetic outcomes as production truth."
 ---
 
 # Emulator
 
 ## Mission
 
-`$emulator` turns portable behavior contracts into executable synthetic experience.
+`$emulator` owns the complete path from evidence or explicit design intent to executable synthetic experience.
 
 ```text
-$grill-me learns what is worth specifying
-$ghost    captures the behavior contract
-$emulator instantiates, runs, mutates, and compares implementations
+source evidence + explicit user decisions
+                  |
+                  v
+          emulator-spec.yaml
+                  |
+                  v
+environments -> agent episodes -> traces, counterexamples, datasets, EER-v1
 ```
 
-`$emulator` does not decide what matters, produce the Ghost contract, diagnose skill deltas, or edit target skills.
+Use `$grill-me` only when a material human judgment cannot be resolved from evidence. No separate contract-generation skill is required.
 
 ## Activation boundary
 
-Use `$emulator` when the user asks to:
+Use `$emulator` to:
 
 ```text
-generate executable worlds from a Ghost package
-instantiate a scenario spec as a runnable environment
-create deterministic, noisy, adversarial, or mutation implementations
-run or compare synthetic implementations
-mutate scenarios to find counterexamples
-produce traces, divergence reports, or EER-v1
+author an emulator contract from a repo, spec, tests, traces, or user design
+generate an executable environment for an agent
+instantiate deterministic, noisy, adversarial, or mutable worlds
+run agents and collect replayable episodes
+mutate or shrink scenarios to find counterexamples
+compare agents or implementations against one contract
+export traces, trajectories, divergences, or EER-v1
 ```
 
-Do not use `$emulator` for:
+Do not use it for:
 
 ```text
-material scope clarification -> $grill-me
-portable behavior contract/spec extraction -> $ghost
+material human choices -> $grill-me
+generic portable library reimplementation contracts -> direct specification work
 historical session mining -> $seq
 one live watched session -> $shadow
-skill change diagnosis -> $tune only if explicitly requested
-skill package edits -> $refine only after explicit apply authority
+skill diagnosis -> $tune only when explicitly requested
+skill edits -> $refine only after explicit apply authority
 ```
 
-`$tune` and `$refine` are optional downstream consumers, not part of the core emulator lifecycle.
-
-## Inputs
+## Request
 
 Prefer:
 
 ```yaml
 emulator_request:
   mode: design | implement | run | mutate | compare | export
-  source_contract:
-    kind: ghost_package | ghost_scenario_tests | emulator_contract
+  source:
+    kind: repository | specification | tests | traces | user_design | existing_contract | mixed
     path:
+    revision:
     fingerprint:
+    evidence_refs: []
+  contract_path: codex/emulators/<target>/emulator-spec.yaml
   target:
     name:
     kind: skill | agent_loop | tool_loop | workflow | library_protocol
   emulator_root: codex/emulators
-  implementation_kinds:
-    - deterministic
-    - noisy
-    - adversarial
-    - mutation
+  implementation_kinds: [deterministic, noisy, adversarial, mutation]
   seed:
   scenario_budget:
   authorized_files:
@@ -70,9 +72,10 @@ emulator_request:
     forbidden: []
   output:
     report: EER-v1
+    trajectories: true
 ```
 
-Fail closed when the source contract is absent or the target is unknown.
+An existing contract is optional. Fail closed only when neither a valid contract nor enough evidence and explicit user decisions exist to author one.
 
 ## Modes
 
@@ -80,157 +83,139 @@ Choose exactly one mode.
 
 ### design
 
-Inspect a Ghost-style contract and produce an emulator design plan.
-
-No files are changed unless the user explicitly requests implementation.
+Author or repair `emulator-spec.yaml`. Do not generate runtime files.
 
 ### implement
 
-Create or update emulator implementation files inside the authorized emulator directory.
+Validate an existing contract or author the missing contract first, then generate or update the executable environment inside the authorized emulator directory.
 
-Do not edit the source Ghost package unless the user explicitly asks for contract repair.
-
-Do not edit target skills.
+Do not edit source repositories or target skills without explicit authority.
 
 ### run
 
-Execute seeded scenarios against one or more emulator implementations.
-
-Capture traces, state transitions, oracle results, and skipped-case reasons.
+Execute seeded scenarios against one or more implementations or agents. Capture observations, actions, tool interactions, state transitions, rewards, oracle results, termination, and skips.
 
 ### mutate
 
-Generate scenario variants from the contract while preserving declared invariants.
-
-Use mutations to find smaller counterexamples, wider boundary coverage, and oracle gaps.
+Generate contract-admissible variants and shrink failures. An invariant-breaking mutation must be explicitly labeled as a negative or boundary case.
 
 ### compare
 
-Compare multiple synthetic implementations against the same contract.
-
-Classify differences as contract ambiguity, emulator bug, oracle gap, nondeterminism, or behavior gap.
+Compare implementations or agents against the same contract. Classify differences as contract ambiguity, emulator bug, oracle gap, nondeterminism, behavior gap, or source-contract gap.
 
 ### export
 
-Emit an `emulator_execution_report / EER-v1`.
+Emit EER-v1 and requested trajectory, counterexample, or curriculum datasets.
 
-Only produce `$tune`-compatible evidence when the user explicitly asks to use emulator findings to improve a skill.
+`$tune` and `$refine` are optional downstream consumers, never implicit parts of this lifecycle.
 
-## Source contract rules
+## Contract ownership
 
-The preferred source is a Ghost scenario-layout package:
+`emulator-spec.yaml` is the single normative contract. Its contract fingerprint is the SHA-256 digest of the finalized file's exact UTF-8 bytes.
 
-```text
-SPEC.md
-tests.yaml
-TESTS_SCHEMA.md
-VERIFY.md
-verification/evidence/*
-```
-
-Treat `tests.yaml` as the behavior contract.
-
-Treat `SPEC.md` as explanatory and normative only where the Ghost package marks it as binding.
-
-Treat `VERIFY.md` and `verification/evidence/*` as provenance and confidence evidence.
-
-If the Ghost package is incomplete, report the missing contract surface instead of inventing it.
-
-## Synthetic implementations
-
-Generate implementations from the same contract, such as:
+A contract declares one origin:
 
 ```text
-deterministic  exact, reproducible state-machine execution
-noisy          latency, partial failure, retries, stochastic user behavior
-adversarial    hostile inputs, prompt injection, misleading tool output
-mutation       systematic perturbation and counterexample shrinking
+source_faithful  source behavior is being reproduced
+designed         explicit user intent defines the world
+mixed            source behavior is the baseline with explicit deviations
 ```
 
-Each implementation must declare:
+Rules about source behavior must be grounded in executable tests, captured traces, public interfaces, schemas, source behavior, or non-contradicted normative documentation. Designed behavior must be grounded in explicit user decisions.
 
-```yaml
-implementation:
-  id:
-  kind:
-  source_contract_fingerprint:
-  seed_policy:
-  supported_scenarios: []
-  oracle_surface:
-  nondeterminism:
-  limitations: []
-```
+Every normative scenario rule, permission, side-effect boundary, terminal condition, oracle, reward, and mutation dimension must cite its authority. Assumptions may fill non-critical description only; never infer safety, security, authority, hidden truth, side effects, reward, or termination.
 
-## Runtime traces
-
-Capture enough evidence to reproduce and explain behavior:
+Normalize nondeterminism into explicit inputs:
 
 ```text
-scenario id
-case id
-implementation id
-seed
-initial visible state
-hidden ground truth fingerprint
-tool surface
-user/actor events
-tool calls and responses
-state mutations
-trace invariants checked
-oracle results
-final state
-failure labels
-counterexample data
+seed, time, timezone, locale, latency, failure schedule,
+actor stochasticity, message ordering, collection normalization
 ```
 
-Do not rely on final text matching when state or trace assertions can express the outcome.
+Read `references/emulator-contract-profile.md` when authoring or validating the contract.
 
-## Oracle policy
+## Workflow
 
-Prefer deterministic oracles:
+1. Bind the target, authority source or user design, revision when applicable, origin, and output path.
+2. Inspect discoverable tests, traces, interfaces, schemas, behavior, and normative docs.
+3. Use `$grill-me` only for unresolved material choices.
+4. Author or validate `emulator-spec.yaml`.
+5. Generate the requested environment implementations.
+6. Run, mutate, compare, or export as requested.
+7. Report exact contract gaps instead of inventing missing normative behavior.
+
+## Environment laws
+
+Every generated environment must expose semantic equivalents of:
 
 ```text
-state assertions
-trace invariants
-forbidden tool checks
-side-effect checks
-budget and step limits
-schema assertions
+reset(scenario_id, seed) -> initial observation
+observe() -> current agent-visible observation
+step(action) -> observation, reward, done, termination reason, oracle results
+score() -> deterministic score and invariant summary
+trace() -> replayable execution trace
 ```
 
-Use model judgment only when deterministic checks cannot express the criterion.
+Hidden ground truth belongs to the environment and oracles. It reaches the agent only through contracted observations or tool results.
 
-Never let a model judge be the sole authority for safety-critical behavior.
+The same deterministic implementation, contract fingerprint, scenario, seed, recorded action sequence, and oracle version must reproduce the same environment observations, state transitions, and terminal result.
 
-When an oracle fails, classify whether the likely problem is:
+A failed hard oracle or trace invariant cannot be overridden by reward or model judgment.
+
+## Implementations and traces
+
+Implementations may be:
 
 ```text
-contract_ambiguity
-emulator_bug
-oracle_gap
-nondeterminism
-behavior_gap
-source_contract_gap
+deterministic  exact state-machine execution
+noisy          seeded latency, failures, retries, and actor noise
+adversarial    hostile inputs, injection, misleading outputs, hidden-state traps
+mutation       declared perturbations and counterexample shrinking
 ```
+
+Each declares its id, kind, contract fingerprint, supported scenarios, seed policy, oracle surface, nondeterminism, and limitations.
+
+Each episode records:
+
+```text
+episode/scenario/case/agent/implementation ids and agent fingerprint
+contract fingerprint, seed, recorded actions, and oracle version
+visible observations and hidden-state fingerprint
+actions, tool calls/results, state mutations, and rewards
+oracle and invariant results
+final state, termination, failure labels, and counterexample data
+```
+
+Read `references/synthetic-implementations.md` when generating environments.
+
+## Oracle and learning policy
+
+Prefer deterministic state, trace, tool, side-effect, schema, budget, and terminal assertions. Model judgment may support criteria that deterministic checks cannot express, but it is never sole authority for safety-critical behavior.
+
+EER-v1 is the run-level evidence record. When requested, also emit:
+
+```text
+trajectories.jsonl
+counterexamples.jsonl
+curriculum.jsonl
+```
+
+Every dataset row binds the contract fingerprint, episode identities, agent fingerprint, implementation, seed, recorded actions, trace, terminal status, and oracle result.
+
+A counterexample becomes a binding regression only after adoption into `emulator-spec.yaml`.
 
 ## Output
 
-Default report:
-
 ```text
 Emulated:
-- Source contract:
-- Target:
-- Mode:
-- Implementations:
-- Seed:
-- Scenario budget:
+- Source and origin:
+- Contract and fingerprint:
+- Target and mode:
+- Implementations and agents:
+- Seed and scenario budget:
 
 Run summary:
-- Executed:
-- Passed:
-- Failed:
-- Skipped:
+- Executed / passed / failed / skipped:
 
 Findings:
 - Divergences:
@@ -240,25 +225,26 @@ Findings:
 - Candidate regressions:
 
 Artifacts:
+- Environment:
 - Traces:
-- Report:
+- Datasets:
 - EER-v1:
 
 Next route:
 - none | repair-contract | build-more-implementations | export-eval-dataset | optional-handoff-tune
 ```
 
-Use `optional-handoff-tune` only when the user explicitly asks to improve a skill from emulator evidence.
+Use `optional-handoff-tune` only after explicit skill-improvement intent.
 
 ## Hard rules
 
-- `$grill-me` decides material user judgments; `$emulator` does not.
-- `$ghost` owns portable contract generation; `$emulator` consumes the contract.
-- Do not edit target skills.
-- Do not assume emulator failures imply skill defects.
-- Do not route to `$tune` or `$refine` unless skill improvement is explicit.
-- Preserve seeds, fingerprints, implementation IDs, and oracle versions.
-- Every exported failure must have a trace, fixture, or skipped-case reason.
-- Prefer contract-faithful implementation over creative scenario invention.
-- Prefer deterministic checks over model-judged checks.
-- Report source-contract gaps instead of filling them silently.
+- `$emulator` owns emulator contract authoring and environment generation.
+- `$grill-me` owns unresolved material human judgments.
+- Keep one normative `emulator-spec.yaml`.
+- Attribute every normative rule; do not silently invent behavior.
+- Preserve contract, scenario, case, implementation, agent, seed, and oracle identities.
+- Keep hidden truth out of uncontracted agent observations.
+- Every exported failure has a trace, fixture, or skip reason.
+- Prefer contract-faithful behavior and deterministic checks.
+- Do not edit target skills or infer skill defects from emulator failures.
+- Do not invoke `$tune` or `$refine` without explicit skill-improvement intent.
