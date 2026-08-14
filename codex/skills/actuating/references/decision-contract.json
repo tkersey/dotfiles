@@ -114,7 +114,7 @@
         "required_artifacts": [
           "goal-contract/v3",
           "counterexample-set/v1 when classified findings exist",
-          "construction-contract/v5",
+          "construction-contract/v6",
           "actuating-evidence-event/v1"
         ],
         "success_signals": [
@@ -148,7 +148,7 @@
         "required_artifacts": [
           "current Goal",
           "exact predecessor subject",
-          "construction-contract/v5",
+          "construction-contract/v6",
           "content-addressed construction-registration receipt wrappers"
         ],
         "success_signals": [
@@ -248,7 +248,7 @@
         "required_artifacts": [
           "current Goal",
           "complete Counterexample Theory",
-          "construction-contract/v5"
+          "construction-contract/v6"
         ],
         "success_signals": [
           "First Principles freezes an incumbent-independent basis before Universalist nomination",
@@ -280,7 +280,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "current construction-contract/v5",
+          "current construction-contract/v6",
           "exact clean current subject",
           "current-subject verifier receipts"
         ],
@@ -350,7 +350,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "current Goal",
-          "current construction-contract/v5",
+          "current construction-contract/v6",
           "complete applicable Counterexample Theory",
           "current-subject realization closure and retirement receipts",
           "current Ship evidence when required",

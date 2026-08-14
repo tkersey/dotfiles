@@ -14,21 +14,24 @@ After `$ledger ensure`, require Ledger 1.x,
 definition. When session evidence is needed, require Seq 1.x and
 `seq-observation-abi/v1`.
 
-`construction-contract/v5` is a hard cut. v1-v4 artifacts and Evidence logs are
-historical only. v5 uses:
+`construction-contract/v6` is a hard cut for new authority. v1-v5 artifacts
+and Evidence logs remain historical and continue to validate only under their
+original versioned definitions. v6 uses:
 
 ```text
-actuation-v5/{goal}/evidence.jsonl
+actuation-v6/{goal}/evidence.jsonl
 ```
 
-Do not replay older event bodies under the v5 definition or reinterpret their
-Construction bytes.
+Do not replay older event bodies under the v6 definition or reinterpret their
+Construction bytes. The historical `construction-contract.json`,
+`construction-registration-receipt.json`, and `evidence-protocol.json` retain
+the v5/v1/actuation-v5 formats; new work uses their v6/v2/v6 successors.
 
-An unbound v5 log fails closed. Bind one exact valid history once:
+An unbound v6 log fails closed. Bind one exact valid history once:
 
 ```bash
 ledger transact \
-  --definition <actuating-root>/definitions/ledger/evidence-protocol.json \
+  --definition <actuating-root>/definitions/ledger/evidence-protocol-v6.json \
   --operation bind-existing \
   --repo <repo> \
   --param goal=<goal-id> \
@@ -57,16 +60,17 @@ review-entry lineage.
 
 ## Construction registration packet
 
-Before mutation, materialize `construction-contract/v5` and every predecessor
-`actuating-verifier-receipt/v1` wrapped by `actuating-construction-registration-receipt/v1` metadata. Register them together:
+Before mutation, materialize `construction-contract/v6` and every predecessor
+`actuating-verifier-receipt/v1` wrapped by
+`actuating-construction-registration-receipt/v2` metadata. Register them together:
 
 ```yaml
-schema: actuating-construction-registration/v2
+schema: actuating-construction-registration/v3
 goal_id:
 construction_ref:
 subject_digest:
 body:
-  schema: actuating-construction-registration-body/v2
+  schema: actuating-construction-registration-body/v3
   construction: {}
   receipts: []
 ```
@@ -85,12 +89,15 @@ predecessor Construction; initial registration has no predecessor receipt packet
 exact predecessor subject
 step
 exact verifier argv
+canonical verifier argv digest
 exit status
 output digests
 ```
 
-The v5 construction registration independently recomputes each wrapper
+The v6 construction registration independently recomputes each wrapper
 `receipt_ref`; a copied or altered receipt is rejected.
+The wrapper obligation equals the nested verifier step, and its verifier argv
+digest equals the digest declared by that exact Construction proof obligation.
 
 Construction registration exact-matches:
 
@@ -98,6 +105,9 @@ Construction registration exact-matches:
 - predecessor Construction and factor inventory when one exists;
 - complete accepted Counterexample coverage;
 - every carrier claim's predecessor subject;
+- the retained live subject across a Goal-only successor transition;
+- successor Counterexample refs equal the retained accepted class register,
+  with no stale Counterexample Set ref on the no-findings lineage route;
 - every claim receipt ref, claim id, obligation, and purpose;
 - receipt Goal, predecessor Construction, subject, and successful exit status;
 - recurrence proof strength and concrete structural resolution;

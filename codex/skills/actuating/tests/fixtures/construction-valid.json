@@ -1,0 +1,228 @@
+{
+  "artifact": {
+    "artifact_id": null,
+    "created_at": "2026-08-14T00:00:00Z",
+    "goal_id": "actuating-repair",
+    "payload": {
+      "goal_contract_ref": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "subject": {
+        "repository": "tkersey/dotfiles",
+        "base_artifact_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "boundary": {
+        "boundary_key": "actuating-admission",
+        "source_worlds": ["review-evidence"],
+        "target_worlds": ["edit-authority"],
+        "admitted_domain": "proved construction relations",
+        "carrier_element_refs": ["element.owner"],
+        "operation_element_refs": ["element.owner"],
+        "observation_element_refs": ["element.owner"],
+        "compatibility_constraints": []
+      },
+      "architecture": {
+        "canonical_owner": "actuating",
+        "governing_law_refs": ["law.owner"],
+        "interpreter_or_handler": "Ledger admission",
+        "representation_or_machine": "construction-contract/v6",
+        "residual_assumptions": [],
+        "selected_construction": "relation-proved admission"
+      },
+      "counterexample_class_refs": [],
+      "counterexample_theory": {
+        "set_refs": [],
+        "generator_class_refs": [],
+        "instance_specific_class_refs": [],
+        "instance_specific_classes": [],
+        "causal_generators": []
+      },
+      "semantic_model": {
+        "kind": "structural",
+        "element_refs": ["element.owner"],
+        "elements": [
+          {
+            "element_id": "element.owner",
+            "kind": "owner",
+            "owner": "actuating",
+            "statement": "Actuating owns admission authority.",
+            "law_refs": ["law.owner"],
+            "observation_refs": ["observation.admission"]
+          }
+        ],
+        "equations": []
+      },
+      "carrier_claim_refs": ["claim.owner"],
+      "carrier_claims": [
+        {
+          "claim_id": "claim.owner",
+          "element_ref": "element.owner",
+          "disposition": "absent",
+          "predecessor_construction_ref": null,
+          "predecessor_subject_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "predecessor_factor_refs": [],
+          "presence_obligation_ref": null,
+          "closure_obligation_ref": null,
+          "negative_obligation_ref": "obligation.impl",
+          "presence_receipt_ref": null,
+          "closure_receipt_ref": null,
+          "negative_receipt_ref": null,
+          "structural_resolution_refs": ["factor.owner"]
+        }
+      ],
+      "falsified_predecessor_claims": [],
+      "preserved_predecessor_claims": [],
+      "invalid_states_eliminated": ["unproved admission"],
+      "preserved_observations": ["valid construction admits"],
+      "proof_obligations": [
+        {
+          "adequacy_reason": "The verifier exercises the admission law.",
+          "falsifier": {"argv": ["false"]},
+          "law_ref": "law.owner",
+          "obligation_id": "obligation.impl",
+          "owner_boundary": "actuating",
+          "proof_kind": "implementation",
+          "proof_mode": "property-law",
+          "statement": "Unproved relations are rejected.",
+          "verifier": {"argv": ["true"]},
+          "verifier_argv_digest": "sha256:cb63328916901bf13ee6c94ac81e38c4d9b5661bb0f199db6f6e3db033518d61"
+        }
+      ],
+      "recompilation": {
+        "counterexample_set_ref": null,
+        "evaluated_class_refs": [],
+        "candidates": [
+          {
+            "candidate_id": "candidate.selected",
+            "derivation": "incumbent-independent",
+            "status": "selected",
+            "summary": "The existing authority boundary with exact relational laws.",
+            "boundary": {
+              "boundary_key": "actuating-admission",
+              "source_worlds": ["review-evidence"],
+              "target_worlds": ["edit-authority"],
+              "admitted_domain": "proved construction relations",
+              "carrier_element_refs": ["element.owner"],
+              "operation_element_refs": ["element.owner"],
+              "observation_element_refs": ["element.owner"],
+              "compatibility_constraints": []
+            },
+            "architecture": {
+              "canonical_owner": "actuating",
+              "governing_law_refs": ["law.owner"],
+              "interpreter_or_handler": "Ledger admission",
+              "representation_or_machine": "construction-contract/v6",
+              "residual_assumptions": [],
+              "selected_construction": "relation-proved admission"
+            },
+            "semantic_model": {
+              "kind": "structural",
+              "element_refs": ["element.owner"],
+              "elements": [
+                {
+                  "element_id": "element.owner",
+                  "kind": "owner",
+                  "owner": "actuating",
+                  "statement": "Actuating owns admission authority.",
+                  "law_refs": ["law.owner"],
+                  "observation_refs": ["observation.admission"]
+                }
+              ],
+              "equations": []
+            },
+            "factor_refs": ["factor.owner"],
+            "factors": [
+              {
+                "description": "Exact relation checks at admission.",
+                "factor_id": "factor.owner",
+                "kind": "law-owner",
+                "law_refs": ["law.owner"],
+                "observation_refs": ["observation.admission"],
+                "owner": "actuating"
+              }
+            ],
+            "law_refs": ["law.owner"],
+            "observation_refs": ["observation.admission"],
+            "residual_obligations": [],
+            "falsifier": "A self-declared reference admits without resolving."
+          }
+        ],
+        "selected_candidate_id": "candidate.selected",
+        "adjudication": {
+          "selected_reason": "It is the smallest owner-exact repair.",
+          "reduction_disposition": "minimal",
+          "reduction_reason": "No new authority layer is introduced.",
+          "falsifier": "A smaller change proves every relation."
+        }
+      },
+      "normal_form": {
+        "mandatory_obligation_refs": ["obligation.impl"],
+        "causal_generator_refs": [],
+        "arrival_order_invariance_falsifier": "Finding order changes the construction.",
+        "disposition": "normal",
+        "incomparable_candidate_refs": []
+      },
+      "semantic_surface": {
+        "predecessor_factor_refs": [],
+        "predecessor_factors": [],
+        "successor_factor_refs": ["factor.owner"],
+        "successor_factors": [
+          {
+            "description": "Exact relation checks at admission.",
+            "factor_id": "factor.owner",
+            "kind": "law-owner",
+            "law_refs": ["law.owner"],
+            "observation_refs": ["observation.admission"],
+            "owner": "actuating"
+          }
+        ]
+      },
+      "realization": {
+        "element_bindings": [
+          {
+            "element_ref": "element.owner",
+            "factor_ref": "factor.owner",
+            "owner_boundary": "actuating",
+            "constructor_or_representation": "Ledger construction admission",
+            "realization_paths": ["codex/skills/actuating/SKILL.md"],
+            "proof_refs": ["obligation.impl"],
+            "closure_obligation_ref": "obligation.impl"
+          }
+        ],
+        "proof_bindings": [
+          {
+            "obligation_ref": "obligation.impl",
+            "proof_paths": ["codex/skills/actuating/SKILL.md"]
+          }
+        ],
+        "unmapped_production_surface": [],
+        "unmapped_proof_surface": [],
+        "retirement_witness_refs": []
+      },
+      "supersession": {
+        "preserved_factor_refs": [],
+        "retired_factor_refs": [],
+        "introduced_factor_refs": ["factor.owner"],
+        "replacement_relations": [],
+        "essential_additions": [
+          {
+            "factor_ref": "factor.owner",
+            "law_refs": ["law.owner"],
+            "proof_refs": ["obligation.impl"],
+            "rationale": "The admission boundary needs one exact law owner."
+          }
+        ],
+        "surface_completeness_proof_ref": "obligation.impl"
+      },
+      "retirements": [],
+      "execution": {
+        "allowed_paths": ["codex/skills/actuating/SKILL.md"],
+        "owner_boundary": "actuating",
+        "operation_effects": ["edit", "inspect", "verify"],
+        "completion": "ready-to-ship"
+      }
+    },
+    "predecessor_refs": [],
+    "schema": "construction-contract/v6",
+    "semantic_author": "actuating",
+    "supporting_refs": []
+  }
+}
