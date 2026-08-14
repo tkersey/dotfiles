@@ -1,13 +1,13 @@
 ---
 name: ledger
-description: "Ensure Ledger 1.0.3 or newer within major version 1 is available and use its passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, bind, rebind, and recover owner-defined artifacts and stores. Use for native Ledger operations, definition authoring or debugging, ABI and capability inspection, and exact storage custody. The owning skill supplies semantics and selects the operation; Ledger enforces the selected definition without acquiring workflow authority."
+description: "Ensure Ledger 1.1.0 or newer within major version 1 is available and use its passive-definition runtime to validate, canonicalize, materialize, transact, replay, project, doctor, migrate segmented logs, bind, rebind, and recover owner-defined artifacts and stores. Use for native Ledger operations, definition authoring or debugging, ABI and capability inspection, and exact storage custody. The owning skill supplies semantics and selects the operation; Ledger enforces the selected definition without acquiring workflow authority."
 ---
 
 # Ledger
 
 ## Mission
 
-Provide the shared bootstrap and operating doctrine for Ledger 1.0.3 or newer
+Provide the shared bootstrap and operating doctrine for Ledger 1.1.0 or newer
 within major version 1: a bounded, deterministic artifact-protocol runtime
 driven by passive definitions owned by their semantic domains.
 
@@ -66,7 +66,7 @@ directly:
 ledger <native-ledger-arguments...>
 ```
 
-The handler requires Ledger 1.0.3 or newer within major version 1 and
+The handler requires Ledger 1.1.0 or newer within major version 1 and
 `ledger-artifact-abi/v1`. When installation authority exists, it can install
 or upgrade the canonical Homebrew formula `tkersey/tap/ledger`. It does not
 proxy native commands. The native CLI owns integrity, stdout, stderr, exit
@@ -105,6 +105,7 @@ ledger materialize
 ledger transact
 ledger project
 ledger doctor
+ledger migrate-segmented
 ledger recovery inspect
 ledger recovery reclaim
 ledger capabilities

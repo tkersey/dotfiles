@@ -11,9 +11,10 @@ duplicating every schema field.
 
 ## Runtime and version gate
 
-After `$ledger ensure` once for the workflow, require Ledger 1.x,
-`ledger-artifact-abi/v1`, and successful checks for the selected Actuating
-Ledger definitions. When session evidence is needed, require Seq 1.x,
+After `$ledger ensure` once for the workflow, require Ledger 1.1.0 or newer,
+`ledger-artifact-abi/v1`, the segmented event-log capability flags, and
+successful checks for the selected Actuating Ledger definitions. When session
+evidence is needed, require Seq 1.x,
 `seq-observation-abi/v1`, and a successful check of the selected observation
 definition.
 
