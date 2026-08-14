@@ -6,7 +6,7 @@ The kernel has exactly four authoritative per-goal artifact families.
 |---|---|---|
 | `goal-contract/v3` | accepted source through `$goal-contract` | What must be true, remain true, and is authorized? |
 | `counterexample-set/v1` | `$review-fold` | What witnessed behavior falsifies a current Construction claim? |
-| `construction-contract/v4` | `$actuating` using `$universalist` | Given the complete current Counterexample Theory, what semantic model and normalized realization should exist? |
+| `construction-contract/v5` | `$actuating` using `$universalist` | Given the complete current Counterexample Theory, what semantic model and normalized realization should exist? |
 | `actuating-evidence-event/v1` | the event body's domain owner | What happened and what was independently observed? |
 
 The Goal Contract is the sole semantic-authority artifact. The Counterexample
@@ -66,7 +66,7 @@ Artifact bytes, verifier logs, tests, CAS receipts, and Ship receipts remain
 owner-issued content-addressed attachments. Plans, local analyses,
 and historical diff folds are discardable aids. The selected normal form,
 causal basis, semantic model, realization bindings, proof obligations, and
-retirements live in `construction-contract/v4`; no Review Path artifact or separate accretion disposition is added.
+retirements live in `construction-contract/v5`; no Review Path artifact or separate accretion disposition is added.
 
 The Actuating subject is the deterministic SHA-256 identity of one clean Git
 commit target: repository identity, commit OID, and tree OID. Dirty state is
@@ -80,11 +80,10 @@ complete current Goal and Counterexample Theory are.
 
 ## Version cut
 
-`construction-contract/v4` supersedes v3 for new selection or mutation. A v3
-artifact may be inspected as historical evidence but cannot authorize another
-affected mutation. Start a fresh v4 goal-local Evidence store when current
-passive definitions cannot replay a mixed lineage without weakening structural
-validation. Do not reinterpret v3 bytes as v4.
+`construction-contract/v5` supersedes v1-v4 for new selection or mutation.
+Earlier artifacts may be inspected as historical evidence but cannot authorize
+another affected mutation. Start a fresh v5 goal-local Evidence store; never
+replay or reinterpret v1-v4 Construction bytes under the v5 definitions.
 
 ## Bankruptcy gate
 
