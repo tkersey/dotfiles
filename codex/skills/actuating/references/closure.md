@@ -6,12 +6,12 @@ Actuating alone applies it, selects the next action, and authors
 structural facts but never emits the verdict.
 
 ```text
-Close(G, K4, Q*, E, R, current_subject)
+Close(G, K5, Q*, E, R, current_subject)
   -> continue | ready-to-ship | complete | blocked
 ```
 
-`G` is the current Goal Contract. `K4` is the current
-`construction-contract/v4`. `Q*` is the complete applicable Counterexample
+`G` is the current Goal Contract. `K5` is the current
+`construction-contract/v5`. `Q*` is the complete applicable Counterexample
 Theory derived from current and predecessor Sets. `E` is the Evidence Ledger and
 `R` the static Review Contract.
 
@@ -19,9 +19,9 @@ Theory derived from current and predecessor Sets. `E` is the Evidence Ledger and
 
 A terminal judgment is legal only when every applicable statement holds:
 
-1. `K4` references the current `G`, is the current Construction, and its base
+1. `K5` references the current `G`, is the current Construction, and its base
    subject plus recorded effect chain yields the exact clean live subject.
-2. `K4.counterexample_class_refs` is the complete set of currently applicable
+2. `K5.counterexample_class_refs` is the complete set of currently applicable
    accepted classes across the Goal lineage. Every class maps to one causal
    generator or an evidenced instance-specific exception.
 3. Every Goal law and causal generator has a selected semantic-model element,

@@ -41,6 +41,10 @@
       "path": "ledger/construction-factor.json"
     },
     {
+      "id": "actuating/construction-registration-receipt",
+      "path": "ledger/construction-registration-receipt.json"
+    },
+    {
       "id": "actuating/construction-semantic-element",
       "path": "ledger/construction-semantic-element.json"
     },
