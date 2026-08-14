@@ -16,7 +16,7 @@ usage:
 
 Ensures a ledger command resolves on PATH. With --install, installs the native
 Ledger CLI's Homebrew formula when ledger is missing or upgrades it when the
-installed CLI does not satisfy readiness. Readiness requires Ledger 1.0.3 or
+installed CLI does not satisfy readiness. Readiness requires Ledger 1.1.0 or
 newer within major version 1 and ledger-artifact-abi/v1. The handler does not
 proxy native commands.
 EOF
@@ -50,13 +50,12 @@ inspect_availability() {
 }
 
 inspect_readiness() {
-  local capabilities line minor patch
+  local capabilities capabilities_json line minor
   local abi_found=false
   ledger_version="$("$ledger_path" version 2>/dev/null || true)"
   [[ "$ledger_version" =~ ^1\.([0-9]+)\.([0-9]+)$ ]] || return 1
   minor="${BASH_REMATCH[1]}"
-  patch="${BASH_REMATCH[2]}"
-  if ((10#$minor == 0 && 10#$patch < 3)); then
+  if ((10#$minor < 1)); then
     return 1
   fi
   capabilities="$("$ledger_path" capabilities --format text 2>/dev/null || true)"
@@ -67,6 +66,15 @@ inspect_readiness() {
     fi
   done <<<"$capabilities"
   [[ "$abi_found" == true ]] || return 1
+  capabilities_json="$("$ledger_path" capabilities --format json 2>/dev/null || true)"
+  for feature in \
+    bounded_checkpoint_replay_v1 \
+    full_history_doctor_v1 \
+    segmented_event_log_v1 \
+    segmented_migration_v1
+  do
+    grep -Fq "\"$feature\":true" <<<"$capabilities_json" || return 1
+  done
   ledger_abi="ledger-artifact-abi/v1"
 }
 
@@ -102,11 +110,11 @@ upgrade_cli() {
   if [[ "$os" != "Darwin" && "$os" != "Linux" ]] ||
     ! command -v brew >/dev/null 2>&1
   then
-    emit_error "version-or-abi-mismatch" "Install or upgrade $formula to Ledger 1.0.3 or newer within major version 1 with ledger-artifact-abi/v1, then retry."
+    emit_error "version-or-abi-mismatch" "Install or upgrade $formula to Ledger 1.1.0 or newer within major version 1 with ledger-artifact-abi/v1, then retry."
     return 2
   fi
   if ! brew list --versions "$formula" >/dev/null 2>&1; then
-    emit_error "version-or-abi-mismatch-nonformula" "Replace the current ledger with $formula 1.0.3 or newer within major version 1, then retry."
+    emit_error "version-or-abi-mismatch-nonformula" "Replace the current ledger with $formula 1.1.0 or newer within major version 1, then retry."
     return 2
   fi
   if ! brew upgrade "$formula" >&2; then
@@ -160,7 +168,7 @@ if ! inspect_readiness; then
     exit 2
   }
   if ! inspect_readiness; then
-    emit_error "post-upgrade-version-or-abi-mismatch" "Verify $formula provides Ledger 1.0.3 or newer within major version 1 and ledger-artifact-abi/v1."
+    emit_error "post-upgrade-version-or-abi-mismatch" "Verify $formula provides Ledger 1.1.0 or newer within major version 1 and ledger-artifact-abi/v1."
     exit 2
   fi
 fi

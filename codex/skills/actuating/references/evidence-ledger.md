@@ -9,10 +9,12 @@ The passive definitions under `../definitions/ledger/` are normative.
 
 ## Runtime and version gate
 
-After `$ledger ensure`, require Ledger 1.x,
-`ledger-artifact-abi/v1`, and successful checks for every selected Actuating
-definition. When session evidence is needed, require Seq 1.x and
-`seq-observation-abi/v1`.
+After `$ledger ensure` once for the workflow, require Ledger 1.1.0 or newer
+within major version 1, `ledger-artifact-abi/v1`, the segmented event-log
+capability flags, and successful checks for every selected Actuating Ledger
+definition. When session evidence is needed, require Seq 1.x,
+`seq-observation-abi/v1`, and a successful check of the selected observation
+definition.
 
 `construction-contract/v5` is a hard cut. v1-v4 artifacts and Evidence logs are
 historical only. v5 uses:

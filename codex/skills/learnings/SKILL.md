@@ -43,7 +43,7 @@ Do not duplicate every learning into memory notes. For an accepted admission, lo
 ## Canonical Store
 
 Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure`. Require Ledger 1.0.3 or newer within major version 1
+complete `$ledger ensure`. Require Ledger 1.1.0 or newer within major version 1
 and `ledger-artifact-abi/v1`.
 Set:
 
