@@ -1,12 +1,24 @@
 # Synthetic Implementation Patterns
 
-`$emulator` may generate multiple executable implementations from the same Ghost contract.
+`$emulator` may generate multiple executable environments from one `emulator-spec.yaml`.
 
-## Deterministic implementation
+Variation belongs in implementation behavior or contract-declared mutations, not silent changes to normative semantics.
+
+## Common surface
+
+Each implementation provides equivalents of:
+
+```text
+reset(scenario_id, seed)
+observe()
+step(action)
+score()
+trace()
+```
+
+## Deterministic
 
 Use for debugging and reproducible counterexamples.
-
-Properties:
 
 ```text
 fixed seed
@@ -16,67 +28,51 @@ exact oracle checks
 no unmodeled time or randomness
 ```
 
-## Noisy implementation
+The same contract fingerprint, implementation id, scenario, seed, recorded action sequence, and oracle version must reproduce the same environment observations, state transitions, and terminal result.
+
+## Noisy
 
 Use for production-like reliability testing.
 
-Possible perturbations:
-
 ```text
 tool latency
-transient errors
-partial failures
-retryable failures
+transient or partial failures
+retries
 actor hesitation
-message ordering noise
+message-order noise
 irrelevant context
 ```
 
-All noise must be seed-controlled and trace-recorded.
+All noise must be contract-admissible, seed-controlled, and trace-recorded.
 
-## Adversarial implementation
+## Adversarial
 
-Use to test security, safety, and robustness boundaries.
-
-Possible perturbations:
+Use for security, safety, and robustness boundaries.
 
 ```text
-prompt injection in tool output
+injection in tool output
 misleading user claims
 conflicting instructions
-forbidden tool temptations
-malformed tool responses
-stale policy snippets
+forbidden-tool temptations
+malformed responses
+stale information
 hidden-state traps
 ```
 
-The implementation must preserve the contract's declared invariants.
+The world must preserve its contracted laws while presenting adversarial observations.
 
-## Mutation implementation
+## Mutation
 
-Use to explore nearby cases and shrink failures.
+Use declared mutation dimensions to explore nearby cases and shrink failures.
 
-Mutation dimensions may include:
-
-```text
-remove a visible fact
-swap tool response order
-rename an entity
-change a threshold
-add irrelevant noise
-delay a tool
-make hidden ground truth contradict the user's claim
-```
-
-Do not mutate a scenario in a way that invalidates the source contract unless the mutation is explicitly marked as a negative/boundary case.
+An invariant-breaking mutation must be labeled as a negative or boundary case. Do not mutate outside the contract and claim conformance.
 
 ## Artifact layout
-
-Recommended output:
 
 ```text
 codex/emulators/<target>/
   emulator-spec.yaml
+  env-manifest.yaml
   implementations/
     deterministic/
     noisy/
@@ -87,7 +83,29 @@ codex/emulators/<target>/
     mutations/
   traces/
   reports/
+    EER-v1.yaml
+  datasets/
+    trajectories.jsonl
+    counterexamples.jsonl
+    curriculum.jsonl
   evidence/
 ```
 
-Each implementation should be reproducible from source contract fingerprint, implementation id, seed, and oracle version.
+Create only requested artifacts; empty scaffolding has no value.
+
+## Reproducibility
+
+Each implementation declares its id, kind, contract fingerprint, supported scenarios, seed policy, oracle version, nondeterminism, and limitations.
+
+Each episode is reproducible from:
+
+```text
+contract fingerprint
+implementation id
+scenario id
+case id
+seed
+oracle version
+recorded action sequence
+agent id and configuration fingerprint when regenerating actions
+```
