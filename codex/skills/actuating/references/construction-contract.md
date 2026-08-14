@@ -118,6 +118,7 @@ artifact:
           static-refinement | property-law | differential | example-regression
         adequacy_reason:
         verifier: {argv: []}
+        verifier_argv_digest: sha256:...
         falsifier: {argv: []}
         proof_kind: implementation | review | acceptance | ship
 
@@ -220,6 +221,8 @@ identity.
 ## Carrier claims
 
 Every semantic element has exactly one predecessor carrier claim.
+Claim identity does not weaken that function: two distinct claim IDs may not
+name the same `element_ref`.
 
 ### `closed-existing`
 
@@ -232,6 +235,10 @@ one owner without an unchecked bypass. Require:
 
 A closed carrier may still be deliberately replaced. If so,
 `structural_resolution_refs` names the concrete factor delta.
+
+Every predecessor factor ref resolves in `semantic_surface.predecessor_factor_refs`.
+Every structural resolution ref resolves to an introduced factor, retired
+factor, or replacement-relation ID in the same Construction.
 
 ### `open-existing`
 
@@ -329,6 +336,12 @@ Exactly one candidate is selected and at least one is incumbent-independent.
 The selected candidate's complete objects exact-match the top-level boundary,
 architecture, semantic model, and successor factors.
 
+`normal_form` is a projection of the candidate adjudication, not an independent
+claim. `minimal` and `smaller-admissible` yield `normal`; `obstructed` yields
+`obstructed`; and `incomparable` yields `incomparable` with the exact
+incomparable candidate refs. Only the first two dispositions can authorize an
+edit.
+
 A candidate dominates another only when it preserves the complete mandatory
 obligation core and is no worse in every required law, observation,
 Counterexample exclusion, authority, representation, semantic mechanism,
@@ -389,6 +402,7 @@ claim
 obligation
 purpose
 exact verifier argv
+canonical verifier argv digest
 exit status
 output digests
 ```

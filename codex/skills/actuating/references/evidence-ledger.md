@@ -85,12 +85,15 @@ predecessor Construction; initial registration has no predecessor receipt packet
 exact predecessor subject
 step
 exact verifier argv
+canonical verifier argv digest
 exit status
 output digests
 ```
 
 The v5 construction registration independently recomputes each wrapper
 `receipt_ref`; a copied or altered receipt is rejected.
+The wrapper obligation equals the nested verifier step, and its verifier argv
+digest equals the digest declared by that exact Construction proof obligation.
 
 Construction registration exact-matches:
 
@@ -98,6 +101,9 @@ Construction registration exact-matches:
 - predecessor Construction and factor inventory when one exists;
 - complete accepted Counterexample coverage;
 - every carrier claim's predecessor subject;
+- the retained live subject across a Goal-only successor transition;
+- successor Counterexample refs equal the retained accepted class register,
+  with no stale Counterexample Set ref on the no-findings lineage route;
 - every claim receipt ref, claim id, obligation, and purpose;
 - receipt Goal, predecessor Construction, subject, and successful exit status;
 - recurrence proof strength and concrete structural resolution;

@@ -139,7 +139,8 @@ A claim is not evidence merely because Actuating authored it. Every successor
 claim that relies on a predecessor carrier cites content-addressed registration
 receipt wrappers carrying the existing `actuating-verifier-receipt/v1` body,
 bound to the current Goal, exact predecessor Construction and subject, claim,
-obligation, verifier invocation, exit status, and output digests. An initial
+obligation, exact verifier invocation digest, exit status, and output digests.
+The wrapper obligation must equal the nested verifier step. An initial
 Construction claims no predecessor preservation; it introduces the first total
 relation and must prove the realized successor before closure.
 

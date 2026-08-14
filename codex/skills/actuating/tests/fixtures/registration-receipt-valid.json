@@ -1,0 +1,18 @@
+{
+  "claim_id": "claim.owner",
+  "obligation_ref": "obligation.impl",
+  "purpose": "predecessor-presence",
+  "receipt": {
+    "construction_ref": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "exit_status": 0,
+    "goal_contract_ref": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "output_digests": [],
+    "schema": "actuating-verifier-receipt/v1",
+    "step_id": "obligation.impl",
+    "subject_digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "verifier": {"argv": ["true"]}
+  },
+  "receipt_ref": null,
+  "verifier_argv_digest": "sha256:cb63328916901bf13ee6c94ac81e38c4d9b5661bb0f199db6f6e3db033518d61",
+  "schema": "actuating-construction-registration-receipt/v1"
+}
