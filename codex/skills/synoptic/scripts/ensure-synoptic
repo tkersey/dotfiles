@@ -63,12 +63,16 @@ inspect_readiness() {
   local skill_found=false
   local ui_found=false
 
-  version_line="$("$synoptic_path" version 2>/dev/null || true)"
+  if ! version_line="$("$synoptic_path" version 2>/dev/null)"; then
+    return 1
+  fi
   if [[ ! "$version_line" =~ ^synoptic[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?)$ ]]; then
     return 1
   fi
   synoptic_version="${BASH_REMATCH[1]}"
-  capabilities="$("$synoptic_path" capabilities 2>/dev/null || true)"
+  if ! capabilities="$("$synoptic_path" capabilities 2>/dev/null)"; then
+    return 1
+  fi
   while IFS= read -r line; do
     case "$line" in
       synoptic-skill-abi/v1) skill_found=true ;;

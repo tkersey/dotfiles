@@ -118,6 +118,10 @@
 
     state.actions.clear();
     for (const card of Array.isArray(snapshot.actions) ? snapshot.actions : []) state.actions.set(card.id, card);
+    state.approvals.clear();
+    for (const approval of Array.isArray(snapshot.approvals) ? snapshot.approvals : []) {
+      state.approvals.set(approval.approvalId, approval);
+    }
     if (state.activeSessionId && !state.tabs.has(state.activeSessionId)) activateSession(null);
     if (!state.activeSessionId && state.tabs.size) activateSession(Array.from(state.tabs.keys()).at(-1));
     reconcilePendingAfterSnapshot();
@@ -206,10 +210,13 @@
         onSessionStatus(payload);
         break;
       case "session.item.started":
-      case "session.item.delta":
       case "session.item.completed":
         onVisibleItem(payload);
         break;
+      case "session.item.delta":
+        onVisibleItem(payload);
+        if (payload.sessionId === state.activeSessionId) renderReview();
+        return;
       case "session.file_changed":
         markSessionStale(payload.sessionId);
         break;
@@ -321,12 +328,13 @@
     const tab = state.tabs.get(sessionId);
     const status = payload.status || "current";
     if (status === "turn-started") acceptPendingMessage(sessionId);
+    const interrupted = status === "interrupted";
     updateTab(sessionId, {
       status: status === "turn-started" || status === "interrupted" ? tab?.status || "current" : normalizeStatus(status),
       staleOrigin: tab?.staleOrigin || normalizeStatus(status) === "stale_origin",
       completed: tab?.completed || normalizeStatus(status) === "completed",
-      turnActive: status === "turn-started" ? true : Boolean(tab?.turnActive),
-      turnFailed: status === "turn-started" ? false : Boolean(tab?.turnFailed)
+      turnActive: status === "turn-started" ? true : interrupted ? false : Boolean(tab?.turnActive),
+      turnFailed: status === "turn-started" || interrupted ? false : Boolean(tab?.turnFailed)
     });
   }
 
@@ -346,7 +354,7 @@
       return;
     }
     if (method === "approval.requested" && raw.approvalId) {
-      state.approvals.set(raw.approvalId, raw);
+      state.approvals.set(raw.approvalId, Object.assign({}, raw, { sessionId }));
       if (sessionId !== state.activeSessionId) {
         toast(`${state.tabs.get(sessionId)?.path || "Another file session"} needs command approval.`);
       }
@@ -537,9 +545,10 @@
     elements.queue_count.textContent = String(state.queue.length);
     clear(elements.queue);
     for (const file of state.queue) {
+      const item = el("div", "queue-item");
+      item.setAttribute("role", "listitem");
       const row = el("button", "queue-row");
       row.type = "button";
-      row.setAttribute("role", "listitem");
       row.disabled = !state.primaryReady || state.openingPath === file.path;
       if (activeTab()?.path === file.path) row.classList.add("active");
       row.append(el("span", "queue-path", file.path));
@@ -554,7 +563,8 @@
       else if (file.activeSessionId) subline.append(el("span", "", "session open"));
       row.append(subline);
       row.addEventListener("click", () => openFile(file));
-      elements.queue.append(row);
+      item.append(row);
+      elements.queue.append(item);
     }
     elements.queue_empty.classList.toggle("hidden", !state.primaryReady || state.queue.length > 0);
   }
@@ -600,10 +610,12 @@
     elements.diff_title.textContent = tab.path;
     const normalized = tabStatus(tab);
     elements.diff_state.className = `status-pill ${normalized}`;
-    elements.diff_state.textContent = tab.diff?.state === "text" ? "current diff" : tab.diff?.state || "unavailable";
+    const stale = tab.staleOrigin || normalized === "stale_origin";
+    elements.diff_state.textContent = tab.diff?.state === "text" ?
+      stale ? "origin diff" : "current diff" : tab.diff?.state || "unavailable";
     elements.stale_banner.classList.toggle(
       "hidden",
-      !tab.staleOrigin && normalized !== "stale_origin"
+      !stale
     );
     elements.conversation_title.textContent = tab.path;
     elements.session_status.className = `status-pill ${normalized}`;
@@ -849,7 +861,7 @@
     }
   });
   elements.message_input.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
       event.preventDefault();
       elements.message_form.requestSubmit();
     }
