@@ -328,39 +328,52 @@ Expected:
 Input:
 
 ```text
-This output will be read by a human. Run a final Logophile pass.
+This answer will be read by a human. Explain the current repository state.
 ```
 
 Expected:
 
-- do not infer a decision-bearing need from audience alone;
-- invoke only if the user explicitly requests the pass or identifies a live language decision.
+- do not invoke implicitly;
+- audience alone does not make the wording decision-bearing.
+
+### Explicit request still wins
+
+Input:
+
+```text
+Run $logophile as a final pass on this otherwise routine status update.
+```
+
+Expected:
+
+- invoke because the user explicitly requested language work;
+- do not reinterpret the explicit request as proof that routine status updates are implicit triggers.
 
 ### Durable but non-behavioral prose
 
 Input:
 
 ```text
-This historical note will be kept forever. Polish it implicitly.
+This historical note will be stored permanently. Summarize the recorded events.
 ```
 
 Expected:
 
-- durability alone is insufficient;
-- no implicit invocation unless wording affects behavior, interface, authority, obligation, or interpretation.
+- do not invoke implicitly;
+- durability alone is insufficient when wording does not control behavior, interface, authority, obligation, or interpretation.
 
 ### Ephemeral but behavior-bearing language
 
 Input:
 
 ```text
-Write the one-turn prompt that tells the agent which operation it is authorized to perform.
+Before the next tool call, finalize the one-turn authorization prompt that tells the agent exactly which operation it may perform.
 ```
 
 Expected:
 
-- invoke implicitly;
-- the wording controls authority even though the artifact is not durable.
+- invoke without requiring the literal `$logophile` name;
+- the wording controls authority even though the artifact is ephemeral.
 
 ## Safety probes
 
