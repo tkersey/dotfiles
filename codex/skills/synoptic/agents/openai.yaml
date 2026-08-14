@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Synoptic"
+  short_description: "Review pull requests one file at a time"
+  default_prompt: "Use $synoptic to launch the local per-file pull-request review workbench."

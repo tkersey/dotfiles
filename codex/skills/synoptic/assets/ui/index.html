@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Synoptic</title>
+    <link rel="stylesheet" href="/assets/app.css">
+  </head>
+  <body>
+    <div id="app" class="app" aria-busy="true">
+      <header class="topbar">
+        <div class="brand" aria-label="Synoptic">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <div>
+            <strong>Synoptic</strong>
+            <span id="round-label" class="eyebrow">Round 1</span>
+          </div>
+        </div>
+        <div id="pr-summary" class="pr-summary">
+          <span class="skeleton wide"></span>
+        </div>
+        <div class="header-actions">
+          <button id="refresh-button" class="button secondary" type="button">Refresh</button>
+          <button id="finish-button" class="button primary" type="button">Finish round</button>
+          <button id="stop-button" class="icon-button danger" type="button" aria-label="Stop Synoptic" title="Stop Synoptic">×</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="queue-panel" aria-labelledby="queue-heading">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">GitHub queue</span>
+              <h1 id="queue-heading">Unreviewed files</h1>
+            </div>
+            <span id="queue-count" class="count">0</span>
+          </div>
+          <div id="primary-gate" class="primary-gate" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <div>
+              <strong id="primary-gate-title">Building common review context</strong>
+              <span id="primary-gate-detail">File selection unlocks when the first background turn completes.</span>
+            </div>
+          </div>
+          <div id="queue" class="queue" role="list"></div>
+          <div id="queue-empty" class="empty-state hidden">
+            <span class="empty-glyph" aria-hidden="true">✓</span>
+            <strong>No unreviewed files</strong>
+            <span>Refresh when the pull request changes.</span>
+          </div>
+        </aside>
+
+        <section class="review-shell" aria-label="File review workspace">
+          <nav id="tabs" class="tabs" aria-label="Open file sessions" role="tablist"></nav>
+          <div id="welcome" class="welcome">
+            <div class="welcome-card">
+              <span class="welcome-kicker">Per-file review</span>
+              <h2>Choose a file to begin.</h2>
+              <p>Each file opens an independent Codex conversation with the pull request's common context and its current GitHub diff.</p>
+              <div class="law-grid">
+                <span>Findings first</span>
+                <span>Actions require confirmation</span>
+                <span>Completion is explicit</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="review" class="review hidden">
+            <section class="diff-panel" aria-labelledby="diff-title">
+              <div class="pane-heading">
+                <div>
+                  <span class="eyebrow">Pull-request diff</span>
+                  <h2 id="diff-title"></h2>
+                </div>
+                <span id="diff-state" class="status-pill"></span>
+              </div>
+              <div id="stale-banner" class="stale-banner hidden" role="alert">
+                <strong>This file changed after this session began.</strong>
+                <span>The latest revision is back in the review queue. This session remains live and may publish validated comments, but it cannot complete the current file review.</span>
+              </div>
+              <div id="diff" class="diff" tabindex="0"></div>
+            </section>
+
+            <section class="conversation-panel" aria-labelledby="conversation-title">
+              <div class="pane-heading conversation-heading">
+                <div>
+                  <span class="eyebrow">Live Codex session</span>
+                  <h2 id="conversation-title">Conversation</h2>
+                </div>
+                <div class="session-controls">
+                  <span id="session-status" class="status-pill"></span>
+                  <button id="interrupt-button" class="button quiet" type="button">Interrupt</button>
+                  <button id="close-button" class="icon-button" type="button" aria-label="Close session" title="Close session">×</button>
+                </div>
+              </div>
+              <div id="conversation" class="conversation" aria-live="polite"></div>
+              <form id="message-form" class="composer">
+                <label class="sr-only" for="message-input">Message this file session</label>
+                <textarea id="message-input" rows="2" placeholder="Ask about the finding, revise a comment, or explicitly complete the file…"></textarea>
+                <button class="send-button" type="submit" aria-label="Send message">Send</button>
+              </form>
+            </section>
+          </div>
+        </section>
+      </main>
+
+      <div id="global-approvals" class="global-approvals hidden" aria-live="polite"></div>
+      <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    </div>
+    <script src="/assets/app.js" defer></script>
+  </body>
+</html>

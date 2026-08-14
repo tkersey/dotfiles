@@ -1,0 +1,7 @@
+{
+  "schema": "synoptic-ui-manifest/v1",
+  "uiAbi": "synoptic-ui/v1",
+  "requiredSkillAbi": "synoptic-skill-abi/v1",
+  "entry": "index.html",
+  "assets": ["app.css", "app.js"]
+}
