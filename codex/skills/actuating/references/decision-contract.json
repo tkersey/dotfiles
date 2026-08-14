@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "ACT-AK-v4-direct-semantic-kernel-v1"
+      "source_fingerprint": "ACT-AK-v5-mode-free-realization-correspondence-v1"
     },
     "triggers": [
       {
@@ -18,8 +18,8 @@
         "exclusions": []
       },
       {
-        "trigger_id": "ACT-MODE",
-        "description": "Explicit modes select implement, triage, remediation-plan, or review-closeout.",
+        "trigger_id": "ACT-ROUTE",
+        "description": "Explicit routes select implement, triage, remediation-plan, or review-closeout.",
         "cue_literals": [
           "$actuating implement",
           "$actuating triage",
@@ -45,7 +45,7 @@
     "routes": [
       {
         "route_id": "ACT-IMPLEMENT",
-        "description": "Select and completely realize the current normalized Construction.",
+        "description": "Select and completely realize the current Construction.",
         "aliases": [
           "implement"
         ],
@@ -100,7 +100,7 @@
         "clause_id": "ACT-KERNEL-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-MODE"
+          "ACT-ROUTE"
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
@@ -114,29 +114,98 @@
         "required_artifacts": [
           "goal-contract/v3",
           "counterexample-set/v1 when classified findings exist",
-          "construction-contract/v4",
+          "construction-contract/v5",
           "actuating-evidence-event/v1"
         ],
         "success_signals": [
           "exactly four authoritative artifact families",
-          "review findings never select repairs or grant mutation",
-          "Construction v4 is the sole carrier of causal basis semantic model normal form proof realization bindings supersession and retirements",
+          "Construction v5 is a proof-carrying predecessor-successor realization relation",
+          "review findings never select corrections or grant mutation",
           "Actuating alone selects the Construction operation next action review credit and closure",
           "Ledger remains structurally passive and Ship owns every public effect"
         ],
         "failure_signals": [
-          "a fifth authority artifact review-path artifact accretion event or mutable workflow state is introduced",
+          "a fifth authority artifact review-path artifact event kind or mutable workflow state is introduced",
+          "a repair mode change-kind semantic-model disposition or supersession disposition becomes authoritative",
           "Ledger reviewer or supporting skill selects architecture mutation or closure",
           "a public effect bypasses Ship",
-          "v3 bytes are reinterpreted as v4"
+          "v1-v4 bytes are reinterpreted as v5"
         ],
-        "rationale": "Authority remains small while the Construction becomes the complete normal-form decision carrier."
+        "rationale": "Authority remains small while the Construction carries the complete semantic and realization relation."
+      },
+      {
+        "clause_id": "ACT-CORRESPONDENCE-001",
+        "trigger_refs": [
+          "ACT-BARE",
+          "ACT-ROUTE"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-REMEDIATION",
+          "ACT-REVIEW-CLOSEOUT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "current Goal",
+          "exact predecessor subject",
+          "construction-contract/v5",
+          "content-addressed construction-registration receipt wrappers"
+        ],
+        "success_signals": [
+          "every typed semantic element has exactly one predecessor carrier claim",
+          "every typed semantic element has exactly one selected successor factor binding",
+          "every selected factor carries at least one semantic element",
+          "closed-existing claims have exact-subject presence and closure receipts",
+          "open-existing and absent claims name concrete factor deltas",
+          "unresolved claims cannot authorize edit"
+        ],
+        "failure_signals": [
+          "a semantic claim is grounded only by prose or a path",
+          "a receipt is bound to another Goal Construction subject claim or obligation",
+          "absence is inferred from failure to find evidence",
+          "a mega-factor cannot identify one coherent owner-controlled construction surface",
+          "predecessor evidence is treated as successor closure evidence"
+        ],
+        "rationale": "Correct-by-construction requires a total interpretation from semantic declarations to evidenced code carriers."
+      },
+      {
+        "clause_id": "ACT-DELTA-001",
+        "trigger_refs": [
+          "ACT-BARE",
+          "ACT-ROUTE"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-REMEDIATION",
+          "ACT-REVIEW-CLOSEOUT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "current or baseline predecessor relation",
+          "selected concrete candidate",
+          "explicit factor correspondence and retirements"
+        ],
+        "success_signals": [
+          "the Construction describes and proves differences without classifying them",
+          "introduced factors carry current laws realization and proof",
+          "retired factors carry current absence evidence",
+          "preserved factors are exact-equal",
+          "representation ownership boundary and admitted-domain changes manifest as factor deltas",
+          "a complete implementation rewrite may preserve the complete semantic relation"
+        ],
+        "failure_signals": [
+          "mode change_kind repair_class semantic_model_disposition or supersession_disposition is introduced",
+          "a free candidate transformation axis substitutes for concrete before-and-after objects",
+          "an unchanged abstract model conceals a representation or ownership replacement",
+          "diff size or source rewrite is mistaken for semantic novelty"
+        ],
+        "rationale": "A multidimensional successor relation cannot be faithfully or compositionally reduced to one repair label."
       },
       {
         "clause_id": "ACT-THEORY-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-MODE"
+          "ACT-ROUTE"
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
@@ -150,56 +219,25 @@
           "current or proposed Construction"
         ],
         "success_signals": [
-          "every currently applicable accepted stable class across the Goal lineage appears in the cumulative Counterexample Theory",
-          "duplicate witnesses campaign boundaries reviewer identity and finding order do not alter theory semantics",
-          "every accepted class maps to one causal generator or an evidenced instance-specific exception",
-          "one recurring class or two same-cause classes invalidates the prior candidate universe",
-          "the first review-entry subject remains immutable for forensic audit"
+          "every applicable accepted stable class appears in the cumulative Counterexample Theory",
+          "the class set is totally partitioned into generator and proof-carrying instance-specific classes",
+          "every generator names one typed required element and its exact carrier claim",
+          "duplicate witnesses campaign boundaries reviewer identity and finding order do not alter semantics",
+          "a recurring generator requires a concrete structural factor delta or valid separation"
         ],
         "failure_signals": [
           "Construction selection uses only the latest review wave",
-          "a subject change erases accepted class history",
-          "a later review-entry anchor replaces the first anchor",
-          "a shared-cause cluster receives another local repair without non-example separation proof"
+          "a class remains both generator-bound and instance-specific",
+          "recurrence receives only another local test or guard",
+          "a separation proof does not remove the class from the shared generator"
         ],
-        "rationale": "Knowledge accumulates monotonically and is quotiented before it can become implementation structure."
-      },
-      {
-        "clause_id": "ACT-NOVELTY-001",
-        "trigger_refs": [
-          "ACT-BARE",
-          "ACT-MODE"
-        ],
-        "expected_routes": [
-          "ACT-IMPLEMENT",
-          "ACT-REMEDIATION",
-          "ACT-REVIEW-CLOSEOUT"
-        ],
-        "prohibited_routes": [],
-        "required_artifacts": [
-          "current Construction",
-          "accepted Counterexample classes"
-        ],
-        "success_signals": [
-          "realization-repair is selected only when exact required behavior already exists in the current semantic model",
-          "a local repair introduces no new state event transition ordering authority custody freshness correlation failure effect observation compatibility validator or proof constructor",
-          "realization-repair and ablation-repair declare an unchanged semantic model while architecture-repair declares a changed model",
-          "semantic novelty falsifies the current Construction and forces a successor before mutation",
-          "stable owner count is never used as proof of semantic-model stability"
-        ],
-        "failure_signals": [
-          "an absent transition state or authority rule is hidden inside realization-repair",
-          "another validator reconstructs information the selected representation forgets",
-          "owner-internal semantic growth is ignored because no new owner was added",
-          "a realization or ablation repair changes the semantic model"
-        ],
-        "rationale": "The first missing semantic constructor triggers rearchitecture instead of waiting for retrospective accretion."
+        "rationale": "Knowledge accumulates monotonically and is quotiented before it becomes implementation structure."
       },
       {
         "clause_id": "ACT-NORMAL-FORM-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-MODE"
+          "ACT-ROUTE"
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
@@ -209,33 +247,31 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "current Goal",
-          "cumulative Counterexample Theory",
-          "construction-contract/v4"
+          "complete Counterexample Theory",
+          "construction-contract/v5"
         ],
         "success_signals": [
-          "the architectonic comparison precedes architecture selection; its mnemonic is not compliance evidence",
           "First Principles freezes an incumbent-independent basis before Universalist nomination",
-          "candidates are concrete semantic models with composable transformation axes",
-          "every candidate carries the same complete mandatory obligation core",
+          "candidates carry concrete boundaries architectures semantic models and factors",
+          "every candidate carries the complete mandatory obligation core",
           "at least one candidate is incumbent-independent",
           "Metanoetic runs once only on a live unchanged decision surface",
           "Reduce challenges disputable factors without selecting",
-          "reordering the same complete theory yields an equivalent selected Construction or the same incomparable minima"
+          "reordering the same theory yields an equivalent selected Construction or the same incomparable minima"
         ],
         "failure_signals": [
-          "four transformation labels are treated as mutually exclusive candidate architectures",
+          "candidate transformation labels substitute for concrete candidates",
           "a candidate wins by omitting an orthogonal obligation",
           "implementation momentum or familiarity establishes dominance",
-          "Universalist Metanoetic or Reduce takes Actuating selection authority",
-          "a mnemonic or tool-call sequence substitutes for the candidate comparison"
+          "Universalist Metanoetic or Reduce takes Actuating selection authority"
         ],
-        "rationale": "Actuating becomes a counterexample-guided normalizer rather than a greedy patch fold."
+        "rationale": "Actuating normalizes complete knowledge instead of greedily folding patches."
       },
       {
         "clause_id": "ACT-REALIZATION-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-MODE"
+          "ACT-ROUTE"
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
@@ -244,31 +280,31 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "current Construction",
-          "exact clean committed subject"
+          "current construction-contract/v5",
+          "exact clean current subject",
+          "current-subject verifier receipts"
         ],
         "success_signals": [
-          "bounded operations isolate effects independent of executor identity while one Construction remains the semantic realization epoch",
-          "closure-grade review begins only after the complete selected Construction is realized",
-          "every live production mechanism maps to one selected factor",
-          "every live proof mechanism maps to one proof obligation",
-          "every superseded mechanism is deleted successor-mapped or justified by a distinct obligation",
-          "unmapped production and proof surfaces are empty",
-          "wound-specific examples are recomposed around shared causal generators"
+          "bounded operations isolate effects while one Construction remains the semantic epoch",
+          "closure-grade review begins only after complete realization",
+          "every semantic element maps to one current factor and bounded construction surface",
+          "every closed owner has a current bypass-absence receipt",
+          "every proof mechanism maps to one proof obligation",
+          "every retirement is proved on the exact current subject"
         ],
         "failure_signals": [
-          "fresh review starts on a half-realized successor",
+          "fresh review starts on a half-realized Construction",
+          "predecessor receipts are reused as current-subject proof",
           "an unmapped branch validator cache recovery path helper fixture or proof path remains live",
-          "multiple same-generator examples remain the governing proof instead of a class-level model",
           "a retirement is conceptual only"
         ],
-        "rationale": "Obligation-rooted semantic garbage collection prevents review history from surviving as code."
+        "rationale": "Two-sided evidence prevents a lawful plan from masquerading as a realized successor."
       },
       {
         "clause_id": "ACT-REVIEW-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-MODE",
+          "ACT-ROUTE",
           "ACT-REVIEW-DEFAULT"
         ],
         "expected_routes": [
@@ -291,15 +327,13 @@
           "four later standard attempts run serially",
           "five consecutive distinct standard cleans close the exact unchanged subject",
           "material mutation resets all review credit",
-          "accepted classes join the cumulative Counterexample Theory before mutation",
-          "a noncanonical closure-grade binding is rejected before its findings can authorize mutation"
+          "accepted classes join the cumulative theory before mutation"
         ],
         "failure_signals": [
           "the clean streak is weakened or replaced",
           "a finding maps directly to a patch",
           "review credit crosses a material subject change",
-          "invalid review provenance permanently enlarges the implementation",
-          "a sibling is cancelled because another request found a defect"
+          "invalid review provenance permanently enlarges implementation"
         ],
         "rationale": "Repeated nondeterministic review remains a direct stochastic falsification capability."
       },
@@ -307,7 +341,7 @@
         "clause_id": "ACT-CLOSURE-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-MODE"
+          "ACT-ROUTE"
         ],
         "expected_routes": [
           "ACT-SHIP-HANDOFF",
@@ -316,26 +350,26 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "current Goal",
-          "current construction-contract/v4",
+          "current construction-contract/v5",
           "complete applicable Counterexample Theory",
-          "current proof and retirement observations",
+          "current-subject realization closure and retirement receipts",
           "current Ship evidence when required",
-          "current five-clean review convergence when required"
+          "current five-clean convergence when required"
         ],
         "success_signals": [
           "closure uses only current authority subject proof publication and review evidence",
-          "realization exactness and every retirement pass",
+          "total realization correspondence and every retirement pass",
           "Ship remains the sole public-effect owner",
           "Actuating authors the semantic closure receipt",
           "five current-subject standard cleans remain mandatory for final closeout"
         ],
         "failure_signals": [
-          "closure accepts an omitted accepted class",
-          "closure accepts semantic novelty hidden in a local repair",
+          "closure accepts an omitted accepted class or semantic element",
+          "closure accepts an unresolved claim unclosed bypass or stale receipt",
           "closure accepts unmapped surface incomplete retirement or stale review credit",
           "Ledger emits or authors the semantic verdict"
         ],
-        "rationale": "Closure proves the current normalized realization, not the history of patches that produced it."
+        "rationale": "Closure proves the current realized relation, not a label or the history that produced it."
       }
     ],
     "instrumentation": {
