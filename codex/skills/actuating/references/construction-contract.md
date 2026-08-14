@@ -1,4 +1,4 @@
-# Construction Contract v5
+# Construction Contract v6
 
 The Construction Contract is Actuating's sole architecture-selection artifact
 for one material construction. It answers:
@@ -9,7 +9,7 @@ for one material construction. It answers:
 
 It never grants mutation by itself.
 
-v5 deliberately has no `mode`, `change_kind`, `repair_class`,
+v6 deliberately has no `mode`, `change_kind`, `repair_class`,
 `semantic_model_disposition`, or supersession disposition. A Construction
 describes the predecessor and successor objects and their relation; admission
 derives obligations from their actual differences.
@@ -18,7 +18,7 @@ derives obligations from their actual differences.
 
 ```yaml
 artifact:
-  schema: construction-contract/v5
+  schema: construction-contract/v6
   artifact_id:
   goal_id:
   semantic_author: actuating

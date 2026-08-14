@@ -23,7 +23,7 @@
         "canonical_owner": "actuating",
         "governing_law_refs": ["law.owner"],
         "interpreter_or_handler": "Ledger admission",
-        "representation_or_machine": "construction-contract/v6",
+        "representation_or_machine": "construction-contract/v5",
         "residual_assumptions": [],
         "selected_construction": "relation-proved admission"
       },
@@ -82,8 +82,7 @@
           "proof_kind": "implementation",
           "proof_mode": "property-law",
           "statement": "Unproved relations are rejected.",
-          "verifier": {"argv": ["true"]},
-          "verifier_argv_digest": "sha256:cb63328916901bf13ee6c94ac81e38c4d9b5661bb0f199db6f6e3db033518d61"
+          "verifier": {"argv": ["true"]}
         }
       ],
       "recompilation": {
@@ -109,7 +108,7 @@
               "canonical_owner": "actuating",
               "governing_law_refs": ["law.owner"],
               "interpreter_or_handler": "Ledger admission",
-              "representation_or_machine": "construction-contract/v6",
+              "representation_or_machine": "construction-contract/v5",
               "residual_assumptions": [],
               "selected_construction": "relation-proved admission"
             },
@@ -221,7 +220,7 @@
       }
     },
     "predecessor_refs": [],
-    "schema": "construction-contract/v6",
+    "schema": "construction-contract/v5",
     "semantic_author": "actuating",
     "supporting_refs": []
   }

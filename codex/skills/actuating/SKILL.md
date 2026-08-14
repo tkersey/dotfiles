@@ -17,7 +17,7 @@ Use exactly four authoritative per-goal artifact families:
    laws, and acceptance, compiled by `$goal-contract`.
 2. `counterexample-set/v1` — classified witnessed falsifications, authored by
    `$review-fold`.
-3. `construction-contract/v5` — the selected typed semantic model,
+3. `construction-contract/v6` — the selected typed semantic model,
    proof-carrying predecessor-successor realization relation, concrete candidate
    comparison, proof, supersession, and retirements, authored by `$actuating`.
 4. `actuating-evidence-event/v1` — append-only observations whose event bodies
@@ -94,7 +94,7 @@ Before every architecture or abstraction selection:
 10. Actuating selects the smallest non-dominated candidate satisfying the full
     obligation core. Reordering the same theory must yield an equivalent
     Construction or the same explicit incomparable minima.
-11. Materialize and register `construction-contract/v5` with the exact
+11. Materialize and register `construction-contract/v6` with the exact
     predecessor verifier receipts required by its carrier claims.
 
 Read [construction-contract.md](references/construction-contract.md).
@@ -273,10 +273,10 @@ Bare invocation and publication-bearing `review-closeout` hand a current `ready-
 never substitutes its own public effect or publication receipt.
 
 Apply [closure.md](references/closure.md) only to the current Goal,
-`construction-contract/v5`, complete Counterexample Theory, exact clean subject,
+`construction-contract/v6`, complete Counterexample Theory, exact clean subject,
 predecessor and successor verifier evidence, Ship evidence when required, and
 current review credit.
 
-`construction-contract/v5` is a hard cut. v1-v4 artifacts and Evidence stores
-remain historical evidence only. Use the v5 Evidence store and never reinterpret
-older bytes.
+`construction-contract/v6` is a hard cut for new authority. v1-v5 artifacts
+and their Evidence stores remain immutable historical evidence only. Use the
+v6 Evidence store and never reinterpret older bytes under successor definitions.

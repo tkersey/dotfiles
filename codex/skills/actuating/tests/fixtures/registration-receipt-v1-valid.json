@@ -13,6 +13,5 @@
     "verifier": {"argv": ["true"]}
   },
   "receipt_ref": null,
-  "verifier_argv_digest": "sha256:cb63328916901bf13ee6c94ac81e38c4d9b5661bb0f199db6f6e3db033518d61",
-  "schema": "actuating-construction-registration-receipt/v2"
+  "schema": "actuating-construction-registration-receipt/v1"
 }
