@@ -92,7 +92,7 @@ Research is dependency-local rather than globally blocking:
 - hold only descendants of that fact;
 - continue with independent frontier decisions whose prerequisites are settled.
 
-Never ask the user for a fact that can be discovered directly.
+Never ask the user for a fact that can be discovered directly. Ask for an unavailable private fact only when it is material and no authorized source can provide it.
 
 ### 3. Construct the material judgment graph
 
@@ -175,7 +175,7 @@ Suspend that branch. Do not keep rephrasing the question, solicit a guess, or si
 Closure requires:
 
 - no unresolved material user-owned decision has settled prerequisites;
-- every remaining branch is model-owned, observation-owned, explicitly nonblocking, or pruned;
+- every remaining unresolved branch is blocked only by an explicit observation-owned prerequisite, explicitly nonblocking, or pruned;
 - no unapproved drift from the authoritative ask remains.
 
 Do not require every conceivable design branch to be visited. Stop when no additional answer from the user can materially change the admissible downstream outcome now.
@@ -220,7 +220,9 @@ Then stop. Do not plan or implement unless the user separately asks the appropri
 
 ## Hard rules
 
+- Use the user's language for natural-language interaction; keep stable IDs and machine keys unchanged.
 - Do not ask for discoverable facts.
+- Do not ask the user to restate the brief or author prompts/examples when bounded decisions or evidence suffice.
 - Do not outsource technical synthesis to the user.
 - Do not ask descendants before their prerequisites.
 - Do not confuse passive agreement with user-authored intent.
