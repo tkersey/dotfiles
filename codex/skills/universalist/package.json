@@ -1,14 +1,14 @@
 {
   "name": "universalist",
-  "version": "17.4.0",
-  "description": "Context-relative boundary-artifact workflow with latent-structure recognition, 56 evidence-bound construction cards, double-category square calculus, and native Seq/Ledger decision binding.",
+  "version": "17.5.0",
+  "description": "Evidence-indexed boundary architecture workflow with a compact routine kernel, latent-structure recognition, 56 lazily selected construction cards, and optional durable decision binding.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true,
   "registry_schema": "universal-construction-registry/v6",
   "plain_output_default": true,
-  "minimum_ledger_version": "0.10.6",
-  "minimum_seq_version": "0.3.52",
+  "minimum_ledger_version": "1.0.3",
+  "minimum_seq_version": "1.0.0",
   "registry_cards": 56,
   "architectural_axes": 12,
   "double_category_mechanics": true,
@@ -19,5 +19,6 @@
   "tests_shipped": false,
   "validation_surface": "seq-skdc-and-ledger-receipt-binding",
   "artifacts": "context-relative-boundary-contract",
-  "latent_structure_recognition": true
+  "latent_structure_recognition": true,
+  "progressive_disclosure": "evidence-indexed"
 }
