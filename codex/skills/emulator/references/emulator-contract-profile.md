@@ -696,7 +696,8 @@ canonical source-bundle manifest and immutable corpus selection
 exclusive support classifications and unsupported default
 actor/evaluator projection separation
 canonical observed actor-readable inventory and per-process access proof for selecting use
-post-generation access proof bound to the actual optimizer process
+exact delivered actor context bound to each access proof
+post-generation access proof bound to the actual fresh optimizer context and process
 group-safe frozen partitions and holdout blindness
 atlas-instance identity bound through holdout reservation, locks, and consumption
 holdout charts absent from single-arm run and mutate roots

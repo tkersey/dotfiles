@@ -113,10 +113,9 @@ corpus and comparison cycle. Its location does not determine selection
 eligibility: a private fallback root may support holdout only when the single
 user-global exposure registry required by `session-derived-atlas.md` is
 writable and prior exposure outside that registry can be excluded. Otherwise
-session-derived compilation may proceed only as discovery-only diagnostic work
-with `global_exposure_untracked`; it cannot support holdout, selection,
-training, promotion, or `adopt`. Every holdout, including a designed holdout,
-requires the user-global registry.
+stop before reading semantic session bytes. Every holdout, including a designed
+holdout, requires the user-global registry; a pure designed non-holdout root
+does not.
 
 ## Modes
 

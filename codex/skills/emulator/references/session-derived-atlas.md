@@ -206,13 +206,14 @@ The chart binds the source-map bytes; the source map recursively binds every
 query and result byte. A paraphrased transcript without these references is not
 source provenance.
 
-`source_bundle_ref` names `source-bundle.json`, whose exact RFC 8785 bytes are:
+`source_bundle_ref` names the closure-root-relative
+`source/<chart-id>/source-bundle.json`, whose exact RFC 8785 bytes are:
 
 ~~~json
-{"assets":[{"fingerprint":"sha256:<hex>","ref":"<bundle-relative-ref>"}],"schema":"session-source-bundle/v1","source_map_fingerprint":"sha256:<hex>","source_map_ref":"source-map.yaml"}
+{"assets":[{"fingerprint":"sha256:<hex>","ref":"<closure-root-relative-ref>"}],"schema":"session-source-bundle/v1","source_map_fingerprint":"sha256:<hex>","source_map_ref":"source/<chart-id>/source-map.yaml"}
 ~~~
 
-Refs are normalized, nonempty POSIX paths relative to the bundle directory and
+Refs are normalized, nonempty POSIX paths relative to the closure root and
 cannot escape it. `assets` is sorted by ref, duplicate-free, and contains the
 source map plus every query specification, result envelope, selected raw event,
 attestation, and other byte transitively referenced by the source map; it
@@ -454,19 +455,35 @@ symlink targets use unpadded RFC 4648 base64url. Roots are sorted,
 duplicate-free, sandbox-relative, and contain every entry. The runner enforces
 a closed filesystem namespace that denies paths outside those roots and keeps
 the namespace unchanged for the actor lifetime. The inventory fingerprint is
-SHA-256 of those exact bytes.
+SHA-256 of those exact bytes. `tool_access_policy_fingerprint` equals the
+contract-owned `environment.tools.asset_fingerprint` repeated by the world;
+a runtime-generated substitute is invalid.
 
 The same runner then emits exact RFC 8785 `actor-access-proof/v1` bytes:
 
 ~~~json
-{"actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
+{"actor_context_fingerprint":"sha256:<hex>","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 The proof is emitted only for the actual fresh process created inside that
 already-observed sandbox. Its run, sandbox, inventory, runner, and tool policy
-must equal the execution row and frozen assets; proof reuse across runs is
+plus actor input and context fingerprints must equal the execution row and
+frozen assets; proof reuse across runs is
 invalid. A runner that cannot enforce and completely enumerate this surface
 cannot produce selecting or training evidence.
+Before such a run, probe the selected existing actor route for this exact
+inventory/access capability. If CAS does not expose it, use an already-supported
+direct runner that does or stop with `runner_unavailable`; the first skill-only
+implementation does not add a CAS route or a new runner.
+
+`actor_context_fingerprint` hashes exact RFC 8785 bytes
+`{"messages":[{"content":"<exact-UTF-8>","role":"system"}],"run_id":"<run-id>","schema":"actor-context/v1"}`.
+The ordered message array admits roles `system`, `developer`, `user`, and
+`assistant` and contains every delivered exact content value. The context includes system/developer instructions and
+any reused history; selecting and training runs require a fresh context with no
+prior messages. `actor_input_fingerprint` equals the separately frozen actor
+packet delivered in that context. Extra, missing, prepended, or reused messages
+invalidate the proof.
 
 Run the forbidden-ref and excerpt scan over every byte in the complete
 actor-readable inventory, including harness, memory, tool fixtures, and mounted
@@ -476,11 +493,14 @@ run `status: invalid_environment` with `status_reason: historical_leakage`.
 Exact matching is not sufficient for source-derived readable assets. After the
 harness, actor input, and mounts are frozen, each actor-started execution emits a
 `semantic-leakage-review/v1` artifact bound to that execution's final
-actor-readable-inventory fingerprint. It contains exactly one sorted coverage
-row for every inventory entry, with the entry ref/fingerprint, provenance
-class (`predates_source`, `independent`, or `possibly_derived`), and result
-(`clear`, `leak`, or `uncertain`). No missing, duplicate, or extra row is
-allowed. An evaluator-only semantic review compares every `possibly_derived`
+actor-readable-inventory fingerprint. Its exact RFC 8785 payload is
+`{"coverage":[{"entry_identity":"sha256:<hex>","provenance_class":"predates_source","result":"clear"}],"inventory_fingerprint":"sha256:<hex>","run_id":"<run-id>","schema":"semantic-leakage-review/v1"}`.
+`entry_identity` is SHA-256 of the exact RFC 8785 bytes of that type-specific
+inventory entry object, so regular files, directories, and symlinks all have a
+defined identity. Coverage is sorted by identity and contains exactly one row
+for every inventory entry. `provenance_class` is `predates_source`,
+`independent`, or `possibly_derived`; `result` is `clear`, `leak`, or
+`uncertain`. No missing, duplicate, or extra row is allowed. An evaluator-only semantic review compares every `possibly_derived`
 asset with the hidden action, correction, recovery, and outcome. Runs and EER
 bind the review ref/fingerprint. A paraphrase, encoded derivative, `leak`, or
 `uncertain` result is `historical_leakage`; when it cannot be excluded, the
@@ -592,17 +612,25 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_inventory_fingerprint":"sha256:<hex>","optimizer_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_inventory_fingerprint":"sha256:<hex>","optimizer_policy_fingerprint":"sha256:<hex>","parent_context_id":null,"pre_candidate_policy_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
 named candidate bytes; `sandbox_instance_id` is nonempty and unique within the
 cycle. Candidate metadata and the root candidate entry bind its static ref and
-fingerprint. The proof's cycle, runner, inventory, optimizer policy, and
+fingerprint. The proof's cycle, runner, inventory, optimizer context and fresh
+context identity, optimizer policy, and
 pre-candidate policy must equal the frozen cycle commitments, and its candidate
 fingerprint must equal the frozen candidate manifest. Missing, mismatched,
 pre-run, or externally supplied access
 evidence contaminates the holdout.
+`optimizer_context_fingerprint` hashes exact RFC 8785 bytes
+`{"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-UTF-8>","role":"system"}],"schema":"optimizer-context/v1"}`
+with the same closed roles and complete ordered message semantics. The generation
+runner creates that context with `parent_context_id: null`; reuse, import, or
+hidden prior messages invalidate the proof. The context receives only the
+frozen optimizer policy and discovery/development inputs and is covered by the
+same leakage review as the readable inventory.
 Before candidate generation, run the same exact and semantic-derivative leakage
 checks over every entry in that final optimizer-readable inventory. Bind a
 complete `semantic-leakage-review/v1` ref/fingerprint to the pre-candidate
@@ -777,14 +805,12 @@ bind `exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonic
 `holdout_lock_root` equals that registry root. Changing `CODEX_HOME`, atlas
 location, caller storage root, or process `HOME` therefore cannot create a fresh exposure
 namespace. If the user-global registry is unavailable or prior exposure outside
-it cannot be excluded, a session-derived request may read and compile only
-discovery-partition charts with `claim.class: diagnostic` and limitation
-`global_exposure_untracked`; it emits no global claim and is permanently
-ineligible for holdout, selection, training, promotion, or `adopt`. Any request
-containing a holdout chart, including a designed holdout, instead stops with
-`source_contaminated`. A pure designed root with no holdout may proceed without
-the registry. When the registry is available, session discovery/development
-reads publish their exposed claims normally. Claims and canonical
+it cannot be excluded for the candidate/optimizer contexts in scope, stop with
+`source_contaminated` before reading semantic session bytes. Create the registry
+before the first managed source read; an absent but creatable registry is not
+an unavailable registry. Any holdout, including a designed holdout, requires
+the registry. A pure designed root with no holdout may proceed without it.
+Claims and canonical
 locks bind the exposure-registry ID; reservations, partition validations,
 selecting runs, and reports bind both the registry and storage-domain IDs. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
@@ -856,14 +882,11 @@ and stop. The post-read discovery is never reinterpreted as a read that did not
 occur. Thus a discovery writer cannot silently contaminate a group after the
 selector releases the partition lock but before first actor exposure.
 
-When the global registry is available, acquire the exclusive global
+Before any managed semantic session read, acquire the exclusive global
 `<holdout_lock_root>/.partition-freeze.lock`, validate the complete sorted
 identity-key set before any semantic source read, stage all new claims, then
 publish them before releasing the lock. Create or validate
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
-The `global_exposure_untracked` diagnostic route above skips this unavailable
-global protocol, records no claim or registry ID, and remains ineligible for
-any later selecting or training use.
 Its file contains exactly the RFC 8785 canonical UTF-8 bytes of:
 
 ~~~json
@@ -1069,7 +1092,9 @@ file add/delete/rename, mode changes, and symlink retargeting are prohibited by
 the optimizer policy before generation. A candidate containing such a delta is
 invalid for this experiment and cannot be recommended. This keeps non-byte
 manifest changes out of `factor-delta-validation/v1` rather than inventing
-uncontracted selectors for them.
+uncontracted selectors for them. A changed regular entry must also win
+precedence at its effective materialized path; changing only a shadowed entry
+is an invalid no-op candidate and cannot satisfy the required-delta rule.
 
 The pre-candidate policy enumerates exact root-qualified behavior-bearing path
 pairs (`root_id`, logical `path`), runtime-configuration keys, and
@@ -1121,7 +1146,7 @@ candidate's validation never covers another candidate.
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
+{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
 ~~~
 
 `changed_files` is the complete regular-file content-difference set sorted by
@@ -1129,8 +1154,9 @@ The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 contains every and only selector covering that file's differences. Runtime
 arrays are the complete changed-key/field sets sorted by `key` and `field`;
 value fingerprints hash the exact RFC 8785 value bytes, including `null`.
-`derivation_path_refs` is sorted and duplicate-free and contains only approved
-changed paths. The two attestation fields are both null unless a mixed-owner
+`derivation_path_refs` and `derivation_runtime_keys` are sorted and
+duplicate-free, and each contains only approved changed paths or runtime keys.
+At least one derivation input is present for every changed surface field. The two attestation fields are both null unless a mixed-owner
 file changes, when both contain the exact attestation asset ref and fingerprint
 bound by candidate metadata. No other fields are admitted.
 
@@ -1335,15 +1361,21 @@ holdout_contaminated
 oracle_gap
 contract_ambiguity
 runner_unavailable
+access_proof_unavailable_after_start
 multiple_factors
 insufficient_evidence
 ~~~
 
 Rollback means: stop fresh actors, discard isolated candidate and reset
-workspaces, and leave the live harness unchanged. Preserve private source
-bundles and evaluation evidence by default for diagnosis; delete material only
-with explicit authorization. A report recommendation never performs rollback or
-adoption itself.
+workspaces, and leave the live harness unchanged. Preserve sanitized private
+source bundles and evaluation evidence by default for diagnosis. Credentials,
+secret values, and private tool outputs are never copied into a bundle. If an
+indispensable selected raw payload still contains other sensitive material,
+require explicit retention authorization before copying it; without that
+authorization, omit or scrub it and downgrade or stop when exact provenance can
+no longer be supported. Delete any unauthorized sensitive temporary copy during
+rollback while retaining non-sensitive diagnostics. A report recommendation
+never performs rollback or adoption itself.
 
 ## First proof
 

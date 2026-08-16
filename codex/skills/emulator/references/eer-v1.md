@@ -184,6 +184,8 @@ emulator_execution_report:
       effect_policy_fingerprint:
       tool_access_policy_fingerprint:
       actor_input_fingerprint:
+      actor_context_ref:
+      actor_context_fingerprint:
       actor_readable_inventory_ref:
       actor_readable_inventory_fingerprint:
       semantic_leakage_review_ref:
@@ -271,12 +273,8 @@ could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
-A registry-free session diagnostic with limitation
-`global_exposure_untracked` omits exposure-registry and partition-claim refs,
-cannot appear in `comparison.evaluated_runs`, and realizes only a diagnostic
-claim. When the registry exists, discovery/development session runs bind their
-published claim snapshots and validation even though they have no holdout
-reservation.
+Discovery/development session runs bind their published registry claim
+snapshots and validation even though they have no holdout reservation.
 
 Each started selecting or training run also binds the post-freeze
 `semantic-leakage-review/v1` required by `session-derived-atlas.md`. Its
@@ -333,7 +331,8 @@ dependency/lock fingerprints. Its canonical digest is the execution's
 `runtime_surface_fingerprint`; corresponding values are equal across arms
 except exact runtime-factor keys or runtime-surface fields declared in the
 pre-candidate factor-owner policy and proved by factor-delta validation to be
-deterministically derived solely from approved factor-owned path changes. This
+deterministically derived solely from approved factor-owned path changes or
+runtime-configuration keys. This
 exception includes dependency/lock fingerprints only when their changed lock
 assets are themselves approved factor-owned paths; it never admits ambient or
 unmapped surface drift. Missing
@@ -440,6 +439,8 @@ and leaves comparison-only fields null:
   "effect_policy_fingerprint": "sha256:...",
   "tool_access_policy_fingerprint": "sha256:...",
   "actor_input_fingerprint": "sha256:...",
+  "actor_context_ref": "runs/run-group-.../actor-context/run-....json",
+  "actor_context_fingerprint": "sha256:...",
   "actor_readable_inventory_ref": "runs/run-group-.../actor-readable-inventory/run-....json",
   "actor_readable_inventory_fingerprint": "sha256:...",
   "semantic_leakage_review_ref": "runs/run-group-.../semantic-leakage-review/run-....json",
