@@ -91,10 +91,10 @@ emulator_request:
     forbidden: []
   output:
     report: EER-v1
-    preferences: false
-    trajectories: false
-    curriculum: false
-    counterexamples: false
+    preferences: true | false
+    trajectories: true | false
+    curriculum: true | false
+    counterexamples: true | false
 ```
 
 Session-derived atlases default to

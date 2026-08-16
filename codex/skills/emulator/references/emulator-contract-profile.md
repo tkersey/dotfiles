@@ -78,7 +78,10 @@ emulator_contract:
   target:
     name:
     kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
-    harness_roots: []
+    harness_roots:
+      - root_id:
+        precedence:
+        mount_path:
 
   atlas:
     charts:
@@ -99,6 +102,8 @@ emulator_contract:
       holdout_visible_to_optimizer: false
       storage_domain_root:
       storage_domain_id:
+      exposure_registry_root:
+      exposure_registry_id:
       holdout_lock_root:
       partition_claims:
         - ref: partitions/claims/<holdout-key>.partition.json
@@ -115,6 +120,7 @@ emulator_contract:
 
   comparison_policy:  # required only for run, mutate, and compare
     execution_mode: single_arm | paired_compare
+    cycle_id:  # paired_compare only
     subject: harness
     pre_candidate_policy:
       ref:
@@ -123,12 +129,14 @@ emulator_contract:
       ref:
       fingerprint:
     baseline_harness:
+      harness_id:
       ref:
       fingerprint:
       capture_provenance_ref:
       capture_provenance_fingerprint:
     candidate_harnesses:
       - candidate_id:
+        harness_id:
         ref:
         fingerprint:
         capture_provenance_ref:
@@ -162,19 +170,22 @@ emulator_contract:
     eer: EER-v1
     runs: runs.jsonl
     comparison: comparison.json  # compare mode only
-    preferences: false
-    trajectories: false
-    curriculum: false
-    counterexamples: false
+    preferences: true | false
+    trajectories: true | false
+    curriculum: true | false
+    counterexamples: true | false
 ~~~
 
 `corpus_digest` is SHA-256 of exact RFC 8785 bytes of
 `{"schema":"emulator-corpus/v1","source_bundle_fingerprints":[...]}` where the
 array is the byte-lexicographically sorted, duplicate-free fingerprints of all
 selected source bundles. It binds the selected immutable source set, not a mutable session
-directory. harness_roots enumerates every behavior-bearing root under
-experiment. The root may contain one chart; the atlas abstraction does not
-require scale.
+directory. `harness_roots` is the ordered runtime layering contract. Each entry
+has a stable `root_id`, a unique nonnegative integer `precedence`, and a
+normalized logical `mount_path`; these values, not a source-worktree path,
+determine lookup and override order. It enumerates every behavior-bearing root
+under experiment. The root may contain one chart; the atlas abstraction does
+not require scale.
 
 Both `session` and `session_corpus` require
 `current_session_excluded: true`. `mixed` also requires `true` whenever any
@@ -191,6 +202,12 @@ variant. `comparison_policy` is absent for non-executing `design` and
 `mutate` require `single_arm`, while `compare` requires `paired_compare`.
 Export preserves whichever state the existing root has. `execution_mode` does
 not replace the operation mode.
+
+The four output booleans bind user authorization to emit each eligible dataset.
+They are frozen before execution. Export may emit only a dataset whose boolean
+is `true`, and still applies the chart-level eligibility and privacy rules; it
+does not rewrite `false` to `true`. Missing authorization is a valid empty
+export, not permission inferred from the export request.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
@@ -215,6 +232,9 @@ two policies' selected factor, factor-owner paths and runtime keys, runtime
 constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
+Every factor-owner file path is the root-qualified pair
+`{"root_id":"<root-id>","path":"<logical-path>"}`; a flat path is invalid
+because layered roots may contain the same logical name.
 After candidate fingerprints freeze, the final root's selecting chart list,
 chart/evaluator fingerprints, partition snapshot, runtime configuration,
 repeats, randomness policy, protected dimensions, threshold, and budget MUST
@@ -414,6 +434,15 @@ environment_chart:
     invalidators: []
     limitations: []
 ~~~
+
+Tool permission is fail closed. `allowed` and `denied` are duplicate-free and
+disjoint. Every allowed tool has exactly one schema in `schemas`; a tool name
+not present in `allowed` is denied even if a schema happens to exist. Every
+action projection that selects a tool resolves that exact name before support
+classification. An action classified `executable` may select only an allowed
+tool. An action selecting a denied or unlisted tool is `denied`; contradictory
+lists, missing allowed-tool schemas, or an executable predicate that can select
+an unallowed tool make the chart `invalid_environment`.
 
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.

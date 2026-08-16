@@ -6,10 +6,15 @@ recommendation. No deployed report corpus exists, so the EER-v1 label is
 corrected in place.
 
 Every `*_ref` in EER-v1, `runs.jsonl`, and `comparison.json` is a normalized
-atlas-root-relative POSIX path. It obeys the contract closure's containment,
-conflict, and fingerprint rules; absolute paths and escaping references are
-invalid. Canonical storage-domain claim locations may appear only inside the
-root-bound partition-claim validation asset, never as report refs.
+atlas-root-relative POSIX path. A ref to the frozen contract or any static
+contract asset MUST begin `roots/<root-digest-hex>/` and resolves from that
+immutable archived closure. A fresh execution/output ref begins
+`runs/<run-group-id>/` or `reports/<run-group-id>/` and its owning directory is
+sealed against replacement before the report is emitted. No report may resolve
+a static asset through the mutable live root. All refs obey containment,
+conflict, and fingerprint rules; absolute and escaping references are invalid.
+Canonical registry locations may appear only inside root-bound validation
+assets, never as report refs.
 
 ## Schema
 
@@ -35,6 +40,7 @@ emulator_execution_report:
     factor:
     atlas_fingerprint:
     storage_domain_id:                 # selecting roots only
+    exposure_registry_id:              # selecting roots only
     partition_snapshot_fingerprint:  # selecting roots only
     partition_validation_ref:        # selecting roots only
     partition_validation_fingerprint: # selecting roots only
@@ -106,6 +112,7 @@ emulator_execution_report:
       partition:
       split_group:
       storage_domain_id:                 # selecting roots only
+      exposure_registry_id:              # selecting roots only
       partition_snapshot_fingerprint:  # selecting roots only
       partition_validation_ref:        # selecting roots only
       partition_validation_fingerprint: # selecting roots only
@@ -132,7 +139,9 @@ emulator_execution_report:
       environment_implementation_fingerprint:
       evaluator_implementation_ref:
       evaluator_implementation_fingerprint:
+      runtime_config_ref:
       runtime_fingerprint:
+      actor_runner_fingerprint:
       actor_seed:
       actor_seed_control: fixed | sampled | unavailable
       environment_seed:
@@ -234,6 +243,16 @@ evaluator implementation bytes are `invalid_environment`. When residual
 judgment is enabled, the execution also binds that judgment result by ref and
 fingerprint; those fields are null when no residual judgment ran.
 
+`runtime_config_ref` names the archived harness bundle's
+`runtime-config.json`; `runtime_fingerprint` is SHA-256 of that asset's exact
+RFC 8785 bytes and those bytes equal the selected harness manifest's inline
+`runtime_config`. The observed process configuration must equal the same bytes.
+The baseline and candidate runtime fingerprints are equal except for keys
+admitted by a runtime-factor delta validation. `actor_runner_fingerprint`
+binds the runner implementation and version and is equal across arms unless
+that exact runtime owner is the selected factor. A mismatch is
+`comparison_drift`, never candidate improvement.
+
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
 every source-identity partition claim and the artifact validating those claims
@@ -278,6 +297,7 @@ and leaves comparison-only fields null:
   "contract_fingerprint": "sha256:...",
   "atlas_fingerprint": "sha256:...",
   "storage_domain_id": null,
+  "exposure_registry_id": null,
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
   "chart_kind": "normative_decision",
@@ -292,11 +312,13 @@ and leaves comparison-only fields null:
   "mutation_generator_fingerprint": null,
   "minimized_counterexample_ref": null,
   "minimized_counterexample_fingerprint": null,
-  "environment_implementation_ref": "worlds/chart-.../implementation.json",
+  "environment_implementation_ref": "roots/<root-digest-hex>/worlds/chart-.../implementation.json",
   "environment_implementation_fingerprint": "sha256:...",
-  "evaluator_implementation_ref": "evaluators/chart-...-implementation.json",
+  "evaluator_implementation_ref": "roots/<root-digest-hex>/evaluators/chart-...-implementation.json",
   "evaluator_implementation_fingerprint": "sha256:...",
+  "runtime_config_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/runtime-config.json",
   "runtime_fingerprint": "sha256:...",
+  "actor_runner_fingerprint": "sha256:...",
   "actor_seed": null,
   "actor_seed_control": "unavailable",
   "environment_seed": null,
@@ -364,14 +386,15 @@ counterexample artifact by reference and fingerprint.
   "factor": "question_policy",
   "atlas_fingerprint": "sha256:...",
   "storage_domain_id": "sha256:...",
+  "exposure_registry_id": "sha256:...",
   "partition_snapshot_fingerprint": "sha256:...",
   "partition_validation_ref": "runs/cmp-.../partition-validation.json",
   "partition_validation_fingerprint": "sha256:...",
-  "partition_claim_refs": ["partitions/claims/<digest-hex>.partition.json"],
+  "partition_claim_refs": ["roots/<root-digest-hex>/partitions/claims/<digest-hex>.partition.json"],
   "partition_claim_fingerprints": ["sha256:..."],
-  "partition_claim_validation_ref": "partitions/partition-claim-validation.json",
+  "partition_claim_validation_ref": "roots/<root-digest-hex>/partitions/partition-claim-validation.json",
   "partition_claim_validation_fingerprint": "sha256:...",
-  "holdout_reservation_ref": "runs/cmp-.../holdout-reservation.json",
+  "holdout_reservation_ref": "runs/<cycle-id>/holdout-reservation.json",
   "holdout_reservation_fingerprint": "sha256:...",
   "holdout_lock_refs": ["runs/cmp-.../holdout-locks/<digest-hex>.lock"],
   "holdout_lock_fingerprints": ["sha256:..."],
@@ -379,9 +402,9 @@ counterexample artifact by reference and fingerprint.
   "holdout_lock_validation_fingerprint": "sha256:...",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
-  "candidate_metadata_ref": "harnesses/candidates/candidate-1/candidate.yaml",
+  "candidate_metadata_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/candidate.yaml",
   "candidate_metadata_fingerprint": "sha256:...",
-  "factor_delta_validation_ref": "harnesses/candidates/candidate-1/factor-delta-validation.json",
+  "factor_delta_validation_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/factor-delta-validation.json",
   "factor_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
