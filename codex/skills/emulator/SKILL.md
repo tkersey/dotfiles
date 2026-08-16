@@ -130,7 +130,10 @@ generator bytes through the chart closure.
 ### compare
 
 Run fresh baseline and candidate arms against the same chart boundary and emit a
-chart-aware comparison. The historical trajectory is never an arm.
+chart-aware comparison. For harness work, both arms are frozen harness bundles.
+Designed synthetic contracts may instead compare frozen actor or environment-
+implementation bundles when the root declares that comparison subject. The
+historical trajectory is never an arm.
 
 ### export
 
@@ -167,7 +170,10 @@ evaluate(output_or_trace) -> oracle vector + state diff + residual judgment
 trace() -> fresh observable trace
 ```
 
-`step(action)` exists only when `support(action) == executable`. Support classes
+Validate actor output against `actor.output_schema` and the action schema before
+support routing; malformed actor output is `hard_fail`, not an unsupported
+counterfactual. `step(action)` exists only when
+`support(action) == executable`. Support classes
 are mutually exclusive. An overlap or unverifiable classification is
 `invalid_environment`; an attempted `observed_only` or `unsupported` transition
 is `unsupported_counterfactual`; a `denied` action is `hard_fail`. Never guess a
@@ -178,9 +184,10 @@ training additionally require an actor-readable inventory and fingerprint plus
 tool-access evidence proving hidden roots were inaccessible. A combined file is
 not proof of separation.
 
-A failed hard oracle or trace invariant cannot be overridden by reward, cost,
-preference, prose quality, or model judgment. Executable charts judge required
-state and trace laws, not historical tool-sequence imitation.
+A failed hard oracle, required state assertion, or trace invariant cannot be
+overridden by reward, cost, preference, prose quality, or model judgment.
+Executable charts judge required state and trace laws, not historical tool-
+sequence imitation.
 
 ## Session-derived execution
 

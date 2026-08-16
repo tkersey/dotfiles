@@ -151,6 +151,8 @@ Canonical source map:
 session_source_map:
   seq_version:
   seq_abi:
+  source_adapter:
+  source_format:
   source:
     session_id:
     path:
@@ -388,6 +390,13 @@ Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
 replace it with an untouched group before another optimization cycle.
 
+Retirement never edits the fingerprinted chart or an earlier root in place.
+Write a content-addressed `holdout-retirement/v1` marker naming the group,
+chart fingerprints, consumption purpose, and prior root fingerprint; bind that
+marker from the next versioned root's `partition_policy.retirement_markers`.
+The previous closure remains immutable and auditable. A group named by an
+effective retirement marker is inactive and ineligible for later holdout use.
+
 Filesystem and process separation are sufficient for the initial accidental
 leakage threat model; do not build a cryptographic broker.
 
@@ -481,9 +490,10 @@ Order is fixed:
 
 ~~~text
 environment validity
+actor output and action schema validity
 exclusive support classification
 hard oracles
-state diff
+required state assertions and state diff
 trace invariants
 protected dimensions
 cost and latency
@@ -509,8 +519,11 @@ valid trajectories are allowed.
 ### Status mapping
 
 ~~~text
-executable or judgeable + oracle pass -> pass
+malformed actor output or action -> hard_fail
+executable or judgeable + all required checks pass -> pass
 executable or judgeable + hard oracle failure -> hard_fail
+failed required state assertion -> hard_fail
+failed trace invariant -> hard_fail
 denied action -> hard_fail
 attempted observed_only or unsupported transition -> unsupported_counterfactual
 malformed, leaked, drifted, or unverifiable environment -> invalid_environment
@@ -527,7 +540,7 @@ not count as promotion passes or failures.
 Return adopt, reject, or insufficient_evidence. Adopt requires:
 
 1. complete baseline and candidate arms are environment-valid for every required chart and repeat;
-2. no new candidate hard-oracle failure of any kind;
+2. no new candidate `hard_fail` of any kind;
 3. no protected regression;
 4. at least one targeted untouched holdout improvement;
 5. any residual preference is order-stable;
@@ -537,7 +550,7 @@ Promotion is only an evidence strength: it means these conditions and the chart
 claim matrix support a separately authorized adoption decision. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
-Any new hard-oracle failure or protected regression yields reject.
+Any new candidate `hard_fail` or protected regression yields reject.
 
 Record paired_replay_delta, observed_association, regression, or
 insufficient_evidence as the evidence relation, separately from the adoption
@@ -545,8 +558,9 @@ recommendation. Do not claim a causal mechanism from an uncontrolled comparison.
 
 ## 11. Export
 
-Emit chart-aware EER-v1, runs.jsonl, and comparison.json as specified in
-eer-v1.md.
+Emit chart-aware EER-v1 and runs.jsonl as specified in eer-v1.md. `compare`
+additionally emits one comparison.json per baseline/candidate pair; standalone
+`run` omits comparison artifacts and uses an independent run-group directory.
 
 Preference rows require:
 
@@ -596,6 +610,7 @@ comparison_drift
 evaluator_contaminated
 holdout_contaminated
 oracle_gap
+contract_ambiguity
 multiple_factors
 insufficient_evidence
 ~~~

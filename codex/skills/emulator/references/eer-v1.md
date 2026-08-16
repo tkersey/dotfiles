@@ -1,7 +1,7 @@
 # EER-v1: Emulator Execution Report
 
 `emulator_execution_report / EER-v1` records the exact atlas closure, fresh
-harness runs, chart eligibility, hard-oracle and state results, and bounded
+subject runs, chart eligibility, hard-oracle and state results, and bounded
 recommendation. No deployed report corpus exists, so the EER-v1 label is
 corrected in place.
 
@@ -20,9 +20,12 @@ emulator_execution_report:
 
   comparison:  # present only for one baseline/candidate compare pair
     comparison_id:
+    subject: harness | actor | environment_implementation
     factor:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
+    baseline_subject_fingerprint:
+    candidate_subject_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     authority_granted: false
@@ -39,23 +42,36 @@ emulator_execution_report:
 
   executions:
     - run_id:
+      contract_fingerprint:
+      atlas_fingerprint:
       chart_id:
       chart_fingerprint:
       chart_kind:
       partition:
       split_group:
+      subject_kind: harness | actor | environment_implementation
+      subject_id:
+      subject_fingerprint:
       harness_id:
-      harness_fingerprint:
+      harness_fingerprint:  # harness subject only
       repeat_id:
+      mutation_case_id:
+      mutation_assignment:
+      mutation_generator_fingerprint:
+      minimized_counterexample_ref:
+      minimized_counterexample_fingerprint:
       implementation_fingerprint:
       runtime_fingerprint:
       seed:
       seed_control: fixed | sampled | unavailable
       failure_schedule_fingerprint:
       world_fingerprint:
+      reset_recipe_fingerprint:
+      effect_policy_fingerprint:
       actor_input_fingerprint:
       actor_readable_inventory_fingerprint:
       actor_access_proof_ref:
+      actor_access_proof_fingerprint:
       evaluator_fingerprint:
       support_result:
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
@@ -85,8 +101,13 @@ emulator_execution_report:
 
   datasets:
     preferences_ref:
+    preferences_fingerprint:
     trajectories_ref:
+    trajectories_fingerprint:
     curriculum_ref:
+    curriculum_fingerprint:
+    counterexamples_ref:
+    counterexamples_fingerprint:
 
   limitations: []
 ```
@@ -116,10 +137,13 @@ runtime-error, ambiguous, or skipped row records a reason and the evidence
 available before termination. No historical run appears as a baseline
 execution.
 
-Every comparison binds exact chart, root closure, harness, world/reset, actor
+Every execution row binds its root contract and atlas fingerprint. Every
+comparison binds exact chart, root closure, harness, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
-the actor could not read evaluator-only roots.
+the actor could not read evaluator-only roots; both its reference and exact
+fingerprint are recorded and verified. Every emitted dataset reference has a
+companion fingerprint.
 
 `run` mode omits `comparison` and emits executions plus applicable datasets and
 limitations. It does not invent a candidate fingerprint or recommendation.
@@ -139,24 +163,37 @@ independent run-group ID and leaves comparison-only fields null:
   "run_id": "run-...",
   "run_group_id": "run-group-...",
   "comparison_id": null,
+  "contract_fingerprint": "sha256:...",
+  "atlas_fingerprint": "sha256:...",
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
   "chart_kind": "normative_decision",
   "partition": "holdout",
   "split_group": "group-...",
+  "subject_kind": "harness",
+  "subject_id": "candidate-1",
+  "subject_fingerprint": "sha256:...",
   "harness_id": "candidate-1",
   "harness_fingerprint": "sha256:...",
   "factor": null,
   "repeat_id": 1,
+  "mutation_case_id": null,
+  "mutation_assignment": null,
+  "mutation_generator_fingerprint": null,
+  "minimized_counterexample_ref": null,
+  "minimized_counterexample_fingerprint": null,
   "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
   "seed": null,
   "seed_control": "unavailable",
   "failure_schedule_fingerprint": null,
   "world_fingerprint": null,
+  "reset_recipe_fingerprint": null,
+  "effect_policy_fingerprint": "sha256:...",
   "actor_input_fingerprint": "sha256:...",
   "actor_readable_inventory_fingerprint": "sha256:...",
   "actor_access_proof_ref": "traces/run-...-access.json",
+  "actor_access_proof_fingerprint": "sha256:...",
   "evaluator_fingerprint": "sha256:...",
   "support_result": "judgeable",
   "status": "pass",
@@ -181,19 +218,25 @@ independent run-group ID and leaves comparison-only fields null:
 
 These rows are not a new global event store.
 
-Every non-pass status has a nonempty `status_reason`. A failed trace invariant
-maps to `hard_fail` before comparison or residual judgment.
+Every non-pass status has a nonempty `status_reason`. Malformed actor/action
+output, a failed required state assertion, and a failed trace invariant each map
+to `hard_fail` before comparison or residual judgment. Mutation runs record the
+case identity and assignment plus generator identity; a minimized failure binds
+its counterexample artifact by reference and fingerprint.
 
 ## comparison.json
 
 ```json
 {
-  "schema": "emulator-harness-comparison/v1",
+  "schema": "emulator-comparison/v1",
   "comparison_id": "cmp-...",
   "contract_fingerprint": "sha256:...",
+  "subject": "harness",
   "factor": "question_policy",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
+  "baseline_subject_fingerprint": "sha256:...",
+  "candidate_subject_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
     "candidate": []
@@ -225,13 +268,14 @@ maps to `hard_fail` before comparison or residual judgment.
 
 ```text
 1. environment and recursive closure validity
-2. exclusive action support
-3. hard oracles
-4. state diff
-5. trace invariants
-6. protected dimensions
-7. cost and latency
-8. residual blinded model or human judgment
+2. actor output and action schema validity
+3. exclusive action support
+4. hard oracles
+5. required state assertions and state diff
+6. trace invariants
+7. protected dimensions
+8. cost and latency
+9. residual blinded model or human judgment
 ```
 
 Hard failures and protected regressions cannot be repaired by later stages. A
@@ -242,15 +286,15 @@ is `ambiguous`.
 ## Recommendation authority
 
 `adopt` requires complete environment-valid baseline and candidate arms for
-every required chart and repeat, no new hard-oracle failure of any kind, no
+every required chart and repeat, no new candidate `hard_fail` of any kind, no
 protected regression, at least one targeted untouched holdout improvement,
 order-stable residual preference when used, and evaluation of the exact
 candidate fingerprint.
 
 A missing or invalid required arm, tie, unsupported required chart, evaluator
 disagreement, closure/access proof gap, or insufficient untouched holdout
-coverage yields `insufficient_evidence`. Any new candidate hard-oracle failure
-or protected regression yields `reject`.
+coverage yields `insufficient_evidence`. Any new candidate `hard_fail` or
+protected regression yields `reject`.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`
 records `paired_replay_delta`, `observed_association`, `regression`, or

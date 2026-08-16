@@ -3,12 +3,19 @@
 emulator-spec.yaml is the EC-v1 root of one content-addressed contract closure
 owned by $emulator.
 
+EC-v1 is intentionally corrected in place because the repository baseline has
+no committed instances or consumers. An `existing_contract` using the obsolete
+pre-adoption scenario shape is not silently interpreted: explicitly upgrade it
+to this closure shape or stop with `contract_ambiguity`. No compatibility layer
+is implied by the retained label.
+
 ## Identity and closure
 
 ~~~text
 root_contract_fingerprint = SHA-256(exact emulator-spec.yaml UTF-8 bytes)
 chart_fingerprint         = SHA-256(exact chart YAML UTF-8 bytes)
 atlas_identity            = root fingerprint + ordered chart fingerprints
+atlas_fingerprint         = SHA-256(NUL-framed atlas_identity tuple)
 ~~~
 
 The root does not contain its own fingerprint. Every chart entry binds its exact
@@ -56,9 +63,13 @@ emulator_contract:
       group_by: root_session_or_task
       frozen_before_candidate_generation: true
       holdout_visible_to_optimizer: false
+      retirement_markers: []
 
   comparison_policy:
+    subject: harness | actor | environment_implementation
     baseline_harness_ref:
+    baseline_subject_ref:
+    candidate_subject_ref:
     candidate_factor_policy: one_semantic_owner
     stochastic_repeats: 3
     deterministic_repeats: 1
@@ -70,7 +81,7 @@ emulator_contract:
   output:
     eer: EER-v1
     runs: runs.jsonl
-    comparison: comparison.json
+    comparison: comparison.json  # compare mode only
     preferences: false
     trajectories: false
     curriculum: false
@@ -80,6 +91,13 @@ corpus_digest binds the selected immutable source set, not a mutable session
 directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
+
+`subject: harness` requires `baseline_harness_ref` and harness manifests.
+Designed synthetic comparisons may use `actor` or
+`environment_implementation` with the two frozen subject refs instead; the same
+one-factor, same-boundary, fresh-arm, and evaluator-immutability laws apply.
+Fields that do not apply to the declared subject are absent rather than filled
+with invented harness identities.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
 equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
@@ -227,6 +245,12 @@ the exact recordings, roots, operations, and authority. They are absent only
 for fully closed effect modes. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
 smallest applicable limit.
+
+`network: allow_recorded` is replay-only: the runner may return only the exact
+fingerprinted recorded responses named by the effect-policy asset and MUST NOT
+contact a live endpoint. Live network access is outside EC-v1 and requires a
+separately authorized designed contract rather than reinterpretation of this
+mode.
 
 Every executable implementation has an exact identity. Its seed-control mode,
 seed when controlled, and any sampled failure schedule are explicit and
