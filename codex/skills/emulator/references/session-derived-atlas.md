@@ -265,9 +265,12 @@ Before first promotion to harness-selection or preference-training use, a human
 MUST record review of the exact source refs, cut, hidden correction, harness
 surface, and hard-oracle interpretation. The exact RFC 8785 review asset is
 bound by `human_review_ref` and `human_review_fingerprint`; it identifies the
-reviewer, the reviewed chart fingerprint, those five reviewed surfaces, and a
-`holdout_blind: true` and `independent_of_candidate_generation: true`
-attestation. Without that evidence the chart stays diagnostic. A proven
+reviewer, the reviewed-subject fingerprint, those five reviewed surfaces, and
+`evaluator_informed: true` and
+`independent_of_candidate_generation: true` attestations. The reviewer is
+evaluator-informed because this review necessarily inspects the hidden
+correction; candidate-generation blindness is proved by the optimizer access
+boundary, not asserted by this reviewer. Without that evidence the chart stays diagnostic. A proven
 recurring evaluator pattern may be reused only when `reviewed_pattern_ref` and
 `reviewed_pattern_fingerprint` bind the independently reviewed pattern and
 `applicability_ref` and `applicability_fingerprint` bind evaluator-produced
@@ -280,22 +283,40 @@ diagnostic/development-only and cannot enter holdout, harness selection,
 promotion, or preference training. There is no same-reviewer exception whose
 choices can be revised after correction reveal.
 
+First parse the finalized chart as data, remove the entire
+`/environment_chart/evaluator/authority/correction_review` subtree, and encode
+the remaining `environment_chart` value as the `chart_semantics` member of the
+exact RFC 8785 `correction-review-subject/v1` asset:
+
+~~~json
+{"chart_semantics":{"chart_version":"EC-chart-v1"},"schema":"correction-review-subject/v1"}
+~~~
+
+The abbreviated `chart_semantics` object above stands for the complete
+remaining chart value, not a selectable field list. The projection rejects a
+review ref or fingerprint anywhere outside the removed subtree. Store the exact
+bytes at `evaluators/review-subjects/<digest-hex>.json`; the chart binds that
+asset through `reviewed_subject_ref` and `reviewed_subject_fingerprint` inside
+`correction_review`. The subject cannot point to the review, pattern, or
+applicability assets, while those assets may point to the subject. This makes
+the content-addressed dependency graph acyclic.
+
 The direct review asset is exact RFC 8785:
 
 ~~~json
-{"chart_fingerprint":"sha256:<hex>","cut_fingerprint":"sha256:<hex>","hard_oracle_interpretation_fingerprint":"sha256:<hex>","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","holdout_blind":true,"independent_of_candidate_generation":true,"reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
+{"cut_fingerprint":"sha256:<hex>","evaluator_informed":true,"hard_oracle_interpretation_fingerprint":"sha256:<hex>","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","independent_of_candidate_generation":true,"reviewed_subject_fingerprint":"sha256:<hex>","reviewed_subject_ref":"evaluators/review-subjects/<digest-hex>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
 ~~~
 
 The reviewed-pattern route binds exact RFC 8785 bytes:
 
 ~~~json
-{"holdout_blind":true,"independent_of_candidate_generation":true,"pattern_id":"<stable-pattern-id>","predicate_fingerprint":"sha256:<hex>","predicate_ref":"evaluators/correction-patterns/<pattern-id>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-reviewed-pattern/v1"}
+{"evaluator_informed":true,"independent_of_candidate_generation":true,"pattern_id":"<stable-pattern-id>","predicate_fingerprint":"sha256:<hex>","predicate_ref":"evaluators/correction-patterns/<pattern-id>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-reviewed-pattern/v1"}
 ~~~
 
 and exact applicability bytes:
 
 ~~~json
-{"applies":true,"chart_fingerprint":"sha256:<hex>","evaluator_implementation_fingerprint":"sha256:<hex>","evaluator_implementation_ref":"evaluators/implementation.json","reviewed_pattern_fingerprint":"sha256:<hex>","reviewed_pattern_ref":"evaluators/correction-patterns/<pattern-id>-review.json","schema":"correction-pattern-applicability/v1"}
+{"applies":true,"evaluator_implementation_fingerprint":"sha256:<hex>","evaluator_implementation_ref":"evaluators/implementation.json","reviewed_pattern_fingerprint":"sha256:<hex>","reviewed_pattern_ref":"evaluators/correction-patterns/<pattern-id>-review.json","reviewed_subject_fingerprint":"sha256:<hex>","reviewed_subject_ref":"evaluators/review-subjects/<digest-hex>.json","schema":"correction-pattern-applicability/v1"}
 ~~~
 
 The review, pattern, applicability, and every fingerprinted preimage are
@@ -688,7 +709,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
@@ -700,6 +721,10 @@ pre-candidate policy must equal the frozen cycle commitments, and its candidate
 fingerprint must equal the frozen candidate manifest. Missing, mismatched,
 pre-run, or externally supplied access
 evidence contaminates the holdout.
+`candidate_generation_blind: true` is emitted only after the runner proves that
+the optimizer context, readable input roots, tool observations, and writable
+output roots contain no holdout semantics; it is a result of the retained
+access and leakage evidence, not a reviewer attestation.
 `optimizer_context_ref` retains the exact RFC 8785 bytes and
 `optimizer_context_fingerprint` hashes them:
 `{"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-UTF-8>","role":"system"}],"schema":"optimizer-context/v1"}`
@@ -752,22 +777,30 @@ cannot emit `status: completed` otherwise.
 The policy is exact RFC 8785 `optimizer-tool-policy/v1`:
 
 ~~~json
-{"allowed_tools":[{"effects":["filesystem_read"],"name":"<tool-name>","schema_fingerprint":"sha256:<hex>","schema_ref":"harnesses/candidates/<candidate-id>/tool-schemas/<tool-name>.json"}],"external_side_effects":"deny","filesystem_roots":[{"access":"read_only","path":"<canonical-absolute-root>","root_id":"<root-id>"}],"network":"deny","schema":"optimizer-tool-policy/v1"}
+{"allowed_tools":[{"effects":["filesystem_read","filesystem_write"],"name":"<tool-name>","schema_fingerprint":"sha256:<hex>","schema_ref":"harnesses/candidates/<candidate-id>/tool-schemas/<tool-name>.json"}],"external_side_effects":"deny","filesystem_roots":[{"access":"read_only","path":"<canonical-absolute-input-root>","root_id":"<input-root-id>"},{"access":"isolated_write","path":"<canonical-absolute-output-root>","root_id":"<output-root-id>"}],"network":"deny","schema":"optimizer-tool-policy/v1"}
 ~~~
 
 Tools sort by name, roots by root ID, effects lexically; all arrays are
-duplicate-free. Unlisted tools, roots, and effects are denied. The trace is
+duplicate-free. `filesystem_write` is admitted only for the predeclared output
+roots whose access is `isolated_write`; input roots remain `read_only`, and no
+other output roots are writable. Unlisted tools, roots, and effects are denied. The trace is
 exact RFC 8785 `optimizer-tool-trace/v1`:
 
 ~~~json
-{"events":[{"arguments_fingerprint":"sha256:<hex>","arguments_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000001-arguments.json","call_id":"<runner-call-id>","effect_fingerprints":[],"kind":"tool_call","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":null,"result_ref":null,"sequence":1,"tool":"<tool-name>"}],"policy_fingerprint":"sha256:<hex>","policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-tool-trace/v1"}
+{"events":[{"arguments_fingerprint":"sha256:<hex>","arguments_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000001-arguments.json","call_id":"<runner-call-id>","effects":[],"error_fingerprint":null,"error_ref":null,"kind":"tool_call","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":null,"result_ref":null,"sequence":1,"tool":"<tool-name>"},{"arguments_fingerprint":null,"arguments_ref":null,"call_id":"<runner-call-id>","effects":[{"effect_fingerprint":"sha256:<hex>","effect_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000002-effect-000001.json"}],"error_fingerprint":null,"error_ref":null,"kind":"tool_result","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":"sha256:<hex>","result_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000002-result.json","sequence":2,"tool":"<tool-name>"}],"policy_fingerprint":"sha256:<hex>","policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-tool-trace/v1"}
 ~~~
 
 Each event has exactly those fields. `kind` is `observation`, `tool_call`, or
-`tool_result`; fields irrelevant to that kind are null or empty, while every
-present ref/fingerprint binds exact retained bytes. Sequence starts at one and
-is contiguous, calls and results join one-to-one by `call_id`, and observed
-effects equal the policy. The input inventory's `tool_policy_fingerprint`, the
+`tool_result`. An `observation` has one non-null observation ref/fingerprint
+pair and null call, tool, arguments, result, and error fields with empty
+`effects`. A `tool_call` has non-null call, tool, and arguments fields, null
+observation/result/error fields, and empty `effects`. A `tool_result` has
+non-null call and tool fields, null observation/arguments fields, exactly one
+non-null result or error ref/fingerprint pair, and the complete ordered
+`effects` array. Each effect object has exactly `effect_ref` and
+`effect_fingerprint`; every present ref/fingerprint binds exact retained bytes.
+Sequence starts at one and is contiguous, calls and results join one-to-one by
+`call_id`, and observed effects equal the policy. The input inventory's `tool_policy_fingerprint`, the
 access proof's optimizer-tool-policy fingerprint, and the trace policy
 fingerprint are identical.
 
@@ -1092,11 +1125,13 @@ pre-candidate policy, final root closure, runs, and EER, plus their
 atlas-relative validation artifact.
 
 If either semantic leakage review reports `leak` or `uncertain` involving a
-holdout identity, acquire `.partition-freeze.lock` and the affected identity
-locks in canonical order before returning. Atomically replace every affected
+holdout identity, acquire the user-global `.partition-freeze.lock` before
+returning. This pre-root mutex exists before a final atlas root or reservation
+and does not require either one or any reservation-derived identity lock.
+While holding it, atomically replace every affected
 `holdout_unexposed` claim with its durable `optimizer_exposed` exposure marker,
 and create equivalent markers for newly identified aliases before releasing
-the locks. A compatible exposed claim is retained; no exposed state may return
+the mutex. A compatible exposed claim is retained; no exposed state may return
 to `holdout_unexposed`. Only after every marker is durably present may the run
 return `holdout_contaminated`. A failed or partial transition blocks all
 affected identities as `source_contaminated`; it never leaves them eligible for

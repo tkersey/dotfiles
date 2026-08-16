@@ -488,6 +488,8 @@ environment_chart:
       refs: []
       attribution: direct | bounded | ambiguous
       correction_review:
+        reviewed_subject_ref:
+        reviewed_subject_fingerprint:
         human_review_ref:
         human_review_fingerprint:
         reviewed_pattern_ref:
@@ -571,15 +573,21 @@ only for `executable`.
 
 For a correction-derived chart to enter holdout or contribute to
 `harness_selection`, `promotion`, or `preference_training`, `correction_review`
-binds exactly one authority route. The direct route has non-null
-`human_review_ref` and fingerprint and null pattern/applicability fields. The
-reused-pattern route has null human-review fields and non-null reviewed-pattern
-and applicability ref/fingerprint pairs. `reviewer_independence` is `true` in
-either route. The bound review or reviewed-pattern asset identifies an
-independent, holdout-blind human reviewer; applicability is evaluator-produced
-evidence that the exact chart satisfies that already reviewed pattern, not a
-chart-author declaration. Missing, mixed, self-authored, or non-independent
-authority limits the chart to diagnostic/development use.
+binds one `correction-review-subject/v1` ref/fingerprint and exactly one
+authority route. That subject is the canonical chart projection with the whole
+`correction_review` subtree removed, so the finalized chart may bind the review
+without the review fingerprinting the finalized chart back. The direct route
+has non-null `human_review_ref` and fingerprint and null pattern/applicability
+fields. The reused-pattern route has null human-review fields and non-null
+reviewed-pattern and applicability ref/fingerprint pairs.
+`reviewer_independence` is `true` in either route. The bound review or
+reviewed-pattern asset identifies an evaluator-informed reviewer who is
+independent of candidate generation; optimizer blindness is proved separately
+by the candidate-generation access boundary. Applicability is
+evaluator-produced evidence that the reviewed subject satisfies that already
+reviewed pattern, not a chart-author declaration. Missing, mixed,
+self-authored, cyclic, or non-independent authority limits the chart to
+diagnostic/development use.
 
 Closure assets are regular, non-symlink files. Each regular asset binds its executable
 mode as well as exact bytes; file-type or mode drift is

@@ -694,12 +694,13 @@ authority.
 The manifest has exactly this payload:
 
 ```json
-{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<hex>","kind":"preferences","ref":"datasets/preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1"}
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"preferences","ref":"datasets/<dataset-digest-hex>.preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1"}
 ```
 
 `datasets` is sorted by `kind`, duplicate-free, and contains every and only
 emitted dataset whose matching authorization is `true`; kind/ref suffixes are
-fixed by the dataset schemas. `originating_eer_ref` and fingerprint identify
+fixed by the dataset schemas, and `<dataset-digest-hex>` is the lowercase hex
+component of that entry's `fingerprint`. `originating_eer_ref` and fingerprint identify
 the exact sealed EER, and `contract_fingerprint` equals that EER's root
 contract. For `run`, `mutate`, and `compare`, both runs fields are non-null and
 identify the exact sealed `runs.jsonl`; for `design` and `implement`, both are

@@ -123,8 +123,10 @@ Choose exactly one mode.
 
 ### design
 
-Compile or repair the root contract and its charts. Do not generate runtime
-files unless the requested artifact is itself an actor packet or evaluator.
+Compile or repair the root contract and its charts. Design may create only the
+contract-owned world/reset/evaluator assets, fixtures, and tool definitions
+required to close the selected executable chart; it does not provision an
+actor runtime, execute the chart, or introduce a native subsystem.
 
 ### implement
 
