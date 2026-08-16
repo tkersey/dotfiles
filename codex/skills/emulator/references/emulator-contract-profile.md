@@ -312,6 +312,15 @@ classify the complete frozen diff but cannot add owner paths, selectors, policy,
 or evaluator authority. Any other drift is
 `holdout_contaminated`.
 
+Per-run actor-readable inventories are runtime evidence and MUST NOT be fields
+of `factor-delta-validation/v1` or any other pre-run root-closure asset. After
+the frozen cohort runs, the evaluator emits the report-owned
+`actor-readable-surface-validation/v1` defined by
+`session-derived-atlas.md`. Its complete unique pair set covers every
+chart/repeat execution tuple and permits only the already-frozen factor delta.
+The EER and comparison bind its exact ref/fingerprint. Missing, incomplete, or
+non-passing coverage is `comparison_drift`.
+
 `comparison_implementation` binds the exact aggregation, delta, precedence,
 and recommendation implementation. Its ref/fingerprint MUST equal the
 pre-candidate commitment and is repeated in each pairwise EER and
@@ -344,8 +353,11 @@ mandatory. This is a mode-neutral subject binding, not invented comparison
 state for a standalone run.
 When a paired comparison contains holdout charts, `partition_policy.factor_selection`
 is mandatory and binds the exact pre-holdout `factor-selection/v1` asset. Its
-factor and owner paths equal the corresponding pre-candidate and optimizer-policy
-fields. A missing, later-authored, or mismatched asset is
+baseline fingerprint equals the frozen baseline harness, and its factor,
+root-qualified owner paths, runtime keys, and derived runtime fields equal the
+corresponding pre-candidate and optimizer-policy fields. The optimizer policy
+does not receive the factor-selection ref/fingerprint or its evidence and
+baseline commitments. A missing, later-authored, or mismatched asset is
 `holdout_contaminated`.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`

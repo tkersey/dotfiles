@@ -81,6 +81,8 @@ emulator_execution_report:
     factor_delta_validation_fingerprint:
     semantic_delta_attestation_ref:
     semantic_delta_attestation_fingerprint:
+    actor_readable_surface_validation_ref:
+    actor_readable_surface_validation_fingerprint:
     actor_context_delta_validation_ref:
     actor_context_delta_validation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
@@ -288,6 +290,16 @@ readable entry and delivered message; the post-run rows additionally map every
 tool observation and bind the pre-phase review fingerprint. Missing, stale,
 partial, `leak`, or `uncertain` review evidence is
 `historical_leakage` and makes the run ineligible.
+
+Every paired comparison also binds exact
+`actor-readable-surface-validation/v1` bytes by ref and fingerprint. The
+report-owned artifact uses the exact schema in `session-derived-atlas.md` and
+contains one complete unique baseline/candidate inventory pair for every
+chart/repeat tuple in the frozen cohort. It is created only after those runtime
+inventories exist and is not part of the root closure or static factor-delta
+validation. Every pair permits only the root-qualified paths already authorized
+by the frozen factor delta; missing, extra, or non-passing pairs are
+`comparison_drift`.
 
 Every paired comparison also binds exact
 `actor-context-delta-validation/v1` bytes by ref and fingerprint. That artifact
@@ -549,6 +561,8 @@ counterexample artifact by reference and fingerprint.
   "factor_delta_validation_fingerprint": "sha256:...",
   "semantic_delta_attestation_ref": null,
   "semantic_delta_attestation_fingerprint": null,
+  "actor_readable_surface_validation_ref": "reports/cmp-.../actor-readable-surface-validation.json",
+  "actor_readable_surface_validation_fingerprint": "sha256:...",
   "actor_context_delta_validation_ref": "reports/cmp-.../actor-context-delta-validation.json",
   "actor_context_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {

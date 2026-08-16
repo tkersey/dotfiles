@@ -112,17 +112,23 @@ resolve and preflight the user-global exposure registry, acquire its
 `semantic-discovery-exposure/v1` bytes under that registry:
 
 ~~~json
-{"corpus_digest":"sha256:<hex>","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-exposure/v1","status":"discovery_exposed_on_read"}
+{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-exposure/v1","status":"discovery_exposed_on_read"}
 ~~~
 
-`query_fingerprint` binds the exact Seq query specification and selected corpus
-root. Only after that discovery exposure is durable may the semantic read run.
-Before releasing the lock, append permanent `discovery_exposed` identity claims
-for every returned session and group. If the process stops after the read but
-before those identity claims publish, the query-level exposure remains
-authoritative and every result of that exact query is discovery-only. Prompt
-matches are permanently `discovery_exposed` and cannot later enter development
-or holdout.
+Before the query, materialize the referenced physical corpus snapshot from
+non-semantic session metadata. It contains the selected corpus root and every
+physically present session identity and source-file digest in query scope;
+`corpus_snapshot_fingerprint` hashes those exact bytes. `query_fingerprint`
+binds the exact Seq query specification and that snapshot fingerprint. Only
+after the exposure record is durable may the semantic read run. Before
+releasing the lock, retain the exact result envelope and append permanent
+`discovery_exposed` identity claims that bind its ref/fingerprint for every
+returned session and group. If the process stops after the read but before
+those result-bound claims publish, every identity in the pre-query corpus
+snapshot is conservatively discovery-only. Prompt matches are permanently
+`discovery_exposed` and cannot later enter development or holdout. The later
+source-bundle `corpus_digest` remains a post-selection closure identity and is
+never required by this pre-read record.
 To discover a holdout candidate, use only physical metadata after publishing a
 complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
@@ -551,17 +557,25 @@ inventory/access capability. If CAS does not expose it, use an already-supported
 direct runner that does or stop with `runner_unavailable`; the first skill-only
 implementation does not add a CAS route or a new runner.
 
-For `paired_compare`, the evaluator-owned factor-delta validator also emits the
-`readable_surface` member of `factor-delta-validation/v1`. It binds both
-inventory ref/fingerprint pairs and both harness manifests. Readable roots, tool policy, and
-every inventory entry outside factor-owned manifest deltas MUST be byte-equal
-between arms. Each differing, added, or removed entry MUST correspond exactly to
-one declared factor-owned harness delta and to the matching arm's manifest bytes,
-type, mode, and path. No other readable-surface delta is allowed. This exact
-member is part of the existing `factor-delta-validation/v1` bytes. The pairwise
-comparison and EER bind that
-factor-delta validation ref/fingerprint. Missing or non-passing readable-surface
-validation is `comparison_drift`, even when both per-arm access proofs pass.
+For `paired_compare`, after all cohort runs finish, the evaluator emits one
+report-owned RFC 8785 `actor-readable-surface-validation/v1` artifact. It
+contains a complete pair for every chart/repeat tuple and binds both inventory
+ref/fingerprint pairs, their run IDs, and the frozen factor-delta validation.
+Readable roots, tool policy, and every inventory entry outside factor-owned
+manifest deltas MUST be byte-equal between arms. Each differing, added, or
+removed entry MUST correspond exactly to one declared factor-owned harness
+delta and to the matching arm's manifest bytes, type, mode, and path. No other
+readable-surface delta is allowed. Pairs sort by `(chart_id, repeat_id,
+baseline_run_id, candidate_run_id)`, are complete and unique for the frozen
+cohort, and each contains the complete sorted root-qualified factor path set.
+The pairwise comparison and EER bind this post-run ref/fingerprint separately
+from the pre-run `factor-delta-validation/v1`. Missing, incomplete, or
+non-passing readable-surface validation is `comparison_drift`, even when both
+per-arm access proofs pass.
+
+~~~json
+{"factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","baseline_run_id":"<run-id>","candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_run_id":"<run-id>","chart_id":"<chart-id>","nonfactor_entries_equal":true,"readable_roots_equal":true,"repeat_id":"<repeat-id>","status":"pass","tool_policy_equal":true}],"schema":"actor-readable-surface-validation/v1"}
+~~~
 
 `actor_context_ref` retains the exact RFC 8785 `actor-context/v1` bytes under
 the run directory, and `actor_context_fingerprint` hashes those bytes:
@@ -709,20 +723,26 @@ partition registry locks every member identity as well as the cluster identity.
 - holdout is frozen before candidate generation and hidden from the author,
   optimizer prompt, candidate worktree, and development reports.
 
-Before the first semantic read of any holdout chart, the human owner selects
-exactly one factor from discovery/development evidence and publishes immutable
+Before the first semantic read of any holdout chart, freeze the exact baseline
+harness and have the human owner select exactly one factor from
+discovery/development evidence. Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"discovery_development_evidence_refs":["sha256:<hex>"],"factor":"question_policy","factor_owner_paths":["<relative-path>"],"holdout_semantics_seen":false,"schema":"factor-selection/v1","selector_identity_fingerprint":"sha256:<hex>"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence_refs":["sha256:<hex>"],"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"holdout_semantics_seen":false,"runtime_configuration_keys":["<key>"],"runtime_surface_fields":["<field>"],"schema":"factor-selection/v1","selector_identity_fingerprint":"sha256:<hex>"}
 ~~~
 
-Evidence refs and owner paths are sorted and duplicate-free. The artifact is
-created under the global partition mutex, before holdout compilation, and bound
-by the root, pre-candidate policy, redacted optimizer policy, and final reports.
-It cannot be revised after a holdout semantic read. If factor selection requires
-holdout contents, those charts become discovery/development and a new untouched
-group is required.
+Evidence refs, root-qualified owner paths, runtime keys, and derived runtime
+fields are sorted and duplicate-free. The artifact is created under the global
+partition mutex before holdout compilation and binds the already-frozen
+baseline. The root, evaluator-only pre-candidate policy, and final reports bind
+its exact ref/fingerprint. The redacted optimizer policy receives only the
+artifact's shared semantic fields, not its ref, fingerprint, evidence refs, or
+baseline commitment. Neither the baseline nor factor selection can be revised
+after a holdout semantic read. If factor selection requires holdout contents,
+those charts become discovery/development and a new untouched group is
+required. Any baseline drift after this artifact is published restarts factor
+selection and requires a new untouched holdout group.
 
 After each holdout chart and evaluator closure is compiled, recursively verified,
 and structurally validated—but before candidate generation, actor execution, or
@@ -920,9 +940,11 @@ retirement-index update lock in that fixed global order. Every path that needs
 both locks uses this order and releases them in reverse. Revalidate the exact global
 claim bytes against the root snapshots, resolve the current pointer, and require
 its target snapshot fingerprint to equal the root's bound snapshot. While still
-holding both locks, acquire the group locks and create the reservation described
-below; release the retirement lock and then the partition lock only after those
-bytes are durably present. Claim writers therefore cannot expose or reclassify
+holding both locks, create and durably publish the complete cycle reservation,
+then acquire the group locks whose exact payloads bind that reservation
+fingerprint. Release the retirement lock and then the partition lock only after
+the reservation, locks, snapshots, and validation bytes are durably present.
+Claim writers therefore cannot expose or reclassify
 a group between revalidation and reservation. A stale
 root therefore remains auditable but is ineligible for selection until a new
 pre-candidate policy and candidate cycle restart from the advanced snapshot;
@@ -1223,12 +1245,13 @@ implementation ref/fingerprint that will aggregate results and choose the
 recommendation.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate redacted optimizer policy
-containing the same selected factor, exact factor-owner paths and factor-
-selection ref/fingerprint, the same non-holdout
+containing the same selected factor and exact factor-owner paths, the same non-holdout
 structured byte selectors and runtime keys,
 runtime constraints, budget, and only discovery/development inputs. Before
 candidate generation, require those shared fields to equal the pre-candidate
-policy exactly. The final root binds both exact refs and
+policy exactly. The optimizer policy contains no factor-selection ref,
+fingerprint, evidence refs, baseline fingerprint, or other commitment digest.
+The final root binds both exact policy refs and
 fingerprints; candidate manifests cannot rewrite either snapshot.
 The final root and each pairwise report repeat the same comparison
 implementation identity.
@@ -1438,7 +1461,7 @@ attestation produced by candidate generation is `multiple_factors`.
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","readable_surface":{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","nonfactor_entries_equal":true,"readable_roots_equal":true,"status":"pass","tool_policy_equal":true},"runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
+{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
 ~~~
 
 `changed_files` is the complete regular-file content-difference set sorted by
@@ -1448,10 +1471,6 @@ arrays are the complete changed-key/field sets sorted by `key` and `field`;
 value fingerprints hash the exact RFC 8785 value bytes, including `null`.
 `derivation_path_refs` and `derivation_runtime_keys` are sorted and
 duplicate-free, and each contains only approved changed paths or runtime keys.
-`readable_surface.authorized_factor_delta_paths` is sorted by `(root_id, path)`,
-duplicate-free, and equals the complete path set licensed by `changed_files` and
-the frozen owner policy. Both inventory refs/fingerprints resolve to the exact
-paired run inputs. All four booleans and `status: pass` are mandatory.
 At least one derivation input is present for every changed surface field. The two attestation fields are both null unless a mixed-owner
 file changes, when both contain the exact attestation asset ref and fingerprint
 bound by candidate metadata. `owner_policy_ref` and
