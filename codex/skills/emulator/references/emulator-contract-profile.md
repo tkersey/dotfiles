@@ -63,6 +63,7 @@ emulator_contract:
         chart_fingerprint:
         kind: normative_decision | executable_episode | observational
         split_group:
+        source_group_fingerprint:
         partition: discovery | development | holdout
         required: true | false
 
@@ -70,6 +71,7 @@ emulator_contract:
       group_by: root_session_or_task
       frozen_before_candidate_generation: true
       holdout_visible_to_optimizer: false
+      holdout_lock_root:
       retirement_index:
         ref: holdout-retirements/snapshots/<fingerprint>.json
         fingerprint:
@@ -142,6 +144,10 @@ optimizer policy contains only the selected factor, runtime constraints,
 candidate budget, and discovery/development inputs; it contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
+Before candidate generation, validation requires exact equality between the
+two policies' selected factor, runtime constraints, and candidate budget.
+Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
+not make divergent policy values compatible.
 
 `subject: harness` requires fingerprinted baseline and candidate harness
 manifests in the recursive root closure.
@@ -185,6 +191,7 @@ environment_chart:
 
   split:
     group_id:
+    source_group_fingerprint:
     partition: discovery | development | holdout
 
   cut:

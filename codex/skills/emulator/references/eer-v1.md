@@ -27,11 +27,11 @@ emulator_execution_report:
     subject: harness | actor | environment_implementation
     factor:
     atlas_fingerprint:
-    partition_snapshot_fingerprint:
-    partition_validation_ref:
-    partition_validation_fingerprint:
-    holdout_reservation_ref:
-    holdout_reservation_fingerprint:
+    partition_snapshot_fingerprint:  # selecting roots only
+    partition_validation_ref:        # selecting roots only
+    partition_validation_fingerprint: # selecting roots only
+    holdout_reservation_ref:          # holdout runs only
+    holdout_reservation_fingerprint:  # holdout runs only
     actor_access_proof_ref:
     actor_access_proof_fingerprint:
     baseline_harness_fingerprint:  # harness subject only
@@ -78,11 +78,11 @@ emulator_execution_report:
       chart_kind:
       partition:
       split_group:
-      partition_snapshot_fingerprint:
-      partition_validation_ref:
-      partition_validation_fingerprint:
-      holdout_reservation_ref:
-      holdout_reservation_fingerprint:
+      partition_snapshot_fingerprint:  # selecting roots only
+      partition_validation_ref:        # selecting roots only
+      partition_validation_fingerprint: # selecting roots only
+      holdout_reservation_ref:          # holdout runs only
+      holdout_reservation_fingerprint:  # holdout runs only
       subject_kind: harness | actor | environment_implementation
       subject_id:
       subject_fingerprint:
@@ -180,8 +180,10 @@ runtime-error, ambiguous, or skipped row records a reason and the evidence
 available before termination. No historical run appears as a baseline
 execution.
 
-Every execution row binds its root contract, atlas, and current partition-
-snapshot fingerprints. Every comparison binds the exact declared subject
+Every execution row binds its root contract and atlas fingerprints. A selecting
+root also binds its current partition-snapshot fingerprint and validation
+artifact; roots without holdout omit partition-snapshot, validation, and
+reservation fields. Every comparison binds the exact declared subject
 bundle, chart, root closure, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Harness manifests are required only for `subject: harness`;
@@ -308,6 +310,14 @@ counterexample artifact by reference and fingerprint.
   "contract_fingerprint": "sha256:...",
   "subject": "harness",
   "factor": "question_policy",
+  "atlas_fingerprint": "sha256:...",
+  "partition_snapshot_fingerprint": "sha256:...",
+  "partition_validation_ref": "partition-validation.json",
+  "partition_validation_fingerprint": "sha256:...",
+  "holdout_reservation_ref": "holdout-reservation.json",
+  "holdout_reservation_fingerprint": "sha256:...",
+  "actor_access_proof_ref": "actor-access-proof.json",
+  "actor_access_proof_fingerprint": "sha256:...",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
   "baseline_subject_fingerprint": "sha256:...",

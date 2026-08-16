@@ -394,6 +394,15 @@ One split group contains all charts derived from the same root session, root
 task, issue, PR, linked worker lineage, or nearly duplicated request. A group
 never crosses partitions.
 
+Each group also has a corpus-independent `source_group_fingerprint`. Compute it
+as SHA-256 of canonical JSON containing `schema: emulator-source-group/v1` and
+the ordered immutable source identities that define the root session/task
+lineage (for example root session ID plus exact source digest, or repository
+identity plus issue/PR/task source ref). Local chart IDs, atlas IDs, partition,
+and the surrounding corpus are excluded. Root chart entries repeat the chart's
+`source_group_fingerprint` exactly; a mismatch or a group whose identity cannot
+be made immutable is ineligible for holdout.
+
 - discovery is visible for failure mining, mechanism hypotheses, and chart
   design;
 - development is visible for bounded candidate and evaluator iteration;
@@ -437,8 +446,10 @@ Before every selecting run, resolve the current pointer and require its target
 snapshot fingerprint to equal the root's bound snapshot. A stale
 root therefore remains auditable but is ineligible for selection until a new
 root closure binds the current index. Record the partition-snapshot fingerprint
-in every run and report. A group named by the current index is inactive and
-cannot be reused as holdout.
+in every selecting run and report. For a root with no holdout,
+partition-snapshot, validation, and reservation fields are absent rather than
+invented. A group named by the current index is inactive and cannot be reused
+as holdout.
 
 Before the first actor sees a holdout, atomically create an exclusive
 `holdout-use/v1` reservation. For compare mode it names the optimization cycle,
@@ -455,15 +466,28 @@ holdout casually.
 
 Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
 cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
-`"emulator-holdout/v1" NUL corpus_digest NUL split_group_id`. The canonical
-lock is `${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks/<hex>.lock`, so the
-same source group cannot be consumed through a second atlas root. Acquire
+`"emulator-holdout/v1" NUL source_group_fingerprint`. Before chart compilation,
+resolve one private, writable `holdout_lock_root` shared by every atlas in the
+storage domain; the default is
+`${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks`, while a caller-supplied
+atlas root must explicitly select and validate its common lock root. The
+canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
+local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
-fails if the key already exists; never use check-then-create. The lock record binds the final
-root fingerprint, pre-candidate policy fingerprint, cycle/run-group identity,
-and reservation fingerprint. If acquisition fails before any actor exposure,
+fails if the key already exists; never use check-then-create. The lock record
+binds the final root fingerprint and reservation fingerprint; compare mode also
+binds the pre-candidate policy fingerprint and cycle identity, while standalone
+mode binds its frozen subject, run-policy fingerprint, and run-group identity.
+If acquisition fails before any actor exposure,
 remove only locks created by that same attempt; after exposure, any incomplete
 lock remains fail-closed for human resolution.
+
+Retirement-index updates use one ordinary exclusive update lock under the same
+`holdout_lock_root`. After acquiring it, reread `current.json`, union the new
+markers with that current immutable snapshot, write the successor snapshot,
+atomically replace the pointer, and release the update lock. A stale expected
+pointer or failed atomic replace aborts without publishing a successor; two
+writers may not derive successors independently from the same snapshot.
 
 Filesystem and process separation are sufficient for the initial accidental
 leakage threat model; do not build a cryptographic broker.
