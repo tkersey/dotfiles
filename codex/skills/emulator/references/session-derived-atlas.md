@@ -235,9 +235,11 @@ and outcome evidence, the historical final answer, and evaluator labels.
 | ambiguous | Multiple explanations remain plausible | diagnostic only |
 
 Before first promotion to harness-selection or preference-training use, a human
-should review the exact source refs, cut, hidden correction, harness surface, and
-hard-oracle interpretation. Proven recurring evaluator patterns may later be
-reused without per-chart review.
+MUST record review of the exact source refs, cut, hidden correction, harness
+surface, and hard-oracle interpretation. Without that evidence the chart stays
+diagnostic. Proven recurring evaluator patterns may later be reused without
+per-chart review only when the chart cites the reviewed pattern and its
+applicability evidence.
 
 ### Construct the evaluator
 
@@ -302,8 +304,10 @@ repeatable reset recipe and pre-state fingerprint
 deterministic evaluator
 ~~~
 
-Approximate may support harness selection only when the known difference cannot
-affect the evaluated behavior; otherwise it is diagnostic. Transcript-only
+Approximate may support harness selection only when the chart binds an exact
+difference inventory plus an inspectable equivalence witness showing those
+differences cannot affect the evaluated behavior. Without both refs and
+fingerprints it is diagnostic. Transcript-only
 supports reasoning/routing/synthesis decisions without task transitions. Absent
 supports no executable claim.
 
@@ -399,16 +403,29 @@ replace it with an untouched group before another optimization cycle.
 Retirement never edits the fingerprinted chart or an earlier root in place.
 Write a content-addressed `holdout-retirement/v1` marker naming the group,
 chart fingerprints, consumption purpose, and prior root fingerprint. Maintain
-the atlas-scoped `holdout-retirements/index.json` as the ordered set of all
-marker refs and fingerprints. The next root binds both the current index digest
-and each effective marker through `partition_policy` and recursive closure.
+immutable content-addressed index snapshots under
+`holdout-retirements/snapshots/<fingerprint>.json`; each is the ordered set of
+all marker refs and fingerprints. A mutable `holdout-retirements/current.json`
+pointer may identify the latest snapshot but is outside prior closures. The
+next root binds the current immutable snapshot and each effective marker through
+`partition_policy` and recursive closure. Before replacing the current root,
+preserve its exact bytes at
+`roots/<root-contract-fingerprint>/emulator-spec.yaml`; reports cite that
+immutable root snapshot.
 
-Before every selecting run, resolve the well-known current index from the atlas
-root and require its fingerprint to equal the root's bound snapshot. A stale
+Before every selecting run, resolve the current pointer and require its target
+snapshot fingerprint to equal the root's bound snapshot. A stale
 root therefore remains auditable but is ineligible for selection until a new
 root closure binds the current index. Record the partition-snapshot fingerprint
 in every run and report. A group named by the current index is inactive and
 cannot be reused as holdout.
+
+Before the first actor sees a holdout, atomically create an exclusive
+`holdout-use/v1` reservation naming the comparison, group, chart fingerprints,
+arms, and repeats. Bind its ref and fingerprint in every affected run. Any
+existing or incomplete reservation makes the group unavailable to another
+comparison and fails closed. On comparison completion, incorporate the
+reservation as a retirement marker in the next immutable snapshot.
 
 Filesystem and process separation are sufficient for the initial accidental
 leakage threat model; do not build a cryptographic broker.
@@ -559,6 +576,10 @@ Return adopt, reject, or insufficient_evidence. Adopt requires:
 4. at least one targeted untouched holdout improvement;
 5. any residual preference is order-stable;
 6. the exact frozen candidate fingerprint was evaluated.
+7. stochastic evidence satisfies the repeat count and improvement rule frozen
+   in the root before candidate generation; arms use matched seeds/schedules
+   when controllable, and uncontrolled nondeterminism that cannot meet that
+   predetermined rule yields `insufficient_evidence`.
 
 Promotion is only an evidence strength: it means these conditions and the chart
 claim matrix support a separately authorized adoption decision. It never mutates
@@ -601,8 +622,10 @@ cluster, fidelity, and supported claim. Every export retains chart and authority
 provenance.
 
 Counterexample rows require a fresh environment-valid mutation run, exact
-mutation assignment and generator identity, a reproducible minimized failing
-artifact, evaluator evidence, and a chart that is not active holdout. A
+mutation assignment, a reproducible minimized failing artifact, evaluator
+evidence, and a chart that is not active holdout. Bind the external generator
+when one exists; finite built-in enumeration instead derives case identity from
+the chart fingerprint, ordered dimension assignment, and shrink strategy. A
 historical failure alone is not an exportable counterexample row.
 
 ## Stop and rollback

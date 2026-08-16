@@ -71,7 +71,7 @@ emulator_contract:
       frozen_before_candidate_generation: true
       holdout_visible_to_optimizer: false
       retirement_index:
-        ref: holdout-retirements/index.json
+        ref: holdout-retirements/snapshots/<fingerprint>.json
         fingerprint:
       retirement_markers:
         - ref:
@@ -96,6 +96,11 @@ emulator_contract:
     candidate_factor_policy: one_semantic_owner
     stochastic_repeats: 3
     deterministic_repeats: 1
+    stochastic_evidence:
+      matched_randomness_when_available: true
+      uncontrolled_repeat_count:
+      improvement_rule:
+      frozen_before_candidate_generation: true
     order_blinding: true
     swapped_judge_order: true
     hard_oracle_precedence: true
@@ -404,6 +409,7 @@ implementation/seed identity plus contracted effects, termination, support match
 for harness comparison: fingerprinted baseline and candidate harness manifests
 for actor or environment comparison: fingerprinted baseline and candidate subject bundles
 same-comparison fingerprints and one semantic factor for compare mode
+predetermined stochastic evidence rule and matched randomness when available
 hard-oracle precedence and protected dimensions
 claim class no stronger than authority, attribution, world, and freshness
 ~~~

@@ -18,6 +18,10 @@ emulator_execution_report:
     closure_inventory_ref:
     closure_inventory_fingerprint:
 
+  runs:
+    ref:
+    fingerprint:
+
   comparison:  # present only for one baseline/candidate compare pair
     comparison_id:
     subject: harness | actor | environment_implementation
@@ -50,6 +54,10 @@ emulator_execution_report:
       partition:
       split_group:
       partition_snapshot_fingerprint:
+      partition_validation_ref:
+      partition_validation_fingerprint:
+      holdout_reservation_ref:
+      holdout_reservation_fingerprint:
       subject_kind: harness | actor | environment_implementation
       subject_id:
       subject_fingerprint:
@@ -68,8 +76,11 @@ emulator_execution_report:
       failure_schedule_fingerprint:
       world_fingerprint:
       reset_recipe_fingerprint:
+      reset_result_ref:
+      reset_result_fingerprint:
       effect_policy_fingerprint:
       actor_input_fingerprint:
+      actor_readable_inventory_ref:
       actor_readable_inventory_fingerprint:
       actor_access_proof_ref:
       actor_access_proof_fingerprint:
@@ -154,6 +165,17 @@ the actor could not read evaluator-only roots; both its reference and exact
 fingerprint are recorded and verified. Every emitted dataset reference has a
 companion fingerprint.
 
+Selecting runs bind the exact validation artifact that proves the atlas's
+current pointer resolved to the root-bound immutable partition snapshot. Holdout
+runs additionally bind the exclusive pre-exposure reservation. Missing or
+mismatched evidence makes selecting use invalid rather than silently reusing a
+stale or consumed group.
+
+The report binds the exact emitted `runs.jsonl` bytes. Its parsed rows MUST equal
+`executions` in order and content. Every executable run also binds the observed
+reset-result/pre-state artifact; a missing or mismatched result is
+`invalid_environment`, even when the reset recipe itself is unchanged.
+
 `run` mode omits `comparison` and emits executions plus applicable datasets and
 limitations. It does not invent a candidate fingerprint or recommendation.
 Each `compare` EER binds exactly one baseline/candidate pair. When a request
@@ -180,6 +202,10 @@ independent run-group ID and leaves comparison-only fields null:
   "partition": "holdout",
   "split_group": "group-...",
   "partition_snapshot_fingerprint": "sha256:...",
+  "partition_validation_ref": "partition-validation.json",
+  "partition_validation_fingerprint": "sha256:...",
+  "holdout_reservation_ref": "holdout-use/run-group.json",
+  "holdout_reservation_fingerprint": "sha256:...",
   "subject_kind": "harness",
   "subject_id": "candidate-1",
   "subject_fingerprint": "sha256:...",
@@ -199,8 +225,11 @@ independent run-group ID and leaves comparison-only fields null:
   "failure_schedule_fingerprint": null,
   "world_fingerprint": null,
   "reset_recipe_fingerprint": null,
+  "reset_result_ref": null,
+  "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
   "actor_input_fingerprint": "sha256:...",
+  "actor_readable_inventory_ref": "actor-readable-inventory.json",
   "actor_readable_inventory_fingerprint": "sha256:...",
   "actor_access_proof_ref": "traces/run-...-access.json",
   "actor_access_proof_fingerprint": "sha256:...",
@@ -232,8 +261,9 @@ These rows are not a new global event store.
 Every non-pass status has a nonempty `status_reason`. Malformed actor/action
 output, a failed required state assertion, and a failed trace invariant each map
 to `hard_fail` before comparison or residual judgment. Mutation runs record the
-case identity and assignment plus generator identity; a minimized failure binds
-its counterexample artifact by reference and fingerprint.
+case identity and assignment plus either the external generator identity or the
+chart-bound finite-enumeration identity; a minimized failure binds its
+counterexample artifact by reference and fingerprint.
 
 ## comparison.json
 
@@ -286,8 +316,9 @@ its counterexample artifact by reference and fingerprint.
 5. required state assertions and state diff
 6. trace invariants
 7. protected dimensions
-8. cost and latency
-9. residual blinded model or human judgment
+8. contracted reward channels
+9. cost and latency
+10. residual blinded model or human judgment
 ```
 
 Hard failures and protected regressions cannot be repaired by later stages. A
@@ -307,7 +338,9 @@ definition fingerprint and observed values.
 every required chart and repeat, no new candidate `hard_fail` of any kind, no
 protected regression, at least one targeted untouched holdout improvement,
 order-stable residual preference when used, and evaluation of the exact
-candidate fingerprint.
+candidate subject fingerprint. Stochastic adoption additionally requires the
+predetermined repeat/improvement rule and matched randomness when available;
+uncontrolled evidence that cannot satisfy the frozen rule is insufficient.
 
 A missing or invalid required arm, tie, unsupported required chart, evaluator
 disagreement, closure/access proof gap, or insufficient untouched holdout
@@ -327,8 +360,9 @@ Dataset references appear only when rows were emitted:
   action, and a fresh passing chosen action that passed hard oracles.
 - Trajectory rows require fresh valid executable runs with reset and complete
   observable trace evidence.
-- Counterexample rows require a fresh valid mutation case, exact assignment and
-  generator identity, and a fingerprinted minimized failing artifact.
+- Counterexample rows require a fresh valid mutation case, exact assignment,
+  external-generator or chart-bound finite-enumeration identity, and a
+  fingerprinted minimized failing artifact.
 - Active holdouts and hidden evaluator material are never exported.
 - Historical assistant responses are not chosen labels merely because they
   occurred.

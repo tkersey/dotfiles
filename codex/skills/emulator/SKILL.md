@@ -217,20 +217,23 @@ execution, evaluation, exports, and stop reasons.
 
 ## Comparison and learning policy
 
-Freeze the baseline and each candidate as complete harness manifests. A
-candidate changes exactly one semantic owner and cannot change charts, source
-bundles, reset recipes, evaluators, comparison code, actor runner, or holdout
+For `subject: harness`, freeze the baseline and each candidate as complete
+harness manifests. For actor or environment-implementation comparisons, freeze
+the corresponding subject bundles and omit harness-only fields. A candidate
+changes exactly one semantic owner and cannot change charts, source bundles,
+reset recipes, evaluators, comparison code, actor runner, or holdout
 partitioning. Candidate generation cannot inspect active holdout material.
 
 Evaluate in this order:
 
 ```text
-environment validity -> support -> hard oracles -> state diff -> trace laws
--> protected dimensions -> cost/latency -> residual judgment
+environment validity -> actor schema -> support -> hard oracles -> state diff
+-> trace laws -> protected dimensions -> reward -> cost/latency -> residual judgment
 ```
 
-Recommendations are `adopt`, `reject`, or `insufficient_evidence`, but they
-grant no mutation authority. Export preference rows only from direct authority
+In `compare` mode, recommendations are `adopt`, `reject`, or
+`insufficient_evidence`, but they grant no mutation authority. Other modes omit
+the recommendation. Export preference rows only from direct authority
 and a fresh passing chosen action. Export trajectories only from fresh valid
 executable runs. Active holdouts never enter training exports.
 
@@ -254,7 +257,7 @@ Findings:
 - Hard-oracle and state deltas:
 - Protected regressions:
 - Residual preference:
-- Recommendation: adopt | reject | insufficient_evidence
+- Recommendation (compare mode only): adopt | reject | insufficient_evidence
 
 Artifacts:
 - Source bundles, actors, worlds, traces, reports, and eligible datasets:
