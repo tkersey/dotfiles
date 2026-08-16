@@ -167,7 +167,7 @@ session_source_map:
   source:
     session_id:
     path:
-    path_sha256:
+    content_sha256:  # SHA-256 of the exact source-file bytes at `path`
     root_session_id:
   queries:
     sessions:
@@ -595,7 +595,8 @@ preserves and binds the existing current snapshot. The pointer is mandatory
 even when there are no retirements. A root without holdout charts may omit both.
 
 Before every selecting run, acquire `.partition-freeze.lock`, then the
-retirement-index update lock in that fixed order. Revalidate the exact global
+retirement-index update lock in that fixed global order. Every path that needs
+both locks uses this order and releases them in reverse. Revalidate the exact global
 claim bytes against the root snapshots, resolve the current pointer, and require
 its target snapshot fingerprint to equal the root's bound snapshot. While still
 holding both locks, acquire the group locks and create the reservation described
@@ -631,12 +632,14 @@ create the exclusive RFC 8785 `holdout-use/v1` reservation at
 `runs/<cycle-id>/holdout-reservation.json` with exactly:
 
 ~~~json
-{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","repeat_ids":["<repeat-id>"]}],"chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
+{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","chart_repeats":[{"chart_fingerprint":"sha256:<hex>","repeat_ids":["<repeat-id>"]}],"comparison_id":"<comparison-id>"}],"chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
 ~~~
 
 `arms` contains the full frozen candidate set and is sorted by `candidate_id`;
-each `repeat_ids` array and both fingerprint arrays are byte-lexicographically
-sorted and duplicate-free. Candidate IDs and comparison IDs are each unique,
+each arm's `chart_repeats` contains every selected chart exactly once, sorted by
+chart fingerprint. Each chart's `repeat_ids` is sorted, duplicate-free, and has
+the exact deterministic or stochastic count frozen by policy. Both top-level
+fingerprint arrays are sorted and duplicate-free. Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
 `comparison_policy.cycle_id`. Each pair keeps its own EER and run group under
@@ -651,9 +654,9 @@ purpose, and prior root; incorporate that marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
-The frozen execution cohort is exactly the Cartesian product of each arm's
-comparison ID, every selected chart fingerprint, baseline and named candidate
-harness fingerprints, and every reserved repeat ID. Exactly one execution row
+The frozen execution cohort is exactly the expansion of each arm's comparison
+ID and per-chart repeat list across the baseline and named candidate harness
+fingerprints. Exactly one execution row
 consumes each tuple. Missing, extra, or duplicate tuples are
 `invalid_environment`; retries require a new comparison identity and cannot be
 selectively appended to the frozen cohort.
@@ -730,7 +733,7 @@ and exposure-registry IDs; canonical paths are evaluator-only runtime facts,
 not report refs.
 
 Immediately before the first actor receives any holdout byte, acquire
-`.retirement-index.lock` and then `.partition-freeze.lock` in that global order,
+`.partition-freeze.lock` and then `.retirement-index.lock` in the same global order,
 reread `current.json`, and require its resolved immutable snapshot to equal the
 root-bound retirement snapshot. Then revalidate every claim, lock, reservation,
 and consumption state against the frozen cycle and atomically create one immutable global
@@ -964,7 +967,9 @@ contains other semantic owners, the asset also binds a human
 hunk implements only the selected factor. This attestation is an explicitly
 permitted fourth validation input, is separately fingerprinted in candidate
 metadata and the validation asset, and cannot widen the predeclared owner set
-or selectors. The
+or selectors. Its attester is independent of candidate generation and has not
+seen holdout chart contents, corrections, evaluator details, or outcomes; the
+attestation binds that holdout-blindness declaration. The
 matching `candidate_harnesses` root entry, candidate metadata, and pairwise EER
 bind the same ref and fingerprint. A missing, incomplete, mismatched, or
 out-of-factor delta is `multiple_factors` and cannot be recommended; one

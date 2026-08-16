@@ -222,7 +222,7 @@ evaluator details. Whole-harness executable comparisons cut before the first
 assistant action unless earlier influence is proved absent.
 
 All charts may support discovery. Only environment-valid fresh paired charts
-with sufficient attribution, transition support, evaluator authority, and
+with sufficient attribution, valid action support, evaluator authority, and
 untouched holdout status may select a candidate. Group all charts from the same
 root session, task, issue, PR, or worker lineage into one partition.
 
