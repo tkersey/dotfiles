@@ -62,8 +62,13 @@ emulator_execution_report:
       termination_reason:
       status_reason:
       hard_oracle_results_ref:
+      hard_oracle_results_fingerprint:
       state_diff_ref:
+      state_diff_fingerprint:
+      trace_invariant_results_ref:
+      trace_invariant_results_fingerprint:
       trace_ref:
+      trace_fingerprint:
       cost:
       limitations: []
 
@@ -124,13 +129,16 @@ candidate so every delta and recommendation has a single arm owner.
 
 ## runs.jsonl
 
-Each fresh run emits one append-only row within its comparison directory:
+Each fresh run emits one append-only row within its run-group directory. Compare
+mode uses the comparison ID as the run-group ID; standalone run mode uses an
+independent run-group ID and leaves comparison-only fields null:
 
 ```json
 {
   "schema": "emulator-run/v1",
   "run_id": "run-...",
-  "comparison_id": "cmp-...",
+  "run_group_id": "run-group-...",
+  "comparison_id": null,
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
   "chart_kind": "normative_decision",
@@ -138,7 +146,7 @@ Each fresh run emits one append-only row within its comparison directory:
   "split_group": "group-...",
   "harness_id": "candidate-1",
   "harness_fingerprint": "sha256:...",
-  "factor": "question_policy",
+  "factor": null,
   "repeat_id": 1,
   "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
@@ -155,8 +163,13 @@ Each fresh run emits one append-only row within its comparison directory:
   "termination_reason": "decision_emitted",
   "status_reason": null,
   "hard_oracle_results_ref": "oracle-results/run-....json",
+  "hard_oracle_results_fingerprint": "sha256:...",
   "state_diff_ref": null,
+  "state_diff_fingerprint": null,
+  "trace_invariant_results_ref": "oracle-results/run-...-trace.json",
+  "trace_invariant_results_fingerprint": "sha256:...",
   "trace_ref": "traces/run-....json",
+  "trace_fingerprint": "sha256:...",
   "cost": {
     "input_tokens": null,
     "output_tokens": null,
@@ -168,6 +181,9 @@ Each fresh run emits one append-only row within its comparison directory:
 
 These rows are not a new global event store.
 
+Every non-pass status has a nonempty `status_reason`. A failed trace invariant
+maps to `hard_fail` before comparison or residual judgment.
+
 ## comparison.json
 
 ```json
@@ -178,6 +194,12 @@ These rows are not a new global event store.
   "factor": "question_policy",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
+  "evaluated_runs": {
+    "baseline": [],
+    "candidate": []
+  },
+  "eer_ref": "EER-v1.yaml",
+  "eer_fingerprint": "sha256:...",
   "eligible_chart_ids": [],
   "excluded_charts": [
     {"chart_id": "...", "reason": "unsupported_counterfactual"}
@@ -186,6 +208,7 @@ These rows are not a new global event store.
   "protected_regressions": [],
   "hard_oracle_delta": {},
   "state_delta": {},
+  "trace_invariant_delta": {},
   "cost_delta": {},
   "residual_preference": {
     "result": "candidate | baseline | tie | ambiguous",

@@ -526,8 +526,8 @@ not count as promotion passes or failures.
 
 Return adopt, reject, or insufficient_evidence. Adopt requires:
 
-1. all required candidate runs are environment-valid;
-2. no new critical hard failure;
+1. complete baseline and candidate arms are environment-valid for every required chart and repeat;
+2. no new candidate hard-oracle failure of any kind;
 3. no protected regression;
 4. at least one targeted untouched holdout improvement;
 5. any residual preference is order-stable;
@@ -537,10 +537,11 @@ Promotion is only an evidence strength: it means these conditions and the chart
 claim matrix support a separately authorized adoption decision. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
+Any new hard-oracle failure or protected regression yields reject.
 
-Use paired_replay_delta, observed_association, regression, or
-insufficient_evidence. Do not claim a causal mechanism from an uncontrolled
-comparison.
+Record paired_replay_delta, observed_association, regression, or
+insufficient_evidence as the evidence relation, separately from the adoption
+recommendation. Do not claim a causal mechanism from an uncontrolled comparison.
 
 ## 11. Export
 

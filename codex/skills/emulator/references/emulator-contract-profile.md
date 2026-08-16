@@ -31,7 +31,7 @@ emulator_contract:
   origin: source_faithful | designed | mixed
 
   source:
-    kind: session | session_corpus | repository | specification | tests | traces | user_design | mixed
+    kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
     refs: []
     corpus_digest:
     current_session_excluded: true
@@ -81,9 +81,11 @@ directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
-For every chart entry, the root `chart_id`, `kind`, `split_group`, and
-`partition` MUST exactly equal the referenced chart's values. Any mismatch is
-`invalid_environment`; neither copy wins by precedence.
+For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
+equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
+`partition` equals chart `split.partition`. Any mismatch is
+`invalid_environment`; neither copy wins by precedence. An observational chart
+MUST have root `required: false` because it cannot participate in selection.
 
 ## Chart contract
 
@@ -97,7 +99,7 @@ environment_chart:
   tags: []
 
   source:
-    source_kind: session | repository | user_design | mixed
+    source_kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
     session_id:
     root_session_id:
     source_bundle_ref:
@@ -131,6 +133,8 @@ environment_chart:
   environment:
     world_fidelity: exact | approximate | transcript_only | absent
     transition_model: total | partial | none
+    world_ref:
+    world_fingerprint:
     implementation:
       ref:
       fingerprint:
@@ -165,6 +169,7 @@ environment_chart:
         classifier_fingerprint:
       executable:
         - support_id:
+          authority_refs: []
           predicate:
             kind: json_pointer_equals
             path:
@@ -228,8 +233,13 @@ seed when controlled, and any sampled failure schedule are explicit and
 fingerprinted; `unavailable` is recorded rather than replaced with an invented
 seed.
 
+Executable charts also bind exactly one canonical `world_ref` and
+`world_fingerprint`; closure assets may contain supporting world material but
+do not create an alternate world identity.
+
 Every support entry has a unique ID and deterministic predicate in the declared
-action schema. The inline predicate language is exact canonical-JSON equality
+action schema plus nonempty authority references to source evidence, evaluator
+authority, or an explicit designed-chart decision. The inline predicate language is exact canonical-JSON equality
 at a JSON Pointer: `path` selects one action value and `value` is the required
 canonical value. Multiple conditions require separate, explicitly composed
 predicate assets rather than implicit prose. An asset matcher binds its
