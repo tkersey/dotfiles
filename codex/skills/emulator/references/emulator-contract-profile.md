@@ -324,6 +324,9 @@ The asset also binds the pre-candidate actor-readable-surface derivation
 implementation. It has exactly one closed pair row per chart/repeat tuple;
 pre-start failures use `unavailable_prestart` with the required null fields
 rather than disappearing from the cohort.
+The report-owned `actor-context-delta-validation/v1` has the same complete
+pair domain and explicit `unavailable_prestart` variant; it never fabricates a
+context fingerprint for an actor that did not start.
 
 `comparison_implementation` binds the exact aggregation, delta, precedence,
 and recommendation implementation. Its ref/fingerprint MUST equal the
@@ -331,6 +334,11 @@ pre-candidate commitment and is repeated in each pairwise EER and
 `comparison.json`. It is evaluator-only, immutable across arms, and cannot be
 modified by a candidate. Missing or unequal bytes are
 `evaluator_contaminated`; no recommendation is eligible.
+Every selecting surface uses the EER-v1 regression-first rule: a decisive
+valid hard, protected, or contracted regression yields `reject` before
+incomplete required coverage is considered. Only when no decisive regression
+exists can invalid, unsupported, skipped, or ambiguous required evidence yield
+`insufficient_evidence`.
 
 Comparisons are harness comparisons. `subject` is therefore exactly `harness`,
 and the recursive root closure contains fingerprinted baseline and candidate
@@ -385,7 +393,8 @@ That compiler is evaluator-informed and isolated from the later optimizer; the
 already-frozen factor-selection artifact MUST predate its first semantic
 holdout read. Once computed, eligibility and `required` cannot change. A
 required holdout that becomes invalid, unsupported, skipped, or ambiguous makes
-the comparison `insufficient_evidence`; it is not an excludable chart.
+the comparison `insufficient_evidence` when no environment-valid, determinate
+row has already proved a decisive regression; it is not an excludable chart.
 Root `chart_id` values are unique; duplicates are `invalid_environment` even
 when their fingerprints happen to match.
 
@@ -503,7 +512,11 @@ environment_chart:
     dimensions:
       - dimension_id:
         domain: []
+        case_kind: ordinary | negative | boundary
         preserved_law_refs: []
+        violated_laws:
+          - law_ref:
+            authority_refs: []
         shrink_strategy:
     generator_ref:
     generator_fingerprint:
@@ -588,13 +601,13 @@ implementation; otherwise the chart is `invalid_environment`.
 
 Support classification has exactly one authoritative representation. With
 `matcher.kind: inline_predicates`, `classifier_ref` and
-`classifier_fingerprint` are null, the five inline lists are authoritative,
+`classifier_fingerprint` are null, the four inline lists are authoritative,
 and admission proves that every valid action matches at most one explicit
 predicate. For `partial` or `none`, `unsupported_default` is `true` and an
 action matching none receives exactly the `unsupported` class from that
 fallback. For `total`, it is `false` only with the exhaustive coverage proof
 required above, so no action can fall through. With
-`matcher.kind: asset`, all five inline lists are empty,
+`matcher.kind: asset`, all four inline lists are empty,
 `unsupported_default` is `false`, and the bound classifier asset is a total
 function from every action admitted by `actions.schema` to exactly one of
 `executable`, `judgeable`, `denied`, `observed_only`, or `unsupported`.
@@ -602,6 +615,15 @@ Mixed representations, a zero-class result after fallback, or a multiple-class
 result make the chart `invalid_environment`. Thus every admitted valid action
 has exactly one support class before evaluation, while `step` remains defined
 only for `executable`.
+
+Each mutation dimension classifies every generated case as ordinary,
+negative, or boundary evidence. An ordinary case has empty `violated_laws`.
+Every invariant-breaking negative or boundary case has at least one
+`violated_laws` entry; each `law_ref` is absent from `preserved_law_refs` and
+each nonempty, duplicate-free `authority_refs` array resolves inside the chart
+closure to evaluator authority that permits testing that exact law. Missing,
+conflicting, or out-of-chart violation authority makes the mutation case
+`invalid_environment`; a generator cannot declare its own authority.
 
 For a correction-derived chart to enter holdout or contribute to
 `harness_selection`, `promotion`, or `preference_training`, `correction_review`
@@ -725,9 +747,11 @@ preference row, yield a trajectory, or count as promotion pass/failure.
 
 ## Exclusive action support
 
-The five support classes are disjoint. Validate that every declared action
-matches at most one list. Overlap, malformed predicates, or an unverified
-classification is invalid_environment.
+The five support classes are disjoint. The four explicit lists are
+`executable`, `judgeable`, `denied`, and `observed_only`; `unsupported` is the
+fallback or asset result, not a fifth inline list. Validate that every declared
+action matches at most one explicit list. Overlap, malformed predicates, or an
+unverified classification is invalid_environment.
 
 | Support | Runtime behavior | Status |
 |---|---|---|

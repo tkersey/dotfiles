@@ -756,13 +756,13 @@ discovery/development evidence. Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selector_ids":["<selector-id>"],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1","selector_identity_fingerprint":"sha256:<hex>"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1","selector_identity_fingerprint":"sha256:<hex>"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
 fingerprint matches exact bytes, and its recorded partition equals the entry;
 holdout evidence is forbidden. Evidence entries, root-qualified owner paths,
-selectors, runtime keys, and derived runtime fields are sorted and
+complete structured selectors, runtime keys, and derived runtime fields are sorted and
 duplicate-free. Each `evidence_ref`, `evidence_fingerprint`, and `partition`
 triple is validated as one resolvable identity. `optimizer_visible_policy` is the complete semantic policy the
 optimizer may later receive; no optimizer-visible selector, constraint, budget,
@@ -934,19 +934,33 @@ durable exposure transition below and then returns `holdout_contaminated`; it
 is never merely a failed local run.
 
 Before any candidate-generation process can read an input or receive a
-message, acquire `.partition-freeze.lock` and atomically create one immutable
-`<holdout_lock_root>/<holdout-key>.<cycle-id>.optimizer-pending.json` for every
-holdout identity. Its exact RFC 8785 `optimizer-exposure-intent/v1` bytes bind
-the cycle, source identity, exposure-registry ID, pre-candidate-policy
-fingerprint, and complete optimizer-visible-policy fingerprint. A pre-existing
-pending intent without a matching immutable `optimizer-cleared/v1` completion
-blocks that identity as `source_contaminated`; crashes therefore fail closed.
-After generation and both complete clear leakage reviews, create the matching
-cleared marker under the same lock. On `leak` or `uncertain`, do not clear the
-intent: first publish the durable `optimizer_exposed` partition claim and then
-return `holdout_contaminated`. Pending and cleared markers are global evidence,
-not a new store or campaign protocol, and are never hidden in an atlas-local
-namespace.
+message, choose a unique `generation_attempt_id`, acquire
+`.partition-freeze.lock`, and atomically create one immutable
+`<holdout_lock_root>/<holdout-key>.<cycle-id>.<candidate-id>.<generation-attempt-id>.optimizer-pending.json`
+for every holdout identity. Its exact RFC 8785 bytes are:
+
+~~~json
+{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","exposure_registry_id":"<registry-id>","generation_attempt_id":"<generation-attempt-id>","optimizer_visible_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"optimizer-exposure-intent/v1","source_identity_fingerprint":"sha256:<hex>"}
+~~~
+
+After generation and both complete clear leakage reviews, create the immutable
+matching
+`<holdout_lock_root>/<holdout-key>.<cycle-id>.<candidate-id>.<generation-attempt-id>.optimizer-cleared.json`
+under the same lock. Its exact RFC 8785 bytes are:
+
+~~~json
+{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","post_generation_review_fingerprint":"sha256:<hex>","schema":"optimizer-cleared/v1","source_identity_fingerprint":"sha256:<hex>"}
+~~~
+
+A clear marker matches only when cycle, candidate, generation attempt, and
+source identity equal the pending record and `pending_fingerprint` hashes those
+exact pending bytes. It clears only that attempt. Any pending intent without
+its exact matching clear blocks the source identity as `source_contaminated`;
+a later retry or another candidate cannot clear it, so crashes fail closed. On
+`leak` or `uncertain`, do not clear the intent: first publish the durable
+`optimizer_exposed` partition claim and then return `holdout_contaminated`.
+Pending and cleared markers are global evidence, not a new store or campaign
+protocol, and are never hidden in an atlas-local namespace.
 
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
@@ -1689,14 +1703,17 @@ declared class, maximum supported claim, and the authority actually proved by
 that run. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
-Apply one total precedence rule. First, any invalid, unsupported, skipped, or
-ambiguous required holdout yields `insufficient_evidence`; incomplete required
-evidence is decided before regression disposition. Once every required holdout
-is valid and determinate, a new candidate `hard_fail`, protected regression, or
-contracted non-hard regression beyond the frozen tolerance yields `reject`.
-Otherwise return `adopt` only when every adoption condition above holds. All
-remaining cases, including ties, disagreement, and inadequate stochastic
-evidence, are `insufficient_evidence`. Exactly one disposition is emitted.
+Apply the same total precedence rule as EER-v1 on every selecting surface.
+First evaluate every environment-valid, determinate row. Any such row proving
+a new candidate `hard_fail`, protected regression, or contracted non-hard
+regression beyond the frozen tolerance yields `reject`, even when other
+required holdout evidence is incomplete. A decisive valid regression is never
+downgraded to `insufficient_evidence`. If no decisive regression exists, any
+invalid, unsupported, skipped, or ambiguous required holdout yields
+`insufficient_evidence`. Otherwise return `adopt` only when every adoption
+condition above holds. All remaining cases, including ties, disagreement, and
+inadequate stochastic evidence, are `insufficient_evidence`. Exactly one
+disposition is emitted.
 
 Record paired_replay_delta, observed_association, regression, or
 insufficient_evidence as the evidence relation, separately from the adoption

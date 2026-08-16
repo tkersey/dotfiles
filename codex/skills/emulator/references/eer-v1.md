@@ -313,13 +313,21 @@ authorized by `factor-delta-validation/v1.runtime_surface_changes`. Missing,
 extra, or non-factor context drift is `comparison_drift`.
 
 Its exact RFC 8785 payload is
-`{"factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_runtime_surface_fields":["actor_context.messages[0].content"],"baseline_actor_context_fingerprint":"sha256:<hex>","baseline_run_id":"<run-id>","candidate_actor_context_fingerprint":"sha256:<hex>","candidate_run_id":"<run-id>","chart_id":"<chart-id>","normalized_equal":false,"repeat_id":"<repeat-id>"}],"schema":"actor-context-delta-validation/v1"}`.
+`{"factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_runtime_surface_fields":["actor_context.messages[0].content"],"baseline_actor_context_fingerprint":"sha256:<hex>","baseline_actor_started":true,"baseline_run_id":"<run-id>","candidate_actor_context_fingerprint":"sha256:<hex>","candidate_actor_started":true,"candidate_run_id":"<run-id>","chart_id":"<chart-id>","normalized_equal":false,"repeat_id":"<repeat-id>","status":"pass","unavailable_reason":null}],"schema":"actor-context-delta-validation/v1"}`.
 Pairs sort by `(chart_id, repeat_id, baseline_run_id, candidate_run_id)` and are
 complete and unique. Each field array is sorted and duplicate-free. It is empty
 when normalized contexts are equal; otherwise it contains every and only
 differing message-content field, each of which occurs exactly once in the bound
 factor-delta validation with matching before/after value fingerprints and an
 approved derivation.
+A tuple whose actor never started still has exactly one pair row with
+`status: unavailable_prestart`, the affected `*_actor_started: false`, null
+actor-context fingerprints, `normalized_equal: null`, an empty
+`authorized_runtime_surface_fields` array, and a nonempty pre-launch
+`unavailable_reason` matching its execution row. The other arm retains its
+observed started flag and context fingerprint. No other row may use that
+variant; omitting it or fabricating a context fingerprint is
+`comparison_drift`.
 
 Comparison-wide access proof maps every execution row that can contribute agent
 evidence to that row's nonempty `actor_access_proof_ref` and fingerprint. A row terminated before process launch records
