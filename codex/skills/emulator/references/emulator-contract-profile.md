@@ -33,7 +33,10 @@ their query specs, result envelopes, fixtures, and executable inputs.
 Every relative reference in the closure resolves from the atlas root, including
 references nested in subordinate manifests. Normalize it as a POSIX relative
 path before lookup; absolute paths, empty paths, `.`/`..` escape, backslashes,
-and duplicate normalized paths are invalid.
+and conflicting closure-inventory entries for one normalized path are invalid.
+Multiple contract fields may reference the same normalized asset only when
+every occurrence binds the same fingerprint; the recursively verified closure
+inventory contains that path once.
 
 The closure is invalid when a required reference is missing, escapes the atlas
 root without explicit authority, has a mismatched digest, or leaves an
@@ -47,7 +50,7 @@ emulator_contract:
   packet_version: EC-v1
   contract_id: EC-<stable-id>
   origin: source_faithful | designed | mixed
-  operation_mode: design | implement | run | mutate | compare | export
+  operation_mode: design | implement | run | mutate | compare
 
   source:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
@@ -78,6 +81,7 @@ emulator_contract:
       group_by: root_session_or_task
       frozen_before_candidate_generation: true
       holdout_visible_to_optimizer: false
+      storage_domain_root:
       holdout_lock_root:
       retirement_index:
         ref: holdout-retirements/snapshots/<fingerprint>.json
@@ -102,10 +106,9 @@ emulator_contract:
       - candidate_id:
         ref:
         fingerprint:
+        factor_delta_validation_ref:
+        factor_delta_validation_fingerprint:
     candidate_factor_policy: one_semantic_owner
-    factor_delta_validation:
-      ref:
-      fingerprint:
     stochastic_repeats: 3
     deterministic_repeats: 1
     stochastic_evidence:
@@ -148,9 +151,12 @@ component is session-derived, and records each excluded session component;
 mixed sources without sessions use `not_applicable`. A pure `user_design`
 source requires `false`; every other source kind requires `not_applicable`.
 
-`operation_mode` is the selected `$emulator` mode and is immutable for the
-closure and report. `execution_mode` says only whether execution has one arm or
-a paired comparison; it does not replace the operation mode.
+`operation_mode` is the operation that authored or executed the closure and is
+immutable for the closure and report. The `$emulator` `export` request reads an
+existing closure and emits eligible outputs without rewriting it; it preserves
+the originating `operation_mode` rather than creating an export-identity
+variant. `execution_mode` says only whether execution has one arm or a paired
+comparison; it does not replace the operation mode.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
@@ -357,7 +363,7 @@ environment_chart:
 
   claim:
     class: diagnostic | preference_training | harness_selection | promotion
-    maximum_supported_claim:
+    maximum_supported_claim: diagnostic | preference_training | harness_selection | promotion
     invalidators: []
     limitations: []
 ~~~
@@ -429,7 +435,7 @@ classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
 classifier that is missing, nondeterministic, or cannot prove the five classes
 disjoint makes the environment invalid.
 
-Mutation dimensions are optional outside `mode: mutate`. Mutation requires at
+Mutation dimensions are optional outside `operation_mode: mutate`. Mutation requires at
 least one finite or otherwise bounded domain, preserved-law references, and a
 deterministic shrink strategy. An external generator is fingerprinted and
 included in the chart closure. No mutation widens action support or source
@@ -508,6 +514,24 @@ select or promote.
 Every `harness_selection` claim requires an untouched
 holdout at the frozen partition snapshot; discovery/development evidence may
 nominate or train but cannot select.
+
+`maximum_supported_claim` is the author-time ceiling proved by the chart's
+authority, attribution, world fidelity, visibility proof, and partition.
+`claim.class` is the use requested for the chart and cannot exceed that ceiling:
+
+- `diagnostic` admits discovery/development diagnosis only;
+- `preference_training` additionally requires direct preference authority and
+  an eligible fresh passing chosen action, and is forbidden while the chart is
+  active holdout;
+- `harness_selection` additionally requires a fresh paired untouched-holdout
+  comparison under the frozen boundary;
+- `promotion` additionally requires an exact resettable world, deterministic
+  authority, and satisfaction of every report-level adoption condition.
+
+A fresh run realizes no stronger claim than both fields and its actually proved
+authority. `promotion` is a comparison-level evidence strength: no single
+chart, historical outcome, discovery run, or development run realizes it by
+itself.
 
 ## Required validation
 

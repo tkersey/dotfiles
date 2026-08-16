@@ -73,6 +73,7 @@ emulator_request:
     kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
   atlas:
     atlas_id:
+    storage_domain_root:
     root:
     chart_kinds: [normative_decision, executable_episode, observational]
     partitions:
@@ -101,8 +102,10 @@ Session-derived atlases default to
 environments may use `codex/emulators/<target>/`. Do not create empty
 scaffolding or commit session artifacts without explicit sanitization and
 authority. Verify the selected private root is writable before authoring; when
-the default is not writable, require a caller-supplied writable private root
-rather than silently writing into the repository.
+the default is not writable, require a caller-supplied writable private
+`storage_domain_root` and derive the atlas root as
+`<storage_domain_root>/emulators/<atlas-id>` rather than silently writing into
+the repository.
 
 ## Modes
 
@@ -140,7 +143,8 @@ trajectory is never an arm.
 ### export
 
 Emit EER-v1 and only datasets whose fresh evidence, authority, partition, and
-visibility rules make them eligible.
+visibility rules make them eligible. Export reads an existing contract closure;
+it does not rewrite the root or change the root's originating `operation_mode`.
 
 ## Contract ownership
 

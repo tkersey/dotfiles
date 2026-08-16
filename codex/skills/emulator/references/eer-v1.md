@@ -14,7 +14,7 @@ emulator_execution_report:
   contract:
     ref:
     fingerprint:
-    operation_mode: design | implement | run | mutate | compare | export
+    operation_mode: design | implement | run | mutate | compare
     atlas_chart_fingerprints: []
     closure_inventory_ref:
     closure_inventory_fingerprint:
@@ -425,9 +425,17 @@ definition fingerprint and observed values.
 every required chart and repeat, no new candidate `hard_fail` of any kind, no
 protected regression, at least one targeted untouched holdout improvement,
 order-stable residual preference when used, and evaluation of the exact
-candidate harness fingerprint. Stochastic adoption additionally requires the
+candidate harness fingerprint. Every required run and chart comparison must be
+determinate; an `ambiguous` required row or comparison prevents adoption.
+Stochastic adoption additionally requires the
 predetermined repeat/improvement rule and matched randomness when available;
 uncontrolled evidence that cannot satisfy the frozen rule is insufficient.
+
+The comparison's factor-delta validation ref and fingerprint MUST exactly
+equal the fields on the root `candidate_harnesses` entry for its candidate ID
+and the same fields in that candidate's metadata. Each candidate has a distinct
+complete baseline/candidate manifest-diff validation; evidence from one
+candidate cannot validate another.
 
 Use one exclusive precedence rule. Any new candidate `hard_fail`, protected
 regression, or contracted non-hard regression beyond tolerance yields `reject`,

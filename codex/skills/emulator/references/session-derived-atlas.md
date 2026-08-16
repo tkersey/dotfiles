@@ -428,16 +428,17 @@ One split group contains all charts derived from the same root session, root
 task, issue, PR, linked worker lineage, or nearly duplicated request. A group
 never crosses partitions.
 
-Each group also has a corpus-independent `source_group_fingerprint`. Its input
-is exactly the RFC 8785 canonical UTF-8 encoding of:
+Each group also has a corpus-independent `source_group_fingerprint`. For a root
+session, its input is exactly the RFC 8785 canonical UTF-8 encoding of:
 
 ~~~json
 {"identity_kind":"root_session","identity_refs":["seq:<adapter>:<root-session-id>"],"schema":"emulator-source-group/v1"}
 ~~~
 
 `external_task` governs the group whenever an exact repository issue/PR/task
-identity is available; otherwise the group kind is `root_session` for session
-material or `designed_task` with the actor-input fingerprint. The group
+identity is available; otherwise the group kind is `duplicate_cluster` for a
+human-attested retry/near-duplicate cluster, `root_session` for one session
+lineage, or `designed_task` with the actor-input fingerprint. The group
 `identity_refs` is the byte-lexicographically sorted,
 duplicate-free array of the selected kind's exact refs; kinds are never mixed.
 Compute SHA-256 over those exact canonical bytes for
@@ -453,7 +454,13 @@ github-issue:<base64url(repository-node-id)>:<base64url(issue-node-id)>
 seq:<adapter>:<root-session-id>
 designed-task:<actor-input-fingerprint>
 task-uri:<base64url(issuer-canonical-absolute-uri UTF-8 bytes)>
+duplicate-cluster:sha256:<digest>
 ~~~
+
+The individual `identity_kind` is canonical by ref family: GitHub and
+`task-uri` refs use `external_task`, `seq` refs use `root_session`,
+`designed-task` refs use `designed_task`, and `duplicate-cluster` refs use
+`duplicate_cluster`. No other kind/ref pairing is valid.
 
 Base64url uses the RFC 4648 URL-safe alphabet without padding. GitHub refs use
 immutable GraphQL node IDs, not owner/repository slugs or issue numbers. A
@@ -462,10 +469,16 @@ absolute URI containing an immutable object identity; generic URI spelling
 normalization is not invented here. Otherwise retain every verified alias or
 keep the group out of holdout. `designed-task` contains the literal `sha256:`
 actor-input fingerprint.
-An approved duplicate cluster uses `duplicate-cluster:sha256:<digest>` whose
-preimage is retained as human attestation. Aliases for one task are all retained. For session-derived
-groups, this individual set always includes the root-session identity (linked
-workers use the root, never worker IDs) plus every stable external-task alias;
+An approved duplicate cluster uses the exact identity kind
+`duplicate_cluster` and ref `duplicate-cluster:sha256:<digest>`; its descriptor
+preimage is exactly
+`{"identity_kind":"duplicate_cluster","identity_ref":"duplicate-cluster:sha256:<digest>","schema":"emulator-source-identity/v1"}`.
+The attestation material from which `<digest>` was computed is retained and
+fingerprinted. No other identity kind is valid for that ref. Aliases for one
+task are all retained. For session-derived groups, this individual set always
+includes every participating root-session identity (linked workers use the
+root, never worker IDs), the duplicate-cluster identity when used, and every
+stable external-task alias;
 individual aliases may span kinds even though the aggregate group kind does
 not. Cross-atlas claims and locks use every individual identity fingerprint, so
 groups that overlap by one underlying task/session collide. Local chart IDs, atlas IDs, partition, and the
@@ -549,13 +562,19 @@ holdout casually.
 Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
 cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
 `"emulator-holdout/v1" NUL source_identity_fingerprint` for every individual
-source identity in the group. Before chart compilation,
-resolve the one authoritative private, writable `holdout_lock_root` for the
-storage domain: `${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks`. It is
-derived from `CODEX_HOME`, never selected per atlas or supplied by the caller.
-Changing `CODEX_HOME` creates a different storage domain whose partition claims
-cannot be combined with the first. The root contract repeats the resolved path,
-and validation rejects any other value. The
+source identity in the group. Before chart compilation, resolve one
+authoritative private, writable `storage_domain_root`. It is the resolved
+`${CODEX_HOME:-$HOME/.codex}` when writable. If that default is unavailable or
+unwritable, the caller may supply one private storage-domain root; the atlas
+then lives at `<storage_domain_root>/emulators/<atlas-id>`. Freeze the resolved
+storage-domain path in the root before any partition claim or candidate
+generation. Within that domain, derive the only valid `holdout_lock_root` as
+`<storage_domain_root>/emulator-holdout-locks`; neither path may vary per atlas
+or later phase. A selecting comparison and its cross-atlas overlap checks may
+use only claims from that same frozen storage domain. Claims from different
+storage domains are not comparable and cannot support harness selection or
+promotion. The root contract repeats both resolved paths, and validation
+rejects any other relationship. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
@@ -666,12 +685,14 @@ candidates outside the live harness. Candidate and evaluator changes require
 separate experiments.
 
 The pre-candidate policy enumerates the exact behavior-bearing paths and runtime
-configuration keys owned by the selected factor. After candidate freeze, a
-factor-delta validation asset computes the complete baseline/candidate manifest
-diff, requires at least one change, and requires every changed path or runtime
-key to be in that predeclared owner set. The final root and candidate metadata
-bind its ref and fingerprint. A missing, incomplete, or out-of-factor delta is
-`multiple_factors` and cannot be recommended.
+configuration keys owned by the selected factor. After candidate freeze, one
+factor-delta validation asset per candidate computes that candidate's complete
+baseline/candidate manifest diff, requires at least one change, and requires
+every changed path or runtime key to be in that predeclared owner set. The
+matching `candidate_harnesses` root entry, candidate metadata, and pairwise EER
+bind the same ref and fingerprint. A missing, incomplete, mismatched, or
+out-of-factor delta is `multiple_factors` and cannot be recommended; one
+candidate's validation never covers another candidate.
 
 ## 9. Run both arms freshly
 
@@ -680,7 +701,7 @@ historical session. Freeze candidates before holdout execution.
 
 For every arm and repeat:
 
-- use a fresh actor process or thread;
+- use a fresh actor process or container for every arm and repeat;
 - use an isolated worktree or read-only workspace;
 - materialize only the selected harness bundle;
 - supply only the actor packet;
@@ -771,18 +792,23 @@ not count as promotion passes or failures.
 Return adopt, reject, or insufficient_evidence. Adopt requires:
 
 1. complete baseline and candidate arms are environment-valid for every required chart and repeat;
-2. no new candidate `hard_fail` of any kind;
-3. no protected regression;
-4. at least one targeted untouched holdout improvement;
-5. any residual preference is order-stable;
-6. the exact frozen candidate fingerprint was evaluated.
-7. stochastic evidence satisfies the repeat count and improvement rule frozen
+2. every required chart comparison is determinate, with no required run or
+   comparison classified `ambiguous`;
+3. no new candidate `hard_fail` of any kind;
+4. no protected regression;
+5. at least one targeted untouched holdout improvement;
+6. any residual preference is order-stable;
+7. the exact frozen candidate fingerprint was evaluated;
+8. stochastic evidence satisfies the repeat count and improvement rule frozen
    in the root before candidate generation; arms use matched seeds/schedules
    when controllable, and uncontrolled nondeterminism that cannot meet that
    predetermined rule yields `insufficient_evidence`.
 
-Promotion is only an evidence strength: it means these conditions and the chart
-claim matrix support a separately authorized adoption decision. It never mutates
+Promotion is only an evidence strength: it means these conditions and every
+included chart's realized claim eligibility support a separately authorized
+adoption decision. A chart contributes no stronger claim than the weaker of its
+declared class, maximum supported claim, and the authority actually proved by
+that run. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
 Apply one total precedence rule: `reject` when any candidate introduces a
