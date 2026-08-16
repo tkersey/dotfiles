@@ -14,7 +14,11 @@ sealed against replacement before the report is emitted. No report may resolve
 a static asset through the mutable live root. The one shared holdout reservation
 MAY instead use `runs/<cycle-id>/holdout-reservation.json` when that cycle ID
 exactly equals the frozen root comparison policy and the reservation bytes bind
-the current comparison ID; no other cross-run-group ref is allowed. All refs obey containment,
+the current comparison ID; no other cross-run-group ref is allowed. An emitted
+dataset ref MAY use `datasets/<dataset-digest-hex>.<kind>.jsonl`, where `kind`
+is `preferences`, `trajectories`, `curriculum`, or `counterexamples`; the
+filename digest equals the exact immutable bytes and the file is never replaced.
+All refs obey containment,
 conflict, and fingerprint rules; absolute and escaping references are invalid.
 Canonical registry locations may appear only inside root-bound validation
 assets, never as report refs.
@@ -236,8 +240,10 @@ fingerprint.
 
 Comparison-wide access proof maps every execution row with
 `actor_started: true` to that row's nonempty `actor_access_proof_ref` and
-fingerprint. Rows skipped before actor start record `actor_started: false` and
-null proof fields; all other statuses require `true`. The baseline/candidate
+fingerprint. A row terminated before process launch records
+`actor_started: false`, null proof fields, and a pre-launch termination reason;
+only `invalid_environment`, `runtime_error`, or `skipped` may do so. All other
+rows require `true`. The baseline/candidate
 run-ID lists are duplicate-free and their union still equals all comparison
 execution rows. Every mapped proof verifies its corresponding fresh process;
 there is no singleton comparison-level proof that can stand in for other runs.

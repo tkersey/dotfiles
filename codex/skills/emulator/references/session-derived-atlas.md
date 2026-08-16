@@ -47,7 +47,7 @@ ${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
   harnesses/candidates/<candidate-id>/
   runs/<run-group-id>/
   reports/<run-group-id>/
-  datasets/
+  datasets/<dataset-digest-hex>.<kind>.jsonl
 ~~~
 
 Use directory mode 0700 and source/evaluator file mode 0600 where supported.
@@ -529,10 +529,14 @@ Write the RFC 8785 canonical bytes of each marker at
 `holdout-retirements/markers/<marker-digest-hex>.json`:
 
 ~~~json
-{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation|training","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"runs/<cycle-id>/holdout-reservation.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"]}
+{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"]}
 ~~~
 
-Both arrays are byte-lexicographically sorted and duplicate-free. The marker
+`consumption_purpose` is exactly one of `evaluation` or `training`; the example
+shows evaluation. Before writing the marker, copy the reservation's exact bytes
+to the static content-addressed `reservation_ref`, require its filename and
+fingerprint to agree, and include it in every successor closure that contains
+the marker. Both arrays are byte-lexicographically sorted and duplicate-free. The marker
 filename digest is SHA-256 of those exact bytes. Maintain immutable index
 snapshots as RFC 8785 bytes under
 `holdout-retirements/snapshots/<snapshot-digest-hex>.json`:
@@ -598,7 +602,7 @@ create the exclusive RFC 8785 `holdout-use/v1` reservation at
 `runs/<cycle-id>/holdout-reservation.json` with exactly:
 
 ~~~json
-{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","repeat_ids":["<repeat-id>"]}],"chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"]}
+{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","repeat_ids":["<repeat-id>"]}],"chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
 ~~~
 
 `arms` contains the full frozen candidate set and is sorted by `candidate_id`;
@@ -654,15 +658,16 @@ bind `exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonic
 location, or caller storage root therefore cannot create a fresh exposure
 namespace. If the user-global registry is unavailable or prior exposure outside
 it cannot be excluded, the root is diagnostic/development-only and cannot
-support holdout, harness selection, promotion, or `adopt`. Claims,
-reservations, locks, validations, selecting runs, and reports bind the registry
-ID as well as the storage-domain ID. The
+support holdout, harness selection, promotion, or `adopt`. Claims and canonical
+locks bind the exposure-registry ID; reservations, partition validations,
+selecting runs, and reports bind both the registry and storage-domain IDs. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
-fails if the key already exists; never use check-then-create. The lock record
-binds the final root fingerprint, reservation fingerprint, pre-candidate policy
-fingerprint, and cycle identity. An existing lock is reusable only when all
+fails if the key already exists; never use check-then-create. The lock contains
+the exact RFC 8785 bytes
+`{"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-lock/v1","source_identity_fingerprint":"sha256:<hex>"}`.
+The filename, holdout key, source identity, and registry ID agree. An existing lock is reusable only when all
 those fields exactly match the current cycle reservation; otherwise acquisition
 fails. If acquisition fails before any actor exposure, remove only locks and
 the unexposed reservation created by that same attempt; after exposure, any
@@ -673,6 +678,13 @@ those snapshots as EER/run refs. The atlas-relative lock-validation artifact
 maps each snapshot fingerprint to its canonical absolute lock path and domain
 and exposure-registry IDs; canonical paths are evaluator-only runtime facts,
 not report refs.
+
+Before the fallback semantic read or any `holdout_unexposed` replacement,
+claim writers check the canonical holdout lock and reservation for every known
+identity while holding `.partition-freeze.lock`. Any active or incomplete
+selection lock/reservation makes the source unavailable and the semantic read
+does not occur. Thus a discovery writer cannot contaminate a group after the
+selector releases the partition lock but before first actor exposure.
 
 Before any semantic source read, acquire the exclusive global
 `<holdout_lock_root>/.partition-freeze.lock`, validate the complete sorted
@@ -773,7 +785,8 @@ entry repeats one declared `target.harness_roots` root ID, precedence, and mount
 path exactly. Entries are sorted by `(precedence, root_id, path)` and
 `(root_id, path)` is unique; roots materialize in ascending precedence and the
 higher numeric precedence wins an effective-path collision. Precedence values
-are unique, so equal-precedence collision is invalid.
+are unique across distinct root declarations; all entries from one root repeat
+that root's same precedence.
 Every `path` is normalized, relative, nonempty, and non-escaping. Its regular
 file resolves relative to the manifest directory at
 `files/<root-id>/<path>` and exact bytes/mode match the entry. This arm-local
@@ -873,7 +886,8 @@ termination.
 Default repeats:
 
 ~~~text
-deterministic chart: one arm run after two identical reset proofs
+exact-fidelity executable chart: one arm run after two identical reset proofs
+normative or observational chart without reset: no reset proof
 stochastic chart: three fresh runs per arm
 uncontrolled actor nondeterminism: record actor_seed_control unavailable and use repeats
 ~~~

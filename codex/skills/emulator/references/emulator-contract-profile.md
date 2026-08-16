@@ -200,7 +200,7 @@ has a stable `root_id`, a unique nonnegative integer `precedence`, and a
 normalized logical `mount_path`; these values, not a source-worktree path,
 determine lookup and override order. Materialize roots in ascending precedence;
 a higher numeric precedence overrides a lower one at the same effective mount
-path. Equal precedence values are invalid. It enumerates every behavior-bearing root
+path. Distinct root declarations have unique precedence values. It enumerates every behavior-bearing root
 under experiment. The root may contain one chart; the atlas abstraction does
 not require scale.
 
