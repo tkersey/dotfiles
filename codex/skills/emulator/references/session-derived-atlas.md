@@ -340,6 +340,7 @@ world:
     denied: []
     schemas: {}
     fixtures: {}
+    chart_projection_fingerprint:
   effects:
     network: deny | fixture_only | replay_recorded
     filesystem_roots: []
@@ -350,6 +351,7 @@ world:
     commands: []
     state_assertions: []
     trace_invariants: []
+    chart_projection_fingerprint:
   closure:
     assets: []
   limitations: []
@@ -361,6 +363,15 @@ and expected pre-state fingerprint; it contains no independent commands or
 fixtures. Mismatch is `invalid_environment`. Non-closed world effects require
 the exact effect-policy ref and fingerprint above, matching the chart effects
 block.
+
+For executable charts, the chart owns semantic tool permission and evaluation;
+`world.tools` and `world.evaluator` own their operational implementation. The
+world records SHA-256 of the exact RFC 8785 canonical bytes of the chart's
+`environment.tools` and `evaluator` blocks in the two
+`chart_projection_fingerprint` fields. Its allowed/denied tool names and schema
+objects also deep-equal the corresponding chart fields. Admission verifies both
+projection fingerprints before reset or execution. Missing references or drift
+is `invalid_environment`; a runner cannot choose one copy by precedence.
 
 Run the reset twice before admitting exact fidelity. Both runs must produce the
 same expected pre-state fingerprint.
@@ -394,14 +405,23 @@ One split group contains all charts derived from the same root session, root
 task, issue, PR, linked worker lineage, or nearly duplicated request. A group
 never crosses partitions.
 
-Each group also has a corpus-independent `source_group_fingerprint`. Compute it
-as SHA-256 of canonical JSON containing `schema: emulator-source-group/v1` and
-the ordered immutable source identities that define the root session/task
-lineage (for example root session ID plus exact source digest, or repository
-identity plus issue/PR/task source ref). Local chart IDs, atlas IDs, partition,
-and the surrounding corpus are excluded. Root chart entries repeat the chart's
-`source_group_fingerprint` exactly; a mismatch or a group whose identity cannot
-be made immutable is ineligible for holdout.
+Each group also has a corpus-independent `source_group_fingerprint`. Its input
+is exactly the RFC 8785 canonical UTF-8 encoding of:
+
+~~~json
+{"identity_kind":"root_session","identity_refs":["seq:<adapter>:<root-session-id>"],"schema":"emulator-source-group/v1"}
+~~~
+
+`identity_kind` is `root_session` whenever any group member is session-derived;
+all linked workers use the root session ID, never their worker IDs. Otherwise
+it is `external_task` for a repository issue/PR/task with exact canonical refs,
+or `designed_task` with the actor-input fingerprint when no external task ref
+exists. `identity_refs` is the byte-lexicographically sorted, duplicate-free
+array of the selected kind's exact refs; kinds are never mixed. Compute SHA-256
+over those exact canonical bytes. Local chart IDs, atlas IDs, partition, and the
+surrounding corpus are excluded. Root chart entries repeat the chart's
+`source_group_fingerprint` exactly; ambiguity, mismatch, or mutable refs make
+the group ineligible for holdout.
 
 - discovery is visible for failure mining, mechanism hypotheses, and chart
   design;
@@ -433,17 +453,22 @@ immutable content-addressed index snapshots under
 all marker refs and fingerprints. A mutable `holdout-retirements/current.json`
 pointer may identify the latest snapshot but is outside prior closures. The
 next root binds the current immutable snapshot and each effective marker through
-`partition_policy` and recursive closure. Before replacing the current root,
-preserve its exact bytes at
-`roots/<root-contract-fingerprint>/emulator-spec.yaml`; reports cite that
-immutable root snapshot.
+`partition_policy` and recursive closure. When finalizing any root and before
+its first run or report, copy its complete exact closure under
+`roots/<root-contract-fingerprint>/`, preserving relative paths and bytes (or
+using immutable digest-addressed assets with an exact path map). Reports cite
+that archived root. Later roots never mutate an archived root or any asset it
+references.
 
 Any selecting root with a holdout creates both an immutable empty snapshot and
 `current.json` before its first use; the pointer is mandatory even when there
 are no retirements. A root without holdout charts may omit both.
 
-Before every selecting run, resolve the current pointer and require its target
-snapshot fingerprint to equal the root's bound snapshot. A stale
+Before every selecting run, acquire the retirement-index update lock, resolve
+the current pointer, and require its target snapshot fingerprint to equal the
+root's bound snapshot. While still holding that lock, acquire the group locks
+and create the reservation described below; release it only after those bytes
+are durably present. A stale
 root therefore remains auditable but is ineligible for selection until a new
 root closure binds the current index. Record the partition-snapshot fingerprint
 in every selecting run and report. For a root with no holdout,
@@ -481,6 +506,15 @@ mode binds its frozen subject, run-policy fingerprint, and run-group identity.
 If acquisition fails before any actor exposure,
 remove only locks created by that same attempt; after exposure, any incomplete
 lock remains fail-closed for human resolution.
+
+At partition freeze, before candidate generation, atomically create
+`<holdout_lock_root>/<hex>.partition.json` for every source group. It binds the
+source-group fingerprint, partition, pre-candidate policy fingerprint, and
+exposure status. An existing claim for another partition, or any prior
+discovery/development exposure when the new claim is holdout, is
+`holdout_contaminated`. Record
+discovery/development exposure before an actor or optimizer can read that
+group; partition claims are not deferred until holdout execution.
 
 Retirement-index updates use one ordinary exclusive update lock under the same
 `holdout_lock_root`. After acquiring it, reread `current.json`, union the new
@@ -524,7 +558,8 @@ Manifest every behavior-bearing root:
 ~~~
 
 Fingerprint the exact RFC 8785 JSON Canonicalization Scheme UTF-8 bytes.
-Implicit global harness state
+The manifest file itself MUST contain exactly those canonical bytes, so its
+exact-file closure SHA-256 and manifest identity are the same digest. Implicit global harness state
 invalidates comparison.
 
 Candidate metadata:

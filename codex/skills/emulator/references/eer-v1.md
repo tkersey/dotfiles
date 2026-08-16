@@ -32,6 +32,10 @@ emulator_execution_report:
     partition_validation_fingerprint: # selecting roots only
     holdout_reservation_ref:          # holdout runs only
     holdout_reservation_fingerprint:  # holdout runs only
+    holdout_lock_refs: []              # holdout runs only
+    holdout_lock_fingerprints: []      # holdout runs only
+    holdout_lock_validation_ref:       # holdout runs only
+    holdout_lock_validation_fingerprint: # holdout runs only
     actor_access_proof_ref:
     actor_access_proof_fingerprint:
     baseline_harness_fingerprint:  # harness subject only
@@ -83,6 +87,10 @@ emulator_execution_report:
       partition_validation_fingerprint: # selecting roots only
       holdout_reservation_ref:          # holdout runs only
       holdout_reservation_fingerprint:  # holdout runs only
+      holdout_lock_refs: []              # holdout runs only
+      holdout_lock_fingerprints: []      # holdout runs only
+      holdout_lock_validation_ref:       # holdout runs only
+      holdout_lock_validation_fingerprint: # holdout runs only
       subject_kind: harness | actor | environment_implementation
       subject_id:
       subject_fingerprint:
@@ -198,9 +206,11 @@ fingerprint.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot. Holdout
-runs additionally bind the exclusive pre-exposure reservation. Missing or
-mismatched evidence makes selecting use invalid rather than silently reusing a
-stale or consumed group.
+runs additionally bind the exclusive pre-exposure reservation, every canonical
+cross-atlas lock ref and fingerprint, and a validation artifact proving those
+locks matched the root, source groups, and reservation before exposure. Missing
+or mismatched evidence makes selecting use invalid rather than silently reusing
+a stale or consumed group.
 
 The report binds the exact emitted `runs.jsonl` bytes. Its parsed rows MUST equal
 `executions` in order and content. Every executable run also binds the observed
@@ -316,6 +326,10 @@ counterexample artifact by reference and fingerprint.
   "partition_validation_fingerprint": "sha256:...",
   "holdout_reservation_ref": "holdout-reservation.json",
   "holdout_reservation_fingerprint": "sha256:...",
+  "holdout_lock_refs": ["holdout-locks/<digest>.lock"],
+  "holdout_lock_fingerprints": ["sha256:..."],
+  "holdout_lock_validation_ref": "holdout-lock-validation.json",
+  "holdout_lock_validation_fingerprint": "sha256:...",
   "actor_access_proof_ref": "actor-access-proof.json",
   "actor_access_proof_fingerprint": "sha256:...",
   "baseline_harness_fingerprint": "sha256:...",

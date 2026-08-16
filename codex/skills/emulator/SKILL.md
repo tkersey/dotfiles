@@ -162,7 +162,8 @@ safety, authority, hidden truth, side effects, selection, or termination.
 
 Read `references/emulator-contract-profile.md` when authoring or validating a
 contract. Read `references/session-derived-atlas.md` whenever a session source
-is selected.
+is selected or any source will participate in holdout selection or a selecting
+comparison.
 
 ## Environment laws
 

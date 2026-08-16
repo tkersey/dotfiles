@@ -148,6 +148,12 @@ Before candidate generation, validation requires exact equality between the
 two policies' selected factor, runtime constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
+After candidate fingerprints freeze, the final root's selecting chart list,
+chart/evaluator fingerprints, partition snapshot, runtime configuration,
+repeats, randomness policy, protected dimensions, threshold, and budget MUST
+equal the evaluator-only pre-candidate commitment. Candidate manifest refs are
+the only comparison inputs added afterward. Any other drift is
+`holdout_contaminated`.
 
 `subject: harness` requires fingerprinted baseline and candidate harness
 manifests in the recursive root closure.
@@ -164,6 +170,8 @@ equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
 `partition` equals chart `split.partition`. Any mismatch is
 `invalid_environment`; neither copy wins by precedence. An observational chart
 MUST have root `required: false` because it cannot participate in selection.
+Root `chart_id` values are unique; duplicates are `invalid_environment` even
+when their fingerprints happen to match.
 
 ## Chart contract
 
