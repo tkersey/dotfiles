@@ -52,7 +52,7 @@ irrelevant context
 ```
 
 All noise is seeded where possible and trace-recorded. If the actor runtime
-offers no deterministic seed, declare `environment_seed_control: unavailable`, use repeats,
+offers no deterministic seed, declare `actor_seed_control: unavailable`, use repeats,
 and lower the supported claim.
 
 ## Adversarial

@@ -372,6 +372,8 @@ Chart `environment.world_fidelity` MUST equal `world.fidelity`; neither field
 wins by precedence.
 World and chart network, filesystem, external-side-effect modes, policy ref,
 and policy fingerprint MUST also match exactly.
+When the world repeats `filesystem_roots`, that list deep-equals the roots in
+the effect-policy asset; neither inline data nor the asset wins by precedence.
 
 For executable charts, the chart owns semantic tool permission and evaluation;
 the tool and evaluator assets own their operational implementation. The chart
@@ -506,7 +508,8 @@ root's bound snapshot. While still holding that lock, acquire the group locks
 and create the reservation described below; release it only after those bytes
 are durably present. A stale
 root therefore remains auditable but is ineligible for selection until a new
-root closure binds the current index. Record the partition-snapshot fingerprint
+pre-candidate policy and candidate cycle restart from the advanced snapshot;
+rebinding only the final root cannot restore eligibility. Record the partition-snapshot fingerprint
 in every selecting run and report. For a root with no holdout,
 partition-snapshot, validation, and reservation fields are absent rather than
 invented. A group named by the current index is inactive and cannot be reused
@@ -547,8 +550,9 @@ fails. If acquisition fails before any actor exposure,
 remove only locks created by that same attempt; after exposure, any incomplete
 lock remains fail-closed for human resolution.
 
-At partition freeze, before candidate generation, acquire identity keys in
-sorted order and atomically create or validate
+At partition freeze, before candidate generation, acquire one exclusive global
+partition-freeze update lock, validate the complete sorted identity-key set,
+stage all new claims, then publish them before releasing the lock. Create or validate
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
 It binds the source-identity fingerprint, group fingerprint, partition, and
 exposure status. Claims are finalized before the pre-candidate policy, which
@@ -560,8 +564,9 @@ discovery/development exposure when the new claim is holdout, is
 `holdout_contaminated`. Record
 discovery/development exposure before an actor or optimizer can read that
 group; partition claims are not deferred until holdout execution. If any key is
-incompatible or acquisition loses a race before exposure, remove only claims
-created by that attempt. Bind every claim ref/fingerprint in the evaluator-only
+incompatible before exposure, remove only staged or published claims created by
+that attempt while still holding the global lock; compatible pre-existing
+claims are never removed. Bind every claim ref/fingerprint in the evaluator-only
 pre-candidate policy; bind those claims plus their validation artifact in the
 final root closure, runs, and EER.
 
@@ -633,6 +638,10 @@ candidate:
   limitations: []
 ~~~
 
+The baseline and candidate subject fingerprints are mandatory for every
+comparison subject. Harness fingerprints are present only for a harness subject
+and MUST equal the corresponding subject fingerprints.
+
 Use exactly one semantic owner, though its implementation may span files that
 jointly own that behavior. At most three candidates run in one cycle. Stage
 candidates outside the live harness. Candidate and evaluator changes require
@@ -650,7 +659,9 @@ For every arm and repeat:
 - materialize only the selected harness bundle;
 - supply only the actor packet;
 - keep evaluator roots unmounted or inaccessible where possible;
-- disable mutable memories unless memory is the selected factor;
+- disable mutable memories unless memory is the selected factor; when it is,
+  restore the same isolated frozen initial memory snapshot independently for
+  every arm and repeat before applying the factor-local difference;
 - record runtime identity, readable inventory, tool policy, and effect policy.
 
 Default normative instruction:
@@ -776,6 +787,11 @@ partition is discovery/development, or a holdout was explicitly retired for
 this training use
 authority stronger than model judgment alone
 ~~~
+
+Rows exported from a deliberately retired holdout additionally bind the exact
+`holdout-retirement/v1` marker, successor snapshot, and `training` retirement
+purpose by ref and fingerprint. Missing or mismatched retirement evidence keeps
+the row ineligible.
 
 Do not export a historical recovery as chosen unless separately re-executed or
 objectively validated.

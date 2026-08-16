@@ -82,7 +82,7 @@ emulator_contract:
           fingerprint:
 
   comparison_policy:
-    mode: run | compare
+    execution_mode: single_arm | paired_compare
     subject: harness | actor | environment_implementation
     pre_candidate_policy:
       ref:
@@ -117,6 +117,12 @@ emulator_contract:
     hard_oracle_precedence: true
     protected_regressions_forbidden: true
 
+  closure:
+    assets:
+      - ref:
+        fingerprint:
+        role: partition_validation | access_proof | other
+
   output:
     eer: EER-v1
     runs: runs.jsonl
@@ -146,7 +152,8 @@ chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
 exact source-identity partition-claim refs/fingerprints, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
 threshold, the factor-to-targeted-chart predicate, protected dimensions,
-non-hard regression tolerance, and candidate budget. It is never
+non-hard regression tolerance, candidate budget, and exact baseline
+subject/harness fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, runtime constraints,
 candidate budget, and discovery/development inputs; it contains no holdout IDs,
@@ -175,9 +182,9 @@ immutability laws apply. Fields that do not apply to the declared subject are
 absent rather than filled with invented harness identities. Every candidate
 entry names the exact manifest whose fingerprint the corresponding comparison
 and runs must repeat.
-For `mode: run`, `baseline_harness` or `baseline_subject` is the single frozen
+For `execution_mode: single_arm`, `baseline_harness` or `baseline_subject` is the single frozen
 execution subject and all candidate and candidate-generation fields are absent.
-For `mode: compare`, both arms and the applicable candidate policies are
+For `execution_mode: paired_compare`, both arms and the applicable candidate policies are
 mandatory. This is a mode-neutral subject binding, not invented comparison
 state for a standalone run.
 
@@ -344,7 +351,7 @@ environment_chart:
         role: source | actor | world | reset | fixture | tool | evaluator | reward | partition
 
   claim:
-    class: diagnostic | preference_training | harness_selection | promotion
+    class: diagnostic | preference_training | harness_selection | subject_selection | promotion
     maximum_supported_claim:
     invalidators: []
     limitations: []
@@ -361,8 +368,7 @@ For `transition_model: none`, `support.executable` is empty. Any nonempty
 executable set requires `partial` or `total` plus a fingerprinted transition
 implementation; otherwise the chart is `invalid_environment`.
 
-Closure assets are regular, non-symlink files unless a chart explicitly defines
-and fingerprints symlink semantics. Each regular asset binds its executable
+Closure assets are regular, non-symlink files. Each regular asset binds its executable
 mode as well as exact bytes; file-type or mode drift is
 `invalid_environment`.
 
@@ -375,7 +381,7 @@ authority for an oracle or success condition and requires at least one
 independent correction, test, assertion, invariant, or human-attestation ref.
 
 `policy_ref` and `policy_fingerprint` are required whenever effects use
-`read_only`, `fixture_only`, `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
+`read_only`, `isolated_write`, `fixture_only`, `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
 the exact recordings, roots, operations, and authority. They are absent only
 for fully closed effect modes. A `read_only` policy enumerates every readable
 root and excludes evaluator-only, session, credential, and unrelated host
@@ -482,8 +488,8 @@ drifted, leaked, incomplete, or unverifiable environment construction.
 | World/evaluator condition | Maximum default claim |
 |---|---|
 | Exact resettable world + deterministic authority + fresh paired untouched holdout | promotion evidence, subject to all protected laws |
-| Exact or behaviorally adequate approximate world + fresh paired authority | harness_selection |
-| Direct correction + leakage-free judgeable decision + fresh passing action | preference_training and harness_selection |
+| Exact or behaviorally adequate approximate world + fresh paired untouched holdout | harness_selection for harness subjects; subject_selection otherwise |
+| Direct correction + leakage-free judgeable decision + fresh passing action | preference_training; selection only after an untouched holdout comparison |
 | Bounded attribution or transcript-only decision | development/diagnostic unless fresh evidence discriminates |
 | Ambiguous attribution, absent world, observational chart, or model-only judgment | diagnostic |
 | Missing actor-readable proof, active holdout exposure, evaluator drift, or closure mismatch | no selecting claim; invalid_environment |
@@ -491,6 +497,9 @@ drifted, leaked, incomplete, or unverifiable environment construction.
 promotion means the evidence packet may support a separately authorized adoption
 decision. It never grants mutation authority. Historical outcomes alone never
 select or promote.
+Every `harness_selection` or `subject_selection` claim requires an untouched
+holdout at the frozen partition snapshot; discovery/development evidence may
+nominate or train but cannot select.
 
 ## Required validation
 
