@@ -365,11 +365,15 @@ and expected pre-state fingerprint; it contains no independent commands or
 fixtures. Mismatch is `invalid_environment`. Non-closed world effects require
 the exact effect-policy ref and fingerprint above, matching the chart effects
 block.
+Chart `environment.world_fidelity` MUST equal `world.fidelity`; neither field
+wins by precedence.
 
 For executable charts, the chart owns semantic tool permission and evaluation;
 the tool and evaluator assets own their operational implementation. The chart
-and world both bind the same exact tool asset ref/fingerprint and evaluator
-asset ref/fingerprint. The world's inline tool/evaluator fields are exact RFC
+and world both bind the same exact tool asset ref/fingerprint. World
+`evaluator.asset_ref/fingerprint` MUST equal chart
+`evaluator.implementation_ref/fingerprint`; the separate semantic
+`evaluator_ref/fingerprint` is validated independently. The world's inline tool/evaluator fields are exact RFC
 8785 projections of those assets, not independent definitions. Admission
 verifies reference equality, fingerprints, and projections before reset or
 execution. Missing references or drift is `invalid_environment`; a runner
@@ -397,6 +401,11 @@ Before admitting any chart:
    access policy;
 8. prove the fresh actor invocation could access only that declared inventory.
 
+Run the forbidden-ref and excerpt scan over every byte in the complete
+actor-readable inventory, including harness, memory, tool fixtures, and mounted
+roots. Any unscannable or unsanitized readable asset is excluded or makes the
+run `historical_leakage`.
+
 A file containing both projections is not separation. For harness selection,
 promotion, or training, absent actor-readable inventory or access proof makes
 the run invalid_environment and limits the chart to diagnostic use.
@@ -414,19 +423,21 @@ is exactly the RFC 8785 canonical UTF-8 encoding of:
 {"identity_kind":"root_session","identity_refs":["seq:<adapter>:<root-session-id>"],"schema":"emulator-source-group/v1"}
 ~~~
 
-`external_task` takes precedence whenever an exact repository issue/PR/task
-identity is available, including for session-derived charts. Otherwise
-`identity_kind` is `root_session` for session material (linked workers use the
-root session ID, never their worker IDs), or `designed_task` with the actor-input
-fingerprint. `identity_refs` is the byte-lexicographically sorted,
+`external_task` governs the group whenever an exact repository issue/PR/task
+identity is available; otherwise the group kind is `root_session` for session
+material or `designed_task` with the actor-input fingerprint. The group
+`identity_refs` is the byte-lexicographically sorted,
 duplicate-free array of the selected kind's exact refs; kinds are never mixed.
 Compute SHA-256 over those exact canonical bytes for
 `source_group_fingerprint`. Also hash each ref independently from the RFC 8785
 canonical bytes of
 `{"identity_kind":"<kind>","identity_ref":"<ref>","schema":"emulator-source-identity/v1"}`
-and record the sorted `source_identity_fingerprints`. Cross-atlas claims and
-locks use every individual identity fingerprint, so groups that overlap by one
-underlying task/session collide. Local chart IDs, atlas IDs, partition, and the
+and record the sorted `source_identity_fingerprints`. For session-derived
+groups, this individual set always includes the root-session identity (linked
+workers use the root, never worker IDs) plus every stable external-task alias;
+individual aliases may span kinds even though the aggregate group kind does
+not. Cross-atlas claims and locks use every individual identity fingerprint, so
+groups that overlap by one underlying task/session collide. Local chart IDs, atlas IDs, partition, and the
 surrounding corpus are excluded. Root chart entries repeat the chart's
 `source_group_fingerprint` exactly; ambiguity, mismatch, or mutable refs make
 the group ineligible for holdout.
@@ -495,8 +506,9 @@ reuse the exact reservation and matching group locks; they do not create them
 again. Holdout use outside compare mode is unsupported. Bind the reservation
 ref and fingerprint in every affected run. Any existing or incomplete
 reservation makes the group unavailable outside the named cycle and fails
-closed. On completion,
-incorporate the reservation as a retirement marker in the next immutable
+closed. On completion, create a content-addressed `holdout-retirement/v1`
+marker referencing the reservation, consumed groups, chart fingerprints,
+purpose, and prior root; incorporate that marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
@@ -521,8 +533,9 @@ lock remains fail-closed for human resolution.
 
 At partition freeze, before candidate generation, atomically create
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
-It binds the source-identity fingerprint, group fingerprint, partition,
-pre-candidate policy fingerprint, and exposure status. An existing claim for
+It binds the source-identity fingerprint, group fingerprint, partition, and
+exposure status. Claims are finalized before the pre-candidate policy, which
+then binds their fingerprints; claims never point back to that policy. An existing claim for
 another partition, or any prior
 discovery/development exposure when the new claim is holdout, is
 `holdout_contaminated`. Record

@@ -140,8 +140,8 @@ The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
 exact source-identity partition-claim refs/fingerprints, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
-threshold, the factor-to-targeted-chart predicate, protected dimensions, and
-candidate budget. It is never
+threshold, the factor-to-targeted-chart predicate, protected dimensions,
+non-hard regression tolerance, and candidate budget. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, runtime constraints,
 candidate budget, and discovery/development inputs; it contains no holdout IDs,
@@ -172,8 +172,9 @@ entry names the exact manifest whose fingerprint the corresponding comparison
 and runs must repeat.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
-equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
-`partition` equals chart `split.partition`. Any mismatch is
+equals chart `kind`, root `split_group` equals chart `split.group_id`, root
+`partition` equals chart `split.partition`, and the root's group and ordered
+source-identity fingerprints equal the chart's recomputed values. Any mismatch is
 `invalid_environment`; neither copy wins by precedence. An observational chart
 MUST have root `required: false` because it cannot participate in selection.
 Root `chart_id` values are unique; duplicates are `invalid_environment` even
@@ -360,9 +361,11 @@ authority for an oracle or success condition and requires at least one
 independent correction, test, assertion, invariant, or human-attestation ref.
 
 `policy_ref` and `policy_fingerprint` are required whenever effects use
-`replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
+`read_only`, `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
 the exact recordings, roots, operations, and authority. They are absent only
-for fully closed effect modes. A `full_episode` requires at least one terminal
+for fully closed effect modes. A `read_only` policy enumerates every readable
+root and excludes evaluator-only, session, credential, and unrelated host
+paths. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
 smallest applicable limit.
 

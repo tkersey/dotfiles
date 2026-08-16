@@ -210,6 +210,9 @@ kinds. Selecting and training claims require an access proof that the actor
 could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
+For a harness comparison, baseline/candidate subject fingerprints likewise
+equal their corresponding harness fingerprints; disagreement invalidates the
+comparison before recommendation.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
