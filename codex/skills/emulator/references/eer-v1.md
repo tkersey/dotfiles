@@ -22,8 +22,8 @@ emulator_execution_report:
     comparison_id:
     subject: harness | actor | environment_implementation
     factor:
-    baseline_harness_fingerprint:
-    candidate_harness_fingerprint:
+    baseline_harness_fingerprint:  # harness subject only
+    candidate_harness_fingerprint: # harness subject only
     baseline_subject_fingerprint:
     candidate_subject_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
@@ -49,6 +49,7 @@ emulator_execution_report:
       chart_kind:
       partition:
       split_group:
+      partition_snapshot_fingerprint:
       subject_kind: harness | actor | environment_implementation
       subject_id:
       subject_fingerprint:
@@ -85,6 +86,10 @@ emulator_execution_report:
       trace_invariant_results_fingerprint:
       trace_ref:
       trace_fingerprint:
+      reward:  # null when reward is disabled
+        definition_fingerprint:
+        channels: {}
+        aggregate:
       cost:
       limitations: []
 
@@ -95,6 +100,7 @@ emulator_execution_report:
       candidate_runs: []
       hard_delta:
       state_delta:
+      reward_delta:
       protected_regressions: []
       residual_preference:
       result: improved | regressed | noninferior | ambiguous | invalid
@@ -137,10 +143,13 @@ runtime-error, ambiguous, or skipped row records a reason and the evidence
 available before termination. No historical run appears as a baseline
 execution.
 
-Every execution row binds its root contract and atlas fingerprint. Every
-comparison binds exact chart, root closure, harness, world/reset, actor
+Every execution row binds its root contract, atlas, and current partition-
+snapshot fingerprints. Every comparison binds the exact declared subject
+bundle, chart, root closure, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
-split fingerprints. Selecting and training claims require an access proof that
+split fingerprints. Harness manifests are required only for `subject: harness`;
+actor and environment-implementation comparisons bind their declared subject
+bundles without invented harness fields. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots; both its reference and exact
 fingerprint are recorded and verified. Every emitted dataset reference has a
 companion fingerprint.
@@ -170,6 +179,7 @@ independent run-group ID and leaves comparison-only fields null:
   "chart_kind": "normative_decision",
   "partition": "holdout",
   "split_group": "group-...",
+  "partition_snapshot_fingerprint": "sha256:...",
   "subject_kind": "harness",
   "subject_id": "candidate-1",
   "subject_fingerprint": "sha256:...",
@@ -207,6 +217,7 @@ independent run-group ID and leaves comparison-only fields null:
   "trace_invariant_results_fingerprint": "sha256:...",
   "trace_ref": "traces/run-....json",
   "trace_fingerprint": "sha256:...",
+  "reward": null,
   "cost": {
     "input_tokens": null,
     "output_tokens": null,
@@ -251,6 +262,7 @@ its counterexample artifact by reference and fingerprint.
   "protected_regressions": [],
   "hard_oracle_delta": {},
   "state_delta": {},
+  "reward_delta": {},
   "trace_invariant_delta": {},
   "cost_delta": {},
   "residual_preference": {
@@ -283,6 +295,12 @@ residual judge is never sole authority, receives hard-oracle results, is blinded
 to harness identity, and is run in both presentation orders. Order disagreement
 is `ambiguous`.
 
+When reward is enabled, each run records the contracted per-channel values and
+aggregate exactly as defined by the fingerprinted reward asset. Reward is a
+learning signal, never an override for a hard failure, protected regression, or
+unsupported transition. Fresh trajectory exports preserve the same reward
+definition fingerprint and observed values.
+
 ## Recommendation authority
 
 `adopt` requires complete environment-valid baseline and candidate arms for
@@ -309,8 +327,11 @@ Dataset references appear only when rows were emitted:
   action, and a fresh passing chosen action that passed hard oracles.
 - Trajectory rows require fresh valid executable runs with reset and complete
   observable trace evidence.
+- Counterexample rows require a fresh valid mutation case, exact assignment and
+  generator identity, and a fingerprinted minimized failing artifact.
 - Active holdouts and hidden evaluator material are never exported.
 - Historical assistant responses are not chosen labels merely because they
   occurred.
 
-Every row retains chart, authority, closure, harness, and evidence provenance.
+Every row retains chart, authority, closure, declared subject, and evidence
+provenance; harness provenance appears only for a harness subject.

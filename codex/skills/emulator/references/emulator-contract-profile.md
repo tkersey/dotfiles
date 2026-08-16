@@ -15,8 +15,15 @@ is implied by the retained label.
 root_contract_fingerprint = SHA-256(exact emulator-spec.yaml UTF-8 bytes)
 chart_fingerprint         = SHA-256(exact chart YAML UTF-8 bytes)
 atlas_identity            = root fingerprint + ordered chart fingerprints
-atlas_fingerprint         = SHA-256(NUL-framed atlas_identity tuple)
+atlas_fingerprint         = SHA-256(
+  UTF-8("emulator-atlas-identity/v1") || 0x00 ||
+  UTF-8(root_contract_fingerprint) ||
+  for each ordered chart fingerprint: 0x00 || UTF-8(chart_fingerprint)
+)
 ~~~
+
+The encoded fingerprints include the literal `sha256:` prefix and lowercase
+hex text. There is no terminal NUL.
 
 The root does not contain its own fingerprint. Every chart entry binds its exact
 bytes. Each chart recursively binds every external source map, actor input,
@@ -63,13 +70,29 @@ emulator_contract:
       group_by: root_session_or_task
       frozen_before_candidate_generation: true
       holdout_visible_to_optimizer: false
-      retirement_markers: []
+      retirement_index:
+        ref: holdout-retirements/index.json
+        fingerprint:
+      retirement_markers:
+        - ref:
+          fingerprint:
 
   comparison_policy:
     subject: harness | actor | environment_implementation
-    baseline_harness_ref:
-    baseline_subject_ref:
-    candidate_subject_ref:
+    baseline_harness:
+      ref:
+      fingerprint:
+    candidate_harnesses:
+      - candidate_id:
+        ref:
+        fingerprint:
+    baseline_subject:
+      ref:
+      fingerprint:
+    candidate_subjects:
+      - candidate_id:
+        ref:
+        fingerprint:
     candidate_factor_policy: one_semantic_owner
     stochastic_repeats: 3
     deterministic_repeats: 1
@@ -85,6 +108,7 @@ emulator_contract:
     preferences: false
     trajectories: false
     curriculum: false
+    counterexamples: false
 ~~~
 
 corpus_digest binds the selected immutable source set, not a mutable session
@@ -92,12 +116,15 @@ directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
-`subject: harness` requires `baseline_harness_ref` and harness manifests.
+`subject: harness` requires fingerprinted baseline and candidate harness
+manifests in the recursive root closure.
 Designed synthetic comparisons may use `actor` or
-`environment_implementation` with the two frozen subject refs instead; the same
-one-factor, same-boundary, fresh-arm, and evaluator-immutability laws apply.
-Fields that do not apply to the declared subject are absent rather than filled
-with invented harness identities.
+`environment_implementation` with fingerprinted baseline and candidate subject
+bundles instead; the same one-factor, same-boundary, fresh-arm, and evaluator-
+immutability laws apply. Fields that do not apply to the declared subject are
+absent rather than filled with invented harness identities. Every candidate
+entry names the exact manifest whose fingerprint the corresponding comparison
+and runs must repeat.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
 equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
@@ -216,6 +243,13 @@ environment_chart:
     hard_oracles: []
     state_diff: []
     trace_invariants: []
+    reward:
+      enabled: true | false
+      definition_ref:
+      definition_fingerprint:
+      channels: []
+      aggregation:
+      authority_refs: []
     residual_judge:
       enabled: true | false
       rubric:
@@ -227,7 +261,7 @@ environment_chart:
     assets:
       - ref:
         sha256:
-        role: source | actor | world | reset | fixture | tool | evaluator
+        role: source | actor | world | reset | fixture | tool | evaluator | reward | partition
 
   claim:
     class: diagnostic | preference_training | harness_selection | promotion
@@ -238,6 +272,11 @@ environment_chart:
 
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
+
+When `reward.enabled` is true, the exact definition asset, named channels,
+aggregation rule, and authority refs are mandatory and the asset appears in the
+recursive closure. When false, the definition fields are null and channels and
+authority refs are empty. Reward never supplies missing oracle authority.
 
 `policy_ref` and `policy_fingerprint` are required whenever effects use
 `allow_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
@@ -362,7 +401,8 @@ actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
 root/chart split metadata equality
 implementation/seed identity plus contracted effects, termination, support matcher, and mutation domains when used
-complete baseline and candidate harness manifests for compare mode
+for harness comparison: fingerprinted baseline and candidate harness manifests
+for actor or environment comparison: fingerprinted baseline and candidate subject bundles
 same-comparison fingerprints and one semantic factor for compare mode
 hard-oracle precedence and protected dimensions
 claim class no stronger than authority, attribution, world, and freshness

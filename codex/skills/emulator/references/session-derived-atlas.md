@@ -386,16 +386,29 @@ never crosses partitions.
 - holdout is frozen before candidate generation and hidden from the author,
   optimizer prompt, candidate worktree, and development reports.
 
+Compile and validate holdout charts in a fresh context that terminates before
+candidate optimization starts. Candidate authoring and optimization use a
+separate fresh context that receives discovery/development material only; prior
+model context that saw holdout contents is not an admissible optimizer. Freeze
+all chart, evaluator, and partition fingerprints before that handoff.
+
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
 replace it with an untouched group before another optimization cycle.
 
 Retirement never edits the fingerprinted chart or an earlier root in place.
 Write a content-addressed `holdout-retirement/v1` marker naming the group,
-chart fingerprints, consumption purpose, and prior root fingerprint; bind that
-marker from the next versioned root's `partition_policy.retirement_markers`.
-The previous closure remains immutable and auditable. A group named by an
-effective retirement marker is inactive and ineligible for later holdout use.
+chart fingerprints, consumption purpose, and prior root fingerprint. Maintain
+the atlas-scoped `holdout-retirements/index.json` as the ordered set of all
+marker refs and fingerprints. The next root binds both the current index digest
+and each effective marker through `partition_policy` and recursive closure.
+
+Before every selecting run, resolve the well-known current index from the atlas
+root and require its fingerprint to equal the root's bound snapshot. A stale
+root therefore remains auditable but is ineligible for selection until a new
+root closure binds the current index. Record the partition-snapshot fingerprint
+in every run and report. A group named by the current index is inactive and
+cannot be reused as holdout.
 
 Filesystem and process separation are sufficient for the initial accidental
 leakage threat model; do not build a cryptographic broker.
@@ -496,6 +509,7 @@ hard oracles
 required state assertions and state diff
 trace invariants
 protected dimensions
+contracted reward channels
 cost and latency
 residual judgment
 ~~~
@@ -569,7 +583,8 @@ direct preference authority
 exact source-bound rejected action
 fresh passing chosen action
 hard-oracle pass
-inactive holdout
+partition is discovery/development, or a holdout was explicitly retired for
+this training use
 authority stronger than model judgment alone
 ~~~
 
@@ -584,6 +599,11 @@ trajectories by default.
 Curriculum rows may record family, difficulty, tools, prerequisites, failure
 cluster, fidelity, and supported claim. Every export retains chart and authority
 provenance.
+
+Counterexample rows require a fresh environment-valid mutation run, exact
+mutation assignment and generator identity, a reproducible minimized failing
+artifact, evaluator evidence, and a chart that is not active holdout. A
+historical failure alone is not an exportable counterexample row.
 
 ## Stop and rollback
 

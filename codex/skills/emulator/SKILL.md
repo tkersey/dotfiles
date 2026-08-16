@@ -80,8 +80,10 @@ emulator_request:
       development:
       holdout:
   experiment:
+    subject: harness | actor | environment_implementation
     factor:
     baseline_harness:
+    baseline_subject:
     candidates: []
     max_candidates: 3
   authorized_files:
@@ -92,6 +94,7 @@ emulator_request:
     preferences: false
     trajectories: false
     curriculum: false
+    counterexamples: false
 ```
 
 Session-derived atlases default to
@@ -163,10 +166,10 @@ is selected.
 Every chart exposes semantic equivalents of:
 
 ```text
-reset(chart_id, harness_id, repeat_id) -> observation
+reset(chart_id, subject_id, repeat_id) -> observation
 observe() -> current actor-visible observation
 support(action) -> executable | judgeable | denied | observed_only | unsupported
-evaluate(output_or_trace) -> oracle vector + state diff + residual judgment
+evaluate(output_or_trace) -> oracle vector + state diff + reward + residual judgment
 trace() -> fresh observable trace
 ```
 
