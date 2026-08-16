@@ -45,6 +45,8 @@ emulator_execution_report:
     comparison_id:
     subject: harness
     factor:
+    comparison_implementation_ref:
+    comparison_implementation_fingerprint:
     atlas_fingerprint:
     storage_domain_id:                 # selecting roots only
     exposure_registry_id:              # selecting roots only
@@ -172,6 +174,8 @@ emulator_execution_report:
       actor_input_fingerprint:
       actor_readable_inventory_ref:
       actor_readable_inventory_fingerprint:
+      semantic_leakage_review_ref:
+      semantic_leakage_review_fingerprint:
       actor_access_proof_ref:
       actor_access_proof_fingerprint:
       evaluator_fingerprint:
@@ -245,6 +249,13 @@ could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
+Each started selecting or training run also binds the post-freeze
+`semantic-leakage-review/v1` required by `session-derived-atlas.md`. Its
+inventory fingerprint equals that row's actor-readable-inventory fingerprint,
+and its coverage rows map every final readable entry exactly once. Missing,
+stale, partial, `leak`, or `uncertain` review evidence is
+`historical_leakage` and makes the run ineligible.
+
 Comparison-wide access proof maps every execution row with
 `actor_started: true` to that row's nonempty `actor_access_proof_ref` and
 fingerprint. A row terminated before process launch records
@@ -273,12 +284,18 @@ runner identity is not a selectable harness factor. A mismatch is
 
 Each started execution also binds a run-owned `runtime-observation/v1` artifact
 by ref and fingerprint. Its exact RFC 8785 payload is
-`{"observed_runtime_config":{},"requested_runtime_fingerprint":"sha256:<hex>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"schema":"runtime-observation/v1"}`.
-`observed_runtime_config` is the complete effective configuration and its
-canonical digest equals both `requested_runtime_fingerprint` and the execution's
-`runtime_fingerprint`. `actor_runner_fingerprint` is SHA-256 of the exact RFC
-8785 `runner` object. Missing observation or unequal observed/requested values
-is `comparison_drift`.
+`{"credential_binding":{"binding_fingerprint":"sha256:<hex>","secret_material_recorded":false},"observed_runtime_config":{},"requested_runtime_fingerprint":"sha256:<hex>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"schema":"runtime-observation/v1"}`.
+`observed_runtime_config` is the closed projection of behavior-bearing,
+non-secret keys declared by `runtime-config.json`; undeclared behavior keys are
+invalid. Its canonical digest equals both `requested_runtime_fingerprint` and
+the execution's `runtime_fingerprint`. Credentials, tokens, values, and their
+digests are never serialized. `binding_fingerprint` instead identifies the
+runner's non-secret credential-source and access-policy descriptor; the
+descriptor has `kind: none` when no credential is mounted. It MUST be equal
+across arms.
+`actor_runner_fingerprint` is SHA-256 of the exact RFC 8785 `runner` object.
+Missing observation, recorded secret material, or unequal observed/requested
+values is `comparison_drift`.
 
 A sampled failure schedule binds both a run-owned `failure_schedule_ref` and
 its exact fingerprint; both are null when no schedule exists. Matched-schedule
@@ -336,7 +353,7 @@ and leaves comparison-only fields null:
   "chart_kind": "normative_decision",
   "partition": "development",
   "split_group": "group-...",
-  "harness_id": "candidate-1",
+  "harness_id": "baseline",
   "harness_fingerprint": "sha256:...",
   "factor": null,
   "repeat_id": "repeat-1",
@@ -349,7 +366,7 @@ and leaves comparison-only fields null:
   "environment_implementation_fingerprint": "sha256:...",
   "evaluator_implementation_ref": "roots/<root-digest-hex>/evaluators/chart-...-implementation.json",
   "evaluator_implementation_fingerprint": "sha256:...",
-  "runtime_config_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/runtime-config.json",
+  "runtime_config_ref": "roots/<root-digest-hex>/harnesses/baseline/runtime-config.json",
   "runtime_fingerprint": "sha256:...",
   "runtime_observation_ref": "runs/run-group-.../runtime/run-...-observation.json",
   "runtime_observation_fingerprint": "sha256:...",
@@ -369,8 +386,10 @@ and leaves comparison-only fields null:
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
   "actor_input_fingerprint": "sha256:...",
-  "actor_readable_inventory_ref": "runs/run-group-.../actor-readable-inventory.json",
+  "actor_readable_inventory_ref": "runs/run-group-.../actor-readable-inventory/run-....json",
   "actor_readable_inventory_fingerprint": "sha256:...",
+  "semantic_leakage_review_ref": "runs/run-group-.../semantic-leakage-review/run-....json",
+  "semantic_leakage_review_fingerprint": "sha256:...",
   "actor_access_proof_ref": "runs/run-group-.../traces/run-...-access.json",
   "actor_access_proof_fingerprint": "sha256:...",
   "evaluator_fingerprint": "sha256:...",
@@ -421,6 +440,8 @@ counterexample artifact by reference and fingerprint.
   "contract_fingerprint": "sha256:...",
   "subject": "harness",
   "factor": "question_policy",
+  "comparison_implementation_ref": "roots/<root-digest-hex>/comparison/implementation.json",
+  "comparison_implementation_fingerprint": "sha256:...",
   "atlas_fingerprint": "sha256:...",
   "storage_domain_id": "sha256:...",
   "exposure_registry_id": "sha256:...",
@@ -531,6 +552,10 @@ determinate; an `ambiguous` required row or comparison prevents adoption.
 Stochastic adoption additionally requires the
 predetermined repeat/improvement rule and matched randomness when available;
 uncontrolled evidence that cannot satisfy the frozen rule is insufficient.
+The comparison implementation ref/fingerprint equals the final root and the
+evaluator-only pre-candidate commitment. It covers aggregation, precedence,
+and recommendation logic; missing, changed, or candidate-readable
+implementation evidence is `evaluator_contaminated` and cannot yield `adopt`.
 
 For a static asset ref, canonical asset identity is `(closure-relative suffix,
 fingerprint)`: strip the exact `roots/<root-digest-hex>/` prefix required in a

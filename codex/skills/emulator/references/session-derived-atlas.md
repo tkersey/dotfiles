@@ -106,6 +106,14 @@ seq find-session \
   --format json
 ~~~
 
+`seq find-session --prompt` is a semantic source read. Its matches are
+permanently `discovery_exposed` and cannot later enter development or holdout.
+To discover a holdout candidate, use only physical metadata after publishing a
+complete `holdout_unexposed` identity claim, then perform the first semantic
+read under the partition-freeze and selection rules in Section 7. If complete
+identity cannot be known without prompt search, use the discovery-only
+fallback; do not retroactively call the match untouched.
+
 Exclude:
 
 - the current compilation session;
@@ -423,13 +431,17 @@ actor-readable inventory, including harness, memory, tool fixtures, and mounted
 roots. Any unscannable or unsanitized readable asset is excluded or makes the
 run `status: invalid_environment` with `status_reason: historical_leakage`.
 
-Exact matching is not sufficient for source-derived readable assets. Retain a
-provenance row for every actor-readable asset stating whether it predates the
-source, was independently authored, or may derive from the selected session
-corpus. An evaluator-only semantic-derivative review compares every possibly
-derived asset with the hidden action, correction, recovery, and outcome and
-binds its result by ref and fingerprint. A paraphrase, encoded derivative, or
-uncertain provenance is `historical_leakage`; when it cannot be excluded, the
+Exact matching is not sufficient for source-derived readable assets. After the
+harness, actor input, and mounts are frozen, each actor-started execution emits a
+`semantic-leakage-review/v1` artifact bound to that execution's final
+actor-readable-inventory fingerprint. It contains exactly one sorted coverage
+row for every inventory entry, with the entry ref/fingerprint, provenance
+class (`predates_source`, `independent`, or `possibly_derived`), and result
+(`clear`, `leak`, or `uncertain`). No missing, duplicate, or extra row is
+allowed. An evaluator-only semantic review compares every `possibly_derived`
+asset with the hidden action, correction, recovery, and outcome. Runs and EER
+bind the review ref/fingerprint. A paraphrase, encoded derivative, `leak`, or
+`uncertain` result is `historical_leakage`; when it cannot be excluded, the
 chart is diagnostic-only and cannot enter holdout, selection, or training.
 
 A file containing both projections is not separation. For harness selection,
@@ -631,6 +643,15 @@ purpose, and prior root; incorporate that marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
+Before creating the reservation, atomically create-new
+`reports/<comparison-id>/` as the comparison-identity reservation for every
+pair, then create `runs/<comparison-id>/`. A
+comparison ID that already exists anywhere in this atlas, including an earlier
+cycle, is invalid and is never reused or replaced. Likewise, `cycle_id` owns
+its reservation directory for the lifetime of the atlas. Partial creation
+before actor exposure is removed only by the same failed attempt; after
+exposure it remains fail-closed for human resolution.
+
 Constrain every path-derived identifier as specified by the contract profile
 before use, and prove each resolved destination remains under its owner root
 before create, replace, or removal. Derive the
@@ -780,7 +801,9 @@ leakage threat model; do not build a cryptographic broker.
 Before candidate generation, write and fingerprint an evaluator-only
 pre-candidate policy asset containing the selecting chart commitments,
 partition snapshot, model/runtime configuration, repeat counts, randomness
-matching, improvement threshold, protected dimensions, and candidate budget.
+matching, improvement threshold, protected dimensions, candidate budget, and
+the exact comparison-implementation ref/fingerprint that will aggregate
+results and choose the recommendation.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate redacted optimizer policy
 containing the selected factor, exact factor-owner paths and runtime keys,
@@ -788,6 +811,8 @@ runtime constraints, budget, and only discovery/development inputs. Before
 candidate generation, require those shared fields to equal the pre-candidate
 policy exactly. The final root binds both exact refs and
 fingerprints; candidate manifests cannot rewrite either snapshot.
+The final root and each pairwise report repeat the same comparison
+implementation identity.
 
 Manifest every behavior-bearing root:
 
@@ -818,8 +843,11 @@ path exactly. Entries are sorted by `(precedence, root_id, path)` and
 higher numeric precedence wins an effective-path collision. Precedence values
 are unique across distinct root declarations; all entries from one root repeat
 that root's same precedence.
-Every `path` is normalized, relative, nonempty, and non-escaping. Its regular
-file resolves relative to the manifest directory at
+Every `path` is normalized, relative, nonempty, and non-escaping. Every
+`mount_path` is `.` or a nonempty normalized POSIX-relative non-escaping path;
+absolute paths, backslashes, and `..` segments are invalid. Before copying a
+file, resolve the effective `mount_path/path` and require it to remain beneath
+the isolated runtime root. Its regular file resolves relative to the manifest directory at
 `files/<root-id>/<path>` and exact bytes/mode match the entry. This arm-local
 layout lets baseline and candidate carry different bytes at the same logical
 path without changing its runtime meaning.
@@ -827,13 +855,20 @@ The bundle also stores the exact RFC 8785 bytes of the manifest's
 `runtime_config` object at manifest-relative `runtime-config.json`. Its digest
 is the run's `runtime_fingerprint`; the archived asset ref and digest are
 recorded in every execution. The actor runner must materialize that exact
-configuration. A runtime-factor experiment may change only predeclared runtime
+closed behavior-bearing non-secret configuration. Credentials, tokens, secret
+values, and their digests are forbidden from both the manifest and runtime
+observation; the run records only the non-secret credential binding-policy
+fingerprint defined by EER-v1. A runtime-factor experiment may change only predeclared runtime
 keys; otherwise baseline/candidate runtime fingerprints must be equal. The
 runner implementation/version is recorded separately and must be equal across
 arms. It is a run fact, not a selectable harness factor; changing it requires a
 different experiment subject outside EC-v1.
-Source symlinks are resolved exactly once while capturing the frozen source
-harness; dangling links and loops are invalid. A separately fingerprinted,
+Capture from an immutable snapshot or locked worktree. If the source cannot be
+made immutable, perform a complete ordered second metadata-and-content scan
+after capture and require byte-identical path, type, mode, link target, and
+digest results before freezing the manifest; any drift restarts capture.
+Source symlinks are resolved exactly once within that stable capture;
+dangling links and loops are invalid. A separately fingerprinted,
 evaluator-only `harness-capture-provenance/v1` asset binds every source link
 path, owning root ID, source-root path, raw target, and final resolved source
 path, plus a complete walk of every declared source root. Its canonical
@@ -883,10 +918,16 @@ separate experiments.
 
 The pre-candidate policy enumerates exact root-qualified behavior-bearing path
 pairs (`root_id`, logical `path`) and runtime-configuration keys owned by the
-selected factor. After candidate freeze, one
-factor-delta validation asset per candidate computes that candidate's complete
-baseline/candidate manifest diff, requires at least one change, and requires
-every changed path or runtime key to be in that predeclared owner set. The
+selected factor. Each path declaration also gives an exact structured selector
+for the bytes owned by that factor, or an evaluator-only human attestation that
+the whole file exclusively owns the factor. A path allowlist alone is not
+factor-locality. After candidate freeze, one factor-delta validation asset per
+candidate computes the complete byte-level baseline/candidate manifest diff,
+requires at least one change, maps every changed byte and runtime key to exactly
+one predeclared selector, and rejects uncovered changes. When a changed file
+contains other semantic owners, the asset also binds a human
+`semantic-delta-attestation/v1` covering every diff hunk and affirming that each
+hunk implements only the selected factor. The
 matching `candidate_harnesses` root entry, candidate metadata, and pairwise EER
 bind the same ref and fingerprint. A missing, incomplete, mismatched, or
 out-of-factor delta is `multiple_factors` and cannot be recommended; one
@@ -999,7 +1040,8 @@ Return adopt, reject, or insufficient_evidence. Adopt requires:
 6. any residual preference is order-stable;
 7. the exact frozen candidate fingerprint was evaluated;
 8. stochastic evidence satisfies the repeat count and improvement rule frozen
-   in the root before candidate generation; arms use matched seeds/schedules
+   in the evaluator-only pre-candidate policy before candidate generation and
+   repeated unchanged in the final root; arms use matched seeds/schedules
    when controllable, and uncontrolled nondeterminism that cannot meet that
    predetermined rule yields `insufficient_evidence`.
 

@@ -143,6 +143,9 @@ emulator_contract:
     optimizer_policy:
       ref:
       fingerprint:
+    comparison_implementation:
+      ref:
+      fingerprint:
     baseline_harness:
       harness_id:
       ref:
@@ -179,7 +182,7 @@ emulator_contract:
         fingerprint:
         file_type: regular
         mode:
-        role: partition_claim | partition_validation | access_proof | factor_delta_validation | harness_capture_provenance | mutation_generator | other
+        role: partition_claim | partition_validation | access_proof | factor_delta_validation | harness_capture_provenance | comparison_implementation | mutation_generator | other
 
   output:
     eer: EER-v1
@@ -197,7 +200,11 @@ array is the byte-lexicographically sorted, duplicate-free fingerprints of all
 selected source bundles. It binds the selected immutable source set, not a mutable session
 directory. `harness_roots` is the ordered runtime layering contract. Each entry
 has a stable `root_id`, a unique nonnegative integer `precedence`, and a
-normalized logical `mount_path`; these values, not a source-worktree path,
+nonempty normalized POSIX-relative logical `mount_path`; `.` denotes the
+runtime root. Absolute paths, backslashes, empty paths, and any `..` segment
+are invalid. Before materialization, resolve every effective
+`mount_path/path` destination and prove it remains beneath the isolated runtime
+root. These values, not a source-worktree path,
 determine lookup and override order. Materialize roots in ascending precedence;
 a higher numeric precedence overrides a lower one at the same effective mount
 path. Distinct root declarations have unique `root_id` and precedence values.
@@ -206,10 +213,13 @@ under experiment. The root may contain one chart; the atlas abstraction does
 not require scale.
 
 Both `session` and `session_corpus` require
-`current_session_excluded: true`. `mixed` also requires `true` whenever any
-component is session-derived, and records each excluded session component;
-mixed sources without sessions use `not_applicable`. A pure `user_design`
-source requires `false`; every other source kind requires `not_applicable`.
+`current_session_excluded: true`. Determine this requirement over the complete
+recursive source closure, not only the root `source.kind`: `mixed`,
+`existing_contract`, or any other wrapper requires `true` whenever a reachable
+chart, source bundle, or nested contract is session-derived, and records each
+excluded session component. A closure with no session-derived component uses
+`false` only for a pure `user_design` source and `not_applicable` otherwise.
+No wrapper may hide a nested session source behind `not_applicable`.
 
 `operation_mode` is the operation that authored or executed the closure and is
 immutable for the closure and report. The `$emulator` `export` request reads an
@@ -234,8 +244,8 @@ refs/fingerprints and their validation asset, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
 threshold, the factor-to-targeted-chart predicate, protected dimensions and
 their evaluator-result bindings, exact factor-owner paths and runtime keys,
-non-hard regression tolerance, candidate budget, and exact baseline
-harness fingerprint. It is never
+non-hard regression tolerance, candidate budget, exact baseline harness
+fingerprint, and exact comparison-implementation ref/fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, its exact factor-owner
 paths and runtime keys, runtime constraints, candidate budget, and
@@ -263,6 +273,13 @@ deterministic functions only of the frozen baseline manifest, candidate
 manifest, and pre-candidate factor-owner declaration; they cannot add policy or
 evaluator authority. Any other drift is
 `holdout_contaminated`.
+
+`comparison_implementation` binds the exact aggregation, delta, precedence,
+and recommendation implementation. Its ref/fingerprint MUST equal the
+pre-candidate commitment and is repeated in each pairwise EER and
+`comparison.json`. It is evaluator-only, immutable across arms, and cannot be
+modified by a candidate. Missing or unequal bytes are
+`evaluator_contaminated`; no recommendation is eligible.
 
 Comparisons are harness comparisons. `subject` is therefore exactly `harness`,
 and the recursive root closure contains fingerprinted baseline and candidate
@@ -466,9 +483,12 @@ Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
 For `transition_model: total`, support predicates exhaustively and exclusively
-cover every action admitted by `actions.schema`, and `unsupported_default` is
-`false`. A total chart that can fall through to `unsupported` is
-`invalid_environment` rather than partially total.
+cover every action admitted by `actions.schema`, `unsupported_default` is
+`false`, and every admitted action not classified `denied` is `executable`.
+`judgeable` and `observed_only` are invalid in a total chart because neither
+supplies a next-state transition. A total chart that can fall through to
+`unsupported` or lacks executable coverage is `invalid_environment` rather
+than partially total.
 For `transition_model: none`, `support.executable` is empty. Any nonempty
 executable set requires `partial` or `total` plus a fingerprinted transition
 implementation; otherwise the chart is `invalid_environment`.
