@@ -64,6 +64,7 @@ emulator_contract:
         kind: normative_decision | executable_episode | observational
         split_group:
         source_group_fingerprint:
+        source_identity_fingerprints: []
         partition: discovery | development | holdout
         required: true | false
 
@@ -135,15 +136,20 @@ component is session-derived, and records each excluded session component;
 mixed sources without sessions use `not_applicable`. A pure `user_design`
 source requires `false`; every other source kind requires `not_applicable`.
 
-The evaluator-only pre-candidate policy asset includes the ordered selecting chart entries
-(`chart_id`, fingerprint, split group, partition, and `required`), factor,
-partition snapshot, runtime configuration, repeats, randomness policy,
-improvement threshold, protected dimensions, and candidate budget. It is never
+The evaluator-only pre-candidate policy asset includes the ordered selecting
+chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
+exact source-identity partition-claim refs/fingerprints, factor, partition
+snapshot, runtime configuration, repeats, randomness policy, improvement
+threshold, the factor-to-targeted-chart predicate, protected dimensions, and
+candidate budget. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, runtime constraints,
 candidate budget, and discovery/development inputs; it contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
+The predicate is an ordered `targeted_chart_rules` array whose entries contain
+exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
+chart appears exactly once. Post-outcome classification is forbidden.
 Before candidate generation, validation requires exact equality between the
 two policies' selected factor, runtime constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
@@ -200,6 +206,7 @@ environment_chart:
   split:
     group_id:
     source_group_fingerprint:
+    source_identity_fingerprints: []
     partition: discovery | development | holdout
 
   cut:
@@ -248,7 +255,12 @@ environment_chart:
       schema:
     actions:
       schema:
-    tools: {}
+    tools:
+      asset_ref:
+      asset_fingerprint:
+      allowed: []
+      denied: []
+      schemas: {}
     effects:
       network: deny | fixture_only | replay_recorded
       filesystem: read_only | isolated_write | declared_roots
@@ -288,6 +300,8 @@ environment_chart:
   evaluator:
     evaluator_ref:
     evaluator_fingerprint:
+    implementation_ref:
+    implementation_fingerprint:
     authority:
       class: explicit_user_correction | deterministic_test | state_assertion | trace_invariant | human_attestation | fresh_comparison | ambiguous
       refs: []
@@ -313,6 +327,8 @@ environment_chart:
     assets:
       - ref:
         sha256:
+        file_type: regular
+        mode:
         role: source | actor | world | reset | fixture | tool | evaluator | reward | partition
 
   claim:
@@ -325,10 +341,23 @@ environment_chart:
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
+For `transition_model: total`, support predicates exhaustively and exclusively
+cover every action admitted by `actions.schema`, and `unsupported_default` is
+`false`. A total chart that can fall through to `unsupported` is
+`invalid_environment` rather than partially total.
+
+Closure assets are regular, non-symlink files unless a chart explicitly defines
+and fingerprints symlink semantics. Each regular asset binds its executable
+mode as well as exact bytes; file-type or mode drift is
+`invalid_environment`.
+
 When `reward.enabled` is true, the exact definition asset, named channels,
 aggregation rule, and authority refs are mandatory and the asset appears in the
 recursive closure. When false, the definition fields are null and channels and
 authority refs are empty. Reward never supplies missing oracle authority.
+`fresh_comparison` records relative fresh evidence only; it is never the sole
+authority for an oracle or success condition and requires at least one
+independent correction, test, assertion, invariant, or human-attestation ref.
 
 `policy_ref` and `policy_fingerprint` are required whenever effects use
 `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines

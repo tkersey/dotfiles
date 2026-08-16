@@ -30,6 +30,10 @@ emulator_execution_report:
     partition_snapshot_fingerprint:  # selecting roots only
     partition_validation_ref:        # selecting roots only
     partition_validation_fingerprint: # selecting roots only
+    partition_claim_refs: []          # selecting roots only
+    partition_claim_fingerprints: []  # selecting roots only
+    partition_claim_validation_ref:   # selecting roots only
+    partition_claim_validation_fingerprint: # selecting roots only
     holdout_reservation_ref:          # holdout runs only
     holdout_reservation_fingerprint:  # holdout runs only
     holdout_lock_refs: []              # holdout runs only
@@ -59,6 +63,17 @@ emulator_execution_report:
     trace_invariant_delta: {}
     cost_delta: {}
     residual_preference: {}
+    chart_comparisons:
+      - chart_id:
+        eligibility:
+        baseline_runs: []
+        candidate_runs: []
+        hard_delta:
+        state_delta:
+        reward_delta:
+        protected_regressions: []
+        residual_preference:
+        result: improved | regressed | noninferior | ambiguous | invalid
 
   run_summary:
     valid_runs:
@@ -85,6 +100,10 @@ emulator_execution_report:
       partition_snapshot_fingerprint:  # selecting roots only
       partition_validation_ref:        # selecting roots only
       partition_validation_fingerprint: # selecting roots only
+      partition_claim_refs: []          # selecting roots only
+      partition_claim_fingerprints: []  # selecting roots only
+      partition_claim_validation_ref:   # selecting roots only
+      partition_claim_validation_fingerprint: # selecting roots only
       holdout_reservation_ref:          # holdout runs only
       holdout_reservation_fingerprint:  # holdout runs only
       holdout_lock_refs: []              # holdout runs only
@@ -137,18 +156,6 @@ emulator_execution_report:
         aggregate:
       cost:
       limitations: []
-
-  chart_comparisons:
-    - chart_id:
-      eligibility:
-      baseline_runs: []
-      candidate_runs: []
-      hard_delta:
-      state_delta:
-      reward_delta:
-      protected_regressions: []
-      residual_preference:
-      result: improved | regressed | noninferior | ambiguous | invalid
 
   datasets:
     preferences_ref:
@@ -205,8 +212,9 @@ are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
-current pointer resolved to the root-bound immutable partition snapshot. Holdout
-runs additionally bind the exclusive pre-exposure reservation, every canonical
+current pointer resolved to the root-bound immutable partition snapshot, plus
+every source-identity partition claim and the artifact validating those claims
+against the frozen pre-candidate policy. Holdout runs additionally bind the exclusive pre-exposure reservation, every canonical
 cross-atlas lock ref and fingerprint, and a validation artifact proving those
 locks matched the root, source groups, and reservation before exposure. Missing
 or mismatched evidence makes selecting use invalid rather than silently reusing
@@ -242,11 +250,6 @@ independent run-group ID and leaves comparison-only fields null:
   "chart_kind": "normative_decision",
   "partition": "development",
   "split_group": "group-...",
-  "partition_snapshot_fingerprint": "sha256:...",
-  "partition_validation_ref": "partition-validation.json",
-  "partition_validation_fingerprint": "sha256:...",
-  "holdout_reservation_ref": null,
-  "holdout_reservation_fingerprint": null,
   "subject_kind": "harness",
   "subject_id": "candidate-1",
   "subject_fingerprint": "sha256:...",
@@ -324,6 +327,10 @@ counterexample artifact by reference and fingerprint.
   "partition_snapshot_fingerprint": "sha256:...",
   "partition_validation_ref": "partition-validation.json",
   "partition_validation_fingerprint": "sha256:...",
+  "partition_claim_refs": ["partition-claims/<digest>.json"],
+  "partition_claim_fingerprints": ["sha256:..."],
+  "partition_claim_validation_ref": "partition-claim-validation.json",
+  "partition_claim_validation_fingerprint": "sha256:...",
   "holdout_reservation_ref": "holdout-reservation.json",
   "holdout_reservation_fingerprint": "sha256:...",
   "holdout_lock_refs": ["holdout-locks/<digest>.lock"],
@@ -358,6 +365,20 @@ counterexample artifact by reference and fingerprint.
     "order_stable": true,
     "evidence_refs": []
   },
+  "chart_comparisons": [
+    {
+      "chart_id": "chart-...",
+      "eligibility": true,
+      "baseline_runs": [],
+      "candidate_runs": [],
+      "hard_delta": {},
+      "state_delta": {},
+      "reward_delta": {},
+      "protected_regressions": [],
+      "residual_preference": {},
+      "result": "improved | regressed | noninferior | ambiguous | invalid"
+    }
+  ],
   "recommendation": "adopt | reject | insufficient_evidence",
   "evidence_relation": "paired_replay_delta | observed_association | regression | insufficient_evidence",
   "reason": "",

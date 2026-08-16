@@ -266,7 +266,7 @@ hard_oracles:
     action_class: ask
     when: required_information_already_visible
   - id: act-on-resolvable-request
-    type: required_decision_class
+    type: decision_class_required
     one_of: [inspect, act, tool]
 protected_dimensions:
   - no_unapproved_mutation
@@ -336,11 +336,12 @@ world:
       fingerprint:
       assertions: []
   tools:
+    asset_ref:
+    asset_fingerprint:
     allowed: []
     denied: []
     schemas: {}
     fixtures: {}
-    chart_projection_fingerprint:
   effects:
     network: deny | fixture_only | replay_recorded
     filesystem_roots: []
@@ -348,10 +349,11 @@ world:
     policy_ref:
     policy_fingerprint:
   evaluator:
+    asset_ref:
+    asset_fingerprint:
     commands: []
     state_assertions: []
     trace_invariants: []
-    chart_projection_fingerprint:
   closure:
     assets: []
   limitations: []
@@ -365,13 +367,13 @@ the exact effect-policy ref and fingerprint above, matching the chart effects
 block.
 
 For executable charts, the chart owns semantic tool permission and evaluation;
-`world.tools` and `world.evaluator` own their operational implementation. The
-world records SHA-256 of the exact RFC 8785 canonical bytes of the chart's
-`environment.tools` and `evaluator` blocks in the two
-`chart_projection_fingerprint` fields. Its allowed/denied tool names and schema
-objects also deep-equal the corresponding chart fields. Admission verifies both
-projection fingerprints before reset or execution. Missing references or drift
-is `invalid_environment`; a runner cannot choose one copy by precedence.
+the tool and evaluator assets own their operational implementation. The chart
+and world both bind the same exact tool asset ref/fingerprint and evaluator
+asset ref/fingerprint. The world's inline tool/evaluator fields are exact RFC
+8785 projections of those assets, not independent definitions. Admission
+verifies reference equality, fingerprints, and projections before reset or
+execution. Missing references or drift is `invalid_environment`; a runner
+cannot choose one copy by precedence.
 
 Run the reset twice before admitting exact fidelity. Both runs must produce the
 same expected pre-state fingerprint.
@@ -412,13 +414,19 @@ is exactly the RFC 8785 canonical UTF-8 encoding of:
 {"identity_kind":"root_session","identity_refs":["seq:<adapter>:<root-session-id>"],"schema":"emulator-source-group/v1"}
 ~~~
 
-`identity_kind` is `root_session` whenever any group member is session-derived;
-all linked workers use the root session ID, never their worker IDs. Otherwise
-it is `external_task` for a repository issue/PR/task with exact canonical refs,
-or `designed_task` with the actor-input fingerprint when no external task ref
-exists. `identity_refs` is the byte-lexicographically sorted, duplicate-free
-array of the selected kind's exact refs; kinds are never mixed. Compute SHA-256
-over those exact canonical bytes. Local chart IDs, atlas IDs, partition, and the
+`external_task` takes precedence whenever an exact repository issue/PR/task
+identity is available, including for session-derived charts. Otherwise
+`identity_kind` is `root_session` for session material (linked workers use the
+root session ID, never their worker IDs), or `designed_task` with the actor-input
+fingerprint. `identity_refs` is the byte-lexicographically sorted,
+duplicate-free array of the selected kind's exact refs; kinds are never mixed.
+Compute SHA-256 over those exact canonical bytes for
+`source_group_fingerprint`. Also hash each ref independently from the RFC 8785
+canonical bytes of
+`{"identity_kind":"<kind>","identity_ref":"<ref>","schema":"emulator-source-identity/v1"}`
+and record the sorted `source_identity_fingerprints`. Cross-atlas claims and
+locks use every individual identity fingerprint, so groups that overlap by one
+underlying task/session collide. Local chart IDs, atlas IDs, partition, and the
 surrounding corpus are excluded. Root chart entries repeat the chart's
 `source_group_fingerprint` exactly; ambiguity, mismatch, or mutable refs make
 the group ineligible for holdout.
@@ -460,9 +468,10 @@ using immutable digest-addressed assets with an exact path map). Reports cite
 that archived root. Later roots never mutate an archived root or any asset it
 references.
 
-Any selecting root with a holdout creates both an immutable empty snapshot and
-`current.json` before its first use; the pointer is mandatory even when there
-are no retirements. A root without holdout charts may omit both.
+When no retirement index exists, the first selecting root with a holdout
+creates both an immutable empty snapshot and `current.json`; otherwise it
+preserves and binds the existing current snapshot. The pointer is mandatory
+even when there are no retirements. A root without holdout charts may omit both.
 
 Before every selecting run, acquire the retirement-index update lock, resolve
 the current pointer, and require its target snapshot fingerprint to equal the
@@ -476,22 +485,25 @@ partition-snapshot, validation, and reservation fields are absent rather than
 invented. A group named by the current index is inactive and cannot be reused
 as holdout.
 
-Before the first actor sees a holdout, atomically create an exclusive
+Once per comparison cycle and before its first actor sees a holdout, atomically
+create an exclusive
 `holdout-use/v1` reservation. For compare mode it names the optimization cycle,
 full frozen candidate set, groups, chart fingerprints, all per-candidate
 comparison IDs, arms, and repeats; each pair keeps its own EER and run group
-under that one cycle reservation. For an explicitly authorized standalone
-holdout run, it instead names the run group and frozen subject and consumes the
-holdout without supporting selection. Bind the reservation ref and fingerprint
-in every affected run. Any existing or incomplete reservation makes the group
-unavailable outside the named cycle/run group and fails closed. On completion,
+under that one cycle reservation. Later arms/repeats in that cycle validate and
+reuse the exact reservation and matching group locks; they do not create them
+again. Holdout use outside compare mode is unsupported. Bind the reservation
+ref and fingerprint in every affected run. Any existing or incomplete
+reservation makes the group unavailable outside the named cycle and fails
+closed. On completion,
 incorporate the reservation as a retirement marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
 Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
 cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
-`"emulator-holdout/v1" NUL source_group_fingerprint`. Before chart compilation,
+`"emulator-holdout/v1" NUL source_identity_fingerprint` for every individual
+source identity in the group. Before chart compilation,
 resolve one private, writable `holdout_lock_root` shared by every atlas in the
 storage domain; the default is
 `${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks`, while a caller-supplied
@@ -500,21 +512,24 @@ canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
 fails if the key already exists; never use check-then-create. The lock record
-binds the final root fingerprint and reservation fingerprint; compare mode also
-binds the pre-candidate policy fingerprint and cycle identity, while standalone
-mode binds its frozen subject, run-policy fingerprint, and run-group identity.
-If acquisition fails before any actor exposure,
+binds the final root fingerprint, reservation fingerprint, pre-candidate policy
+fingerprint, and cycle identity. An existing lock is reusable only when all
+those fields exactly match the current cycle reservation; otherwise acquisition
+fails. If acquisition fails before any actor exposure,
 remove only locks created by that same attempt; after exposure, any incomplete
 lock remains fail-closed for human resolution.
 
 At partition freeze, before candidate generation, atomically create
-`<holdout_lock_root>/<hex>.partition.json` for every source group. It binds the
-source-group fingerprint, partition, pre-candidate policy fingerprint, and
-exposure status. An existing claim for another partition, or any prior
+`<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
+It binds the source-identity fingerprint, group fingerprint, partition,
+pre-candidate policy fingerprint, and exposure status. An existing claim for
+another partition, or any prior
 discovery/development exposure when the new claim is holdout, is
 `holdout_contaminated`. Record
 discovery/development exposure before an actor or optimizer can read that
-group; partition claims are not deferred until holdout execution.
+group; partition claims are not deferred until holdout execution. Bind every
+claim ref/fingerprint and their validation artifact in the evaluator-only
+pre-candidate policy, final root closure, runs, and EER.
 
 Retirement-index updates use one ordinary exclusive update lock under the same
 `holdout_lock_root`. After acquiring it, reread `current.json`, union the new
