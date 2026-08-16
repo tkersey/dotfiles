@@ -125,6 +125,8 @@ emulator_contract:
     assets:
       - ref:
         fingerprint:
+        file_type: regular
+        mode:
         role: partition_validation | access_proof | factor_delta_validation | other
 
   output:
@@ -182,7 +184,11 @@ After candidate fingerprints freeze, the final root's selecting chart list,
 chart/evaluator fingerprints, partition snapshot, runtime configuration,
 repeats, randomness policy, protected dimensions, threshold, and budget MUST
 equal the evaluator-only pre-candidate commitment. Candidate manifest refs are
-the only comparison inputs added afterward. Any other drift is
+added afterward together with the corresponding derived per-candidate
+factor-delta validation refs and fingerprints. Those validation assets MUST be
+deterministic functions only of the frozen baseline manifest, candidate
+manifest, and pre-candidate factor-owner declaration; they cannot add policy or
+evaluator authority. Any other drift is
 `holdout_contaminated`.
 
 Comparisons are harness comparisons. `subject` is therefore exactly `harness`,

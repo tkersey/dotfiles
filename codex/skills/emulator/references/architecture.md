@@ -30,7 +30,7 @@ fresh comparison arm.
 |---|---|---|
 | Seq | Physical session discovery, source-event identity/order, messages, turns, tools, workers, tokens, and query limitations | Correction semantics, chart type, replayability, evaluator authority, or candidate quality |
 | `$emulator` | Source bundles, charts, support boundaries, actor/evaluator projections, atlas closure, resets, evaluators, comparisons, EER-v1, datasets, and STOP | Truth of raw facts, undiscoverable user preference, live-harness adoption, or publication authority |
-| CAS or selected existing runner | Fresh process/thread execution, runtime identity, tool transport, actor trace, and terminal status | Chart authority or evaluator semantics |
+| CAS or selected existing runner | Fresh process/container execution, runtime identity, tool transport, actor trace, and terminal status | Chart authority or evaluator semantics |
 | Git and task tools | Repository identity, reset state, fixtures, tests, state effects, and deterministic assertions | Harness policy |
 | Human owner | Ambiguous correction adjudication, experimental factor, adoption, external publication, and privacy relaxation | Physical source facts |
 | `$grill-me` | Material unresolved user judgments | Environment implementation |

@@ -105,7 +105,10 @@ authority. Verify the selected private root is writable before authoring; when
 the default is not writable, require a caller-supplied writable private
 `storage_domain_root` and derive the atlas root as
 `<storage_domain_root>/emulators/<atlas-id>` rather than silently writing into
-the repository.
+the repository. A caller-supplied fallback domain is diagnostic/development
+only; holdout, harness selection, and promotion require the canonical resolved
+`${CODEX_HOME:-$HOME/.codex}` storage domain so cross-atlas claims share one
+namespace.
 
 ## Modes
 

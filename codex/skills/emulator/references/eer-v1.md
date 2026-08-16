@@ -233,9 +233,10 @@ candidate so every delta and recommendation has a single arm owner.
 
 ## runs.jsonl
 
-Each fresh run emits one append-only row within its run-group directory. Compare
+Each fresh run emits one append-only row under `runs/<run-group-id>/`. Compare
 mode uses the comparison ID as the run-group ID; standalone run mode uses an
-independent run-group ID and leaves comparison-only fields null:
+independent run-group ID, stores its report under `reports/<run-group-id>/`,
+and leaves comparison-only fields null:
 
 ```json
 {

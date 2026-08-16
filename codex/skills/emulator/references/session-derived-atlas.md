@@ -45,8 +45,8 @@ ${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
   worlds/
   harnesses/baseline/
   harnesses/candidates/<candidate-id>/
-  runs/<comparison-id>/
-  reports/<comparison-id>/
+  runs/<run-group-id>/
+  reports/<run-group-id>/
   datasets/
 ~~~
 
@@ -469,13 +469,22 @@ absolute URI containing an immutable object identity; generic URI spelling
 normalization is not invented here. Otherwise retain every verified alias or
 keep the group out of holdout. `designed-task` contains the literal `sha256:`
 actor-input fingerprint.
-An approved duplicate cluster uses the exact identity kind
-`duplicate_cluster` and ref `duplicate-cluster:sha256:<digest>`; its descriptor
-preimage is exactly
+An approved duplicate cluster first materializes the exact RFC 8785 canonical
+UTF-8 bytes of:
+
+~~~json
+{"member_source_identity_fingerprints":["sha256:<hex>","sha256:<hex>"],"schema":"emulator-duplicate-cluster/v1"}
+~~~
+
+The member array is byte-lexicographically sorted, duplicate-free, contains at
+least two root-session identity fingerprints, and contains every root session
+covered by the human attestation. `<digest>` is SHA-256 of those exact bytes.
+The cluster then uses identity kind `duplicate_cluster` and ref
+`duplicate-cluster:sha256:<digest>`; its descriptor preimage is exactly
 `{"identity_kind":"duplicate_cluster","identity_ref":"duplicate-cluster:sha256:<digest>","schema":"emulator-source-identity/v1"}`.
-The attestation material from which `<digest>` was computed is retained and
-fingerprinted. No other identity kind is valid for that ref. Aliases for one
-task are all retained. For session-derived groups, this individual set always
+The canonical cluster bytes and human attestation are retained and
+fingerprinted. No other identity kind or digest preimage is valid for that ref.
+Aliases for one task are all retained. For session-derived groups, this individual set always
 includes every participating root-session identity (linked workers use the
 root, never worker IDs), the duplicate-cluster identity when used, and every
 stable external-task alias;
@@ -563,18 +572,18 @@ Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
 cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
 `"emulator-holdout/v1" NUL source_identity_fingerprint` for every individual
 source identity in the group. Before chart compilation, resolve one
-authoritative private, writable `storage_domain_root`. It is the resolved
-`${CODEX_HOME:-$HOME/.codex}` when writable. If that default is unavailable or
-unwritable, the caller may supply one private storage-domain root; the atlas
-then lives at `<storage_domain_root>/emulators/<atlas-id>`. Freeze the resolved
-storage-domain path in the root before any partition claim or candidate
-generation. Within that domain, derive the only valid `holdout_lock_root` as
-`<storage_domain_root>/emulator-holdout-locks`; neither path may vary per atlas
-or later phase. A selecting comparison and its cross-atlas overlap checks may
-use only claims from that same frozen storage domain. Claims from different
-storage domains are not comparable and cannot support harness selection or
-promotion. The root contract repeats both resolved paths, and validation
-rejects any other relationship. The
+authoritative private, writable `storage_domain_root`. For any holdout,
+harness-selection, or promotion claim it MUST be the canonical resolved
+`${CODEX_HOME:-$HOME/.codex}`. If that default is unavailable or unwritable, a
+caller may supply a private storage-domain root only for diagnostic or
+development use; that fallback domain is ineligible for holdout and cannot
+support harness selection or promotion. The atlas lives at
+`<storage_domain_root>/emulators/<atlas-id>`. Freeze the resolved storage-domain
+path in the root before any partition claim or candidate generation. Within
+the canonical selection-capable domain, derive the only valid
+`holdout_lock_root` as `<storage_domain_root>/emulator-holdout-locks`; neither
+path may vary per atlas or later phase. The root contract repeats both resolved
+paths, and validation rejects any other relationship. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
@@ -590,8 +599,17 @@ At partition freeze, before candidate generation, acquire one exclusive global
 partition-freeze update lock, validate the complete sorted identity-key set,
 stage all new claims, then publish them before releasing the lock. Create or validate
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
-It binds the source-identity fingerprint, group fingerprint, partition, and
-exposure status. Claims are finalized before the pre-candidate policy, which
+Its file contains exactly the RFC 8785 canonical UTF-8 bytes of:
+
+~~~json
+{"exposure_status":"holdout_unexposed","partition":"holdout","schema":"emulator-partition-claim/v1","source_group_fingerprint":"sha256:<hex>","source_identity_fingerprint":"sha256:<hex>"}
+~~~
+
+For discovery or development, `partition` is that exact value and
+`exposure_status` is respectively `discovery_exposed` or
+`development_exposed`; no other fields or values are admitted. The filename's
+holdout-key hex and both fingerprint fields must agree with the claimed
+identity and group. Claims are finalized before the pre-candidate policy, which
 then binds their fingerprints; claims never point back to that policy. The
 claim-validation artifact is created afterward and is bound only by the final
 root, runs, and EER. An existing byte-identical compatible claim is reused. An existing claim for
@@ -827,6 +845,8 @@ recommendation. Do not claim a causal mechanism from an uncontrolled comparison.
 Emit chart-aware EER-v1 and runs.jsonl as specified in eer-v1.md. `compare`
 additionally emits one comparison.json per baseline/candidate pair; standalone
 `run` omits comparison artifacts and uses an independent run-group directory.
+For compare, `<run-group-id>` is the comparison ID; for standalone run it is
+the independent `run_group_id` recorded in every row and EER execution.
 
 Preference rows require:
 
