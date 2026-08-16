@@ -528,16 +528,17 @@ Retirement never edits the fingerprinted chart or an earlier root in place.
 Write a content-addressed `holdout-retirement/v1` marker naming the group,
 chart fingerprints, consumption purpose, and prior root fingerprint. Maintain
 immutable content-addressed index snapshots under
-`holdout-retirements/snapshots/<fingerprint>.json`; each is the ordered set of
+`holdout-retirements/snapshots/<digest-hex>.json`; each is the ordered set of
 all marker refs and fingerprints. A mutable `holdout-retirements/current.json`
 pointer may identify the latest snapshot but is outside prior closures. The
 next root binds the current immutable snapshot and each effective marker through
 `partition_policy` and recursive closure. When finalizing any root and before
 its first run or report, copy its complete exact closure under
-`roots/<root-contract-fingerprint>/`, preserving relative paths and bytes (or
+`roots/<root-digest-hex>/`, preserving relative paths and bytes (or
 using immutable digest-addressed assets with an exact path map). Reports cite
-that archived root. Later roots never mutate an archived root or any asset it
-references.
+that archived root, and subordinate refs resolve from the archived root
+directory rather than the live atlas root. Later roots never mutate an archived
+root or any asset it references.
 
 When no retirement index exists, the first selecting root with a holdout
 creates both an immutable empty snapshot and `current.json`; otherwise it
@@ -556,6 +557,22 @@ in every selecting run and report. For a root with no holdout,
 partition-snapshot, validation, and reservation fields are absent rather than
 invented. A group named by the current index is inactive and cannot be reused
 as holdout.
+
+While holding the retirement-index lock, write one run-group-local RFC 8785
+`partition-validation/v1` artifact with exactly:
+
+~~~json
+{"current_pointer_fingerprint":"sha256:<hex>","current_pointer_ref":"holdout-retirements/current.json","resolved_snapshot_fingerprint":"sha256:<hex>","resolved_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","root_contract_fingerprint":"sha256:<hex>","root_snapshot_fingerprint":"sha256:<hex>","run_group_id":"<run-group-id>","schema":"partition-validation/v1","storage_domain_id":"sha256:<hex>"}
+~~~
+
+The writer fingerprints the exact current-pointer bytes, resolves that pointer,
+and requires the resolved ref/fingerprint to equal the root-bound snapshot
+before emitting the artifact. `resolved_snapshot_fingerprint`,
+`root_snapshot_fingerprint`, and the EER `partition_snapshot_fingerprint` are
+identical. Store it
+at `runs/<run-group-id>/partition-validation.json`; runs and EER bind that ref
+and exact fingerprint. This runtime proof is distinct from the static
+`partition-claim-validation/v1` asset.
 
 Once per comparison cycle and before its first actor sees a holdout, atomically
 create an exclusive
@@ -598,9 +615,9 @@ domain, derive the only valid
 path may vary per atlas or later phase. The root contract repeats both resolved
 paths and the domain ID, and validation rejects any other relationship. Claims
 are authoritative only against claims with the same domain ID. A caller-supplied
-domain may support selection only when source compilation, candidate generation,
-and execution all use that domain; the report records that exposure in another
-storage domain cannot be excluded. The
+noncanonical domain is diagnostic/development-only because exposure in another
+domain cannot be excluded; it cannot support holdout, harness selection,
+promotion, or `adopt`. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
@@ -718,6 +735,10 @@ then contains only regular, non-symlink files at the logical root paths, with
 the resolved bytes and executable modes bound by the manifest. No materialized
 bundle symlink may resolve back into the live harness. Absolute logical paths,
 `..`, and duplicate normalized paths are invalid.
+The final resolved source of every symlink must remain inside one frozen
+`target.harness_roots` entry; otherwise capture stops. Legitimate external
+content must first be declared as another harness root—there is no implicit
+host-path allowlist.
 
 Candidate metadata:
 

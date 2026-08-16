@@ -30,13 +30,21 @@ bytes. Each chart recursively binds every external source map, actor input,
 world/reset recipe, fixture, tool manifest, and evaluator asset by relative
 reference plus exact SHA-256. Source maps and world manifests likewise bind
 their query specs, result envelopes, fixtures, and executable inputs.
-Every relative reference in the closure resolves from the atlas root, including
-references nested in subordinate manifests. Normalize it as a POSIX relative
+The closure root is the directory containing the exact `emulator-spec.yaml`
+named by the consumer. For a live root it is the atlas root; for an archived
+root it is `roots/<root-digest-hex>/`. Every relative reference in the closure
+resolves from that closure root, including references nested in subordinate
+manifests. Normalize it as a POSIX relative
 path before lookup; absolute paths, empty paths, `.`/`..` escape, backslashes,
 and conflicting closure-inventory entries for one normalized path are invalid.
 Multiple contract fields may reference the same normalized asset only when
 every occurrence binds the same fingerprint; the recursively verified closure
 inventory contains that path once.
+
+Fingerprints retain the `sha256:<hex>` representation in contract fields. A
+fingerprint used in a filename or directory uses only its validated 64-character
+lowercase hexadecimal suffix, called `<digest-hex>`; the `sha256:` prefix is
+never part of a path component.
 
 Every value used as one filesystem path component, including `atlas_id`,
 `chart_id`, `candidate_id`, `comparison_id`, `run_group_id`, `repeat_id`, and
@@ -99,13 +107,13 @@ emulator_contract:
         ref: partitions/partition-claim-validation.json
         fingerprint:
       retirement_index:
-        ref: holdout-retirements/snapshots/<fingerprint>.json
+        ref: holdout-retirements/snapshots/<digest-hex>.json
         fingerprint:
       retirement_markers:
         - ref:
           fingerprint:
 
-  comparison_policy:  # required only for run and compare
+  comparison_policy:  # required only for run, mutate, and compare
     execution_mode: single_arm | paired_compare
     subject: harness
     pre_candidate_policy:
@@ -178,11 +186,11 @@ source requires `false`; every other source kind requires `not_applicable`.
 immutable for the closure and report. The `$emulator` `export` request reads an
 existing closure and emits eligible outputs without rewriting it; it preserves
 the originating `operation_mode` rather than creating an export-identity
-variant. `comparison_policy` is required only for `run` and `compare`; it is
-absent for non-executing `design`, `implement`, and `mutate` roots. Export
-preserves whichever state the existing root has. `execution_mode` says only
-whether execution has one arm or a paired comparison; it does not replace the
-operation mode.
+variant. `comparison_policy` is absent for non-executing `design` and
+`implement` roots. It is required for `run`, `mutate`, and `compare`: `run` and
+`mutate` require `single_arm`, while `compare` requires `paired_compare`.
+Export preserves whichever state the existing root has. `execution_mode` does
+not replace the operation mode.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),

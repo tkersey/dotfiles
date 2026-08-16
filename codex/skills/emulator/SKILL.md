@@ -106,10 +106,10 @@ the default is not writable, require a caller-supplied writable private
 `storage_domain_root` and derive the atlas root as
 `<storage_domain_root>/emulators/<atlas-id>` rather than silently writing into
 the repository. Freeze one caller-supplied domain for the complete source
-corpus and comparison cycle; it may support selection only when every producer
-and consumer uses that same shared private domain and the report records that
-cross-domain reuse cannot be excluded. Never choose a different domain per
-atlas or arm.
+corpus and comparison cycle, but treat it as diagnostic/development-only unless
+it is the canonical resolved `${CODEX_HOME:-$HOME/.codex}` domain. Cross-domain
+non-exposure is otherwise unprovable, so a fallback domain cannot support
+holdout, harness selection, or promotion.
 
 ## Modes
 
@@ -136,7 +136,8 @@ observations, actions, effects, terminal state, cost, and trace.
 Apply only chart-declared mutations. A mutation outside declared support creates
 a new designed chart; it never becomes a source-faithful transition. Each
 declared dimension binds its domain, preserved laws, shrink strategy, and any
-generator bytes through the chart closure.
+generator bytes through the chart closure. Mutation execution uses one frozen
+harness subject; compare mutated results only in a separate `compare` request.
 
 ### compare
 

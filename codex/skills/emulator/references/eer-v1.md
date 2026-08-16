@@ -48,8 +48,6 @@ emulator_execution_report:
     holdout_lock_fingerprints: []      # holdout runs only
     holdout_lock_validation_ref:       # holdout runs only
     holdout_lock_validation_fingerprint: # holdout runs only
-    actor_access_proof_ref:
-    actor_access_proof_fingerprint:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     candidate_metadata_ref:
@@ -223,6 +221,13 @@ could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
+Comparison-wide access proof is the total mapping from every run ID in
+`evaluated_runs.baseline` and `evaluated_runs.candidate` to that execution row's
+nonempty `actor_access_proof_ref` and fingerprint. The two run-ID lists are
+duplicate-free, their union equals the comparison's execution rows, and every
+mapped proof verifies the corresponding fresh process. There is no singleton
+comparison-level proof that can stand in for other runs.
+
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
 evaluator implementation bytes are `invalid_environment`. When residual
@@ -232,7 +237,10 @@ fingerprint; those fields are null when no residual judgment ran.
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
 every source-identity partition claim and the artifact validating those claims
-against the frozen pre-candidate policy. Holdout runs additionally bind the exclusive pre-exposure reservation, every canonical
+against the frozen pre-candidate policy. The canonical
+`partition-validation/v1` payload and run-group path are defined in
+`session-derived-atlas.md`; a different payload is invalid. Holdout runs
+additionally bind the exclusive pre-exposure reservation, every canonical
 cross-atlas lock's atlas-relative snapshot ref and fingerprint, and a validation
 artifact proving those snapshots matched the canonical locks, root, storage
 domain, source groups, and reservation before exposure. Missing
@@ -247,8 +255,9 @@ Every exact-fidelity executable run additionally binds the two distinct,
 byte-identical-prestate admission reset artifacts required before chart
 admission; missing or duplicate proof refs invalidate the fidelity claim.
 
-`run` mode omits `comparison` and emits executions plus applicable datasets and
-limitations. It does not invent a candidate fingerprint or recommendation.
+`run` and `mutate` modes omit `comparison` and emit executions plus applicable
+datasets and limitations under one frozen harness subject. Neither invents a
+candidate fingerprint or recommendation.
 Each `compare` EER binds exactly one baseline/candidate pair. When a request
 evaluates multiple candidates, emit one EER and one `comparison.json` per
 candidate so every delta and recommendation has a single arm owner.
@@ -277,7 +286,7 @@ and leaves comparison-only fields null:
   "harness_id": "candidate-1",
   "harness_fingerprint": "sha256:...",
   "factor": null,
-  "repeat_id": 1,
+  "repeat_id": "repeat-1",
   "mutation_case_id": null,
   "mutation_assignment": null,
   "mutation_generator_fingerprint": null,
@@ -301,9 +310,9 @@ and leaves comparison-only fields null:
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
   "actor_input_fingerprint": "sha256:...",
-  "actor_readable_inventory_ref": "actor-readable-inventory.json",
+  "actor_readable_inventory_ref": "runs/run-group-.../actor-readable-inventory.json",
   "actor_readable_inventory_fingerprint": "sha256:...",
-  "actor_access_proof_ref": "traces/run-...-access.json",
+  "actor_access_proof_ref": "runs/run-group-.../traces/run-...-access.json",
   "actor_access_proof_fingerprint": "sha256:...",
   "evaluator_fingerprint": "sha256:...",
   "residual_judgment_ref": null,
@@ -312,13 +321,13 @@ and leaves comparison-only fields null:
   "status": "pass",
   "termination_reason": "decision_emitted",
   "status_reason": null,
-  "hard_oracle_results_ref": "oracle-results/run-....json",
+  "hard_oracle_results_ref": "runs/run-group-.../oracle-results/run-....json",
   "hard_oracle_results_fingerprint": "sha256:...",
   "state_diff_ref": null,
   "state_diff_fingerprint": null,
-  "trace_invariant_results_ref": "oracle-results/run-...-trace.json",
+  "trace_invariant_results_ref": "runs/run-group-.../oracle-results/run-...-trace.json",
   "trace_invariant_results_fingerprint": "sha256:...",
-  "trace_ref": "traces/run-....json",
+  "trace_ref": "runs/run-group-.../traces/run-....json",
   "trace_fingerprint": "sha256:...",
   "reward": null,
   "cost": {
@@ -356,31 +365,29 @@ counterexample artifact by reference and fingerprint.
   "atlas_fingerprint": "sha256:...",
   "storage_domain_id": "sha256:...",
   "partition_snapshot_fingerprint": "sha256:...",
-  "partition_validation_ref": "partition-validation.json",
+  "partition_validation_ref": "runs/cmp-.../partition-validation.json",
   "partition_validation_fingerprint": "sha256:...",
-  "partition_claim_refs": ["partitions/claims/<digest>.partition.json"],
+  "partition_claim_refs": ["partitions/claims/<digest-hex>.partition.json"],
   "partition_claim_fingerprints": ["sha256:..."],
   "partition_claim_validation_ref": "partitions/partition-claim-validation.json",
   "partition_claim_validation_fingerprint": "sha256:...",
-  "holdout_reservation_ref": "holdout-reservation.json",
+  "holdout_reservation_ref": "runs/cmp-.../holdout-reservation.json",
   "holdout_reservation_fingerprint": "sha256:...",
-  "holdout_lock_refs": ["runs/cmp-.../holdout-locks/<digest>.lock"],
+  "holdout_lock_refs": ["runs/cmp-.../holdout-locks/<digest-hex>.lock"],
   "holdout_lock_fingerprints": ["sha256:..."],
-  "holdout_lock_validation_ref": "holdout-lock-validation.json",
+  "holdout_lock_validation_ref": "runs/cmp-.../holdout-lock-validation.json",
   "holdout_lock_validation_fingerprint": "sha256:...",
-  "actor_access_proof_ref": "actor-access-proof.json",
-  "actor_access_proof_fingerprint": "sha256:...",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
   "candidate_metadata_ref": "harnesses/candidates/candidate-1/candidate.yaml",
   "candidate_metadata_fingerprint": "sha256:...",
-  "factor_delta_validation_ref": "factor-delta-validation.json",
+  "factor_delta_validation_ref": "harnesses/candidates/candidate-1/factor-delta-validation.json",
   "factor_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
     "candidate": []
   },
-  "eer_ref": "EER-v1.yaml",
+  "eer_ref": "reports/cmp-.../EER-v1.yaml",
   "eer_fingerprint": "sha256:...",
   "eligible_chart_ids": [],
   "excluded_charts": [
