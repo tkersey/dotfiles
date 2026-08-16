@@ -23,7 +23,10 @@ expert demonstration, or baseline arm. Historical evidence discovers what to
 challenge; fresh executions decide whether a harness candidate wins.
 
 Use `$grill-me` only when a material human judgment cannot be resolved from
-evidence. Do not introduce a native CLI, protocol service, or persistent store.
+evidence. Do not introduce a native CLI, protocol service, database, or global
+event store. The private file-backed exposure claims, locks, and retirement
+index required by the atlas contract are permitted evidence assets, not a new
+product or service.
 
 ## Activation boundary
 
@@ -106,10 +109,11 @@ the default is not writable, require a caller-supplied writable private
 `storage_domain_root` and derive the atlas root as
 `<storage_domain_root>/emulators/<atlas-id>` rather than silently writing into
 the repository. Freeze one caller-supplied domain for the complete source
-corpus and comparison cycle, but treat it as diagnostic/development-only unless
-it is the canonical resolved `${CODEX_HOME:-$HOME/.codex}` domain. Cross-domain
-non-exposure is otherwise unprovable, so a fallback domain cannot support
-holdout, harness selection, or promotion.
+corpus and comparison cycle. Its location does not determine selection
+eligibility: a private fallback root may support holdout only when the single
+user-global exposure registry required by `session-derived-atlas.md` is
+writable and prior exposure outside that registry can be excluded. Otherwise
+the atlas is diagnostic/development-only.
 
 ## Modes
 

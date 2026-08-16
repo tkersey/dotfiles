@@ -59,6 +59,21 @@ root without explicit authority, has a mismatched digest, or leaves an
 execution-relevant byte implicit. Reports record the root fingerprint, ordered
 chart fingerprints, and recursively verified closure inventory.
 
+Store that inventory at `reports/<run-group-id>/closure-inventory.json` as
+exact RFC 8785 bytes:
+
+~~~json
+{"assets":[{"fingerprint":"sha256:<hex>","mode":"100644","ref":"roots/<root-digest-hex>/<relative-ref>"}],"root_contract_fingerprint":"sha256:<hex>","schema":"emulator-closure-inventory/v1"}
+~~~
+
+It includes the archived `emulator-spec.yaml` and every unique regular file
+transitively reachable from it, excludes the inventory itself and runtime
+outputs, and sorts the duplicate-free `assets` array by `ref`. Each ref begins
+with the archive prefix for `root_contract_fingerprint`; its suffix is the
+normalized closure-relative path. Mode and fingerprint match the archived
+file. A missing reachable file or an extra inventory entry is
+`invalid_environment`.
+
 ## Root contract
 
 ~~~yaml
@@ -183,7 +198,9 @@ selected source bundles. It binds the selected immutable source set, not a mutab
 directory. `harness_roots` is the ordered runtime layering contract. Each entry
 has a stable `root_id`, a unique nonnegative integer `precedence`, and a
 normalized logical `mount_path`; these values, not a source-worktree path,
-determine lookup and override order. It enumerates every behavior-bearing root
+determine lookup and override order. Materialize roots in ascending precedence;
+a higher numeric precedence overrides a lower one at the same effective mount
+path. Equal precedence values are invalid. It enumerates every behavior-bearing root
 under experiment. The root may contain one chart; the atlas abstraction does
 not require scale.
 

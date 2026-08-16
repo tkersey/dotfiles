@@ -561,11 +561,14 @@ creates both an immutable empty snapshot and `current.json`; otherwise it
 preserves and binds the existing current snapshot. The pointer is mandatory
 even when there are no retirements. A root without holdout charts may omit both.
 
-Before every selecting run, acquire the retirement-index update lock, resolve
-the current pointer, and require its target snapshot fingerprint to equal the
-root's bound snapshot. While still holding that lock, acquire the group locks
-and create the reservation described below; release it only after those bytes
-are durably present. A stale
+Before every selecting run, acquire `.partition-freeze.lock`, then the
+retirement-index update lock in that fixed order. Revalidate the exact global
+claim bytes against the root snapshots, resolve the current pointer, and require
+its target snapshot fingerprint to equal the root's bound snapshot. While still
+holding both locks, acquire the group locks and create the reservation described
+below; release the retirement lock and then the partition lock only after those
+bytes are durably present. Claim writers therefore cannot expose or reclassify
+a group between revalidation and reservation. A stale
 root therefore remains auditable but is ineligible for selection until a new
 pre-candidate policy and candidate cycle restart from the advanced snapshot;
 rebinding only the final root cannot restore eligibility. Record the partition-snapshot fingerprint
@@ -679,14 +682,16 @@ lock. Create or validate
 Its file contains exactly the RFC 8785 canonical UTF-8 bytes of:
 
 ~~~json
-{"exposure_registry_id":"sha256:<hex>","exposure_status":"holdout_unexposed","partition":"holdout","schema":"emulator-partition-claim/v1","source_group_fingerprint":"sha256:<hex>","source_identity_fingerprint":"sha256:<hex>"}
+{"exposure_registry_id":"sha256:<hex>","exposure_status":"holdout_unexposed","partition":"holdout","schema":"emulator-partition-claim/v1","source_identity_fingerprint":"sha256:<hex>"}
 ~~~
 
 For discovery or development, `partition` is that exact value and
 `exposure_status` is respectively `discovery_exposed` or
 `development_exposed`; no other fields or values are admitted. The filename's
-holdout-key hex and both fingerprint fields must agree with the claimed
-identity, group, and exposure registry. Claims are finalized before compilation
+holdout-key hex, identity fingerprint, and registry ID must agree with the
+claimed identity and exposure registry. Aggregate group identity is deliberately
+absent: claims record exposure of each stable identity, so later alias discovery
+does not invalidate already published discovery claims. Claims are finalized before compilation
 and before the pre-candidate policy, except for the locked discovery-only alias
 fallback above; the policy binds their final fingerprints. Claims never point
 back to that policy. The atlas copies each canonical claim's
@@ -766,7 +771,9 @@ Arm IDs, candidate IDs, and the selected factor are administrative comparison
 metadata and MUST NOT appear in this behavior manifest or fingerprint. Each
 entry repeats one declared `target.harness_roots` root ID, precedence, and mount
 path exactly. Entries are sorted by `(precedence, root_id, path)` and
-`(root_id, path)` is unique; precedence and mount path bind runtime layering.
+`(root_id, path)` is unique; roots materialize in ascending precedence and the
+higher numeric precedence wins an effective-path collision. Precedence values
+are unique, so equal-precedence collision is invalid.
 Every `path` is normalized, relative, nonempty, and non-escaping. Its regular
 file resolves relative to the manifest directory at
 `files/<root-id>/<path>` and exact bytes/mode match the entry. This arm-local
@@ -779,7 +786,8 @@ recorded in every execution. The actor runner must materialize that exact
 configuration. A runtime-factor experiment may change only predeclared runtime
 keys; otherwise baseline/candidate runtime fingerprints must be equal. The
 runner implementation/version is recorded separately and must be equal across
-arms unless it is itself the selected factor.
+arms. It is a run fact, not a selectable harness factor; changing it requires a
+different experiment subject outside EC-v1.
 Source symlinks are resolved exactly once while capturing the frozen source
 harness; dangling links and loops are invalid. A separately fingerprinted,
 evaluator-only `harness-capture-provenance/v1` asset binds every source link

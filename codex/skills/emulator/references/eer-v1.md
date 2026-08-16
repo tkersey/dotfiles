@@ -11,7 +11,10 @@ contract asset MUST begin `roots/<root-digest-hex>/` and resolves from that
 immutable archived closure. A fresh execution/output ref begins
 `runs/<run-group-id>/` or `reports/<run-group-id>/` and its owning directory is
 sealed against replacement before the report is emitted. No report may resolve
-a static asset through the mutable live root. All refs obey containment,
+a static asset through the mutable live root. The one shared holdout reservation
+MAY instead use `runs/<cycle-id>/holdout-reservation.json` when that cycle ID
+exactly equals the frozen root comparison policy and the reservation bytes bind
+the current comparison ID; no other cross-run-group ref is allowed. All refs obey containment,
 conflict, and fingerprint rules; absolute and escaping references are invalid.
 Canonical registry locations may appear only inside root-bound validation
 assets, never as report refs.
@@ -142,6 +145,7 @@ emulator_execution_report:
       runtime_config_ref:
       runtime_fingerprint:
       actor_runner_fingerprint:
+      actor_started: true | false
       actor_seed:
       actor_seed_control: fixed | sampled | unavailable
       environment_seed:
@@ -230,12 +234,13 @@ could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
-Comparison-wide access proof is the total mapping from every run ID in
-`evaluated_runs.baseline` and `evaluated_runs.candidate` to that execution row's
-nonempty `actor_access_proof_ref` and fingerprint. The two run-ID lists are
-duplicate-free, their union equals the comparison's execution rows, and every
-mapped proof verifies the corresponding fresh process. There is no singleton
-comparison-level proof that can stand in for other runs.
+Comparison-wide access proof maps every execution row with
+`actor_started: true` to that row's nonempty `actor_access_proof_ref` and
+fingerprint. Rows skipped before actor start record `actor_started: false` and
+null proof fields; all other statuses require `true`. The baseline/candidate
+run-ID lists are duplicate-free and their union still equals all comparison
+execution rows. Every mapped proof verifies its corresponding fresh process;
+there is no singleton comparison-level proof that can stand in for other runs.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
@@ -249,8 +254,8 @@ RFC 8785 bytes and those bytes equal the selected harness manifest's inline
 `runtime_config`. The observed process configuration must equal the same bytes.
 The baseline and candidate runtime fingerprints are equal except for keys
 admitted by a runtime-factor delta validation. `actor_runner_fingerprint`
-binds the runner implementation and version and is equal across arms unless
-that exact runtime owner is the selected factor. A mismatch is
+binds the runner implementation and version and is always equal across arms;
+runner identity is not a selectable harness factor. A mismatch is
 `comparison_drift`, never candidate improvement.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
@@ -319,6 +324,7 @@ and leaves comparison-only fields null:
   "runtime_config_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/runtime-config.json",
   "runtime_fingerprint": "sha256:...",
   "actor_runner_fingerprint": "sha256:...",
+  "actor_started": true,
   "actor_seed": null,
   "actor_seed_control": "unavailable",
   "environment_seed": null,
@@ -493,9 +499,13 @@ Stochastic adoption additionally requires the
 predetermined repeat/improvement rule and matched randomness when available;
 uncontrolled evidence that cannot satisfy the frozen rule is insufficient.
 
-The comparison's factor-delta validation ref and fingerprint MUST exactly
-equal the fields on the root `candidate_harnesses` entry for its candidate ID
-and the same fields in that candidate's metadata. Each candidate has a distinct
+For a static asset ref, canonical asset identity is `(closure-relative suffix,
+fingerprint)`: strip the exact `roots/<root-digest-hex>/` prefix required in a
+report before comparison. The comparison's factor-delta validation asset
+identity MUST equal the closure-relative fields on the root
+`candidate_harnesses` entry for its candidate ID and the same fields in that
+candidate's metadata. Literal prefixed and unprefixed ref strings are not
+compared. Each candidate has a distinct
 complete baseline/candidate manifest-diff validation; evidence from one
 candidate cannot validate another.
 
