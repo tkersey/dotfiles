@@ -5,6 +5,12 @@ subject runs, chart eligibility, hard-oracle and state results, and bounded
 recommendation. No deployed report corpus exists, so the EER-v1 label is
 corrected in place.
 
+Every `*_ref` in EER-v1, `runs.jsonl`, and `comparison.json` is a normalized
+atlas-root-relative POSIX path. It obeys the contract closure's containment,
+conflict, and fingerprint rules; absolute paths and escaping references are
+invalid. Canonical storage-domain claim locations may appear only inside the
+root-bound partition-claim validation asset, never as report refs.
+
 ## Schema
 
 ```yaml
@@ -28,6 +34,7 @@ emulator_execution_report:
     subject: harness
     factor:
     atlas_fingerprint:
+    storage_domain_id:                 # selecting roots only
     partition_snapshot_fingerprint:  # selecting roots only
     partition_validation_ref:        # selecting roots only
     partition_validation_fingerprint: # selecting roots only
@@ -45,6 +52,8 @@ emulator_execution_report:
     actor_access_proof_fingerprint:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
+    candidate_metadata_ref:
+    candidate_metadata_fingerprint:
     factor_delta_validation_ref:
     factor_delta_validation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
@@ -98,6 +107,7 @@ emulator_execution_report:
       chart_kind:
       partition:
       split_group:
+      storage_domain_id:                 # selecting roots only
       partition_snapshot_fingerprint:  # selecting roots only
       partition_validation_ref:        # selecting roots only
       partition_validation_fingerprint: # selecting roots only
@@ -120,7 +130,10 @@ emulator_execution_report:
       mutation_generator_fingerprint:
       minimized_counterexample_ref:
       minimized_counterexample_fingerprint:
-      implementation_fingerprint:
+      environment_implementation_ref:
+      environment_implementation_fingerprint:
+      evaluator_implementation_ref:
+      evaluator_implementation_fingerprint:
       runtime_fingerprint:
       actor_seed:
       actor_seed_control: fixed | sampled | unavailable
@@ -140,6 +153,8 @@ emulator_execution_report:
       actor_access_proof_ref:
       actor_access_proof_fingerprint:
       evaluator_fingerprint:
+      residual_judgment_ref:
+      residual_judgment_fingerprint:
       support_result:
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
@@ -208,12 +223,19 @@ could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
+Every execution separately binds the environment-transition implementation and
+the evaluator implementation declared by its chart. Missing or unequal
+evaluator implementation bytes are `invalid_environment`. When residual
+judgment is enabled, the execution also binds that judgment result by ref and
+fingerprint; those fields are null when no residual judgment ran.
+
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
 every source-identity partition claim and the artifact validating those claims
 against the frozen pre-candidate policy. Holdout runs additionally bind the exclusive pre-exposure reservation, every canonical
-cross-atlas lock ref and fingerprint, and a validation artifact proving those
-locks matched the root, source groups, and reservation before exposure. Missing
+cross-atlas lock's atlas-relative snapshot ref and fingerprint, and a validation
+artifact proving those snapshots matched the canonical locks, root, storage
+domain, source groups, and reservation before exposure. Missing
 or mismatched evidence makes selecting use invalid rather than silently reusing
 a stale or consumed group.
 
@@ -246,6 +268,7 @@ and leaves comparison-only fields null:
   "comparison_id": null,
   "contract_fingerprint": "sha256:...",
   "atlas_fingerprint": "sha256:...",
+  "storage_domain_id": null,
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
   "chart_kind": "normative_decision",
@@ -260,7 +283,10 @@ and leaves comparison-only fields null:
   "mutation_generator_fingerprint": null,
   "minimized_counterexample_ref": null,
   "minimized_counterexample_fingerprint": null,
-  "implementation_fingerprint": "sha256:...",
+  "environment_implementation_ref": "worlds/chart-.../implementation.json",
+  "environment_implementation_fingerprint": "sha256:...",
+  "evaluator_implementation_ref": "evaluators/chart-...-implementation.json",
+  "evaluator_implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
   "actor_seed": null,
   "actor_seed_control": "unavailable",
@@ -280,6 +306,8 @@ and leaves comparison-only fields null:
   "actor_access_proof_ref": "traces/run-...-access.json",
   "actor_access_proof_fingerprint": "sha256:...",
   "evaluator_fingerprint": "sha256:...",
+  "residual_judgment_ref": null,
+  "residual_judgment_fingerprint": null,
   "support_result": "judgeable",
   "status": "pass",
   "termination_reason": "decision_emitted",
@@ -326,16 +354,17 @@ counterexample artifact by reference and fingerprint.
   "subject": "harness",
   "factor": "question_policy",
   "atlas_fingerprint": "sha256:...",
+  "storage_domain_id": "sha256:...",
   "partition_snapshot_fingerprint": "sha256:...",
   "partition_validation_ref": "partition-validation.json",
   "partition_validation_fingerprint": "sha256:...",
-  "partition_claim_refs": ["partition-claims/<digest>.json"],
+  "partition_claim_refs": ["partitions/claims/<digest>.partition.json"],
   "partition_claim_fingerprints": ["sha256:..."],
-  "partition_claim_validation_ref": "partition-claim-validation.json",
+  "partition_claim_validation_ref": "partitions/partition-claim-validation.json",
   "partition_claim_validation_fingerprint": "sha256:...",
   "holdout_reservation_ref": "holdout-reservation.json",
   "holdout_reservation_fingerprint": "sha256:...",
-  "holdout_lock_refs": ["holdout-locks/<digest>.lock"],
+  "holdout_lock_refs": ["runs/cmp-.../holdout-locks/<digest>.lock"],
   "holdout_lock_fingerprints": ["sha256:..."],
   "holdout_lock_validation_ref": "holdout-lock-validation.json",
   "holdout_lock_validation_fingerprint": "sha256:...",
@@ -343,6 +372,8 @@ counterexample artifact by reference and fingerprint.
   "actor_access_proof_fingerprint": "sha256:...",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
+  "candidate_metadata_ref": "harnesses/candidates/candidate-1/candidate.yaml",
+  "candidate_metadata_fingerprint": "sha256:...",
   "factor_delta_validation_ref": "factor-delta-validation.json",
   "factor_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {

@@ -38,6 +38,14 @@ Multiple contract fields may reference the same normalized asset only when
 every occurrence binds the same fingerprint; the recursively verified closure
 inventory contains that path once.
 
+Every value used as one filesystem path component, including `atlas_id`,
+`chart_id`, `candidate_id`, `comparison_id`, `run_group_id`, `repeat_id`, and
+`split.group_id`, is 1-128 lowercase ASCII characters, begins and ends with an
+ASCII letter or digit, contains only letters, digits, `.`, `_`, or `-`, and is
+neither `.` nor `..`. Validate the component before joining it to a root, then
+resolve the destination and prove it remains beneath the owning root before
+any create, replace, or removal.
+
 The closure is invalid when a required reference is missing, escapes the atlas
 root without explicit authority, has a mismatched digest, or leaves an
 execution-relevant byte implicit. Reports record the root fingerprint, ordered
@@ -82,7 +90,14 @@ emulator_contract:
       frozen_before_candidate_generation: true
       holdout_visible_to_optimizer: false
       storage_domain_root:
+      storage_domain_id:
       holdout_lock_root:
+      partition_claims:
+        - ref: partitions/claims/<holdout-key>.partition.json
+          fingerprint:
+      partition_claim_validation:
+        ref: partitions/partition-claim-validation.json
+        fingerprint:
       retirement_index:
         ref: holdout-retirements/snapshots/<fingerprint>.json
         fingerprint:
@@ -90,7 +105,7 @@ emulator_contract:
         - ref:
           fingerprint:
 
-  comparison_policy:
+  comparison_policy:  # required only for run and compare
     execution_mode: single_arm | paired_compare
     subject: harness
     pre_candidate_policy:
@@ -102,10 +117,16 @@ emulator_contract:
     baseline_harness:
       ref:
       fingerprint:
+      capture_provenance_ref:
+      capture_provenance_fingerprint:
     candidate_harnesses:
       - candidate_id:
         ref:
         fingerprint:
+        capture_provenance_ref:
+        capture_provenance_fingerprint:
+        candidate_metadata_ref: harnesses/candidates/<candidate-id>/candidate.yaml
+        candidate_metadata_fingerprint:
         factor_delta_validation_ref:
         factor_delta_validation_fingerprint:
     candidate_factor_policy: one_semantic_owner
@@ -127,7 +148,7 @@ emulator_contract:
         fingerprint:
         file_type: regular
         mode:
-        role: partition_validation | access_proof | factor_delta_validation | other
+        role: partition_claim | partition_validation | access_proof | factor_delta_validation | harness_capture_provenance | mutation_generator | other
 
   output:
     eer: EER-v1
@@ -157,27 +178,33 @@ source requires `false`; every other source kind requires `not_applicable`.
 immutable for the closure and report. The `$emulator` `export` request reads an
 existing closure and emits eligible outputs without rewriting it; it preserves
 the originating `operation_mode` rather than creating an export-identity
-variant. `execution_mode` says only whether execution has one arm or a paired
-comparison; it does not replace the operation mode.
+variant. `comparison_policy` is required only for `run` and `compare`; it is
+absent for non-executing `design`, `implement`, and `mutate` roots. Export
+preserves whichever state the existing root has. `execution_mode` says only
+whether execution has one arm or a paired comparison; it does not replace the
+operation mode.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
-exact source-identity partition-claim refs/fingerprints, factor, partition
+exact atlas-relative source-identity partition-claim snapshot
+refs/fingerprints and their validation asset, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
 threshold, the factor-to-targeted-chart predicate, protected dimensions and
 their evaluator-result bindings, exact factor-owner paths and runtime keys,
 non-hard regression tolerance, candidate budget, and exact baseline
 harness fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
-optimizer policy contains only the selected factor, runtime constraints,
-candidate budget, and discovery/development inputs; it contains no holdout IDs,
+optimizer policy contains only the selected factor, its exact factor-owner
+paths and runtime keys, runtime constraints, candidate budget, and
+discovery/development inputs; it contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
 The predicate is an ordered `targeted_chart_rules` array whose entries contain
 exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
 chart appears exactly once. Post-outcome classification is forbidden.
 Before candidate generation, validation requires exact equality between the
-two policies' selected factor, runtime constraints, and candidate budget.
+two policies' selected factor, factor-owner paths and runtime keys, runtime
+constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
 After candidate fingerprints freeze, the final root's selecting chart list,
@@ -196,7 +223,13 @@ and the recursive root closure contains fingerprinted baseline and candidate
 harness manifests. Actor/runtime and environment-implementation identities are
 run facts, not selectable comparison subjects. Every candidate entry names the
 exact harness manifest whose fingerprint the corresponding comparison and runs
-must repeat.
+must repeat. It also binds the deterministic
+`harnesses/candidates/<candidate-id>/candidate.yaml` metadata bytes; candidate
+metadata, factor-delta validation, and pairwise EER repeat the same candidate,
+baseline, factor, and manifest identities.
+Every baseline and candidate entry separately binds its evaluator-only capture
+provenance asset. That asset proves how the logical regular files were captured
+but is not part of the harness behavior fingerprint or factor delta.
 For `execution_mode: single_arm`, `baseline_harness` is the single frozen
 execution subject and all candidate and candidate-generation fields are absent.
 For `execution_mode: paired_compare`, both arms and the applicable candidate policies are
@@ -365,7 +398,7 @@ environment_chart:
         sha256:
         file_type: regular
         mode:
-        role: source | actor | world | reset | fixture | tool | evaluator | reward | partition
+        role: source | actor | world | reset | fixture | tool | evaluator | reward | partition | mutation_generator
 
   claim:
     class: diagnostic | preference_training | harness_selection | promotion

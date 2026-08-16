@@ -242,7 +242,12 @@ MUST record review of the exact source refs, cut, hidden correction, harness
 surface, and hard-oracle interpretation. Without that evidence the chart stays
 diagnostic. Proven recurring evaluator patterns may later be reused without
 per-chart review only when the chart cites the reviewed pattern and its
-applicability evidence.
+applicability evidence. For holdout, that reviewer must not participate in
+factor selection or candidate authoring. If no independent reviewer is
+available, freeze the factor, factor-owner declaration, candidate budget,
+runtime policy, and every other candidate-affecting human choice before the
+review; after seeing the correction the reviewer may accept or reject the chart
+but may not change those choices. Otherwise the chart remains diagnostic.
 
 ### Construct the evaluator
 
@@ -568,22 +573,34 @@ purpose, and prior root; incorporate that marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
-Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
+Constrain every path-derived identifier as specified by the contract profile
+before use, and prove each resolved destination remains under its owner root
+before create, replace, or removal. Derive the
 cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
 `"emulator-holdout/v1" NUL source_identity_fingerprint` for every individual
-source identity in the group. Before chart compilation, resolve one
-authoritative private, writable `storage_domain_root`. For any holdout,
-harness-selection, or promotion claim it MUST be the canonical resolved
-`${CODEX_HOME:-$HOME/.codex}`. If that default is unavailable or unwritable, a
-caller may supply a private storage-domain root only for diagnostic or
-development use; that fallback domain is ineligible for holdout and cannot
-support harness selection or promotion. The atlas lives at
+source identity in the group. Before reading any message, tool, attachment, or
+other semantic source byte, use only physical discovery metadata to derive the
+source identities, then atomically publish the applicable exposure claim or
+holdout reservation described below. If identity cannot be derived without a
+semantic read, stop rather than exposing it before a claim. Before chart
+compilation, resolve one authoritative private, writable
+`storage_domain_root`. Use the canonical resolved
+`${CODEX_HOME:-$HOME/.codex}` when writable; a caller may instead explicitly
+supply one shared private root for the entire corpus and comparison cycle. The
+atlas lives at
 `<storage_domain_root>/emulators/<atlas-id>`. Freeze the resolved storage-domain
-path in the root before any partition claim or candidate generation. Within
-the canonical selection-capable domain, derive the only valid
+path and
+`storage_domain_id = SHA-256("emulator-storage-domain/v1" NUL canonical-realpath-UTF-8)`
+in the root before any partition claim or candidate generation. Claims,
+reservations, validations, runs, and reports bind that ID. Within the selected
+domain, derive the only valid
 `holdout_lock_root` as `<storage_domain_root>/emulator-holdout-locks`; neither
 path may vary per atlas or later phase. The root contract repeats both resolved
-paths, and validation rejects any other relationship. The
+paths and the domain ID, and validation rejects any other relationship. Claims
+are authoritative only against claims with the same domain ID. A caller-supplied
+domain may support selection only when source compilation, candidate generation,
+and execution all use that domain; the report records that exposure in another
+storage domain cannot be excluded. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
@@ -591,41 +608,58 @@ fails if the key already exists; never use check-then-create. The lock record
 binds the final root fingerprint, reservation fingerprint, pre-candidate policy
 fingerprint, and cycle identity. An existing lock is reusable only when all
 those fields exactly match the current cycle reservation; otherwise acquisition
-fails. If acquisition fails before any actor exposure,
-remove only locks created by that same attempt; after exposure, any incomplete
-lock remains fail-closed for human resolution.
+fails. If acquisition fails before any actor exposure, remove only locks and
+the unexposed reservation created by that same attempt; after exposure, any
+incomplete lock or reservation remains fail-closed for human resolution.
+After successful acquisition, copy each lock's exact bytes into the run group's
+atlas-relative `runs/<run-group-id>/holdout-locks/<hex>.lock` and bind only
+those snapshots as EER/run refs. The atlas-relative lock-validation artifact
+maps each snapshot fingerprint to its canonical absolute lock path and domain
+ID; canonical paths are evaluator-only runtime facts, not report refs.
 
-At partition freeze, before candidate generation, acquire one exclusive global
-partition-freeze update lock, validate the complete sorted identity-key set,
-stage all new claims, then publish them before releasing the lock. Create or validate
+Before any semantic source read, acquire the exclusive global
+`<holdout_lock_root>/.partition-freeze.lock`, validate the complete sorted
+identity-key set, stage all new claims, then publish them before releasing the
+lock. Create or validate
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
 Its file contains exactly the RFC 8785 canonical UTF-8 bytes of:
 
 ~~~json
-{"exposure_status":"holdout_unexposed","partition":"holdout","schema":"emulator-partition-claim/v1","source_group_fingerprint":"sha256:<hex>","source_identity_fingerprint":"sha256:<hex>"}
+{"exposure_status":"holdout_unexposed","partition":"holdout","schema":"emulator-partition-claim/v1","source_group_fingerprint":"sha256:<hex>","source_identity_fingerprint":"sha256:<hex>","storage_domain_id":"sha256:<hex>"}
 ~~~
 
 For discovery or development, `partition` is that exact value and
 `exposure_status` is respectively `discovery_exposed` or
 `development_exposed`; no other fields or values are admitted. The filename's
 holdout-key hex and both fingerprint fields must agree with the claimed
-identity and group. Claims are finalized before the pre-candidate policy, which
-then binds their fingerprints; claims never point back to that policy. The
-claim-validation artifact is created afterward and is bound only by the final
-root, runs, and EER. An existing byte-identical compatible claim is reused. An existing claim for
+identity, group, and storage domain. Claims are finalized before compilation
+and before the pre-candidate policy, which then binds their fingerprints;
+claims never point back to that policy. The atlas copies each canonical claim's
+exact bytes to the atlas-relative
+`partitions/claims/<holdout-key>.partition.json` and binds those snapshot refs
+and fingerprints in the pre-candidate policy and root closure. It then creates
+an atlas-relative `partition-claim-validation/v1` asset mapping every snapshot
+to its canonical holdout key, global claim location, storage-domain ID, and
+identical fingerprint. The validation asset is evaluator-only and is bound by
+the final root, runs, and EER; external absolute claim paths are runtime facts,
+not closure refs. Its RFC 8785 payload is exactly
+`{"claims":[{"canonical_claim_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"partitions/claims/<hex>.partition.json"}],"schema":"partition-claim-validation/v1","storage_domain_id":"sha256:<hex>"}`
+with claims sorted by `holdout_key`; no other fields are admitted. An existing
+byte-identical compatible claim is reused. An existing claim for
 another partition, or any prior
 discovery/development exposure when the new claim is holdout, is
-`holdout_contaminated`. Record
-discovery/development exposure before an actor or optimizer can read that
-group; partition claims are not deferred until holdout execution. If any key is
+`holdout_contaminated`. Record every partition exposure before the compiler,
+author, actor, or optimizer can read that group; claims are not deferred until
+partition freeze or execution. If any key is
 incompatible before exposure, remove only staged or published claims created by
 that attempt while still holding the global lock; compatible pre-existing
-claims are never removed. Bind every claim ref/fingerprint in the evaluator-only
-pre-candidate policy; bind those claims plus their validation artifact in the
-final root closure, runs, and EER.
+claims are never removed. Bind only atlas-relative claim snapshots in the
+pre-candidate policy, final root closure, runs, and EER, plus their
+atlas-relative validation artifact.
 
-Retirement-index updates use one ordinary exclusive update lock under the same
-`holdout_lock_root`. After acquiring it, reread `current.json`, union the new
+Retirement-index updates use the ordinary exclusive
+`<holdout_lock_root>/.retirement-index.lock`. After acquiring it, reread
+`current.json`, union the new
 markers with that current immutable snapshot, write the successor snapshot,
 atomically replace the pointer, and release the update lock. A stale expected
 pointer or failed atomic replace aborts without publishing a successor; two
@@ -642,8 +676,10 @@ partition snapshot, model/runtime configuration, repeat counts, randomness
 matching, improvement threshold, protected dimensions, and candidate budget.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate redacted optimizer policy
-containing the selected factor, runtime constraints, budget, and only
-discovery/development inputs. The final root binds both exact refs and
+containing the selected factor, exact factor-owner paths and runtime keys,
+runtime constraints, budget, and only discovery/development inputs. Before
+candidate generation, require those shared fields to equal the pre-candidate
+policy exactly. The final root binds both exact refs and
 fingerprints; candidate manifests cannot rewrite either snapshot.
 
 Manifest every behavior-bearing root:
@@ -654,8 +690,8 @@ Manifest every behavior-bearing root:
   "harness_id": "baseline-or-candidate-id",
   "factor": "question_policy",
   "roots": [
-    {"path": "AGENTS.md", "mode": "100644", "sha256": "...", "source_resolution": {"kind": "dereferenced_symlink", "link_chain": [{"path": "AGENTS.md", "target": "/source/AGENTS.md"}], "resolved_source_path": "/source/AGENTS.md"}},
-    {"path": "skills/example/SKILL.md", "mode": "100644", "sha256": "...", "source_resolution": {"kind": "regular", "link_chain": [], "resolved_source_path": "skills/example/SKILL.md"}}
+    {"path": "AGENTS.md", "mode": "100644", "sha256": "..."},
+    {"path": "skills/example/SKILL.md", "mode": "100644", "sha256": "..."}
   ],
   "runtime_config": {
     "model": "...",
@@ -671,8 +707,13 @@ exact-file closure SHA-256 and manifest identity are the same digest. Implicit g
 invalidates comparison.
 Every root `path` is normalized, relative, nonempty, non-escaping, and unique.
 Source symlinks are resolved exactly once while capturing the frozen source
-harness; dangling links and loops are invalid. `source_resolution` binds every
-link path and raw target plus the final resolved source path. The staged bundle
+harness; dangling links and loops are invalid. A separately fingerprinted,
+evaluator-only `harness-capture-provenance/v1` asset binds every source link
+path, raw target, and final resolved source path and is included in the root
+closure and the corresponding baseline/candidate root entry. That provenance
+validates capture but is excluded from harness
+identity and factor-delta comparison, so equivalent captures in different
+worktrees have the same behavior fingerprint. The staged bundle
 then contains only regular, non-symlink files at the logical root paths, with
 the resolved bytes and executable modes bound by the manifest. No materialized
 bundle symlink may resolve back into the live harness. Absolute logical paths,
