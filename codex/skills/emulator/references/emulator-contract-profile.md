@@ -48,7 +48,7 @@ emulator_contract:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
     refs: []
     corpus_digest:
-    current_session_excluded: true
+    current_session_excluded: true | false | not_applicable
     limitations: []
 
   target:
@@ -79,6 +79,9 @@ emulator_contract:
 
   comparison_policy:
     subject: harness | actor | environment_implementation
+    pre_candidate_policy:
+      ref:
+      fingerprint:
     baseline_harness:
       ref:
       fingerprint:
@@ -120,6 +123,9 @@ corpus_digest binds the selected immutable source set, not a mutable session
 directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
+
+`current_session_excluded: true` is mandatory for session-corpus mining.
+Current user design may use `false`; non-session sources use `not_applicable`.
 
 `subject: harness` requires fingerprinted baseline and candidate harness
 manifests in the recursive root closure.
@@ -185,6 +191,11 @@ environment_chart:
     transition_model: total | partial | none
     world_ref:
     world_fingerprint:
+    approximation:
+      difference_inventory_ref:
+      difference_inventory_fingerprint:
+      equivalence_witness_ref:
+      equivalence_witness_fingerprint:
     implementation:
       ref:
       fingerprint:
@@ -203,7 +214,7 @@ environment_chart:
       schema:
     tools: {}
     effects:
-      network: deny | fixture_only | allow_recorded
+      network: deny | fixture_only | replay_recorded
       filesystem: read_only | isolated_write | declared_roots
       external_side_effects: deny | fixture_only | explicit
       policy_ref:
@@ -284,13 +295,13 @@ recursive closure. When false, the definition fields are null and channels and
 authority refs are empty. Reward never supplies missing oracle authority.
 
 `policy_ref` and `policy_fingerprint` are required whenever effects use
-`allow_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
+`replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
 the exact recordings, roots, operations, and authority. They are absent only
 for fully closed effect modes. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
 smallest applicable limit.
 
-`network: allow_recorded` is replay-only: the runner may return only the exact
+`network: replay_recorded` is replay-only: the runner may return only the exact
 fingerprinted recorded responses named by the effect-policy asset and MUST NOT
 contact a live endpoint. Live network access is outside EC-v1 and requires a
 separately authorized designed contract rather than reinterpretation of this
@@ -410,6 +421,7 @@ for harness comparison: fingerprinted baseline and candidate harness manifests
 for actor or environment comparison: fingerprinted baseline and candidate subject bundles
 same-comparison fingerprints and one semantic factor for compare mode
 predetermined stochastic evidence rule and matched randomness when available
+fingerprinted pre-candidate policy snapshot for compare mode
 hard-oracle precedence and protected dimensions
 claim class no stronger than authority, attribution, world, and freshness
 ~~~

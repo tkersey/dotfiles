@@ -32,6 +32,7 @@ emulator_execution_report:
     candidate_subject_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
+    reason:
     authority_granted: false
 
   run_summary:
@@ -45,7 +46,10 @@ emulator_execution_report:
     skipped_runs:
 
   executions:
-    - run_id:
+    - schema: emulator-run/v1
+      run_id:
+      run_group_id:
+      comparison_id:
       contract_fingerprint:
       atlas_fingerprint:
       chart_id:
@@ -63,6 +67,7 @@ emulator_execution_report:
       subject_fingerprint:
       harness_id:
       harness_fingerprint:  # harness subject only
+      factor:
       repeat_id:
       mutation_case_id:
       mutation_assignment:
@@ -199,13 +204,13 @@ independent run-group ID and leaves comparison-only fields null:
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
   "chart_kind": "normative_decision",
-  "partition": "holdout",
+  "partition": "development",
   "split_group": "group-...",
   "partition_snapshot_fingerprint": "sha256:...",
   "partition_validation_ref": "partition-validation.json",
   "partition_validation_fingerprint": "sha256:...",
-  "holdout_reservation_ref": "holdout-use/run-group.json",
-  "holdout_reservation_fingerprint": "sha256:...",
+  "holdout_reservation_ref": null,
+  "holdout_reservation_fingerprint": null,
   "subject_kind": "harness",
   "subject_id": "candidate-1",
   "subject_fingerprint": "sha256:...",
@@ -255,6 +260,11 @@ independent run-group ID and leaves comparison-only fields null:
   "limitations": []
 }
 ```
+
+The EER comparison block is authoritative. `comparison.json` binds the exact
+EER bytes and MUST copy its subject identities, evaluated run IDs, deltas,
+recommendation, evidence relation, reason, and authority flag exactly. Any
+mismatch is `invalid_environment`; neither artifact wins by timestamp.
 
 These rows are not a new global event store.
 
@@ -342,10 +352,10 @@ candidate subject fingerprint. Stochastic adoption additionally requires the
 predetermined repeat/improvement rule and matched randomness when available;
 uncontrolled evidence that cannot satisfy the frozen rule is insufficient.
 
-A missing or invalid required arm, tie, unsupported required chart, evaluator
-disagreement, closure/access proof gap, or insufficient untouched holdout
-coverage yields `insufficient_evidence`. Any new candidate `hard_fail` or
-protected regression yields `reject`.
+Use one exclusive precedence rule. Any new candidate `hard_fail`, protected
+regression, or contracted non-hard regression beyond tolerance yields `reject`,
+even when other evidence is incomplete. Otherwise `adopt` applies only when all
+adoption conditions hold. Every other case yields `insufficient_evidence`.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`
 records `paired_replay_delta`, `observed_association`, `regression`, or

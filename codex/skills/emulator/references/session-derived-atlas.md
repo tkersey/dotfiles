@@ -340,7 +340,7 @@ world:
     schemas: {}
     fixtures: {}
   effects:
-    network: deny | fixture_only | allow_recorded
+    network: deny | fixture_only | replay_recorded
     filesystem_roots: []
     external_side_effects: deny
   evaluator:
@@ -421,16 +421,29 @@ in every run and report. A group named by the current index is inactive and
 cannot be reused as holdout.
 
 Before the first actor sees a holdout, atomically create an exclusive
-`holdout-use/v1` reservation naming the comparison, group, chart fingerprints,
-arms, and repeats. Bind its ref and fingerprint in every affected run. Any
-existing or incomplete reservation makes the group unavailable to another
-comparison and fails closed. On comparison completion, incorporate the
-reservation as a retirement marker in the next immutable snapshot.
+`holdout-use/v1` reservation. For compare mode it names the optimization cycle,
+full frozen candidate set, groups, chart fingerprints, all per-candidate
+comparison IDs, arms, and repeats; each pair keeps its own EER and run group
+under that one cycle reservation. For an explicitly authorized standalone
+holdout run, it instead names the run group and frozen subject and consumes the
+holdout without supporting selection. Bind the reservation ref and fingerprint
+in every affected run. Any existing or incomplete reservation makes the group
+unavailable outside the named cycle/run group and fails closed. On completion,
+incorporate the reservation as a retirement marker in the next immutable
+snapshot. Prefer discovery/development for standalone examples; do not spend a
+holdout casually.
 
 Filesystem and process separation are sufficient for the initial accidental
 leakage threat model; do not build a cryptographic broker.
 
 ## 8. Freeze harness bundles
+
+Before candidate generation, write and fingerprint a pre-candidate policy asset
+containing the selected factor, partition snapshot, model/runtime configuration,
+repeat counts, randomness matching, improvement threshold, protected
+dimensions, and candidate budget. Candidate generation receives that immutable
+asset. The final root binds its exact ref and fingerprint; finalizing candidate
+manifests later cannot rewrite the earlier policy snapshot.
 
 Manifest every behavior-bearing root:
 
@@ -451,7 +464,8 @@ Manifest every behavior-bearing root:
 }
 ~~~
 
-Fingerprint canonical JSON manifest bytes. Implicit global harness state
+Fingerprint the exact RFC 8785 JSON Canonicalization Scheme UTF-8 bytes.
+Implicit global harness state
 invalidates comparison.
 
 Candidate metadata:
@@ -585,7 +599,12 @@ Promotion is only an evidence strength: it means these conditions and the chart
 claim matrix support a separately authorized adoption decision. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
-Any new candidate `hard_fail` or protected regression yields reject.
+Apply one total precedence rule: `reject` when any candidate introduces a
+`hard_fail`, protected regression, or contracted non-hard regression beyond the
+frozen tolerance. Otherwise return `adopt` only when every adoption condition
+above holds. All remaining cases, including missing/invalid arms, ties,
+unsupported coverage, disagreement, and inadequate stochastic evidence, are
+`insufficient_evidence`. Exactly one disposition is emitted.
 
 Record paired_replay_delta, observed_association, regression, or
 insufficient_evidence as the evidence relation, separately from the adoption
