@@ -270,8 +270,9 @@ threshold, the factor-to-targeted-chart predicate, protected dimensions and
 their evaluator-result bindings, exact factor-owner paths, runtime-configuration
 keys, and deterministically derived runtime-surface fields,
 non-hard regression tolerance, candidate budget, exact baseline harness
-fingerprint, exact optimizer-readable inventory ref/fingerprint, exact
-candidate-generation runner ref/fingerprint, and exact
+fingerprint, exact immutable optimizer-input inventory ref/fingerprint,
+predeclared candidate-output roots and pre-state inventory ref/fingerprint,
+exact candidate-generation runner ref/fingerprint, and exact
 comparison-implementation ref/fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, its exact factor-owner
@@ -343,6 +344,16 @@ equals chart `kind`, root `split_group` equals chart `split.group_id`, root
 source-identity descriptors, and fingerprints equal the chart's recomputed values. Any mismatch is
 `invalid_environment`; neither copy wins by precedence. An observational chart
 MUST have root `required: false` because it cannot participate in selection.
+Every structurally selection-eligible, non-observational holdout chart MUST have
+root `required: true`. Root `required: false` is otherwise limited to
+discovery/development or structurally selection-ineligible charts. Eligibility
+is true exactly when the frozen chart has `claim.class: harness_selection |
+promotion`, its maximum claim is at least that class, evaluator attribution is
+`direct`, and it has at least one hard oracle, state assertion, or trace
+invariant. It is computed from those declared fields and frozen before hidden
+historical suffixes, evaluator details, or outcomes are inspected. A
+required holdout that becomes invalid, unsupported, skipped, or ambiguous makes
+the comparison `insufficient_evidence`; it is not an excludable chart.
 Root `chart_id` values are unique; duplicates are `invalid_environment` even
 when their fingerprints happen to match.
 
@@ -648,6 +659,9 @@ classification is invalid_environment.
 unsupported_counterfactual is a run status, not an agent failure and not an
 invalid_environment alias. invalid_environment is reserved for malformed,
 drifted, leaked, incomplete, or unverifiable environment construction.
+This intentionally resolves the source-level wording conflict in favor of the
+dedicated status: support can be honest and partial even when the requested
+counterfactual is unavailable.
 
 ## World fidelity and claims
 

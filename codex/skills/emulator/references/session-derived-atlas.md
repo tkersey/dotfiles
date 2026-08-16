@@ -418,6 +418,15 @@ cannot choose one copy by precedence.
 
 Run the reset twice before admitting exact fidelity. Both runs must produce the
 same expected pre-state fingerprint.
+Each admission reset, including dependency setup, runs in its own newly created
+disposable worktree or fixture instance under the declared effect policy. The
+two proofs start from the same captured source bytes but use distinct instances;
+neither may run in the live source checkout, a candidate worktree, or an actor
+worktree. Destroy each instance after its pre-state fingerprint is durable. If
+any reset or setup command can read or mutate outside the declared roots, or if
+the runner cannot prove that confinement, admission stops with
+`reset_not_repeatable` or `world_not_reconstructable`; it never downgrades the
+same execution to approximate fidelity.
 Bind both admission-reset result refs/fingerprints in each later EER that claims
 exact fidelity; the actor-run reset result is additional evidence, not a
 substitute for repeatability admission.
@@ -462,7 +471,7 @@ a runtime-generated substitute is invalid.
 The same runner then emits exact RFC 8785 `actor-access-proof/v1` bytes:
 
 ~~~json
-{"actor_context_fingerprint":"sha256:<hex>","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
+{"actor_context_fingerprint":"sha256:<hex>","actor_context_ref":"runs/<run-group-id>/actor-context/<run-id>.json","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 The proof is emitted only for the actual fresh process created inside that
@@ -476,7 +485,8 @@ inventory/access capability. If CAS does not expose it, use an already-supported
 direct runner that does or stop with `runner_unavailable`; the first skill-only
 implementation does not add a CAS route or a new runner.
 
-`actor_context_fingerprint` hashes exact RFC 8785 bytes
+`actor_context_ref` retains the exact RFC 8785 `actor-context/v1` bytes under
+the run directory, and `actor_context_fingerprint` hashes those bytes:
 `{"messages":[{"content":"<exact-UTF-8>","role":"system"}],"run_id":"<run-id>","schema":"actor-context/v1"}`.
 The ordered message array admits roles `system`, `developer`, `user`, and
 `assistant` and contains every delivered exact content value. The context includes system/developer instructions and
@@ -490,19 +500,38 @@ actor-readable inventory, including harness, memory, tool fixtures, and mounted
 roots. Any unscannable or unsanitized readable asset is excluded or makes the
 run `status: invalid_environment` with `status_reason: historical_leakage`.
 
-Exact matching is not sufficient for source-derived readable assets. After the
-harness, actor input, and mounts are frozen, each actor-started execution emits a
-`semantic-leakage-review/v1` artifact bound to that execution's final
-actor-readable-inventory fingerprint. Its exact RFC 8785 payload is
-`{"coverage":[{"entry_identity":"sha256:<hex>","provenance_class":"predates_source","result":"clear"}],"inventory_fingerprint":"sha256:<hex>","run_id":"<run-id>","schema":"semantic-leakage-review/v1"}`.
-`entry_identity` is SHA-256 of the exact RFC 8785 bytes of that type-specific
-inventory entry object, so regular files, directories, and symlinks all have a
-defined identity. Coverage is sorted by identity and contains exactly one row
-for every inventory entry. `provenance_class` is `predates_source`,
-`independent`, or `possibly_derived`; `result` is `clear`, `leak`, or
-`uncertain`. No missing, duplicate, or extra row is allowed. An evaluator-only semantic review compares every `possibly_derived`
-asset with the hidden action, correction, recovery, and outcome. Runs and EER
-bind the review ref/fingerprint. A paraphrase, encoded derivative, `leak`, or
+Exact matching is not sufficient for source-derived execution surfaces. Before
+actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
+readable inventory entry and every delivered message. After actor termination,
+emit a second review over those surfaces plus every tool result or other tool
+observation delivered to the actor. The post-run payload is
+`{"context_fingerprint":"sha256:<hex>","coverage":[{"provenance_class":"predates_source","result":"clear","surface_identity":"sha256:<hex>","surface_kind":"filesystem_entry"}],"execution_id":"<run-id>","execution_kind":"actor","inventory_fingerprint":"sha256:<hex>","phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
+The pre-start form uses `phase: pre_start`, a null
+`pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
+reviews instead use `execution_kind: optimizer` with `pre_generation` and
+`post_generation` phases. Both
+artifacts are evaluator-visible and never actor input.
+
+`surface_kind` is exactly `filesystem_entry`, `delivered_message`, or
+`tool_observation`. A filesystem identity hashes the exact RFC 8785 bytes of its
+type-specific inventory entry. A message identity hashes
+`{"content":"<exact-UTF-8>","index":<zero-based-index>,"role":"<role>","schema":"delivered-message/v1"}`.
+A tool-observation identity hashes the exact RFC 8785 bytes
+`{"call_arguments":<exact-JSON-value>,"call_id":"<id>","index":<zero-based-index>,"result":<exact-JSON-value>,"schema":"tool-observation/v1","tool":"<tool-name>"}`;
+the row covers both the call exposed to the tool boundary and the result exposed
+back to the actor. Non-JSON or binary values first use their contracted lossless
+JSON representation; an unrepresentable or unscannable observation is
+`historical_leakage`.
+
+Coverage sorts by `(surface_kind, surface_identity)` and contains exactly one
+row for every surface required by its phase. `provenance_class` is
+`predates_source`, `independent`, or `possibly_derived`; `result` is `clear`,
+`leak`, or `uncertain`. No missing, duplicate, or extra row is allowed. An
+evaluator-only semantic review compares every `possibly_derived` surface with
+the hidden action, correction, recovery, and outcome. Actor start requires a
+clear pre-start review; selection, promotion, and training require a clear
+post-run review whose pre-phase fingerprint matches. Runs and EER bind both
+review refs/fingerprints. A paraphrase, encoded derivative, `leak`, or
 `uncertain` result is `historical_leakage`; when it cannot be excluded, the
 chart is diagnostic-only and cannot enter holdout, selection, or training.
 
@@ -565,8 +594,12 @@ UTF-8 bytes of:
 ~~~
 
 The member array is byte-lexicographically sorted, duplicate-free, contains at
-least two root-session identity fingerprints, and contains every root session
-covered by the human attestation. `<digest>` is SHA-256 of those exact bytes.
+least two individual source identities, and contains every source identity
+covered by the human attestation. Each member is a `root_session` or
+`designed_task` identity; a mixed set is allowed. This lets paraphrased designed
+tasks share an attested duplicate cluster instead of becoming independent
+holdouts merely because their actor-input bytes differ. `<digest>` is SHA-256
+of those exact bytes.
 The cluster then uses identity kind `duplicate_cluster` and ref
 `duplicate-cluster:sha256:<digest>`; its descriptor preimage is exactly
 `{"identity_kind":"duplicate_cluster","identity_ref":"duplicate-cluster:sha256:<digest>","schema":"emulator-source-identity/v1"}`.
@@ -588,12 +621,25 @@ whose individual source-identity sets overlap to have exactly one
 `invalid_environment` and cannot multiply holdout evidence.
 Retried or near-duplicate sessions without a shared stable external-task or
 human-attested duplicate-cluster descriptor are ineligible for holdout.
+Likewise, near-duplicate designed tasks without a stable external-task or one
+shared human-attested duplicate cluster are ineligible for holdout. The global
+partition registry locks every member identity as well as the cluster identity.
 
 - discovery is visible for failure mining, mechanism hypotheses, and chart
   design;
 - development is visible for bounded candidate and evaluator iteration;
 - holdout is frozen before candidate generation and hidden from the author,
   optimizer prompt, candidate worktree, and development reports.
+
+Before hidden chart semantics or outcomes are inspected, structural admission
+classifies every non-observational holdout chart as selection-eligible or
+ineligible. Every selection-eligible holdout entry is `required: true`.
+`required: false` is permitted only for discovery/development entries or for an
+observational or structurally selection-ineligible chart. The classification is
+part of the frozen pre-candidate policy and cannot change after chart contents,
+evaluator results, or arm outcomes are seen. An invalid, unsupported, skipped,
+or ambiguous required holdout yields `insufficient_evidence`; it is never moved
+to `excluded_charts` to improve the recommendation.
 
 Compile and validate holdout charts in a fresh context that terminates before
 candidate optimization starts. Candidate authoring and optimization use a
@@ -612,30 +658,47 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_inventory_fingerprint":"sha256:<hex>","optimizer_policy_fingerprint":"sha256:<hex>","parent_context_id":null,"pre_candidate_policy_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_policy_fingerprint":"sha256:<hex>","parent_context_id":null,"post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
 named candidate bytes; `sandbox_instance_id` is nonempty and unique within the
 cycle. Candidate metadata and the root candidate entry bind its static ref and
-fingerprint. The proof's cycle, runner, inventory, optimizer context and fresh
+fingerprint. The proof's cycle, runner, input inventory, optimizer context and fresh
 context identity, optimizer policy, and
 pre-candidate policy must equal the frozen cycle commitments, and its candidate
 fingerprint must equal the frozen candidate manifest. Missing, mismatched,
 pre-run, or externally supplied access
 evidence contaminates the holdout.
-`optimizer_context_fingerprint` hashes exact RFC 8785 bytes
+`optimizer_context_ref` retains the exact RFC 8785 bytes and
+`optimizer_context_fingerprint` hashes them:
 `{"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-UTF-8>","role":"system"}],"schema":"optimizer-context/v1"}`
 with the same closed roles and complete ordered message semantics. The generation
 runner creates that context with `parent_context_id: null`; reuse, import, or
 hidden prior messages invalidate the proof. The context receives only the
 frozen optimizer policy and discovery/development inputs and is covered by the
 same leakage review as the readable inventory.
-Before candidate generation, run the same exact and semantic-derivative leakage
-checks over every entry in that final optimizer-readable inventory. Bind a
-complete `semantic-leakage-review/v1` ref/fingerprint to the pre-candidate
-policy; any missing, stale, `leak`, or `uncertain` row is
-`holdout_contaminated`.
+The optimizer input inventory is immutable and uses the same complete entry
+rules as `actor-readable-inventory/v1`; it is re-enumerated after generation and
+must remain byte-identical. Candidate output roots are predeclared separately
+and are accessible only under the output policy, not as immutable input roots.
+Together the two inventories cover the optimizer's complete filesystem
+namespace. The runner inventories candidate outputs immediately before
+and after generation with exact RFC 8785 `candidate-output-inventory/v1` bytes
+using the same type-specific entries. Only differences represented by the
+frozen candidate manifest and completely covered by
+`factor-delta-validation/v1` may appear. An arbitrary writable root, an input
+mutation, or an unaccounted output byte is `holdout_contaminated` or
+`multiple_factors` as applicable.
+
+Before generation, run the same exact and semantic-derivative leakage checks
+over every optimizer input entry and delivered optimizer message. After
+generation, repeat them over those surfaces, every optimizer tool observation,
+and every candidate-output entry. The access proof's pre/post leakage
+fingerprints bind those two complete `semantic-leakage-review/v1` artifacts.
+The runner may emit `status: completed` only after input equality, output-delta
+coverage, and a clear post-generation review are proved. Missing, stale,
+`leak`, or `uncertain` evidence is `holdout_contaminated`.
 
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
@@ -1143,6 +1206,24 @@ bind the same ref and fingerprint. A missing, incomplete, mismatched, or
 out-of-factor delta is `multiple_factors` and cannot be recommended; one
 candidate's validation never covers another candidate.
 
+The attestation is exact RFC 8785:
+
+~~~json
+{"attester_identity_fingerprint":"sha256:<hex>","baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","factor":"<factor>","holdout_blind":true,"hunks":[{"baseline_end":0,"baseline_fingerprint":"sha256:<hex>","baseline_start":0,"candidate_end":0,"candidate_fingerprint":"sha256:<hex>","candidate_start":0,"factor_only_justification":"<nonempty-text>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"independent_of_candidate_generation":true,"ownership_authority_fingerprints":["sha256:<hex>"],"pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"semantic-delta-attestation/v1"}
+~~~
+
+Hunk offsets are half-open byte ranges; a zero-length side represents an
+insertion or deletion. Hunks sort by `(root_id, path, baseline_start,
+candidate_start)`, never overlap, and cover every changed byte exactly once.
+Each side fingerprint hashes the exact selected slice, and every `selector_ids`
+array plus the ownership-authority fingerprint array is sorted and unique. Each
+hunk maps only to selectors declared by the pre-candidate policy. The candidate,
+baseline, factor, policy, owner authorities, and harness fingerprints equal the
+candidate metadata and factor-delta asset. `attester_identity_fingerprint` is
+an opaque stable identity fingerprint; both independence booleans are required
+true. Arbitrary bytes, an uncovered hunk, a mismatched authority, or an
+attestation produced by candidate generation is `multiple_factors`.
+
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
 ~~~json
@@ -1176,6 +1257,16 @@ For every arm and repeat:
   restore the same isolated frozen initial memory snapshot independently for
   every arm and repeat before applying the factor-local difference;
 - record runtime identity, readable inventory, tool policy, and effect policy.
+
+The exact actor contexts are compared pairwise after removing only the
+`run_id` field. Role order and message count must match. Every remaining content
+difference must occur exactly once in the candidate's existing
+`factor-delta-validation/v1.runtime_surface_changes`, using a field such as
+`actor_context.messages[<index>].content` and nonempty derivation refs to the
+approved changed harness paths or runtime keys. Every other context byte is
+equal. A system, developer, user, or history difference that is neither
+run-local nor factor-derived is `comparison_drift`; a context fingerprint alone
+cannot establish cross-arm equivalence.
 
 Default normative instruction:
 

@@ -81,6 +81,8 @@ emulator_execution_report:
     factor_delta_validation_fingerprint:
     semantic_delta_attestation_ref:
     semantic_delta_attestation_fingerprint:
+    actor_context_delta_validation_ref:
+    actor_context_delta_validation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     reason:
@@ -188,6 +190,8 @@ emulator_execution_report:
       actor_context_fingerprint:
       actor_readable_inventory_ref:
       actor_readable_inventory_fingerprint:
+      semantic_leakage_prestart_review_ref:
+      semantic_leakage_prestart_review_fingerprint:
       semantic_leakage_review_ref:
       semantic_leakage_review_fingerprint:
       actor_access_proof_ref:
@@ -276,12 +280,30 @@ fingerprint.
 Discovery/development session runs bind their published registry claim
 snapshots and validation even though they have no holdout reservation.
 
-Each started selecting or training run also binds the post-freeze
-`semantic-leakage-review/v1` required by `session-derived-atlas.md`. Its
-inventory fingerprint equals that row's actor-readable-inventory fingerprint,
-and its coverage rows map every final readable entry exactly once. Missing,
-stale, partial, `leak`, or `uncertain` review evidence is
+Each started selecting or training run binds both the pre-start and post-run
+`semantic-leakage-review/v1` artifacts required by
+`session-derived-atlas.md`. Their inventory and context fingerprints equal the
+row's readable inventory and actor context. The pre-start rows map every
+readable entry and delivered message; the post-run rows additionally map every
+tool observation and bind the pre-phase review fingerprint. Missing, stale,
+partial, `leak`, or `uncertain` review evidence is
 `historical_leakage` and makes the run ineligible.
+
+Every paired comparison also binds exact
+`actor-context-delta-validation/v1` bytes by ref and fingerprint. That artifact
+maps each baseline/candidate run pair, removes only each context's `run_id`, and
+records either exact equality or the complete set of content fields already
+authorized by `factor-delta-validation/v1.runtime_surface_changes`. Missing,
+extra, or non-factor context drift is `comparison_drift`.
+
+Its exact RFC 8785 payload is
+`{"factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_runtime_surface_fields":["actor_context.messages[0].content"],"baseline_actor_context_fingerprint":"sha256:<hex>","baseline_run_id":"<run-id>","candidate_actor_context_fingerprint":"sha256:<hex>","candidate_run_id":"<run-id>","chart_id":"<chart-id>","normalized_equal":false,"repeat_id":"<repeat-id>"}],"schema":"actor-context-delta-validation/v1"}`.
+Pairs sort by `(chart_id, repeat_id, baseline_run_id, candidate_run_id)` and are
+complete and unique. Each field array is sorted and duplicate-free. It is empty
+when normalized contexts are equal; otherwise it contains every and only
+differing message-content field, each of which occurs exactly once in the bound
+factor-delta validation with matching before/after value fingerprints and an
+approved derivation.
 
 Comparison-wide access proof maps every execution row that can contribute agent
 evidence to that row's nonempty `actor_access_proof_ref` and fingerprint. A row terminated before process launch records
@@ -443,6 +465,8 @@ and leaves comparison-only fields null:
   "actor_context_fingerprint": "sha256:...",
   "actor_readable_inventory_ref": "runs/run-group-.../actor-readable-inventory/run-....json",
   "actor_readable_inventory_fingerprint": "sha256:...",
+  "semantic_leakage_prestart_review_ref": "runs/run-group-.../semantic-leakage-review/run-...-prestart.json",
+  "semantic_leakage_prestart_review_fingerprint": "sha256:...",
   "semantic_leakage_review_ref": "runs/run-group-.../semantic-leakage-review/run-....json",
   "semantic_leakage_review_fingerprint": "sha256:...",
   "actor_access_proof_ref": "runs/run-group-.../traces/run-...-access.json",
@@ -525,6 +549,8 @@ counterexample artifact by reference and fingerprint.
   "factor_delta_validation_fingerprint": "sha256:...",
   "semantic_delta_attestation_ref": null,
   "semantic_delta_attestation_fingerprint": null,
+  "actor_context_delta_validation_ref": "reports/cmp-.../actor-context-delta-validation.json",
+  "actor_context_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
     "candidate": []
@@ -626,10 +652,13 @@ compared. Each candidate has a distinct
 complete baseline/candidate manifest-diff validation; evidence from one
 candidate cannot validate another.
 
-Use one exclusive precedence rule. Any new candidate `hard_fail`, protected
-regression, or contracted non-hard regression beyond tolerance yields `reject`,
-even when other evidence is incomplete. Otherwise `adopt` applies only when all
-adoption conditions hold. Every other case yields `insufficient_evidence`.
+Use one exclusive precedence rule. An invalid, unsupported, skipped, or
+ambiguous required holdout yields `insufficient_evidence` before regression
+disposition; it cannot be silently excluded. Once every required holdout is
+valid and determinate, any new candidate `hard_fail`, protected regression, or
+contracted non-hard regression beyond tolerance yields `reject`. Otherwise
+`adopt` applies only when all adoption conditions hold. Every other case yields
+`insufficient_evidence`.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`
 records `paired_replay_delta`, `observed_association`, `regression`, or
