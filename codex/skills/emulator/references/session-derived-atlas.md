@@ -106,8 +106,23 @@ seq find-session \
   --format json
 ~~~
 
-`seq find-session --prompt` is a semantic source read. Its matches are
-permanently `discovery_exposed` and cannot later enter development or holdout.
+`seq find-session --prompt` is a semantic source read. Before running it,
+resolve and preflight the user-global exposure registry, acquire its
+`.partition-freeze.lock`, and publish immutable RFC 8785
+`semantic-discovery-exposure/v1` bytes under that registry:
+
+~~~json
+{"corpus_digest":"sha256:<hex>","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-exposure/v1","status":"discovery_exposed_on_read"}
+~~~
+
+`query_fingerprint` binds the exact Seq query specification and selected corpus
+root. Only after that discovery exposure is durable may the semantic read run.
+Before releasing the lock, append permanent `discovery_exposed` identity claims
+for every returned session and group. If the process stops after the read but
+before those identity claims publish, the query-level exposure remains
+authoritative and every result of that exact query is discovery-only. Prompt
+matches are permanently `discovery_exposed` and cannot later enter development
+or holdout.
 To discover a holdout candidate, use only physical metadata after publishing a
 complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
@@ -427,7 +442,7 @@ world:
     fixtures: {}
   effects:
     network: deny | fixture_only | replay_recorded
-    filesystem: read_only | isolated_write | declared_roots
+    filesystem: deny | read_only | isolated_write | declared_roots
     filesystem_roots: []
     external_side_effects: deny | fixture_only | explicit
     policy_ref:
@@ -535,6 +550,18 @@ Before such a run, probe the selected existing actor route for this exact
 inventory/access capability. If CAS does not expose it, use an already-supported
 direct runner that does or stop with `runner_unavailable`; the first skill-only
 implementation does not add a CAS route or a new runner.
+
+For `paired_compare`, the evaluator-owned factor-delta validator also emits the
+`readable_surface` member of `factor-delta-validation/v1`. It binds both
+inventory ref/fingerprint pairs and both harness manifests. Readable roots, tool policy, and
+every inventory entry outside factor-owned manifest deltas MUST be byte-equal
+between arms. Each differing, added, or removed entry MUST correspond exactly to
+one declared factor-owned harness delta and to the matching arm's manifest bytes,
+type, mode, and path. No other readable-surface delta is allowed. This exact
+member is part of the existing `factor-delta-validation/v1` bytes. The pairwise
+comparison and EER bind that
+factor-delta validation ref/fingerprint. Missing or non-passing readable-surface
+validation is `comparison_drift`, even when both per-arm access proofs pass.
 
 `actor_context_ref` retains the exact RFC 8785 `actor-context/v1` bytes under
 the run directory, and `actor_context_fingerprint` hashes those bytes:
@@ -682,15 +709,35 @@ partition registry locks every member identity as well as the cluster identity.
 - holdout is frozen before candidate generation and hidden from the author,
   optimizer prompt, candidate worktree, and development reports.
 
-Before hidden chart semantics or outcomes are inspected, structural admission
-classifies every non-observational holdout chart as selection-eligible or
-ineligible. Every selection-eligible holdout entry is `required: true`.
-`required: false` is permitted only for discovery/development entries or for an
-observational or structurally selection-ineligible chart. The classification is
-part of the frozen pre-candidate policy and cannot change after chart contents,
-evaluator results, or arm outcomes are seen. An invalid, unsupported, skipped,
-or ambiguous required holdout yields `insufficient_evidence`; it is never moved
-to `excluded_charts` to improve the recommendation.
+Before the first semantic read of any holdout chart, the human owner selects
+exactly one factor from discovery/development evidence and publishes immutable
+RFC 8785 `factor-selection/v1` bytes:
+
+~~~json
+{"discovery_development_evidence_refs":["sha256:<hex>"],"factor":"question_policy","factor_owner_paths":["<relative-path>"],"holdout_semantics_seen":false,"schema":"factor-selection/v1","selector_identity_fingerprint":"sha256:<hex>"}
+~~~
+
+Evidence refs and owner paths are sorted and duplicate-free. The artifact is
+created under the global partition mutex, before holdout compilation, and bound
+by the root, pre-candidate policy, redacted optimizer policy, and final reports.
+It cannot be revised after a holdout semantic read. If factor selection requires
+holdout contents, those charts become discovery/development and a new untouched
+group is required.
+
+After each holdout chart and evaluator closure is compiled, recursively verified,
+and structurally validated—but before candidate generation, actor execution, or
+arm outcomes—the evaluator-informed holdout compiler classifies every
+non-observational chart as selection-eligible or ineligible from its frozen
+claim class, maximum claim, attribution, and oracle/invariant presence. Every
+selection-eligible holdout entry is `required: true`. `required: false` is
+permitted only for discovery/development entries or for an observational or
+structurally selection-ineligible chart. The classification is part of the
+frozen pre-candidate policy and cannot change after candidate generation begins
+or any arm outcome is seen. An invalid, unsupported, skipped, or ambiguous
+required holdout yields `insufficient_evidence`; it is never moved to
+`excluded_charts` to improve the recommendation.
+Eligibility therefore freezes after chart and evaluator validation and before
+candidate generation or arm outcomes.
 
 Compile and validate holdout charts in a fresh context that terminates before
 candidate optimization starts. Candidate authoring and optimization use a
@@ -745,10 +792,19 @@ The candidate output inventory is exactly:
 {"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
 ~~~
 
-Both use the same exhaustive type-specific lstat entry variants as
-`actor-readable-inventory/v1`; the regular-file entry above is one closed
-variant, not an extension point. Entries sort by `(root_id, path)`, roots sort
-by `root_id`, and each array is duplicate-free. The sandbox ID equals the
+Both optimizer inventory schemas use exactly these closed, schema-local entry
+variants and no others:
+
+~~~json
+{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}
+{"file_type":"directory","mode":"040700","path":"<logical-path>","root_id":"<root-id>"}
+{"file_type":"symlink","link_target_base64url":"<base64url>","path":"<logical-path>","root_id":"<root-id>"}
+~~~
+
+Special files make the inventory invalid. Symlink targets use unpadded RFC 4648
+base64url and are never followed while inventorying. Entries sort by
+`(root_id, path)`, roots sort by `root_id`, and each array is duplicate-free.
+The sandbox ID equals the
 access proof. Input and output roots are canonical, pairwise disjoint, and
 together cover the optimizer's complete filesystem namespace; no third
 readable or writable root exists. Pre- and post-generation output inventories
@@ -982,22 +1038,30 @@ Bind it as `exposure_registry_root`, and
 bind `exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonical-realpath-UTF-8)`.
 `holdout_lock_root` equals that registry root. Changing `CODEX_HOME`, atlas
 location, caller storage root, or process `HOME` therefore cannot create a fresh exposure
-namespace. If the user-global registry is unavailable or prior exposure outside
-it cannot be excluded for the candidate/optimizer contexts in scope, stop with
-`source_contaminated` before reading semantic session bytes. Create the registry
-before the first managed source read; an absent but creatable registry is not
-an unavailable registry. Any holdout, including a designed holdout, requires
-the registry. A pure designed root with no holdout may proceed without it.
+namespace. Before any holdout read, the actual compiler runtime MUST prove that
+it can create, lock, atomically replace, and fsync a probe file under that exact
+registry, then remove only the probe. When filesystem policy denies the probe,
+request the smallest user-approved permission grant for the exact registry root;
+never substitute an atlas-local or repository-local authority. If the grant is
+declined or the probe still fails, or if prior exposure outside the registry
+cannot be excluded for the candidate/optimizer contexts in scope, stop with
+`source_contaminated` before reading semantic session bytes. An absent but
+creatable registry is not unavailable. Any holdout, including a designed
+holdout, requires the registry. A pure designed root with no holdout may proceed
+without it.
 For a source identity that existed or may have been inspected before this
 registry was created, first bind exact RFC 8785
 `pre-registry-exposure-attestation/v1` bytes:
 
 ~~~json
-{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","independent_of_candidate_generation":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
+{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
 The sorted, duplicate-free identity array is complete for the group and the
-human attester is holdout-blind and independent of candidate generation. The
+human attester is holdout-blind and independent of candidate generation.
+`no_prior_baseline_harness_exposure` means no selected source content, correction,
+outcome, or evaluator interpretation was used to author, tune, choose, or review
+the frozen baseline harness. The
 attestation ref/fingerprint is evaluator-only and bound by the pre-candidate
 policy and final root. False, unknown, incomplete, missing, or self-authored
 legacy exposure evidence makes every affected legacy source ineligible for
@@ -1154,11 +1218,13 @@ Before candidate generation, write and fingerprint an evaluator-only
 pre-candidate policy asset containing the selecting chart commitments,
 partition snapshot, model/runtime configuration, repeat counts, randomness
 matching, improvement threshold, protected dimensions, candidate budget, and
-the exact comparison-implementation ref/fingerprint that will aggregate
-results and choose the recommendation.
+the exact pre-holdout `factor-selection/v1` ref/fingerprint and comparison-
+implementation ref/fingerprint that will aggregate results and choose the
+recommendation.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate redacted optimizer policy
-containing the selected factor, exact factor-owner paths, the same non-holdout
+containing the same selected factor, exact factor-owner paths and factor-
+selection ref/fingerprint, the same non-holdout
 structured byte selectors and runtime keys,
 runtime constraints, budget, and only discovery/development inputs. Before
 candidate generation, require those shared fields to equal the pre-candidate
@@ -1372,7 +1438,7 @@ attestation produced by candidate generation is `multiple_factors`.
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
+{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","readable_surface":{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","nonfactor_entries_equal":true,"readable_roots_equal":true,"status":"pass","tool_policy_equal":true},"runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
 ~~~
 
 `changed_files` is the complete regular-file content-difference set sorted by
@@ -1382,6 +1448,10 @@ arrays are the complete changed-key/field sets sorted by `key` and `field`;
 value fingerprints hash the exact RFC 8785 value bytes, including `null`.
 `derivation_path_refs` and `derivation_runtime_keys` are sorted and
 duplicate-free, and each contains only approved changed paths or runtime keys.
+`readable_surface.authorized_factor_delta_paths` is sorted by `(root_id, path)`,
+duplicate-free, and equals the complete path set licensed by `changed_files` and
+the frozen owner policy. Both inventory refs/fingerprints resolve to the exact
+paired run inputs. All four booleans and `status: pass` are mandatory.
 At least one derivation input is present for every changed surface field. The two attestation fields are both null unless a mixed-owner
 file changes, when both contain the exact attestation asset ref and fingerprint
 bound by candidate metadata. `owner_policy_ref` and

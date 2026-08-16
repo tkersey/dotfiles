@@ -113,9 +113,13 @@ corpus and comparison cycle. Its location does not determine selection
 eligibility: a private fallback root may support holdout only when the single
 user-global exposure registry required by `session-derived-atlas.md` is
 writable and prior exposure outside that registry can be excluded. Otherwise
-stop before reading semantic session bytes. Every holdout, including a designed
-holdout, requires the user-global registry; a pure designed non-holdout root
-does not.
+stop before reading semantic session bytes. Before any holdout work, preflight
+the exact OS-account-global registry with the runtime that will compile the
+atlas. If that runtime lacks write authority, request the smallest user-approved
+permission grant for that exact root; do not substitute the atlas storage root
+or a repository-local registry. If authority remains unavailable, stop with
+`source_contaminated`. Every holdout, including a designed holdout, requires the
+user-global registry; a pure designed non-holdout root does not.
 
 ## Modes
 
@@ -124,9 +128,13 @@ Choose exactly one mode.
 ### design
 
 Compile or repair the root contract and its charts. Design may create only the
-contract-owned world/reset/evaluator assets, fixtures, and tool definitions
-required to close the selected executable chart; it does not provision an
-actor runtime, execute the chart, or introduce a native subsystem.
+contract-owned source-bundle, actor-projection, partition, evaluator, world,
+reset, fixture, and tool assets required to close the selected chart, regardless
+of chart kind. It does not provision an actor runtime, execute the chart, or
+introduce a native subsystem.
+For an executable chart, these include its contract-owned world/reset/evaluator
+assets. These contract-owned source and actor assets are required closure assets,
+not runtime provisioning.
 
 ### implement
 

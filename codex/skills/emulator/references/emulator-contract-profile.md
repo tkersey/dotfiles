@@ -127,6 +127,9 @@ emulator_contract:
       exposure_registry_root:
       exposure_registry_id:
       holdout_lock_root:
+      factor_selection:
+        ref: partitions/factor-selection.json
+        fingerprint:
       partition_claims:
         - ref: partitions/claims/<holdout-key>.partition.json
           fingerprint:
@@ -339,6 +342,11 @@ execution subject and all candidate and candidate-generation fields are absent.
 For `execution_mode: paired_compare`, both arms and the applicable candidate policies are
 mandatory. This is a mode-neutral subject binding, not invented comparison
 state for a standalone run.
+When a paired comparison contains holdout charts, `partition_policy.factor_selection`
+is mandatory and binds the exact pre-holdout `factor-selection/v1` asset. Its
+factor and owner paths equal the corresponding pre-candidate and optimizer-policy
+fields. A missing, later-authored, or mismatched asset is
+`holdout_contaminated`.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
 equals chart `kind`, root `split_group` equals chart `split.group_id`, root
@@ -352,8 +360,12 @@ discovery/development or structurally selection-ineligible charts. Eligibility
 is true exactly when the frozen chart has `claim.class: harness_selection |
 promotion`, its maximum claim is at least that class, evaluator attribution is
 `direct`, and it has at least one hard oracle, state assertion, or trace
-invariant. It is computed from those declared fields and frozen before hidden
-historical suffixes, evaluator details, or outcomes are inspected. A
+invariant. The holdout compiler computes this predicate after recursively
+verifying the chart closure and validating the evaluator fields that define the
+predicate, but before candidate generation, actor execution, or arm outcomes.
+That compiler is evaluator-informed and isolated from the later optimizer; the
+already-frozen factor-selection artifact MUST predate its first semantic
+holdout read. Once computed, eligibility and `required` cannot change. A
 required holdout that becomes invalid, unsupported, skipped, or ambiguous makes
 the comparison `insufficient_evidence`; it is not an excludable chart.
 Root `chart_id` values are unique; duplicates are `invalid_environment` even
@@ -444,7 +456,7 @@ environment_chart:
       schemas: {}
     effects:
       network: deny | fixture_only | replay_recorded
-      filesystem: read_only | isolated_write | declared_roots
+      filesystem: deny | read_only | isolated_write | declared_roots
       external_side_effects: deny | fixture_only | explicit
       policy_ref:
       policy_fingerprint:
@@ -533,12 +545,14 @@ environment_chart:
 
 Tool permission is fail closed. `allowed` and `denied` are duplicate-free and
 disjoint. Every allowed tool has exactly one schema in `schemas`; a tool name
-not present in `allowed` is denied even if a schema happens to exist. Every
-action projection that selects a tool resolves that exact name before support
-classification. An action classified `executable` may select only an allowed
-tool. An action selecting a denied or unlisted tool is `denied`; contradictory
-lists, missing allowed-tool schemas, or an executable predicate that can select
-an unallowed tool make the chart `invalid_environment`.
+not present in `allowed` is denied even if a schema happens to exist. Tool-name
+resolution is the first branch of the sole support classifier. An admitted
+action selecting a denied or unlisted tool has exactly one support class,
+`denied`, and every `executable`, `judgeable`, and `observed_only` predicate MUST
+be false for that action; the unsupported fallback is not evaluated. Any such
+overlap is `invalid_environment`. An `executable` action may select only an
+allowed tool. Contradictory lists or missing allowed-tool schemas are likewise
+`invalid_environment`.
 
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
@@ -604,7 +618,9 @@ independent correction, test, assertion, invariant, or human-attestation ref.
 `policy_ref` and `policy_fingerprint` are required whenever effects use
 `read_only`, `isolated_write`, `fixture_only`, `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
 the exact recordings, roots, operations, and authority. They are absent only
-for fully closed effect modes. A `read_only` policy enumerates every readable
+when network, filesystem, and external side effects are all `deny`. A
+`filesystem: deny` actor receives no filesystem root or filesystem-capable tool.
+A `read_only` policy enumerates every readable
 root and excludes evaluator-only, session, credential, and unrelated host
 paths. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
