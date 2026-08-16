@@ -272,6 +272,8 @@ keys, and deterministically derived runtime-surface fields,
 non-hard regression tolerance, candidate budget, exact baseline harness
 fingerprint, exact immutable optimizer-input inventory ref/fingerprint,
 predeclared candidate-output roots and pre-state inventory ref/fingerprint,
+exact optimizer tool/effect policy ref/fingerprint and required complete trace
+schema,
 exact candidate-generation runner ref/fingerprint, and exact
 comparison-implementation ref/fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
@@ -485,6 +487,14 @@ environment_chart:
       class: explicit_user_correction | deterministic_test | state_assertion | trace_invariant | human_attestation | fresh_comparison | ambiguous
       refs: []
       attribution: direct | bounded | ambiguous
+      correction_review:
+        human_review_ref:
+        human_review_fingerprint:
+        reviewed_pattern_ref:
+        reviewed_pattern_fingerprint:
+        applicability_ref:
+        applicability_fingerprint:
+        reviewer_independence: true | false
     hard_oracles: []
     state_diff: []
     trace_invariants: []
@@ -541,6 +551,35 @@ than partially total.
 For `transition_model: none`, `support.executable` is empty. Any nonempty
 executable set requires `partial` or `total` plus a fingerprinted transition
 implementation; otherwise the chart is `invalid_environment`.
+
+Support classification has exactly one authoritative representation. With
+`matcher.kind: inline_predicates`, `classifier_ref` and
+`classifier_fingerprint` are null, the five inline lists are authoritative,
+and admission proves that every valid action matches at most one explicit
+predicate. For `partial` or `none`, `unsupported_default` is `true` and an
+action matching none receives exactly the `unsupported` class from that
+fallback. For `total`, it is `false` only with the exhaustive coverage proof
+required above, so no action can fall through. With
+`matcher.kind: asset`, all five inline lists are empty,
+`unsupported_default` is `false`, and the bound classifier asset is a total
+function from every action admitted by `actions.schema` to exactly one of
+`executable`, `judgeable`, `denied`, `observed_only`, or `unsupported`.
+Mixed representations, a zero-class result after fallback, or a multiple-class
+result make the chart `invalid_environment`. Thus every admitted valid action
+has exactly one support class before evaluation, while `step` remains defined
+only for `executable`.
+
+For a correction-derived chart to enter holdout or contribute to
+`harness_selection`, `promotion`, or `preference_training`, `correction_review`
+binds exactly one authority route. The direct route has non-null
+`human_review_ref` and fingerprint and null pattern/applicability fields. The
+reused-pattern route has null human-review fields and non-null reviewed-pattern
+and applicability ref/fingerprint pairs. `reviewer_independence` is `true` in
+either route. The bound review or reviewed-pattern asset identifies an
+independent, holdout-blind human reviewer; applicability is evaluator-produced
+evidence that the exact chart satisfies that already reviewed pattern, not a
+chart-author declaration. Missing, mixed, self-authored, or non-independent
+authority limits the chart to diagnostic/development use.
 
 Closure assets are regular, non-symlink files. Each regular asset binds its executable
 mode as well as exact bytes; file-type or mode drift is

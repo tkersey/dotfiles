@@ -690,3 +690,20 @@ authorization booleans, and sorted dataset ref/fingerprint pairs. Its filename
 digest is recomputed from the exact bytes. Missing or mismatched originating
 evidence makes export `invalid_environment`; the manifest grants no publication
 authority.
+
+The manifest has exactly this payload:
+
+```json
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<hex>","kind":"preferences","ref":"datasets/preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1"}
+```
+
+`datasets` is sorted by `kind`, duplicate-free, and contains every and only
+emitted dataset whose matching authorization is `true`; kind/ref suffixes are
+fixed by the dataset schemas. `originating_eer_ref` and fingerprint identify
+the exact sealed EER, and `contract_fingerprint` equals that EER's root
+contract. For `run`, `mutate`, and `compare`, both runs fields are non-null and
+identify the exact sealed `runs.jsonl`; for `design` and `implement`, both are
+null. Mixed nullability is invalid. The output-authorization object exactly
+equals the originating contract snapshot. The export filename digest is
+SHA-256 of these exact canonical bytes, so no two payload preimages share one
+manifest identity.

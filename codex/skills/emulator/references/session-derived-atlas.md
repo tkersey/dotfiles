@@ -263,14 +263,44 @@ and outcome evidence, the historical final answer, and evaluator labels.
 
 Before first promotion to harness-selection or preference-training use, a human
 MUST record review of the exact source refs, cut, hidden correction, harness
-surface, and hard-oracle interpretation. Without that evidence the chart stays
-diagnostic. Proven recurring evaluator patterns may later be reused without
-per-chart review only when the chart cites the reviewed pattern and its
-applicability evidence. For holdout, that reviewer must not participate in
-factor selection or candidate authoring. If no independent reviewer is
-available, the chart remains diagnostic/development-only and cannot enter
-holdout, harness selection, promotion, or preference training. There is no
-same-reviewer exception whose choices can be revised after correction reveal.
+surface, and hard-oracle interpretation. The exact RFC 8785 review asset is
+bound by `human_review_ref` and `human_review_fingerprint`; it identifies the
+reviewer, the reviewed chart fingerprint, those five reviewed surfaces, and a
+`holdout_blind: true` and `independent_of_candidate_generation: true`
+attestation. Without that evidence the chart stays diagnostic. A proven
+recurring evaluator pattern may be reused only when `reviewed_pattern_ref` and
+`reviewed_pattern_fingerprint` bind the independently reviewed pattern and
+`applicability_ref` and `applicability_fingerprint` bind evaluator-produced
+evidence that the exact chart satisfies it. Direct review fields and
+reviewed-pattern fields are mutually exclusive, and `reviewer_independence` is
+true for either route. A chart author cannot self-declare applicability. For
+holdout, the reviewer must not participate in factor selection or candidate
+authoring. If no independent reviewer is available, the chart remains
+diagnostic/development-only and cannot enter holdout, harness selection,
+promotion, or preference training. There is no same-reviewer exception whose
+choices can be revised after correction reveal.
+
+The direct review asset is exact RFC 8785:
+
+~~~json
+{"chart_fingerprint":"sha256:<hex>","cut_fingerprint":"sha256:<hex>","hard_oracle_interpretation_fingerprint":"sha256:<hex>","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","holdout_blind":true,"independent_of_candidate_generation":true,"reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
+~~~
+
+The reviewed-pattern route binds exact RFC 8785 bytes:
+
+~~~json
+{"holdout_blind":true,"independent_of_candidate_generation":true,"pattern_id":"<stable-pattern-id>","predicate_fingerprint":"sha256:<hex>","predicate_ref":"evaluators/correction-patterns/<pattern-id>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-reviewed-pattern/v1"}
+~~~
+
+and exact applicability bytes:
+
+~~~json
+{"applies":true,"chart_fingerprint":"sha256:<hex>","evaluator_implementation_fingerprint":"sha256:<hex>","evaluator_implementation_ref":"evaluators/implementation.json","reviewed_pattern_fingerprint":"sha256:<hex>","reviewed_pattern_ref":"evaluators/correction-patterns/<pattern-id>-review.json","schema":"correction-pattern-applicability/v1"}
+~~~
+
+The review, pattern, applicability, and every fingerprinted preimage are
+evaluator-only closure assets. A ref without its exact bytes is not review
+authority.
 
 ### Construct the evaluator
 
@@ -658,7 +688,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_policy_fingerprint":"sha256:<hex>","parent_context_id":null,"post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
@@ -678,27 +708,79 @@ runner creates that context with `parent_context_id: null`; reuse, import, or
 hidden prior messages invalidate the proof. The context receives only the
 frozen optimizer policy and discovery/development inputs and is covered by the
 same leakage review as the readable inventory.
-The optimizer input inventory is immutable and uses the same complete entry
-rules as `actor-readable-inventory/v1`; it is re-enumerated after generation and
-must remain byte-identical. Candidate output roots are predeclared separately
-and are accessible only under the output policy, not as immutable input roots.
-Together the two inventories cover the optimizer's complete filesystem
-namespace. The runner inventories candidate outputs immediately before
-and after generation with exact RFC 8785 `candidate-output-inventory/v1` bytes
-using the same type-specific entries. Only differences represented by the
+The optimizer input inventory is immutable and is exactly the RFC 8785 bytes:
+
+~~~json
+{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"input_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-input-inventory/v1","tool_policy_fingerprint":"sha256:<hex>"}
+~~~
+
+The candidate output inventory is exactly:
+
+~~~json
+{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
+~~~
+
+Both use the same exhaustive type-specific lstat entry variants as
+`actor-readable-inventory/v1`; the regular-file entry above is one closed
+variant, not an extension point. Entries sort by `(root_id, path)`, roots sort
+by `root_id`, and each array is duplicate-free. The sandbox ID equals the
+access proof. Input and output roots are canonical, pairwise disjoint, and
+together cover the optimizer's complete filesystem namespace; no third
+readable or writable root exists. Pre- and post-generation output inventories
+have byte-identical `output_roots` and differ only in `phase` and `entries`.
+The input inventory is re-enumerated after generation and must remain
+byte-identical. Candidate output roots are accessible only under the output
+policy, not as immutable input roots. The runner inventories them immediately
+before and after generation. Their ref/fingerprint pairs are the exact fields
+bound by the access proof and pre-candidate policy. Only differences represented by the
 frozen candidate manifest and completely covered by
 `factor-delta-validation/v1` may appear. An arbitrary writable root, an input
 mutation, or an unaccounted output byte is `holdout_contaminated` or
 `multiple_factors` as applicable.
 
+The pre-candidate policy also binds the exact
+`optimizer_tool_policy_ref`/fingerprint. That policy permits only declared
+tools, schemas, filesystem roots, and effects; network and
+`external_side_effects` are denied unless a fixture-only exception is frozen
+there. The runner enforces it and retains an exact ordered
+`optimizer_tool_trace_ref`/fingerprint containing every optimizer observation,
+tool call, arguments, result, error, and effect. No-tool generation binds the
+canonical empty trace rather than omitting it. The trace is complete only when
+the runner-observed call/result sequence and enforced policy agree; the runner
+cannot emit `status: completed` otherwise.
+
+The policy is exact RFC 8785 `optimizer-tool-policy/v1`:
+
+~~~json
+{"allowed_tools":[{"effects":["filesystem_read"],"name":"<tool-name>","schema_fingerprint":"sha256:<hex>","schema_ref":"harnesses/candidates/<candidate-id>/tool-schemas/<tool-name>.json"}],"external_side_effects":"deny","filesystem_roots":[{"access":"read_only","path":"<canonical-absolute-root>","root_id":"<root-id>"}],"network":"deny","schema":"optimizer-tool-policy/v1"}
+~~~
+
+Tools sort by name, roots by root ID, effects lexically; all arrays are
+duplicate-free. Unlisted tools, roots, and effects are denied. The trace is
+exact RFC 8785 `optimizer-tool-trace/v1`:
+
+~~~json
+{"events":[{"arguments_fingerprint":"sha256:<hex>","arguments_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000001-arguments.json","call_id":"<runner-call-id>","effect_fingerprints":[],"kind":"tool_call","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":null,"result_ref":null,"sequence":1,"tool":"<tool-name>"}],"policy_fingerprint":"sha256:<hex>","policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-tool-trace/v1"}
+~~~
+
+Each event has exactly those fields. `kind` is `observation`, `tool_call`, or
+`tool_result`; fields irrelevant to that kind are null or empty, while every
+present ref/fingerprint binds exact retained bytes. Sequence starts at one and
+is contiguous, calls and results join one-to-one by `call_id`, and observed
+effects equal the policy. The input inventory's `tool_policy_fingerprint`, the
+access proof's optimizer-tool-policy fingerprint, and the trace policy
+fingerprint are identical.
+
 Before generation, run the same exact and semantic-derivative leakage checks
 over every optimizer input entry and delivered optimizer message. After
-generation, repeat them over those surfaces, every optimizer tool observation,
-and every candidate-output entry. The access proof's pre/post leakage
+generation, repeat them over those surfaces, every entry in the complete
+optimizer tool trace, and every candidate-output entry. The access proof's pre/post leakage
 fingerprints bind those two complete `semantic-leakage-review/v1` artifacts.
 The runner may emit `status: completed` only after input equality, output-delta
-coverage, and a clear post-generation review are proved. Missing, stale,
-`leak`, or `uncertain` evidence is `holdout_contaminated`.
+coverage, policy/trace completeness, and a clear post-generation review are
+proved. Missing, stale, `leak`, or `uncertain` evidence first triggers the
+durable exposure transition below and then returns `holdout_contaminated`; it
+is never merely a failed local run.
 
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
@@ -873,6 +955,21 @@ it cannot be excluded for the candidate/optimizer contexts in scope, stop with
 before the first managed source read; an absent but creatable registry is not
 an unavailable registry. Any holdout, including a designed holdout, requires
 the registry. A pure designed root with no holdout may proceed without it.
+For a source identity that existed or may have been inspected before this
+registry was created, first bind exact RFC 8785
+`pre-registry-exposure-attestation/v1` bytes:
+
+~~~json
+{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","independent_of_candidate_generation":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
+~~~
+
+The sorted, duplicate-free identity array is complete for the group and the
+human attester is holdout-blind and independent of candidate generation. The
+attestation ref/fingerprint is evaluator-only and bound by the pre-candidate
+policy and final root. False, unknown, incomplete, missing, or self-authored
+legacy exposure evidence makes every affected legacy source ineligible for
+holdout; it may be discovery/development only. Creating a new registry never
+resets exposure history.
 Claims and canonical
 locks bind the exposure-registry ID; reservations, partition validations,
 selecting runs, and reports bind both the registry and storage-domain IDs. The
@@ -958,7 +1055,9 @@ Its file contains exactly the RFC 8785 canonical UTF-8 bytes of:
 
 For discovery or development, `partition` is that exact value and
 `exposure_status` is respectively `discovery_exposed` or
-`development_exposed`; no other fields or values are admitted. The filename's
+`development_exposed`. Candidate-generation leakage uses partition
+`development` and exposure status `optimizer_exposed`; these are the only
+admitted status/partition combinations. The filename's
 holdout-key hex, identity fingerprint, and registry ID must agree with the
 claimed identity and exposure registry. Aggregate group identity is deliberately
 absent: claims record exposure of each stable identity, so later alias discovery
@@ -991,6 +1090,17 @@ it preserves the fact of exposure and invalidates the stale holdout snapshot.
 Bind only atlas-relative claim snapshots in the
 pre-candidate policy, final root closure, runs, and EER, plus their
 atlas-relative validation artifact.
+
+If either semantic leakage review reports `leak` or `uncertain` involving a
+holdout identity, acquire `.partition-freeze.lock` and the affected identity
+locks in canonical order before returning. Atomically replace every affected
+`holdout_unexposed` claim with its durable `optimizer_exposed` exposure marker,
+and create equivalent markers for newly identified aliases before releasing
+the locks. A compatible exposed claim is retained; no exposed state may return
+to `holdout_unexposed`. Only after every marker is durably present may the run
+return `holdout_contaminated`. A failed or partial transition blocks all
+affected identities as `source_contaminated`; it never leaves them eligible for
+selection.
 
 Retirement-index updates use the ordinary exclusive
 `<holdout_lock_root>/.retirement-index.lock`. After acquiring it, reread
@@ -1227,7 +1337,7 @@ attestation produced by candidate generation is `multiple_factors`.
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
+{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
 ~~~
 
 `changed_files` is the complete regular-file content-difference set sorted by
@@ -1239,7 +1349,13 @@ value fingerprints hash the exact RFC 8785 value bytes, including `null`.
 duplicate-free, and each contains only approved changed paths or runtime keys.
 At least one derivation input is present for every changed surface field. The two attestation fields are both null unless a mixed-owner
 file changes, when both contain the exact attestation asset ref and fingerprint
-bound by candidate metadata. No other fields are admitted.
+bound by candidate metadata. `owner_policy_ref` and
+`owner_policy_fingerprint` exactly equal the evaluator-only frozen
+pre-candidate policy ref and `pre_candidate_policy_fingerprint` already bound
+by the root and generation-access proof. The validator receives that immutable
+asset from the evaluator, never from candidate output; a stale, self-selected,
+or ref/fingerprint-mismatched policy is `evaluator_contaminated`. No other
+fields are admitted.
 
 ## 9. Run both arms freshly
 
@@ -1370,12 +1486,14 @@ declared class, maximum supported claim, and the authority actually proved by
 that run. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
-Apply one total precedence rule: `reject` when any candidate introduces a
-`hard_fail`, protected regression, or contracted non-hard regression beyond the
-frozen tolerance. Otherwise return `adopt` only when every adoption condition
-above holds. All remaining cases, including missing/invalid arms, ties,
-unsupported coverage, disagreement, and inadequate stochastic evidence, are
-`insufficient_evidence`. Exactly one disposition is emitted.
+Apply one total precedence rule. First, any invalid, unsupported, skipped, or
+ambiguous required holdout yields `insufficient_evidence`; incomplete required
+evidence is decided before regression disposition. Once every required holdout
+is valid and determinate, a new candidate `hard_fail`, protected regression, or
+contracted non-hard regression beyond the frozen tolerance yields `reject`.
+Otherwise return `adopt` only when every adoption condition above holds. All
+remaining cases, including ties, disagreement, and inadequate stochastic
+evidence, are `insufficient_evidence`. Exactly one disposition is emitted.
 
 Record paired_replay_delta, observed_association, regression, or
 insufficient_evidence as the evidence relation, separately from the adoption
