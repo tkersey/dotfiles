@@ -161,6 +161,8 @@ emulator_contract:
         capture_provenance_fingerprint:
         candidate_metadata_ref: harnesses/candidates/<candidate-id>/candidate.yaml
         candidate_metadata_fingerprint:
+        candidate_generation_access_proof_ref:
+        candidate_generation_access_proof_fingerprint:
         factor_delta_validation_ref:
         factor_delta_validation_fingerprint:
     candidate_factor_policy: one_semantic_owner
@@ -228,6 +230,12 @@ the originating `operation_mode` rather than creating an export-identity
 variant. `comparison_policy` is absent for non-executing `design` and
 `implement` roots. It is required for `run`, `mutate`, and `compare`: `run` and
 `mutate` require `single_arm`, while `compare` requires `paired_compare`.
+`single_arm` roots MUST NOT select a holdout chart. Holdout execution is valid
+only in `paired_compare` under the reservation, locking, and consumption
+protocol; a holdout in `run` or `mutate` is an invalid contract rather than an
+unreserved execution route.
+`paired_compare` roots MUST NOT select a mutation assignment or mutation case;
+EC-v1 mutation evidence is single-arm only.
 Export preserves whichever state the existing root has. `execution_mode` does
 not replace the operation mode.
 
@@ -243,12 +251,16 @@ exact atlas-relative source-identity partition-claim snapshot
 refs/fingerprints and their validation asset, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
 threshold, the factor-to-targeted-chart predicate, protected dimensions and
-their evaluator-result bindings, exact factor-owner paths and runtime keys,
+their evaluator-result bindings, exact factor-owner paths, runtime-configuration
+keys, and deterministically derived runtime-surface fields,
 non-hard regression tolerance, candidate budget, exact baseline harness
-fingerprint, and exact comparison-implementation ref/fingerprint. It is never
+fingerprint, exact optimizer-readable inventory ref/fingerprint, exact
+candidate-generation runner ref/fingerprint, and exact
+comparison-implementation ref/fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, its exact factor-owner
-paths, non-holdout structured byte selectors and runtime keys, runtime constraints, candidate budget, and
+paths, non-holdout structured byte selectors, runtime-configuration keys,
+approved derived runtime-surface fields, runtime constraints, candidate budget, and
 discovery/development inputs; it contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
@@ -257,7 +269,7 @@ exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
 chart appears exactly once. Post-outcome classification is forbidden.
 Before candidate generation, validation requires exact equality between the
 two policies' selected factor, factor-owner paths, structured byte selectors,
-and runtime keys, runtime
+runtime-configuration keys, approved derived runtime-surface fields, runtime
 constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
@@ -292,8 +304,9 @@ run facts, not selectable comparison subjects. Every candidate entry names the
 exact harness manifest whose fingerprint the corresponding comparison and runs
 must repeat. It also binds the deterministic
 `harnesses/candidates/<candidate-id>/candidate.yaml` metadata bytes; candidate
-metadata, factor-delta validation, and pairwise EER repeat the same candidate,
-baseline, factor, and manifest identities.
+metadata, actual candidate-generation access proof, factor-delta validation,
+and pairwise EER repeat the same candidate, baseline, factor, and manifest
+identities.
 Every baseline and candidate entry separately binds its evaluator-only capture
 provenance asset. That asset proves how logical regular files and safely
 recreated internal symlinks were captured
@@ -663,7 +676,10 @@ exact source bundle and immutable corpus selection
 exclusive support classifications and unsupported default
 actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
+post-generation access proof bound to the actual optimizer process
 group-safe frozen partitions and holdout blindness
+holdout charts absent from single-arm run and mutate roots
+mutation cases absent from paired compare roots and execution rows
 root/chart split metadata equality
 implementation/seed identity plus contracted effects, termination, support matcher, and mutation domains when used
 fingerprinted baseline and candidate harness manifests

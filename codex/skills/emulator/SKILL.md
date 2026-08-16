@@ -141,7 +141,8 @@ Apply only chart-declared mutations. A mutation outside declared support creates
 a new designed chart; it never becomes a source-faithful transition. Each
 declared dimension binds its domain, preserved laws, shrink strategy, and any
 generator bytes through the chart closure. Mutation execution uses one frozen
-harness subject; compare mutated results only in a separate `compare` request.
+harness subject. EC-v1 does not pair mutation cases in `compare`; a comparison
+selecting a mutation assignment is an invalid contract.
 
 ### compare
 
@@ -181,12 +182,17 @@ comparison.
 Every chart exposes semantic equivalents of:
 
 ```text
-reset(chart_id, subject_id, repeat_id) -> observation
+reset(chart_id, repeat_id) -> observation
 observe() -> current actor-visible observation
 support(action) -> executable | judgeable | denied | observed_only | unsupported
 evaluate(output_or_trace) -> oracle vector + state diff + reward + residual judgment
 trace() -> fresh observable trace
 ```
+
+Harness, candidate, arm, and subject identity are not reset inputs. For a
+paired comparison, the same chart and repeat must produce the same reset
+observation and pre-state fingerprint before either actor starts; any
+identity-dependent reset behavior is `comparison_drift`.
 
 Validate actor output against `actor.output_schema` and the action schema before
 support routing; malformed actor output is `hard_fail`, not an unsupported

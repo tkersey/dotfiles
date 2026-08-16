@@ -12,7 +12,7 @@ fidelity, or claim strength.
 Every chart provides semantic equivalents of:
 
 ```text
-reset(chart_id, subject_id, repeat_id)
+reset(chart_id, repeat_id)
 observe()
 support(action)
 evaluate(output_or_trace)

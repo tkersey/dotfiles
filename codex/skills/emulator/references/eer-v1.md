@@ -39,7 +39,7 @@ emulator_execution_report:
     closure_inventory_ref:
     closure_inventory_fingerprint:
 
-  runs:
+  runs:  # present only for run, mutate, or compare
     ref:
     fingerprint:
 
@@ -71,6 +71,8 @@ emulator_execution_report:
     candidate_harness_fingerprint:
     candidate_metadata_ref:
     candidate_metadata_fingerprint:
+    candidate_generation_access_proof_ref:
+    candidate_generation_access_proof_fingerprint:
     factor_delta_validation_ref:
     factor_delta_validation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
@@ -102,7 +104,7 @@ emulator_execution_report:
         residual_preference:
         result: improved | regressed | noninferior | ambiguous | invalid
 
-  run_summary:
+  run_summary:  # present only for run, mutate, or compare
     valid_runs:
     invalid_environment_runs:
     unsupported_runs:
@@ -112,7 +114,7 @@ emulator_execution_report:
     runtime_error_runs:
     skipped_runs:
 
-  executions:
+  executions:  # present only for run, mutate, or compare
     - schema: emulator-run/v1
       run_id:
       run_group_id:
@@ -216,6 +218,16 @@ emulator_execution_report:
   limitations: []
 ```
 
+For `design` and `implement`, `runs`, `run_summary`, `executions`, and
+`comparison` are absent; the EER reports only the frozen contract closure,
+eligible non-run outputs, and limitations. These modes do not invent a run
+group, an empty `runs.jsonl`, or runtime counters. For `run`, `mutate`, and
+`compare`, the three run sections are required and the parsed `runs.jsonl` rows
+must equal `executions` as specified below.
+For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
+`mutation_generator_fingerprint`, and minimized-counterexample fields are null;
+a non-null value is `invalid_environment`.
+
 ## Status and accounting laws
 
 Every fresh run appears exactly once.
@@ -303,7 +315,12 @@ mode, OS/runtime identity, locale, timezone, working-directory policy,
 behavior-bearing environment projection, tool-manifest fingerprint, and sorted
 dependency/lock fingerprints. Its canonical digest is the execution's
 `runtime_surface_fingerprint`; corresponding values are equal across arms
-except exact runtime-factor keys admitted by factor-delta validation. Missing
+except exact runtime-factor keys or runtime-surface fields declared in the
+pre-candidate factor-owner policy and proved by factor-delta validation to be
+deterministically derived solely from approved factor-owned path changes. This
+exception includes dependency/lock fingerprints only when their changed lock
+assets are themselves approved factor-owned paths; it never admits ambient or
+unmapped surface drift. Missing
 or unmodeled behavior-bearing runtime state makes the run
 `invalid_environment`, not silently nondeterministic.
 Credentials, tokens, values, and their digests are never serialized. The
@@ -484,6 +501,8 @@ counterexample artifact by reference and fingerprint.
   "candidate_harness_fingerprint": "sha256:...",
   "candidate_metadata_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/candidate.yaml",
   "candidate_metadata_fingerprint": "sha256:...",
+  "candidate_generation_access_proof_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/generation-access-proof.json",
+  "candidate_generation_access_proof_fingerprint": "sha256:...",
   "factor_delta_validation_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/factor-delta-validation.json",
   "factor_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {
