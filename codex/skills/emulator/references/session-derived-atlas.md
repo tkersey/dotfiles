@@ -56,8 +56,10 @@ raw sessions, corrections, private tool output, credentials, or hidden
 evaluators. Sanitize any authorized shareable report.
 
 Network and external side effects are denied by default. Production services
-require fixture substitution or explicit user authorization. Never extract or
-evaluate private chain-of-thought.
+require fixture/replay substitution under EC-v1. Explicitly authorized live
+access routes to a separate designed contract with admitted live effects; user
+authorization alone does not widen EC-v1. Never extract or evaluate private
+chain-of-thought.
 
 ## 1. Capability gate
 
@@ -344,8 +346,9 @@ world:
     fixtures: {}
   effects:
     network: deny | fixture_only | replay_recorded
+    filesystem: read_only | isolated_write | declared_roots
     filesystem_roots: []
-    external_side_effects: deny
+    external_side_effects: deny | fixture_only | explicit
     policy_ref:
     policy_fingerprint:
   evaluator:
@@ -367,6 +370,8 @@ the exact effect-policy ref and fingerprint above, matching the chart effects
 block.
 Chart `environment.world_fidelity` MUST equal `world.fidelity`; neither field
 wins by precedence.
+World and chart network, filesystem, external-side-effect modes, policy ref,
+and policy fingerprint MUST also match exactly.
 
 For executable charts, the chart owns semantic tool permission and evaluation;
 the tool and evaluator assets own their operational implementation. The chart
@@ -381,6 +386,9 @@ cannot choose one copy by precedence.
 
 Run the reset twice before admitting exact fidelity. Both runs must produce the
 same expected pre-state fingerprint.
+Bind both admission-reset result refs/fingerprints in each later EER that claims
+exact fidelity; the actor-run reset result is additional evidence, not a
+substitute for repeatability admission.
 
 Whole-harness comparisons cut before the first assistant action. A later skill
 or synthesis cut is admissible only with explicit proof that the selected factor
@@ -404,7 +412,7 @@ Before admitting any chart:
 Run the forbidden-ref and excerpt scan over every byte in the complete
 actor-readable inventory, including harness, memory, tool fixtures, and mounted
 roots. Any unscannable or unsanitized readable asset is excluded or makes the
-run `historical_leakage`.
+run `status: invalid_environment` with `status_reason: historical_leakage`.
 
 A file containing both projections is not separation. For harness selection,
 promotion, or training, absent actor-readable inventory or access proof makes
@@ -432,7 +440,13 @@ Compute SHA-256 over those exact canonical bytes for
 `source_group_fingerprint`. Also hash each ref independently from the RFC 8785
 canonical bytes of
 `{"identity_kind":"<kind>","identity_ref":"<ref>","schema":"emulator-source-identity/v1"}`
-and record the sorted `source_identity_fingerprints`. For session-derived
+and retain the sorted descriptor preimages in `source_identity_descriptors`
+beside the sorted `source_identity_fingerprints`. Canonical refs are
+`github-pr:<lowercase-owner>/<lowercase-repo>#<number>`,
+`github-issue:<lowercase-owner>/<lowercase-repo>#<number>`,
+`seq:<adapter>:<root-session-id>`, or `task-uri:<normalized-absolute-uri>`.
+An approved duplicate cluster uses `duplicate-cluster:sha256:<digest>` whose
+preimage is retained as human attestation. Aliases for one task are all retained. For session-derived
 groups, this individual set always includes the root-session identity (linked
 workers use the root, never worker IDs) plus every stable external-task alias;
 individual aliases may span kinds even though the aggregate group kind does
@@ -441,6 +455,8 @@ groups that overlap by one underlying task/session collide. Local chart IDs, atl
 surrounding corpus are excluded. Root chart entries repeat the chart's
 `source_group_fingerprint` exactly; ambiguity, mismatch, or mutable refs make
 the group ineligible for holdout.
+Retried or near-duplicate sessions without a shared stable external-task or
+human-attested duplicate-cluster descriptor are ineligible for holdout.
 
 - discovery is visible for failure mining, mechanism hypotheses, and chart
   design;
@@ -531,18 +547,23 @@ fails. If acquisition fails before any actor exposure,
 remove only locks created by that same attempt; after exposure, any incomplete
 lock remains fail-closed for human resolution.
 
-At partition freeze, before candidate generation, atomically create
+At partition freeze, before candidate generation, acquire identity keys in
+sorted order and atomically create or validate
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
 It binds the source-identity fingerprint, group fingerprint, partition, and
 exposure status. Claims are finalized before the pre-candidate policy, which
-then binds their fingerprints; claims never point back to that policy. An existing claim for
+then binds their fingerprints; claims never point back to that policy. The
+claim-validation artifact is created afterward and is bound only by the final
+root, runs, and EER. An existing byte-identical compatible claim is reused. An existing claim for
 another partition, or any prior
 discovery/development exposure when the new claim is holdout, is
 `holdout_contaminated`. Record
 discovery/development exposure before an actor or optimizer can read that
-group; partition claims are not deferred until holdout execution. Bind every
-claim ref/fingerprint and their validation artifact in the evaluator-only
-pre-candidate policy, final root closure, runs, and EER.
+group; partition claims are not deferred until holdout execution. If any key is
+incompatible or acquisition loses a race before exposure, remove only claims
+created by that attempt. Bind every claim ref/fingerprint in the evaluator-only
+pre-candidate policy; bind those claims plus their validation artifact in the
+final root closure, runs, and EER.
 
 Retirement-index updates use one ordinary exclusive update lock under the same
 `holdout_lock_root`. After acquiring it, reread `current.json`, union the new
@@ -589,14 +610,19 @@ Fingerprint the exact RFC 8785 JSON Canonicalization Scheme UTF-8 bytes.
 The manifest file itself MUST contain exactly those canonical bytes, so its
 exact-file closure SHA-256 and manifest identity are the same digest. Implicit global harness state
 invalidates comparison.
+Every root `path` is normalized, relative, nonempty, non-escaping, and unique;
+absolute paths, `..`, symlinks outside the bundle, and duplicate normalized
+paths are invalid before materialization.
 
 Candidate metadata:
 
 ~~~yaml
 candidate:
   candidate_id:
-  baseline_harness_fingerprint:
-  candidate_harness_fingerprint:
+  baseline_harness_fingerprint:  # harness subject only
+  candidate_harness_fingerprint: # harness subject only
+  baseline_subject_fingerprint:
+  candidate_subject_fingerprint:
   factor:
   hypothesis:
   changed_paths: []
@@ -644,7 +670,7 @@ Default repeats:
 ~~~text
 deterministic chart: one arm run after two identical reset proofs
 stochastic chart: three fresh runs per arm
-uncontrolled actor nondeterminism: record seed_control unavailable and use repeats
+uncontrolled actor nondeterminism: record actor_seed_control unavailable and use repeats
 ~~~
 
 Alternate or randomize arm order. Blind residual judges to harness identity,

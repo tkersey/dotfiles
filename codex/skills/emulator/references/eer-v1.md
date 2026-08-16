@@ -124,11 +124,15 @@ emulator_execution_report:
       minimized_counterexample_fingerprint:
       implementation_fingerprint:
       runtime_fingerprint:
-      seed:
-      seed_control: fixed | sampled | unavailable
+      actor_seed:
+      actor_seed_control: fixed | sampled | unavailable
+      environment_seed:
+      environment_seed_control: fixed | sampled | unavailable
       failure_schedule_fingerprint:
       world_fingerprint:
       reset_recipe_fingerprint:
+      admission_reset_refs: []         # exact-fidelity executable charts
+      admission_reset_fingerprints: [] # exact-fidelity executable charts
       reset_result_ref:
       reset_result_fingerprint:
       effect_policy_fingerprint:
@@ -227,6 +231,9 @@ The report binds the exact emitted `runs.jsonl` bytes. Its parsed rows MUST equa
 `executions` in order and content. Every executable run also binds the observed
 reset-result/pre-state artifact; a missing or mismatched result is
 `invalid_environment`, even when the reset recipe itself is unchanged.
+Every exact-fidelity executable run additionally binds the two distinct,
+byte-identical-prestate admission reset artifacts required before chart
+admission; missing or duplicate proof refs invalidate the fidelity claim.
 
 `run` mode omits `comparison` and emits executions plus applicable datasets and
 limitations. It does not invent a candidate fingerprint or recommendation.
@@ -267,11 +274,15 @@ independent run-group ID and leaves comparison-only fields null:
   "minimized_counterexample_fingerprint": null,
   "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
-  "seed": null,
-  "seed_control": "unavailable",
+  "actor_seed": null,
+  "actor_seed_control": "unavailable",
+  "environment_seed": null,
+  "environment_seed_control": "unavailable",
   "failure_schedule_fingerprint": null,
   "world_fingerprint": null,
   "reset_recipe_fingerprint": null,
+  "admission_reset_refs": [],
+  "admission_reset_fingerprints": [],
   "reset_result_ref": null,
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",

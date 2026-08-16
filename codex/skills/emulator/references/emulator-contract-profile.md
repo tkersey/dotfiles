@@ -64,6 +64,7 @@ emulator_contract:
         kind: normative_decision | executable_episode | observational
         split_group:
         source_group_fingerprint:
+        source_identity_descriptors: []
         source_identity_fingerprints: []
         partition: discovery | development | holdout
         required: true | false
@@ -81,6 +82,7 @@ emulator_contract:
           fingerprint:
 
   comparison_policy:
+    mode: run | compare
     subject: harness | actor | environment_implementation
     pre_candidate_policy:
       ref:
@@ -125,7 +127,10 @@ emulator_contract:
     counterexamples: false
 ~~~
 
-corpus_digest binds the selected immutable source set, not a mutable session
+`corpus_digest` is SHA-256 of exact RFC 8785 bytes of
+`{"schema":"emulator-corpus/v1","source_bundle_fingerprints":[...]}` where the
+array is the byte-lexicographically sorted, duplicate-free fingerprints of all
+selected source bundles. It binds the selected immutable source set, not a mutable session
 directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
@@ -170,11 +175,16 @@ immutability laws apply. Fields that do not apply to the declared subject are
 absent rather than filled with invented harness identities. Every candidate
 entry names the exact manifest whose fingerprint the corresponding comparison
 and runs must repeat.
+For `mode: run`, `baseline_harness` or `baseline_subject` is the single frozen
+execution subject and all candidate and candidate-generation fields are absent.
+For `mode: compare`, both arms and the applicable candidate policies are
+mandatory. This is a mode-neutral subject binding, not invented comparison
+state for a standalone run.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
 equals chart `kind`, root `split_group` equals chart `split.group_id`, root
-`partition` equals chart `split.partition`, and the root's group and ordered
-source-identity fingerprints equal the chart's recomputed values. Any mismatch is
+`partition` equals chart `split.partition`, and the root's group, ordered
+source-identity descriptors, and fingerprints equal the chart's recomputed values. Any mismatch is
 `invalid_environment`; neither copy wins by precedence. An observational chart
 MUST have root `required: false` because it cannot participate in selection.
 Root `chart_id` values are unique; duplicates are `invalid_environment` even
@@ -207,6 +217,7 @@ environment_chart:
   split:
     group_id:
     source_group_fingerprint:
+    source_identity_descriptors: []
     source_identity_fingerprints: []
     partition: discovery | development | holdout
 
@@ -243,8 +254,8 @@ environment_chart:
     implementation:
       ref:
       fingerprint:
-      seed_control: fixed | sampled | unavailable
-      seed:
+      environment_seed_control: fixed | sampled | unavailable
+      environment_seed:
       failure_schedule_ref:
       failure_schedule_fingerprint:
     reset:
@@ -287,7 +298,7 @@ environment_chart:
       judgeable: []
       denied: []
       observed_only: []
-      unsupported_default: true
+      unsupported_default: true | false
 
   mutation:
     dimensions:
@@ -346,6 +357,9 @@ For `transition_model: total`, support predicates exhaustively and exclusively
 cover every action admitted by `actions.schema`, and `unsupported_default` is
 `false`. A total chart that can fall through to `unsupported` is
 `invalid_environment` rather than partially total.
+For `transition_model: none`, `support.executable` is empty. Any nonempty
+executable set requires `partial` or `total` plus a fingerprinted transition
+implementation; otherwise the chart is `invalid_environment`.
 
 Closure assets are regular, non-symlink files unless a chart explicitly defines
 and fingerprints symlink semantics. Each regular asset binds its executable
@@ -361,7 +375,7 @@ authority for an oracle or success condition and requires at least one
 independent correction, test, assertion, invariant, or human-attestation ref.
 
 `policy_ref` and `policy_fingerprint` are required whenever effects use
-`read_only`, `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
+`read_only`, `fixture_only`, `replay_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
 the exact recordings, roots, operations, and authority. They are absent only
 for fully closed effect modes. A `read_only` policy enumerates every readable
 root and excludes evaluator-only, session, credential, and unrelated host
