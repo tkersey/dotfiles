@@ -79,6 +79,8 @@ emulator_execution_report:
     candidate_generation_access_proof_fingerprint:
     factor_delta_validation_ref:
     factor_delta_validation_fingerprint:
+    semantic_delta_attestation_ref:
+    semantic_delta_attestation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     reason:
@@ -180,6 +182,7 @@ emulator_execution_report:
       reset_result_ref:
       reset_result_fingerprint:
       effect_policy_fingerprint:
+      tool_access_policy_fingerprint:
       actor_input_fingerprint:
       actor_readable_inventory_ref:
       actor_readable_inventory_fingerprint:
@@ -268,6 +271,13 @@ could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
 
+A registry-free session diagnostic with limitation
+`global_exposure_untracked` omits exposure-registry and partition-claim refs,
+cannot appear in `comparison.evaluated_runs`, and realizes only a diagnostic
+claim. When the registry exists, discovery/development session runs bind their
+published claim snapshots and validation even though they have no holdout
+reservation.
+
 Each started selecting or training run also binds the post-freeze
 `semantic-leakage-review/v1` required by `session-derived-atlas.md`. Its
 inventory fingerprint equals that row's actor-readable-inventory fingerprint,
@@ -275,12 +285,14 @@ and its coverage rows map every final readable entry exactly once. Missing,
 stale, partial, `leak`, or `uncertain` review evidence is
 `historical_leakage` and makes the run ineligible.
 
-Comparison-wide access proof maps every execution row with
-`actor_started: true` to that row's nonempty `actor_access_proof_ref` and
-fingerprint. A row terminated before process launch records
+Comparison-wide access proof maps every execution row that can contribute agent
+evidence to that row's nonempty `actor_access_proof_ref` and fingerprint. A row terminated before process launch records
 `actor_started: false`, null proof fields, and a pre-launch termination reason;
-only `invalid_environment`, `runtime_error`, or `skipped` may do so. All other
-rows require `true`. The baseline/candidate
+only `invalid_environment`, `runtime_error`, or `skipped` may do so. A started
+row whose runner fails before access proof is durable may record null proof
+fields only with `status: runtime_error | invalid_environment` and reason
+`access_proof_unavailable_after_start`; it is ineligible for selection or
+training. All other started rows require a nonempty proof. The baseline/candidate
 run-ID lists are duplicate-free, disjoint, and their union still equals all
 comparison execution rows. Every baseline-listed row's harness fingerprint
 equals the root baseline; every candidate-listed row's harness fingerprint
@@ -426,6 +438,7 @@ and leaves comparison-only fields null:
   "reset_result_ref": null,
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
+  "tool_access_policy_fingerprint": "sha256:...",
   "actor_input_fingerprint": "sha256:...",
   "actor_readable_inventory_ref": "runs/run-group-.../actor-readable-inventory/run-....json",
   "actor_readable_inventory_fingerprint": "sha256:...",
@@ -509,6 +522,8 @@ counterexample artifact by reference and fingerprint.
   "candidate_generation_access_proof_fingerprint": "sha256:...",
   "factor_delta_validation_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/factor-delta-validation.json",
   "factor_delta_validation_fingerprint": "sha256:...",
+  "semantic_delta_attestation_ref": null,
+  "semantic_delta_attestation_fingerprint": null,
   "evaluated_runs": {
     "baseline": [],
     "candidate": []

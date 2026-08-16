@@ -105,7 +105,7 @@ emulator_contract:
         mount_path:
 
   atlas:
-    instance_id:
+    instance_id:  # required for session-derived roots or any root with holdout
     charts:
       - chart_id:
         chart_ref:
@@ -172,6 +172,8 @@ emulator_contract:
         candidate_generation_access_proof_fingerprint:
         factor_delta_validation_ref:
         factor_delta_validation_fingerprint:
+        semantic_delta_attestation_ref:
+        semantic_delta_attestation_fingerprint:
     candidate_factor_policy: one_semantic_owner
     stochastic_repeats: 3
     deterministic_repeats: 1
@@ -220,6 +222,13 @@ path. Distinct root declarations have unique `root_id` and precedence values.
 It enumerates every behavior-bearing root
 under experiment. The root may contain one chart; the atlas abstraction does
 not require scale.
+
+`atlas.instance_id` is required for any session-derived root or any root with a
+holdout chart. It is SHA-256 of the exact UTF-8 sequence
+`"emulator-atlas-instance/v1" NUL storage_domain_id NUL canonical-atlas-root-realpath`.
+It is absent for a pure designed root with no holdout. Any holdout additionally
+requires the user-global exposure registry; there is no registry-free holdout
+identity.
 
 Both `session` and `session_corpus` require
 `current_session_excluded: true`. Determine this requirement over the complete
@@ -314,6 +323,10 @@ must repeat. It also binds the deterministic
 metadata, actual candidate-generation access proof, factor-delta validation,
 and pairwise EER repeat the same candidate, baseline, factor, and manifest
 identities.
+The candidate metadata, root candidate entry, factor-delta validation, and
+pairwise EER also repeat the same semantic-delta-attestation ref/fingerprint;
+both fields are null when no mixed-owner file changes and both are non-null
+otherwise.
 Every baseline and candidate entry separately binds its evaluator-only capture
 provenance asset. That asset proves how logical regular files and safely
 recreated internal symlinks were captured
@@ -679,10 +692,10 @@ Require:
 ~~~text
 EC-v1 root and ordered chart identities
 recursive closure verification for all execution-relevant bytes
-exact source bundle and immutable corpus selection
+canonical source-bundle manifest and immutable corpus selection
 exclusive support classifications and unsupported default
 actor/evaluator projection separation
-actor-readable inventory, fingerprint, and tool-access proof for selecting use
+canonical observed actor-readable inventory and per-process access proof for selecting use
 post-generation access proof bound to the actual optimizer process
 group-safe frozen partitions and holdout blindness
 atlas-instance identity bound through holdout reservation, locks, and consumption
@@ -693,6 +706,7 @@ implementation/seed identity plus contracted effects, termination, support match
 fingerprinted baseline and candidate harness manifests
 same-comparison fingerprints and one semantic factor for compare mode
 closed selector semantics and complete factor-delta validation for candidate changes
+unchanged manifest path/type/mode/symlink surface across harness arms
 predetermined stochastic evidence rule and matched randomness when available
 fingerprinted pre-candidate policy snapshot for compare mode
 hard-oracle precedence and protected dimensions

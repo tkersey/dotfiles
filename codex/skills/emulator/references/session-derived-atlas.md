@@ -206,6 +206,21 @@ The chart binds the source-map bytes; the source map recursively binds every
 query and result byte. A paraphrased transcript without these references is not
 source provenance.
 
+`source_bundle_ref` names `source-bundle.json`, whose exact RFC 8785 bytes are:
+
+~~~json
+{"assets":[{"fingerprint":"sha256:<hex>","ref":"<bundle-relative-ref>"}],"schema":"session-source-bundle/v1","source_map_fingerprint":"sha256:<hex>","source_map_ref":"source-map.yaml"}
+~~~
+
+Refs are normalized, nonempty POSIX paths relative to the bundle directory and
+cannot escape it. `assets` is sorted by ref, duplicate-free, and contains the
+source map plus every query specification, result envelope, selected raw event,
+attestation, and other byte transitively referenced by the source map; it
+contains no extra file. The source-map entry equals the two dedicated fields.
+`source_bundle_fingerprint` is SHA-256 of these exact manifest bytes, never a
+directory walk or archive digest. The corpus digest uses only these canonical
+bundle fingerprints.
+
 ## 4. Compile correction windows
 
 ### Detect candidates
@@ -425,6 +440,34 @@ Before admitting any chart:
    access policy;
 8. prove the fresh actor invocation could access only that declared inventory.
 
+After mounts and tool policy freeze but before actor instructions are
+delivered, the runner emits exact RFC 8785 `actor-readable-inventory/v1` bytes:
+
+~~~json
+{"entries":[{"fingerprint":"sha256:<hex>","kind":"regular","mode":"100644","path":"<sandbox-relative-path>"},{"kind":"directory","mode":"040700","path":"<sandbox-relative-path>"},{"kind":"symlink","link_target_base64url":"<base64url>","path":"<sandbox-relative-path>"}],"readable_roots":["<sandbox-relative-path>"],"run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-readable-inventory/v1","tool_access_policy_fingerprint":"sha256:<hex>"}
+~~~
+
+`entries` is the complete recursive `lstat` walk of every readable root after
+mount freeze, sorted by normalized path, with exactly one type-valid row per
+path. Regular fingerprints bind exact bytes; modes are six-digit octal text;
+symlink targets use unpadded RFC 4648 base64url. Roots are sorted,
+duplicate-free, sandbox-relative, and contain every entry. The runner enforces
+a closed filesystem namespace that denies paths outside those roots and keeps
+the namespace unchanged for the actor lifetime. The inventory fingerprint is
+SHA-256 of those exact bytes.
+
+The same runner then emits exact RFC 8785 `actor-access-proof/v1` bytes:
+
+~~~json
+{"actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
+~~~
+
+The proof is emitted only for the actual fresh process created inside that
+already-observed sandbox. Its run, sandbox, inventory, runner, and tool policy
+must equal the execution row and frozen assets; proof reuse across runs is
+invalid. A runner that cannot enforce and completely enumerate this surface
+cannot produce selecting or training evidence.
+
 Run the forbidden-ref and excerpt scan over every byte in the complete
 actor-readable inventory, including harness, memory, tool fixtures, and mounted
 roots. Any unscannable or unsanitized readable asset is excluded or makes the
@@ -549,15 +592,16 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_inventory_fingerprint":"sha256:<hex>","optimizer_policy_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_inventory_fingerprint":"sha256:<hex>","optimizer_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
 named candidate bytes; `sandbox_instance_id` is nonempty and unique within the
 cycle. Candidate metadata and the root candidate entry bind its static ref and
-fingerprint. The proof's runner, inventory, and optimizer policy must equal the
-pre-candidate commitments, and its candidate fingerprint must equal the frozen
-candidate manifest. Missing, mismatched, pre-run, or externally supplied access
+fingerprint. The proof's cycle, runner, inventory, optimizer policy, and
+pre-candidate policy must equal the frozen cycle commitments, and its candidate
+fingerprint must equal the frozen candidate manifest. Missing, mismatched,
+pre-run, or externally supplied access
 evidence contaminates the holdout.
 Before candidate generation, run the same exact and semantic-derivative leakage
 checks over every entry in that final optimizer-readable inventory. Bind a
@@ -697,7 +741,8 @@ set or derive it completely from physical discovery metadata, then atomically
 publish the applicable claims. Retain and fingerprint the attestation or
 physical envelope; a merely asserted incomplete list is not holdout authority.
 
-When completeness cannot be established without semantic source bytes, acquire
+For registry-backed compilation, when completeness cannot be established
+without semantic source bytes, acquire
 the global partition-freeze lock, publish `discovery_exposed` claims for every
 physically known identity, perform the bounded semantic read while still
 holding the lock, derive all newly visible stable aliases, and publish
@@ -732,10 +777,14 @@ bind `exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonic
 `holdout_lock_root` equals that registry root. Changing `CODEX_HOME`, atlas
 location, caller storage root, or process `HOME` therefore cannot create a fresh exposure
 namespace. If the user-global registry is unavailable or prior exposure outside
-it cannot be excluded, stop session-derived compilation with
-`source_contaminated` before reading semantic source bytes. A designed root
-with no session-derived source may proceed without this registry, but there is
-no atlas-local exposure namespace or diagnostic bypass for sessions. Claims and canonical
+it cannot be excluded, a session-derived request may read and compile only
+discovery-partition charts with `claim.class: diagnostic` and limitation
+`global_exposure_untracked`; it emits no global claim and is permanently
+ineligible for holdout, selection, training, promotion, or `adopt`. Any request
+containing a holdout chart, including a designed holdout, instead stops with
+`source_contaminated`. A pure designed root with no holdout may proceed without
+the registry. When the registry is available, session discovery/development
+reads publish their exposed claims normally. Claims and canonical
 locks bind the exposure-registry ID; reservations, partition validations,
 selecting runs, and reports bind both the registry and storage-domain IDs. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
@@ -807,11 +856,14 @@ and stop. The post-read discovery is never reinterpreted as a read that did not
 occur. Thus a discovery writer cannot silently contaminate a group after the
 selector releases the partition lock but before first actor exposure.
 
-Before any semantic source read, acquire the exclusive global
+When the global registry is available, acquire the exclusive global
 `<holdout_lock_root>/.partition-freeze.lock`, validate the complete sorted
-identity-key set, stage all new claims, then publish them before releasing the
-lock. Create or validate
+identity-key set before any semantic source read, stage all new claims, then
+publish them before releasing the lock. Create or validate
 `<holdout_lock_root>/<hex>.partition.json` for every individual source identity.
+The `global_exposure_untracked` diagnostic route above skips this unavailable
+global protocol, records no claim or registry ID, and remains ineligible for
+any later selecting or training use.
 Its file contains exactly the RFC 8785 canonical UTF-8 bytes of:
 
 ~~~json
@@ -1010,6 +1062,15 @@ jointly own that behavior. At most three candidates run in one cycle. Stage
 candidates outside the live harness. Candidate and evaluator changes require
 separate experiments.
 
+EC-v1 candidates may change only the bytes of existing regular manifest files
+and predeclared runtime-configuration values. Baseline and candidate manifest
+path sets, entry types, executable modes, and symlink targets must be identical;
+file add/delete/rename, mode changes, and symlink retargeting are prohibited by
+the optimizer policy before generation. A candidate containing such a delta is
+invalid for this experiment and cannot be recommended. This keeps non-byte
+manifest changes out of `factor-delta-validation/v1` rather than inventing
+uncontracted selectors for them.
+
 The pre-candidate policy enumerates exact root-qualified behavior-bearing path
 pairs (`root_id`, logical `path`), runtime-configuration keys, and
 deterministically derived runtime-surface fields owned by the selected factor.
@@ -1063,7 +1124,7 @@ The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 {"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
 ~~~
 
-`changed_files` is the complete manifest file-difference set sorted by
+`changed_files` is the complete regular-file content-difference set sorted by
 `(root_id, path)`; each `selector_ids` array is sorted, duplicate-free, and
 contains every and only selector covering that file's differences. Runtime
 arrays are the complete changed-key/field sets sorted by `key` and `field`;
