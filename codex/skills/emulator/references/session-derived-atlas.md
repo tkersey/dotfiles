@@ -252,10 +252,9 @@ diagnostic. Proven recurring evaluator patterns may later be reused without
 per-chart review only when the chart cites the reviewed pattern and its
 applicability evidence. For holdout, that reviewer must not participate in
 factor selection or candidate authoring. If no independent reviewer is
-available, freeze the factor, factor-owner declaration, candidate budget,
-runtime policy, and every other candidate-affecting human choice before the
-review; after seeing the correction the reviewer may accept or reject the chart
-but may not change those choices. Otherwise the chart remains diagnostic.
+available, the chart remains diagnostic/development-only and cannot enter
+holdout, harness selection, promotion, or preference training. There is no
+same-reviewer exception whose choices can be revised after correction reveal.
 
 ### Construct the evaluator
 
@@ -520,6 +519,10 @@ groups that overlap by one underlying task/session collide. Local chart IDs, atl
 surrounding corpus are excluded. Root chart entries repeat the chart's
 `source_group_fingerprint` exactly; ambiguity, mismatch, or mutable refs make
 the group ineligible for holdout.
+Atlas validation additionally requires every connected component of charts
+whose individual source-identity sets overlap to have exactly one
+`split.group_id`; assigning an overlapping identity to different groups is
+`invalid_environment` and cannot multiply holdout evidence.
 Retried or near-duplicate sessions without a shared stable external-task or
 human-attested duplicate-cluster descriptor are ineligible for holdout.
 
@@ -540,6 +543,11 @@ optimizer with filesystem tools. Run optimization in a workspace where holdout
 roots are not mounted/readable, and bind an optimizer-readable inventory plus
 access-proof ref and fingerprint in the pre-candidate policy asset. Missing or
 mismatched optimizer access evidence contaminates the holdout.
+Before candidate generation, run the same exact and semantic-derivative leakage
+checks over every entry in that final optimizer-readable inventory. Bind a
+complete `semantic-leakage-review/v1` ref/fingerprint to the pre-candidate
+policy; any missing, stale, `leak`, or `uncertain` row is
+`holdout_contaminated`.
 
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
@@ -643,6 +651,13 @@ purpose, and prior root; incorporate that marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
+The frozen execution cohort is exactly the Cartesian product of each arm's
+comparison ID, every selected chart fingerprint, baseline and named candidate
+harness fingerprints, and every reserved repeat ID. Exactly one execution row
+consumes each tuple. Missing, extra, or duplicate tuples are
+`invalid_environment`; retries require a new comparison identity and cannot be
+selectively appended to the frozen cohort.
+
 Before creating the reservation, atomically create-new
 `reports/<comparison-id>/` as the comparison-identity reservation for every
 pair, then create `runs/<comparison-id>/`. A
@@ -714,14 +729,18 @@ maps each snapshot fingerprint to its canonical absolute lock path and domain
 and exposure-registry IDs; canonical paths are evaluator-only runtime facts,
 not report refs.
 
-Immediately before the first actor receives any holdout byte, reacquire
-`.partition-freeze.lock`, revalidate every claim, lock, and reservation against
-the frozen cycle, and atomically create one immutable global
+Immediately before the first actor receives any holdout byte, acquire
+`.retirement-index.lock` and then `.partition-freeze.lock` in that global order,
+reread `current.json`, and require its resolved immutable snapshot to equal the
+root-bound retirement snapshot. Then revalidate every claim, lock, reservation,
+and consumption state against the frozen cycle and atomically create one immutable global
 `<holdout_lock_root>/<hex>.consumed.json` per identity. Its exact RFC 8785 bytes
 are
 `{"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-consumption/v1","source_identity_fingerprint":"sha256:<hex>"}`.
 The filename, key, identity, registry, cycle, root, and reservation must agree.
-Release the lock only after every marker is durable, then expose the actor.
+Release both locks in reverse order only after every marker is durable, then
+expose the actor. A concurrent retirement advance makes the root stale and the
+run `invalid_environment`; it is never ignored.
 Later arms/repeats in the same cycle validate and reuse the exact markers; any
 other cycle is permanently blocked. These non-lock markers are the global
 completion/consumption authority. Lock cleanup never removes them, and a lock
@@ -806,7 +825,8 @@ the exact comparison-implementation ref/fingerprint that will aggregate
 results and choose the recommendation.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate redacted optimizer policy
-containing the selected factor, exact factor-owner paths and runtime keys,
+containing the selected factor, exact factor-owner paths, the same non-holdout
+structured byte selectors and runtime keys,
 runtime constraints, budget, and only discovery/development inputs. Before
 candidate generation, require those shared fields to equal the pre-candidate
 policy exactly. The final root binds both exact refs and
@@ -820,8 +840,8 @@ Manifest every behavior-bearing root:
 {
   "schema": "emulator-harness-manifest/v1",
   "roots": [
-    {"root_id": "user", "precedence": 0, "mount_path": ".", "path": "AGENTS.md", "mode": "100644", "sha256": "..."},
-    {"root_id": "repo", "precedence": 1, "mount_path": ".", "path": "skills/example/SKILL.md", "mode": "100644", "sha256": "..."}
+    {"root_id": "user", "precedence": 0, "mount_path": ".", "path": "AGENTS.md", "file_type": "regular", "mode": "100644", "sha256": "..."},
+    {"root_id": "repo", "precedence": 1, "mount_path": ".", "path": "skills/example/SKILL.md", "file_type": "regular", "mode": "100644", "sha256": "..."}
   ],
   "runtime_config": {
     "model": "...",
@@ -843,11 +863,15 @@ path exactly. Entries are sorted by `(precedence, root_id, path)` and
 higher numeric precedence wins an effective-path collision. Precedence values
 are unique across distinct root declarations; all entries from one root repeat
 that root's same precedence.
+After exact-path precedence is resolved, no winning effective path may be a
+regular file or symlink ancestor of another winning path. Such
+ancestor/descendant collisions are `invalid_environment`; runners never invent
+replacement or directory-overlay semantics.
 Every `path` is normalized, relative, nonempty, and non-escaping. Every
 `mount_path` is `.` or a nonempty normalized POSIX-relative non-escaping path;
 absolute paths, backslashes, and `..` segments are invalid. Before copying a
 file, resolve the effective `mount_path/path` and require it to remain beneath
-the isolated runtime root. Its regular file resolves relative to the manifest directory at
+the isolated runtime root. A `file_type: regular` entry resolves relative to the manifest directory at
 `files/<root-id>/<path>` and exact bytes/mode match the entry. This arm-local
 layout lets baseline and candidate carry different bytes at the same logical
 path without changing its runtime meaning.
@@ -857,8 +881,8 @@ is the run's `runtime_fingerprint`; the archived asset ref and digest are
 recorded in every execution. The actor runner must materialize that exact
 closed behavior-bearing non-secret configuration. Credentials, tokens, secret
 values, and their digests are forbidden from both the manifest and runtime
-observation; the run records only the non-secret credential binding-policy
-fingerprint defined by EER-v1. A runtime-factor experiment may change only predeclared runtime
+observation; the run binds only the sanitized non-secret credential descriptor
+ref/fingerprint defined by EER-v1. A runtime-factor experiment may change only predeclared runtime
 keys; otherwise baseline/candidate runtime fingerprints must be equal. The
 runner implementation/version is recorded separately and must be equal across
 arms. It is a run fact, not a selectable harness factor; changing it requires a
@@ -868,7 +892,15 @@ made immutable, perform a complete ordered second metadata-and-content scan
 after capture and require byte-identical path, type, mode, link target, and
 digest results before freezing the manifest; any drift restarts capture.
 Source symlinks are resolved exactly once within that stable capture;
-dangling links and loops are invalid. A separately fingerprinted,
+dangling links and loops are invalid. A symlink manifest entry records
+`file_type: symlink`, its exact raw relative `link_target`, and the included
+target entry; it omits regular-file mode/digest. The archive stores this
+description as regular manifest bytes, and the isolated runtime recreates the
+same link only after proving its effective resolution remains beneath the
+runtime root and reaches the bound target. Thus `readlink`, `lstat`, and
+realpath-sensitive harness behavior is preserved. A link that cannot be safely
+recreated makes the harness ineligible rather than being silently flattened.
+A separately fingerprinted,
 evaluator-only `harness-capture-provenance/v1` asset binds every source link
 path, owning root ID, source-root path, raw target, and final resolved source
 path, plus a complete walk of every declared source root. Its canonical
@@ -882,9 +914,9 @@ capture. The provenance asset is included in the root
 closure and the corresponding baseline/candidate root entry. That provenance
 validates capture but is excluded from harness
 identity and factor-delta comparison, so equivalent captures in different
-worktrees have the same behavior fingerprint. The staged bundle
-then contains only regular, non-symlink files at the manifest-relative bundle paths, with
-the resolved bytes and executable modes bound by the manifest. No materialized
+worktrees have the same behavior fingerprint. The staged archive contains only
+regular files; runtime materialization creates only manifest-declared internal
+symlinks and regular files with bound bytes and executable modes. No materialized
 bundle symlink may resolve back into the live harness. Absolute logical paths,
 `..`, and duplicate normalized paths are invalid.
 The final resolved source of every symlink must remain inside some declared
@@ -902,6 +934,8 @@ candidate:
   factor:
   factor_delta_validation_ref:
   factor_delta_validation_fingerprint:
+  semantic_delta_attestation_ref:  # null unless a mixed-owner file changes
+  semantic_delta_attestation_fingerprint:
   hypothesis:
   changed_paths: []
   affected_chart_tags: []
@@ -927,7 +961,10 @@ requires at least one change, maps every changed byte and runtime key to exactly
 one predeclared selector, and rejects uncovered changes. When a changed file
 contains other semantic owners, the asset also binds a human
 `semantic-delta-attestation/v1` covering every diff hunk and affirming that each
-hunk implements only the selected factor. The
+hunk implements only the selected factor. This attestation is an explicitly
+permitted fourth validation input, is separately fingerprinted in candidate
+metadata and the validation asset, and cannot widen the predeclared owner set
+or selectors. The
 matching `candidate_harnesses` root entry, candidate metadata, and pairwise EER
 bind the same ref and fingerprint. A missing, incomplete, mismatched, or
 out-of-factor delta is `multiple_factors` and cannot be recommended; one

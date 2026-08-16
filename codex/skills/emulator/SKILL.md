@@ -153,7 +153,9 @@ trajectory is never an arm.
 
 Emit EER-v1 and only datasets whose fresh evidence, authority, partition, and
 visibility rules make them eligible. Export reads an existing contract closure;
-it does not rewrite the root or change the root's originating `operation_mode`.
+it does not rewrite the root, its sealed EER, or change the root's originating
+`operation_mode`. A deferred export emits a content-addressed export manifest
+that binds the original EER/runs and every emitted dataset.
 
 ## Contract ownership
 

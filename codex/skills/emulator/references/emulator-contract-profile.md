@@ -248,7 +248,7 @@ non-hard regression tolerance, candidate budget, exact baseline harness
 fingerprint, and exact comparison-implementation ref/fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, its exact factor-owner
-paths and runtime keys, runtime constraints, candidate budget, and
+paths, non-holdout structured byte selectors and runtime keys, runtime constraints, candidate budget, and
 discovery/development inputs; it contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
@@ -256,7 +256,8 @@ The predicate is an ordered `targeted_chart_rules` array whose entries contain
 exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
 chart appears exactly once. Post-outcome classification is forbidden.
 Before candidate generation, validation requires exact equality between the
-two policies' selected factor, factor-owner paths and runtime keys, runtime
+two policies' selected factor, factor-owner paths, structured byte selectors,
+and runtime keys, runtime
 constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
@@ -270,8 +271,11 @@ equal the evaluator-only pre-candidate commitment. Candidate manifest refs are
 added afterward together with the corresponding derived per-candidate
 factor-delta validation refs and fingerprints. Those validation assets MUST be
 deterministic functions only of the frozen baseline manifest, candidate
-manifest, and pre-candidate factor-owner declaration; they cannot add policy or
-evaluator authority. Any other drift is
+manifest, pre-candidate factor-owner declaration, and—only for a mixed-owner
+file—the separately fingerprinted post-diff human semantic-delta attestation
+named by both the candidate metadata and validation asset. The attestation can
+classify the complete frozen diff but cannot add owner paths, selectors, policy,
+or evaluator authority. Any other drift is
 `holdout_contaminated`.
 
 `comparison_implementation` binds the exact aggregation, delta, precedence,
@@ -291,7 +295,8 @@ must repeat. It also binds the deterministic
 metadata, factor-delta validation, and pairwise EER repeat the same candidate,
 baseline, factor, and manifest identities.
 Every baseline and candidate entry separately binds its evaluator-only capture
-provenance asset. That asset proves how the logical regular files were captured
+provenance asset. That asset proves how logical regular files and safely
+recreated internal symlinks were captured
 but is not part of the harness behavior fingerprint or factor delta.
 For `execution_mode: single_arm`, `baseline_harness` is the single frozen
 execution subject and all candidate and candidate-generation fields are absent.

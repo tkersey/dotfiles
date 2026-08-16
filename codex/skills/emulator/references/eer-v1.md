@@ -18,6 +18,8 @@ the current comparison ID; no other cross-run-group ref is allowed. An emitted
 dataset ref MAY use `datasets/<dataset-digest-hex>.<kind>.jsonl`, where `kind`
 is `preferences`, `trajectories`, `curriculum`, or `counterexamples`; the
 filename digest equals the exact immutable bytes and the file is never replaced.
+A deferred export manifest MAY use `exports/<export-digest-hex>.json`; its
+filename digest likewise equals its immutable bytes.
 All refs obey containment,
 conflict, and fingerprint rules; absolute and escaping references are invalid.
 Canonical registry locations may appear only inside root-bound validation
@@ -156,6 +158,7 @@ emulator_execution_report:
       runtime_fingerprint:
       runtime_observation_ref:
       runtime_observation_fingerprint:
+      runtime_surface_fingerprint:
       actor_runner_fingerprint:
       actor_started: true | false
       actor_seed:
@@ -262,9 +265,15 @@ fingerprint. A row terminated before process launch records
 `actor_started: false`, null proof fields, and a pre-launch termination reason;
 only `invalid_environment`, `runtime_error`, or `skipped` may do so. All other
 rows require `true`. The baseline/candidate
-run-ID lists are duplicate-free and their union still equals all comparison
-execution rows. Every mapped proof verifies its corresponding fresh process;
+run-ID lists are duplicate-free, disjoint, and their union still equals all
+comparison execution rows. Every baseline-listed row's harness fingerprint
+equals the root baseline; every candidate-listed row's harness fingerprint
+equals the one candidate for that pair. Every mapped proof verifies its corresponding fresh process;
 there is no singleton comparison-level proof that can stand in for other runs.
+The execution rows are also an exact one-to-one realization of the frozen
+chart × harness-arm × repeat cohort. Missing, extra, or duplicate cohort tuples
+invalidate comparison; favorable retry selection is impossible within one
+comparison identity.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
@@ -284,15 +293,25 @@ runner identity is not a selectable harness factor. A mismatch is
 
 Each started execution also binds a run-owned `runtime-observation/v1` artifact
 by ref and fingerprint. Its exact RFC 8785 payload is
-`{"credential_binding":{"binding_fingerprint":"sha256:<hex>","secret_material_recorded":false},"observed_runtime_config":{},"requested_runtime_fingerprint":"sha256:<hex>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"schema":"runtime-observation/v1"}`.
+`{"credential_binding":{"descriptor_fingerprint":"sha256:<hex>","descriptor_ref":"runs/<run-group-id>/runtime/<run-id>-credential-binding.json","secret_material_recorded":false},"observed_runtime_config":{},"observed_runtime_surface":{},"requested_runtime_fingerprint":"sha256:<hex>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"schema":"runtime-observation/v1"}`.
 `observed_runtime_config` is the closed projection of behavior-bearing,
-non-secret keys declared by `runtime-config.json`; undeclared behavior keys are
-invalid. Its canonical digest equals both `requested_runtime_fingerprint` and
-the execution's `runtime_fingerprint`. Credentials, tokens, values, and their
-digests are never serialized. `binding_fingerprint` instead identifies the
-runner's non-secret credential-source and access-policy descriptor; the
-descriptor has `kind: none` when no credential is mounted. It MUST be equal
-across arms.
+non-secret requested keys and its canonical digest equals both
+`requested_runtime_fingerprint` and the execution's `runtime_fingerprint`.
+`observed_runtime_surface` follows the runner-owned closed schema bound by
+`actor_runner_fingerprint` and MUST include resolved model/version and reasoning
+mode, OS/runtime identity, locale, timezone, working-directory policy,
+behavior-bearing environment projection, tool-manifest fingerprint, and sorted
+dependency/lock fingerprints. Its canonical digest is the execution's
+`runtime_surface_fingerprint`; corresponding values are equal across arms
+except exact runtime-factor keys admitted by factor-delta validation. Missing
+or unmodeled behavior-bearing runtime state makes the run
+`invalid_environment`, not silently nondeterministic.
+Credentials, tokens, values, and their digests are never serialized. The
+runner emits the referenced exact RFC 8785 sanitized
+`credential-binding-descriptor/v1` bytes containing provider kind, non-secret
+endpoint identity, access-policy fingerprint, and a runner-derived opaque
+binding ID (or `kind: none`). The observation fingerprint recomputes from those
+bytes, and descriptor bytes MUST be equal across arms.
 `actor_runner_fingerprint` is SHA-256 of the exact RFC 8785 `runner` object.
 Missing observation, recorded secret material, or unequal observed/requested
 values is `comparison_drift`.
@@ -370,6 +389,7 @@ and leaves comparison-only fields null:
   "runtime_fingerprint": "sha256:...",
   "runtime_observation_ref": "runs/run-group-.../runtime/run-...-observation.json",
   "runtime_observation_fingerprint": "sha256:...",
+  "runtime_surface_fingerprint": "sha256:...",
   "actor_runner_fingerprint": "sha256:...",
   "actor_started": true,
   "actor_seed": null,
@@ -593,3 +613,12 @@ Dataset references appear only when rows were emitted:
   occurred.
 
 Every row retains chart, authority, closure, harness, and evidence provenance.
+
+A deferred `export` never edits a sealed EER. It emits immutable eligible
+dataset files plus exact RFC 8785 `emulator-export-manifest/v1` bytes at
+`exports/<export-digest-hex>.json`. The manifest binds the originating EER ref
+and fingerprint, runs ref and fingerprint, root contract fingerprint, output
+authorization booleans, and sorted dataset ref/fingerprint pairs. Its filename
+digest is recomputed from the exact bytes. Missing or mismatched originating
+evidence makes export `invalid_environment`; the manifest grants no publication
+authority.
