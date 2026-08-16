@@ -55,12 +55,18 @@ resolve the destination and prove it remains beneath the owning root before
 any create, replace, or removal.
 
 The closure is invalid when a required reference is missing, escapes the atlas
-root without explicit authority, has a mismatched digest, or leaves an
-execution-relevant byte implicit. Reports record the root fingerprint, ordered
-chart fingerprints, and recursively verified closure inventory.
+root, has a mismatched digest, or leaves an execution-relevant byte implicit.
+External material must be copied into the closure and fingerprinted; no caller
+authority makes an absolute or escaping ref valid. Reports record the root
+fingerprint, ordered chart fingerprints, and recursively verified closure
+inventory.
 
-Store that inventory at `reports/<run-group-id>/closure-inventory.json` as
-exact RFC 8785 bytes:
+For `run`, `mutate`, or `compare`, store that inventory at
+`reports/<run-group-id>/closure-inventory.json`. For non-executing `design` or
+`implement`, store it at
+`reports/contracts/<root-digest-hex>/closure-inventory.json` and store the EER
+beside it; this content-addressed contract-report namespace is create-new and
+does not invent a run group. The inventory uses exact RFC 8785 bytes:
 
 ~~~json
 {"assets":[{"fingerprint":"sha256:<hex>","mode":"100644","ref":"roots/<root-digest-hex>/<relative-ref>"}],"root_contract_fingerprint":"sha256:<hex>","schema":"emulator-closure-inventory/v1"}
@@ -99,6 +105,7 @@ emulator_contract:
         mount_path:
 
   atlas:
+    instance_id:
     charts:
       - chart_id:
         chart_ref:
@@ -678,12 +685,14 @@ actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
 post-generation access proof bound to the actual optimizer process
 group-safe frozen partitions and holdout blindness
+atlas-instance identity bound through holdout reservation, locks, and consumption
 holdout charts absent from single-arm run and mutate roots
 mutation cases absent from paired compare roots and execution rows
 root/chart split metadata equality
 implementation/seed identity plus contracted effects, termination, support matcher, and mutation domains when used
 fingerprinted baseline and candidate harness manifests
 same-comparison fingerprints and one semantic factor for compare mode
+closed selector semantics and complete factor-delta validation for candidate changes
 predetermined stochastic evidence rule and matched randomness when available
 fingerprinted pre-candidate policy snapshot for compare mode
 hard-oracle precedence and protected dimensions

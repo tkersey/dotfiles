@@ -647,7 +647,7 @@ create the exclusive RFC 8785 `holdout-use/v1` reservation at
 `runs/<cycle-id>/holdout-reservation.json` with exactly:
 
 ~~~json
-{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","chart_repeats":[{"chart_fingerprint":"sha256:<hex>","repeat_ids":["<repeat-id>"]}],"comparison_id":"<comparison-id>"}],"chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
+{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","chart_repeats":[{"chart_fingerprint":"sha256:<hex>","repeat_ids":["<repeat-id>"]}],"comparison_id":"<comparison-id>"}],"atlas_instance_id":"sha256:<hex>","chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
 ~~~
 
 `arms` contains the full frozen candidate set and is sorted by `candidate_id`;
@@ -657,7 +657,8 @@ the exact deterministic or stochastic count frozen by policy. Both top-level
 fingerprint arrays are sorted and duplicate-free. Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
-`comparison_policy.cycle_id`. Each pair keeps its own EER and run group under
+`comparison_policy.cycle_id`; `atlas_instance_id` equals the recomputed root
+instance identity. Each pair keeps its own EER and run group under
 that one cycle reservation. Later arms/repeats validate and reuse the exact
 bytes and matching group locks; they do not create them again. Holdout use
 outside compare mode is unsupported. Bind that atlas-root-relative reservation
@@ -714,6 +715,12 @@ Before chart compilation, resolve one private, writable
 `storage_domain_root`. The atlas lives at
 `<storage_domain_root>/emulators/<atlas-id>` and binds
 `storage_domain_id = SHA-256("emulator-storage-domain/v1" NUL canonical-realpath-UTF-8)`.
+It also binds
+`atlas.instance_id = SHA-256("emulator-atlas-instance/v1" NUL storage_domain_id NUL canonical-atlas-root-realpath-UTF-8)`.
+The instance ID is frozen in the root, reservation, canonical locks, and
+consumption markers. Moving or copying a closure to another atlas root changes
+the recomputed instance ID and makes it ineligible for execution; copied local
+run/report directories cannot reuse a prior cohort.
 Storage may follow `${CODEX_HOME:-$HOME/.codex}` or an explicit private root,
 but storage location never scopes exposure authority. All selection-capable
 roots use the single user-global registry at canonical-realpath
@@ -736,7 +743,7 @@ local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
 fails if the key already exists; never use check-then-create. The lock contains
 the exact RFC 8785 bytes
-`{"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-lock/v1","source_identity_fingerprint":"sha256:<hex>"}`.
+`{"atlas_instance_id":"sha256:<hex>","cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-lock/v1","source_identity_fingerprint":"sha256:<hex>"}`.
 The filename, holdout key, source identity, and registry ID agree. An existing lock is reusable only when all
 those fields exactly match the current cycle reservation; otherwise acquisition
 fails. If acquisition fails before any actor exposure, remove only locks and
@@ -749,7 +756,7 @@ maps each snapshot fingerprint to its canonical absolute lock path and frozen
 identity. Its exact RFC 8785 payload is:
 
 ~~~json
-{"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","locks":[{"canonical_lock_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"runs/<run-group-id>/holdout-locks/<hex>.lock","source_identity_fingerprint":"sha256:<hex>"}],"reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-lock-validation/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
+{"atlas_instance_id":"sha256:<hex>","cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","locks":[{"canonical_lock_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"runs/<run-group-id>/holdout-locks/<hex>.lock","source_identity_fingerprint":"sha256:<hex>"}],"reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-lock-validation/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
 ~~~
 
 `locks` contains every and only lock required by the run's selected holdout
@@ -758,7 +765,7 @@ groups, sorted by `holdout_key`, with unique keys, identities, paths, and refs;
 holdout group set from the reservation; no other fields are admitted. Each
 snapshot's exact bytes must equal its
 canonical lock and must bind the same cycle, reservation, root, registry,
-holdout key, and source identity as this validation asset. Canonical paths are
+atlas instance, holdout key, and source identity as this validation asset. Canonical paths are
 evaluator-only runtime facts, not report refs. Store the artifact at
 `runs/<run-group-id>/holdout-lock-validation.json` and bind its exact
 fingerprint in every affected run and EER.
@@ -770,8 +777,9 @@ root-bound retirement snapshot. Then revalidate every claim, lock, reservation,
 and consumption state against the frozen cycle and atomically create one immutable global
 `<holdout_lock_root>/<hex>.consumed.json` per identity. Its exact RFC 8785 bytes
 are
-`{"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-consumption/v1","source_identity_fingerprint":"sha256:<hex>"}`.
-The filename, key, identity, registry, cycle, root, and reservation must agree.
+`{"atlas_instance_id":"sha256:<hex>","cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-consumption/v1","source_identity_fingerprint":"sha256:<hex>"}`.
+The filename, key, identity, registry, atlas instance, cycle, root, and
+reservation must agree.
 Keep both locks held while the first actor packet or mount is handed to the
 fresh actor, and release them in reverse order only after every marker is
 durable and that actor has acknowledged loading the exact actor-input
@@ -788,12 +796,15 @@ Copy their exact bytes to
 `runs/<run-group-id>/holdout-consumption/<digest-hex>.json` for each pair and
 bind those snapshots in every affected run and EER.
 
-Before the fallback semantic read or any `holdout_unexposed` replacement,
-claim writers check the canonical holdout lock, reservation, and consumption
-marker for every known
-identity while holding `.partition-freeze.lock`. Any active or incomplete
-selection lock/reservation makes the source unavailable and the semantic read
-does not occur. Thus a discovery writer cannot contaminate a group after the
+Before the fallback semantic read, claim writers check the canonical holdout
+lock, reservation, and consumption marker for every identity known before the
+read while holding `.partition-freeze.lock`. An active or incomplete selection
+lock/reservation on a pre-read known identity makes the source unavailable and
+the semantic read does not occur. A stable alias learned only by that bounded
+read is instead handled by the post-read rule above: publish or atomically
+replace its claim as `discovery_exposed`, invalidate any unconsumed selection,
+and stop. The post-read discovery is never reinterpreted as a read that did not
+occur. Thus a discovery writer cannot silently contaminate a group after the
 selector releases the partition lock but before first actor exposure.
 
 Before any semantic source read, acquire the exclusive global
@@ -1002,10 +1013,33 @@ separate experiments.
 The pre-candidate policy enumerates exact root-qualified behavior-bearing path
 pairs (`root_id`, logical `path`), runtime-configuration keys, and
 deterministically derived runtime-surface fields owned by the selected factor.
-Each path declaration also gives an exact structured selector
-for the bytes owned by that factor, or an evaluator-only human attestation that
-the whole file exclusively owns the factor. A path allowlist alone is not
-factor-locality. After candidate freeze, one factor-delta validation asset per
+Each path declaration also gives an exact structured selector for the bytes
+owned by that factor and its evaluator-only ownership authority. A path
+allowlist alone is not factor-locality.
+
+Selectors are a closed array in the pre-candidate policy. Each is exactly one
+of:
+
+~~~json
+{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}
+{"end_anchor_base64url":"<base64url>","kind":"utf8_anchor_region","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>","start_anchor_base64url":"<base64url>"}
+~~~
+
+`ownership_authority_ref` is a normalized closure-relative static ref. IDs are
+unique and selectors sort by `(root_id, path, selector_id)`. Base64url
+uses the RFC 4648 URL-safe alphabet without padding and decodes to nonempty
+UTF-8 bytes. For an anchor selector, each anchor occurs exactly once in both
+baseline and candidate, the start precedes the end, and the owned half-open
+region runs from the first byte of the start anchor to the first byte of the
+end anchor. Regions in one file are nonoverlapping. Remove the ordered owned
+regions from baseline and candidate; the remaining bytes must be identical.
+Selected regions for one file are disjoint, and `whole_file` cannot be combined
+with another selector for that file.
+A `whole_file` selector is valid only when its authority asset attests exclusive
+factor ownership of that file. These are the only selector and addressing
+semantics in EC-v1.
+
+After candidate freeze, one factor-delta validation asset per
 candidate computes the complete byte-level baseline/candidate manifest diff,
 requires at least one change, maps every changed byte, runtime key, and derived
 runtime-surface field to exactly one predeclared selector or approved
@@ -1022,6 +1056,22 @@ matching `candidate_harnesses` root entry, candidate metadata, and pairwise EER
 bind the same ref and fingerprint. A missing, incomplete, mismatched, or
 out-of-factor delta is `multiple_factors` and cannot be recommended; one
 candidate's validation never covers another candidate.
+
+The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
+
+~~~json
+{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"field":"<field>"}],"schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
+~~~
+
+`changed_files` is the complete manifest file-difference set sorted by
+`(root_id, path)`; each `selector_ids` array is sorted, duplicate-free, and
+contains every and only selector covering that file's differences. Runtime
+arrays are the complete changed-key/field sets sorted by `key` and `field`;
+value fingerprints hash the exact RFC 8785 value bytes, including `null`.
+`derivation_path_refs` is sorted and duplicate-free and contains only approved
+changed paths. The two attestation fields are both null unless a mixed-owner
+file changes, when both contain the exact attestation asset ref and fingerprint
+bound by candidate metadata. No other fields are admitted.
 
 ## 9. Run both arms freshly
 

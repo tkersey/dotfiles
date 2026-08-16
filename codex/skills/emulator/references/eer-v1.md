@@ -11,8 +11,12 @@ contract asset MUST begin `roots/<root-digest-hex>/` and resolves from that
 immutable archived closure. A fresh execution/output ref begins
 `runs/<run-group-id>/` or `reports/<run-group-id>/` and its owning directory is
 sealed against replacement before the report is emitted. No report may resolve
-a static asset through the mutable live root. The one shared holdout reservation
-MAY instead use `runs/<cycle-id>/holdout-reservation.json` when that cycle ID
+a static asset through the mutable live root. For `design` or `implement` only,
+non-execution report refs begin
+`reports/contracts/<root-digest-hex>/`; that create-new directory contains the
+EER and closure inventory and is never a run-group identity.
+The one shared holdout reservation MAY instead use
+`runs/<cycle-id>/holdout-reservation.json` when that cycle ID
 exactly equals the frozen root comparison policy and the reservation bytes bind
 the current comparison ID; no other cross-run-group ref is allowed. An emitted
 dataset ref MAY use `datasets/<dataset-digest-hex>.<kind>.jsonl`, where `kind`
@@ -126,15 +130,15 @@ emulator_execution_report:
       chart_kind:
       partition:
       split_group:
-      storage_domain_id:                 # selecting roots only
-      exposure_registry_id:              # selecting roots only
+      storage_domain_id:                 # source-bound runs with partition claims
+      exposure_registry_id:              # source-bound runs with partition claims
       partition_snapshot_fingerprint:  # selecting roots only
       partition_validation_ref:        # selecting roots only
       partition_validation_fingerprint: # selecting roots only
-      partition_claim_refs: []          # selecting roots only
-      partition_claim_fingerprints: []  # selecting roots only
-      partition_claim_validation_ref:   # selecting roots only
-      partition_claim_validation_fingerprint: # selecting roots only
+      partition_claim_refs: []          # source-bound runs with partition claims
+      partition_claim_fingerprints: []  # source-bound runs with partition claims
+      partition_claim_validation_ref:   # source-bound runs with partition claims
+      partition_claim_validation_fingerprint: # source-bound runs with partition claims
       holdout_reservation_ref:          # holdout runs only
       holdout_reservation_fingerprint:  # holdout runs only
       holdout_lock_refs: []              # holdout runs only
