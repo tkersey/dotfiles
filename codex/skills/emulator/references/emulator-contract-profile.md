@@ -82,6 +82,9 @@ emulator_contract:
     pre_candidate_policy:
       ref:
       fingerprint:
+    optimizer_policy:
+      ref:
+      fingerprint:
     baseline_harness:
       ref:
       fingerprint:
@@ -125,13 +128,20 @@ experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
 Both `session` and `session_corpus` require
-`current_session_excluded: true`. `user_design` requires `false`; every other
-source kind requires `not_applicable`.
+`current_session_excluded: true`. `mixed` also requires `true` whenever any
+component is session-derived, and records each excluded session component;
+mixed sources without sessions use `not_applicable`. A pure `user_design`
+source requires `false`; every other source kind requires `not_applicable`.
 
-The pre-candidate policy asset includes the ordered selecting chart entries
+The evaluator-only pre-candidate policy asset includes the ordered selecting chart entries
 (`chart_id`, fingerprint, split group, partition, and `required`), factor,
 partition snapshot, runtime configuration, repeats, randomness policy,
-improvement threshold, protected dimensions, and candidate budget.
+improvement threshold, protected dimensions, and candidate budget. It is never
+mounted or supplied to candidate optimization. The separately fingerprinted
+optimizer policy contains only the selected factor, runtime constraints,
+candidate budget, and discovery/development inputs; it contains no holdout IDs,
+tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
+digest from which they can be enumerated.
 
 `subject: harness` requires fingerprinted baseline and candidate harness
 manifests in the recursive root closure.

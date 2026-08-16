@@ -26,6 +26,14 @@ emulator_execution_report:
     comparison_id:
     subject: harness | actor | environment_implementation
     factor:
+    atlas_fingerprint:
+    partition_snapshot_fingerprint:
+    partition_validation_ref:
+    partition_validation_fingerprint:
+    holdout_reservation_ref:
+    holdout_reservation_fingerprint:
+    actor_access_proof_ref:
+    actor_access_proof_fingerprint:
     baseline_harness_fingerprint:  # harness subject only
     candidate_harness_fingerprint: # harness subject only
     baseline_subject_fingerprint:
@@ -34,6 +42,19 @@ emulator_execution_report:
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     reason:
     authority_granted: false
+    evaluated_runs:
+      baseline: []
+      candidate: []
+    eligible_chart_ids: []
+    excluded_charts: []
+    targeted_improvements: []
+    protected_regressions: []
+    hard_oracle_delta: {}
+    state_delta: {}
+    reward_delta: {}
+    trace_invariant_delta: {}
+    cost_delta: {}
+    residual_preference: {}
 
   run_summary:
     valid_runs:
@@ -264,10 +285,10 @@ independent run-group ID and leaves comparison-only fields null:
 }
 ```
 
-The EER comparison block is authoritative. `comparison.json` binds the exact
-EER bytes and MUST copy its subject identities, evaluated run IDs, deltas,
-recommendation, evidence relation, reason, and authority flag exactly. Any
-mismatch is `invalid_environment`; neither artifact wins by timestamp.
+The EER comparison block is authoritative and contains the complete comparison
+payload. `comparison.json` is the deterministic JSON projection of that block
+plus `schema`, `contract_fingerprint`, `eer_ref`, and `eer_fingerprint`; it adds
+no independent value. Any projection mismatch is `invalid_environment`.
 
 These rows are not a new global event store.
 

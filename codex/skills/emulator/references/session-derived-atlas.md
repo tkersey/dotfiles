@@ -344,6 +344,8 @@ world:
     network: deny | fixture_only | replay_recorded
     filesystem_roots: []
     external_side_effects: deny
+    policy_ref:
+    policy_fingerprint:
   evaluator:
     commands: []
     state_assertions: []
@@ -352,6 +354,13 @@ world:
     assets: []
   limitations: []
 ~~~
+
+`world.reset` is the sole reset-recipe owner. The chart reset block points to
+that world manifest and repeats only the contracted reset kind, world digest,
+and expected pre-state fingerprint; it contains no independent commands or
+fixtures. Mismatch is `invalid_environment`. Non-closed world effects require
+the exact effect-policy ref and fingerprint above, matching the chart effects
+block.
 
 Run the reset twice before admitting exact fidelity. Both runs must produce the
 same expected pre-state fingerprint.
@@ -444,10 +453,13 @@ incorporate the reservation as a retirement marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
 
-The canonical lock key is
-`holdout-retirements/locks/<split-group-id>.lock`. Acquire multiple groups in
-sorted group-id order with an atomic create-new operation that fails if the key
-already exists; never use check-then-create. The lock record binds the final
+Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
+cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
+`"emulator-holdout/v1" NUL corpus_digest NUL split_group_id`. The canonical
+lock is `${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks/<hex>.lock`, so the
+same source group cannot be consumed through a second atlas root. Acquire
+multiple keys in sorted digest order with an atomic create-new operation that
+fails if the key already exists; never use check-then-create. The lock record binds the final
 root fingerprint, pre-candidate policy fingerprint, cycle/run-group identity,
 and reservation fingerprint. If acquisition fails before any actor exposure,
 remove only locks created by that same attempt; after exposure, any incomplete
@@ -458,12 +470,15 @@ leakage threat model; do not build a cryptographic broker.
 
 ## 8. Freeze harness bundles
 
-Before candidate generation, write and fingerprint a pre-candidate policy asset
-containing the selected factor, partition snapshot, model/runtime configuration,
-repeat counts, randomness matching, improvement threshold, protected
-dimensions, and candidate budget. Candidate generation receives that immutable
-asset. The final root binds its exact ref and fingerprint; finalizing candidate
-manifests later cannot rewrite the earlier policy snapshot.
+Before candidate generation, write and fingerprint an evaluator-only
+pre-candidate policy asset containing the selecting chart commitments,
+partition snapshot, model/runtime configuration, repeat counts, randomness
+matching, improvement threshold, protected dimensions, and candidate budget.
+Do not expose that asset, its holdout fields, or its evaluator criteria to the
+optimizer. Candidate generation receives a separate redacted optimizer policy
+containing the selected factor, runtime constraints, budget, and only
+discovery/development inputs. The final root binds both exact refs and
+fingerprints; candidate manifests cannot rewrite either snapshot.
 
 Manifest every behavior-bearing root:
 
