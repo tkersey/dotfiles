@@ -300,6 +300,10 @@ inventories exist and is not part of the root closure or static factor-delta
 validation. Every pair permits only the root-qualified paths already authorized
 by the frozen factor delta; missing, extra, or non-passing pairs are
 `comparison_drift`.
+Its derivation-implementation ref/fingerprint equals the evaluator-only asset
+frozen before candidate generation. A pre-start execution still has one
+`unavailable_prestart` pair row with the closed null/started fields defined by
+the atlas contract; omitting that tuple is `comparison_drift`.
 
 Every paired comparison also binds exact
 `actor-context-delta-validation/v1` bytes by ref and fingerprint. That artifact
@@ -666,12 +670,16 @@ compared. Each candidate has a distinct
 complete baseline/candidate manifest-diff validation; evidence from one
 candidate cannot validate another.
 
-Use one exclusive precedence rule. An invalid, unsupported, skipped, or
-ambiguous required holdout yields `insufficient_evidence` before regression
-disposition; it cannot be silently excluded. Once every required holdout is
-valid and determinate, any new candidate `hard_fail`, protected regression, or
-contracted non-hard regression beyond tolerance yields `reject`. Otherwise
-`adopt` applies only when all adoption conditions hold. Every other case yields
+Use one exclusive precedence rule. First evaluate every environment-valid,
+determinate row. If any such row proves a new candidate `hard_fail`, protected
+regression, or contracted non-hard regression beyond tolerance, the candidate
+is `reject` even when another required holdout is invalid, unsupported,
+skipped, or ambiguous. A decisive witnessed regression is not erased by
+incomplete coverage: decisive regression yields `reject` before incomplete-
+coverage handling. If no decisive regression exists, any invalid,
+unsupported, skipped, or ambiguous required holdout yields
+`insufficient_evidence`; it cannot be silently excluded. Otherwise `adopt`
+applies only when all adoption conditions hold. Every other case yields
 `insufficient_evidence`.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`

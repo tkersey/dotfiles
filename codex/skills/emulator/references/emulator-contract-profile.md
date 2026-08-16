@@ -278,12 +278,12 @@ predeclared candidate-output roots and pre-state inventory ref/fingerprint,
 exact optimizer tool/effect policy ref/fingerprint and required complete trace
 schema,
 exact candidate-generation runner ref/fingerprint, and exact
-comparison-implementation ref/fingerprint. It is never
+comparison-implementation ref/fingerprint, plus exact runtime-surface and
+actor-readable-surface derivation-implementation refs/fingerprints. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
-optimizer policy contains only the selected factor, its exact factor-owner
-paths, non-holdout structured byte selectors, runtime-configuration keys,
-approved derived runtime-surface fields, runtime constraints, candidate budget, and
-discovery/development inputs; it contains no holdout IDs,
+optimizer policy is the exact deterministic projection of the complete
+`factor-selection/v1.optimizer_visible_policy` object frozen before any
+holdout semantic read, plus discovery/development inputs. It contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
 The predicate is an ordered `targeted_chart_rules` array whose entries contain
@@ -320,6 +320,10 @@ the frozen cohort runs, the evaluator emits the report-owned
 chart/repeat execution tuple and permits only the already-frozen factor delta.
 The EER and comparison bind its exact ref/fingerprint. Missing, incomplete, or
 non-passing coverage is `comparison_drift`.
+The asset also binds the pre-candidate actor-readable-surface derivation
+implementation. It has exactly one closed pair row per chart/repeat tuple;
+pre-start failures use `unavailable_prestart` with the required null fields
+rather than disappearing from the cohort.
 
 `comparison_implementation` binds the exact aggregation, delta, precedence,
 and recommendation implementation. Its ref/fingerprint MUST equal the
@@ -353,11 +357,13 @@ mandatory. This is a mode-neutral subject binding, not invented comparison
 state for a standalone run.
 When a paired comparison contains holdout charts, `partition_policy.factor_selection`
 is mandatory and binds the exact pre-holdout `factor-selection/v1` asset. Its
-baseline fingerprint equals the frozen baseline harness, and its factor,
-root-qualified owner paths, runtime keys, and derived runtime fields equal the
-corresponding pre-candidate and optimizer-policy fields. The optimizer policy
-does not receive the factor-selection ref/fingerprint or its evidence and
-baseline commitments. A missing, later-authored, or mismatched asset is
+baseline fingerprint equals the frozen baseline harness. Every discovery or
+development evidence entry resolves by ref/fingerprint and records its
+partition. Its complete `optimizer_visible_policy` object equals the
+corresponding pre-candidate object and deterministically projects to the
+optimizer policy. The optimizer does not receive the factor-selection
+ref/fingerprint, evidence, selector identity, or baseline commitments. A
+missing, later-authored, unresolved, or mismatched asset is
 `holdout_contaminated`.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
