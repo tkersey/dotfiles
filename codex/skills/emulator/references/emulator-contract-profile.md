@@ -81,6 +81,10 @@ directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
+For every chart entry, the root `chart_id`, `kind`, `split_group`, and
+`partition` MUST exactly equal the referenced chart's values. Any mismatch is
+`invalid_environment`; neither copy wins by precedence.
+
 ## Chart contract
 
 ~~~yaml
@@ -127,6 +131,13 @@ environment_chart:
   environment:
     world_fidelity: exact | approximate | transcript_only | absent
     transition_model: total | partial | none
+    implementation:
+      ref:
+      fingerprint:
+      seed_control: fixed | sampled | unavailable
+      seed:
+      failure_schedule_ref:
+      failure_schedule_fingerprint:
     reset:
       kind: none | git_worktree | fixture | custom
       recipe_ref:
@@ -141,12 +152,36 @@ environment_chart:
       network: deny | fixture_only | allow_recorded
       filesystem: read_only | isolated_write | declared_roots
       external_side_effects: deny | fixture_only | explicit
+      policy_ref:
+      policy_fingerprint:
+    termination:
+      terminal_conditions: []
+      max_steps:
+      timeout_ms:
     support:
-      executable: []
+      matcher:
+        kind: inline_predicates | asset
+        classifier_ref:
+        classifier_fingerprint:
+      executable:
+        - support_id:
+          predicate:
+            kind: json_pointer_equals
+            path:
+            value:
       judgeable: []
       denied: []
       observed_only: []
       unsupported_default: true
+
+  mutation:
+    dimensions:
+      - dimension_id:
+        domain: []
+        preserved_law_refs: []
+        shrink_strategy:
+    generator_ref:
+    generator_fingerprint:
 
   evaluator:
     evaluator_ref:
@@ -181,6 +216,33 @@ environment_chart:
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
+`policy_ref` and `policy_fingerprint` are required whenever effects use
+`allow_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
+the exact recordings, roots, operations, and authority. They are absent only
+for fully closed effect modes. A `full_episode` requires at least one terminal
+condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
+smallest applicable limit.
+
+Every executable implementation has an exact identity. Its seed-control mode,
+seed when controlled, and any sampled failure schedule are explicit and
+fingerprinted; `unavailable` is recorded rather than replaced with an invented
+seed.
+
+Every support entry has a unique ID and deterministic predicate in the declared
+action schema. The inline predicate language is exact canonical-JSON equality
+at a JSON Pointer: `path` selects one action value and `value` is the required
+canonical value. Multiple conditions require separate, explicitly composed
+predicate assets rather than implicit prose. An asset matcher binds its
+classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
+classifier that is missing, nondeterministic, or cannot prove the five classes
+disjoint makes the environment invalid.
+
+Mutation dimensions are optional outside `mode: mutate`. Mutation requires at
+least one finite or otherwise bounded domain, preserved-law references, and a
+deterministic shrink strategy. An external generator is fingerprinted and
+included in the chart closure. No mutation widens action support or source
+authority.
+
 ## Chart classes
 
 ### Normative decision
@@ -209,8 +271,9 @@ completion without an executable world.
 
 Requires a reset recipe, world fingerprint, actor-visible task, executable
 support, tool/effect contract, fresh trace, and deterministic hard oracle or
-state assertion. A whole-harness comparison cuts at session start with no target
-prior influence.
+state assertion. It also requires contracted terminal conditions, positive
+step/timeout bounds, and an implementation identity. A whole-harness comparison
+cuts at session start with no target prior influence.
 
 ### Observational
 
@@ -263,11 +326,18 @@ exclusive support classifications and unsupported default
 actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
-complete baseline and candidate harness manifests
-same-comparison fingerprints and one semantic factor
+root/chart split metadata equality
+implementation/seed identity plus contracted effects, termination, support matcher, and mutation domains when used
+complete baseline and candidate harness manifests for compare mode
+same-comparison fingerprints and one semantic factor for compare mode
 hard-oracle precedence and protected dimensions
 claim class no stronger than authority, attribution, world, and freshness
 ~~~
+
+Comparison-only validation and artifacts apply only to `compare`. `design`,
+`implement`, `mutate`, and single-harness `run` remain valid without inventing a
+candidate or recommendation; they still satisfy closure, environment, trace,
+and claim laws applicable to their mode.
 
 Missing authority is oracle_gap; conflicting authority is contract_ambiguity;
 closure, leakage, or boundary drift is invalid_environment. Do not fill any gap

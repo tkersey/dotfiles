@@ -123,7 +123,9 @@ observations, actions, effects, terminal state, cost, and trace.
 ### mutate
 
 Apply only chart-declared mutations. A mutation outside declared support creates
-a new designed chart; it never becomes a source-faithful transition.
+a new designed chart; it never becomes a source-faithful transition. Each
+declared dimension binds its domain, preserved laws, shrink strategy, and any
+generator bytes through the chart closure.
 
 ### compare
 

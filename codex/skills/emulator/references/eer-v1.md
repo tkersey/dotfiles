@@ -18,12 +18,13 @@ emulator_execution_report:
     closure_inventory_ref:
     closure_inventory_fingerprint:
 
-  comparison:
+  comparison:  # present only for one baseline/candidate compare pair
     comparison_id:
     factor:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
+    evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     authority_granted: false
 
   run_summary:
@@ -46,7 +47,11 @@ emulator_execution_report:
       harness_id:
       harness_fingerprint:
       repeat_id:
+      implementation_fingerprint:
       runtime_fingerprint:
+      seed:
+      seed_control: fixed | sampled | unavailable
+      failure_schedule_fingerprint:
       world_fingerprint:
       actor_input_fingerprint:
       actor_readable_inventory_fingerprint:
@@ -55,6 +60,7 @@ emulator_execution_report:
       support_result:
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
+      status_reason:
       hard_oracle_results_ref:
       state_diff_ref:
       trace_ref:
@@ -110,6 +116,12 @@ input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots.
 
+`run` mode omits `comparison` and emits executions plus applicable datasets and
+limitations. It does not invent a candidate fingerprint or recommendation.
+Each `compare` EER binds exactly one baseline/candidate pair. When a request
+evaluates multiple candidates, emit one EER and one `comparison.json` per
+candidate so every delta and recommendation has a single arm owner.
+
 ## runs.jsonl
 
 Each fresh run emits one append-only row within its comparison directory:
@@ -128,7 +140,11 @@ Each fresh run emits one append-only row within its comparison directory:
   "harness_fingerprint": "sha256:...",
   "factor": "question_policy",
   "repeat_id": 1,
+  "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
+  "seed": null,
+  "seed_control": "unavailable",
+  "failure_schedule_fingerprint": null,
   "world_fingerprint": null,
   "actor_input_fingerprint": "sha256:...",
   "actor_readable_inventory_fingerprint": "sha256:...",
@@ -136,6 +152,8 @@ Each fresh run emits one append-only row within its comparison directory:
   "evaluator_fingerprint": "sha256:...",
   "support_result": "judgeable",
   "status": "pass",
+  "termination_reason": "decision_emitted",
+  "status_reason": null,
   "hard_oracle_results_ref": "oracle-results/run-....json",
   "state_diff_ref": null,
   "trace_ref": "traces/run-....json",
@@ -200,18 +218,21 @@ is `ambiguous`.
 
 ## Recommendation authority
 
-`adopt` requires all required candidate runs to be environment-valid, no new
-critical hard failure, no protected regression, at least one targeted untouched
-holdout improvement, order-stable residual preference when used, and evaluation
-of the exact candidate fingerprint.
+`adopt` requires complete environment-valid baseline and candidate arms for
+every required chart and repeat, no new hard-oracle failure of any kind, no
+protected regression, at least one targeted untouched holdout improvement,
+order-stable residual preference when used, and evaluation of the exact
+candidate fingerprint.
 
-A tie, unsupported required chart, evaluator disagreement, closure/access proof
-gap, or insufficient untouched holdout coverage yields
-`insufficient_evidence`. A targeted hard regression yields `reject`.
+A missing or invalid required arm, tie, unsupported required chart, evaluator
+disagreement, closure/access proof gap, or insufficient untouched holdout
+coverage yields `insufficient_evidence`. Any new candidate hard-oracle failure
+or protected regression yields `reject`.
 
-The recommendation is `paired_replay_delta`, `observed_association`,
-`regression`, or `insufficient_evidence`; it is not a causal claim. It grants
-no mutation, merge, release, or publication authority.
+`recommendation` remains the adoption disposition enum. `evidence_relation`
+records `paired_replay_delta`, `observed_association`, `regression`, or
+`insufficient_evidence`; it is not a causal claim. Neither field grants
+mutation, merge, release, or publication authority.
 
 ## Datasets
 
