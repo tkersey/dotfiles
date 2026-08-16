@@ -1,111 +1,228 @@
 # EER-v1: Emulator Execution Report
 
-`emulator_execution_report / EER-v1` records what contract and environment ran, what each episode did, where agents or implementations diverged, and which findings are reusable.
+`emulator_execution_report / EER-v1` records the exact atlas closure, fresh
+harness runs, chart eligibility, hard-oracle and state results, and bounded
+recommendation. No deployed report corpus exists, so the EER-v1 label is
+corrected in place.
 
 ## Schema
 
 ```yaml
 emulator_execution_report:
   packet_version: EER-v1
-  source_contract:
-    kind: emulator_contract
-    spec_ref:
-    contract_id:
+
+  contract:
+    ref:
     fingerprint:
-    source_revision:
-    authority_refs: []
-  target:
-    name:
-    kind:
-  emulator:
-    version:
-    implementation_ids: []
-    seed:
-    seed_policy:
-    oracle_version:
-  agents:
-    - id:
-      fingerprint:
-      limitations: []
+    atlas_chart_fingerprints: []
+    closure_inventory_ref:
+    closure_inventory_fingerprint:
+
+  comparison:
+    comparison_id:
+    factor:
+    baseline_harness_fingerprint:
+    candidate_harness_fingerprint:
+    recommendation: adopt | reject | insufficient_evidence
+    authority_granted: false
+
   run_summary:
-    generated_cases:
-    executed_cases:
-    passed_cases:
-    failed_cases:
-    skipped_cases:
+    valid_runs:
+    invalid_environment_runs:
+    unsupported_runs:
+    passed_runs:
+    hard_failed_runs:
+    ambiguous_runs:
+    runtime_error_runs:
+    skipped_runs:
+
   executions:
-    - episode_id:
-      scenario_id:
-      case_id:
-      implementation_id:
-      agent_id:
-      agent_fingerprint:
-      seed:
-      status: pass | fail | skip
+    - run_id:
+      chart_id:
+      chart_fingerprint:
+      chart_kind:
+      partition:
+      split_group:
+      harness_id:
+      harness_fingerprint:
+      repeat_id:
+      runtime_fingerprint:
+      world_fingerprint:
+      actor_input_fingerprint:
+      actor_readable_inventory_fingerprint:
+      actor_access_proof_ref:
+      evaluator_fingerprint:
+      support_result:
+      status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
-      reward_total:
-      action_trace_ref:
-      oracle_results_ref:
+      hard_oracle_results_ref:
+      state_diff_ref:
       trace_ref:
-      skipped_reason:
-  implementations:
-    - id:
-      kind: deterministic | noisy | adversarial | mutation
-      contract_fingerprint:
-      supported_scenarios: []
+      cost:
       limitations: []
-  divergences:
-    - divergence_id:
-      scenario_id:
-      case_id:
-      implementations: []
-      agents: []
-      observed_difference:
-      likely_source:
-        contract_ambiguity | emulator_bug | oracle_gap | nondeterminism | behavior_gap | source_contract_gap
-      evidence_refs: []
-  counterexamples:
-    - counterexample_id:
-      scenario_id:
-      case_id:
-      minimal_inputs:
-      violated_oracles: []
-      trace_ref:
-      reproducible_command:
-  candidate_regressions:
-    - case_id:
-      source_counterexample:
-      why_reusable:
-      required_oracles: []
+
+  chart_comparisons:
+    - chart_id:
+      eligibility:
+      baseline_runs: []
+      candidate_runs: []
+      hard_delta:
+      state_delta:
+      protected_regressions: []
+      residual_preference:
+      result: improved | regressed | noninferior | ambiguous | invalid
+
   datasets:
+    preferences_ref:
     trajectories_ref:
-    counterexamples_ref:
     curriculum_ref:
+
   limitations: []
-  optional_downstream:
-    tune_handoff:
-      available: yes | no
-      reason:
 ```
 
-## Accounting rules
+## Status and accounting laws
 
-- Every episode appears in `executions`.
-- Summary counts equal execution counts.
-- Every pass or failure has a trace and recorded action sequence.
-- Every skip has a reason.
-- Every execution binds contract, implementation, agent, scenario, case, seed, and oracle identities.
-- Every counterexample binds violated oracles and reproducible evidence.
-- Dataset references appear only for emitted datasets.
+Every fresh run appears exactly once.
 
-## Interpretation
+```text
+valid_runs = passed_runs + hard_failed_runs + ambiguous_runs
 
-EER-v1 is behavioral evidence, not proof that a target skill or production system should change.
+total execution rows =
+  valid_runs
+  + invalid_environment_runs
+  + unsupported_runs
+  + runtime_error_runs
+  + skipped_runs
+```
 
-A failed episode may indicate an emulator bug, contract ambiguity, oracle gap, nondeterminism, behavior gap, or missing source contract.
+`unsupported_counterfactual` and `invalid_environment` are not agent failures.
+The former means an attempted action had `observed_only` or `unsupported`
+support; the latter means the chart, closure, visibility, reset, or comparison
+boundary was malformed or unverifiable.
 
-Reward never overrides a failed hard oracle.
+Every pass or hard failure has a fresh trace. Every invalid, unsupported,
+runtime-error, ambiguous, or skipped row records a reason and the evidence
+available before termination. No historical run appears as a baseline
+execution.
 
-A candidate regression becomes binding only after adoption into `emulator-spec.yaml`.
+Every comparison binds exact chart, root closure, harness, world/reset, actor
+input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
+split fingerprints. Selecting and training claims require an access proof that
+the actor could not read evaluator-only roots.
 
-`$tune` handoff requires explicit skill-improvement intent.
+## runs.jsonl
+
+Each fresh run emits one append-only row within its comparison directory:
+
+```json
+{
+  "schema": "emulator-run/v1",
+  "run_id": "run-...",
+  "comparison_id": "cmp-...",
+  "chart_id": "chart-...",
+  "chart_fingerprint": "sha256:...",
+  "chart_kind": "normative_decision",
+  "partition": "holdout",
+  "split_group": "group-...",
+  "harness_id": "candidate-1",
+  "harness_fingerprint": "sha256:...",
+  "factor": "question_policy",
+  "repeat_id": 1,
+  "runtime_fingerprint": "sha256:...",
+  "world_fingerprint": null,
+  "actor_input_fingerprint": "sha256:...",
+  "actor_readable_inventory_fingerprint": "sha256:...",
+  "actor_access_proof_ref": "traces/run-...-access.json",
+  "evaluator_fingerprint": "sha256:...",
+  "support_result": "judgeable",
+  "status": "pass",
+  "hard_oracle_results_ref": "oracle-results/run-....json",
+  "state_diff_ref": null,
+  "trace_ref": "traces/run-....json",
+  "cost": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "latency_ms": null
+  },
+  "limitations": []
+}
+```
+
+These rows are not a new global event store.
+
+## comparison.json
+
+```json
+{
+  "schema": "emulator-harness-comparison/v1",
+  "comparison_id": "cmp-...",
+  "contract_fingerprint": "sha256:...",
+  "factor": "question_policy",
+  "baseline_harness_fingerprint": "sha256:...",
+  "candidate_harness_fingerprint": "sha256:...",
+  "eligible_chart_ids": [],
+  "excluded_charts": [
+    {"chart_id": "...", "reason": "unsupported_counterfactual"}
+  ],
+  "targeted_improvements": [],
+  "protected_regressions": [],
+  "hard_oracle_delta": {},
+  "state_delta": {},
+  "cost_delta": {},
+  "residual_preference": {
+    "result": "candidate | baseline | tie | ambiguous",
+    "order_stable": true,
+    "evidence_refs": []
+  },
+  "recommendation": "adopt | reject | insufficient_evidence",
+  "reason": "",
+  "authority_granted": false
+}
+```
+
+## Evaluation order
+
+```text
+1. environment and recursive closure validity
+2. exclusive action support
+3. hard oracles
+4. state diff
+5. trace invariants
+6. protected dimensions
+7. cost and latency
+8. residual blinded model or human judgment
+```
+
+Hard failures and protected regressions cannot be repaired by later stages. A
+residual judge is never sole authority, receives hard-oracle results, is blinded
+to harness identity, and is run in both presentation orders. Order disagreement
+is `ambiguous`.
+
+## Recommendation authority
+
+`adopt` requires all required candidate runs to be environment-valid, no new
+critical hard failure, no protected regression, at least one targeted untouched
+holdout improvement, order-stable residual preference when used, and evaluation
+of the exact candidate fingerprint.
+
+A tie, unsupported required chart, evaluator disagreement, closure/access proof
+gap, or insufficient untouched holdout coverage yields
+`insufficient_evidence`. A targeted hard regression yields `reject`.
+
+The recommendation is `paired_replay_delta`, `observed_association`,
+`regression`, or `insufficient_evidence`; it is not a causal claim. It grants
+no mutation, merge, release, or publication authority.
+
+## Datasets
+
+Dataset references appear only when rows were emitted:
+
+- Preference rows require direct authority, an exact source-bound rejected
+  action, and a fresh passing chosen action that passed hard oracles.
+- Trajectory rows require fresh valid executable runs with reset and complete
+  observable trace evidence.
+- Active holdouts and hidden evaluator material are never exported.
+- Historical assistant responses are not chosen labels merely because they
+  occurred.
+
+Every row retains chart, authority, closure, harness, and evidence provenance.

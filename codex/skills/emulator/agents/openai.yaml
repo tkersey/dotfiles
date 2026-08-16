@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Emulator"
-  short_description: "Define and run executable agent learning environments"
-  default_prompt: "Use $emulator to author or validate emulator-spec.yaml from source evidence and explicit user decisions, generate and run replayable agent environments, preserve contract/scenario/case/agent/implementation/seed/oracle identities, emit traces and EER-v1, and avoid target-skill edits or $tune/$refine handoff without explicit skill-improvement intent."
+  short_description: "Build total or partial agent environments from design or session evidence"
+  default_prompt: "Use $emulator to compile a provenance-preserving environment atlas, keep session-derived transitions partial, separate actor and evaluator visibility, compare fresh baseline and candidate harness runs, preserve hard-oracle precedence, and never mutate the live harness without explicit authority."

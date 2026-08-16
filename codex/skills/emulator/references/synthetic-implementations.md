@@ -1,111 +1,136 @@
 # Synthetic Implementation Patterns
 
-`$emulator` may generate multiple executable environments from one `emulator-spec.yaml`.
+`$emulator` may generate total designed worlds and partial session-derived
+charts inside one EC-v1 atlas.
 
-Variation belongs in implementation behavior or contract-declared mutations, not silent changes to normative semantics.
+Variation belongs in implementation behavior or contract-declared mutations.
+It cannot silently widen transition support, evaluator authority, world
+fidelity, or claim strength.
 
 ## Common surface
 
-Each implementation provides equivalents of:
+Every chart provides semantic equivalents of:
 
 ```text
-reset(scenario_id, seed)
+reset(chart_id, harness_id, repeat_id)
 observe()
-step(action)
-score()
+support(action)
+evaluate(output_or_trace)
 trace()
 ```
 
+`step(action)` is provided only for actions classified `executable`.
+Synthetic worlds may declare `transition_model: total`; session-derived worlds
+are commonly partial or have no transition model.
+
 ## Deterministic
 
-Use for debugging and reproducible counterexamples.
+Use for debugging, exact reset, hard oracles, and reproducible counterexamples.
 
 ```text
 fixed seed
 explicit state machine
 stable tool responses
-exact oracle checks
+exact state and trace assertions
 no unmodeled time or randomness
 ```
 
-The same contract fingerprint, implementation id, scenario, seed, recorded action sequence, and oracle version must reproduce the same environment observations, state transitions, and terminal result.
+The same closure, implementation, chart, reset, seed, action sequence, and
+evaluator version must reproduce the same observations, transitions, and
+terminal result.
 
 ## Noisy
 
-Use for production-like reliability testing.
+Use for contract-admissible reliability testing:
 
 ```text
-tool latency
-transient or partial failures
+tool latency and transient failures
 retries
 actor hesitation
-message-order noise
+message ordering
 irrelevant context
 ```
 
-All noise must be contract-admissible, seed-controlled, and trace-recorded.
+All noise is seeded where possible and trace-recorded. If the actor runtime
+offers no deterministic seed, declare `seed_control: unavailable`, use repeats,
+and lower the supported claim.
 
 ## Adversarial
 
-Use for security, safety, and robustness boundaries.
+Use for declared robustness boundaries:
 
 ```text
 injection in tool output
 misleading user claims
-conflicting instructions
 forbidden-tool temptations
 malformed responses
 stale information
 hidden-state traps
 ```
 
-The world must preserve its contracted laws while presenting adversarial observations.
+Adversarial observations preserve the chart's laws and effect policy. They do
+not expose hidden evaluator material.
 
 ## Mutation
 
-Use declared mutation dimensions to explore nearby cases and shrink failures.
+Use only declared mutation dimensions. Each declares its domain, preserved laws,
+intentional negative cases, and shrink strategy.
 
-An invariant-breaking mutation must be labeled as a negative or boundary case. Do not mutate outside the contract and claim conformance.
+An invariant-breaking mutation is a negative or boundary case. A mutation
+outside a session chart's declared support creates a new `designed` or `mixed`
+chart with its own authority and fingerprint. It cannot be called a
+source-faithful counterfactual.
 
-## Artifact layout
+Deterministic, noisy, adversarial, and mutation implementations never upgrade:
+
+```text
+ambiguous attribution -> direct
+transcript_only -> exact
+observed_only or unsupported -> executable
+diagnostic -> harness_selection or promotion
+```
+
+## Storage
+
+Shareable, sanitized designed worlds may live under:
 
 ```text
 codex/emulators/<target>/
-  emulator-spec.yaml
-  env-manifest.yaml
-  implementations/
-    deterministic/
-    noisy/
-    adversarial/
-    mutation/
-  scenarios/
-    generated/
-    mutations/
-  traces/
-  reports/
-    EER-v1.yaml
-  datasets/
-    trajectories.jsonl
-    counterexamples.jsonl
-    curriculum.jsonl
-  evidence/
 ```
 
-Create only requested artifacts; empty scaffolding has no value.
+Session-derived material defaults to:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
+```
+
+Use private directory and file modes where supported. Do not commit raw
+sessions, corrections, evaluator-only material, secrets, or private tool
+outputs. Create only requested artifacts; empty scaffolding has no value.
 
 ## Reproducibility
 
-Each implementation declares its id, kind, contract fingerprint, supported scenarios, seed policy, oracle version, nondeterminism, and limitations.
-
-Each episode is reproducible from:
+Bind every implementation and run to:
 
 ```text
-contract fingerprint
-implementation id
-scenario id
-case id
-seed
-oracle version
-recorded action sequence
-agent id and configuration fingerprint when regenerating actions
+root and ordered chart fingerprints
+recursive closure inventory
+implementation and harness fingerprints
+chart and split identity
+actor input and actor-readable inventory fingerprints
+world/reset and evaluator fingerprints
+runtime configuration, seed control, repeat id, and effect policy
+fresh action sequence and trace
 ```
+
+Reproducibility does not mean historical trace imitation. Executable charts may
+reach the same valid state through a different trajectory unless sequence
+identity is itself a contracted law.
+
+## Rollback
+
+Generated implementations and candidate worktrees are disposable. On invalid
+closure, leakage, drift, or failed proof, stop actors and discard the isolated
+candidate/reset workspace. Preserve private source and evaluation evidence by
+default for diagnosis; remove it only with explicit authorization. No emulator
+result edits or rolls back the live harness.

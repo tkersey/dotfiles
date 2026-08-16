@@ -1,49 +1,52 @@
 ---
 name: emulator
-description: "Define, generate, run, mutate, compare, and export executable emulator environments for agents. Use for `$emulator`, synthetic worlds, agent learning environments, scenario contracts, deterministic/noisy/adversarial environments, counterexamples, trajectory datasets, implementation divergence, trace reports, or EER-v1. Not for generic library reimplementation specs, material scope clarification, target-skill edits, or treating synthetic outcomes as production truth."
+description: "Define, compile, run, mutate, compare, and export total synthetic or partial session-derived agent environments. Use for `$emulator`, session-derived environments, existing session corpora, correction windows, environment atlases, harness optimization, preference extraction, fresh baseline/candidate comparisons, synthetic worlds, counterexamples, trajectories, or EER-v1. Not for treating historical actions as expert labels, inventing unsupported transitions, or mutating a live harness without separate authority."
 ---
 
 # Emulator
 
 ## Mission
 
-`$emulator` owns the complete path from evidence or explicit design intent to executable synthetic experience.
+`$emulator` owns one content-addressed contract closure containing total synthetic
+worlds and partial session-derived charts.
 
 ```text
-source evidence + explicit user decisions
-                  |
-                  v
-          emulator-spec.yaml
-                  |
-                  v
-environments -> agent episodes -> traces, counterexamples, datasets, EER-v1
+source evidence or explicit design
+  -> emulator-spec.yaml closure
+  -> environment charts
+  -> fresh actor runs
+  -> hard oracles, state diffs, traces, and eligible datasets
 ```
 
-Use `$grill-me` only when a material human judgment cannot be resolved from evidence. No separate contract-generation skill is required.
+A historical session is a partial transition witness, not a complete simulator,
+expert demonstration, or baseline arm. Historical evidence discovers what to
+challenge; fresh executions decide whether a harness candidate wins.
+
+Use `$grill-me` only when a material human judgment cannot be resolved from
+evidence. Do not introduce a native CLI, protocol service, or persistent store.
 
 ## Activation boundary
 
 Use `$emulator` to:
 
 ```text
-author an emulator contract from a repo, spec, tests, traces, or user design
-generate an executable environment for an agent
-instantiate deterministic, noisy, adversarial, or mutable worlds
-run agents and collect replayable episodes
-mutate or shrink scenarios to find counterexamples
-compare agents or implementations against one contract
-export traces, trajectories, divergences, or EER-v1
+author a contract from a repository, spec, tests, traces, sessions, or design
+compile correction windows into normative decision charts
+reconstruct resettable tasks as executable episode charts
+preserve useful but non-selecting evidence as observational charts
+run total synthetic or honest partial environments
+compare fresh baseline and factor-local candidate harnesses
+export EER-v1, preference rows, fresh trajectories, or curriculum rows
 ```
 
 Do not use it for:
 
 ```text
-material human choices -> $grill-me
-generic portable library reimplementation contracts -> direct specification work
-historical session mining -> $seq
-one live watched session -> $shadow
-skill diagnosis -> $tune only when explicitly requested
-skill edits -> $refine only after explicit apply authority
+physical session facts -> Seq owns discovery, identity, order, and tool facts
+material user choices -> $grill-me
+automatic target-skill or live-harness edits
+historical-trace imitation or private chain-of-thought reconstruction
+model-generated transitions presented as source-faithful history
 ```
 
 ## Request
@@ -54,28 +57,48 @@ Prefer:
 emulator_request:
   mode: design | implement | run | mutate | compare | export
   source:
-    kind: repository | specification | tests | traces | user_design | existing_contract | mixed
-    path:
+    kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
+    session_id:
+    session_path:
+    root:
+    repo:
+    since:
+    until:
     revision:
     fingerprint:
     evidence_refs: []
-  contract_path: codex/emulators/<target>/emulator-spec.yaml
+  contract_path:
   target:
     name:
-    kind: skill | agent_loop | tool_loop | workflow | library_protocol
-  emulator_root: codex/emulators
-  implementation_kinds: [deterministic, noisy, adversarial, mutation]
-  seed:
-  scenario_budget:
+    kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
+  atlas:
+    atlas_id:
+    root:
+    chart_kinds: [normative_decision, executable_episode, observational]
+    partitions:
+      discovery:
+      development:
+      holdout:
+  experiment:
+    factor:
+    baseline_harness:
+    candidates: []
+    max_candidates: 3
   authorized_files:
     allowed: []
     forbidden: []
   output:
     report: EER-v1
-    trajectories: true
+    preferences: false
+    trajectories: false
+    curriculum: false
 ```
 
-An existing contract is optional. Fail closed only when neither a valid contract nor enough evidence and explicit user decisions exist to author one.
+Session-derived atlases default to
+`${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/`; shareable designed
+environments may use `codex/emulators/<target>/`. Do not create empty
+scaffolding or commit session artifacts without explicit sanitization and
+authority.
 
 ## Modes
 
@@ -83,168 +106,162 @@ Choose exactly one mode.
 
 ### design
 
-Author or repair `emulator-spec.yaml`. Do not generate runtime files.
+Compile or repair the root contract and its charts. Do not generate runtime
+files unless the requested artifact is itself an actor packet or evaluator.
 
 ### implement
 
-Validate an existing contract or author the missing contract first, then generate or update the executable environment inside the authorized emulator directory.
-
-Do not edit source repositories or target skills without explicit authority.
+Materialize executable world, reset, tool, fixture, and evaluator assets already
+authorized by the contract. Do not edit source repositories or target skills
+without separate authority.
 
 ### run
 
-Execute seeded scenarios against one or more implementations or agents. Capture observations, actions, tool interactions, state transitions, rewards, oracle results, termination, and skips.
+Execute one frozen harness against selected charts. Capture only fresh runtime
+observations, actions, effects, terminal state, cost, and trace.
 
 ### mutate
 
-Generate contract-admissible variants and shrink failures. An invariant-breaking mutation must be explicitly labeled as a negative or boundary case.
+Apply only chart-declared mutations. A mutation outside declared support creates
+a new designed chart; it never becomes a source-faithful transition.
 
 ### compare
 
-Compare implementations or agents against the same contract. Classify differences as contract ambiguity, emulator bug, oracle gap, nondeterminism, behavior gap, or source-contract gap.
+Run fresh baseline and candidate arms against the same chart boundary and emit a
+chart-aware comparison. The historical trajectory is never an arm.
 
 ### export
 
-Emit EER-v1 and requested trajectory, counterexample, or curriculum datasets.
-
-`$tune` and `$refine` are optional downstream consumers, never implicit parts of this lifecycle.
+Emit EER-v1 and only datasets whose fresh evidence, authority, partition, and
+visibility rules make them eligible.
 
 ## Contract ownership
 
-`emulator-spec.yaml` is the single normative contract. Its contract fingerprint is the SHA-256 digest of the finalized file's exact UTF-8 bytes.
+One normative content-addressed contract closure is rooted at
+`emulator-spec.yaml`. The root fingerprint is SHA-256 of its exact UTF-8 bytes.
+Each chart is bound by exact bytes, and each chart recursively binds every
+execution-relevant external source map, actor input, world/reset recipe, fixture,
+tool manifest, and evaluator asset by exact SHA-256. A referenced artifact that
+is missing or mismatched makes the environment invalid.
 
-A contract declares one origin:
+The contract declares `source_faithful`, `designed`, or `mixed` origin. Every
+normative rule, permission, side-effect boundary, evaluator, terminal condition,
+reward, and mutation dimension cites its authority. Assumptions cannot define
+safety, authority, hidden truth, side effects, selection, or termination.
 
-```text
-source_faithful  source behavior is being reproduced
-designed         explicit user intent defines the world
-mixed            source behavior is the baseline with explicit deviations
-```
-
-Rules about source behavior must be grounded in executable tests, captured traces, public interfaces, schemas, source behavior, or non-contradicted normative documentation. Designed behavior must be grounded in explicit user decisions.
-
-Every normative scenario rule, permission, side-effect boundary, terminal condition, oracle, reward, and mutation dimension must cite its authority. Assumptions may fill non-critical description only; never infer safety, security, authority, hidden truth, side effects, reward, or termination.
-
-Normalize nondeterminism into explicit inputs:
-
-```text
-seed, time, timezone, locale, latency, failure schedule,
-actor stochasticity, message ordering, collection normalization
-```
-
-Read `references/emulator-contract-profile.md` when authoring or validating the contract.
-
-## Workflow
-
-1. Bind the target, authority source or user design, revision when applicable, origin, and output path.
-2. Inspect discoverable tests, traces, interfaces, schemas, behavior, and normative docs.
-3. Use `$grill-me` only for unresolved material choices.
-4. Author or validate `emulator-spec.yaml`.
-5. Generate the requested environment implementations.
-6. Run, mutate, compare, or export as requested.
-7. Report exact contract gaps instead of inventing missing normative behavior.
+Read `references/emulator-contract-profile.md` when authoring or validating a
+contract. Read `references/session-derived-atlas.md` whenever a session source
+is selected.
 
 ## Environment laws
 
-Every generated environment must expose semantic equivalents of:
+Every chart exposes semantic equivalents of:
 
 ```text
-reset(scenario_id, seed) -> initial observation
-observe() -> current agent-visible observation
-step(action) -> observation, reward, done, termination reason, oracle results
-score() -> deterministic score and invariant summary
-trace() -> replayable execution trace
+reset(chart_id, harness_id, repeat_id) -> observation
+observe() -> current actor-visible observation
+support(action) -> executable | judgeable | denied | observed_only | unsupported
+evaluate(output_or_trace) -> oracle vector + state diff + residual judgment
+trace() -> fresh observable trace
 ```
 
-Hidden ground truth belongs to the environment and oracles. It reaches the agent only through contracted observations or tool results.
+`step(action)` exists only when `support(action) == executable`. Support classes
+are mutually exclusive. An overlap or unverifiable classification is
+`invalid_environment`; an attempted `observed_only` or `unsupported` transition
+is `unsupported_counterfactual`; a `denied` action is `hard_fail`. Never guess a
+next state.
 
-The same deterministic implementation, contract fingerprint, scenario, seed, recorded action sequence, and oracle version must reproduce the same environment observations, state transitions, and terminal result.
+Actor-visible and evaluator-only projections are separate. Selection and
+training additionally require an actor-readable inventory and fingerprint plus
+tool-access evidence proving hidden roots were inaccessible. A combined file is
+not proof of separation.
 
-A failed hard oracle or trace invariant cannot be overridden by reward or model judgment.
+A failed hard oracle or trace invariant cannot be overridden by reward, cost,
+preference, prose quality, or model judgment. Executable charts judge required
+state and trace laws, not historical tool-sequence imitation.
 
-## Implementations and traces
+## Session-derived execution
 
-Implementations may be:
+Seq owns physical session discovery and exact source-event facts. `$emulator`
+owns source bundles, cuts, chart classification, support, evaluator authority,
+fresh comparison, claims, exports, and STOP decisions. CAS or the selected
+existing runner owns fresh actor execution facts; Git and task tools own reset
+and state assertions.
+
+For correction charts, cut immediately before the disputed historical action.
+Give the actor only facts legitimately available at that cut. Hide the action,
+later correction, recovery, tests, review, final answer, labels, and holdout
+evaluator details. Whole-harness executable comparisons cut before the first
+assistant action unless earlier influence is proved absent.
+
+All charts may support discovery. Only environment-valid fresh paired charts
+with sufficient attribution, transition support, evaluator authority, and
+untouched holdout status may select a candidate. Group all charts from the same
+root session, task, issue, PR, or worker lineage into one partition.
+
+Read `references/session-derived-atlas.md` for source extraction, correction and
+executable compilation, leakage checks, harness manifests, partitions, fresh
+execution, evaluation, exports, and stop reasons.
+
+## Comparison and learning policy
+
+Freeze the baseline and each candidate as complete harness manifests. A
+candidate changes exactly one semantic owner and cannot change charts, source
+bundles, reset recipes, evaluators, comparison code, actor runner, or holdout
+partitioning. Candidate generation cannot inspect active holdout material.
+
+Evaluate in this order:
 
 ```text
-deterministic  exact state-machine execution
-noisy          seeded latency, failures, retries, and actor noise
-adversarial    hostile inputs, injection, misleading outputs, hidden-state traps
-mutation       declared perturbations and counterexample shrinking
+environment validity -> support -> hard oracles -> state diff -> trace laws
+-> protected dimensions -> cost/latency -> residual judgment
 ```
 
-Each declares its id, kind, contract fingerprint, supported scenarios, seed policy, oracle surface, nondeterminism, and limitations.
+Recommendations are `adopt`, `reject`, or `insufficient_evidence`, but they
+grant no mutation authority. Export preference rows only from direct authority
+and a fresh passing chosen action. Export trajectories only from fresh valid
+executable runs. Active holdouts never enter training exports.
 
-Each episode records:
-
-```text
-episode/scenario/case/agent/implementation ids and agent fingerprint
-contract fingerprint, seed, recorded actions, and oracle version
-visible observations and hidden-state fingerprint
-actions, tool calls/results, state mutations, and rewards
-oracle and invariant results
-final state, termination, failure labels, and counterexample data
-```
-
-Read `references/synthetic-implementations.md` when generating environments.
-
-## Oracle and learning policy
-
-Prefer deterministic state, trace, tool, side-effect, schema, budget, and terminal assertions. Model judgment may support criteria that deterministic checks cannot express, but it is never sole authority for safety-critical behavior.
-
-EER-v1 is the run-level evidence record. When requested, also emit:
-
-```text
-trajectories.jsonl
-counterexamples.jsonl
-curriculum.jsonl
-```
-
-Every dataset row binds the contract fingerprint, episode identities, agent fingerprint, implementation, seed, recorded actions, trace, terminal status, and oracle result.
-
-A counterexample becomes a binding regression only after adoption into `emulator-spec.yaml`.
+Read `references/eer-v1.md` for run accounting and comparison artifacts. Read
+`references/synthetic-implementations.md` when generating designed worlds.
 
 ## Output
 
 ```text
 Emulated:
-- Source and origin:
-- Contract and fingerprint:
-- Target and mode:
-- Implementations and agents:
-- Seed and scenario budget:
+- Source, origin, and limitations:
+- Contract closure and fingerprints:
+- Charts, groups, partitions, and support:
+- Baseline, candidate, factor, and fresh runs:
 
 Run summary:
-- Executed / passed / failed / skipped:
+- Valid / passed / hard-failed / ambiguous:
+- Invalid environment / unsupported / runtime error / skipped:
 
 Findings:
-- Divergences:
-- Counterexamples:
-- Oracle gaps:
-- Contract ambiguities:
-- Candidate regressions:
+- Hard-oracle and state deltas:
+- Protected regressions:
+- Residual preference:
+- Recommendation: adopt | reject | insufficient_evidence
 
 Artifacts:
-- Environment:
-- Traces:
-- Datasets:
-- EER-v1:
+- Source bundles, actors, worlds, traces, reports, and eligible datasets:
 
 Next route:
-- none | repair-contract | build-more-implementations | export-eval-dataset | optional-handoff-tune
+- none | repair-contract | reconstruct-world | choose-factor | separately-authorize-adoption
 ```
-
-Use `optional-handoff-tune` only after explicit skill-improvement intent.
 
 ## Hard rules
 
-- `$emulator` owns emulator contract authoring and environment generation.
-- `$grill-me` owns unresolved material human judgments.
-- Keep one normative `emulator-spec.yaml`.
-- Attribute every normative rule; do not silently invent behavior.
-- Preserve contract, scenario, case, implementation, agent, seed, and oracle identities.
-- Keep hidden truth out of uncontracted agent observations.
-- Every exported failure has a trace, fixture, or skip reason.
-- Prefer contract-faithful behavior and deterministic checks.
-- Do not edit target skills or infer skill defects from emulator failures.
-- Do not invoke `$tune` or `$refine` without explicit skill-improvement intent.
+- Historical sessions are sources, never baseline arms or expert labels.
+- Preserve exact source provenance, content-addressed closure, and source order.
+- Keep actor and evaluator projections separate and prove actor-readable roots.
+- Keep support classes exclusive; never totalize an unknown transition.
+- `reset`, `observe`, `support`, `evaluate`, and `trace` are universal; `step` is not.
+- All charts may discover; only eligible fresh charts may select.
+- Use one semantic factor per candidate and freeze it before holdout execution.
+- Keep active holdouts out of candidate generation and training exports.
+- Hard oracles and protected dimensions dominate preferences and scalar scores.
+- Stop on leakage, drift, missing authority, unsupported transitions, or irreconstructable state.
+- Never mutate the live harness or publish private data without separate authority.
+- Do not add a native subsystem before repeated real charts prove a general capability gap.

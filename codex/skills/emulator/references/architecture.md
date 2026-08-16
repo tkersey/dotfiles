@@ -1,73 +1,95 @@
 # Emulator Architecture
 
-`$emulator` owns both the behavior contract and the executable synthetic world.
+`$emulator` owns the contract and evaluation boundary for designed worlds and
+session-derived partial charts.
 
 ```text
-source evidence + explicit user decisions
-                  |
-                  v
-          emulator-spec.yaml
-                  |
-                  v
- environments + episodes + traces + EER-v1
+repositories, tests, design       sessions through Seq
+             \                         /
+              -> source-bound charts <-
+                         |
+                         v
+             emulator-spec.yaml atlas closure
+                         |
+                         v
+                 fresh actor runs
+                         |
+                         v
+        hard oracles -> state diff -> residual judgment
+                         |
+                         v
+                 EER-v1 and eligible datasets
 ```
 
-Use `$grill-me` only when a material human judgment cannot be resolved from evidence.
+Historical material nominates decisions and evaluators. It never supplies a
+fresh comparison arm.
 
 ## Responsibility split
 
-| Skill | Owns | Does not own |
+| Owner | Owns | Does not own |
 |---|---|---|
-| `$grill-me` | Material user judgments, scope, proof bar, failure priorities | Contracts or environments |
-| `$emulator` | Contract authoring, environments, runs, mutation, traces, datasets, divergence reports | Undiscoverable user priorities or target-skill edits |
-| `$tune` | Optional downstream skill-change diagnosis | Core emulator lifecycle |
-| `$refine` | Optional downstream authorized edits | Core emulator lifecycle |
+| Seq | Physical session discovery, source-event identity/order, messages, turns, tools, workers, tokens, and query limitations | Correction semantics, chart type, replayability, evaluator authority, or candidate quality |
+| `$emulator` | Source bundles, charts, support boundaries, actor/evaluator projections, atlas closure, resets, evaluators, comparisons, EER-v1, datasets, and STOP | Truth of raw facts, undiscoverable user preference, live-harness adoption, or publication authority |
+| CAS or selected existing runner | Fresh process/thread execution, runtime identity, tool transport, actor trace, and terminal status | Chart authority or evaluator semantics |
+| Git and task tools | Repository identity, reset state, fixtures, tests, state effects, and deterministic assertions | Harness policy |
+| Human owner | Ambiguous correction adjudication, experimental factor, adoption, external publication, and privacy relaxation | Physical source facts |
+| `$grill-me` | Material unresolved user judgments | Environment implementation |
 
-## Boundary
+The first implementation changes no Seq or CAS surface. If an existing actor
+route cannot run a chart, use another already-supported runner or report the
+chart blocked.
 
-`emulator-spec.yaml` is the single normative boundary between authority and runtime.
+## Contract boundary
 
-Each rule identifies its authority:
-
-```text
-source evidence
-explicit user decision
-non-critical assumption
-```
-
-Source-faithful claims require source evidence. Designed deviations require explicit user decisions. Assumptions cannot define critical behavior.
-
-Every implementation interprets one contract fingerprint.
-
-Laws:
+`emulator-spec.yaml` is the root of one recursive content-addressed closure,
+not necessarily one physical file. The ordered root chart list binds exact chart
+bytes. Each chart binds all external source, actor, world, reset, fixture, tool,
+and evaluator bytes that can affect execution or judgment.
 
 ```text
-same deterministic implementation + contract + scenario + seed + action sequence + oracle version
-  -> same environment observations, state transitions, and terminal result
-
-hidden ground truth
-  -> environment/oracle-visible
-  -> agent-visible only through contracted observations or tool results
-
-hard oracle failure
-  -> not overridable by reward or model judgment
+same root bytes + ordered chart bytes + recursively bound assets
+  -> same atlas identity
 ```
 
-## Canonical flow
+Changing a referenced byte without updating its parent fingerprint invalidates
+the environment. Source bundles preserve exact Seq query specs and result
+envelopes; free-form transcript paraphrase is not provenance.
 
-1. Resolve source, target, revision, origin, and requested environment.
-2. Inspect discoverable evidence.
-3. Use `$grill-me` only for unresolved material choices.
-4. Author or validate `emulator-spec.yaml`.
-5. Generate and run one or more implementations.
-6. Mutate, shrink, compare, and export only as requested.
+## Partial transition boundary
 
-Missing normative evidence is `source_contract_gap`, not permission to invent behavior. Conflicting authority is `contract_ambiguity`.
-
-## Optional downstream route
+Every action receives exactly one support class:
 
 ```text
-EER-v1 -> $tune -> $refine
+executable    a resettable implementation can produce the next state
+judgeable     the decision can be evaluated without a next state
+denied        the contract deterministically forbids the action
+observed_only history witnessed it, but no fresh counterfactual is supported
+unsupported   the environment has no honest execution or judgment
 ```
 
-Use it only after explicit skill-improvement intent.
+`step` exists only for `executable`. Unknown transitions remain unknown. A
+model-generated transition belongs to a separately designed chart and cannot
+inherit source-faithful authority.
+
+## Visibility boundary
+
+The actor invocation receives only a fingerprinted actor projection. Historical
+suffix, correction, recovery, outcome, grader labels, and holdout evaluators are
+evaluator-only. Selection or training requires proof of the actor-readable
+inventory and accessible tool roots; file-level separation alone is
+insufficient.
+
+## Comparison boundary
+
+Both baseline and candidate arms are fresh. They bind the same chart, actor
+packet, world/reset, effects, evaluator, runtime configuration, repeat policy,
+and split identity. Only the selected semantic factor may differ.
+
+```text
+hard failure or protected regression -> cannot be repaired by preference
+unsupported or invalid environment -> not an agent failure
+recommendation -> evidence only, never mutation authority
+```
+
+Use `$grill-me` only when source evidence cannot settle a material human
+judgment. Missing authority is a gap or STOP, never permission to invent.
