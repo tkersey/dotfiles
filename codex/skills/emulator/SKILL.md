@@ -80,10 +80,9 @@ emulator_request:
       development:
       holdout:
   experiment:
-    subject: harness | actor | environment_implementation
+    subject: harness
     factor:
     baseline_harness:
-    baseline_subject:
     candidates: []
     max_candidates: 3
   authorized_files:
@@ -122,9 +121,8 @@ repositories or target skills without separate authority.
 
 ### run
 
-Execute one frozen declared subject against selected charts; require a harness
-only for `subject: harness`. Capture only fresh runtime observations, actions,
-effects, terminal state, cost, and trace.
+Execute one frozen harness against selected charts. Capture only fresh runtime
+observations, actions, effects, terminal state, cost, and trace.
 
 ### mutate
 
@@ -136,10 +134,8 @@ generator bytes through the chart closure.
 ### compare
 
 Run fresh baseline and candidate arms against the same chart boundary and emit a
-chart-aware comparison. For harness work, both arms are frozen harness bundles.
-Designed synthetic contracts may instead compare frozen actor or environment-
-implementation bundles when the root declares that comparison subject. The
-historical trajectory is never an arm.
+chart-aware comparison. Both arms are frozen harness bundles. The historical
+trajectory is never an arm.
 
 ### export
 
@@ -221,9 +217,7 @@ execution, evaluation, exports, and stop reasons.
 
 ## Comparison and learning policy
 
-For `subject: harness`, freeze the baseline and each candidate as complete
-harness manifests. For actor or environment-implementation comparisons, freeze
-the corresponding subject bundles and omit harness-only fields. A candidate
+Freeze the baseline and each candidate as complete harness manifests. A candidate
 changes exactly one semantic owner and cannot change charts, source bundles,
 reset recipes, evaluators, comparison code, actor runner, or holdout
 partitioning. Candidate generation cannot inspect active holdout material.

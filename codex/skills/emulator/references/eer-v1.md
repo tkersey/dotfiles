@@ -14,6 +14,7 @@ emulator_execution_report:
   contract:
     ref:
     fingerprint:
+    operation_mode: design | implement | run | mutate | compare | export
     atlas_chart_fingerprints: []
     closure_inventory_ref:
     closure_inventory_fingerprint:
@@ -24,7 +25,7 @@ emulator_execution_report:
 
   comparison:  # present only for one baseline/candidate compare pair
     comparison_id:
-    subject: harness | actor | environment_implementation
+    subject: harness
     factor:
     atlas_fingerprint:
     partition_snapshot_fingerprint:  # selecting roots only
@@ -42,10 +43,10 @@ emulator_execution_report:
     holdout_lock_validation_fingerprint: # holdout runs only
     actor_access_proof_ref:
     actor_access_proof_fingerprint:
-    baseline_harness_fingerprint:  # harness subject only
-    candidate_harness_fingerprint: # harness subject only
-    baseline_subject_fingerprint:
-    candidate_subject_fingerprint:
+    baseline_harness_fingerprint:
+    candidate_harness_fingerprint:
+    factor_delta_validation_ref:
+    factor_delta_validation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     reason:
@@ -110,11 +111,8 @@ emulator_execution_report:
       holdout_lock_fingerprints: []      # holdout runs only
       holdout_lock_validation_ref:       # holdout runs only
       holdout_lock_validation_fingerprint: # holdout runs only
-      subject_kind: harness | actor | environment_implementation
-      subject_id:
-      subject_fingerprint:
       harness_id:
-      harness_fingerprint:  # harness subject only
+      harness_fingerprint:
       factor:
       repeat_id:
       mutation_case_id:
@@ -202,21 +200,13 @@ execution.
 Every execution row binds its root contract and atlas fingerprints. A selecting
 root also binds its current partition-snapshot fingerprint and validation
 artifact; roots without holdout omit partition-snapshot, validation, and
-reservation fields. Every comparison binds the exact declared subject
-bundle, chart, root closure, world/reset, actor
+reservation fields. Every comparison binds the exact declared harness bundle,
+chart, root closure, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
-split fingerprints. Harness manifests are required only for `subject: harness`;
-actor and environment-implementation comparisons bind their declared subject
-bundles without invented harness fields. For `subject_kind: harness`,
-`subject_id == harness_id` and `subject_fingerprint == harness_fingerprint`; a
-mismatch is `invalid_environment`. Harness fields are absent for other subject
-kinds. Selecting and training claims require an access proof that the actor
+split fingerprints. Selecting and training claims require an access proof that the actor
 could not read evaluator-only roots; both its reference and exact fingerprint
 are recorded and verified. Every emitted dataset reference has a companion
 fingerprint.
-For a harness comparison, baseline/candidate subject fingerprints likewise
-equal their corresponding harness fingerprints; disagreement invalidates the
-comparison before recommendation.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
@@ -260,9 +250,6 @@ independent run-group ID and leaves comparison-only fields null:
   "chart_kind": "normative_decision",
   "partition": "development",
   "split_group": "group-...",
-  "subject_kind": "harness",
-  "subject_id": "candidate-1",
-  "subject_fingerprint": "sha256:...",
   "harness_id": "candidate-1",
   "harness_fingerprint": "sha256:...",
   "factor": null,
@@ -355,8 +342,8 @@ counterexample artifact by reference and fingerprint.
   "actor_access_proof_fingerprint": "sha256:...",
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
-  "baseline_subject_fingerprint": "sha256:...",
-  "candidate_subject_fingerprint": "sha256:...",
+  "factor_delta_validation_ref": "factor-delta-validation.json",
+  "factor_delta_validation_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
     "candidate": []
@@ -377,7 +364,8 @@ counterexample artifact by reference and fingerprint.
   "residual_preference": {
     "result": "candidate | baseline | tie | ambiguous",
     "order_stable": true,
-    "evidence_refs": []
+    "evidence_refs": [],
+    "evidence_fingerprints": []
   },
   "chart_comparisons": [
     {
@@ -399,6 +387,11 @@ counterexample artifact by reference and fingerprint.
   "authority_granted": false
 }
 ```
+
+Residual evidence refs and fingerprints are ordered, same-length pairs. Each
+fingerprint binds the exact judgment-result bytes. Missing, mismatched, or
+mutable unbound judgment evidence makes the residual preference `ambiguous` and
+cannot support `adopt`.
 
 ## Evaluation order
 
@@ -432,7 +425,7 @@ definition fingerprint and observed values.
 every required chart and repeat, no new candidate `hard_fail` of any kind, no
 protected regression, at least one targeted untouched holdout improvement,
 order-stable residual preference when used, and evaluation of the exact
-candidate subject fingerprint. Stochastic adoption additionally requires the
+candidate harness fingerprint. Stochastic adoption additionally requires the
 predetermined repeat/improvement rule and matched randomness when available;
 uncontrolled evidence that cannot satisfy the frozen rule is insufficient.
 
@@ -461,5 +454,4 @@ Dataset references appear only when rows were emitted:
 - Historical assistant responses are not chosen labels merely because they
   occurred.
 
-Every row retains chart, authority, closure, declared subject, and evidence
-provenance; harness provenance appears only for a harness subject.
+Every row retains chart, authority, closure, harness, and evidence provenance.

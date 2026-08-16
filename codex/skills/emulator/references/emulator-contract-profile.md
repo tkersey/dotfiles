@@ -30,6 +30,10 @@ bytes. Each chart recursively binds every external source map, actor input,
 world/reset recipe, fixture, tool manifest, and evaluator asset by relative
 reference plus exact SHA-256. Source maps and world manifests likewise bind
 their query specs, result envelopes, fixtures, and executable inputs.
+Every relative reference in the closure resolves from the atlas root, including
+references nested in subordinate manifests. Normalize it as a POSIX relative
+path before lookup; absolute paths, empty paths, `.`/`..` escape, backslashes,
+and duplicate normalized paths are invalid.
 
 The closure is invalid when a required reference is missing, escapes the atlas
 root without explicit authority, has a mismatched digest, or leaves an
@@ -43,6 +47,7 @@ emulator_contract:
   packet_version: EC-v1
   contract_id: EC-<stable-id>
   origin: source_faithful | designed | mixed
+  operation_mode: design | implement | run | mutate | compare | export
 
   source:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
@@ -83,7 +88,7 @@ emulator_contract:
 
   comparison_policy:
     execution_mode: single_arm | paired_compare
-    subject: harness | actor | environment_implementation
+    subject: harness
     pre_candidate_policy:
       ref:
       fingerprint:
@@ -97,14 +102,10 @@ emulator_contract:
       - candidate_id:
         ref:
         fingerprint:
-    baseline_subject:
+    candidate_factor_policy: one_semantic_owner
+    factor_delta_validation:
       ref:
       fingerprint:
-    candidate_subjects:
-      - candidate_id:
-        ref:
-        fingerprint:
-    candidate_factor_policy: one_semantic_owner
     stochastic_repeats: 3
     deterministic_repeats: 1
     stochastic_evidence:
@@ -121,7 +122,7 @@ emulator_contract:
     assets:
       - ref:
         fingerprint:
-        role: partition_validation | access_proof | other
+        role: partition_validation | access_proof | factor_delta_validation | other
 
   output:
     eer: EER-v1
@@ -147,13 +148,18 @@ component is session-derived, and records each excluded session component;
 mixed sources without sessions use `not_applicable`. A pure `user_design`
 source requires `false`; every other source kind requires `not_applicable`.
 
+`operation_mode` is the selected `$emulator` mode and is immutable for the
+closure and report. `execution_mode` says only whether execution has one arm or
+a paired comparison; it does not replace the operation mode.
+
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
 exact source-identity partition-claim refs/fingerprints, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
-threshold, the factor-to-targeted-chart predicate, protected dimensions,
+threshold, the factor-to-targeted-chart predicate, protected dimensions and
+their evaluator-result bindings, exact factor-owner paths and runtime keys,
 non-hard regression tolerance, candidate budget, and exact baseline
-subject/harness fingerprint. It is never
+harness fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy contains only the selected factor, runtime constraints,
 candidate budget, and discovery/development inputs; it contains no holdout IDs,
@@ -173,16 +179,13 @@ equal the evaluator-only pre-candidate commitment. Candidate manifest refs are
 the only comparison inputs added afterward. Any other drift is
 `holdout_contaminated`.
 
-`subject: harness` requires fingerprinted baseline and candidate harness
-manifests in the recursive root closure.
-Designed synthetic comparisons may use `actor` or
-`environment_implementation` with fingerprinted baseline and candidate subject
-bundles instead; the same one-factor, same-boundary, fresh-arm, and evaluator-
-immutability laws apply. Fields that do not apply to the declared subject are
-absent rather than filled with invented harness identities. Every candidate
-entry names the exact manifest whose fingerprint the corresponding comparison
-and runs must repeat.
-For `execution_mode: single_arm`, `baseline_harness` or `baseline_subject` is the single frozen
+Comparisons are harness comparisons. `subject` is therefore exactly `harness`,
+and the recursive root closure contains fingerprinted baseline and candidate
+harness manifests. Actor/runtime and environment-implementation identities are
+run facts, not selectable comparison subjects. Every candidate entry names the
+exact harness manifest whose fingerprint the corresponding comparison and runs
+must repeat.
+For `execution_mode: single_arm`, `baseline_harness` is the single frozen
 execution subject and all candidate and candidate-generation fields are absent.
 For `execution_mode: paired_compare`, both arms and the applicable candidate policies are
 mandatory. This is a mode-neutral subject binding, not invented comparison
@@ -339,7 +342,9 @@ environment_chart:
       enabled: true | false
       rubric:
       sole_authority: false
-    protected_dimensions: []
+    protected_dimensions:
+      - dimension_id:
+        evaluator_result_ids: []
     success_condition:
 
   closure:
@@ -351,7 +356,7 @@ environment_chart:
         role: source | actor | world | reset | fixture | tool | evaluator | reward | partition
 
   claim:
-    class: diagnostic | preference_training | harness_selection | subject_selection | promotion
+    class: diagnostic | preference_training | harness_selection | promotion
     maximum_supported_claim:
     invalidators: []
     limitations: []
@@ -389,6 +394,12 @@ paths. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
 smallest applicable limit.
 
+Every protected dimension names at least one hard-oracle, state-assertion, or
+trace-invariant result ID from the same evaluator. Every eligible baseline and
+candidate run emits all named results. Missing coverage is
+`invalid_environment`; an empty or model-judgment-only binding cannot protect a
+dimension.
+
 `network: replay_recorded` is replay-only: the runner may return only the exact
 fingerprinted recorded responses named by the effect-policy asset and MUST NOT
 contact a live endpoint. Live network access is outside EC-v1 and requires a
@@ -400,9 +411,6 @@ seed when controlled, and any sampled failure schedule are explicit and
 fingerprinted; `unavailable` is recorded rather than replaced with an invented
 seed.
 
-For `subject: environment_implementation`, the shared chart omits the singular
-implementation ref/fingerprint and each arm resolves them from its frozen
-subject bundle. Other subject kinds use the chart implementation block. The
 actor's `action_projection` deterministically extracts exactly one action from
 the validated output before support classification; projection failure is
 `hard_fail`.
@@ -488,7 +496,7 @@ drifted, leaked, incomplete, or unverifiable environment construction.
 | World/evaluator condition | Maximum default claim |
 |---|---|
 | Exact resettable world + deterministic authority + fresh paired untouched holdout | promotion evidence, subject to all protected laws |
-| Exact or behaviorally adequate approximate world + fresh paired untouched holdout | harness_selection for harness subjects; subject_selection otherwise |
+| Exact or behaviorally adequate approximate world + fresh paired untouched holdout | harness_selection |
 | Direct correction + leakage-free judgeable decision + fresh passing action | preference_training; selection only after an untouched holdout comparison |
 | Bounded attribution or transcript-only decision | development/diagnostic unless fresh evidence discriminates |
 | Ambiguous attribution, absent world, observational chart, or model-only judgment | diagnostic |
@@ -497,7 +505,7 @@ drifted, leaked, incomplete, or unverifiable environment construction.
 promotion means the evidence packet may support a separately authorized adoption
 decision. It never grants mutation authority. Historical outcomes alone never
 select or promote.
-Every `harness_selection` or `subject_selection` claim requires an untouched
+Every `harness_selection` claim requires an untouched
 holdout at the frozen partition snapshot; discovery/development evidence may
 nominate or train but cannot select.
 
@@ -515,8 +523,7 @@ actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
 root/chart split metadata equality
 implementation/seed identity plus contracted effects, termination, support matcher, and mutation domains when used
-for harness comparison: fingerprinted baseline and candidate harness manifests
-for actor or environment comparison: fingerprinted baseline and candidate subject bundles
+fingerprinted baseline and candidate harness manifests
 same-comparison fingerprints and one semantic factor for compare mode
 predetermined stochastic evidence rule and matched randomness when available
 fingerprinted pre-candidate policy snapshot for compare mode

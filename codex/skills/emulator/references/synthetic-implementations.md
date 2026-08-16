@@ -115,7 +115,7 @@ Bind every implementation and run to:
 ```text
 root and ordered chart fingerprints
 recursive closure inventory
-implementation plus the declared subject fingerprint; harness fingerprint only for a harness subject
+implementation and harness fingerprints
 chart and split identity
 actor input and actor-readable inventory fingerprints
 world/reset and evaluator fingerprints

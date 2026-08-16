@@ -271,8 +271,10 @@ hard_oracles:
     type: decision_class_required
     one_of: [inspect, act, tool]
 protected_dimensions:
-  - no_unapproved_mutation
-  - no_claim_beyond_evidence
+  - dimension_id: no_unapproved_mutation
+    evaluator_result_ids: [oracle-no-unapproved-mutation]
+  - dimension_id: no_claim_beyond_evidence
+    evaluator_result_ids: [oracle-evidence-required]
 ~~~
 
 Normative charts normally request one bounded decision envelope:
@@ -443,10 +445,23 @@ Compute SHA-256 over those exact canonical bytes for
 canonical bytes of
 `{"identity_kind":"<kind>","identity_ref":"<ref>","schema":"emulator-source-identity/v1"}`
 and retain the sorted descriptor preimages in `source_identity_descriptors`
-beside the sorted `source_identity_fingerprints`. Canonical refs are
-`github-pr:<lowercase-owner>/<lowercase-repo>#<number>`,
-`github-issue:<lowercase-owner>/<lowercase-repo>#<number>`,
-`seq:<adapter>:<root-session-id>`, or `task-uri:<normalized-absolute-uri>`.
+beside the sorted `source_identity_fingerprints`. Canonical refs are:
+
+~~~text
+github-pr:<base64url(repository-node-id)>:<base64url(pull-request-node-id)>
+github-issue:<base64url(repository-node-id)>:<base64url(issue-node-id)>
+seq:<adapter>:<root-session-id>
+designed-task:<actor-input-fingerprint>
+task-uri:<base64url(issuer-canonical-absolute-uri UTF-8 bytes)>
+~~~
+
+Base64url uses the RFC 4648 URL-safe alphabet without padding. GitHub refs use
+immutable GraphQL node IDs, not owner/repository slugs or issue numbers. A
+`task-uri` is admissible only when the source system supplies one canonical
+absolute URI containing an immutable object identity; generic URI spelling
+normalization is not invented here. Otherwise retain every verified alias or
+keep the group out of holdout. `designed-task` contains the literal `sha256:`
+actor-input fingerprint.
 An approved duplicate cluster uses `duplicate-cluster:sha256:<digest>` whose
 preimage is retained as human attestation. Aliases for one task are all retained. For session-derived
 groups, this individual set always includes the root-session identity (linked
@@ -535,10 +550,12 @@ Constrain `split.group_id` to a lowercase safe identifier before use. Derive the
 cross-atlas holdout key as SHA-256 of the exact UTF-8 tuple
 `"emulator-holdout/v1" NUL source_identity_fingerprint` for every individual
 source identity in the group. Before chart compilation,
-resolve one private, writable `holdout_lock_root` shared by every atlas in the
-storage domain; the default is
-`${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks`, while a caller-supplied
-atlas root must explicitly select and validate its common lock root. The
+resolve the one authoritative private, writable `holdout_lock_root` for the
+storage domain: `${CODEX_HOME:-$HOME/.codex}/emulator-holdout-locks`. It is
+derived from `CODEX_HOME`, never selected per atlas or supplied by the caller.
+Changing `CODEX_HOME` creates a different storage domain whose partition claims
+cannot be combined with the first. The root contract repeats the resolved path,
+and validation rejects any other value. The
 canonical lock is `<holdout_lock_root>/<hex>.lock`, so corpus membership or a
 local group rename cannot give the same source group a second identity. Acquire
 multiple keys in sorted digest order with an atomic create-new operation that
@@ -600,8 +617,8 @@ Manifest every behavior-bearing root:
   "harness_id": "baseline-or-candidate-id",
   "factor": "question_policy",
   "roots": [
-    {"path": "AGENTS.md", "mode": "100644", "sha256": "..."},
-    {"path": "skills/example/SKILL.md", "mode": "100644", "sha256": "..."}
+    {"path": "AGENTS.md", "mode": "100644", "sha256": "...", "source_resolution": {"kind": "dereferenced_symlink", "link_chain": [{"path": "AGENTS.md", "target": "/source/AGENTS.md"}], "resolved_source_path": "/source/AGENTS.md"}},
+    {"path": "skills/example/SKILL.md", "mode": "100644", "sha256": "...", "source_resolution": {"kind": "regular", "link_chain": [], "resolved_source_path": "skills/example/SKILL.md"}}
   ],
   "runtime_config": {
     "model": "...",
@@ -615,9 +632,14 @@ Fingerprint the exact RFC 8785 JSON Canonicalization Scheme UTF-8 bytes.
 The manifest file itself MUST contain exactly those canonical bytes, so its
 exact-file closure SHA-256 and manifest identity are the same digest. Implicit global harness state
 invalidates comparison.
-Every root `path` is normalized, relative, nonempty, non-escaping, and unique;
-absolute paths, `..`, symlinks outside the bundle, and duplicate normalized
-paths are invalid before materialization.
+Every root `path` is normalized, relative, nonempty, non-escaping, and unique.
+Source symlinks are resolved exactly once while capturing the frozen source
+harness; dangling links and loops are invalid. `source_resolution` binds every
+link path and raw target plus the final resolved source path. The staged bundle
+then contains only regular, non-symlink files at the logical root paths, with
+the resolved bytes and executable modes bound by the manifest. No materialized
+bundle symlink may resolve back into the live harness. Absolute logical paths,
+`..`, and duplicate normalized paths are invalid.
 
 Candidate metadata:
 
@@ -626,9 +648,9 @@ candidate:
   candidate_id:
   baseline_harness_fingerprint:  # harness subject only
   candidate_harness_fingerprint: # harness subject only
-  baseline_subject_fingerprint:
-  candidate_subject_fingerprint:
   factor:
+  factor_delta_validation_ref:
+  factor_delta_validation_fingerprint:
   hypothesis:
   changed_paths: []
   affected_chart_tags: []
@@ -638,14 +660,18 @@ candidate:
   limitations: []
 ~~~
 
-The baseline and candidate subject fingerprints are mandatory for every
-comparison subject. Harness fingerprints are present only for a harness subject
-and MUST equal the corresponding subject fingerprints.
-
 Use exactly one semantic owner, though its implementation may span files that
 jointly own that behavior. At most three candidates run in one cycle. Stage
 candidates outside the live harness. Candidate and evaluator changes require
 separate experiments.
+
+The pre-candidate policy enumerates the exact behavior-bearing paths and runtime
+configuration keys owned by the selected factor. After candidate freeze, a
+factor-delta validation asset computes the complete baseline/candidate manifest
+diff, requires at least one change, and requires every changed path or runtime
+key to be in that predeclared owner set. The final root and candidate metadata
+bind its ref and fingerprint. A missing, incomplete, or out-of-factor delta is
+`multiple_factors` and cannot be recommended.
 
 ## 9. Run both arms freshly
 
