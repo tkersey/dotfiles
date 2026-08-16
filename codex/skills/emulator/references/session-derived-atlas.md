@@ -83,7 +83,8 @@ cas app-server preflight \
 
 Use a more specific already-installed profile when required. Do not change Seq
 or CAS for the first proof. If no existing runner supports a chart, classify it
-blocked.
+`skipped` with canonical stop reason `runner_unavailable`; it is a pre-run
+capability gap, not an agent failure or runtime error.
 
 ## 2. Discover and freeze sources
 
@@ -396,6 +397,12 @@ separate fresh context that receives discovery/development material only; prior
 model context that saw holdout contents is not an admissible optimizer. Freeze
 all chart, evaluator, and partition fingerprints before that handoff.
 
+Do not rely on prompts or same-user file modes to hide holdout material from an
+optimizer with filesystem tools. Run optimization in a workspace where holdout
+roots are not mounted/readable, and bind an optimizer-readable inventory plus
+access-proof ref and fingerprint in the pre-candidate policy asset. Missing or
+mismatched optimizer access evidence contaminates the holdout.
+
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
 replace it with an untouched group before another optimization cycle.
@@ -412,6 +419,10 @@ next root binds the current immutable snapshot and each effective marker through
 preserve its exact bytes at
 `roots/<root-contract-fingerprint>/emulator-spec.yaml`; reports cite that
 immutable root snapshot.
+
+Any selecting root with a holdout creates both an immutable empty snapshot and
+`current.json` before its first use; the pointer is mandatory even when there
+are no retirements. A root without holdout charts may omit both.
 
 Before every selecting run, resolve the current pointer and require its target
 snapshot fingerprint to equal the root's bound snapshot. A stale
@@ -432,6 +443,15 @@ unavailable outside the named cycle/run group and fails closed. On completion,
 incorporate the reservation as a retirement marker in the next immutable
 snapshot. Prefer discovery/development for standalone examples; do not spend a
 holdout casually.
+
+The canonical lock key is
+`holdout-retirements/locks/<split-group-id>.lock`. Acquire multiple groups in
+sorted group-id order with an atomic create-new operation that fails if the key
+already exists; never use check-then-create. The lock record binds the final
+root fingerprint, pre-candidate policy fingerprint, cycle/run-group identity,
+and reservation fingerprint. If acquisition fails before any actor exposure,
+remove only locks created by that same attempt; after exposure, any incomplete
+lock remains fail-closed for human resolution.
 
 Filesystem and process separation are sufficient for the initial accidental
 leakage threat model; do not build a cryptographic broker.
@@ -575,6 +595,7 @@ malformed, leaked, drifted, or unverifiable environment -> invalid_environment
 runner failure unrelated to agent decision -> runtime_error
 order-unstable or genuinely indeterminate result -> ambiguous
 policy-excluded chart -> skipped
+runner unavailable before actor start -> skipped with reason runner_unavailable
 ~~~
 
 unsupported_counterfactual and invalid_environment are not agent defects and do
@@ -673,6 +694,7 @@ evaluator_contaminated
 holdout_contaminated
 oracle_gap
 contract_ambiguity
+runner_unavailable
 multiple_factors
 insufficient_evidence
 ~~~

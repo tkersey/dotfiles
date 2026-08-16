@@ -165,10 +165,13 @@ bundle, chart, root closure, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Harness manifests are required only for `subject: harness`;
 actor and environment-implementation comparisons bind their declared subject
-bundles without invented harness fields. Selecting and training claims require an access proof that
-the actor could not read evaluator-only roots; both its reference and exact
-fingerprint are recorded and verified. Every emitted dataset reference has a
-companion fingerprint.
+bundles without invented harness fields. For `subject_kind: harness`,
+`subject_id == harness_id` and `subject_fingerprint == harness_fingerprint`; a
+mismatch is `invalid_environment`. Harness fields are absent for other subject
+kinds. Selecting and training claims require an access proof that the actor
+could not read evaluator-only roots; both its reference and exact fingerprint
+are recorded and verified. Every emitted dataset reference has a companion
+fingerprint.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot. Holdout
@@ -311,6 +314,7 @@ counterexample artifact by reference and fingerprint.
     "evidence_refs": []
   },
   "recommendation": "adopt | reject | insufficient_evidence",
+  "evidence_relation": "paired_replay_delta | observed_association | regression | insufficient_evidence",
   "reason": "",
   "authority_granted": false
 }

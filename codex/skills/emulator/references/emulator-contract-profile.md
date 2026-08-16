@@ -124,8 +124,14 @@ directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
-`current_session_excluded: true` is mandatory for session-corpus mining.
-Current user design may use `false`; non-session sources use `not_applicable`.
+Both `session` and `session_corpus` require
+`current_session_excluded: true`. `user_design` requires `false`; every other
+source kind requires `not_applicable`.
+
+The pre-candidate policy asset includes the ordered selecting chart entries
+(`chart_id`, fingerprint, split group, partition, and `required`), factor,
+partition snapshot, runtime configuration, repeats, randomness policy,
+improvement threshold, protected dimensions, and candidate budget.
 
 `subject: harness` requires fingerprinted baseline and candidate harness
 manifests in the recursive root closure.
@@ -185,6 +191,11 @@ environment_chart:
     allowed_context_refs: []
     forbidden_context_refs: []
     output_schema:
+    action_projection:
+      source: decision_output | tool_call_event | actor_action_event
+      kind: json_pointer
+      path:
+      cardinality: exactly_one_per_support_check
 
   environment:
     world_fidelity: exact | approximate | transcript_only | absent
@@ -311,6 +322,13 @@ Every executable implementation has an exact identity. Its seed-control mode,
 seed when controlled, and any sampled failure schedule are explicit and
 fingerprinted; `unavailable` is recorded rather than replaced with an invented
 seed.
+
+For `subject: environment_implementation`, the shared chart omits the singular
+implementation ref/fingerprint and each arm resolves them from its frozen
+subject bundle. Other subject kinds use the chart implementation block. The
+actor's `action_projection` deterministically extracts exactly one action from
+the validated output before support classification; projection failure is
+`hard_fail`.
 
 Executable charts also bind exactly one canonical `world_ref` and
 `world_fingerprint`; closure assets may contain supporting world material but

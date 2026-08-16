@@ -101,7 +101,9 @@ Session-derived atlases default to
 `${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/`; shareable designed
 environments may use `codex/emulators/<target>/`. Do not create empty
 scaffolding or commit session artifacts without explicit sanitization and
-authority.
+authority. Verify the selected private root is writable before authoring; when
+the default is not writable, require a caller-supplied writable private root
+rather than silently writing into the repository.
 
 ## Modes
 
@@ -114,14 +116,15 @@ files unless the requested artifact is itself an actor packet or evaluator.
 
 ### implement
 
-Materialize executable world, reset, tool, fixture, and evaluator assets already
-authorized by the contract. Do not edit source repositories or target skills
-without separate authority.
+Author or validate the contract closure when needed, then materialize its
+executable world, reset, tool, fixture, and evaluator assets. Do not edit source
+repositories or target skills without separate authority.
 
 ### run
 
-Execute one frozen harness against selected charts. Capture only fresh runtime
-observations, actions, effects, terminal state, cost, and trace.
+Execute one frozen declared subject against selected charts; require a harness
+only for `subject: harness`. Capture only fresh runtime observations, actions,
+effects, terminal state, cost, and trace.
 
 ### mutate
 
