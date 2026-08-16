@@ -83,7 +83,9 @@ insufficient.
 
 Both baseline and candidate arms are fresh. They bind the same chart, actor
 packet, world/reset, effects, evaluator, runtime configuration, repeat policy,
-and split identity. Only the selected semantic factor may differ.
+and split identity. Only the selected semantic factor may differ; when that
+factor owns declared runtime keys, runtime parity is evaluated after applying
+exactly that validated key-local delta.
 
 ```text
 hard failure or protected regression -> cannot be repaired by preference

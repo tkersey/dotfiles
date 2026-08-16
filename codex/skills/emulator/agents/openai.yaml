@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Emulator"
-  short_description: "Build total or partial agent environments from design or session evidence"
+  short_description: "Build partial agent environments from sessions or design"
   default_prompt: "Use $emulator to compile a provenance-preserving environment atlas, keep session-derived transitions partial, separate actor and evaluator visibility, compare fresh baseline and candidate harness runs, preserve hard-oracle precedence, and never mutate the live harness without explicit authority."

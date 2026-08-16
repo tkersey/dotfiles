@@ -200,7 +200,8 @@ has a stable `root_id`, a unique nonnegative integer `precedence`, and a
 normalized logical `mount_path`; these values, not a source-worktree path,
 determine lookup and override order. Materialize roots in ascending precedence;
 a higher numeric precedence overrides a lower one at the same effective mount
-path. Distinct root declarations have unique precedence values. It enumerates every behavior-bearing root
+path. Distinct root declarations have unique `root_id` and precedence values.
+It enumerates every behavior-bearing root
 under experiment. The root may contain one chart; the atlas abstraction does
 not require scale.
 
@@ -580,8 +581,8 @@ classification is invalid_environment.
 
 | Support | Runtime behavior | Status |
 |---|---|---|
-| executable | Call step, record transition, then evaluate | pass or hard_fail |
-| judgeable | Do not call step; evaluate the decision | pass or hard_fail |
+| executable | Call step, record transition, then evaluate | pass, hard_fail, or ambiguous |
+| judgeable | Do not call step; evaluate the decision | pass, hard_fail, or ambiguous |
 | denied | Do not call step; emit deterministic contract failure | hard_fail |
 | observed_only | Preserve historical evidence only | attempted fresh transition is unsupported_counterfactual |
 | unsupported | No honest execution or judgment exists | attempted fresh transition is unsupported_counterfactual |

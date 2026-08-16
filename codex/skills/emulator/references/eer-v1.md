@@ -61,6 +61,8 @@ emulator_execution_report:
     holdout_lock_fingerprints: []      # holdout runs only
     holdout_lock_validation_ref:       # holdout runs only
     holdout_lock_validation_fingerprint: # holdout runs only
+    holdout_consumption_refs: []        # holdout runs only
+    holdout_consumption_fingerprints: [] # holdout runs only
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     candidate_metadata_ref:
@@ -133,6 +135,8 @@ emulator_execution_report:
       holdout_lock_fingerprints: []      # holdout runs only
       holdout_lock_validation_ref:       # holdout runs only
       holdout_lock_validation_fingerprint: # holdout runs only
+      holdout_consumption_refs: []        # holdout runs only
+      holdout_consumption_fingerprints: [] # holdout runs only
       harness_id:
       harness_fingerprint:
       factor:
@@ -148,12 +152,15 @@ emulator_execution_report:
       evaluator_implementation_fingerprint:
       runtime_config_ref:
       runtime_fingerprint:
+      runtime_observation_ref:
+      runtime_observation_fingerprint:
       actor_runner_fingerprint:
       actor_started: true | false
       actor_seed:
       actor_seed_control: fixed | sampled | unavailable
       environment_seed:
       environment_seed_control: fixed | sampled | unavailable
+      failure_schedule_ref:
       failure_schedule_fingerprint:
       world_fingerprint:
       reset_recipe_fingerprint:
@@ -264,6 +271,19 @@ binds the runner implementation and version and is always equal across arms;
 runner identity is not a selectable harness factor. A mismatch is
 `comparison_drift`, never candidate improvement.
 
+Each started execution also binds a run-owned `runtime-observation/v1` artifact
+by ref and fingerprint. Its exact RFC 8785 payload is
+`{"observed_runtime_config":{},"requested_runtime_fingerprint":"sha256:<hex>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"schema":"runtime-observation/v1"}`.
+`observed_runtime_config` is the complete effective configuration and its
+canonical digest equals both `requested_runtime_fingerprint` and the execution's
+`runtime_fingerprint`. `actor_runner_fingerprint` is SHA-256 of the exact RFC
+8785 `runner` object. Missing observation or unequal observed/requested values
+is `comparison_drift`.
+
+A sampled failure schedule binds both a run-owned `failure_schedule_ref` and
+its exact fingerprint; both are null when no schedule exists. Matched-schedule
+claims compare the referenced bytes, not a free-standing digest.
+
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
 every source-identity partition claim and the artifact validating those claims
@@ -273,7 +293,9 @@ against the frozen pre-candidate policy. The canonical
 additionally bind the exclusive pre-exposure reservation, every canonical
 cross-atlas lock's atlas-relative snapshot ref and fingerprint, and a validation
 artifact proving those snapshots matched the canonical locks, root, storage
-domain, source groups, and reservation before exposure. Missing
+domain, source groups, and reservation before exposure. They also bind
+atlas-relative snapshots of every global consumption marker created before
+first actor exposure. Missing
 or mismatched evidence makes selecting use invalid rather than silently reusing
 a stale or consumed group.
 
@@ -329,12 +351,15 @@ and leaves comparison-only fields null:
   "evaluator_implementation_fingerprint": "sha256:...",
   "runtime_config_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/runtime-config.json",
   "runtime_fingerprint": "sha256:...",
+  "runtime_observation_ref": "runs/run-group-.../runtime/run-...-observation.json",
+  "runtime_observation_fingerprint": "sha256:...",
   "actor_runner_fingerprint": "sha256:...",
   "actor_started": true,
   "actor_seed": null,
   "actor_seed_control": "unavailable",
   "environment_seed": null,
   "environment_seed_control": "unavailable",
+  "failure_schedule_ref": null,
   "failure_schedule_fingerprint": null,
   "world_fingerprint": null,
   "reset_recipe_fingerprint": null,
@@ -412,6 +437,8 @@ counterexample artifact by reference and fingerprint.
   "holdout_lock_fingerprints": ["sha256:..."],
   "holdout_lock_validation_ref": "runs/cmp-.../holdout-lock-validation.json",
   "holdout_lock_validation_fingerprint": "sha256:...",
+  "holdout_consumption_refs": ["runs/cmp-.../holdout-consumption/<digest-hex>.json"],
+  "holdout_consumption_fingerprints": ["sha256:..."],
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
   "candidate_metadata_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/candidate.yaml",

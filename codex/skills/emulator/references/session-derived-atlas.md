@@ -423,6 +423,15 @@ actor-readable inventory, including harness, memory, tool fixtures, and mounted
 roots. Any unscannable or unsanitized readable asset is excluded or makes the
 run `status: invalid_environment` with `status_reason: historical_leakage`.
 
+Exact matching is not sufficient for source-derived readable assets. Retain a
+provenance row for every actor-readable asset stating whether it predates the
+source, was independently authored, or may derive from the selected session
+corpus. An evaluator-only semantic-derivative review compares every possibly
+derived asset with the hidden action, correction, recovery, and outcome and
+binds its result by ref and fingerprint. A paraphrase, encoded derivative, or
+uncertain provenance is `historical_leakage`; when it cannot be excluded, the
+chart is diagnostic-only and cannot enter holdout, selection, or training.
+
 A file containing both projections is not separation. For harness selection,
 promotion, or training, absent actor-readable inventory or access proof makes
 the run invalid_environment and limits the chart to diagnostic use.
@@ -639,8 +648,10 @@ physically known identity, perform the bounded semantic read while still
 holding the lock, derive all newly visible stable aliases, and publish
 `discovery_exposed` claims for them before releasing it. That group is
 permanently discovery-only. If a newly discovered alias already has a
-`holdout_unexposed` claim, atomically replace it with `discovery_exposed` so
-every selecting run's mandatory claim revalidation fails, then stop with
+selection lock/reservation but no consumption marker, atomically replace its
+`holdout_unexposed` claim with `discovery_exposed`; the selector's mandatory
+pre-actor revalidation then fails. If its consumption marker exists, the alias
+is already consumed and cannot be reused. In either case stop with
 `source_contaminated`; any other incompatible claim also stops. Claims never
 transition from an exposed state back to holdout. This fallback makes the
 unavoidable first read honest without pretending the alias was knowable.
@@ -652,10 +663,13 @@ Before chart compilation, resolve one private, writable
 Storage may follow `${CODEX_HOME:-$HOME/.codex}` or an explicit private root,
 but storage location never scopes exposure authority. All selection-capable
 roots use the single user-global registry at canonical-realpath
-`$HOME/.codex/emulator-holdout-locks`, bind it as `exposure_registry_root`, and
+`<os-account-home>/.codex/emulator-holdout-locks`, where `os-account-home` is
+resolved from the effective OS account record (for example
+`getpwuid(geteuid())`) and never from caller-controlled `HOME` or `CODEX_HOME`.
+Bind it as `exposure_registry_root`, and
 bind `exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonical-realpath-UTF-8)`.
 `holdout_lock_root` equals that registry root. Changing `CODEX_HOME`, atlas
-location, or caller storage root therefore cannot create a fresh exposure
+location, caller storage root, or process `HOME` therefore cannot create a fresh exposure
 namespace. If the user-global registry is unavailable or prior exposure outside
 it cannot be excluded, the root is diagnostic/development-only and cannot
 support holdout, harness selection, promotion, or `adopt`. Claims and canonical
@@ -679,8 +693,25 @@ maps each snapshot fingerprint to its canonical absolute lock path and domain
 and exposure-registry IDs; canonical paths are evaluator-only runtime facts,
 not report refs.
 
+Immediately before the first actor receives any holdout byte, reacquire
+`.partition-freeze.lock`, revalidate every claim, lock, and reservation against
+the frozen cycle, and atomically create one immutable global
+`<holdout_lock_root>/<hex>.consumed.json` per identity. Its exact RFC 8785 bytes
+are
+`{"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-consumption/v1","source_identity_fingerprint":"sha256:<hex>"}`.
+The filename, key, identity, registry, cycle, root, and reservation must agree.
+Release the lock only after every marker is durable, then expose the actor.
+Later arms/repeats in the same cycle validate and reuse the exact markers; any
+other cycle is permanently blocked. These non-lock markers are the global
+completion/consumption authority. Lock cleanup never removes them, and a lock
+without a marker remains active or incomplete and fails closed.
+Copy their exact bytes to
+`runs/<run-group-id>/holdout-consumption/<digest-hex>.json` for each pair and
+bind those snapshots in every affected run and EER.
+
 Before the fallback semantic read or any `holdout_unexposed` replacement,
-claim writers check the canonical holdout lock and reservation for every known
+claim writers check the canonical holdout lock, reservation, and consumption
+marker for every known
 identity while holding `.partition-freeze.lock`. Any active or incomplete
 selection lock/reservation makes the source unavailable and the semantic read
 does not occur. Thus a discovery writer cannot contaminate a group after the
@@ -805,7 +836,14 @@ Source symlinks are resolved exactly once while capturing the frozen source
 harness; dangling links and loops are invalid. A separately fingerprinted,
 evaluator-only `harness-capture-provenance/v1` asset binds every source link
 path, owning root ID, source-root path, raw target, and final resolved source
-path and is included in the root
+path, plus a complete walk of every declared source root. Its canonical
+`roots` entries contain `root_id`, absolute source root, every regular or
+symlink path with mode/digest and included flag, and any excluded path with a
+nonempty reason and authority ref; entries and paths are sorted and unique.
+Every discovered path is either included in the manifest or explicitly
+authorized as excluded, and every manifest entry occurs in the inventory.
+Missing, extra, or unaccounted behavior-bearing files invalidate baseline
+capture. The provenance asset is included in the root
 closure and the corresponding baseline/candidate root entry. That provenance
 validates capture but is excluded from harness
 identity and factor-delta comparison, so equivalent captures in different
@@ -814,10 +852,10 @@ then contains only regular, non-symlink files at the manifest-relative bundle pa
 the resolved bytes and executable modes bound by the manifest. No materialized
 bundle symlink may resolve back into the live harness. Absolute logical paths,
 `..`, and duplicate normalized paths are invalid.
-The final resolved source of every symlink must remain inside the source root
-bound by its capture-provenance root ID; otherwise capture stops. Legitimate external
-content must first be declared as another harness root—there is no implicit
-host-path allowlist.
+The final resolved source of every symlink must remain inside some declared
+source root. When it crosses roots, provenance records both owning and target
+root IDs and capture uses the target root's inventory entry. A target outside
+all declared roots stops capture; there is no implicit host-path allowlist.
 
 Candidate metadata:
 
