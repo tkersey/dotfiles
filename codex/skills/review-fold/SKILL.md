@@ -1,6 +1,6 @@
 ---
 name: review-fold
-description: "Classify and quotient current review findings, failing tests, incidents, bug reports, migration failures, and other witnessed falsifiers against the exact current Goal and Git head. Separate facts from suggestions, identify stable law-and-boundary classes and causal recurrence from available owner evidence, and return a Review Fold without selecting repairs, granting mutation, counting review credit, or persisting a Counterexample artifact."
+description: "Classify and quotient current review findings, failing tests, incidents, bug reports, migration failures, and other witnessed falsifiers against the exact current Goal and Git head. Separate facts from suggestions, distinguish law boundaries from detection surfaces, identify counterexample families and independent witnesses from available owner evidence, and return a Review Fold without selecting admission frontiers, repairs, architecture, review credit, or durable artifacts."
 ---
 
 # Review Fold
@@ -13,11 +13,12 @@ Turn current witnessed falsification pressure into one bounded analytical fold:
 owner-issued evidence
 + current Goal
 + exact Git head
--> classified facts, quotient classes, causal pressure, and blockers
+-> classified facts, counterexample families, causal pressure, and blockers
 -> no mutation authority
 ```
 
-`$review-fold` owns evidence classification and quotienting. `$actuating` owns
+`$review-fold` owns evidence classification, quotienting, and family evidence.
+`$actuating` owns admission-frontier analysis, semantic-hotspot judgment,
 architecture evaluation, target selection, review credit, next action, and
 closure. Source owners retain their receipts and durable history.
 
@@ -43,7 +44,7 @@ incidents, provider review threads, migration failures, and compatibility
 failures retain their native owner evidence.
 
 Do not require an Actuating campaign event, Construction identifier,
-Counterexample Set, or Ledger record.
+Counterexample Set, hotspot registry, or Ledger record.
 
 ## Minimal law
 
@@ -51,7 +52,9 @@ Counterexample Set, or Ledger record.
 claim != observed fact
 observed fact != current liability
 current liability != accepted scope
-accepted scope != selected repair
+accepted scope != counterexample family
+counterexample family != admission frontier
+admission frontier != selected repair
 Review Fold != mutation authority
 ```
 
@@ -65,16 +68,21 @@ review_fold:
     missing_sources: []
   classes:
     - class_id:
-      boundary:
       law:
+      law_boundary:
+      semantic_owner:
       discrepancy: excess | deficit | incoherence | partiality | misbinding
-      owner:
       severity: critical | high | medium | low
       disposition: accepted | rejected | blocked | follow-up
       observed_facts: []
       evidence_refs: []
-      witnesses: []
+      witnesses:
+        - observed_fact:
+          detection_boundary:
+          evidence_ref:
+          independence_basis:
       applicability:
+      family_basis:
       quotient_basis:
       recurrence:
         status: first-observed | recurring | unknown
@@ -85,8 +93,12 @@ review_fold:
 ```
 
 Class IDs are stable semantic names within the available evidence horizon. They
-derive from the governing law, boundary, discrepancy, and owner—not attempt,
-thread, commit, filename, campaign, publication epoch, or proposed patch.
+derive from the governing law, law boundary, semantic owner, discrepancy, and
+family basis—not attempt, thread, commit, filename, detection surface, campaign,
+publication epoch, or proposed patch.
+
+A class may contain witnesses detected at different boundaries. Review Fold
+does not infer that a detection boundary is the admission frontier.
 
 ## Evidence horizon
 
@@ -99,7 +111,7 @@ Use every currently available owner source relevant to the Goal:
 - migration and compatibility failures;
 - prior owner evidence explicitly available in the active context.
 
-Do not maintain a parallel retained class register.
+Do not maintain a parallel retained class or hotspot register.
 
 When historical evidence needed to prove recurrence is unavailable:
 
@@ -117,21 +129,50 @@ architecture laws remain unproved.
 2. Separate the source's claim, observed fact, suggested repair, and transport
    status.
 3. Decide whether each fact is a current liability under an accepted Goal law.
-4. Name boundary, governing law, discrepancy, owner, witness, applicability,
-   and evidence.
-5. Quotient duplicate rows and same-class observations.
-6. Compare exact available prior owner evidence to classify recurrence and
+4. For each witness, name the detection boundary and exact owner evidence.
+5. For each candidate class, name the governing law, law boundary, semantic
+   owner, discrepancy, applicability, and family basis.
+6. Quotient duplicate rows and same-family observations only when the governing
+   law and semantic basis agree.
+7. Record why each witness is independent or mark the basis unknown.
+8. Compare exact available prior owner evidence to classify recurrence and
    shared causal mechanisms.
-7. Assign one disposition:
+9. Assign one disposition:
    - `accepted`: current in-scope falsification is established;
    - `rejected`: evidence establishes stale, false, already satisfied,
      preference-only, or non-liability pressure;
-   - `blocked`: validity, applicability, ownership, or current identity remains
-     unknown;
+   - `blocked`: validity, applicability, ownership, family basis, or current
+     identity remains unknown;
    - `follow-up`: valid pressure lies outside the current Goal.
-8. Return the fold directly to Actuating.
+10. Return the fold directly to Actuating.
 
 A current clean source may return an empty `classes` list.
+
+## Counterexample families
+
+Group witnesses only when current evidence supports:
+
+```text
+same violated law
+compatible applicability
+same semantic owner
+same law boundary
+same causal mechanism or equivalent escape relation
+```
+
+Witness independence requires a material difference in input partition, state
+or transition, call path, producer or consumer, external incident, generator,
+or temporal trace.
+
+Duplicate reports, copied tests, repeated reviewer prose, and multiple failures
+from one root execution are not independent evidence.
+
+File proximity is not a family basis. Different files may witness one family;
+one file may contain several unrelated families.
+
+Review Fold reports the family and causal evidence. Actuating combines that
+evidence with the reconstructed incumbent to identify the admission frontier
+and decide whether the family forms a semantic hotspot.
 
 ## Source revisions
 
@@ -144,27 +185,29 @@ history is explicit uncertainty, not evidence erasure.
 
 ## Causal pressure
 
-Group accepted classes under one causal mechanism only when current evidence
-supports a shared missing or falsified semantic law.
+On a demonstrated recurrence, several independent same-family witnesses, or
+several current defensive sites for one law, Actuating must reconsider whether
+another pointwise realization repair is architecturally closed.
 
-On a demonstrated recurrence or multiple accepted same-cause classes,
-Actuating must reconsider whether another pointwise realization repair is
-architecturally closed. Review Fold reports the causal evidence; it does not
-choose the replacement architecture.
+Review Fold reports the pressure. It does not choose the admission frontier,
+repair locus, replacement architecture, or correctness delta.
 
 ## Guardrails
 
-- Do not choose architecture, repair, work node, operation, publication, next
-  action, review credit, or closure.
+- Do not choose an admission frontier, architecture, repair, work node,
+  operation, publication, next action, review credit, or closure.
 - Do not turn suggested patches into accepted facts.
-- Do not create or register a Counterexample artifact.
+- Do not equate detection surface with law boundary or admission frontier.
+- Do not create or register a Counterexample or hotspot artifact.
 - Do not invoke Ledger.
-- Do not claim historical continuity when owner evidence is unavailable.
+- Do not claim historical continuity or witness independence without exact
+  evidence.
 - Do not broaden Goal scope.
 - Do not treat CAS process exit as a semantic verdict.
 
 ## Handoff
 
 Return the current Review Fold, exact source evidence references, accepted and
-blocked classes, causal groups, evidence-horizon gaps, and unresolved
-questions. Actuating decides what those facts require.
+blocked classes, counterexample families, witness-independence bases, causal
+groups, evidence-horizon gaps, and unresolved questions. Actuating decides what
+those facts require.

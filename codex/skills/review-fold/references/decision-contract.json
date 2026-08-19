@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-live-evidence-v1"
+      "source_fingerprint": "review-fold-counterexample-family-v1"
     },
     "triggers": [
       {
@@ -22,16 +22,21 @@
         "exclusions": []
       },
       {
-        "trigger_id": "RF-CLASS",
-        "description": "Multiple observations may witness one stable law-and-boundary class or causal mechanism.",
+        "trigger_id": "RF-FAMILY",
+        "description": "Several observations may witness one counterexample family or semantic hotspot pressure.",
         "cue_literals": [
-          "duplicate finding",
+          "counterexample family",
+          "semantic hotspot",
+          "detection boundary",
+          "independent witness",
           "same law",
-          "same boundary",
           "recurrence"
         ],
         "cue_regexes": [],
-        "exclusions": []
+        "exclusions": [
+          "file proximity alone",
+          "duplicate reports or copied tests alone"
+        ]
       },
       {
         "trigger_id": "RF-SOURCE-REVISION",
@@ -59,7 +64,7 @@
       },
       {
         "route_id": "RF-BLOCK",
-        "description": "Block a classification when evidence, applicability, ownership, or identity is unknown.",
+        "description": "Block a classification when evidence, applicability, ownership, family basis, or identity is unknown.",
         "aliases": [
           "blocked"
         ],
@@ -84,21 +89,23 @@
           "one disposition per current class"
         ],
         "success_signals": [
-          "claims facts and suggested repairs are separate",
+          "claims, facts, suggested repairs, and transport status are separate",
+          "law boundaries and witness detection boundaries are distinct",
           "a clean source is representable",
           "output is returned directly to Actuating"
         ],
         "failure_signals": [
           "review prose selects work",
+          "a detection boundary is presented as an admission frontier",
           "unknown evidence is treated as current",
-          "a Counterexample Set or Ledger record is created"
+          "a Counterexample Set, hotspot artifact, or Ledger record is created"
         ],
         "rationale": "Classification remains current analysis rather than a second durable evidence world."
       },
       {
-        "clause_id": "RF-QUOTIENT-001",
+        "clause_id": "RF-FAMILY-001",
         "trigger_refs": [
-          "RF-CLASS"
+          "RF-FAMILY"
         ],
         "expected_routes": [
           "RF-FOLD",
@@ -106,26 +113,30 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "law",
-          "boundary",
+          "governing law",
+          "law boundary",
+          "semantic owner",
           "discrepancy",
-          "owner",
-          "witness",
+          "witness detection boundaries",
+          "family basis",
+          "independence basis per witness",
           "applicability",
-          "quotient basis",
           "exact evidence references"
         ],
         "success_signals": [
-          "duplicates collapse",
+          "duplicates collapse without collapsing independent witnesses",
+          "different detection surfaces may remain one same-law family",
+          "file proximity never defines a family",
           "recurrence is established only from exact available prior evidence",
           "shared causal mechanisms are evidenced"
         ],
         "failure_signals": [
-          "attempt or patch identity defines a class",
+          "attempt, patch, file, or reviewer identity defines a class",
+          "duplicate reports count as independent witnesses",
           "memory or summary manufactures recurrence",
-          "a repair is selected"
+          "Review Fold selects an admission frontier or repair"
         ],
-        "rationale": "Actuating receives stable current pressure without maintaining a parallel class register."
+        "rationale": "Actuating receives current counterexample-family evidence without a retained class or hotspot register."
       },
       {
         "clause_id": "RF-REVISION-001",

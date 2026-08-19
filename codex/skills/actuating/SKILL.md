@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Use bare $actuating for implementation, Ship publication, and exhaustive review convergence; use explicit implement, triage, remediation-plan, or review-closeout for bounded routes. Reconstruct the incumbent architecture from Git, preserve it when closed under current obligations, and recompile it through First Principles, Universalist, bounded Metanoetic challenge, and Reduce when new evidence changes semantics, ownership, representation, or abstraction. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store and invokes no Ledger gate."
+description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Use bare $actuating for implementation, Ship publication, and exhaustive review convergence; use explicit implement, triage, remediation-plan, or review-closeout for bounded routes. Treat accepted bugs as counterexamples to named laws, distinguish detection surfaces from admission frontiers, derive semantic hotspots from current owner evidence and repository scar tissue, preserve the incumbent only when its existing owner can exclude the complete evidenced family, and otherwise recompile the smallest correctness-non-dominated architecture. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store and invokes no Ledger gate."
 ---
 
 # Actuating
@@ -37,13 +37,13 @@ the facts it consumes and keeps no parallel durable world.
 `$first-principles` controls the admissible premise basis.
 `$universalist` nominates repository-native architectures and boundaries.
 `$metanoetic` may expand the hypothesis space once on one unchanged decision
-surface. `$reduce` challenges unearned factors. Supporting skills never select
-the target architecture or grant mutation. `$ship` alone performs public
-effects. CAS owns review execution and receipts.
+surface. `$reduce` challenges unearned factors and detection-only movement.
+Supporting skills never select the target architecture or grant mutation.
+`$ship` alone performs public effects. CAS owns review execution and receipts.
 
 Git is the realized construction. A prose analysis, previous thread, PR
-description, ADR, or Architecture Working Set is explanatory evidence and may
-be stale; none outranks the current tree.
+description, ADR, Architecture Working Set, or semantic-hotspot analysis is
+explanatory evidence and may be stale; none outranks the current tree.
 
 ## Public routes
 
@@ -97,14 +97,14 @@ unavailable, or mismatched evidence receives no credit.
 For any mutation that may affect a boundary, model the current tree:
 
 ```text
-boundaries
+boundaries and admitted inputs
 canonical owners
 state dimensions
 events and transitions
-effects and handlers
+effects, handlers, ordering, and custody
 authoritative representations
 public observations and compatibility
-recovery and cancellation
+recovery, retry, cancellation, and terminal behavior
 proof mechanisms
 live bypasses, parallel owners, and residue
 ```
@@ -117,6 +117,51 @@ legibility defect. Do not compensate with an Actuating-private database.
 Read [architecture-reconciliation.md](references/architecture-reconciliation.md)
 when mutation could change architecture or abstractions.
 
+## Bugs as counterexamples
+
+Every accepted bug, failing test, incident, migration failure, compatibility
+failure, or review finding is a witnessed counterexample to a named required
+law. It is not a patch instruction.
+
+For bug-driven work, distinguish:
+
+```text
+Detection surface
+  where incorrectness became visible
+
+Admission frontier
+  the earliest seam with enough information and authority to prevent the
+  invalid state or trace from becoming sanctioned behavior
+```
+
+`$review-fold` classifies facts, law boundaries, counterexample families,
+witness independence, recurrence, and causal mechanisms. Actuating combines
+that evidence with the incumbent to identify the admission frontier and decide
+whether a semantic hotspot exists.
+
+Read [semantic-hotspots.md](references/semantic-hotspots.md) when the witness
+touches a construction, transition, composition, ownership, representation,
+interpretation, or observation boundary; or current code shows repeated
+defenses for the same law.
+
+A semantic hotspot is the ephemeral conjunction:
+
+```text
+violated law
+x semantic owner
+x admission frontier
+x escape paths
+x independent witnesses
+```
+
+It is not a file, churn score, bug count, review count, or stored record. One
+counterexample may reopen architecture immediately when it falsifies a
+universal construction, transition, composition, ownership, or bypass law.
+
+Skip deeper hotspot analysis for an isolated mistake wholly inside an
+already-correct owner when the incumbent already excludes the complete family
+and no sanctioned bypass remains.
+
 ## Architecture-closure test
 
 Preserve the incumbent and perform a realization correction only when all are
@@ -128,15 +173,17 @@ current canonical owner remains correct
 no new state dimension, event, transition, effect, terminal mode, or ordering law
 no ownership, authority, admitted-domain, or representation change
 no new compatibility, recovery, cancellation, retry, or observation mode
-no recurring causal failure indicates a missing shared mechanism
 no active bypass, parallel owner, or obsolete representation must be removed
+the existing owner can exclude the complete evidenced counterexample family
+without another independent guard, owner, representation, or semantic mechanism
 ```
 
 A changed implementation technique or complete source rewrite is not itself
 architectural novelty. Conversely, hiding new semantics inside an existing
 module does not preserve the architecture.
 
-If any condition fails, reopen architecture selection before mutation.
+A convenient place for another check is not closure. If any condition fails,
+reopen architecture selection before mutation.
 
 ## Architecture reconsideration
 
@@ -145,10 +192,16 @@ Recompile the architecture when current evidence establishes at least one:
 - accepted source or compatibility requirements changed;
 - a finding falsifies an incumbent law, owner, representation, or transition;
 - a proposed repair needs a new semantic constructor or observable mode;
+- one witness disproves construction soundness, legal composition, transition
+  admissibility, canonical ownership, or bypass exclusion;
+- a semantic hotspot exposes a shared missing mechanism;
 - a causal failure recurs after pointwise correction;
 - one law is independently owned or represented in multiple places;
+- another local fix would move or add a guard while preserving the same invalid
+  region;
 - a bypass or displaced mechanism remains live;
-- a materially smaller candidate satisfies the same obligations;
+- a materially smaller correctness-non-dominated candidate satisfies the same
+  obligations;
 - the repository cannot expose a coherent owner or transition model.
 
 Then:
@@ -156,18 +209,28 @@ Then:
 1. Compile the current Goal through `$goal-contract`.
 2. Freeze an incumbent-independent premise basis with `$first-principles`.
 3. Run `$review-fold` over all currently available applicable owner evidence.
-4. Ask `$universalist` for concrete repository-native candidates.
-5. Invoke `$metanoetic` once only when a materially different model, owner, or
+4. Derive the counterexample topology and bounded semantic hotspot when
+   bug-driven.
+5. Ask `$universalist` for concrete repository-native candidates. For
+   bug-driven candidates require the enforcement locus, family eliminated,
+   unchecked paths retired, valid observations preserved, residual invalidity,
+   falsifier, and transition.
+6. Invoke `$metanoetic` once only when a materially different model, owner, or
    representation remains plausible.
-6. Invoke `$reduce` when a candidate preserves or adds a disputable factor.
-7. Select the smallest non-dominated candidate satisfying every current
-   obligation and observation.
-8. Name the preserved, introduced, replaced, and retired mechanisms.
-9. Define exact proof commands and falsifiers.
+7. Invoke `$reduce` when a candidate preserves or adds a disputable factor or
+   merely moves detection.
+8. Select the smallest correctness-non-dominated candidate satisfying every
+   current obligation and observation.
+9. Name the preserved, introduced, replaced, and retired mechanisms.
+10. State the correctness delta and exact proof before mutation.
+
+Correctness dominance is the partial order defined in
+[semantic-hotspots.md](references/semantic-hotspots.md). Do not replace it with
+a scalar architecture score or manufacture dominance among incomparable minima.
 
 Accepted findings never map directly to patches. Review order, reviewer
-identity, campaign partitioning, implementation momentum, and the incumbent's
-familiarity do not select architecture.
+identity, campaign partitioning, implementation momentum, file proximity, bug
+count, and the incumbent's familiarity do not select architecture.
 
 ## Architecture Working Set
 
@@ -179,11 +242,28 @@ Bound head:
 Goal:
 Incumbent model:
 Falsified or newly required laws:
+
+Counterexample topology, when bug-driven:
+  Witness:
+  Detection surface:
+  Admission frontier:
+  Counterexample family:
+  Escape paths:
+  Semantic scar tissue:
+
 Selected target:
 Canonical owners:
 Preserve:
 Introduce or replace:
 Retire:
+
+Correctness delta:
+  Invalid region eliminated:
+  Escape paths retired:
+  Valid observations preserved:
+  Residual invalidity:
+  Residual owner:
+
 Proof commands:
 Reconsider when:
 ```
@@ -198,8 +278,8 @@ review contradicts Working Set -> architecture selection reopens
 ```
 
 A PR description or ADR may retain rationale when humans need it. It remains
-ordinary documentation. Do not create a schema, predecessor chain, registry, or
-workflow receipt for the Working Set.
+ordinary documentation. Do not create a schema, predecessor chain, hotspot
+registry, architecture score, or workflow receipt for the Working Set.
 
 ## Realization
 
@@ -223,10 +303,27 @@ Git owns parent/successor identity, changed paths, ancestry, and recovery.
 Uncommitted state is provisional. A committed result is not complete merely
 because it exists.
 
+For a bug-driven correction, prove at the strongest honest owner locus:
+
+```text
+witness rejection
+counterexample-family elimination
+required valid behavior preservation
+escape-path and bypass exclusion
+elimination or interpreter adequacy
+explicit ownership of unavoidable residual invalidity
+```
+
+As same-family witnesses accumulate, compress example-only proof into the
+strongest repository-supported law-level proof rather than accumulating
+pointwise guards and tests.
+
 Before Ship or closure-grade review:
 
 - every required semantic mechanism exists in the current tree;
 - every canonical owner excludes material bypasses;
+- every selected counterexample family is excluded at the chosen frontier or
+  its residual invalidity is explicit and owned;
 - every selected retirement is actually absent or deliberately successor-mapped;
 - every required proof command passes on the exact current head;
 - no correctness-bearing production or proof mechanism remains unexplained by
@@ -310,6 +407,9 @@ A head is `complete` only while all applicable predicates hold:
 accepted Goal satisfied
 required validation passes on the exact head
 selected architecture is fully realized and residue retired
+accepted bug witnesses are rejected
+selected counterexample families are excluded or residual invalidity is explicit
+selected escape paths are retired
 publication matches the exact head when required
 the Review Contract is satisfied for the exact head when required
 no applicable unresolved finding or blocker remains
@@ -320,17 +420,24 @@ Any changed input reopens reconciliation naturally.
 ## Hard rules
 
 - No Actuating Ledger command, definition, event log, or durable workflow store.
-- No Goal, Construction, Counterexample, Evidence, operation, or closure
-  registration protocol.
-- No replacement database, architecture registry, receipt family, or migration
-  layer.
+- No Goal, Construction, Counterexample, Evidence, operation, closure, or
+  semantic-hotspot registration protocol.
+- No replacement database, bug Ledger, hotspot registry, architecture score,
+  bug-count threshold, receipt family, or migration layer.
 - Do not treat an analysis, plan, prior thread, or PR description as current
   repository truth.
-- Do not patch a finding before testing architecture closure.
-- Do not rerun architecture selection when the incumbent remains closed under
-  the exact obligation.
-- Do not claim recurrence when the relevant owner evidence is unavailable.
+- Do not map a bug or finding directly to a patch.
+- Do not conflate the detection surface with the admission frontier.
+- Do not infer a semantic hotspot from file proximity, churn, review count, or
+  repeated prose.
+- Do not call guard multiplication correct by construction.
+- Do not rerun architecture selection when the incumbent can exclude the exact
+  evidenced family through its existing owner.
+- Do not preserve the incumbent when the same invalid family remains admitted
+  through a sanctioned path.
+- Do not claim recurrence or witness independence when the relevant owner
+  evidence is unavailable.
 - Do not grant review credit without exact current-head CAS evidence.
-- Do not claim completion from process status, a stored verdict, or publication
-  alone.
+- Do not claim completion from process status, a stored verdict, publication,
+  or rejection of one example alone.
 - Complete object-level work before optional learnings or memory capture.

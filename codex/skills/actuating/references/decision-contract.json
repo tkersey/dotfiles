@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-live-reconciler-v1"
+      "source_fingerprint": "actuating-semantic-hotspot-reconciler-v1"
     },
     "triggers": [
       {
@@ -30,6 +30,26 @@
         "exclusions": []
       },
       {
+        "trigger_id": "ACT-COUNTEREXAMPLE",
+        "description": "A current bug or falsifier may expose a semantic hotspot or architecture defect.",
+        "cue_literals": [
+          "bug",
+          "failing test",
+          "regression",
+          "incident",
+          "invalid state",
+          "illegal transition",
+          "semantic hotspot",
+          "counterexample family",
+          "admission frontier"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "isolated syntax or mechanical mistake wholly inside an already-correct owner",
+          "environment failure with no semantic boundary implication"
+        ]
+      },
+      {
         "trigger_id": "ACT-RECONSIDER",
         "description": "Current evidence falsifies or extends the incumbent architecture.",
         "cue_literals": [
@@ -43,7 +63,7 @@
         "cue_regexes": [],
         "exclusions": [
           "diff size or implementation rewrite alone",
-          "one local defect already represented by the incumbent"
+          "one local defect whose complete family is already excluded by the incumbent"
         ]
       },
       {
@@ -147,10 +167,48 @@
         "rationale": "Reconciliation remains current when durable facts stay with their owners and interpretations are recomputed."
       },
       {
+        "clause_id": "ACT-HOTSPOT-001",
+        "trigger_refs": [
+          "ACT-COUNTEREXAMPLE",
+          "ACT-RECONSIDER"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-TRIAGE",
+          "ACT-REMEDIATION",
+          "ACT-REVIEW-CLOSEOUT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "exact witnessed counterexample",
+          "named violated law",
+          "detection surface distinct from candidate admission frontier",
+          "current Review Fold family evidence when multiple witnesses are claimed",
+          "bounded repository-native semantic scar tissue when applicable",
+          "counterexample topology and correctness delta when architecture reopens"
+        ],
+        "success_signals": [
+          "a bug is treated as a counterexample rather than a patch instruction",
+          "one universal-law falsifier may reopen architecture immediately",
+          "semantic hotspots require same-law owner evidence rather than file proximity",
+          "the incumbent is preserved only when its existing owner excludes the complete evidenced family",
+          "the selected target states invalid region eliminated, escape paths retired, and residual invalidity"
+        ],
+        "failure_signals": [
+          "detection surface is treated as admission frontier without evidence",
+          "bug or finding maps directly to a patch",
+          "file proximity, churn, or an arbitrary bug count establishes a hotspot",
+          "another guard is called correct by construction while the same invalid family remains admitted",
+          "a hotspot registry, score, threshold, receipt, or durable store is created"
+        ],
+        "rationale": "Bugs improve architecture only when their counterexample families are traced to the earliest owned admission seam and excluded there."
+      },
+      {
         "clause_id": "ACT-ARCHITECTURE-001",
         "trigger_refs": [
           "ACT-BARE",
           "ACT-ROUTE",
+          "ACT-COUNTEREXAMPLE",
           "ACT-RECONSIDER"
         ],
         "expected_routes": [
@@ -162,19 +220,22 @@
         "required_artifacts": [
           "incumbent model reconstructed from the current tree",
           "architecture-closure judgment",
-          "Architecture Working Set when selection reopens"
+          "Architecture Working Set when selection reopens",
+          "correctness-dominance comparison for bug-driven candidates"
         ],
         "success_signals": [
-          "local repair preserves an incumbent already closed under the obligation",
-          "semantic novelty or recurrence reopens selection before mutation",
+          "local repair preserves an incumbent already closed under the complete obligation or counterexample family",
+          "semantic novelty, universal-law falsification, or semantic hotspot reopens selection before mutation",
+          "the smallest correctness-non-dominated candidate is selected",
           "First Principles, Universalist, bounded Metanoetic challenge, and Reduce retain their authority boundaries"
         ],
         "failure_signals": [
-          "finding maps directly to patch",
           "new semantics hide inside a realization repair",
-          "prior Construction artifact substitutes for current repository evidence"
+          "candidate comparison ignores invalid states, escape paths, owner dilution, or residual proof burden",
+          "incomparable minima are collapsed into a scalar score",
+          "prior analysis substitutes for current repository evidence"
         ],
-        "rationale": "Architecture is a live interpretation of the current tree and obligations, not persisted workflow truth."
+        "rationale": "Architecture selection minimizes current admitted incorrectness while preserving every required valid observation and compatibility obligation."
       },
       {
         "clause_id": "ACT-REVIEW-001",
@@ -211,7 +272,8 @@
         "clause_id": "ACT-CLOSURE-001",
         "trigger_refs": [
           "ACT-BARE",
-          "ACT-ROUTE"
+          "ACT-ROUTE",
+          "ACT-COUNTEREXAMPLE"
         ],
         "expected_routes": [
           "ACT-SHIP-HANDOFF",
@@ -223,24 +285,28 @@
           "current exact Git head",
           "current validation",
           "current Ship evidence when required",
-          "current CAS evidence when required"
+          "current CAS evidence when required",
+          "witness rejection and family-elimination proof when bug-driven"
         ],
         "success_signals": [
           "closure is reevaluated from live owner facts",
+          "accepted witnesses are rejected through sanctioned paths",
+          "selected counterexample families are excluded at the canonical owner or residual invalidity is explicit and owned",
           "publication-before-review adoption is bound through the Ship observation digest in CAS request fingerprints",
           "no closure receipt or Evidence event is required"
         ],
         "failure_signals": [
           "stored completion survives changed inputs",
           "Ship requires an Actuating closure receipt",
+          "rejection of one example substitutes for family elimination",
           "publication, process exit, or a summary count substitutes for current proof"
         ],
-        "rationale": "Completion is a head-relative predicate, not durable control state."
+        "rationale": "Completion is a head-relative correctness predicate, not durable control state."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The current Git tree and owner-issued evidence are the facts; Actuating reports its live judgment without persisting a peer authority artifact."
+      "rationale": "The current Git tree and owner-issued evidence are the facts; Actuating reports its live judgment without persisting a peer authority artifact or hotspot registry."
     }
   }
 }

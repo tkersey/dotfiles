@@ -1,7 +1,7 @@
 interface:
   display_name: "reduce"
-  short_description: "Challenge costly factors without taking selection authority"
+  short_description: "Ablate detection-only architecture and invalidity-preserving layers"
   brand_color: "#64748B"
-  default_prompt: "Use $reduce to factor the candidate, challenge redundant distinctions, and prove recomposition; in Actuating composition, return one compact non-authoritative challenge and reserve RC-v1 for standalone or independently durable work."
+  default_prompt: "Use $reduce to factor the candidate, challenge redundant distinctions, compare invalid regions and escape paths, and prove recomposition. In Actuating composition, mark candidates dominated when they preserve the same counterexample family and merely add, move, rename, or duplicate detection; return one compact non-authoritative challenge and reserve RC-v1 for standalone or independently durable work."
 policy:
   allow_implicit_invocation: false

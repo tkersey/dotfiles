@@ -1,6 +1,6 @@
 ---
 name: reduce
-description: "Audit over-engineered codebases by factoring layers into live obligations, quotienting redundant distinctions, ablating unearned surface, and normalizing the survivors while preserving required behavior. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo or infrastructure tooling, web stacks, or requests to remove layers. In Actuating composition, return one compact non-authoritative minimization challenge before target-architecture selection; use RC-v1 only for standalone audits or independently durable handoffs."
+description: "Audit over-engineered codebases by factoring layers into live obligations, quotienting redundant distinctions, ablating unearned surface, and normalizing the survivors while preserving required behavior. Use when change latency or agent difficulty comes from frameworks, plugins, DI, codegen, task runners, config indirection, ORMs, GraphQL, monorepo or infrastructure tooling, web stacks, or requests to remove layers. In Actuating composition, challenge candidates that preserve the same invalid region while adding or relocating detection; return one compact non-authoritative minimization challenge before target-architecture selection."
 ---
 
 # Reduce
@@ -30,15 +30,16 @@ guard:
 ```
 
 - **Factoring** decomposes a layer into obligations, owners, inputs, outputs,
-  dependencies, observations, and recomposition roles.
+  dependencies, observations, invalid states, escape paths, and recomposition
+  roles.
 - **Quotienting** collapses distinctions no required observation can
   distinguish after congruence checks.
 - **Ablating** removes, privatizes, collapses, or decommissions factors without a
   distinct live obligation.
 - **Normalizing** recomposes the survivors around canonical owners and lower
   primitives.
-- **Refinement-preserving** retains required behavior while allowing obsolete,
-  duplicated, invalid, or unrequired behavior to disappear.
+- **Refinement-preserving** retains required valid behavior while allowing
+  obsolete, duplicated, invalid, or unrequired behavior to disappear.
 
 ## Abstraction elevator
 
@@ -71,19 +72,22 @@ to request another nomination or block.
 7. Every removed factor needs obligation discharge.
 8. Every target normal form needs recomposition proof.
 9. Keep value and obligation risk separate.
-10. Do not turn the audit into another durable workflow unless independent
+10. A candidate that preserves the same invalid region and merely adds, moves,
+    renames, or duplicates detection is dominated when an admissible
+    owner-level candidate excludes the same counterexample family.
+11. Do not turn the audit into another durable workflow unless independent
     durability is explicitly required outside the active Actuating run.
 
 ## Workflow
 
 1. Map the relevant layers, lower primitives, public/wire/storage boundaries,
-   proof surfaces, and invariants.
+   proof surfaces, invariants, invalid states, and escape paths.
 2. Trace at least one real request, change, or command through each major
    abstraction.
 3. Factor each candidate by live obligation:
 
-| factor | obligation | owner | inputs/outputs | observations | external commitment | recomposition role |
-|---|---|---|---|---|---|---|
+| factor | obligation | owner | inputs/outputs | observations | invalidity excluded | external commitment | recomposition role |
+|---|---|---|---|---|---|---|---|
 
 4. Classify each obligation `live`, `moved`, `expired`, `duplicated`, `invalid`,
    or `unknown`.
@@ -91,11 +95,15 @@ to request another nomination or block.
    evidenced value.
 6. Test quotient candidates against an explicit observation set and congruence
    under accepted operations.
-7. Check whether apparently removable shape is an essential product,
+7. For bug-driven work, compare the invalid region, admission frontier, escape
+   paths, semantic owners, and residual checks before and after the candidate.
+8. Reject guard movement presented as correctness improvement when the same
+   invalid family still crosses the same frontier.
+9. Check whether apparently removable shape is an essential product,
    refinement, agreement boundary, free construction, protocol, or external
    obligation.
-8. Classify dominance as `dominant`, `dominated`, `incomparable`, or `unknown`.
-9. Return one operator-level verdict:
+10. Classify dominance as `dominant`, `dominated`, `incomparable`, or `unknown`.
+11. Return one operator-level verdict:
    `keep`, `hold`, `factor`, `quotient`, `wrap`, `split`, `collapse`, `ablate`,
    `privatize`, `decommission`, `normalize`, `replace`, `validate-first`, or
    `climb`.
@@ -108,12 +116,20 @@ Return exactly:
 Reduction Challenge
 Bound head:
 Candidate:
+Counterexample family, when applicable:
 Disputable factors:
+Invalid-region comparison:
+Detection-only movement:
+Owner-level alternative:
 Verdict: minimal | dominated | incomparable | essential-shape-gap | blocked
 Smaller admissible candidate:
 Obligations preserved:
 Recomposition proof or falsifier:
 ```
+
+Mark `Detection-only movement: yes` when a candidate merely changes where an
+invalidity is noticed while leaving the same state, trace, owner dilution, or
+escape path admissible.
 
 This is supporting analysis, not an artifact or selection. Use
 [reduction-certificate.md](references/reduction-certificate.md) only for a
@@ -130,11 +146,11 @@ When explicitly asked to implement:
 3. Implement one coherent reduction seam.
 4. Preserve the old surface until the selected proof relation passes unless
    direct deletion is already proved safe.
-5. Run recomposition and residue checks.
+5. Run recomposition, invalid-region, bypass, and residue checks.
 6. Stop when a new observation changes an obligation or invalidates the target.
 
-No Ledger operation, Construction artifact, or one-operation protocol is
-required.
+No Ledger operation, Construction artifact, hotspot register, or one-operation
+protocol is required.
 
 ## Standalone output
 
@@ -142,7 +158,7 @@ required.
 2. Layer and boundary map
 3. Evidence
 4. Factorization map
-5. Tax, value, and dominance
+5. Tax, value, invalid region, and dominance
 6. Quotient candidates
 7. Essential-abstraction check
 8. Winnowing decisions
@@ -157,6 +173,7 @@ Winnowing Bottom Line:
 - quotient:
 - ablate:
 - normalize:
+- invalidity eliminated:
 - preserve because:
 - proof relation:
 - first safe move:

@@ -3,17 +3,19 @@ set -eu
 
 skill_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 codex_root=$(CDPATH='' cd -- "$skill_root/../.." && pwd)
-repo_root=$(CDPATH='' cd -- "$codex_root/.." && pwd)
 jaq_bin=${JAQ_BIN:-jaq}
 
 for removed in \
   "$skill_root/definitions" \
+  "$skill_root/hotspots" \
+  "$skill_root/state" \
+  "$skill_root/semantic-hotspots.json" \
   "$codex_root/skills/goal-contract/definitions" \
   "$codex_root/skills/review-fold/definitions" \
   "$codex_root/skills/review-fold/assets"
 do
   if [ -e "$removed" ]; then
-    echo "retired protocol surface remains: $removed" >&2
+    echo "retired or prohibited protocol surface remains: $removed" >&2
     exit 1
   fi
 done
@@ -36,6 +38,7 @@ done
 active_files="
 $skill_root/SKILL.md
 $skill_root/references/architecture-reconciliation.md
+$skill_root/references/semantic-hotspots.md
 $skill_root/references/closure.md
 $skill_root/references/review-contract.md
 $codex_root/skills/goal-contract/SKILL.md
@@ -75,10 +78,31 @@ do
 done
 
 grep -F 'level-triggered architecture reconciler' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Architecture-closure test' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Architecture Working Set' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Bugs as counterexamples' "$skill_root/SKILL.md" >/dev/null
+grep -F 'A semantic hotspot is the ephemeral conjunction:' "$skill_root/SKILL.md" >/dev/null
+grep -F 'complete evidenced counterexample family' "$skill_root/SKILL.md" >/dev/null
+grep -F 'smallest correctness-non-dominated candidate' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Invalid region eliminated:' "$skill_root/SKILL.md" >/dev/null
+grep -F 'No replacement database, bug Ledger, hotspot registry' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
+
+grep -F 'Semantic Hotspot H =' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Admission frontier' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Detection surface' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'correctness-dominates' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'No bug Ledger, hotspot registry' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'False hotspot' "$skill_root/references/semantic-hotspots.md" >/dev/null
+
+grep -F 'detection_boundary:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'family_basis:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'independence_basis:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'does not infer that a detection boundary is the admission frontier' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+
+grep -F 'preserves the same invalid region' "$codex_root/skills/reduce/SKILL.md" >/dev/null
+grep -F 'Detection-only movement:' "$codex_root/skills/reduce/SKILL.md" >/dev/null
+
 grep -F 'start a fresh full wave' "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'publication observation digest' "$skill_root/references/review-contract.md" >/dev/null
 
@@ -98,11 +122,24 @@ grep -F 'publication observation digest' "$skill_root/references/review-contract
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-live-reconciler-v1" and
+    "actuating-semantic-hotspot-reconciler-v1" and
+  ([.skill_decision_contract.triggers[].trigger_id] |
+    index("ACT-COUNTEREXAMPLE")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-HOTSPOT-001")) != null and
   ([.skill_decision_contract.routes[].route_id] | sort) ==
     (["ACT-IMPLEMENT", "ACT-TRIAGE", "ACT-REMEDIATION",
       "ACT-REVIEW-CLOSEOUT", "ACT-SHIP-HANDOFF", "ACT-CLOSE"] | sort)
 ' "$skill_root/references/decision-contract.json" >/dev/null
+
+"$jaq_bin" -e '
+  .skill_decision_contract.skill.source_fingerprint ==
+    "review-fold-counterexample-family-v1" and
+  ([.skill_decision_contract.triggers[].trigger_id] |
+    index("RF-FAMILY")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("RF-FAMILY-001")) != null
+' "$codex_root/skills/review-fold/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .ledger == [{
@@ -120,4 +157,4 @@ do
   test -s "$skill_root/references/$lens"
 done
 
-echo "actuating reconciler contract: pass"
+echo "actuating semantic-hotspot reconciler contract: pass"
