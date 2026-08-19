@@ -1,41 +1,40 @@
-# Counterexample-to-Construction Integration
+# Review Evidence to Architecture Reconciliation
 
 Use `$negative-ledger` as an evidence-backed pre-route exclusion check, never as
 a review classifier, architecture selector, or workflow authority.
 
-~~~text
-review or failure evidence
--> $review-fold classifies counterexample-set/v1
--> $actuating evaluates the current Construction
--> current exact Negative Ledger `route-gate` projection
--> $actuating selects or blocks a successor Construction
-~~~
+```text
+owner review or failure evidence
+-> $review-fold classifies the current evidence horizon
+-> $actuating reconstructs the incumbent architecture from Git
+-> current exact Negative Ledger route-gate projection
+-> $actuating preserves, recompiles, or blocks the target architecture
+```
 
 ## Trigger
 
-Project the canonical `route-gate` before Actuating selects a route when:
+Project the canonical `route-gate` before Actuating selects an architecture
+when:
 
-- an accepted Counterexample resembles a previously failed construction;
-- the same law-and-boundary class recurs after repair;
-- a prior realization, architecture, or ablation route was falsified;
-- a public bypass, compatibility path, fallback, parser tolerance, or proof
-  choice caused a current witnessed failure; or
-- a candidate Construction resembles an active exact route exclusion.
+- a current accepted finding resembles a previously failed route;
+- the same law-and-boundary failure may have recurred;
+- a prior realization or architecture route was falsified;
+- a bypass, compatibility path, fallback, parser tolerance, or proof choice
+  caused a witnessed current failure; or
+- a candidate resembles an active exact route exclusion.
 
-## Ownership law
+## Ownership
 
-- `$review-fold` owns classification and quotienting into the Counterexample
-  Set.
-- `$negative-ledger` owns current applicability of recorded route exclusions.
-- `$actuating` owns Counterexample evaluation, successor Construction
-  selection, the next action, and closure judgment.
-- The current Construction Contract is the only selected architecture.
+- `$review-fold` owns current evidence classification and quotienting.
+- `$negative-ledger` owns applicability of recorded route exclusions.
+- `$actuating` owns incumbent reconstruction, architecture closure, target
+  selection, next action, and live closure.
+- Git is the realized construction.
 
 An active exact applicable exclusion may block selection until it is reopened,
-proved stale or superseded, or recorded as accepted risk with the required
-external authority through Negative Ledger's lifecycle. Fuzzy, stale, or
-merely recalled evidence is suggest-only.
+proved stale or superseded, or accepted as risk with the required external
+authority. Fuzzy, stale, or recalled evidence is suggest-only.
 
-The projection result grants no mutation, does not become a Construction, and
-does not count review credit. Capture a failed successor route only when
-current evidence satisfies Negative Ledger's durable, route-shaping threshold.
+The projection grants no mutation, does not become an architecture decision, and
+does not count review credit. Capture a failed route only when current evidence
+satisfies Negative Ledger's own durable, route-shaping threshold.

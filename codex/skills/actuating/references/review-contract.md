@@ -1,283 +1,167 @@
 # Static Review Contract
 
-Actuating owns one static review law. It is not mutable per-goal state and does
-not become Ledger policy.
+Actuating owns one checked-in review policy:
+[review-contract.json](review-contract.json). It is source policy, not mutable
+per-goal state and not a Ledger definition.
 
-## Canonical contract
+## Contract identity
 
-The checked-in [review-contract.json](review-contract.json) bundle contains the
-complete normative `actuating-review-contract/v1` under `review_contract` and
-supporting resource manifests under `lens_contract_manifests`. The normative
-object contains the immutable nonblank contract identity, topology,
-convergence law, recovery law, quality predicate, and all five nonblank lens
-references and digests. Each `required_lenses` entry has exactly `name`,
-`role`, `contract_ref`, and `contract_digest`. It is the one static contract;
-do not synthesize a per-goal copy.
+Before dispatch, read the exact raw bytes and compute:
 
-Each same-name supporting manifest declares a sorted, duplicate-free
-`resources` array of exact repository-relative UTF-8 paths and SHA-256 digests
-of their raw file bytes. The normative `contract_ref` must be one of those
-paths. Compute its package digest from the exact bytes and separators:
+```text
+review_contract_digest = sha256(raw review-contract.json bytes)
+```
 
-~~~text
-lens_contract_digest = sha256(
-  "actuating-lens-contract/v1" || 0x00 ||
-  for each resource sorted by path:
-    path || 0x00 || resource_digest || 0x00
-)
-~~~
+For each required lens, read the exact instruction file named by
+`instructions_ref` and compute:
 
-Encode every digest as `sha256:` plus 64 lowercase hexadecimal digits. The
-standard lens is the compact checked-in
-[standard-review.md](standard-review.md); auxiliary packages bind the actual
-skill resources enumerated in the JSON rather than an empty or symbolic ref.
+```text
+instruction_digest = sha256(exact UTF-8 instruction bytes)
+```
 
-Compute the aggregate published digest from canonical JSON after replacing
-only the nested `review_contract.contract_digest` with JSON `null`:
+Do not trim or normalize. A changed policy or lens file naturally produces a
+new binding. No stored self-digest or manifest copy is required.
 
-~~~text
-review_contract_digest =
-  sha256(canonical_json(review_contract with contract_digest = null))
-~~~
+## Review context
 
-Canonical JSON sorts object keys lexicographically, emits arrays in their
-declared order, uses UTF-8, and emits no insignificant whitespace. Store the
-result in `contract_digest`. A changed resource byte, lens, role, threshold,
-recovery rule, material-change rule, or quality predicate requires recomputing
-the affected package and aggregate digest and assigning a new immutable
-contract identity; no per-goal snapshot may revise the static contract.
+Build one canonical ephemeral context:
 
-Actuating constructs and supplies the exact canonical Review Contract. Ledger
-may validate its schema, recompute `contract_digest`, and compare that digest
-with a campaign or Counterexample subject. Ledger must not substitute an
-internal hardcoded contract, choose a contract version, or interpret the
-contract into review credit.
+```yaml
+review_context:
+  repository:
+  base_sha:
+  head_sha:
+  target_fingerprint:
+  goal:
+    objective:
+    non_goals: []
+    required_observations: []
+    compatibility: []
+  validation_summary:
+  publication_observation_ref: null | sha256-digest
+```
 
-Validate the checked-in bundle through the passive definition before binding a
-campaign:
+Canonicalize this JSON in memory and compute `review_context_digest`. The
+context is request input, not a durable artifact.
 
-~~~bash
-ledger validate \
-  --definition <actuating-skill-root>/definitions/ledger/review-contract.json \
-  --input contract=<actuating-skill-root>/references/review-contract.json \
-  --format json
-~~~
+When reviewing already-public state for later adoption,
+`publication_observation_ref` is the exact Ship publication observation digest obtained
+before dispatch.
 
-The result establishes structural validity only. Actuating derives and owns
-the current campaign identity from the validated contract and exact campaign
-tuple.
+## Campaign and request bindings
 
-Derive the campaign identity from the exact UTF-8 strings and NUL separators:
-
-~~~text
+```text
 campaign_id = sha256(
-  "actuating-review-campaign/v1" || 0x00 ||
-  goal_id || 0x00 ||
-  construction_ref || 0x00 ||
-  subject_digest || 0x00 ||
-  review_contract_digest
+  "actuating-review-campaign/v2" || NUL ||
+  repository || NUL ||
+  base_sha || NUL ||
+  head_sha || NUL ||
+  target_fingerprint || NUL ||
+  review_contract_digest || NUL ||
+  review_context_digest
 )
-~~~
+```
 
-The `review_contract_digest` in every `counterexample-set/v1` subject binds the
-current static Review Contract. A Counterexample Set produced from a CAS finding
-must also cite the current `review_campaign_started` event and exact terminal
-attempt event in `supporting_refs`. Actuating resolves those events and requires
-their campaign identity to equal the digest derived from the Set's existing
-Goal, Construction, subject, and Review Contract tuple; no duplicate campaign
-field is added to the Counterexample subject. A failing test,
-incident, compatibility failure, or other non-review falsifier does not require
-a review campaign before classification or repair. Ledger validates the
-artifact's structural subject tuple and digest shape; Actuating evaluates source
-provenance and any campaign relationship. Actuating decides whether the matched
-evidence earns credit. Any changed campaign input creates a different campaign
-and admits no prior review credit.
+For each required request:
 
-The static `attempt_quality` also binds
-`owner_lived_transport_required == true` and
-`required_capability == "cas_workflow_bound_owner_lived_review_v1"`.
-Actuating must observe that capability from `cas capabilities --json` before
-binding or dispatching a closure-grade request. Absence blocks before
-`review/start`; prose, an older CAS version, or a stored thread handle cannot
-substitute for the capability.
+```text
+request_fingerprint = sha256(
+  "actuating-review-request/v2" || NUL ||
+  campaign_id || NUL ||
+  request_id || NUL ||
+  lens_name || NUL ||
+  role || NUL ||
+  instruction_digest
+)
+```
 
-## Required topology
+Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
+binding. Actuating retains the context and expected fingerprints during the
+active run. CAS echoes the binding and owns the exact review receipt.
+
+## CAS boundary
+
+Before dispatch, require the current CAS review compatibility and capability
+checks. Each credited attempt must report:
+
+- a structured semantic verdict;
+- strong principal evidence with no reduced protection;
+- backend class `cas-start-wait`;
+- exact current base, head, and target fingerprint;
+- exact workflow-binding echo;
+- exact instruction bytes or their receipt-bound digest;
+- status `clean` or `findings`.
+
+Process exit, prose, or a thread handle is not a review verdict.
+
+Actuating checks owner-issued receipt fields directly. Do not pass CAS receipts
+through Ledger or copy them into an Actuating event log.
+
+## Compact lenses
 
 The required lenses are:
 
-| Lens | Role |
-|---|---|
-| standard | standard |
-| footgun-finder | auxiliary |
-| invariant-ace | auxiliary |
-| complexity-mitigator | auxiliary |
-| fresh-eyes | auxiliary |
+| Lens | Role | Instruction |
+|---|---|---|
+| standard | standard | `standard-review.md` |
+| footgun-finder | auxiliary | `lenses/footgun-review.md` |
+| invariant-ace | auxiliary | `lenses/invariant-review.md` |
+| complexity-mitigator | auxiliary | `lenses/complexity-review.md` |
+| fresh-eyes | auxiliary | `lenses/fresh-eyes-review.md` |
 
-Before the first dispatch, Actuating binds all five requests to one current
-Goal, Construction, review subject, campaign identity, exact lens contract,
-exact instruction digest, and unique opaque request identity.
-
-Derive each request fingerprint from exact UTF-8 strings and NUL separators:
-
-~~~text
-request_fingerprint = sha256(
-  "actuating-review-request/v1" || 0x00 ||
-  goal_id || 0x00 || campaign_id || 0x00 || subject_digest || 0x00 ||
-  request_id || 0x00 || lens_name || 0x00 || role || 0x00 ||
-  lens_contract_digest || 0x00 || instruction_digest
-)
-~~~
-
-`instruction_digest` is `sha256:` plus the SHA-256 of the exact UTF-8
-`developerInstructions` bytes supplied to the credited CAS `start --wait` or
-terminal `wait` route, with no trimming or newline normalization. The retained
-terminal receipt contains those exact bytes and its `targetFingerprint` also
-binds them. Before granting credit, Actuating hashes the receipt field and
-requires equality with the bound `instruction_digest`; the opaque
-workflow-binding echo alone is insufficient proof of instruction fidelity.
-The generic `cas review run` envelope is not a credited Actuating attempt
-because its backend class is not `cas-start-wait`.
-
-CAS receives only `request_id` and `request_fingerprint` in its opaque
-`workflowBinding` and must echo both unchanged. Semantic credit requires that
-exact echo and exact equality of the receipt's `baseSha`, `headSha`, and
-`targetFingerprint` to the current captured tuple. A digest, request, campaign,
-subject, lens, role, instruction, or tuple mismatch earns no credit.
-
-## CAS owner-fact projection
-
-CAS owns the current receipt protocol. The envelope reports
-`tupleVerdictExists`; `reviewVerdict` reports:
-
-~~~text
-principalStrength
-accountFingerprintReducedProtection
-backendClass
-baseSha
-headSha
-targetFingerprint
-workflowBinding
-status
-~~~
-
-Actuating owns the semantic credit predicate. Credit requires the exact bound
-request and context, `tupleVerdictExists == true`,
-`principalStrength == "strong"`,
-`accountFingerprintReducedProtection == false`,
-`backendClass == "cas-start-wait"`, a current tuple, and a structured `clean`
-or `findings` status. The exact `workflowBinding` must match the request whose
-fingerprint binds the lens contract and instruction digest. The
-`attempt_quality` fields above name Actuating policy; they are not alternate
-CAS receipt keys. Invalid, incomplete, reduced, fallback, unknown-backend, or
-mismatched attempts remain observable but receive no semantic credit.
+These are bounded read-only projections. They do not launch the standalone
+skill workflows, spawn authority lanes, persist artifacts, select repairs, or
+certify closeout.
 
 ## Initial wave
 
-Actuating launches standard plus four auxiliary CAS requests as five
-concurrent owner-lived `cas review start --wait --timeout-ms 2700000`
-processes. Each process owns its notification channel from `review/start`
-through a structured terminal receipt or one explicit terminal owner failure.
-Bare workflow-bound `start` followed by a separate `wait` is forbidden. All
-five processes must be launched before Actuating accepts an initial terminal
-result. A finding, clean result, start failure, or transport failure never
-cancels a launched sibling; every sibling reaches terminal transport evidence.
+Launch all five owner-lived `cas review start --wait` processes before accepting
+an initial terminal result.
 
-On a publication-bearing route, Actuating maps the current published subject
-to CAS `--base <bound-base>` and requires every returned base, head, and target
-fingerprint to match that binding. It must not select `--uncommitted` for a
-clean published checkout: that selector covers only working-tree changes, not
-the published branch delta. `--commit HEAD` is sufficient only when that one
-commit is itself the complete bound review subject.
-
-Each `review_attempt_started` observation must cite the exact CAS start
-`receipt_ref`. Ledger checks only that the reference is a digest. Actuating
-evaluates the five distinct, current, exactly bound start receipts and owns the
-all-five-start barrier.
-
-CAS owns attempt execution and the structured receipt. Actuating owns dispatch
-timing, validates request and subject identity, and evaluates the owner facts
-under the static Review Contract. Ledger may append the receipt reference and
-project structural attempt history. Ledger never launches CAS, classifies its
-facts as `clean` or `findings`, or turns any field or process exit status into
-review credit.
+- A finding, clean result, or transport failure never cancels a sibling.
+- Every launched request reaches terminal transport evidence.
+- The initial standard clean is clean attempt one.
+- Every finding passes through `$review-fold`.
+- Accepted pressure is resolved or rejected before serial confirmation.
 
 ## Request-local recovery
 
-A terminal attempt without a structured semantic verdict:
+A terminal request without a structured semantic verdict:
 
-- contributes no semantic attempt and no clean credit;
-- changes only that request to recovery-required;
-- preserves sibling facts on the unchanged subject;
-- waits for the initial non-cancelling transport barrier;
-- reruns the exact request once with the same subject and binding plus a fresh
-  attempt identity;
+- contributes no semantic attempt or clean credit;
+- preserves completed sibling evidence on the unchanged head;
+- may run one fresh exact-request recovery after the initial barrier;
 - blocks after a second verdictless terminal result.
 
-The recovery state belongs only to that exact request. Completed sibling facts
-and any standard clean credit remain current on the unchanged subject. A
-request-local transport loss does not reset all review credit and does not
-relaunch the four auxiliaries; only a material review-subject change does.
-
-Retrying lost output from an active exact attempt adopts that attempt; it does
-not create a second attempt or credit. The admitted recovery creates distinct
-attempt B. Active, stale, exhausted, blocked, non-current, or
-barrier-incomplete requests expose no recovery action.
-
-## Findings and Counterexamples
-
-Every finding passes through `$review-fold` before repair. It separates fact
-from suggested patch, quotients duplicates, and authors the current
-`counterexample-set/v1`. Accepted classes require Actuating to evaluate the
-current Construction and select a current successor or blocker before any
-mutation. Rejection requires evidence.
-
-Every entry in `finding_refs` is the `sha256:` digest of the exact canonical
-CAS compact finding-row bytes: `title`, `body`, `file`, `line`, and `priority`.
-The enclosing immutable receipt supplies attempt, tuple, request, and verdict
-provenance. Neither a row digest nor receipt identity participates in
-Counterexample class identity.
-A `follow-up` class remains recorded and routed to a successor goal but is
-nonblocking for the current Goal. Only applicable accepted debt and applicable
-blockers constrain current mutation or closure.
-
-Review and Counterexample artifacts never select a repair or grant mutation.
+Recover a live known handle with CAS `wait`; do not create a duplicate attempt.
 
 ## Convergence
 
-The initial wave succeeds only when the standard attempt is clean, every
-auxiliary is terminal and current, every finding is classified, no accepted
-Counterexample remains unresolved, and the review subject is unchanged. That
-standard clean is clean attempt one.
+After the initial wave is fully adjudicated, launch fresh standard attempts
+serially until the trailing exact-head clean suffix reaches five.
 
-Actuating then launches fresh standard attempts serially until the trailing
-current-subject streak reaches five consecutive distinct clean attempts.
+- A standard finding resets the suffix to zero.
+- An auxiliary finding does not change standard credit unless resolution changes
+  the head.
+- Any material Git head change invalidates all prior credit by tuple mismatch
+  and requires a fresh 1+4 wave.
+- No credit crosses a head change.
 
-A standard finding on an unchanged subject resets the standard streak to zero.
-Auxiliary facts remain current on that unchanged subject. If adjudication causes
-a material subject change, all review credit resets and a fresh concurrent 1+4
-wave is required. An auxiliary finding does not alter standard credit unless it
-causes a material subject change.
+## Resumption
 
-When the initial-wave standard attempt reports findings but adjudication causes
-no material subject change, the four terminal auxiliary results remain current.
-After every finding is classified and every accepted class is resolved or
-rejected, Actuating may launch a fresh standard attempt from streak zero; its
-first clean result establishes attempt one. It does not relaunch the auxiliaries
-unless the subject changes.
+Credit only exact receipts currently available to Actuating.
 
-No review credit crosses a material subject change. There is no carry.
+- Reuse a known CAS handle or exact receipt when its complete binding can be
+  revalidated.
+- A prior summary, claimed count, or PR prose grants no credit.
+- If the complete current evidence set cannot be resolved after interruption,
+  start a fresh full wave.
 
-The review subject includes every repository artifact whose correctness is in
-scope. It excludes only Artifact Kernel control storage and declared evidence
-attachments. Any other subject-digest change is material.
+This fail-closed restart is deliberate. Actuating maintains no review database.
 
-## Independence
+## Findings
 
-Reviewers receive the exact subject, pinned lens contract, exact instructions,
-and opaque workflow identity. They do not automatically receive persuasive
-architecture rationale. After independent results return, Actuating joins each
-accepted Counterexample to the Construction claim it falsifies.
-
-Changing the lens registry, a lens role or contract, the clean threshold, the
-recovery law, the quality predicate, or the material-change law creates a new
-immutable Review Contract identity and digest.
+A finding affects action only after `$review-fold` classifies the observed fact,
+applicability, governing law, and causal relationship. Suggested patches remain
+reviewer prose. Neither CAS nor Review Fold selects architecture or grants
+mutation.

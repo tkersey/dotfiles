@@ -1,4 +1,4 @@
-# CAS review proof boundary
+# CAS Review Proof Boundary
 
 Before `cas review run` or `cas review start`, require:
 
@@ -8,37 +8,39 @@ cas app-server preflight --cwd <repo> --profile review \
 cas capabilities --json
 ```
 
-The preflight must be compatible for the exact resolved runtime. The capability
-receipt must report `cas_structured_review_v1: true` and, for a
-workflow-bound start, `cas_workflow_bound_owner_lived_review_v1: true`.
-Require `transport.selected == "managed-ws"`; review's native runtime gate
-does not accept stdio compatibility as equivalent proof.
-CAS 0.5.0 executes that gate internally before `review/start` and reports the
-realized connection in its receipt as `selectedTransport == "websocket"`;
-`cas review` intentionally exposes no caller transport flag.
+The exact resolved runtime must be compatible. Require
+`cas_structured_review_v1: true`; workflow-bound starts additionally require
+`cas_workflow_bound_owner_lived_review_v1: true` and owner-lived
+`start --wait`.
 
 ## Evidence law
 
 ```text
-A process is not a review.
-A parent thread is not a review.
-An attempt begins only when reviewThreadId exists.
-A semantic verdict exists only when the structured verdict binds the target.
+a process is not a review
+a parent thread is not a review
+an attempt begins only when reviewThreadId exists
+a semantic verdict exists only when the structured verdict binds the target
 ```
 
-CAS owns the exact selector, instruction bytes, opaque workflow binding,
-review thread and turn, runtime/contract/transport identity, bounded recovery,
-principal facts, structured verdict, failure class, and finding provenance.
+CAS owns:
 
-The caller owns topology, lens meaning, review credit, finding truth and scope,
-Counterexample classification, repairs, mutation, publication, and closure.
-Process exit and prose are transport observations only.
+- exact target selector and target fingerprint;
+- instruction bytes;
+- opaque workflow binding;
+- review thread and turn;
+- runtime, contract, transport, and principal facts;
+- terminal semantic verdict or failure;
+- finding provenance;
+- durable attempt record.
+
+The caller owns topology, lens meaning, review credit, finding truth,
+classification, architecture, mutation, publication, and closure.
 
 ## Commands
 
-Use `run` for a standalone one-off review. Use one owner-lived `start --wait`
-process for a workflow-bound or Actuating request. Recover an already-started
-admissible diagnostic attempt with `wait`; do not duplicate a live handle.
+Use `run` for a standalone one-off review. Use one owner-lived
+`start --wait` process for an Actuating request. Use `wait` only for a known
+already-started attempt.
 
 ```bash
 cas review run --cwd <repo> --base <base> \
@@ -52,15 +54,14 @@ cas review start --wait --cwd <repo> --base <base> \
   --timeout-ms 2700000 --json
 ```
 
-When the caller admits a distinct same-target attempt after terminal evidence,
-add `--fresh-attempt <source-bound-reason>`. CAS validates and records that
-reason but does not decide whether the caller's workflow permits the attempt.
-A live or pending exact handle is recovered with `wait`, not replaced.
+A live or pending exact handle is recovered with `wait`, not replaced. A
+distinct same-target attempt after terminal evidence requires
+`--fresh-attempt <source-bound-reason>`.
 
 For post-publication review, use the exact bound base/head selector. A clean
-checkout is not a reason to substitute `--uncommitted`.
+checkout is not a reason to use `--uncommitted`.
 
-The workflow binding is the direct two-field input:
+The workflow binding remains opaque:
 
 ```json
 {
@@ -69,31 +70,32 @@ The workflow binding is the direct two-field input:
 }
 ```
 
-CAS returns it opaquely and does not infer a lens or policy.
+CAS echoes it and does not infer Actuating policy.
 
-## Receipt use
+## Receipt interpretation
 
-A semantic consumer requires a structured receipt whose target base, head, and
-fingerprint agree at receipt and verdict level. Validate it through CAS's
-passive `definitions/ledger/review-receipt.json` before interpretation.
+Actuating consumes the exact owner-issued CAS receipt directly. Require:
 
-Before the first native Ledger command, load `$ledger` and complete
-`$ledger ensure` once. Then validate the exact receipt:
+- receipt and verdict target tuples agree;
+- expected base, head, and target fingerprint;
+- exact workflow-binding echo;
+- structured semantic status;
+- strong principal and no reduced protection;
+- backend class `cas-start-wait`;
+- exact current runtime compatibility facts.
 
-```bash
-ledger validate \
-  --definition <cas-skill-root>/definitions/ledger/review-receipt.json \
-  --input receipt=<cas-review-receipt.json> \
-  --format json
-```
+Do not pass the receipt through Ledger or copy it into an Actuating event log.
+Structural parsing is not review credit; Actuating evaluates the exact fields
+under its static Review Contract.
 
-Require `ledger-validation-result/v1`, `valid: true`, the expected definition
-digest, `authority_granted: false`, and `storage_mutated: false`. Structural
-validity does not grant review credit or semantic authority.
+Missing structured output, provider failure, account exhaustion, fallback,
+transport loss, stale tuple, or mismatched binding earns no semantic credit.
 
-Actuating review credit additionally requires the static Review Contract's
-exact request/context match, `principalStrength == "strong"`,
-`accountFingerprintReducedProtection == false`, and
-`backendClass == "cas-start-wait"`. Missing structured output, auth-provider
-failure, attestation-provider failure, account exhaustion, or transport loss
-earns no clean verdict.
+## Resumption
+
+CAS owns durable attempt records, but Actuating maintains no review index.
+
+Reuse only an exact known handle or exact receipt that can be fully
+revalidated. If an interrupted Actuating run cannot resolve every receipt
+required for its current wave and clean suffix, it starts a fresh full wave.
+A summary or claimed count never substitutes for owner evidence.

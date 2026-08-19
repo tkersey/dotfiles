@@ -4,14 +4,6 @@
   "seq": [],
   "ledger": [
     {
-      "id": "cas/review-finding",
-      "path": "ledger/review-finding.json"
-    },
-    {
-      "id": "cas/review-receipt",
-      "path": "ledger/review-receipt.json"
-    },
-    {
       "id": "cas/fork-inquiry-receipt",
       "path": "ledger/fork-inquiry-receipt.json"
     }

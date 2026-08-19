@@ -1,207 +1,170 @@
 ---
 name: review-fold
-description: "Classify and quotient review findings, failing tests, incidents, bug reports, migration failures, and other witnessed falsifiers against the exact current Goal and Construction, including carrying unresolved classes across explicit source revisions. Author counterexample-set/v1 without selecting repairs, counting review credit, or granting mutation."
+description: "Classify and quotient current review findings, failing tests, incidents, bug reports, migration failures, and other witnessed falsifiers against the exact current Goal and Git head. Separate facts from suggestions, identify stable law-and-boundary classes and causal recurrence from available owner evidence, and return a Review Fold without selecting repairs, granting mutation, counting review credit, or persisting a Counterexample artifact."
 ---
 
 # Review Fold
 
 ## Mission
 
-Turn witnessed falsification pressure into one immutable classified-bug
-artifact.
+Turn current witnessed falsification pressure into one bounded analytical fold:
 
-~~~text
-review or failure source + Goal Contract + current Construction
--> counterexample-set/v1
+```text
+owner-issued evidence
++ current Goal
++ exact Git head
+-> classified facts, quotient classes, causal pressure, and blockers
 -> no mutation authority
-~~~
+```
 
-`$review-fold` owns fact classification, disposition, and quotienting.
-`$actuating` owns evaluation against the current Construction, successor
-selection, orchestration, review credit, and closure. The source owner retains
-its own receipt semantics.
+`$review-fold` owns evidence classification and quotienting. `$actuating` owns
+architecture evaluation, target selection, review credit, next action, and
+closure. Source owners retain their receipts and durable history.
+
+## Input
+
+Require:
+
+```yaml
+review_fold_input:
+  goal:
+  repository:
+  base:
+  head:
+  source_batches:
+    - owner:
+      exact_receipt_or_output:
+      findings_or_failure:
+  relevant_prior_owner_evidence: []
+```
+
+CAS-derived evidence must include the exact terminal CAS receipt. Tests,
+incidents, provider review threads, migration failures, and compatibility
+failures retain their native owner evidence.
+
+Do not require an Actuating campaign event, Construction identifier,
+Counterexample Set, or Ledger record.
 
 ## Minimal law
 
-~~~text
+```text
 claim != observed fact
-observed fact != liability
-liability != accepted scope
+observed fact != current liability
+current liability != accepted scope
 accepted scope != selected repair
-Counterexample Set != mutation authority
-~~~
+Review Fold != mutation authority
+```
 
-## Counterexample Set
+## Output
 
-~~~yaml
-artifact:
-  schema: counterexample-set/v1
-  artifact_id:
-  goal_id:
-  semantic_author: review-fold
-  created_at:
-  predecessor_refs: []
-  supporting_refs:
-    - review-campaign-started-event-ref
-    - review-attempt-or-failure-event-ref
-  payload:
-    subject:
-      construction_ref:
-      repository:
-      artifact_digest:
-      review_contract_digest:
-    classes:
-      - class_id:
-        boundary_key:
-        law_ref:
-        discrepancy: excess | deficit | incoherence | partiality | misbinding
-        owner_boundary:
-        severity: critical | high | medium | low
-        status: accepted | rejected | blocked | follow-up
-        observed_facts: []
-        evidence_refs: []
-        finding_refs: []
-        witness:
-        falsifier_ref:
-        applicability:
-        quotient_basis:
-~~~
+```yaml
+review_fold:
+  bound_head:
+  evidence_horizon:
+    complete_for_claims: true | false
+    missing_sources: []
+  classes:
+    - class_id:
+      boundary:
+      law:
+      discrepancy: excess | deficit | incoherence | partiality | misbinding
+      owner:
+      severity: critical | high | medium | low
+      disposition: accepted | rejected | blocked | follow-up
+      observed_facts: []
+      evidence_refs: []
+      witnesses: []
+      applicability:
+      quotient_basis:
+      recurrence:
+        status: first-observed | recurring | unknown
+        prior_evidence_refs: []
+      causal_mechanism:
+  unresolved_questions: []
+  handoff:
+```
 
-For CAS-derived evidence, `supporting_refs` cites the current
-`review_campaign_started` event and each exact terminal attempt or transport
-event used by the Set. Actuating resolves those Evidence Ledger events and
-requires their `campaign_id` and request identity to match the campaign derived
-from this Set's existing subject tuple. Do not duplicate that derived campaign
-identity as a fifth Counterexample subject field. A non-review falsifier needs
-no campaign reference.
+Class IDs are stable semantic names within the available evidence horizon. They
+derive from the governing law, boundary, discrepancy, and owner—not attempt,
+thread, commit, filename, campaign, publication epoch, or proposed patch.
 
-Every newly materialized Set binds the exact current Goal Contract through
-`supporting_refs` as `goal-contract:<artifact_id>`.
+## Evidence horizon
 
-Outside an explicit source revision, a Set is a source-local delta: include only
-classes newly observed or reclassified by this source. Do not copy untouched
-retained classes or their source Sets into `classes` or `predecessor_refs`.
-When an included class recurs, cite the prior Set that most recently carried
-that class. Actuating's retained class register preserves untouched classes and
-supplies the cumulative Counterexample Theory.
+Use every currently available owner source relevant to the Goal:
 
-For an explicit source revision with unresolved accepted or blocked classes, or
-one that brings a `follow-up` class within the successor Goal's scope, use the
-carry-forward transition:
+- exact CAS receipts and findings;
+- unresolved provider review threads;
+- current failing tests and verifier outputs;
+- supplied incidents and bug reports;
+- migration and compatibility failures;
+- prior owner evidence explicitly available in the active context.
 
-- the successor Goal cites every Set carrying an unresolved accepted or blocked
-  class, or a `follow-up` class brought into scope, as
-  `counterexample-set:<artifact_id>`;
-- the successor Set's `supporting_refs` contains
-  `goal-contract:<successor-artifact-id>` and
-  `counterexample-set:<artifact_id>` for every carried Set;
-- `predecessor_refs` includes the most recent Set carrying each carried class;
-- `subject.construction_ref` remains the exact predecessor Construction being
-  evaluated; and
-- every carried stable `class_id` appears exactly once with a current
-  disposition under the successor Goal.
+Do not maintain a parallel retained class register.
 
-Missing or mismatched Goal identity, incomplete source-revision coverage,
-omitted source-revision classes, or predecessor drift is `blocked`. The
-transition classifies evidence under new source authority; it neither selects
-the successor Construction nor grants mutation.
+When historical evidence needed to prove recurrence is unavailable:
 
-A current clean source may produce an empty `classes` list. One class represents
-one stable Counterexample to one governing law at one boundary. Review attempt
-IDs, commits, publication epochs, filenames, and proposed patches are
-provenance, not class identity.
+```text
+recurrence.status = unknown
+```
 
-For CAS evidence, each `finding_refs` entry is the `sha256:` digest of the
-exact canonical compact CAS finding-row bytes. Preserve the enclosing CAS
-receipt as attempt, tuple, request, and verdict provenance; none of those
-transient identities defines the Counterexample class or substitutes for the
-canonical-row digest.
-
-## Dispositions
-
-- `accepted`: current evidence establishes an in-scope falsification.
-- `rejected`: evidence shows the claim is false, stale, already satisfied,
-  preference-only, or not a liability.
-- `blocked`: validity, ownership, applicability, or current subject identity
-  remains unknown.
-- `follow-up`: valid evidence lies outside the accepted Goal.
-
-Rejected classes require rejection evidence. Accepted classes require
-Actuating to evaluate the current Construction before mutation. A suggested
-repair remains source prose and never enters the selected construction merely
-because a reviewer proposed it.
+Do not infer `first-observed` or `recurring` from memory or a previous summary.
+Actuating may still address the current accepted fact, but recurrence-dependent
+architecture laws remain unproved.
 
 ## Procedure
 
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure` once. Resolve the active `$review-fold`,
-`$actuating`, and, for CAS evidence, `$cas` skill roots. Require Ledger 1.x,
-`ledger-artifact-abi/v1`, and successful `ledger definition check` results for
-the definitions this fold will consume.
+1. Bind every source batch to the exact current Goal and Git head.
+2. Separate the source's claim, observed fact, suggested repair, and transport
+   status.
+3. Decide whether each fact is a current liability under an accepted Goal law.
+4. Name boundary, governing law, discrepancy, owner, witness, applicability,
+   and evidence.
+5. Quotient duplicate rows and same-class observations.
+6. Compare exact available prior owner evidence to classify recurrence and
+   shared causal mechanisms.
+7. Assign one disposition:
+   - `accepted`: current in-scope falsification is established;
+   - `rejected`: evidence establishes stale, false, already satisfied,
+     preference-only, or non-liability pressure;
+   - `blocked`: validity, applicability, ownership, or current identity remains
+     unknown;
+   - `follow-up`: valid pressure lies outside the current Goal.
+8. Return the fold directly to Actuating.
 
-1. Bind the source to the exact current Goal artifact, Construction, subject
-   digest, static Review Contract digest, and source-owner receipt. Put
-   `goal-contract:<artifact_id>` in `supporting_refs`. A failing test, incident,
-   compatibility failure, or other non-review falsifier requires no review
-   campaign. A CAS-derived set additionally binds its originating campaign,
-   whose Review Contract digest must match the static digest in the
-   Counterexample subject, and validates the exact owner receipt through
-   `<cas-skill-root>/definitions/ledger/review-receipt.json`. That validation
-   recursively checks the compact finding rows and grants no review credit.
-   Never fabricate a campaign for local evidence or make
-   `review_contract_digest` optional.
-2. Separate each claim, observed fact, and suggested repair.
-3. Decide whether the fact is a current liability under an accepted Goal law.
-4. Identify the governing law, stable boundary, discrepancy, owner, witness,
-   falsifier, applicability, and evidence.
-5. Quotient duplicate and same-class findings. One class may cite many finding
-   rows and may recur across Construction successors. For an ordinary source,
-   emit only new or reclassified classes. When an emitted class recurs, the new
-   Set's `predecessor_refs` must include the prior Set that most recently
-   carried that class.
-6. For source-revision carry-forward, include unresolved accepted and blocked
-   classes plus each `follow-up` class brought within the successor Goal's
-   scope; verify successor Goal and carried-Set reference symmetry, preserve the
-   predecessor Construction, and require total stable-class coverage.
-7. Assign exactly one disposition to every emitted class, or every carried
-   class during source revision.
-8. Materialize the Counterexample Set, then register the returned canonical
-   artifact through the Evidence protocol:
+A current clean source may return an empty `classes` list.
 
-   ~~~bash
-   ledger materialize \
-     --definition <review-fold-skill-root>/definitions/ledger/counterexample-set.json \
-     --input counterexamples=<counterexample-set.json> \
-     --format json
+## Source revisions
 
-   ledger transact \
-     --definition <actuating-skill-root>/definitions/ledger/evidence-protocol.json \
-     --operation register-counterexamples \
-     --repo <repo> \
-     --input counterexample_registration=<counterexample-registration.json> \
-     --param goal=<goal-id> \
-     --format json
-   ~~~
+When the accepted source changes, re-run the fold over every currently
+available applicable owner source. Reclassify current applicability and
+disposition under the new Goal.
 
-   The registration packet is passive JSON containing
-   `schema:"actuating-counterexample-registration/v1"`, the exact Goal,
-   Construction, and subject tuple, and the materialization result's parsed
-   `canonical_content` as `body`.
-9. Require `ledger-materialization-result/v1` followed by
-   `ledger-transaction-result/v1` for `register-counterexamples`. Return the
-   materialized Counterexample Set and registration event identity to
-   Actuating. Do not propose or execute a repair.
+Do not copy predecessor Sets or create carry-forward references. Missing owner
+history is explicit uncertainty, not evidence erasure.
 
-Use [review-fold.valid.example.json](assets/review-fold.valid.example.json) as
-a shape example, never as evidence or authority.
+## Causal pressure
+
+Group accepted classes under one causal mechanism only when current evidence
+supports a shared missing or falsified semantic law.
+
+On a demonstrated recurrence or multiple accepted same-cause classes,
+Actuating must reconsider whether another pointwise realization repair is
+architecturally closed. Review Fold reports the causal evidence; it does not
+choose the replacement architecture.
 
 ## Guardrails
 
-- Do not choose the review backend, lens, architecture, repair, work node, or
-  next action.
-- Do not count clean attempts or decide review convergence or closure.
-- Do not turn style, speculation, or suggested patches into code.
-- Do not accept scope expansion without source authority.
-- Do not define class identity from transient implementation or review IDs.
-- Treat Ledger materialization and validation as structural artifact work only.
-  A pass grants no mutation, repair selection, review credit, or completion.
+- Do not choose architecture, repair, work node, operation, publication, next
+  action, review credit, or closure.
+- Do not turn suggested patches into accepted facts.
+- Do not create or register a Counterexample artifact.
+- Do not invoke Ledger.
+- Do not claim historical continuity when owner evidence is unavailable.
+- Do not broaden Goal scope.
+- Do not treat CAS process exit as a semantic verdict.
+
+## Handoff
+
+Return the current Review Fold, exact source evidence references, accepted and
+blocked classes, causal groups, evidence-horizon gaps, and unresolved
+questions. Actuating decides what those facts require.

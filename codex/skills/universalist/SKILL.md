@@ -164,9 +164,10 @@ sophistication never prove prerequisites or select a route.
 Do not load Ledger plan mechanics merely because a boundary decision is
 consequential.
 
-Read `references/durable-decision.md` only when no current Actuating
-Construction will carry the complete decision and the decision must remain
-independently addressable across sessions, actors, migration, or supersession.
+Read `references/durable-decision.md` only when the decision must remain
+independently addressable outside the active Actuating run across sessions,
+actors, migration, or supersession. Actuating's ephemeral Architecture Working
+Set is never a durability carrier.
 
 Never load the durability module in Actuating composition.
 
@@ -206,14 +207,14 @@ residual obligations, invalidators, and transition needed by Actuating.
 
 Universalist must not:
 
-- select or reopen the Construction;
+- select or reopen Actuating's target architecture;
 - grant mutation;
-- convert accepted counterexamples directly into an architecture decision;
+- convert accepted Review Fold classes directly into an architecture decision;
 - allocate a Universalist plan or emit a root receipt;
-- overwrite a materialized Construction.
+- persist or overwrite an Actuating architecture artifact.
 
-Actuating alone adjudicates the nomination and authors the current
-Construction.
+Actuating alone adjudicates the nomination and updates its ephemeral
+Architecture Working Set. The Git tree is the realized construction.
 
 Standalone work may select under root authority after completing the applicable
 consequential and durability contracts.
@@ -244,9 +245,10 @@ Successor packets: owner + axis + seam / none
 - **escalate** — the route materially changed; repeat consequential analysis;
 - **obstruct** — no honest current route is representable or authorized.
 
-Before Actuating selects a Construction, revise the nomination in place. After
-materialization, return material evidence to Actuating; Universalist must not
-reopen the Construction. Never overwrite an existing root receipt.
+Before Actuating selects a target architecture, revise the nomination in
+place. After implementation begins, return material evidence to Actuating;
+Universalist must not reopen the target directly. Never overwrite an existing
+root receipt.
 
 ## Evidence and obstruction
 
