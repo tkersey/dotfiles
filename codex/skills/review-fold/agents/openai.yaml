@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Fold"
-  short_description: "Classify current falsification pressure"
-  default_prompt: "Use $review-fold to bind owner-issued evidence to the exact current Goal and Git head, separate facts from suggested repairs, quotient stable law-and-boundary classes, establish recurrence only from available exact owner evidence, and return a Review Fold without selecting architecture, granting mutation, counting review credit, persisting an artifact, or invoking Ledger."
+  short_description: "Classify counterexample families and causal pressure"
+  default_prompt: "Use $review-fold to bind owner-issued evidence to the exact current Goal and Git head, separate facts from suggested repairs, distinguish law boundaries from witness detection surfaces, quotient only same-law counterexample families, state witness-independence bases, and establish recurrence only from exact available owner evidence. Return a Review Fold without inferring admission frontiers, selecting architecture, granting mutation, counting review credit, persisting an artifact, or invoking Ledger."
