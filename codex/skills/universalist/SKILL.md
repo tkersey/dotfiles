@@ -205,6 +205,32 @@ obstructed
 with the evidence, boundary owner, required observations, law, falsifier,
 residual obligations, invalidators, and transition needed by Actuating.
 
+When Actuating supplies a bug-driven counterexample topology, also return this
+projection for every live candidate:
+
+```text
+Current owner set and status:
+Candidate semantic owner:
+Enforcement locus or admission cut:
+Family predicate or generator:
+Domain and sanctioned admission relation:
+Claim strength and comparison evidence:
+Invalid family excluded:
+Unchecked sanctioned paths retired:
+Primary enforcement:
+Derived guards preserved:
+Valid observations preserved:
+Residual invalidity and owner:
+Disposition supported: eliminated | contained | obstructed | unresolved
+Falsifier:
+Transition and retirement:
+```
+
+Do not define the family as only the observed witnesses. Do not invent one
+frontier when the repository requires a minimal admission cut. Do not collapse
+primary enforcement, derived trust-boundary guards, compatibility adapters,
+observability guards, and compensating guards into one undifferentiated layer.
+
 Universalist must not:
 
 - select or reopen Actuating's target architecture;
