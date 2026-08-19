@@ -1,38 +1,35 @@
 ---
 name: evidence-fold
-description: "Fold tests, diffs, logs, benchmarks, screenshots, review results, and artifact state into a structured verdict: done, continue, regress, blocked, invalid-proof, ask-human, or refactor-kernel."
+description: "Fold tests, diffs, logs, benchmarks, screenshots, review results, and current Git state into a bounded verdict: done, continue, regress, blocked, invalid-proof, ask-human, or refactor-kernel."
 ---
 
 # Evidence Fold
 
 ## Mission
 
-Consume implementation and proof evidence into a node-level decision. Within
-Actuating, EF-v1 is a discardable supporting view over the current Goal,
-Construction, subject, exact operation, and cited Evidence Ledger events. It
-does not create authority, select the next operation, or become peer state.
+Consume owner-issued implementation and proof evidence into a bounded
+current-head decision.
+
+Within Actuating, EF-v1 is a discardable supporting view over the current Goal,
+exact Git head, changed paths, validation outputs, and cited owner receipts. It
+does not create authority, persist workflow state, select the next action, or
+become a completion record.
 
 ```text
-EvidenceTree -> Verdict
+current owner evidence -> Evidence Fold -> recommendation
 ```
 
-This reducer recommends whether the current node should stop, continue,
-revert, ask, or reframe. Its output grants no operation authority. `done`
-describes only the evaluated node; Actuating selects the next action and
-applies the closure theorem to the whole goal.
-
-## Verdict schema
+## Shape
 
 ```yaml
 evidence_fold:
   version: EF-v1
-  evidence_id:
-  goal_id:
-  construction_ref:
-  step_id:
+  goal:
   artifact_state:
-    repo:
-    subject_digest:
+    repository:
+    base:
+    head:
+    tree:
     changed_paths: []
   evidence:
     observed: []
@@ -41,62 +38,59 @@ evidence_fold:
       failed: []
       unavailable: []
     artifacts_inspected: []
-    review_refs: []
+    review_receipts: []
   progress:
-    status: done|continue|regress|blocked|invalid-proof|ask-human|refactor-kernel
-    score_before:
-    score_after:
+    status: done | continue | regress | blocked | invalid-proof | ask-human | refactor-kernel
     largest_remaining_failure:
     next_frontier:
   proof:
-    supports_done_claim: yes|no
+    supports_done_claim: yes | no
     proof_gaps: []
     residual_risks: []
-    stale_or_missing_artifact_binding: yes|no
+    stale_or_missing_head_binding: yes | no
   anti_gaming:
-    tests_deleted: yes|no|unknown
-    assertions_weakened: yes|no|unknown
-    checks_skipped: yes|no|unknown
-    coverage_reduced: yes|no|unknown
-    behavior_outside_goal_changed: yes|no|unknown
+    tests_deleted: yes | no | unknown
+    assertions_weakened: yes | no | unknown
+    checks_skipped: yes | no | unknown
+    coverage_reduced: yes | no | unknown
+    behavior_outside_goal_changed: yes | no | unknown
   recommendation:
-    action: stop|continue|revert|isolate|ask-human|spawn-branch-race|block-external-coordination|use-review-fold
+    action: stop | continue | revert | isolate | ask-human | refactor-kernel | use-review-fold
     reason:
 ```
 
-For Actuating, `construction_ref` and `step_id` identify the exact current
-Construction and Actuating-selected operation. `artifact_state` is the
-post-operation subject binding; `changed_paths` must equal the observed path
-set. A node-level `done` verdict requires `supports_done_claim=yes`, no proof
-gaps, `recommendation.action=stop`, and passing cited observations.
+A node-level `done` requires exact current-head binding,
+`supports_done_claim=yes`, no proof gaps, passing required observations, and
+`recommendation.action=stop`. Actuating still evaluates whole-goal closure.
 
 ## Procedure
 
-1. Bind evidence to current branch/head/diff or mark proof invalid.
-2. Accept a review finding only after `$review-fold` has classified it in a
-   current Counterexample Set. Raw review prose is not EF input.
-3. Separate what passed, what failed, and what was not run.
-4. Compare the new result to the prior attempt when available.
-5. Check anti-gaming before accepting success.
+1. Bind every input to the current Git head or mark proof invalid.
+2. Accept review pressure only after `$review-fold` has classified the observed
+   fact against the current Goal and head.
+3. Separate passed, failed, unavailable, and stale evidence.
+4. Compare with a prior attempt only when its exact owner evidence is available.
+5. Check anti-gaming before accepting improvement.
 6. Name the largest remaining failure or proof gap.
-7. Recommend exactly one next action.
+7. Recommend one next action.
 
-## Refactor-kernel result
-
-Return `status: refactor-kernel` when local fixes pass narrowly but leave a shared cause intact:
+Return `refactor-kernel` when local fixes pass narrowly but leave a shared cause:
 
 ```text
-same bug appears in multiple call sites
-review comments collapse to one missing abstraction
+the same failure appears at multiple call sites
+findings collapse to one missing semantic mechanism
 new tests would be wound-specific
-the patch adds tolerance for invalid state instead of preventing it
-the canonical owner is bypassed
+the patch tolerates invalid state rather than preventing it
+the canonical owner remains bypassed
 ```
 
 ## Guardrails
 
-- Passing tests alone are insufficient when the goal also requires negative checks, review disposition, or artifact inspection.
-- A stale command log cannot close a current-artifact goal.
+- Passing tests alone do not satisfy untested required observations.
+- A stale command log cannot prove the current head.
 - Absence of failure is not proof when the verifier did not run.
-- Do not recommend more code when proof-only closure or review rejection is enough.
-- Do not convert node `done` into a goal-completion claim.
+- Do not recommend more code when proof-only closure or review rejection is
+  sufficient.
+- Do not convert node `done` into whole-goal completion.
+- Do not require or emit a Construction ref, operation step ID, Evidence Ledger
+  event, or Ledger command.

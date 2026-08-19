@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Ship"
   short_description: "Publish or adopt exact validated public state"
-  default_prompt: "Use $ship to open, update, or promote a proof-backed PR, or read-only adopt an exact already-public Actuating subject when no current PR tuple can represent it."
+  default_prompt: "Use $ship to open, update, or promote a proof-backed PR, or to read-only observe and adopt an exact already-public Actuating head when no current PR tuple can represent it. Bind exact Git and validation facts, return Ship-owned readback evidence, never require an Actuating closure receipt, and never merge."

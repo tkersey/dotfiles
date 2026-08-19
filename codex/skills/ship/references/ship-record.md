@@ -1,9 +1,15 @@
-# Ship Record
+# Ship Records
 
-Existing PR-based `SHIP-v1` records remain valid. Their schema and semantics
-below are unchanged.
+Ship records are immutable owner-issued evidence for one public-state epoch.
+They bind exact Git and provider facts but grant no architecture, review, or
+closure authority.
 
-~~~yaml
+## Pull-request publication
+
+Existing direct `SHIP-v1` records remain historical evidence. Current
+publication uses:
+
+```yaml
 ship_record:
   record_version: SHIP-v1
   source: direct | actuation
@@ -30,47 +36,25 @@ ship_record:
     command:
     result:
     pr_url:
-  actuation_binding:
-    closure_receipt_ref:
-    goal_contract_ref:
-    construction_ref:
-    subject_digest:
-    evidence_head:
-    review_contract_digest:
-    closure_route: final-closeout
-~~~
-
-`pr_readiness.mode` reports the selected publication posture. The controlling
-decision keeps operation and final state separate:
-
-~~~yaml
-pr_decision:
-  operation: create | update | update-and-promote | blocked
-  final_state: ready | draft | preserve
-~~~
+  actuation_binding: null | {
+    goal_context_digest: sha256-digest,
+    review_contract_digest: sha256-digest,
+    review_context_digest: null | sha256-digest,
+    publication_required: boolean
+  }
+```
 
 `action.result` is successful only after live PR readback matches repository,
-base and head identities, URL, open/draft state, and managed proof block.
+base/head identities, URL, open/draft state, and managed proof block.
 
-`actuation_binding` is required when `source=actuation` and omitted for direct
-shipping. Ship copies every field verbatim from Actuating's current readiness
-receipt and requires `closure_route: final-closeout`. It does not reconstruct
-them from PR text or interpret them as architecture, review, or closure
-authority.
+For Actuating input, Ship copies `actuation_binding` verbatim. It does not
+reconstruct the Goal, architecture, review state, or closure judgment.
 
-`SHIP-v1` is immutable evidence for one publication epoch. Return the complete
-record to Actuating; only Actuating may evaluate publication currentness and
-record it in the Evidence Ledger.
+## Pre-review public-state observation
 
-## Existing-publication adoption
-
-Before a review campaign that will later close through adoption, Ship may emit
-this read-only observation record after the same exact Git and PR-absence
-readback required by adoption:
-
-~~~yaml
+```yaml
 ship_observation_record:
-  record_version: SHIP-OBSERVATION-v1
+  record_version: SHIP-OBSERVATION-v2
   source: actuation
   publication_route: observe-existing
   repository:
@@ -94,34 +78,35 @@ ship_observation_record:
     operation: observe-existing
     result: observed
     mutation_performed: false
-  review_binding:
-    goal_contract_ref:
-    construction_ref:
-    subject_digest:
+  actuation_binding:
+    goal_context_digest:
     review_contract_digest:
-~~~
+```
 
-`SHIP-OBSERVATION-v1` is not final publication closure. Actuating records its
-digest before binding or dispatching the campaign. Final adoption ratifies that
-exact digest and tuple; the Evidence Ledger's event order, rather than a
-comparison between provider and Ledger clocks, proves observation-before-review.
-Observation admits no release state: its input requires
-`existing_publication.release == null`. Final adoption alone validates and
-records an optional release.
+Canonicalize the complete record as JSON and hash those exact bytes with
+SHA-256. Actuating includes that digest in the canonical review context before
+CAS dispatch.
 
-Use this exact companion record only when Actuating supplies a current
-`ready-to-ship` receipt for an exact subject that is already public and no
-current PR tuple can truthfully represent that publication epoch:
+Observation succeeds only when:
 
-~~~yaml
+- the provider repository and canonical head ref match the input;
+- the head ref is the live default branch;
+- the live head equals the supplied head;
+- base differs from head and is an ancestor;
+- base/head refs name the same default-branch publication route;
+- the complete live open-PR inventory contains zero exact matches;
+- no release is supplied;
+- no mutation occurs.
+
+## Existing-publication adoption
+
+```yaml
 ship_adoption_record:
-  record_version: SHIP-ADOPTION-v1
+  record_version: SHIP-ADOPTION-v2
   source: actuation
   publication_route: adopt-existing
   repository:
-  publication_proof:
-    pre_review_observation_ref: null | sha256-digest
-    provider_event_ref: null | sha256-digest
+  publication_observation_ref:
   review_target:
     base_ref:
     base_sha:
@@ -130,7 +115,6 @@ ship_adoption_record:
   eligibility:
     open_exact_pr_count: 0
     pr_unrepresentable_reason: head-is-default-branch
-    observed_at:
   public_state:
     branch:
       provider:
@@ -160,62 +144,27 @@ ship_adoption_record:
     result: adopted
     mutation_performed: false
   actuation_binding:
-    closure_receipt_ref:
-    goal_contract_ref:
-    construction_ref:
-    subject_digest:
-    evidence_head:
+    goal_context_digest:
     review_contract_digest:
-    closure_route: final-closeout
-~~~
+    review_context_digest:
+```
 
-Canonicalize the complete record as JSON and hash those exact bytes with
-SHA-256. Arrays retain their declared order; `assets` is sorted by `name` and
-has unique names, equal cardinality, and exact set equality with the complete
-live provider asset inventory, so every live release asset appears exactly
-once.
+Ship resolves `publication_observation_ref`, recomputes its digest, and
+exact-matches repository, canonical ref, base/head, Goal context, and Review
+Contract. Actuating supplies the exact current review context whose digest
+contains the same observation reference; the credited CAS receipts echo request
+fingerprints derived from that context.
 
-Adoption is read-only. Ship requires `repository`, `review_target.head_ref`,
-`public_state.branch.repository`, and `public_state.branch.ref` to identify the
-same repository and canonical branch. The canonical ref is the sole branch
-identity; normalize short branch names once to `refs/heads/<name>` before
-comparison. The provider must report that ref as the
-repository's current default branch, and the remote branch SHA must equal
-both `public_state.branch.sha` and `review_target.head_sha`. The comparison base
-SHA must equal the `scope.base_ref` of the exact Goal artifact bound by the
-Actuating handoff. That owner-selected delivery baseline and the head must
-differ, and the base must be an ancestor. `review_target.base_ref` and
-`review_target.head_ref` both normalize to the same live default-branch ref;
-the ref identifies the publication route while the immutable base SHA
-identifies the review range and is passed directly to CAS. Ship obtains a
-complete live PR inventory whose exact open repository/base/head match count is
-`open_exact_pr_count: 0`; same-ref equality records why no truthful
-branch-to-branch PR can represent this state. For a
-new campaign, `publication_proof.pre_review_observation_ref` is non-null and
-Ship exact-matches the referenced `SHIP-OBSERVATION-v1` repository,
-review target, branch provider/repository/ref/SHA/default-branch identity, and
-`review_binding`. Actuating's Evidence Ledger order makes that observation the
-publication-epoch anchor before campaign binding; adoption separately performs
-a fresh exact readback of the same current default-branch tuple. The adoption's
-current `actuation_binding` must carry the same Goal, Construction, subject, and
-review contract, but its closure receipt and Evidence Ledger head may be later.
-For a historical campaign, `publication_proof.provider_event_ref` is non-null;
-Ship resolves its immutable bytes, recomputes the digest, and exact-matches the
-provider, repository, canonical ref, and head. Actuating, not Ship, proves that
-event preceded the exact campaign with a content-addressed causal-order
-observation. Exactly one publication-proof field is non-null. Matching endpoints do not prove uninterrupted publication history.
-For a non-null release, Ship requires its live provider to exact-match
-`public_state.branch.provider`, requires its live repository
-to exact-match the adopted repository, requires `publication_state: published`
-and `draft: false`, resolves
-`target_sha`, and requires it to equal
-`review_target.head_sha`, requires unique receipt asset names and cardinality
-equal to the complete live provider inventory, requires exact set equality, and
-exact-matches every release field and asset name, size, and SHA-256 digest. Ship
-copies the complete current ready-to-ship `actuation_binding` verbatim. Any
-mismatch, missing digest, duplicate asset name, unpublished or draft release,
-requested mutation, blocked result, or ambiguous target yields no receipt.
+This binding proves observation-before-review without an Actuating event log.
+A campaign lacking the bound observation is ineligible; obtain a fresh
+observation and fresh review.
 
-Return the complete immutable `SHIP-ADOPTION-v1` record and its SHA-256 digest
-to Actuating. It has the same owner boundary as `SHIP-v1`; it is not a second
-publication authority.
+For a non-null release, Ship requires current provider state `published`,
+`draft: false`, target equal to the reviewed head, unique asset names, equal
+cardinality and exact set equality with the complete live inventory, and exact
+field and digest matches.
+
+Adoption is read-only. Any mismatch, incomplete provider inventory, duplicate
+asset, requested mutation, or stale review context yields no receipt.
+
+Return the complete canonical record and SHA-256 digest to Actuating.

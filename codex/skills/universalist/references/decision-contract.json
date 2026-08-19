@@ -4,102 +4,80 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v15"
+      "source_fingerprint": "universalist-boundary-decision-v16"
     },
     "triggers": [
       {
         "trigger_id": "UNI-BOUNDARY",
-        "description": "Implementation or resolution considers how values effects state evidence authority or behavior cross an owned code boundary, including repeated implementations that distribute one law across owners.",
+        "description": "Implementation or resolution considers how values, effects, state, evidence, authority, or behavior cross an owned boundary.",
         "cue_literals": [
           "code boundary",
           "boundary disposition",
-          "source / target",
-          "preserved / forgotten / generated / observed",
-          "current encoding / latent pattern disposition",
           "law",
           "falsifier"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "work wholly internal to one unchanged boundary with no distributed law or materially reusable structure",
+          "work wholly internal to one unchanged boundary with no distributed law",
           "category theory exposition without a concrete seam"
         ]
       },
       {
         "trigger_id": "UNI-CONSEQUENTIAL",
-        "description": "At least two plausible routes materially differ in persistent behavior authority compatibility migration enforcement invalidation or proof obligations.",
+        "description": "At least two plausible routes materially differ in behavior, ownership, representation, compatibility, migration, effects, resources, invalidation, or proof.",
         "cue_literals": [
-          "smallest effective artifact",
-          "current-context contract",
           "comparison universe",
-          "one axis and typed hole",
+          "typed hole",
           "Boundary Artifact Contract",
-          "enforcement matrix",
-          "generalization dividend",
-          "transition witness",
-          "proof lease",
-          "invalidation triggers"
+          "proof lease"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "routine seam with one plausible route",
-          "ceremonial activation with no route choice",
-          "static schema example",
-          "categorical label with no material delta"
+          "one uncontested ordinary route",
+          "categorical vocabulary without a material delta"
         ]
       },
       {
         "trigger_id": "UNI-RECOGNIZE",
-        "description": "Repository evidence shows repeated or structurally similar implementations that may instantiate one law-bearing pattern and recognition could materially change ownership legal composition interpretation migration or proof.",
+        "description": "Repository evidence exposes repeated semantic obligations that may share one law-bearing structure.",
         "cue_literals": [
           "current encoding",
-          "representative instances",
-          "candidate general pattern",
-          "encoding relation",
           "nearest false friend",
           "discriminating law",
-          "generalization dividend",
-          "transition witness"
+          "generalization dividend"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "surface resemblance or shared vocabulary without a discriminating law",
-          "one local helper with no repeated semantic obligation or imminent constrained variant",
-          "recognition with no material generalization dividend"
+          "surface resemblance without a discriminating law",
+          "one local helper with no repeated obligation"
         ]
       },
       {
         "trigger_id": "UNI-RECLASSIFY",
-        "description": "New execution evidence may materially change the active boundary disposition or plan before the next affected seam mutation.",
+        "description": "New execution evidence may materially change a current boundary nomination before the next affected mutation.",
         "cue_literals": [
-          "reclassification checkpoint",
-          "prior disposition or decision",
+          "prior disposition",
           "new evidence",
           "material semantic delta",
-          "invalidated artifacts",
-          "successor packets"
+          "reclassification"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "same owner axis law falsifier route and obligations under routine refinement",
-          "diff size retry count test count elapsed time or categorical vocabulary alone"
+          "same owner, law, falsifier, route, and obligations under routine refinement"
         ]
       },
       {
         "trigger_id": "UNI-DURABLE",
-        "description": "A consequential Universalist decision must remain independently addressable outside a current Actuating Construction.",
+        "description": "A consequential Universalist decision must remain independently addressable outside an active Actuating run.",
         "cue_literals": [
           "independently durable",
-          "standalone decision",
           "cross-session handoff",
-          "multi-actor handoff",
           "migration decision",
           "supersession"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "a current Actuating Construction carries the complete nomination adjudication proof and retirement decision",
-          "routine or uncontested seam",
+          "Actuating can reconstruct and adjudicate the decision within its current run",
           "decision materiality without an independent durability need"
         ]
       }
@@ -107,25 +85,25 @@
     "routes": [
       {
         "route_id": "UNI-PRESERVE",
-        "description": "Preserve an already exact boundary and continue without a new abstraction.",
+        "description": "Preserve an already exact boundary.",
         "aliases": [],
         "terminal": true
       },
       {
         "route_id": "UNI-ORDINARY",
-        "description": "Apply the smallest ordinary repository-native construction that makes the seam exact.",
+        "description": "Nominate the smallest ordinary repository-native construction.",
         "aliases": [],
         "terminal": false
       },
       {
         "route_id": "UNI-CANONICAL",
-        "description": "Apply a construction card or advanced mechanics route because it materially strengthens the ordinary candidate.",
+        "description": "Nominate an advanced construction because it materially strengthens the ordinary candidate.",
         "aliases": [],
         "terminal": false
       },
       {
         "route_id": "UNI-OBSTRUCT",
-        "description": "Stop with an obstruction or explicitly justify a primitive bypass when no honest representable or effective construction is available.",
+        "description": "Report an evidenced obstruction or underdetermination.",
         "aliases": [],
         "terminal": true
       }
@@ -144,29 +122,23 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "boundary disposition with attributed rationale and owner",
-          "source and target worlds",
-          "current requirements and required observations",
-          "preserved forgotten generated and observed information",
-          "compatibility plan",
-          "residual obligations",
-          "invalidation triggers",
+          "boundary",
+          "owner",
+          "required observations",
           "law",
-          "falsifier"
+          "falsifier",
+          "invalidators"
         ],
         "success_signals": [
-          "the owning seam current requirements observable law and invalidators are explicit",
-          "preservation is representable without inventing structure",
-          "ordinary routing follows the declared disposition"
+          "the incumbent or ordinary candidate is explicit",
+          "preservation adds no abstraction"
         ],
         "failure_signals": [
-          "boundary disposition without attributed rationale",
-          "boundary language without an owner or current requirements",
-          "compatibility residuals invalidators or falsifier omitted",
-          "symptom-only downstream patch",
-          "a newly introduced ordinary boundary mislabeled as preserve"
+          "boundary without owner",
+          "symptom-only patch",
+          "missing falsifier"
         ],
-        "rationale": "Broad activation is useful only when every considered boundary receives an explicit disposition and executable falsifier."
+        "rationale": "Broad activation is useful only when it yields one exact disposition."
       },
       {
         "clause_id": "UNI-MINIMAL-001",
@@ -181,37 +153,22 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "composition context",
-          "decision owner",
-          "decision carrier",
           "ordinary candidate",
-          "declared comparison universe",
-          "one architectural axis and typed hole",
-          "relevant construction cards and dispositions",
-          "nominated or standalone-selected construction",
-          "alternatives considered",
-          "rejected route",
-          "material architectural delta",
-          "expected outcome",
+          "comparison universe",
+          "one axis and typed hole",
+          "alternatives",
+          "material delta",
           "resource impact"
         ],
         "success_signals": [
-          "one owned boundary one axis one typed hole one smallest effective artifact",
-          "Universalist nominates in Actuating composition and selects only under standalone root authority",
-          "every relevant card is selected rejected contradicted or unresolved",
-          "dominance is evidenced relative to the declared universe",
-          "incomparable minima remain underdetermined"
+          "incomparable minima remain underdetermined",
+          "Universalist nominates while Actuating selects"
         ],
         "failure_signals": [
-          "composition owner or decision carrier omitted",
-          "Universalist selects or reopens an Actuating Construction",
-          "comparison universe omitted",
-          "relevant card ignored",
-          "signal count evidence count diagnostic order registry order or categorical sophistication manufactures a winner",
-          "incomparable candidates forced into one route",
-          "widened seam without a law requirement"
+          "Universalist selects or reopens Actuating target architecture",
+          "candidate wins by omitted obligations"
         ],
-        "rationale": "The decision record must expose what changed because of Universalist rather than merely proving that the skill was present."
+        "rationale": "Minimality is relative to one complete current obligation set."
       },
       {
         "clause_id": "UNI-RECOGNITION-001",
@@ -226,27 +183,22 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "current encoding and representative instances",
-          "carriers operations observations candidate equations and known non-laws when recognition is nominated",
-          "candidate general pattern and explicit encoding relation when nominated",
-          "nearest false friend and discriminating law with attributed repository evidence when nominated",
-          "generalization dividend or reason the recognition remains explanatory metadata",
-          "observation-preserving transition witness when recognition materially changes the route"
+          "current encoding",
+          "representative instances",
+          "nearest false friend",
+          "discriminating law",
+          "generalization dividend",
+          "transition witness when material"
         ],
         "success_signals": [
-          "recognition begins from concrete operations observations laws and counterexamples rather than vocabulary",
-          "the current encoding is classified as literal observational partial or degenerate lax or pseudo distributed lawless analogy-only or contradicted",
-          "the ordinary candidate remains the baseline and a recognized pattern survives only with a material generalization dividend",
-          "a material transition names encoding interpretation preservation compatibility first witness seam retired bypasses rollback and stop condition"
+          "recognition begins from repository operations and observations",
+          "a retained pattern deletes or centralizes a material obligation"
         ],
         "failure_signals": [
-          "surface resemblance signal count or a categorical name selects architecture",
-          "pattern name lacks a discriminating law or nearest false friend",
-          "generalization adds abstraction without deleting or centralizing a material obligation",
-          "recognition changes the route without an observation-preserving transition witness",
-          "one local helper is generalized without a repeated law or imminent constrained variant"
+          "pattern selected by name",
+          "generalization without dividend"
         ],
-        "rationale": "Category theory creates architectural leverage when it recognizes the law-bearing structure already latent in ordinary code and supplies a verified transition, not when it merely labels resemblance."
+        "rationale": "Recognition matters only when it changes ownership, legal composition, or proof."
       },
       {
         "clause_id": "UNI-CONTEXT-001",
@@ -261,28 +213,23 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "context identifier or evidence fingerprint",
-          "requirement sources",
-          "required observations and equivalence",
-          "authority and policy",
-          "compatibility and migration constraints",
-          "effects and ordering",
-          "resource constraints",
-          "host enforcement capabilities",
-          "freshness or validity horizon"
+          "current evidence fingerprint",
+          "requirements",
+          "observations",
+          "authority",
+          "compatibility",
+          "effects",
+          "resources",
+          "invalidation horizon"
         ],
         "success_signals": [
-          "correctness claims are explicitly relative to an attributed current context",
-          "host capability bounds claim strength",
-          "freshness and authority changes invalidate the proof lease"
+          "claims are explicitly current-context relative"
         ],
         "failure_signals": [
-          "correctness claimed without an attributed context",
-          "static enforcement claimed beyond host capabilities",
-          "authority compatibility effects resources or freshness omitted",
-          "stale context treated as current"
+          "stale context treated as current",
+          "claim strength exceeds host enforcement"
         ],
-        "rationale": "Context-relative correctness is valid only while its attributed requirements capabilities and freshness horizon remain current."
+        "rationale": "Boundary correctness is a freshness-bound proof lease."
       },
       {
         "clause_id": "UNI-ARTIFACT-001",
@@ -296,30 +243,22 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "Boundary Artifact Contract",
-          "boundary owner and requirements discharged",
-          "representation or carrier",
-          "applicable constructors eliminators compositions and interpreter or projection or handler",
-          "required observations",
-          "compatibility and migration",
+          "repository-native carrier",
+          "owner",
+          "operations",
+          "observations",
+          "compatibility",
           "bypass prevention",
-          "resource bound",
-          "claim strength",
-          "artifact-specific rationale for every inapplicable surface"
+          "proof"
         ],
         "success_signals": [
-          "the nominated or standalone-selected direction lowers into one repository-native artifact candidate",
-          "public construction composition and interpretation preserve the current requirements",
-          "inapplicable surfaces are explicit and justified"
+          "the nomination lowers to one honest repository-native artifact"
         ],
         "failure_signals": [
           "theorem nomination treated as final architecture",
-          "ceremonial constructor eliminator composition or interpreter invented",
-          "inapplicable field left blank or unexplained",
-          "bypass path remains unowned",
-          "claim strength exceeds the effective lowering"
+          "ceremonial surface invented"
         ],
-        "rationale": "A theorem card nominates a direction; architecture exists only after an honest repository-native lowering with applicable surfaces and bypass policy."
+        "rationale": "Architecture exists only after effective repository-native lowering."
       },
       {
         "clause_id": "UNI-ENFORCEMENT-001",
@@ -334,28 +273,21 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "enforcement matrix",
-          "one semantic owner and one primary disposition per requirement with status enforced residual or obstructed",
-          "semantic authority and primary locus",
-          "derived guard loci with shared-rule conformance when present",
-          "positive witness and failure behavior",
-          "residual owner and check time",
-          "invalidation triggers and proof lease"
+          "one semantic owner per requirement",
+          "primary enforcement locus",
+          "residual owner",
+          "failure behavior",
+          "invalidators"
         ],
         "success_signals": [
-          "every requirement has one semantic authority and one primary disposition as enforced residual or obstructed",
-          "derived guards preserve the same rule without becoming competing owners",
-          "residuals and invalidators have explicit owners and actions"
+          "derived guards do not become competing owners"
         ],
         "failure_signals": [
           "orphan requirement",
-          "competing semantic authorities",
-          "redundant guard treated as independent policy",
-          "derived guard lacks conformance or drift witness",
-          "residual lacks owner or check time",
-          "proof lease lacks invalidation triggers"
+          "competing authority",
+          "unowned residual"
         ],
-        "rationale": "Single semantic authority prevents policy drift while compatible derived guards preserve defense in depth."
+        "rationale": "One semantic owner prevents policy dilution."
       },
       {
         "clause_id": "UNI-MECHANICS-001",
@@ -370,30 +302,20 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "advanced mechanics disposition",
+          "advanced-mechanics disposition",
           "concrete artifact or none",
-          "interpreter projection handler lowering context transport locality representation description composition context framing or two-dimensional square calculus when mechanics are used",
-          "existence or nonexistence evidence",
-          "commutation or preservation evidence",
-          "competitor mediation evidence",
-          "canonicality or uniqueness-up-to evidence",
-          "effective presentation evidence",
-          "mechanics falsifier"
+          "effective proof profile",
+          "falsifier"
         ],
         "success_signals": [
-          "none is explicit for ordinary seams",
-          "a named mechanics topic changes the artifact and proof when selected",
-          "theorem cards link to retained doctrine and mechanics sources",
-          "double-category selection names both arrow families square pasting interchange and one effective interpretation"
+          "ordinary seams explicitly use no advanced mechanics",
+          "selected mechanics change the artifact and proof"
         ],
         "failure_signals": [
-          "decorative Kan Yoneda Coyoneda Freyd operad pullback pushout double-category equipment comonad density halo Day promonoidal Tambara optic codensity CQL or sheafification vocabulary",
-          "mechanics selected without evidenced preconditions",
-          "mechanics selected without a complete proof profile",
-          "static contextual or interchange structure used to imply effect commutativity",
-          "commutative square mislabeled as a double category"
+          "decorative terminology",
+          "mechanics without evidenced prerequisites"
         ],
-        "rationale": "Deep mechanics remain available in the theorem library but are retained only when a relevant card produces a material delta and complete proof obligations."
+        "rationale": "Advanced mechanics remain evidence-bound."
       },
       {
         "clause_id": "UNI-DOUBLE-001",
@@ -407,32 +329,20 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "horizontal arrow family and composition",
-          "vertical arrow family and composition",
-          "typed square representation with four boundaries",
-          "horizontal square pasting",
-          "vertical square pasting",
-          "interchange or coherent comparison",
-          "double-functor interpretation",
-          "effect authority provenance and resource guardrails",
-          "mismatch and interchange falsifiers",
-          "normalization and invalidation policy"
+          "two composable arrow families",
+          "typed squares",
+          "horizontal and vertical pasting",
+          "interchange",
+          "effective interpretation"
         ],
         "success_signals": [
-          "the two arrow families have distinct repository meanings",
-          "square construction enforces matching boundaries",
-          "local compatibility squares paste into one global witness",
-          "the two pasting orders agree under declared observations"
+          "both compositions have distinct repository meaning"
         ],
         "failure_signals": [
           "one arrow family does not compose",
-          "square boundaries are unchecked",
-          "local squares do not paste",
-          "interchange changes a required observation",
-          "a smaller category 2-category adapter PROP or DPO artifact already suffices",
-          "equipment claimed without companions conjoints or restrictions"
+          "a smaller ordinary artifact suffices"
         ],
-        "rationale": "Double categories add value only when composition of behavior and composition of change are both architecture and their compatibility is itself compositional."
+        "rationale": "Two-dimensional mechanics are admitted only when both compositions are real architecture."
       },
       {
         "clause_id": "UNI-OBSTRUCTION-001",
@@ -446,25 +356,21 @@
           "UNI-PRESERVE"
         ],
         "required_artifacts": [
-          "witnessed nonexistence inconsistency nonrepresentability resource lower bound or canonical underdetermination",
           "counterexample",
-          "obstruction stability",
-          "effective obstruction check",
+          "stable obstruction",
           "falsifier",
           "reopening condition",
-          "resolution of every active constructive alternative"
+          "resolution of constructive alternatives"
         ],
         "success_signals": [
-          "missing evidence remains epistemic debt",
-          "a complete obstruction is selected only when no constructive alternative remains active"
+          "unknown remains epistemic debt",
+          "obstruction is selected only after constructive alternatives close"
         ],
         "failure_signals": [
-          "failed implementation attempt treated as nonexistence",
-          "missing evidence treated as obstruction",
-          "obstruction loses to a constructive card by diagnostic priority",
-          "constructive and obstruction evidence coexist without explicit conflict"
+          "failed implementation treated as nonexistence",
+          "missing evidence treated as obstruction"
         ],
-        "rationale": "Obstruction is a proved architectural result rather than a fallback label for uncertainty or implementation failure."
+        "rationale": "Obstruction is an evidenced result rather than a fallback label."
       },
       {
         "clause_id": "UNI-RECLASSIFY-001",
@@ -479,29 +385,20 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "prior disposition or decision",
+          "prior nomination",
           "new evidence",
-          "material semantic delta",
-          "reclassification outcome retain split escalate or obstruct",
-          "invalidated artifacts or none",
-          "successor packets or none"
+          "material delta",
+          "retain, split, escalate, or obstruct outcome"
         ],
         "success_signals": [
-          "retain preserves the same owner axis law falsifier route and obligations without allocating a plan",
-          "split creates one packet per independently governed owner or axis",
-          "a newly consequential seam stops before mutation and repeats the full analysis",
-          "Step 0 applies only to an independently durable successor",
-          "an Actuating-owned Construction receives later material evidence through Actuating"
+          "Actuating receives changed evidence and decides whether architecture closure still holds",
+          "Git outranks stale nomination"
         ],
         "failure_signals": [
-          "mutation continues under a materially stale disposition",
-          "independent owners or axes remain collapsed into one packet",
-          "diff size retries tests time or vocabulary alone trigger escalation",
-          "Universalist reopens an Actuating-owned Construction",
-          "a prior receipt is overwritten instead of invalidated",
-          "a plan is created retroactively after the affected mutation"
+          "mutation continues under a stale nomination",
+          "Universalist independently reopens Actuating architecture"
         ],
-        "rationale": "Boundary decisions are freshness-bound proof leases and must be reclassified when execution evidence changes the semantic basis that authorized the next mutation."
+        "rationale": "Nominations are revisable proof leases over current evidence."
       },
       {
         "clause_id": "UNI-ROOT-001",
@@ -516,32 +413,23 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "one ledger-addressed Universalist plan",
+          "one independently durable Universalist plan",
           "one root SDR-v1 receipt",
-          "applicable clause refs covering the selected route",
-          "current Seq contract fingerprint",
-          "plan-bound artifact state",
-          "worker references to the root decision id"
+          "current contract fingerprint"
         ],
         "success_signals": [
-          "exactly one root receipt per independently durable changed seam",
-          "receipt clause refs cover every applicable current policy clause",
-          "receipt fingerprint matches the validated contract snapshot",
-          "independent axis analysis shares the root seam decision unless it becomes a genuinely distinct changed seam"
+          "durability is outside Actuating composition and scoped to one changed seam"
         ],
         "failure_signals": [
-          "duplicate worker receipts",
-          "applicable policy clause omitted",
-          "missing or stale contract fingerprint",
-          "one receipt spans unrelated seams",
-          "receipt emitted from a static example"
+          "durable plan allocated inside Actuating",
+          "duplicate worker receipts"
         ],
-        "rationale": "Root-scoped receipts preserve independently durable attribution without duplicating an Actuating Construction decision."
+        "rationale": "Standalone durability preserves attribution without creating an Actuating control plane."
       }
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "Consequential reasoning is always inspectable; only independently durable decisions need a separate plan-bound receipt outside an Actuating Construction."
+      "rationale": "Only independently durable standalone decisions need a plan-bound receipt; Actuating keeps nominations in context."
     }
   }
 }

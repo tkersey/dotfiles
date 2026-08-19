@@ -4,12 +4,12 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-set-v1-goal-follow-up-carry-forward"
+      "source_fingerprint": "review-fold-live-evidence-v1"
     },
     "triggers": [
       {
         "trigger_id": "RF-SOURCE",
-        "description": "Witnessed falsification evidence needs source-bound classification.",
+        "description": "Current owner-issued falsification evidence needs classification.",
         "cue_literals": [
           "review finding",
           "failing test",
@@ -23,7 +23,7 @@
       },
       {
         "trigger_id": "RF-CLASS",
-        "description": "Multiple finding rows may witness one stable law-and-boundary class.",
+        "description": "Multiple observations may witness one stable law-and-boundary class or causal mechanism.",
         "cue_literals": [
           "duplicate finding",
           "same law",
@@ -35,12 +35,11 @@
       },
       {
         "trigger_id": "RF-SOURCE-REVISION",
-        "description": "A successor Goal must carry unresolved accepted and blocked Counterexamples plus follow-up classes brought into scope without laundering or losing their lineage.",
+        "description": "Changed accepted authority requires current evidence to be reclassified against the new Goal.",
         "cue_literals": [
           "source revision",
           "successor Goal",
-          "carry-forward",
-          "unresolved Counterexample",
+          "changed scope",
           "follow-up"
         ],
         "cue_regexes": [],
@@ -49,8 +48,8 @@
     ],
     "routes": [
       {
-        "route_id": "RF-COUNTEREXAMPLE",
-        "description": "Author the current immutable counterexample-set/v1.",
+        "route_id": "RF-FOLD",
+        "description": "Return the current analytical Review Fold.",
         "aliases": [
           "accepted",
           "rejected",
@@ -60,7 +59,7 @@
       },
       {
         "route_id": "RF-BLOCK",
-        "description": "Block when source, validity, applicability, ownership, or subject identity is unknown.",
+        "description": "Block a classification when evidence, applicability, ownership, or identity is unknown.",
         "aliases": [
           "blocked"
         ],
@@ -74,28 +73,27 @@
           "RF-SOURCE"
         ],
         "expected_routes": [
-          "RF-COUNTEREXAMPLE",
+          "RF-FOLD",
           "RF-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "counterexample-set/v1",
-          "source-owner evidence",
-          "exact current Goal artifact binding",
-          "current Construction binding",
-          "disposition for every class"
+          "current Goal",
+          "exact Git head",
+          "owner-issued source evidence",
+          "one disposition per current class"
         ],
         "success_signals": [
           "claims facts and suggested repairs are separate",
-          "supporting_refs contains the exact current goal-contract artifact",
-          "a clean source is representable without invented findings"
+          "a clean source is representable",
+          "output is returned directly to Actuating"
         ],
         "failure_signals": [
-          "review prose directly selects work",
-          "a Set is indistinguishable between predecessor and successor Goal authority",
-          "unknown or stale evidence is treated as current"
+          "review prose selects work",
+          "unknown evidence is treated as current",
+          "a Counterexample Set or Ledger record is created"
         ],
-        "rationale": "Classification remains evidence and never becomes mutation authority."
+        "rationale": "Classification remains current analysis rather than a second durable evidence world."
       },
       {
         "clause_id": "RF-QUOTIENT-001",
@@ -103,66 +101,61 @@
           "RF-CLASS"
         ],
         "expected_routes": [
-          "RF-COUNTEREXAMPLE",
+          "RF-FOLD",
           "RF-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "stable class identity",
-          "boundary key",
-          "governing law",
+          "law",
+          "boundary",
           "discrepancy",
-          "owner boundary",
+          "owner",
           "witness",
-          "falsifier",
           "applicability",
-          "quotient basis"
+          "quotient basis",
+          "exact evidence references"
         ],
         "success_signals": [
-          "duplicates collapse into one class",
-          "recurrence across Constructions retains stable class identity"
+          "duplicates collapse",
+          "recurrence is established only from exact available prior evidence",
+          "shared causal mechanisms are evidenced"
         ],
         "failure_signals": [
-          "attempt commit publication epoch or patch proposal defines class identity",
-          "a repair or next action is selected"
+          "attempt or patch identity defines a class",
+          "memory or summary manufactures recurrence",
+          "a repair is selected"
         ],
-        "rationale": "Actuating evaluates stable falsifiers rather than a patch queue."
+        "rationale": "Actuating receives stable current pressure without maintaining a parallel class register."
       },
       {
-        "clause_id": "RF-CARRY-001",
+        "clause_id": "RF-REVISION-001",
         "trigger_refs": [
           "RF-SOURCE-REVISION"
         ],
         "expected_routes": [
-          "RF-COUNTEREXAMPLE",
+          "RF-FOLD",
           "RF-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "successor Goal artifact ref",
-          "every Set carrying an unresolved accepted or blocked class or a follow-up class brought into scope",
-          "predecessor Construction ref",
-          "latest predecessor Set refs",
-          "disposition for every carried stable class"
+          "current revised Goal",
+          "currently available applicable owner evidence"
         ],
         "success_signals": [
-          "successor Goal and successor Set cite the same carried Sets",
-          "successor Set cites the exact successor Goal",
-          "predecessor Construction remains the classified subject",
-          "every carried class appears exactly once with a current disposition"
+          "all available relevant evidence is reclassified under current authority",
+          "missing historical sources remain explicit"
         ],
         "failure_signals": [
-          "stable goal_id substitutes for exact Goal artifact identity",
-          "a carried Set or class is omitted",
-          "predecessor lineage drifts",
-          "carry-forward selects a Construction or grants mutation"
+          "predecessor Set carry-forward is required",
+          "source revision erases known current evidence",
+          "missing owner history is invented"
         ],
-        "rationale": "Source revision changes semantic authority without laundering unresolved evidence or manufacturing a repair."
+        "rationale": "Current owner facts are reinterpreted directly instead of copied through artifact lineage."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The immutable Counterexample Set already records every disposition and quotient class consumed by Actuating."
+      "rationale": "The Review Fold is returned in the active workflow; durable facts remain with their source owners."
     }
   }
 }
