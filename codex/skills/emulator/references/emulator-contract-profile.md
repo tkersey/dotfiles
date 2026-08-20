@@ -519,6 +519,8 @@ environment_chart:
     source_bundle_fingerprint:
     source_event_refs: []
     historical_action_refs: []
+    rejected_historical_action_ref:
+    rejected_historical_action_fingerprint:
     correction_refs: []
     outcome_refs: []
     contamination: []
@@ -580,6 +582,9 @@ environment_chart:
       schema:
     actions:
       schema:
+      schema_fingerprint:
+      tool_name_projection_ref:
+      tool_name_projection_fingerprint:
     tools:
       asset_ref:
       asset_fingerprint:
@@ -708,7 +713,21 @@ exporter MUST NOT infer or invent it.
 Tool permission is fail closed. `allowed` and `denied` are duplicate-free and
 disjoint. Every allowed tool has exactly one schema in `schemas`; a tool name
 not present in `allowed` is denied even if a schema happens to exist. Tool-name
-resolution is the first branch of the sole support classifier. An admitted
+resolution is the first branch of the sole support classifier. Every action
+schema has an exact SHA-256 fingerprint and binds closed RFC 8785
+`tool-name-projection/v1` bytes:
+
+~~~json
+{"action_schema_fingerprint":"sha256:<hex>","projection_kind":"json_pointer","schema":"tool-name-projection/v1","tool_name_pointer":"/decision/tool"}
+~~~
+
+`projection_kind` is `json_pointer` with one exact RFC 6901 pointer, or `none`
+with a null pointer when the action schema admits no tool-selecting action. The
+schema fingerprint equals the exact canonical `actions.schema` value. A missing
+pointer value means no tool was selected; a present value must be a string.
+Failure to resolve the pointer or a non-string value is `invalid_environment`.
+The resolved string alone enters the unlisted/denied branch, before any support
+predicate. An admitted
 action selecting a denied or unlisted tool has exactly one support class,
 `denied`, and every `executable`, `judgeable`, and `observed_only` predicate MUST
 be false for that action; the unsupported fallback is not evaluated. Any such
@@ -718,6 +737,15 @@ allowed tool. Contradictory lists or missing allowed-tool schemas are likewise
 
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
+
+For a direct correction chart eligible for holdout, harness selection,
+promotion, or preference training, both `rejected_historical_action` fields are
+non-null and identify exactly one source-bundle action asset. The ref is a
+member of `historical_action_refs`, the fingerprint equals that asset's exact
+bytes, and it is the disputed action A used by the cut, actor hidden target, and
+preference export. Other historical actions may remain in the plural provenance
+array but cannot replace A after chart fingerprinting. Non-correction charts
+require both singular fields null.
 
 For `transition_model: total`, support predicates exhaustively and exclusively
 cover every action admitted by `actions.schema`, `unsupported_default` is

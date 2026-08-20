@@ -40,7 +40,7 @@ ${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
   charts/
   source/<chart-id>/queries/
   source/<chart-id>/results/
-  source/<chart-id>/source-map.yaml
+  source/<chart-id>/source-maps/<source-id>.yaml
   actors/
   worlds/
   harnesses/baseline/
@@ -144,10 +144,10 @@ Its query-independent global ref is
 `semantic-discovery/identity-exposures/<holdout-key>.json`. While still holding
 the lock and before the semantic read, stage a permanent `discovery_exposed`
 partition claim for every identity not already classified
-`discovery_exposed` or `development_exposed` in
+`discovery_exposed`, `development_exposed`, or `optimizer_exposed` in
 `source_identity_fingerprints`; each new claim binds its own identity-exposure
-ref and fingerprint. An existing `discovery_exposed` or
-`development_exposed` claim is already conservative enough and is retained
+ref and fingerprint. An existing `discovery_exposed`, `development_exposed`,
+or `optimizer_exposed` claim is already conservative enough and is retained
 without replacement, including a legacy claim whose semantic-discovery
 evidence fields are null. Publish each new claim before its marker; for an
 already-exposed identity, publish or reuse the query-independent marker as a
@@ -679,7 +679,7 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json"}`.
+`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"derivation_evidence_fingerprint":"sha256:<hex>","derivation_evidence_ref":"runs/<run-group-id>/semantic-leakage-derivations/<occurrence-id>.json","hidden_access":"excluded","inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","semantic_overlap":"none","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
@@ -757,15 +757,18 @@ Coverage sorts by `occurrence_id` and contains exactly one row for every
 required occurrence. `inventory_entry_ref` points to its inventory row, message
 index, or trace-event pointer. `provenance_classes` is the sorted nonempty
 conservative union for that occurrence; `possibly_derived` dominates
-`independent`, which dominates `predates_source`. `result` is `clear`,
-`leak`, or `uncertain`. No missing, duplicate, or extra row is allowed. An
-evaluator-only semantic review compares every occurrence whose
-`provenance_classes` contains `possibly_derived` with
-the hidden action, correction, recovery, and outcome. Actor start requires a
+`independent`, which dominates `predates_source`. Each exact derivation-evidence
+pair resolves the complete transitive access lineage used to assign that
+class. `hidden_access` is `excluded`, `witnessed`, or `unresolved`;
+`semantic_overlap` is `none`, `possible`, or `material` and is diagnostic only.
+`result` is `clear` exactly for excluded access, `leak` exactly for witnessed
+hidden access, and `uncertain` exactly for unresolved access. Semantic overlap
+without an access witness never changes `clear` to `leak` or `uncertain`. No
+missing, duplicate, or extra row is allowed. Actor start requires a
 clear pre-start review; selection, promotion, and training require a clear
 post-run review whose pre-phase fingerprint matches. Runs and EER bind both
-review refs/fingerprints. A paraphrase, encoded derivative, `leak`, or
-`uncertain` result is `historical_leakage`; when it cannot be excluded, the
+review refs/fingerprints. A witnessed or unresolved access path is
+`historical_leakage`; when it cannot be excluded, the
 chart is diagnostic-only and cannot enter holdout, selection, or training.
 
 Every review binds the same evaluator-owned `provenance_derivation` ref and
@@ -773,8 +776,13 @@ fingerprint. Its deterministic law assigns `predates_source` only when the exact
 occurrence asset is transitively present in the immutable source bundle before
 the chart cut; assigns `independent` only to frozen baseline/world assets whose
 captured provenance predates factor selection and has no source-derived input;
-and assigns `possibly_derived` to all candidate-generated bytes, optimizer or
-actor outputs, tool observations, and every unresolved case. The evaluator
+and assigns `possibly_derived` only when a retained access lineage reaches
+hidden evaluator/source bytes or cannot exclude such a dependency. Candidate-
+generated bytes whose complete access proof contains only frozen baseline/world
+and authorized discovery/development inputs are `independent` of the hidden
+target even when their content is semantically similar. Optimizer or actor
+outputs and tool observations with incomplete lineage remain
+`possibly_derived`. The evaluator
 recomputes each row from retained occurrence evidence; producers cannot choose
 the class.
 
@@ -1145,8 +1153,10 @@ The candidate output inventory is exactly:
 {"entries":[],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
 ~~~
 
-The post-generation form uses `phase: post_generation` and contains the exact
-generated regular-file entries.
+The post-generation form uses `phase: post_generation` and contains every exact
+generated regular-file, directory, and symlink entry admitted by the closed
+variants below. Each directory or symlink requires its matching retained
+filesystem effect just as a regular file does; special files remain forbidden.
 
 The pre-generation output inventory has an empty `entries` array; only the
 predeclared isolated output roots exist. Every post-generation entry is covered
@@ -1317,8 +1327,20 @@ A clear writer recursively copies the access proof, contexts, rendered policy,
 frozen holdout target, inventories, generation effects, tool policy/trace and payload preimages, both
 leakage reviews, every leakage surface preimage, and candidate output bytes
 under the private global attempt directory. It emits exact RFC 8785
-`candidate-generation-evidence-closure/v1` bytes with a sorted, duplicate-free
-`closure_inventory` of ref/fingerprint/role entries. Every recursive ref
+`candidate-generation-evidence-closure/v1` bytes:
+
+~~~json
+{"candidate_id":"<candidate-id>","closure_inventory":[{"fingerprint":"sha256:<hex>","ref":"access-proof.json","role":"access_proof"}],"cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"candidate-generation-evidence-closure/v1","source_identity_fingerprints":["sha256:<hex>"]}
+~~~
+
+The exact top-level fields are those displayed. `closure_inventory` is sorted
+by `(role, ref)`, has unique refs, and admits only `access_proof`,
+`candidate_output`, `generation_effect`, `holdout_target`, `leakage_review`,
+`leakage_surface`, `optimizer_context`, `optimizer_input`, `optimizer_policy`,
+`pre_candidate_policy`, `tool_payload`, `tool_policy`, and `tool_trace`.
+It contains every copied asset exactly once under its semantic role. The source
+identity array is sorted and duplicate-free and equals both pending and clear
+records. Every recursive ref
 resolves within that immutable directory; no atlas-local ref remains.
 A clear marker is atomically created beside its pending file at
 `<pending-digest-hex>.cleared.json`. It matches only when cycle, candidate,
@@ -1505,9 +1527,14 @@ physical envelope; a merely asserted incomplete list is not holdout authority.
 The caller route uses exact RFC 8785
 `{"attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","complete":true,"schema":"identity-completeness-attestation/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}`
 bytes. The physical route retains the exact non-semantic discovery envelope.
-Every chart, pre-candidate policy, and root binds exactly one common
-`identity_completeness_ref`/fingerprint route; claims, locks, and reservations
-revalidate its complete identity set before publication.
+Every session-derived chart binds exactly one per-chart physical or attested
+`identity_completeness_ref`/fingerprint; pure designed charts use
+`not_applicable` with both fields null. After chart fingerprints freeze, the
+root and pre-candidate policy bind the aggregate
+`identity-completeness-manifest/v1` pair defined by the contract profile. A
+chart MUST NOT bind that aggregate pair because the manifest contains the chart
+fingerprint. Claims, locks, and reservations revalidate the aggregate manifest
+and each referenced per-chart identity set before publication.
 
 For registry-backed compilation, when completeness cannot be established
 without semantic source bytes, acquire
@@ -1560,7 +1587,7 @@ registry was created, first bind exact RFC 8785
 `pre-registry-exposure-attestation/v1` bytes:
 
 ~~~json
-{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
+{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","holdout_blind":true,"independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
 The sorted, duplicate-free identity array is complete for the group and the
@@ -1670,7 +1697,8 @@ discovery has both non-null and binds the exact
 query-independent `semantic-discovery-identity-exposure/v1` asset whose source
 identity equals this claim. One null field, an unresolved asset, or a mismatched
 identity or registry makes that new-claim variant invalid. An already
-`discovery_exposed` or `development_exposed` claim with both fields null remains
+`discovery_exposed`, `development_exposed`, or `optimizer_exposed` claim with
+both fields null remains
 valid when semantic discovery later occurs only if the same exact identity-
 exposure asset exists and the semantic-discovery gate validates the claim plus
 marker union described in Section 2. The marker augments evidence; it does not

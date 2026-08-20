@@ -71,12 +71,14 @@ emulator_execution_report:
     partition_claim_validation_fingerprint: # selecting roots only
     holdout_reservation_ref:          # holdout runs only
     holdout_reservation_fingerprint:  # holdout runs only
-    holdout_lock_refs: []              # holdout runs only
-    holdout_lock_fingerprints: []      # holdout runs only
+    holdout_locks:                     # holdout runs only
+      - ref:
+        fingerprint:
     holdout_lock_validation_ref:       # holdout runs only
     holdout_lock_validation_fingerprint: # holdout runs only
-    holdout_consumption_refs: []        # holdout runs only
-    holdout_consumption_fingerprints: [] # holdout runs only
+    holdout_consumptions:              # holdout runs only
+      - ref:
+        fingerprint:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     candidate_metadata_ref:
@@ -153,12 +155,14 @@ emulator_execution_report:
       partition_claim_validation_fingerprint: # source-bound runs with partition claims
       holdout_reservation_ref:          # holdout runs only
       holdout_reservation_fingerprint:  # holdout runs only
-      holdout_lock_refs: []              # holdout runs only
-      holdout_lock_fingerprints: []      # holdout runs only
+      holdout_locks:                     # holdout runs only
+        - ref:
+          fingerprint:
       holdout_lock_validation_ref:       # holdout runs only
       holdout_lock_validation_fingerprint: # holdout runs only
-      holdout_consumption_refs: []        # holdout runs only
-      holdout_consumption_fingerprints: [] # holdout runs only
+      holdout_consumptions:              # holdout runs only
+        - ref:
+          fingerprint:
       harness_id:
       harness_fingerprint:
       factor:
@@ -214,6 +218,7 @@ emulator_execution_report:
       residual_judgment_fingerprint:
       support_results:
         - action_index:
+          action_ref:
           action_fingerprint:
           support_class: executable | judgeable | denied | observed_only | unsupported
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
@@ -332,8 +337,9 @@ execution.
 
 `support_results` is an ordered array with exactly one row for every
 consequential action that reached support classification. `action_index` starts
-at zero and is contiguous; `action_fingerprint` binds the exact classified
-action projection, and `support_class` is that action's one exclusive class.
+at zero and is contiguous. `action_ref` resolves retained exact RFC 8785 action-
+projection bytes even when no full trace exists, and `action_fingerprint` is
+their SHA-256. `support_class` is that action's one exclusive class.
 The array is empty exactly when execution ended before any support
 classification, including pre-start `runner_unavailable` and malformed output
 rejected before a valid action exists. A full-turn or full-episode run retains
@@ -579,6 +585,7 @@ and leaves comparison-only fields null:
   "support_results": [
     {
       "action_index": 0,
+      "action_ref": "runs/run-group-.../actions/run-...-000000.json",
       "action_fingerprint": "sha256:...",
       "support_class": "judgeable"
     }
@@ -647,12 +654,10 @@ counterexample artifact by reference and fingerprint.
   "partition_claim_validation_fingerprint": "sha256:...",
   "holdout_reservation_ref": "runs/<cycle-id>/holdout-reservation.json",
   "holdout_reservation_fingerprint": "sha256:...",
-  "holdout_lock_refs": ["runs/cmp-.../holdout-locks/<digest-hex>.lock"],
-  "holdout_lock_fingerprints": ["sha256:..."],
+  "holdout_locks": [{"fingerprint":"sha256:...","ref":"runs/cmp-.../holdout-locks/<digest-hex>.lock"}],
   "holdout_lock_validation_ref": "runs/cmp-.../holdout-lock-validation.json",
   "holdout_lock_validation_fingerprint": "sha256:...",
-  "holdout_consumption_refs": ["runs/cmp-.../holdout-consumption/<digest-hex>.json"],
-  "holdout_consumption_fingerprints": ["sha256:..."],
+  "holdout_consumptions": [{"fingerprint":"sha256:...","ref":"runs/cmp-.../holdout-consumption/<digest-hex>.json"}],
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
   "candidate_metadata_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/candidate.yaml",
@@ -710,6 +715,12 @@ counterexample artifact by reference and fingerprint.
   "authority_granted": false
 }
 ```
+
+`holdout_locks` and `holdout_consumptions` are arrays of closed exact
+`ref`/`fingerprint` objects, sorted by ref with unique refs. Each fingerprint
+binds the bytes at its paired ref; comparison and every affected execution row
+repeat the same complete arrays. Parallel ref and fingerprint arrays are
+invalid.
 
 Residual evidence refs and fingerprints are ordered, same-length pairs. Each
 fingerprint binds the exact judgment-result bytes. Missing, mismatched, or
@@ -809,7 +820,8 @@ Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 Refs/fingerprints resolve exact eligible bytes; static refs use the archived
 root. `state_ref`/fingerprint are the row's `actor_input_ref` identity and equal
 the archived form of the chart's exact `actor.input_ref`/fingerprint.
-`rejected_action_ref`/fingerprint are the `historical_action_ref` identity and equal one exact
+`rejected_action_ref`/fingerprint equal the chart source's singular
+`rejected_historical_action_ref`/fingerprint and identify one exact
 action asset entry and that entry's own fingerprint in the chart's
 `session-source-bundle/v1.assets`; the separate source-bundle fingerprint
 continues to bind the manifest. No conventional path or bundle-as-action
