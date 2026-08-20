@@ -171,9 +171,16 @@ atomic replacement. The temp must not match a forbidden path, is never exposed
 as a general sibling grant, and its name binds the invocation identity and a
 process-incarnation fingerprint plus a digest of the exact target leaf. The
 incarnation asset uses the immutable `os-process-incarnation/v1` schema and
-private custody defined in `references/session-derived-atlas.md` and is retained
-until the temp is replaced or recovered. Before creating a replacement temp, recover
-same-target orphan temps left by crashed invocations: validate the complete
+private custody defined in `references/session-derived-atlas.md`. A pure
+designed non-holdout root stores it under its authorized atlas-private
+`process-incarnations/v1/` directory and requires no exposure registry. It is retained
+until the temp is replaced or recovered.
+The temp leaf is `.<target-leaf>.emulator-tmp-<digest-hex>`, where the digest is
+SHA-256 of `"emulator-replacement-temp/v1" NUL canonical-target-path NUL
+invocation-id NUL process-incarnation-fingerprint NUL 128-bit-nonce`. Recovery
+recomputes this exact preimage; no other sibling name is eligible.
+Before creating a replacement temp, recover same-target orphan temps left by
+crashed invocations: validate the complete
 name, hold one exclusive per-target replacement lock, prove the named owner is
 dead, require a regular single-link file in the same pinned directory, and
 atomically rename that orphan to the current invocation's admitted temp name

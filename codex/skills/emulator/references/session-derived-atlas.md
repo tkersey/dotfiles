@@ -90,16 +90,10 @@ capability gap, not an agent failure or runtime error.
 
 ## 2. Discover and freeze sources
 
-Use existing physical commands:
-
-~~~bash
-seq sessions \
-  --root "${CODEX_HOME:-$HOME/.codex}/sessions" \
-  --repo <repo> \
-  --since <time> \
-  --until <time> \
-  --format json
-~~~
+Use the existing `seq sessions` command only as the subprocess owned by the
+exposure wrapper specified below. Do not invoke or display its raw JSON directly
+for holdout discovery; the wrapper must publish its attempt before launch and
+return only the verified physical projection.
 
 `seq find-session --prompt` is a semantic source read. Before running it,
 resolve and preflight the user-global exposure registry, acquire its
@@ -269,8 +263,8 @@ durable. If scrubbing would destroy required provenance, stop or downgrade the
 claim rather than publishing sensitive bytes globally.
 
 ~~~json
-{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_lock_path":"<canonical-absolute-lock-path>","private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
-{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
+{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_lock_path":"<canonical-absolute-lock-path>","private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","result_projection_fingerprint":"sha256:<hex>","result_projection_ref":"semantic-discovery/result-projections/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","result_projection_fingerprint":"sha256:<hex>","result_projection_ref":"semantic-discovery/result-projections/<digest-hex>.json","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[],"identity_exposure_markers":[],"pending_fingerprint":"sha256:<hex>","result_fingerprint":null,"schema":"semantic-discovery-attempt-cancelled/v1","terminal_reason":"no_semantic_output_proved"}
 ~~~
@@ -318,11 +312,13 @@ dead-owner recovery validates that transfer marker, atomically chains a new
 transfer to itself under the same lock, and resumes deletion. Thus every
 transfer state is recoverable and no prior-owner marker must reappear.
 A missing or unequal marker forbids
-cleanup and cannot become evidence. It may clear the attempt only after proving
-the wrapper never returned or delivered semantic bytes; in that case it
+cleanup and cannot become evidence. It may cancel the attempt only after proving
+the Seq command never started; in that case it
 publishes the immutable cancelled variant above rather than deleting registry
-evidence. Otherwise the attempt remains unresolved and returns
-`source_contaminated`. Unprovable owner/output state is
+evidence. A started command without durable `result.json` publishes a terminal
+`semantic-discovery-alias-uncertain/v1` marker bound to the snapshot/query and
+permanently makes the queried corpus plus any later-discovered aliases
+discovery-only; it never uses the cancelled variant. Unprovable owner/output state is
 `source_contaminated`. No raw semantic byte is a registry recovery dependency,
 and no unresolved semantic-discovery attempt permits a new
 `holdout_unexposed` claim.
@@ -394,7 +390,9 @@ identity cannot be known without prompt search, use the discovery-only
 fallback; do not retroactively call the match untouched.
 The physical `seq sessions` route is not a second crash protocol. It runs as a
 `semantic-discovery-attempt/v1` using a frozen physical-listing query spec,
-projection implementation, and alias extractor; the existing pending/result/
+projection implementation, and alias extractor. The attempt's exact pending
+bytes add `result_projection_ref`/fingerprint, and its result repeats that pair;
+unequal projector bytes are `source_contaminated`. The existing pending/result/
 completed/cancelled state machine, immutable snapshot ref, process-incarnation
 custody, staging cleanup, and recovery rules apply unchanged. Raw command output
 is never delivered to the compiler or selector. The retained projection contains
@@ -406,9 +404,15 @@ wrapper durably marks the complete physically identified snapshot
 `discovery_exposed` before returning only a fallback status; a crash cannot
 leave semantic bytes observed without conservative exposure. Incomplete
 physical identity stops `source_contaminated`.
-The attempt's already-required `snapshot_ref` resolves the immutable complete
+On a fully valid physical projection, publish exact
+`semantic-discovery-physical-clear/v1` completion bytes binding pending/result,
+projector, and snapshot fingerprints with empty exposure claims; only this
+variant may support later `holdout_unexposed`. Unknown/excluded output uses the
+ordinary exposure-bearing completion. The attempt's required `snapshot_ref` resolves the immutable complete
 physical identity set recovery must expose. No separate physical-listing
 pending, started, result, or terminal schema exists.
+The exact clear payload is
+`{"attempt_id":"<opaque-attempt-id>","exposure_claims":[],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","result_projection_fingerprint":"sha256:<hex>","schema":"semantic-discovery-physical-clear/v1","snapshot_fingerprint":"sha256:<hex>"}`.
 
 Exclude:
 
@@ -1335,8 +1339,9 @@ In schemas below, `principal_identity_ref` denotes this common ref/fingerprint
 contract; role-specific fields retain their selector, reviewer, or attester
 prefix.
 
-A chart with `source_kind: user_design`, or `mixed` containing designed
-material, binds non-null exact RFC 8785
+Every chart with designed semantics—including any chart under root
+`origin: designed`, `source_kind: user_design`, or `mixed` containing designed
+material—binds non-null exact RFC 8785
 `designed-chart-authorship/v1` bytes through its source authorship pair:
 `{"actor_input_fingerprint":"sha256:<hex>","author_principal_identity_fingerprint":"sha256:<hex>","author_principal_identity_ref":"principals/<digest-hex>.json","schema":"designed-chart-authorship/v1","source_identity_fingerprints":["sha256:<hex>"]}`.
 The identity array equals the chart split exactly and the actor input equals the
@@ -3058,6 +3063,7 @@ oracle_gap
 contract_ambiguity
 runner_unavailable
 access_proof_unavailable_after_start
+runtime_observation_unavailable_after_launch
 multiple_factors
 insufficient_evidence
 ~~~

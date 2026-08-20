@@ -617,6 +617,10 @@ identity is never discarded in lieu of a terminal row.
 Immediately after sandbox allocation and before any later effect, create-new and
 fsync exact `sandbox-creation-receipt/v1` bytes
 `{"run_id":"<run-id>","sandbox_instance_id":"<opaque-id>","schema":"sandbox-creation-receipt/v1","tuple_key":"sha256:<hex>"}`.
+Before allocation, create-new/fsync a sandbox-allocation intent containing the
+preselected sandbox ID and tuple key; recovery treats an uncertain allocation
+as created and cleans only that identity. The runner must implement allocation
+plus receipt publication as one owner operation after this intent.
 Before actor input delivery, spawn the actor suspended, bind its process
 incarnation, and create-new/fsync closed `actor-launch-receipt/v1` bytes. Only
 then resume delivery. If the actor exits before `runtime-observation/v1` is
@@ -628,6 +632,14 @@ The launch receipt is exact
 Every execution row binds both receipt pairs when `actor_started: true`; a
 sandbox-created prestart row binds only the sandbox receipt, and a pre-sandbox
 row binds neither.
+Suspended spawn, process-incarnation capture, and launch-receipt publication are
+one runner-owned atomic operation; a runner lacking it stops `runner_unavailable`
+before consuming a holdout.
+
+Before any recovery appends a terminal row, it create-news
+`terminal-claims/<tuple-key-hex>.json` with exact tuple/run identity. Only the
+successful claimant may emit the row; an existing claim is resumed, never
+duplicated.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
@@ -797,6 +809,10 @@ validation pair as required above:
   "sandbox_instance_id": "<runner-opaque-id>",
   "sandbox_created": true,
   "actor_started": true,
+  "sandbox_creation_receipt_ref": "runs/run-group-.../receipts/run-...-sandbox.json",
+  "sandbox_creation_receipt_fingerprint": "sha256:...",
+  "actor_launch_receipt_ref": "runs/run-group-.../receipts/run-...-launch.json",
+  "actor_launch_receipt_fingerprint": "sha256:...",
   "randomness_cohort_commitment_ref": null,
   "randomness_cohort_commitment_fingerprint": null,
   "actor_seed": null,
