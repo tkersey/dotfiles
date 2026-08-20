@@ -29,7 +29,6 @@ emulator_contract:
   packet_version: EC-v1
   contract_id: EC-<stable-id>
   origin: source_faithful | designed | mixed
-  operation_mode: design | implement | run | mutate | compare
 
   source:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | mixed
@@ -82,8 +81,9 @@ directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
-For every chart entry, the root `chart_id`, `kind`, `split_group`, and
-`partition` MUST exactly equal the referenced chart's values. Any mismatch is
+For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
+equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
+`partition` equals chart `split.partition`. Any mismatch is
 `invalid_environment`; neither copy wins by precedence.
 
 ## Chart contract
@@ -161,6 +161,11 @@ environment_chart:
       terminal_conditions:
         - condition_id:
           predicate:
+            kind: json_pointer_equals | asset
+            path:
+            value:
+            predicate_ref:
+            predicate_fingerprint:
           authority_refs: []
       max_steps:
       timeout_ms:
@@ -176,9 +181,27 @@ environment_chart:
             kind: json_pointer_equals
             path:
             value:
-      judgeable: []
-      denied: []
-      observed_only: []
+      judgeable:
+        - support_id:
+          authority_refs: []
+          predicate:
+            kind: json_pointer_equals
+            path:
+            value:
+      denied:
+        - support_id:
+          authority_refs: []
+          predicate:
+            kind: json_pointer_equals
+            path:
+            value:
+      observed_only:
+        - support_id:
+          authority_refs: []
+          predicate:
+            kind: json_pointer_equals
+            path:
+            value:
       unsupported_default: true
 
   mutation:
@@ -194,6 +217,8 @@ environment_chart:
         shrink_strategy:
     generator_ref:
     generator_fingerprint:
+    assignment_schema_ref:
+    assignment_schema_fingerprint:
 
   evaluator:
     evaluator_ref:
@@ -228,10 +253,10 @@ environment_chart:
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
-`policy_ref` and `policy_fingerprint` are required for every effect mode except
-an effect-free normative chart with no tools, `network: deny`,
-`external_side_effects: deny`, and a read-only filesystem with zero readable
-roots. The asset defines exact readable/writable roots, fixtures, recordings,
+`policy_ref` and `policy_fingerprint` are required for every chart, including an
+inert observational or normative chart. The inert policy explicitly binds empty
+readable/writable roots, fixtures, recordings, and operations. Other policies
+define exact readable/writable roots, fixtures, recordings,
 operations, and authority for `read_only`, `isolated_write`, `declared_roots`,
 both `fixture_only` uses, `allow_recorded`, and `explicit`. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
@@ -239,7 +264,7 @@ smallest applicable limit.
 
 Every executable implementation has an exact identity. Actor and environment
 seed-control modes are independent; each seed is present only when its own
-control is fixed or sampled. Any sampled failure schedule is explicit and
+control is fixed or sampled and is canonically null when unavailable. Any sampled failure schedule is explicit and
 fingerprinted; `unavailable` is recorded rather than replaced with an invented
 seed.
 
@@ -252,9 +277,12 @@ classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
 classifier that is missing, nondeterministic, or cannot prove the five classes
 disjoint makes the environment invalid.
 Every terminal condition likewise has nonempty authority refs; timeout and step
-bounds do not invent permission to terminate successfully.
+bounds do not invent permission to terminate successfully. A terminal predicate
+uses the same exact JSON-Pointer equality language as inline support, or
+`kind: asset` with non-null predicate ref/fingerprint and null inline fields.
+Mixed or prose predicates are invalid.
 
-Mutation dimensions are optional outside `mode: mutate`. Mutation requires at
+Mutation dimensions are optional outside `operation_mode: mutate`. Mutation requires at
 least one finite or otherwise bounded domain, preserved-law references, and a
 deterministic shrink strategy. An external generator is fingerprinted and
 included in the chart closure. No mutation widens action support or source
@@ -263,6 +291,12 @@ Every generated assignment emits a closed case classification naming its exact
 dimension cases, `ordinary | boundary | negative` kind, expected preserved
 laws, and expected violated laws. Combination-only violations are declared on
 the assignment classification rather than guessed from one dimension.
+`assignment_schema_ref` resolves the closed
+`mutation-assignment/v1` schema with exact fields `assignment_id`, sorted
+`case_ids`, canonical `values`, aggregate `kind`, sorted
+`expected_preserved_law_refs`, and sorted `expected_violated_law_refs`. Every
+mutate run binds the resulting assignment ref/fingerprint in runs.jsonl and
+EER; omission is `invalid_environment`.
 
 ## Chart classes
 

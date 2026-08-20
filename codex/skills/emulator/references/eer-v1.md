@@ -14,7 +14,7 @@ emulator_execution_report:
   contract:
     ref:
     fingerprint:
-    operation_mode: design | implement | run | mutate | compare
+    operation_mode: design | implement | run | mutate | compare | export
     atlas_chart_fingerprints: []
     closure_inventory_ref:
     closure_inventory_fingerprint:
@@ -28,6 +28,8 @@ emulator_execution_report:
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     authority_granted: false
 
+  run_group_id:  # non-null for standalone run/mutate; null otherwise
+
   run_summary:
     valid_runs:
     invalid_environment_runs:
@@ -40,6 +42,8 @@ emulator_execution_report:
 
   executions:
     - run_id:
+      run_group_id:
+      comparison_id:
       chart_id:
       chart_fingerprint:
       chart_kind:
@@ -48,6 +52,10 @@ emulator_execution_report:
       harness_id:
       harness_fingerprint:
       repeat_id:
+      factor:
+      randomness_cohort_fingerprint:
+      mutation_assignment_ref:
+      mutation_assignment_fingerprint:
       implementation_fingerprint:
       runtime_fingerprint:
       actor_seed:
@@ -118,6 +126,16 @@ Every comparison binds exact chart, root closure, harness, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots.
+For each paired chart/repeat, baseline and candidate rows bind the same
+`randomness_cohort_fingerprint`; controlled actor/environment seeds and failure
+schedules are equal across arms. A mismatch is `comparison_drift` and cannot
+claim `paired_replay_delta`.
+
+The EC-v1 root is reusable and does not contain an operation mode.
+`EER.contract.operation_mode` is the immutable invocation/report mode; it is
+validated against the selected request route, while the contract fingerprint
+continues to identify unchanged atlas semantics across design, run, compare,
+and export.
 
 `run` mode omits `comparison` and emits executions plus applicable datasets and
 limitations. It does not invent a candidate fingerprint or recommendation.
@@ -147,6 +165,9 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "harness_fingerprint": "sha256:...",
   "factor": "question_policy",
   "repeat_id": 1,
+  "randomness_cohort_fingerprint": "sha256:...",
+  "mutation_assignment_ref": null,
+  "mutation_assignment_fingerprint": null,
   "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
   "actor_seed": null,
@@ -181,6 +202,11 @@ non-null and the comparison/factor keys are absent; in compare mode
 `run_group_id` is null and comparison/factor are non-null. Mixed ownership is
 invalid. `contract.operation_mode` selects the variant and cannot be inferred
 from omitted fields.
+The report-level standalone `run_group_id` equals every execution and runs.jsonl
+row it summarizes. Mutation assignment fields are non-null exactly for mutate
+rows and resolve one `mutation-assignment/v1` artifact; they are null otherwise.
+Actor/environment seed keys are always serialized and are null exactly when
+their corresponding control is `unavailable`.
 
 ## comparison.json
 
@@ -246,6 +272,15 @@ A missing or invalid required arm, tie, unsupported required chart, evaluator
 disagreement, closure/access proof gap, or insufficient untouched holdout
 coverage yields `insufficient_evidence`. Any new candidate hard-oracle failure
 or protected regression yields `reject`.
+
+Recommendation precedence is total: witnessed new hard failure or protected
+regression yields `reject` first, even when coverage is also incomplete; absent
+such regression, incomplete or indeterminate required evidence yields
+`insufficient_evidence`; only then may `adopt` be considered. `reject` pairs
+with `evidence_relation: regression`; `insufficient_evidence` pairs with
+`insufficient_evidence`; `adopt` pairs with `paired_replay_delta` for matched
+cohorts or `observed_association` for adequately repeated uncontrolled
+stochastic evidence. All other pairs are invalid.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`
 records `paired_replay_delta`, `observed_association`, `regression`, or
