@@ -23,10 +23,7 @@ expert demonstration, or baseline arm. Historical evidence discovers what to
 challenge; fresh executions decide whether a harness candidate wins.
 
 Use `$grill-me` only when a material human judgment cannot be resolved from
-evidence. Do not introduce a native CLI, protocol service, database, or global
-event store. The private file-backed exposure claims, locks, and retirement
-index required by the atlas contract are permitted evidence assets, not a new
-product or service.
+evidence. Do not introduce a native CLI, protocol service, or persistent store.
 
 ## Activation boundary
 
@@ -71,131 +68,37 @@ emulator_request:
     fingerprint:
     evidence_refs: []
   contract_path:
-  export_origin:  # required only for export
-    eer_ref:
-    eer_fingerprint:
-    runs_ref:
-    runs_fingerprint:
-    successor_root_ref:
-    successor_root_fingerprint:
   target:
     name:
     kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
   atlas:
     atlas_id:
-    storage_domain_root:
+    root:
     chart_kinds: [normative_decision, executable_episode, observational]
     partitions:
       discovery:
       development:
       holdout:
   experiment:
-    subject: harness
     factor:
     baseline_harness:
     candidates: []
     max_candidates: 3
   authorized_files:
-    allowed: []  # deny all writes until explicitly populated
+    allowed: []
     forbidden: []
   output:
     report: EER-v1
     preferences: false
     trajectories: false
     curriculum: false
-    counterexamples: false
 ```
 
 Session-derived atlases default to
 `${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/`; shareable designed
 environments may use `codex/emulators/<target>/`. Do not create empty
 scaffolding or commit session artifacts without explicit sanitization and
-authority. Verify the selected private root is writable before authoring; when
-the default is not writable, require a caller-supplied writable private
-`storage_domain_root` and derive the atlas root as
-`<storage_domain_root>/emulators/<atlas-id>` rather than silently writing into
-the repository. Freeze one caller-supplied domain for the complete source
-corpus and comparison cycle. Its location does not determine selection
-eligibility: a private fallback root may support holdout only when the single
-user-global exposure registry required by `session-derived-atlas.md` is
-writable and prior exposure outside that registry can be excluded. Otherwise
-stop before reading semantic session bytes. Before any holdout work, preflight
-the exact OS-account-global registry with the runtime that will compile the
-atlas. If that runtime lacks write authority, request the smallest user-approved
-permission grant for that exact root; do not substitute the atlas storage root
-or a repository-local registry. If authority remains unavailable, stop with
-`source_contaminated`. Every holdout, including a designed holdout, requires the
-user-global registry; a pure designed non-holdout root does not.
-
-### Filesystem write authority
-
-Before every filesystem create, update, unlink, rename-away, or recursive
-removal in any mode, resolve every affected destination
-against `authorized_files.allowed` and `authorized_files.forbidden`. Missing or
-empty `allowed` denies every write; there is no implicit wildcard. Each entry is
-a closed `{kind: file | directory, path: <canonical-absolute-path>}` object. A
-`file` matches only that exact real path. A `directory` matches itself and
-component-bound descendants after symlink-free canonical resolution; string-
-prefix and glob matching are forbidden. `forbidden` uses the same component-
-safe semantics and wins over `allowed`. Recursive removal first enumerates and
-checks every descendant; admitting a parent never authorizes removal of a
-forbidden child. Unlink checks its target path; rename checks both source and
-destination plus both parent directory entries. Directory rename additionally
-requires an exclusive lock that prevents membership changes in both source and
-destination trees from enumeration through rename completion. The sole exception is atomic
-replacement under one exact `kind: file` grant: that grant authorizes the
-invocation-owned temporary source entry and the exact granted destination
-entry. During locked crash recovery it also authorizes exactly one validated
-dead-owner same-target orphan source solely for atomic transfer to the current
-temp name. These are narrowly implied authority over those named parent-directory
-entries, not authority over the parent path or any sibling; no other operation
-or name in the parent is admitted. Before
-renaming a directory,
-recursively enumerate it without following symlinks and authorize every
-descendant at both its source path and corresponding destination path; a
-forbidden descendant denies the entire rename. For a not-yet-created path,
-canonicalize and authorize the existing parent with no symlink components,
-validate the exact leaf name, and create with no-follow/create-new semantics;
-an absent leaf never broadens authority. Probe cleanup and rollback use the same gate. A destination
-not positively admitted or matched by a forbidden entry MUST NOT be affected.
-Open and pin every authorized existing ancestor, then perform effects with
-descriptor-relative no-follow operations (`openat`/`renameat`/`unlinkat` or an
-equivalent race-free facility) and revalidate the pinned chain. Existing
-regular files are never modified in place: write a create-new sibling and
-atomically replace only the authorized directory entry. If replacement cannot
-be used, stop; in-place or non-atomic fallback is forbidden. An allowed hard
-link never grants authority over another name.
-A `kind: file` grant implicitly admits exactly one unpredictable,
-invocation-owned temporary entry in the same pinned directory solely for this
-atomic replacement. The temp must not match a forbidden path, is never exposed
-as a general sibling grant, and its name binds the invocation identity and a
-process-incarnation fingerprint plus a digest of the exact target leaf. The
-incarnation asset uses the immutable `os-process-incarnation/v1` schema and
-private custody defined in `references/session-derived-atlas.md`. A pure
-designed non-holdout root stores it under its authorized atlas-private
-`process-incarnations/v1/` directory and requires no exposure registry. It is retained
-until the temp is replaced or recovered.
-The temp leaf is `.<target-leaf>.emulator-tmp-<digest-hex>`, where the digest is
-SHA-256 of `"emulator-replacement-temp/v1" NUL canonical-target-path NUL
-invocation-id NUL process-incarnation-fingerprint NUL 128-bit-nonce`. Recovery
-recomputes this exact preimage; no other sibling name is eligible.
-Before creating a replacement temp, recover same-target orphan temps left by
-crashed invocations: validate the complete
-name, hold one exclusive per-target replacement lock, prove the named owner is
-dead, require a regular single-link file in the same pinned directory, and
-atomically rename that orphan to the current invocation's admitted temp name
-before unlinking it through the common gate. This rename is the ownership
-transfer. Ambiguous, aliased,
-malformed, or wrong-target entries stop the operation. The current temp is
-removed on failure before the operation returns.
-Recursive
-removal is permitted only inside an invocation-owned isolated root while its
-exclusive owner lock is held; shared-tree recursive deletion is forbidden.
-This common pre-effect gate covers
-contract, source, actor, partition, evaluator, world, reset, fixture, tool,
-reward, mutation-generator, harness, run, trace, report, and dataset artifacts.
-The four dataset flags remain `false` unless the user explicitly sets a
-specific flag to `true`; mode selection never grants dataset-export authority.
+authority.
 
 ## Modes
 
@@ -203,44 +106,14 @@ Choose exactly one mode.
 
 ### design
 
-Compile or repair the root contract and its charts. Design may create only the
-contract, chart, source-bundle, actor-projection, partition, declarative
-evaluator-policy, required closure archive/inventory/EER report, and, for a
-retirement successor, its required static retirement evidence and mapping
-assets. When first authoring a holdout, it may also capture
-the exact mode-neutral baseline harness bundle and capture provenance plus the
-factor-selection asset required by `holdout_authoring_baseline`, along with the
-pre-candidate metadata/inventory templates, optimizer tool-policy, generation
-runner, and runtime assets that must be frozen before the first semantic
-holdout read; it may not
-create a candidate bundle. For a pending implementation it may freeze the
-materialization-plan and deterministic materializer assets, but not their
-implementation outputs. It does not materialize executable world, reset,
-fixture, tool, reward, mutation-generator, or evaluator-implementation assets;
-provision an actor runtime; execute the chart; or introduce a native subsystem.
+Compile or repair the root contract and its charts. Do not generate runtime
+files unless the requested artifact is itself an actor packet or evaluator.
 
 ### implement
 
-Validate the design-authored pending closure and its closed materialization plan,
-allowing only the implementation assets declared as pending. Materialize those
-assets in an isolated staging root, compute their exact identities, then create
-and fully validate one content-addressed implemented successor closure that changes
-only the pending asset refs/fingerprints, root reset-admission fingerprints
-and materialization-witness pairs emitted at the plan's frozen destinations,
-and root/chart closure fingerprints.
-Fresh admission sandbox identities may give a repeated implement attempt a
-different content address; determinism applies to each frozen materializer and
-normalized prestate, not to opaque runtime IDs across attempts.
-The successor also requires `operation_mode: implement` and a
-`predecessor_root_fingerprint` equal to the design root; these are the only
-additional identity changes beyond the plan-bound witnesses. It may also update exactly the deterministic
-transitive proof assets enumerated by the plan's `derivations`; no unplanned
-derived asset or semantic field may change.
-Any task semantics, evaluator policy, scope, or plan change routes back to
-`design`; implement does not independently author them. Do not edit source
-repositories or target skills without separate authority.
-Reward and mutation-generator assets are materialized when their chart fields
-require them and the common write-authority gate admits their destinations.
+Materialize executable world, reset, tool, fixture, and evaluator assets already
+authorized by the contract. Do not edit source repositories or target skills
+without separate authority.
 
 ### run
 
@@ -252,30 +125,17 @@ observations, actions, effects, terminal state, cost, and trace.
 Apply only chart-declared mutations. A mutation outside declared support creates
 a new designed chart; it never becomes a source-faithful transition. Each
 declared dimension binds its domain, preserved laws, shrink strategy, and any
-generator bytes through the chart closure. Mutation execution uses one frozen
-harness subject. EC-v1 does not pair mutation cases in `compare`; a comparison
-selecting a mutation assignment is an invalid contract.
+generator bytes through the chart closure.
 
 ### compare
 
 Run fresh baseline and candidate arms against the same chart boundary and emit a
-chart-aware comparison. Both arms are frozen harness bundles. The historical
-trajectory is never an arm.
+chart-aware comparison. The historical trajectory is never an arm.
 
 ### export
 
-Validate and bind the originating sealed EER, then emit only datasets whose
-fresh evidence, authority, partition, and visibility rules make them eligible.
-Export emits no new EER and does not rewrite the root, sealed report, or
-originating `operation_mode`. A deferred export emits a content-addressed
-export manifest that binds the original EER/runs and every emitted dataset.
-The request's `export_origin` selects exactly one sealed EER by ref/fingerprint;
-its runs pair is both non-null for run/mutate/compare and both null for
-design/implement. Missing, mixed, or ambiguous origin fields are invalid; never
-select a mutable "latest" report.
-The successor-root pair is both non-null only for a deliberately retired
-holdout export and both null otherwise; it selects the exact training-authorized
-retirement successor required by exported rows and the manifest.
+Emit EER-v1 and only datasets whose fresh evidence, authority, partition, and
+visibility rules make them eligible.
 
 ## Contract ownership
 
@@ -293,34 +153,21 @@ safety, authority, hidden truth, side effects, selection, or termination.
 
 Read `references/emulator-contract-profile.md` when authoring or validating a
 contract. Read `references/session-derived-atlas.md` whenever a session source
-is selected or any source will participate in holdout selection or a selecting
-comparison.
+is selected.
 
 ## Environment laws
 
 Every chart exposes semantic equivalents of:
 
 ```text
-reset(chart_id, repeat_id, mutation_case_id,
-      mutation_assignment_ref, mutation_assignment_fingerprint) -> observation
+reset(chart_id, harness_id, repeat_id) -> observation
 observe() -> current actor-visible observation
 support(action) -> executable | judgeable | denied | observed_only | unsupported
-evaluate(output_or_trace) -> oracle vector + state diff + reward + residual judgment
+evaluate(output_or_trace) -> oracle vector + state diff + residual judgment
 trace() -> fresh observable trace
 ```
 
-Harness, candidate, arm, and subject identity are not reset inputs. For a
-paired comparison, the same chart and repeat must produce the same reset
-observation and pre-state fingerprint before either actor starts; any
-identity-dependent reset behavior is `comparison_drift`.
-Outside `mutate`, all three mutation inputs are null. In `mutate`, they are
-non-null, resolve the exact chart-bound assignment, and equal the frozen
-single-arm cohort row; reset never reads ambient mutation state.
-
-Validate actor output against `actor.output_schema` and the action schema before
-support routing; malformed actor output is `hard_fail`, not an unsupported
-counterfactual. `step(action)` exists only when
-`support(action) == executable`. Support classes
+`step(action)` exists only when `support(action) == executable`. Support classes
 are mutually exclusive. An overlap or unverifiable classification is
 `invalid_environment`; an attempted `observed_only` or `unsupported` transition
 is `unsupported_counterfactual`; a `denied` action is `hard_fail`. Never guess a
@@ -331,10 +178,9 @@ training additionally require an actor-readable inventory and fingerprint plus
 tool-access evidence proving hidden roots were inaccessible. A combined file is
 not proof of separation.
 
-A failed hard oracle, required state assertion, or trace invariant cannot be
-overridden by reward, cost, preference, prose quality, or model judgment.
-Executable charts judge required state and trace laws, not historical tool-
-sequence imitation.
+A failed hard oracle or trace invariant cannot be overridden by reward, cost,
+preference, prose quality, or model judgment. Executable charts judge required
+state and trace laws, not historical tool-sequence imitation.
 
 ## Session-derived execution
 
@@ -351,7 +197,7 @@ evaluator details. Whole-harness executable comparisons cut before the first
 assistant action unless earlier influence is proved absent.
 
 All charts may support discovery. Only environment-valid fresh paired charts
-with sufficient attribution, valid action support, evaluator authority, and
+with sufficient attribution, transition support, evaluator authority, and
 untouched holdout status may select a candidate. Group all charts from the same
 root session, task, issue, PR, or worker lineage into one partition.
 
@@ -361,21 +207,20 @@ execution, evaluation, exports, and stop reasons.
 
 ## Comparison and learning policy
 
-Freeze the baseline and each candidate as complete harness manifests. A candidate
-changes exactly one semantic owner and cannot change charts, source bundles,
-reset recipes, evaluators, comparison code, actor runner, or holdout
+Freeze the baseline and each candidate as complete harness manifests. A
+candidate changes exactly one semantic owner and cannot change charts, source
+bundles, reset recipes, evaluators, comparison code, actor runner, or holdout
 partitioning. Candidate generation cannot inspect active holdout material.
 
 Evaluate in this order:
 
 ```text
-environment validity -> actor schema -> support -> hard oracles -> state diff
--> trace laws -> protected dimensions -> reward -> cost/latency -> residual judgment
+environment validity -> support -> hard oracles -> state diff -> trace laws
+-> protected dimensions -> cost/latency -> residual judgment
 ```
 
-In `compare` mode, recommendations are `adopt`, `reject`, or
-`insufficient_evidence`, but they grant no mutation authority. Other modes omit
-the recommendation. Export preference rows only from direct authority
+Recommendations are `adopt`, `reject`, or `insufficient_evidence`, but they
+grant no mutation authority. Export preference rows only from direct authority
 and a fresh passing chosen action. Export trajectories only from fresh valid
 executable runs. Active holdouts never enter training exports.
 
@@ -399,7 +244,7 @@ Findings:
 - Hard-oracle and state deltas:
 - Protected regressions:
 - Residual preference:
-- Recommendation (compare mode only): adopt | reject | insufficient_evidence
+- Recommendation: adopt | reject | insufficient_evidence
 
 Artifacts:
 - Source bundles, actors, worlds, traces, reports, and eligible datasets:

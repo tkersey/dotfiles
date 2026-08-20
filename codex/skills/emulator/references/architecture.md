@@ -15,8 +15,7 @@ repositories, tests, design       sessions through Seq
                  fresh actor runs
                          |
                          v
- hard oracles -> state diff -> trace invariants -> protected dimensions
-              -> reward -> cost/latency -> residual judgment
+        hard oracles -> state diff -> residual judgment
                          |
                          v
                  EER-v1 and eligible datasets
@@ -24,8 +23,6 @@ repositories, tests, design       sessions through Seq
 
 Historical material nominates decisions and evaluators. It never supplies a
 fresh comparison arm.
-The complete normative precedence and failure semantics are owned by
-`eer-v1.md`; this diagram does not shorten or override them.
 
 ## Responsibility split
 
@@ -33,7 +30,7 @@ The complete normative precedence and failure semantics are owned by
 |---|---|---|
 | Seq | Physical session discovery, source-event identity/order, messages, turns, tools, workers, tokens, and query limitations | Correction semantics, chart type, replayability, evaluator authority, or candidate quality |
 | `$emulator` | Source bundles, charts, support boundaries, actor/evaluator projections, atlas closure, resets, evaluators, comparisons, EER-v1, datasets, and STOP | Truth of raw facts, undiscoverable user preference, live-harness adoption, or publication authority |
-| CAS or selected existing runner | Fresh process/container execution, runtime identity, tool transport, actor trace, and terminal status | Chart authority or evaluator semantics |
+| CAS or selected existing runner | Fresh process/thread execution, runtime identity, tool transport, actor trace, and terminal status | Chart authority or evaluator semantics |
 | Git and task tools | Repository identity, reset state, fixtures, tests, state effects, and deterministic assertions | Harness policy |
 | Human owner | Ambiguous correction adjudication, experimental factor, adoption, external publication, and privacy relaxation | Physical source facts |
 | `$grill-me` | Material unresolved user judgments | Environment implementation |
@@ -86,9 +83,7 @@ insufficient.
 
 Both baseline and candidate arms are fresh. They bind the same chart, actor
 packet, world/reset, effects, evaluator, runtime configuration, repeat policy,
-and split identity. Only the selected semantic factor may differ; when that
-factor owns declared runtime keys, runtime parity is evaluated after applying
-exactly that validated key-local delta.
+and split identity. Only the selected semantic factor may differ.
 
 ```text
 hard failure or protected regression -> cannot be repaired by preference

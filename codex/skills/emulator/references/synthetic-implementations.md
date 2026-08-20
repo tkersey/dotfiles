@@ -12,8 +12,7 @@ fidelity, or claim strength.
 Every chart provides semantic equivalents of:
 
 ```text
-reset(chart_id, repeat_id, mutation_case_id,
-      mutation_assignment_ref, mutation_assignment_fingerprint)
+reset(chart_id, harness_id, repeat_id)
 observe()
 support(action)
 evaluate(output_or_trace)
@@ -23,11 +22,6 @@ trace()
 `step(action)` is provided only for actions classified `executable`.
 Synthetic worlds may declare `transition_model: total`; session-derived worlds
 are commonly partial or have no transition model.
-
-The three mutation inputs are all null outside `mutate`. In `mutate`, all three
-are non-null, equal the chart-local frozen cohort tuple, and the implementation
-resolves and fingerprints the assignment before reset. Implementations MUST NOT
-recover the assignment from ambient state or from the case ID alone.
 
 ## Deterministic
 
@@ -58,7 +52,7 @@ irrelevant context
 ```
 
 All noise is seeded where possible and trace-recorded. If the actor runtime
-offers no deterministic seed, declare `actor_seed_control: unavailable`, use repeats,
+offers no deterministic seed, declare `seed_control: unavailable`, use repeats,
 and lower the supported claim.
 
 ## Adversarial
@@ -137,8 +131,6 @@ identity is itself a contracted law.
 
 Generated implementations and candidate worktrees are disposable. On invalid
 closure, leakage, drift, or failed proof, stop actors and discard the isolated
-candidate/reset workspace. Preserve sensitive source or evaluation payloads
-only with explicit retention authorization. Without it, delete unauthorized
-temporary copies and retain only permitted sanitized identities and diagnostics.
-No emulator
+candidate/reset workspace. Preserve private source and evaluation evidence by
+default for diagnosis; remove it only with explicit authorization. No emulator
 result edits or rolls back the live harness.
