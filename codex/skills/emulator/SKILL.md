@@ -89,7 +89,7 @@ emulator_request:
     candidates: []
     max_candidates: 3
   authorized_files:
-    allowed: []
+    allowed: []  # deny all writes until explicitly populated
     forbidden: []
   output:
     report: EER-v1
@@ -123,9 +123,14 @@ user-global registry; a pure designed non-holdout root does not.
 ### Filesystem write authority
 
 Before every filesystem create or update in any mode, resolve the destination
-against `authorized_files.allowed` and `authorized_files.forbidden`. A
-destination absent from a nonempty allowlist or matched by a forbidden path is
-out of authority and MUST NOT be written. This common pre-effect gate covers
+against `authorized_files.allowed` and `authorized_files.forbidden`. Missing or
+empty `allowed` denies every write; there is no implicit wildcard. Each entry is
+a closed `{kind: file | directory, path: <canonical-absolute-path>}` object. A
+`file` matches only that exact real path. A `directory` matches itself and
+component-bound descendants after symlink-free canonical resolution; string-
+prefix and glob matching are forbidden. `forbidden` uses the same component-
+safe semantics and wins over `allowed`. A destination not positively admitted
+or matched by a forbidden entry MUST NOT be written. This common pre-effect gate covers
 contract, source, actor, partition, evaluator, world, reset, fixture, tool,
 reward, mutation-generator, harness, run, trace, report, and dataset artifacts.
 The four dataset flags remain `false` unless the user explicitly sets a
@@ -138,18 +143,17 @@ Choose exactly one mode.
 ### design
 
 Compile or repair the root contract and its charts. Design may create only the
-contract-owned source-bundle, actor-projection, partition, evaluator, world,
-reset, fixture, tool, reward, and mutation-generator assets required to close the selected chart, regardless
-of chart kind. It does not provision an actor runtime, execute the chart, or
-introduce a native subsystem.
-For an executable chart, these include its contract-owned world/reset/evaluator
-assets. These contract-owned source and actor assets are required closure assets,
-not runtime provisioning.
+contract, chart, source-bundle, actor-projection, partition, and declarative
+evaluator-policy assets. It does not materialize executable world, reset,
+fixture, tool, reward, mutation-generator, or evaluator-implementation assets;
+provision an actor runtime; execute the chart; or introduce a native subsystem.
 
 ### implement
 
-Author or validate the contract closure when needed, then materialize its
-executable world, reset, tool, fixture, and evaluator assets. Do not edit source
+Validate an already-authored contract closure, then materialize its executable
+world, reset, tool, fixture, reward, mutation-generator, and evaluator-
+implementation assets. Contract repair routes back to `design`; `implement`
+does not acquire a second contract-authoring identity. Do not edit source
 repositories or target skills without separate authority.
 Reward and mutation-generator assets are materialized when their chart fields
 require them and the common write-authority gate admits their destinations.

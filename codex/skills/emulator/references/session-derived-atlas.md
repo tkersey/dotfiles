@@ -133,6 +133,16 @@ identities. A group is holdout-eligible only when every member identity is
 holdout-eligible, so one exposed member makes the group discovery-only without
 inventing an aggregate identity claim.
 
+This pre-read identity set is complete only when the bound physical
+identity-completeness asset proves that no stable task/session alias requires
+semantic source bytes to discover. Without that proof, select the locked
+discovery-only fallback before reading: keep `.partition-freeze.lock` through
+the semantic query, extract every newly visible stable alias from the complete
+result/source window, publish its `discovery_exposed` claim and marker, and
+revalidate the union before releasing the lock. A post-read alias absent from
+the locked union, or already consumed as holdout, is `source_contaminated`;
+query success never retroactively establishes completeness.
+
 For each individual source identity, construct exact RFC 8785
 `semantic-discovery-identity-exposure/v1` bytes:
 
@@ -825,7 +835,12 @@ semantics, chart fingerprint, and the exact hidden evaluator pair are non-null
 in every variant. `target_kind: historical_correction` uses the displayed
 non-null historical pairs and its complete source-evidence array. Its hidden-
 action pair is copied exactly from the chart's singular rejected historical
-action fields and never synthesized from a conventional path.
+action fields and never synthesized from a conventional path. Its prompt pair
+equals `actor.prompt_*`; correction, recovery, and outcome pairs equal the
+chart's singular hidden source projection pairs; chart semantics and hidden
+evaluator pairs equal their chart-owned assets. Every equality is validated
+before target fingerprinting, so the target cannot substitute or omit a
+chart-owned projection.
 `target_kind: source_no_history` requires hidden-action, correction, recovery,
 and outcome pairs null while retaining a nonempty complete source-evidence
 array. `target_kind: designed_no_history` requires those four pairs null and
@@ -951,7 +966,7 @@ Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>","message_projection_ref":"evidence/projections/<digest-hex>.json"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","pre_holdout_optimizer_templates":[{"candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_semantics_seen":false,"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>","message_projection_ref":"evidence/projections/<digest-hex>.json"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","pre_holdout_optimizer_templates":[{"candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
@@ -988,6 +1003,11 @@ after a holdout semantic read. If factor selection requires holdout contents,
 those charts become discovery/development and a new untouched group is
 required. Any baseline drift after this artifact is published restarts factor
 selection and requires a new untouched holdout group.
+
+The generation-runner and model/runtime pairs are likewise frozen in these
+pre-read bytes. The pre-candidate policy and every candidate access proof repeat
+them exactly; a post-read choice, alternate runtime, or missing pair is
+`holdout_contaminated` before optimizer start.
 
 The candidate-independent optimizer tool policy template is exact RFC 8785
 `optimizer-tool-policy-template/v1` bytes containing allowed tool names,
@@ -1099,13 +1119,14 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":null,"holdout_target_ref":null,"optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
+{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":null,"holdout_target_ref":null,"optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
 ~~~
 
 The displayed payload is the exact non-holdout variant. The exact holdout
 variant has the identical closed field set, uses
 `schema: candidate-generation-access-proof/holdout-v1`, and replaces both null
-target values with the frozen holdout target pair. The non-holdout schema is
+target values with the frozen holdout target pair. Its `pending_ref` points to
+the archived exact global pending-intent snapshot. The non-holdout schema is
 `candidate-generation-access-proof/non-holdout-v1`; mixed schema and target
 nullability is invalid.
 
@@ -1176,12 +1197,14 @@ variants below. Each directory or symlink requires its matching retained
 filesystem effect just as a regular file does; special files remain forbidden.
 
 The pre-generation output inventory has an empty `entries` array; only the
-predeclared isolated output roots exist. Every post-generation entry is covered
-by a retained filesystem-write effect in the bound optimizer tool trace, and
-the ordered complete write-effect set is the attempt's `generation_effects`.
-An unchanged prestate byte, a poststate byte without one generating effect, or
-an effect without its resulting poststate entry invalidates candidate
-provenance.
+predeclared isolated output roots exist. Replay the complete ordered
+`generation_effects` from that empty prestate using exact create, overwrite,
+rename, symlink, mkdir, and delete semantics. The replay-derived final inventory
+must equal the post-generation inventory byte-for-byte. This admits atomic-save
+temporaries and overwritten/deleted intermediates while proving that every
+surviving byte has traced provenance and no effect is unaccounted. An unchanged
+prestate byte, unrepresentable effect, replay error, or final mismatch
+invalidates candidate provenance.
 
 The pre-generation semantic leakage review covers every entry in both the
 optimizer input inventory and `candidate_output_prestate`, plus every delivered
@@ -1296,7 +1319,10 @@ required only when `holdout_evidence` is non-null. For a non-holdout comparison,
 the registry and lock roots are not applicable and no global record is created.
 Instead the run directory contains closed exact RFC 8785
 `{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","optimizer_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"candidate-generation-intent/v1"}`
-bytes. Their digest is the access proof's `pending_fingerprint`; holdout target
+bytes at the access proof's canonical `pending_ref`. Create-new and fsync that
+file before the optimizer receives any message or readable root. Its digest is
+the access proof's `pending_fingerprint`, and the sealed attempt evidence
+closure includes the exact file under role `generation_intent`; holdout target
 fields remain null. Both routes retain one attempt identity without fabricating
 holdout authority.
 
@@ -1351,7 +1377,7 @@ under the private global attempt directory. It emits exact RFC 8785
 
 The exact top-level fields are those displayed. `closure_inventory` is sorted
 by `(role, ref)`, has unique refs, and admits `access_proof`,
-`candidate_output`, `generation_effect`, `holdout_target`, `leakage_review`,
+`candidate_output`, `generation_effect`, `generation_intent`, `holdout_target`, `leakage_review`,
 `leakage_surface`, `derivation_evidence`, `optimizer_context`, `optimizer_input`, `optimizer_policy`,
 `pre_candidate_policy`, `tool_payload`, `tool_policy`, and `tool_trace`.
 Any recursively referenced asset without a primary role uses `dependency` and
@@ -1444,6 +1470,11 @@ both locks uses this order and releases them in reverse. Revalidate the exact gl
 claim bytes against the root snapshots, resolve the current pointer, and require
 its target snapshot fingerprint to equal the root's bound snapshot. While still
 holding both locks, enumerate every regular, non-symlink
+`optimizer-intent-sentinels/<holdout-key>/*.json` file before memberships. Each
+sentinel's pending fingerprint must resolve one cohort pending intent and the
+complete matching membership set; an orphan sentinel is reconciled only by an
+exact matching cleared closure or stops `source_contaminated`. Only after the
+sentinel domain is complete, recognized, and duplicate-free may the gate enumerate
 `optimizer-intent-memberships/<holdout-key>/*.json` file for every selected
 source identity. Resolve each common pending fingerprint, require identical
 cohort membership, its exact matching `.cleared.json`, and the complete
@@ -1848,7 +1879,9 @@ dimensions have zero tolerance.
 `session_provenance` is non-null for every session-derived comparison regardless
 of partition and otherwise null. Its closed value is
 `{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprint":null,"legacy_exposure_attestation_ref":null,"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}`.
-The legacy pair is both non-null exactly for a pre-registry source. The final
+The legacy pair is both non-null exactly for a pre-registry source admitted to
+holdout. A pre-registry discovery/development source may keep both null and is
+therefore permanently holdout-ineligible. The final
 root's `session_provenance` ref/fingerprint resolves exact bytes equal to this
 complete object; the root never embeds a competing inline shape. Non-compare
 session roots author that same referenced asset directly from their root source
@@ -1993,10 +2026,10 @@ evaluator-only `harness-capture-provenance/v1` asset binds every source link
 path, owning root ID, source-root path, raw-target base64url, and final resolved source
 path, plus a complete walk of every declared source root. Its canonical
 `roots` entries contain `root_id`, absolute source root, every regular or
-symlink path with mode/digest and included flag, and any excluded path with a
-nonempty reason and authority ref; entries and paths are sorted and unique.
-Every discovered path is either included in the manifest or explicitly
-authorized as excluded, and every manifest entry occurs in the inventory.
+symlink path with mode/digest and `included: true`; entries and paths are sorted
+and unique. `excluded_paths` is an exact empty array: the first implementation
+does not certify non-behavior by assertion. Every discovered regular or symlink
+path is included in the manifest, and every manifest entry occurs in the inventory.
 Missing, extra, or unaccounted behavior-bearing files invalidate baseline
 capture. The provenance asset is included in the root
 closure and the corresponding baseline/candidate root entry. That provenance

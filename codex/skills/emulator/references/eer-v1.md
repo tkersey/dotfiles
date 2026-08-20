@@ -633,8 +633,16 @@ SHA-256 of `"emulator-finite-mutation-generator/v1" NUL chart_fingerprint NUL`
 plus the exact complete mutation-declaration bytes defined by the contract
 profile. In either route, `mutation_case_id` is SHA-256 of
 `"emulator-mutation-case/v1" NUL chart_fingerprint NUL mutation_generator_fingerprint NUL`
-plus the exact `mutation-assignment/v1` bytes. A minimized failure binds its
-counterexample artifact by reference and fingerprint.
+plus the exact `mutation-assignment/v1` bytes. A minimized failure ref resolves
+closed exact RFC 8785 `emulator-minimized-counterexample/v1` bytes:
+
+```json
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"failing_run_id":"<run-id>","mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":"sha256:<hex>","shrink_selection_trace_ref":"runs/<run-group-id>/shrink-selection-trace.json"}
+```
+
+Every identity equals the originating execution, assignment, chart, evaluator
+result, and sealed shrink trace; the payload pair binds the actual minimized
+bytes. Export copies this wrapper pair and rejects a case/path/digest-only join.
 
 ## comparison.json
 

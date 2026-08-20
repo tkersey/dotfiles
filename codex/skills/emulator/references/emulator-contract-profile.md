@@ -304,7 +304,9 @@ exact RFC 8785 `session-provenance/v1` bytes:
 The companion fingerprint hashes those exact bytes. The identity pair equals
 the root source pair, claim refs/fingerprints are same-length positionally
 joined arrays sorted by ref, and the validation pair covers them exactly. The
-legacy pair is all-null except for an admitted pre-registry source. In
+legacy pair is non-null only for a pre-registry source admitted to holdout;
+discovery/development sources may keep it all-null and remain permanently
+ineligible for holdout. In
 `paired_compare`, the pre-candidate policy's inline `session_provenance` value
 is byte-identical to this referenced asset. In `design`, `implement`, `run`, and
 `mutate`, the root source and partition evidence construct the same asset
@@ -540,7 +542,13 @@ environment_chart:
     rejected_historical_action_ref:
     rejected_historical_action_fingerprint:
     correction_refs: []
+    hidden_correction_ref:
+    hidden_correction_fingerprint:
+    hidden_recovery_ref:
+    hidden_recovery_fingerprint:
     outcome_refs: []
+    hidden_outcome_ref:
+    hidden_outcome_fingerprint:
     contamination: []
     limitations: []
 
@@ -565,6 +573,8 @@ environment_chart:
     mode: one_step_decision | full_turn | full_episode
     input_ref:
     input_fingerprint:
+    prompt_ref:
+    prompt_fingerprint:
     allowed_context_refs: []
     forbidden_context_refs: []
     output_schema:
@@ -638,6 +648,9 @@ environment_chart:
 
   mutation:
     law_refs: []
+    law_evaluator_bindings:
+      - law_ref:
+        evaluator_result_id:
     dimensions:
       - dimension_id:
         domain:
@@ -765,6 +778,12 @@ bytes, and it is the disputed action A used by the cut, actor hidden target, and
 preference export. Other historical actions may remain in the plural provenance
 array but cannot replace A after chart fingerprinting. Non-correction charts
 require both singular fields null.
+The prompt and three hidden projection pairs are non-null for every selecting
+correction chart, resolve exact chart/source-bundle assets, and select exactly
+one member of their corresponding plural provenance arrays when one exists.
+The holdout and actor leakage targets copy these four pairs, the rejected-action
+pair, chart semantics, and evaluator pair byte-for-byte; conventional paths or
+post-chart selections are invalid.
 
 For `transition_model: total`, support predicates exhaustively and exclusively
 cover every action admitted by `actions.schema`, `unsupported_default` is
@@ -814,7 +833,13 @@ has exactly one support class before evaluation, while `step` remains defined
 only for `executable`.
 
 `mutation.law_refs` is the sorted, duplicate-free complete mutation-law
-universe. `dimension_id` values are chart-wide unique before assignment or
+universe. `law_evaluator_bindings` is sorted by unique `law_ref`, covers that
+universe exactly, and maps every preserved or violated law to one executable
+hard-oracle, state-diff, or trace-invariant result ID in the same chart. Every
+applicable mutation run emits every bound result; a preserved law passes and a
+violated law fails in agreement with the recomputed assignment classification.
+Missing, unrelated, or contradictory results are `invalid_environment`.
+`dimension_id` values are chart-wide unique before assignment or
 interaction derivation. Every dimension has unique `case_id` values; its shrink strategy may
 select only declared case IDs. Each domain case, not the whole dimension,
 declares its value, case kind, preserved laws, and violated laws. Its preserved
