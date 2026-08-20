@@ -559,9 +559,13 @@ invalidate comparison; favorable retry selection is impossible within one
 comparison identity.
 Before sandbox or process creation, create-new and fsync one
 `execution-intent/v1` file per frozen tuple under the run group's
-`execution-intents/` directory. Its exact bytes bind run ID, chart, harness,
-repeat, comparison/run-group, and mutation identities; the filename digest,
-row intent pair, and bytes agree. A crash leaves the tuple reserved: recovery
+`execution-intents/<tuple-key-hex>.json` path. `tuple_key` is SHA-256 of exact
+RFC 8785 tuple bytes containing comparison/run-group, chart, harness, repeat,
+run purpose, and nullable mutation/parent identities—but not run ID. The closed
+intent bytes are
+`{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":null,"harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":null,"mutation_case_id":null,"parent_mutation_case_id":null,"parent_repeat_id":null,"repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary"}}`.
+The row intent fingerprint hashes those bytes and its run ID equals the intent;
+the tuple-key filename prevents a new run ID from reserving the same tuple. A crash leaves the tuple reserved: recovery
 emits a terminal runtime-error row or invalidates that comparison identity, but
 never relaunches the tuple.
 
@@ -830,16 +834,18 @@ trial row; `primary` requires both fields null. In either variant,
 from the chart's shrink graphs. Every descendant is either a fresh hard-oracle
 passing run (`status: pass`, non-null run ID and oracle evidence pair) or a
 deterministic inapplicable proof (`status: inapplicable`, null run ID and
-non-null proof pair); all rows have the same closed fields. No failing descendant may
+non-null proof pair). For sampled/unavailable controls, use the distinct closed
+`status: cohort_pass` row:
+`{"aggregation":{"result":"nonfailure","rule":"<frozen-rule>"},"assignment_fingerprint":"sha256:<hex>","evidence_fingerprints":["sha256:<hex>"],"evidence_refs":["runs/<run-group-id>/oracle-results/<run-id>.json"],"run_ids":["<run-id>"],"status":"cohort_pass"}`.
+Its arrays cover the complete frozen repeat cohort and are same-length ordered
+pairs; no run may fail. The irreducibility array is thus a closed tagged union,
+not one shared row shape. No failing descendant may
 remain. An empty descendant set is valid. Thus minimality means no smaller
 failing applicable assignment, not merely trial selection or absence of any
 smaller case. Export copies this
 wrapper pair and rejects a case/path/digest-only join.
-For sampled or unavailable actor/environment seed control, every applicable
-strict descendant must bind the complete frozen repeat cohort and its
-contracted aggregation result proving nonfailure. One passing repeat is
-insufficient. Single-run irreducibility is admitted only when all relevant
-controls are fixed/deterministic.
+One passing repeat is insufficient for sampled/unavailable controls. Single-run
+irreducibility is admitted only when all relevant controls are fixed/deterministic.
 
 ## comparison.json
 

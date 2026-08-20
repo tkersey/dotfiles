@@ -99,11 +99,6 @@ seq sessions \
   --since <time> \
   --until <time> \
   --format json
-
-seq find-session \
-  --prompt <bounded-text> \
-  --root <copied-snapshot-root> \
-  --format json
 ~~~
 
 `seq find-session --prompt` is a semantic source read. Before running it,
@@ -124,6 +119,16 @@ copy and require every byte and path to match before querying. Run
 `seq find-session` against that copied snapshot root, never against the live
 mutable sessions root. A copy or rewalk mismatch stops with
 `source_contaminated` before the semantic read.
+
+Only after the pre-read claim/attempt gate below is durable may the semantic
+command run:
+
+~~~bash
+seq find-session \
+  --prompt <bounded-text> \
+  --root <copied-snapshot-root> \
+  --format json
+~~~
 
 The retained manifest is exact RFC 8785 `physical-corpus-snapshot/v1` bytes:
 
@@ -1016,14 +1021,15 @@ semantics, chart fingerprint, and the exact hidden evaluator pair are non-null
 in every variant. `actor_visible_state_ref`/fingerprint equal the chart's exact
 `actor.input_ref`/fingerprint; the target cannot substitute another visible
 asset. `target_kind: historical_correction` uses the displayed
-non-null historical pairs and its complete source-evidence array. Its hidden-
+non-null hidden-action/correction pairs, the chart's canonical nullable
+recovery/outcome pairs, and its complete source-evidence array. Its hidden-
 action pair is copied exactly from the chart's singular rejected historical
 action fields and never synthesized from a conventional path. Its prompt pair
 equals `actor.prompt_*`; correction, recovery, and outcome pairs equal the
 chart's singular hidden source projection pairs; chart semantics and hidden
 evaluator pairs equal their chart-owned assets. Every equality is validated
-before target fingerprinting, so the target cannot substitute or omit a
-chart-owned projection.
+before target fingerprinting, so the target cannot substitute a chart-owned
+projection or turn present evidence into absence.
 `target_kind: source_no_history` requires hidden-action, correction, recovery,
 and outcome pairs null while retaining a nonempty complete source-evidence
 array. `target_kind: designed_no_history` requires those four pairs null and
@@ -1674,9 +1680,11 @@ tuple exactly once per comparison; tuple identity is `(comparison_id,
 chart_fingerprint, repeat_id, harness_fingerprint)`. A missing pair or tuple
 blocks retirement. Before sealing, copy each exact EER and runs file into the
 static successor-owned `holdout-retirements/evidence/cycles/<cycle-id>/`
-namespace and fsync it; runtime directories are never transitive refs.
+namespace, recursively copy every EER/runs dependency, and fsync the complete
+tree; runtime directories are never transitive refs. A sealed reference mapping
+maps every embedded canonical runtime ref to its static snapshot pair.
 Its closed payload is
-`{"arms":[{"candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","eer_fingerprint":"sha256:<hex>","eer_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/EER-v1.yaml","runs_fingerprint":"sha256:<hex>","runs_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/runs.jsonl"}],"reservation_fingerprint":"sha256:<hex>","schema":"holdout-cycle-completion/v1"}`.
+`{"arms":[{"candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","eer_fingerprint":"sha256:<hex>","eer_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/EER-v1.yaml","reference_mapping_fingerprint":"sha256:<hex>","reference_mapping_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/reference-mapping.json","runs_fingerprint":"sha256:<hex>","runs_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/runs.jsonl"}],"reservation_fingerprint":"sha256:<hex>","schema":"holdout-cycle-completion/v1"}`.
 Arms sort by candidate ID with unique candidate/comparison IDs and equal the
 reservation arm set exactly; each EER/runs pair resolves and accounts its
 reserved tuples.
@@ -1933,6 +1941,11 @@ physical envelope; a merely asserted incomplete list is not holdout authority.
 The caller route uses exact RFC 8785
 `{"attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","complete":true,"issuance_id":"<opaque-issuance-id>","schema":"identity-completeness-attestation/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"source_state_fingerprint":"sha256:<hex>","source_state_ref":"identity/source-states/<digest-hex>.json"}`
 bytes. The physical route retains the exact non-semantic discovery envelope.
+That envelope is closed RFC 8785 `physical-identity-completeness/v1` bytes:
+`{"complete":true,"physical_snapshot_fingerprint":"sha256:<hex>","physical_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","schema":"physical-identity-completeness/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_descriptors":[{"identity_kind":"root_session","identity_ref":"seq:<adapter>:<root-session-id>"}],"source_identity_fingerprints":["sha256:<hex>"]}`.
+Arrays are sorted and duplicate-free, descriptor fingerprints recompute the
+identity array, and both identity/group sets equal the chart split exactly;
+missing physically discoverable aliases make `complete: true` invalid.
 The source-state pair binds the immutable physical snapshot/corpus selection
 and alias-bearing metadata observed for issuance. Reuse against any different
 source-state fingerprint is invalid; a newly discovered alias requires a new
@@ -2258,11 +2271,15 @@ The already-materialized commitment has exact RFC 8785
 `randomness-cohort-commitment/v1` bytes:
 
 ~~~json
-{"rows":[{"actor_seed":null,"actor_seed_control":"unavailable","chart_fingerprint":"sha256:<hex>","environment_seed":17,"environment_seed_control":"sampled","failure_schedule_fingerprint":"sha256:<hex>","failure_schedule_ref":"comparison/failure-schedules/<chart-hex>-<repeat-id>.json","repeat_id":"<repeat-id>"}],"schema":"randomness-cohort-commitment/v1"}
+{"arm_schedule":[{"candidate_id":"candidate-1","chart_fingerprint":"sha256:<hex>","first_arm":"baseline","repeat_id":"<repeat-id>"}],"rows":[{"actor_seed":null,"actor_seed_control":"unavailable","chart_fingerprint":"sha256:<hex>","environment_seed":17,"environment_seed_control":"sampled","failure_schedule_fingerprint":"sha256:<hex>","failure_schedule_ref":"comparison/failure-schedules/<chart-hex>-<repeat-id>.json","repeat_id":"<repeat-id>"}],"schema":"randomness-cohort-commitment/v1"}
 ~~~
 
 Rows sort by `(chart_fingerprint, repeat_id)`, are complete and unique for the
 frozen paired cohort, and record every controllable draw and sampled schedule.
+`arm_schedule` sorts by `(candidate_id, chart_fingerprint, repeat_id)`, covers
+every pair tuple exactly once, and freezes baseline-first or candidate-first
+before execution. Actual start order must match; alternation/randomization is
+therefore evidence, not a post-run claim.
 Fixed or sampled controls require a concrete seed; `unavailable` requires null.
 The schedule pair is both null when none is sampled and otherwise resolves
 exact bytes already durable before candidate generation. The commitment is

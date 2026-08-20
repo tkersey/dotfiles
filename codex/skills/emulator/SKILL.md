@@ -155,6 +155,11 @@ regular files are never modified in place: write a create-new sibling and
 atomically replace only the authorized directory entry. If replacement cannot
 be used, reject any target with link count greater than one or an unverified
 inode alias; an allowed hard link never grants authority over another name.
+A `kind: file` grant implicitly admits exactly one unpredictable,
+invocation-owned temporary entry in the same pinned directory solely for this
+atomic replacement. The temp must not match a forbidden path, is never exposed
+as a general sibling grant, and is removed on failure before the operation
+returns.
 Recursive
 removal is permitted only inside an invocation-owned isolated root while its
 exclusive owner lock is held; shared-tree recursive deletion is forbidden.

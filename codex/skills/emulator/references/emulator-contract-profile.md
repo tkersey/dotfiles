@@ -356,6 +356,14 @@ ref/fingerprint pair that is exactly null in the pending chart plus one exact
 deterministic materializer asset frozen by design. Implement executes only
 those bytes; two distinct outputs from one unchanged materializer/plan are
 `invalid_environment`. Mode-gated
+Each `materializer_ref` resolves closed `emulator-materializer/v1` bytes that
+bind the complete input-closure ref/fingerprint, normalized staging-prestate
+ref/fingerprint, toolchain/runtime identity, deterministic command/arguments,
+and expected output projection for that field. Ambient environment, unbound
+tools, or unstated input bytes are denied; the implement witness records the
+exact materializer/runtime and output digest.
+The exact payload is
+`{"arguments":[],"command_fingerprint":"sha256:<hex>","command_ref":"materializers/commands/<digest-hex>","expected_output_fingerprint":"sha256:<hex>","expected_output_ref":"materializers/outputs/<digest-hex>.json","input_closure_fingerprint":"sha256:<hex>","input_closure_ref":"materializers/inputs/<digest-hex>.json","normalized_prestate_fingerprint":"sha256:<hex>","normalized_prestate_ref":"materializers/prestates/<digest-hex>.json","runtime_fingerprint":"sha256:<hex>","runtime_ref":"materializers/runtimes/<digest-hex>.json","schema":"emulator-materializer/v1"}`.
 Every destination across `entries`, all four fields of `admission_outputs`, and
 `derivations` is globally unique; aliases or write-order ownership are invalid.
 Mode-gated
@@ -400,6 +408,10 @@ The latter is non-null only for a successor that incorporates a completed
 holdout retirement and names the exact originating root whose charts were
 retired. A root that is both materialized and retirement-updated requires two
 separate successors; one root never conflates those transitions.
+A retirement successor uses `operation_mode: design`, has no
+`comparison_policy` or run sections, and binds the completed reservation,
+cycle-completion, retirement marker/index, and predecessor through its static
+closure. It is contract authoring after execution, not another compare run.
 
 `operation_mode` is the operation that authored or executed the closure and is
 immutable for the closure and report. The `$emulator` `export` request reads an
@@ -679,6 +691,7 @@ environment_chart:
     correction_refs: []
     hidden_correction_ref:
     hidden_correction_fingerprint:
+    recovery_refs: []
     hidden_recovery_ref:
     hidden_recovery_fingerprint:
     outcome_refs: []
@@ -918,9 +931,12 @@ bytes, and it is the disputed action A used by the cut, actor hidden target, and
 preference export. Other historical actions may remain in the plural provenance
 array but cannot replace A after chart fingerprinting. Non-correction charts
 require both singular fields null.
-The prompt and three hidden projection pairs are non-null for every selecting
-correction chart, resolve exact chart/source-bundle assets, and select exactly
-one member of their corresponding plural provenance arrays when one exists.
+The prompt and hidden-correction pairs are non-null for every selecting
+correction chart. Recovery and outcome pairs are each either both non-null and
+select exactly one member of `recovery_refs`/`outcome_refs`, or both null when
+the historical session ended without that artifact; null is canonical absence,
+not permission to fabricate evidence. Non-null pairs resolve exact
+chart/source-bundle assets.
 The holdout and actor leakage targets copy these four pairs, the rejected-action
 pair, chart semantics, and evaluator pair byte-for-byte; conventional paths or
 post-chart selections are invalid.
