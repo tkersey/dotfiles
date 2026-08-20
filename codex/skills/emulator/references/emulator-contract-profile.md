@@ -166,7 +166,9 @@ emulator_contract:
       shrink_trials:  # mutate only; empty when no shrink execution is allowed
         - chart_fingerprint:
           parent_mutation_case_id:
+          parent_repeat_id:
           mutation_case_id:
+          trial_repeat_id:
           mutation_assignment_ref:
           mutation_assignment_fingerprint:
     paired_cohort:  # paired_compare only
@@ -308,8 +310,11 @@ case ID and case IDs are unique. Execution rows equal
 the complete expansion of this cohort; missing, extra, or duplicate rows are
 `invalid_environment`. `shrink_trials` is a sorted, duplicate-free finite set
 of permitted secondary assignments. It is frozen with the root before the
-primary mutation runs; every tuple names its parent primary case and recomputes
-its own case ID. It is empty outside `mutate`.
+primary mutation runs; every tuple names its parent primary case and
+`parent_repeat_id`, freezes its own `trial_repeat_id`, and recomputes its own
+case ID. The parent chart/case/repeat tuple names exactly one primary row; the
+trial repeat is not chosen or retried after observing outcomes. It is empty
+outside `mutate`.
 
 For `paired_compare`, `single_arm_cohort` is null and `paired_cohort` is
 mandatory. It freezes every chart and repeat exactly once. For holdout charts it

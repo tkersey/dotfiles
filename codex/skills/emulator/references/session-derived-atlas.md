@@ -671,7 +671,7 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"context_fingerprint":"sha256:<hex>","coverage":[{"inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
+`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
@@ -679,7 +679,10 @@ reviews instead use `execution_kind: optimizer` with `pre_generation` and
 `generation_attempt_id` and `pending_fingerprint` equal to the candidate access
 proof and pending intent plus non-null `holdout_target_ref` and fingerprint
 equal to the frozen pre-candidate policy and global attempt closure. Actor
-forms require all four fields null. Both
+forms require generation, pending, and optimizer holdout-target fields null.
+For a selecting actor, `actor_hidden_target_ref`/fingerprint are non-null and
+bind the exact chart-local hidden action/correction/recovery/outcome projection
+used by the semantic comparison; a nonselecting actor requires both null. Both
 artifacts are evaluator-visible and never actor input.
 
 `inventories` is sorted by `kind`, duplicate-free, and every ref/fingerprint
@@ -998,7 +1001,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":"sha256:<hex>","holdout_target_ref":"comparison/holdout-semantic-target.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":null,"holdout_target_ref":null,"optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
@@ -1010,6 +1013,9 @@ pre-candidate policy must equal the frozen cycle commitments, and its candidate
 fingerprint must equal the frozen candidate manifest. Missing, mismatched,
 pre-run, or externally supplied access
 evidence contaminates the holdout.
+The two holdout-target fields are both non-null and equal the closed policy's
+holdout target exactly when `holdout_evidence` is non-null; both are null for a
+discovery/development-only paired comparison. No other mixed nullability is valid.
 Its `generation_attempt_id` equals the pending intent and both leakage reviews;
 its `pending_fingerprint` hashes the exact pending bytes for that attempt. The
 proof cannot be reused across attempts even when candidate and cycle IDs match.
@@ -1168,7 +1174,14 @@ semantic fields equal the frozen `factor-selection/v1.optimizer_visible_policy`
 projection plus only the separately authorized discovery/development inputs.
 
 Both arrays are complete, sorted, and duplicate-free for the frozen cohort.
-Atomically create the one immutable cohort intent at
+While still holding the partition mutex, first atomically create one immutable
+`pending_sentinel` per source identity at
+`optimizer-intent-sentinels/<holdout-key>/<pending-digest-hex>.json`, with exact
+RFC 8785 `{"pending_fingerprint":"sha256:<hex>","schema":"optimizer-intent-pending-sentinel/v1","source_identity_fingerprint":"sha256:<hex>"}` bytes.
+Reservation and generation gates scan both sentinel and membership directories;
+an orphan sentinel blocks and triggers reconciliation against the cohort-intent
+directory. Only after all sentinels are durable may the compiler atomically
+create the one immutable cohort intent at
 `<holdout_lock_root>/optimizer-intents/<pending-digest-hex>.pending.json`.
 For every individual identity, atomically create exact RFC 8785
 `{"pending_fingerprint":"sha256:<hex>","schema":"optimizer-intent-membership/v1","source_identity_fingerprint":"sha256:<hex>"}`
@@ -1233,6 +1246,16 @@ the marker. Both arrays are byte-lexicographically sorted and duplicate-free. Th
 filename digest is SHA-256 of those exact bytes. Maintain immutable index
 snapshots as RFC 8785 bytes under
 `holdout-retirements/snapshots/<snapshot-digest-hex>.json`:
+
+Training approval bytes are closed exact RFC 8785
+`holdout-training-authorization/v1`:
+
+~~~json
+{"authorized_chart_fingerprints":["sha256:<hex>"],"authorized_source_group_fingerprints":["sha256:<hex>"],"consumption_purpose":"training","principal_identity_fingerprint":"sha256:<hex>","principal_identity_ref":"principals/<digest-hex>.json","schema":"holdout-training-authorization/v1"}
+~~~
+
+Both arrays equal the marker arrays, are sorted and duplicate-free, and the
+principal resolves the human owner under the canonical identity rules.
 
 ~~~json
 {"markers":[{"fingerprint":"sha256:<hex>","ref":"holdout-retirements/markers/<digest-hex>.json"}],"schema":"holdout-retirement-index/v1"}
@@ -1618,12 +1641,21 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","candidate_budget":1,"candidate_generation_commitments":[],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"comparison/factor-selection.json","holdout_semantic_target_fingerprint":null,"holdout_semantic_target_ref":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_visible_policy":{},"partition_snapshot_fingerprint":"sha256:<hex>","protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"targeted_chart_rules":[{"chart_id":"<chart-id>","target_predicate":{"kind":"tag_equals","tag":"<factor-tag>"},"targeted":true}]}
 ~~~
 
-The arrays are sorted by their displayed identities and duplicate-free. The two
-holdout-target fields are both non-null exactly when a holdout chart is selected
-and otherwise both null. Every ref/fingerprint resolves exact bytes, all
+The arrays are sorted by their displayed identities and duplicate-free.
+`targeted_chart_rules` covers every selected chart exactly once and is frozen
+before candidate generation; its predicate and result cannot depend on outcomes.
+`holdout_evidence` is non-null exactly when any selected chart is holdout and is
+then closed exact RFC 8785 bytes within the policy:
+
+~~~json
+{"factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","holdout_semantic_target_fingerprint":"sha256:<hex>","holdout_semantic_target_ref":"comparison/holdout-semantic-target.json","identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","partition_snapshot_fingerprint":"sha256:<hex>","partition_snapshot_ref":"partitions/snapshots/<digest-hex>.json","selection_intent_snapshot_fingerprint":"sha256:<hex>","selection_intent_snapshot_ref":"partitions/selection-intent-snapshot.json","selection_intent_validation_fingerprint":"sha256:<hex>","selection_intent_validation_ref":"partitions/selection-intent-validation.json"}
+~~~
+
+The two holdout-target fields in the access proof repeat this nested object.
+Every ref/fingerprint resolves exact bytes, all
 selected charts and candidate commitments are complete, and no extra field is
 allowed. The root policy fingerprint is valid only after this closed payload
 and every transitive ref validate.
