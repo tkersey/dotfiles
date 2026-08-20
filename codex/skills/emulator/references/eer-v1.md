@@ -509,7 +509,10 @@ factor-delta validation with matching before/after value fingerprints and an
 approved derivation.
 A tuple whose actor never started still has exactly one pair row with
 `status: unavailable_prestart`, the affected `*_actor_started: false`, null
-actor-context fingerprints, `normalized_equal: null`, an empty
+actor-context fingerprint only when no context was constructed. If its
+execution row retains a planned context and pre-start leakage review, the pair
+retains that same non-null context fingerprint while `actor_started` remains
+false. `normalized_equal` is null, with an empty
 `authorized_runtime_surface_fields` array, and that arm's nonempty pre-launch
 `*_unavailable_reason` matching its execution row. Started arms have null
 reasons; two failed arms retain two independent reasons. The other arm retains its
@@ -584,9 +587,11 @@ Before sandbox or process creation, create-new and fsync one
 `execution-intents/<tuple-key-hex>.json` path. `tuple_key` is SHA-256 of exact
 RFC 8785 tuple bytes containing comparison/run-group, chart, harness, repeat,
 run purpose, and nullable mutation/parent identities—but not run ID. The closed
-run-ID set is duplicate-free within the run group; reserving an intent whose
-`run_id` already appears in any intent or execution row is
-`invalid_environment` before launch. The closed
+run-ID set is duplicate-free within the run group. Before tuple-intent
+publication, create-new and fsync
+`run-id-reservations/<sha256(run-id)-hex>.json` with closed exact bytes
+`{"run_id":"<run-id>","schema":"execution-run-id-reservation/v1","tuple_key":"sha256:<tuple-key-hex>"}`.
+An existing key or mismatched row is `invalid_environment` before launch. The closed
 intent bytes are
 `{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":"<comparison-id-or-null>","harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":"<sha256-or-null>","mutation_case_id":"<case-id-or-null>","parent_mutation_case_id":"<case-id-or-null>","parent_repeat_id":"<repeat-id-or-null>","repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary"}}`.
 The shrink-trial variant has the same closed outer shape and exact tuple keys,
@@ -600,8 +605,10 @@ have `run_purpose: shrink_trial` and exact frozen parent identities. No other
 field combination is admitted, and the intent tuple equals its execution row.
 The row intent fingerprint hashes those bytes and its run ID equals the intent;
 the tuple-key filename prevents a new run ID from reserving the same tuple. A crash leaves the tuple reserved: recovery
-emits a terminal runtime-error row or invalidates that comparison identity, but
-never relaunches the tuple.
+emits exactly one terminal runtime-error or invalid-environment row for that
+reserved tuple and never relaunches it. Every reserved holdout tuple therefore
+remains accounted for and can participate in cycle completion; comparison
+identity is never discarded in lieu of a terminal row.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal

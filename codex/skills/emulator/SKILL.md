@@ -167,7 +167,9 @@ A `kind: file` grant implicitly admits exactly one unpredictable,
 invocation-owned temporary entry in the same pinned directory solely for this
 atomic replacement. The temp must not match a forbidden path, is never exposed
 as a general sibling grant, and its name binds the invocation identity and a
-digest of the exact target leaf. Before creating a replacement temp, recover
+process-incarnation fingerprint plus a digest of the exact target leaf. The
+incarnation asset is retained in the invocation cleanup namespace until the
+temp is replaced or recovered. Before creating a replacement temp, recover
 same-target orphan temps left by crashed invocations: validate the complete
 name, hold one exclusive per-target replacement lock, prove the named owner is
 dead, require a regular single-link file in the same pinned directory, and

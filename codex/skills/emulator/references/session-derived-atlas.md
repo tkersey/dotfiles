@@ -160,7 +160,7 @@ Before copying any raw byte, acquire the already-derived
 `markers/<snapshot-key>.lock`
 exclusive owner lock, then create and fsync an owner-only cleanup marker outside
 the raw root with exact RFC 8785
-`{"owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":null}`
+`{"owner_invocation_id":"<opaque-invocation-id>","owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","owner_process_opaque_id":"<opaque-process-id>","raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":null}`
 bytes, then fsync the marker directory. After the snapshot manifest is durable,
 atomically replace the marker under that lock with the same exact object except
 for its non-null matching snapshot fingerprint, and fsync the marker directory
@@ -234,7 +234,7 @@ nonce; the pending record binds its fingerprint. Hold the namespace owner lock
 through live use.
 The marker is always `<private_staging_root_path>/.semantic-discovery-owner.json`
 and contains exact RFC 8785 bytes
-`{"attempt_id":"<opaque-attempt-id>","nonce":"<base64url>","owner_process_opaque_id":"<opaque-process-id>","private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-owner/v1"}`.
+`{"attempt_id":"<opaque-attempt-id>","nonce":"<base64url>","owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","owner_process_opaque_id":"<opaque-process-id>","private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-owner/v1"}`.
 No other marker path or shape is admitted.
 The exclusive lock is the create-new file
 `<storage_domain_root>/private/semantic-discovery-locks/v1/<attempt-id>.lock`, a
@@ -262,9 +262,10 @@ durable. If scrubbing would destroy required provenance, stop or downgrade the
 claim rather than publishing sensitive bytes globally.
 
 ~~~json
-{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_lock_path":"<canonical-absolute-lock-path>","private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_lock_path":"<canonical-absolute-lock-path>","private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
 {"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
+{"attempt_id":"<opaque-attempt-id>","exposure_claims":[],"identity_exposure_markers":[],"pending_fingerprint":"sha256:<hex>","result_fingerprint":null,"schema":"semantic-discovery-attempt-cancelled/v1","terminal_reason":"no_semantic_output_proved"}
 ~~~
 
 Arrays are sorted and duplicate-free; descriptor fingerprints use the canonical
@@ -288,6 +289,10 @@ completion record, fsyncing each affected registry directory after claim,
 marker, and completion publication. Capability preflight and holdout admission enumerate every
 pending attempt before proceeding. For a dead owner with a durable result,
 recovery must publish and revalidate all result aliases before completion. With
+the durable result path, recovery then applies the same retention decision and
+ownership-transfer cleanup to any remaining private staging root before
+publishing `completed.json`; result-bearing crashes cannot leave raw staging.
+With
 no durable `result.json`, recovery never opens, interprets, or deletes the
 path-named private staging payload as evidence. After proving the owner process
 dead, recovery acquires the exclusive cleanup-namespace lock, opens the root
@@ -297,7 +302,7 @@ replaces that marker with exact `semantic-discovery-staging-transfer/v1` bytes
 binding the prior marker fingerprint, recovery invocation/process, and root;
 that compare-and-swap transfers the isolated root to the recovery invocation.
 The first transfer's exact RFC 8785 payload is
-`{"attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<recovery-invocation-id>","owner_process_opaque_id":"<recovery-process-id>","pending_fingerprint":"sha256:<hex>","previous_marker_fingerprint":"sha256:<hex>","previous_transfer_fingerprint":null,"private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-transfer/v1"}`.
+`{"attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<recovery-invocation-id>","owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","owner_process_opaque_id":"<recovery-process-id>","pending_fingerprint":"sha256:<hex>","previous_marker_fingerprint":"sha256:<hex>","previous_transfer_fingerprint":null,"private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-transfer/v1"}`.
 Later transfers use the same closed fields with non-null
 `previous_transfer_fingerprint` equal to the replaced transfer bytes.
 The transfer bytes also bind the pending fingerprint and previous transfer
@@ -307,7 +312,9 @@ transfer to itself under the same lock, and resumes deletion. Thus every
 transfer state is recoverable and no prior-owner marker must reappear.
 A missing or unequal marker forbids
 cleanup and cannot become evidence. It may clear the attempt only after proving
-the wrapper never returned or delivered semantic bytes; otherwise the attempt remains unresolved and returns
+the wrapper never returned or delivered semantic bytes; in that case it
+publishes the immutable cancelled variant above rather than deleting registry
+evidence. Otherwise the attempt remains unresolved and returns
 `source_contaminated`. Unprovable owner/output state is
 `source_contaminated`. No raw semantic byte is a registry recovery dependency,
 and no unresolved semantic-discovery attempt permits a new
@@ -389,6 +396,14 @@ wrapper durably marks the complete physically identified snapshot
 `discovery_exposed` before returning only a fallback status; a crash cannot
 leave semantic bytes observed without conservative exposure. Incomplete
 physical identity stops `source_contaminated`.
+Before invoking Seq, the wrapper create-news and fsyncs exact
+`physical-listing-attempt/v1` bytes under
+`semantic-discovery/physical-listing-attempts/<attempt-digest>.pending.json`,
+binding owner process-incarnation pair, query spec, repository/root snapshot,
+and projection implementation fingerprint. Preflight resumes any pending
+attempt under the same lock; it either publishes all conservative exposure
+claims and a terminal completion or proves the command never started. No raw
+listing is inspected without this durable attempt.
 
 Exclude:
 
