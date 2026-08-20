@@ -240,7 +240,7 @@ claim rather than publishing sensitive bytes globally.
 
 ~~~json
 {"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
-{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized-or-scrubbed","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
+{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 ~~~
 
@@ -264,12 +264,12 @@ revalidates the complete union, and then writes the matching immutable
 completion record, fsyncing each affected registry directory after claim,
 marker, and completion publication. Capability preflight and holdout admission enumerate every
 pending attempt before proceeding. For a dead owner with a durable result,
-recovery must publish and revalidate all result aliases before completion; with
-no `result.json`, recovery may use only the exact pending-bound private staging
-root: validate its custody, run the same frozen extraction and retention gate,
-and publish the deterministic retained projection and result. If that root is
-missing or unverifiable, it may clear the attempt only after proving the wrapper
-never returned or delivered semantic bytes. Unprovable owner/output state is
+recovery must publish and revalidate all result aliases before completion. With
+no durable `result.json`, recovery never opens, interprets, or deletes the
+path-named private staging bytes: path reuse cannot become evidence. It may
+clear the attempt only after proving the wrapper never returned or delivered
+semantic bytes; otherwise the attempt remains unresolved and returns
+`source_contaminated`. Unprovable owner/output state is
 `source_contaminated`. No raw semantic byte is a registry recovery dependency,
 and no unresolved semantic-discovery attempt permits a new
 `holdout_unexposed` claim.
@@ -322,7 +322,7 @@ by this pre-read record. Query completion never rewrites an existing exposure
 claim.
 
 ~~~json
-{"query_record_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<spec-digest-hex>.json","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized-or-scrubbed","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
+{"query_record_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<spec-digest-hex>.json","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
 ~~~
 
 Those are the exact closed fields; all four pairs resolve exact retained bytes,
@@ -527,7 +527,11 @@ the plan fingerprint or finalized chart fingerprint. Thus filling planned implem
 reviewed semantic subject; any unplanned or changed-plan field still changes it
 and requires fresh review.
 Then remove the entire `/environment_chart/evaluator/authority/correction_review`
-subtree and encode the remaining `environment_chart` value as the
+subtree and remove from `/environment_chart/closure/assets` the exact transitive
+ref set reachable only from that subtree, including the subject, review,
+pattern, applicability, reviewer, and review-input preimages. The finalized
+chart retains those entries; only the reviewed projection excludes them. Encode
+the remaining `environment_chart` value as the
 `chart_semantics` member of the exact RFC 8785
 `correction-review-subject/v1` asset:
 
@@ -872,7 +876,9 @@ user message whose exact UTF-8 content SHA-256 equals the chart's
 actor-input indexes are distinct; omitted or substituted prompt bytes make the
 run `invalid_environment` even when both arms receive the same context.
 `harness_instruction_message_indexes` names every system/developer instruction
-message. Those bytes come from the frozen arm harness; paired context validation
+message except an index named by `prompt_message_indexes`; the two arrays are
+disjoint. A chart-owned system prompt stays prompt-owned and equal across arms.
+All indexed harness bytes come from the frozen arm harness; paired context validation
 requires equality except exact message deltas derived from the selected harness
 factor. Task prompt and actor input are never factor-owned deltas.
 
@@ -1935,7 +1941,8 @@ each arm's `chart_repeats` contains every selected chart exactly once, sorted by
 chart fingerprint. Each chart's `repeat_ids` is sorted, duplicate-free, and has
 the exact deterministic or stochastic count frozen by policy. Every arm's
 complete `chart_repeats` bytes are identical to every other arm and to the
-root's singular `comparison_policy.paired_cohort`; candidates cannot choose
+root's singular `comparison_policy.paired_cohort.selected_chart_repeats` array;
+candidates cannot choose
 different repeat IDs. All three top-level fingerprint arrays are sorted and
 duplicate-free. The top-level chart, group, and identity arrays contain only
 selected holdout charts: charts are the holdout subset of `chart_repeats`,
@@ -2082,7 +2089,7 @@ ordinary Seq or file access—and for every designed holdout, first bind exact
 RFC 8785 `holdout-exposure-attestation/v1` bytes:
 
 ~~~json
-{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","baseline_harness_fingerprint":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","holdout_blind":true,"independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"holdout-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"],"source_kind":"designed"}
+{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","baseline_harness_fingerprint":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<selector-digest-hex>.json","holdout_blind":true,"independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"no_prior_factor_selector_exposure":true,"schema":"holdout-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"],"source_kind":"designed"}
 ~~~
 
 The sorted, duplicate-free identity array is complete for the group and the
@@ -2095,6 +2102,9 @@ makes the attestation invalid regardless of its booleans.
 The baseline and factor-selection fingerprints equal the exact frozen selection
 that admits this legacy source; changing either requires a new attestation from
 an independently blind principal and never reuses stale evidence.
+The selector identity equals the factor-selection asset, and the attestation is
+invalid unless the attester can directly attest that selector had no prior
+semantic access to the covered source identities.
 `no_prior_baseline_harness_exposure` means no selected source content, correction,
 outcome, or evaluator interpretation was used to author, tune, choose, or review
 the frozen baseline harness. The
@@ -2233,7 +2243,8 @@ back to that policy. The atlas copies each canonical claim's
 exact bytes to the atlas-relative
 `partitions/claims/<holdout-key>.partition.json` and binds those snapshot refs
 and fingerprints in the pre-candidate policy and root closure. For every
-non-null exposure-evidence pair it also copies the canonical identity-exposure
+required discovery marker, including one supplementing a legacy exposed claim
+whose evidence pair is null, it also copies the canonical identity-exposure
 bytes to `partitions/identity-exposures/<holdout-key>.json`. It then creates
 an atlas-relative `partition-claim-validation/v1` asset mapping every snapshot
 to its canonical holdout key, global claim location, exposure-registry ID, and
@@ -2242,7 +2253,7 @@ the final root, runs, and EER; external absolute claim paths are runtime facts,
 not closure refs. Its RFC 8785 payload is exactly
 `{"claims":[{"canonical_claim_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"partitions/claims/<hex>.partition.json"}],"exposure_registry_id":"sha256:<hex>","identity_exposures":[{"canonical_ref":"semantic-discovery/identity-exposures/<holdout-key>.json","fingerprint":"sha256:<hex>","holdout_key":"<hex>","snapshot_ref":"partitions/identity-exposures/<holdout-key>.json"}],"schema":"partition-claim-validation/v1"}`
 with both arrays sorted by `holdout_key`; identity-exposure rows cover every
-non-null claim evidence pair exactly once and provide the only closure-local
+required marker exactly once and provide the only closure-local
 resolution mapping. No other fields are admitted. An existing
 byte-identical compatible claim is reused. An existing claim for
 another partition, or any prior

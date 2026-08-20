@@ -579,7 +579,7 @@ Before sandbox or process creation, create-new and fsync one
 RFC 8785 tuple bytes containing comparison/run-group, chart, harness, repeat,
 run purpose, and nullable mutation/parent identities—but not run ID. The closed
 intent bytes are
-`{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":"<comparison-id-or-null>","harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":"<sha256-or-null>","mutation_case_id":"<case-id-or-null>","parent_mutation_case_id":"<case-id-or-null>","parent_repeat_id":"<repeat-id-or-null>","repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary-or-shrink_trial"}}`.
+`{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":"<comparison-id-or-null>","harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":"<sha256-or-null>","mutation_case_id":"<case-id-or-null>","parent_mutation_case_id":"<case-id-or-null>","parent_repeat_id":"<repeat-id-or-null>","repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary"}}`.
 For `compare`, `comparison_id` is the exact non-null comparison ID and every
 mutation/parent field is null. For `run`, all comparison, mutation, and parent
 fields are null. For `mutate`, the mutation pair equals the frozen assignment;

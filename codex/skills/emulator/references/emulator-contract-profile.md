@@ -52,7 +52,8 @@ Every value used as one filesystem path component, including `atlas_id`,
 ASCII letter or digit, contains only letters, digits, `.`, `_`, or `-`, and is
 neither `.` nor `..`. Validate the component before joining it to a root, then
 resolve the destination and prove it remains beneath the owning root before
-any create, replace, or removal.
+any create, replace, or removal. `run_group_id` and `comparison_id` additionally
+MUST NOT equal the reserved component `contracts`.
 
 The closure is invalid when a required reference is missing, escapes the atlas
 root, has a mismatched digest, or leaves an execution-relevant byte implicit.
