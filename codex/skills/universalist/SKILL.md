@@ -211,10 +211,18 @@ return this projection for every live candidate:
 ```text
 Selected counterexample theory:
 Candidate theory delta: none | proposed
+Candidate interpretation delta: none | proposed
 Accidental incumbent coordinate, when proposed:
 Proposed semantic observation domain or law, when proposed:
 Witness interpretation into the selected or proposed domain:
 Candidate interpretation into the selected or proposed domain:
+Interpretation totality:
+Violation-reflection evidence:
+Invalidity-precision evidence:
+Correctness-bearing distinctions preserved:
+Distinctions intentionally quotiented:
+Required observations preserved:
+Interpretation-adequacy strength and falsifier:
 Predicted sibling counterexamples, when proposed:
 Theory-delta falsifier, when proposed:
 Current owner set and status:
@@ -235,15 +243,24 @@ Transition and retirement:
 ```
 
 A candidate may expose a materially simpler, more representation-independent,
-or more causally adequate counterexample theory. Report that as a candidate
-theory delta; do not silently redefine the family the candidate claims to
-eliminate. Actuating alone decides whether to use its single bounded
-co-refinement before target selection.
+more law-reflecting, or more causally adequate counterexample theory. Report
+that as a candidate theory or interpretation delta; do not silently redefine
+the family or erase the violation the candidate claims to eliminate. Actuating
+alone decides whether to use its single bounded co-refinement before target
+selection.
+
+A named interpretation is not enough. A candidate is not correctness-comparable
+unless its interpretation is total over sanctioned behavior, reflects every
+concrete violation into the invalidity predicate, preserves invalidity precision
+for the declared horizon, and retains every Goal-required observation at an
+explicit evidence strength.
 
 Do not define the family as only the observed witnesses. Do not invent one
 frontier when the repository requires a minimal admission cut. Do not collapse
 primary enforcement, derived trust-boundary guards, compatibility adapters,
 observability guards, and compensating guards into one undifferentiated layer.
+Do not nominate a candidate as correct by construction when its semantic quotient
+collapses behaviors that differ under the governing law.
 
 Universalist must not:
 
@@ -254,8 +271,9 @@ Universalist must not:
 - allocate a Universalist plan or emit a root receipt;
 - persist or overwrite an Actuating architecture artifact.
 
-Actuating alone adjudicates the nomination and any theory delta and updates its
-ephemeral Architecture Working Set. The Git tree is the realized construction.
+Actuating alone adjudicates the nomination and any theory or interpretation
+delta and updates its ephemeral Architecture Working Set. The Git tree is the
+realized construction.
 
 Standalone work may select under root authority after completing the applicable
 consequential and durability contracts.

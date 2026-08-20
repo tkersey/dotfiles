@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-semantic-hotspot-scenarios/v2",
+  "schema": "actuating-semantic-hotspot-scenarios/v3",
   "defaults": {
     "witness_subject_recorded": true,
     "applicability_subject_recorded": true,
@@ -24,13 +24,19 @@
     "metanoetic_run": false,
     "architectonic_disposition": "not-needed",
     "architecture_reveals_better_theory": false,
-    "co_refinement_used": false
+    "co_refinement_used": false,
+    "ordinary_interpretation_adequacy": "adequate",
+    "selected_interpretation_adequacy": "adequate",
+    "interpretation_adequacy_strength": "bounded",
+    "required_observations_preserved": true,
+    "law_distinct_behaviors_collapsed": false
   },
   "scenarios": [
     {
       "id": "isolated-realization-defect",
       "inputs": {
         "family_claim_strength": "proved",
+        "interpretation_adequacy_strength": "proved",
         "existing_authority_excludes_family": true
       },
       "expected": {
@@ -87,6 +93,7 @@
       "id": "legitimate-derived-trust-boundary-guards",
       "inputs": {
         "family_claim_strength": "proved",
+        "interpretation_adequacy_strength": "proved",
         "existing_authority_excludes_family": true,
         "derived_guards_required": true
       },
@@ -162,6 +169,7 @@
       "id": "distributed-admission-cut",
       "inputs": {
         "family_claim_strength": "exhaustive-finite",
+        "interpretation_adequacy_strength": "exhaustive-finite",
         "architecture_claim_falsified": true,
         "frontier_candidates": 3,
         "derived_guards_required": true
@@ -200,7 +208,11 @@
         "frontier_coverage": "unknown",
         "theory_shape": "unknown",
         "semantic_observation_domain_status": "unknown",
-        "family_theory_falsifier_status": "unknown"
+        "family_theory_falsifier_status": "unknown",
+        "ordinary_interpretation_adequacy": "unknown",
+        "selected_interpretation_adequacy": "unknown",
+        "interpretation_adequacy_strength": "unknown",
+        "required_observations_preserved": "unknown"
       },
       "expected": {
         "class_disposition": "blocked",
@@ -313,6 +325,7 @@
       "id": "clear-owner-invariant-skips-metanoetic",
       "inputs": {
         "family_claim_strength": "proved",
+        "interpretation_adequacy_strength": "proved",
         "existing_authority_excludes_family": true
       },
       "expected": {
@@ -344,6 +357,88 @@
       "inputs": {
         "architecture_reveals_better_theory": true,
         "architectonic_disposition": "replace"
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "blocked",
+        "frontier_shape": "single",
+        "architecture_disposition": "blocked",
+        "hotspot_disposition": "unresolved"
+      }
+    },
+    {
+      "id": "coarse-domain-hides-invalidity",
+      "inputs": {
+        "ordinary_interpretation_adequacy": "coarse",
+        "law_distinct_behaviors_collapsed": true,
+        "material_alternative_theory_plausible": true,
+        "metanoetic_run": true,
+        "architectonic_disposition": "replace",
+        "selected_interpretation_adequacy": "adequate",
+        "architecture_claim_falsified": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "adjudicated",
+        "frontier_shape": "single",
+        "architecture_disposition": "reopen",
+        "hotspot_disposition": "architectural"
+      }
+    },
+    {
+      "id": "law-reflecting-quotient",
+      "inputs": {
+        "family_claim_strength": "proved",
+        "interpretation_adequacy_strength": "proved",
+        "ordinary_interpretation_adequacy": "adequate",
+        "selected_interpretation_adequacy": "adequate",
+        "required_observations_preserved": true,
+        "existing_authority_excludes_family": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
+        "frontier_shape": "single",
+        "architecture_disposition": "preserve",
+        "hotspot_disposition": "realization"
+      }
+    },
+    {
+      "id": "one-way-reflection-only",
+      "inputs": {
+        "selected_interpretation_adequacy": "reflection-only",
+        "interpretation_adequacy_strength": "bounded",
+        "goal_accepts_containment": true,
+        "architecture_claim_falsified": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "bounded",
+        "frontier_shape": "single",
+        "architecture_disposition": "contain",
+        "hotspot_disposition": "contained"
+      }
+    },
+    {
+      "id": "candidate-specific-erasure",
+      "inputs": {
+        "architecture_claim_falsified": true,
+        "selected_interpretation_adequacy": "inadequate",
+        "law_distinct_behaviors_collapsed": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "blocked",
+        "frontier_shape": "single",
+        "architecture_disposition": "blocked",
+        "hotspot_disposition": "unresolved"
+      }
+    },
+    {
+      "id": "required-observation-erasure",
+      "inputs": {
+        "architecture_claim_falsified": true,
+        "required_observations_preserved": false
       },
       "expected": {
         "class_disposition": "candidate",

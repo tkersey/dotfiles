@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Use bare $actuating for implementation, Ship publication, and exhaustive review convergence; use explicit implement, triage, remediation-plan, or review-closeout for bounded routes. Treat bugs as witnessed counterexamples, preserve provenance, derive and challenge counterexample theories over a semantic observation domain, operate architectonically over theory and architecture together, distinguish detection from an admission frontier or minimal admission cut, and compare architectures by the invalid region they exclude at explicit claim strength. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store and invokes no Ledger gate."
+description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Use bare $actuating for implementation, Ship publication, and exhaustive review convergence; use explicit implement, triage, remediation-plan, or review-closeout for bounded routes. Treat bugs as witnessed counterexamples, preserve provenance, derive and challenge counterexample theories over a law-reflecting semantic observation domain, operate architectonically over theory and architecture together, distinguish detection from an admission frontier or minimal admission cut, and compare architectures by the concrete invalid region they exclude at explicit claim strength. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store and invokes no Ledger gate."
 ---
 
 # Actuating
@@ -31,6 +31,7 @@ facts it consumes and keeps no parallel durable world.
 | What is published? | `$ship` and the provider |
 | What observations form one class? | `$review-fold` |
 | What counterexample theory survives? | `$actuating`, challenged by `$metanoetic` and architectonic adjudication |
+| Is its semantic interpretation adequate? | `$actuating`, from explicit law-reflection and observation-preservation evidence |
 | What admission frontier or cut matters? | `$actuating` |
 | What architecture should exist? | `$actuating`, using `$universalist` |
 | Is the result complete? | live Actuating judgment over current owner facts |
@@ -39,10 +40,10 @@ facts it consumes and keeps no parallel durable world.
 `$review-fold` supplies observational classes and family hypotheses.
 `$metanoetic` may challenge one provisional counterexample theory once on one
 unchanged decision surface. `OPERATE ARCHITECTONICALLY` adjudicates the
-organizing law, semantic domain, ownership, construction, and composition before
-Actuating finalizes the theory. `$universalist` nominates repository-native
-architectures and boundaries. `$reduce` challenges unearned factors and
-compensating guard movement.
+organizing law, semantic domain, ownership, construction, composition, and
+interpretation before Actuating finalizes the theory. `$universalist` nominates
+repository-native architectures and boundaries. `$reduce` challenges unearned
+factors and compensating guard movement.
 
 Supporting skills never select the target architecture or grant mutation.
 `$ship` alone performs public effects. CAS owns review execution and receipts.
@@ -107,12 +108,15 @@ current applicability        whether its law and route remain live now
 detection surface            where incorrectness became visible
 observational class          Review Fold's same-law evidence grouping
 semantic observation domain  Omega, independent of one candidate representation
+interpretation family        Alpha: witness/incumbent/candidate maps into Omega
 ordinary counterexample      provisional theory Theta_0 over Omega
 theory challenger            one materially different Theta_1 when triggered
 family predicate             Phi over Omega; F = { omega in Omega | Phi(omega) }
 sanctioned admission         supported paths whose behavior is interpreted in Omega
 frontier or admission cut    one seam, or a minimal covering set of seams
 current owner set and status canonical | distributed | absent | contested | unknown
+interpretation adequacy      totality, violation reflection, invalidity precision,
+                             and required-observation preservation
 family-theory falsifier      evidence that would refute the proposed theory
 claim strength               proved | exhaustive-finite | bounded |
                              property-tested | sampled | hypothesized | unknown
@@ -121,18 +125,42 @@ claim strength               proved | exhaustive-finite | bounded |
 A counterexample theory is:
 
 ```text
-Theta = (Omega, L, Phi, A, O, C, Q)
+Theta = (Omega, Alpha, L, Phi, A, O, C, Q)
 ```
 
 where `L` is the governing law, `A` the sanctioned admission semantics, `O` the
-owner model, `C` the frontier or cut, and `Q` the claim strength. Witnesses must
-be interpreted into `Omega`; candidates may use different internal
-representations but must expose comparable observations in `Omega`.
+owner model, `C` the frontier or cut, and `Q` the weakest evidence strength among
+the theory, interpretation adequacy, path coverage, and exclusion claims.
+`Alpha` contains the interpretation maps for witnesses and each incumbent or
+candidate architecture. Candidates may use different internal representations,
+but must expose comparable, law-reflecting observations in `Omega`.
+
+For candidate `K`, sanctioned concrete behavior `B_K`, and interpretation
+`alpha_K : B_K -> Omega`, require over the declared validity horizon:
+
+```text
+Totality
+  alpha_K(b) is defined for every sanctioned b
+
+Violation reflection
+  Bad_L(b) -> Phi(alpha_K(b))
+
+Invalidity precision
+  Phi(alpha_K(b)) -> Bad_L(b)
+
+Required-observation preservation
+  alpha_K may identify two behaviors only when their difference is irrelevant
+  to L and to every Goal-required observation
+```
+
+`Bad_L(b)` means that concrete behavior `b` violates the selected law. The
+interpretation may quotient accidental representation; it may not quotient a
+correctness-bearing distinction.
 
 Review Fold owns witness classification, observational classes, and provisional
-family hypotheses. Actuating owns theory adjudication, family finalization,
-frontier partitioning, admission-cut selection, semantic-hotspot judgment, and
-architecture selection.
+family hypotheses. Actuating owns theory and interpretation adjudication, family
+finalization, frontier partitioning, admission-cut selection, semantic-hotspot
+judgment, and architecture selection.
 
 A hotspot is predicate-defined and ephemeral:
 
@@ -151,56 +179,66 @@ when the incumbent already excludes the family and no sanctioned bypass remains.
 
 Preserve the incumbent only when its existing semantic authority and frontier
 or cut can exclude the selected predicate-defined family from every sanctioned
-admission path at the stated claim strength without adding another independent
+admission path at the stated claim strength, and its incumbent interpretation is
+total, law-reflecting, precise for the declared invalidity, and preserves every
+required observation. It must do so without adding another independent
 compensating guard, owner, representation, state dimension, transition law,
 effect, compatibility mode, recovery mode, or escape path.
 
 A convenient place for another check is not closure. If the law, semantic
-observation domain, authority, representation, state space, admission coverage,
-or sanctioned escape surface must change, reopen architecture before mutation.
+observation domain, interpretation adequacy, authority, representation, state
+space, admission coverage, or sanctioned escape surface must change, reopen
+architecture before mutation.
 
 ## Architecture reconsideration
 
 Reopen selection when evidence establishes semantic novelty, a sanctioned
 universal-law falsifier, a predicate-defined hotspot, distributed/absent/
 contested ownership, incomplete admission coverage, compensating guard
-accretion, a live sanctioned bypass, or a smaller correctness-non-dominated
-candidate.
+accretion, a live sanctioned bypass, a semantic observation domain that erases a
+law-bearing distinction, or a smaller correctness-non-dominated candidate.
 
 Then:
 
 1. Compile the Goal and freeze an incumbent-independent premise basis.
 2. Run `$review-fold`; preserve witness provenance and current applicability.
 3. Derive the smallest ordinary counterexample theory `Theta_0`: semantic
-   observation domain, law, witness interpretation, family predicate, sanctioned
-   admission semantics, owner model, frontier/cut hypothesis, claim strength,
-   and family-theory falsifier.
+   observation domain, interpretation family, law, witness interpretation,
+   family predicate, sanctioned admission semantics, owner model, frontier/cut
+   hypothesis, interpretation-adequacy evidence, claim strength, and
+   family-theory falsifier.
 4. Before finalizing the family, invoke one bounded `$metanoetic` challenge when
    `Theta_0` is detection-shaped, enumerative, representation-bound, contradicted
-   by a same-law witness, ownership/topology-dependent, or merely one plausible
-   frame among materially different alternatives. The challenger may revise the
-   law, semantic domain, predicate, owner, admission semantics, or frontier/cut.
+   by a same-law witness, ownership/topology-dependent, merely one plausible
+   frame, or too coarse to reflect a correctness-bearing distinction. The
+   challenger may revise the law, semantic domain, interpretation, predicate,
+   owner, admission semantics, or frontier/cut.
 5. **OPERATE ARCHITECTONICALLY.** Compare the ordinary and challenger theories
    against the Goal, witnesses, required observations, conceptual compression,
-   canonical ownership, lawful construction/elimination/composition, and their
-   falsifiers. Retain, replace, combine, split, or leave the theory unresolved.
+   canonical ownership, lawful construction/elimination/composition,
+   interpretation adequacy, and falsifiers. Select the smallest **lawful
+   quotient**: forget accidental representation, never violation. Retain,
+   replace, combine, split, or leave the theory unresolved.
 6. Finalize the selected theory and derive one admission frontier or a minimal
    admission cut. Do not force one coordinate system inherited from the
    incumbent representation.
 7. Ask `$universalist` for repository-native candidates interpreted through the
-   selected semantic observation domain.
+   selected semantic observation domain. Each candidate must supply a total
+   interpretation and evidence for violation reflection, invalidity precision,
+   and required-observation preservation.
 8. Permit one bounded co-refinement before target selection when a live
    architecture candidate exposes a materially simpler, more
-   representation-independent, or more causally adequate theory. Return once to
-   architectonic theory adjudication without rerunning Metanoetic on the same
-   decision surface.
+   representation-independent, more law-reflecting, or more causally adequate
+   theory. Return once to architectonic theory adjudication without rerunning
+   Metanoetic on the same decision surface.
 9. Ask `$reduce` to challenge compensating detection, witness-enumerating
-   predicates, and unearned factors.
+   predicates, law-erasing quotients, and unearned factors.
 10. Establish the correctness Pareto frontier from explicit relation evidence.
+    A candidate with an inadequate interpretation cannot enter the frontier.
 11. Among correctness-equivalent candidates, select the least costly effective
     realization; preserve material incomparability.
-12. State the selected theory, architecture delta, disposition, evidence
-    strength, proof, and reconsideration falsifier.
+12. State the selected theory, interpretation-adequacy argument, architecture
+    delta, disposition, evidence strength, proof, and reconsideration falsifier.
 
 Accepted findings never map directly to patches. File proximity, bug count,
 review order, implementation momentum, incumbent vocabulary, and incumbent
@@ -216,8 +254,11 @@ Bound head / Goal / incumbent / falsified laws
 Witness provenance / current applicability / detection surface
 Observational class
 Ordinary theory Theta_0 / Metanoetic challenger Theta_1 when invoked
-Semantic observation domain / witness interpretation
+Semantic observation domain / interpretation family Alpha
 Selected law / family predicate / sanctioned admission / validity horizon
+Interpretation totality / violation reflection / invalidity precision
+Required-observation preservation / distinctions intentionally quotiented
+Interpretation-adequacy strength and falsifier
 Family-theory falsifier / claim strength / architectonic disposition
 Current owner set and status / candidate semantic owner
 Admission frontier or cut / escape paths / classified scar tissue
@@ -230,9 +271,9 @@ Residual invalidity and owner / evidence strength / proof / reconsider when
 ```
 
 The Working Set is not durable authority. Refresh it when the head, Goal,
-applicability, selected theory, owner set, frontier/cut, or target changes. Code
-wins over analysis. Do not add a schema, predecessor chain, registry, score, or
-receipt.
+applicability, selected theory, interpretation adequacy, owner set, frontier/cut,
+or target changes. Code wins over analysis. Do not add a schema, predecessor
+chain, registry, score, or receipt.
 
 ## Realization
 
@@ -255,23 +296,27 @@ For bug-driven work, prove at the strongest honest owner or cut:
 ```text
 current-witness rejection
 witness interpretation into the selected semantic observation domain
-family-theory falsifier not established by current evidence
+interpretation totality over every sanctioned behavior
+violation reflection: every concrete L-violation maps into Phi
+invalidity precision: every Phi observation denotes an L-violation
+required-observation preservation and explicit lawful quotienting
+family-theory and interpretation-adequacy falsifiers not established
 candidate behavior interpreted into the same semantic observation domain
 family exclusion over the declared domain and admission semantics
 valid-behavior preservation
 frontier/cut and escape-path coverage
 elimination or interpreter adequacy
 honest residual ownership
-claim strength matching the evidence
+claim strength matching the weakest supporting evidence
 ```
 
 Use one disposition:
 
 ```text
-eliminated  family excluded at the stated claim strength
-contained   risk bounded but family or external residual remains admitted
+eliminated  family excluded concretely at the stated claim strength
+contained   risk bounded but family, interpretation, or external residual remains
 obstructed  required exclusion is unavailable under accepted constraints
-unresolved  theory, family, ownership, coverage, or proof remains unknown
+unresolved  theory, interpretation, family, ownership, coverage, or proof is unknown
 ```
 
 Containment may satisfy only a Goal that explicitly accepts its residual. Never
@@ -279,11 +324,12 @@ call containment correct by construction. Compress accumulating same-law
 examples into the strongest repository-supported law-level proof rather than
 accumulating pointwise guards and tests.
 
-Before Ship or closure-grade review, the selected counterexample theory must
-survive its stated falsifier; every authority and derived guard must have a
-coherent role; eliminated families must have semantic-domain/admission/coverage
-proof; contained residuals must be authorized and observable; selected escape
-paths and retirements must be absent; and exact-head proof commands must pass.
+Before Ship or closure-grade review, the selected counterexample theory and
+interpretation must survive their stated falsifiers; every authority and derived
+guard must have a coherent role; eliminated families must have semantic-domain,
+interpretation-adequacy, admission, and coverage proof; contained residuals must
+be authorized and observable; selected escape paths and retirements must be
+absent; and exact-head proof commands must pass.
 
 ## Review evidence and convergence
 
@@ -326,11 +372,11 @@ owner facts and is never persisted.
 
 A head is complete only while the Goal is satisfied; exact-head validation and
 required review pass; architecture and retirements are fully realized; current
-witnesses are rejected; the selected counterexample theory survives its
-falsifier; eliminated families have semantic-domain/predicate/admission/coverage
-proof; contained residuals are explicitly authorized and owned; required
-derived guards remain coherent; publication matches when required; and no
-applicable blocker remains.
+witnesses are rejected; the selected counterexample theory and interpretation
+survive their falsifiers; eliminated families have semantic-domain,
+interpretation-adequacy, predicate, admission, and coverage proof; contained
+residuals are explicitly authorized and owned; required derived guards remain
+coherent; publication matches when required; and no applicable blocker remains.
 
 ## Hard rules
 
@@ -338,19 +384,26 @@ applicable blocker remains.
   database, bug Ledger, hotspot registry, score, threshold, receipt family, or
   migration layer.
 - Do not map a bug directly to a patch or define a family as only its examples.
-- Do not finalize a detection-shaped, enumerative, or representation-bound
-  family theory while a materially different Metanoetic challenger remains live.
+- Do not finalize a detection-shaped, enumerative, representation-bound, or
+  law-erasing family theory while a materially different Metanoetic challenger
+  remains live.
 - Do not invoke Metanoetic repeatedly on one unchanged decision surface.
 - Do not use `OPERATE ARCHITECTONICALLY` as rhetoric; it must adjudicate the law,
-  semantic domain, ownership, construction, composition, and falsifier.
+  semantic domain, lawful quotient, ownership, construction, composition, and
+  falsifier.
+- Do not treat representation independence as interpretation adequacy.
+- Do not let `Omega` collapse concrete behaviors that differ with respect to `L`
+  or a Goal-required observation.
+- Do not let a candidate enter the correctness Pareto frontier without a total,
+  law-reflecting interpretation at an explicit evidence strength.
 - Do not rewrite historical provenance as current-head provenance.
 - Do not require one current owner when owner dilution may be the defect.
 - Do not invent one frontier when a minimal admission cut is required.
 - Do not conflate detection with admission or remove legitimate derived guards
   as compensating residue.
 - Do not call guard multiplication or containment correct by construction.
-- Do not claim recurrence, independence, theory adequacy, elimination, or
-  dominance beyond the available evidence strength.
+- Do not claim recurrence, independence, theory adequacy, interpretation
+  adequacy, elimination, or dominance beyond the available evidence strength.
 - Do not claim completion from process status, stored verdict, publication, or
   rejection of observed examples alone.
 - Complete object-level work before optional learnings or memory capture.

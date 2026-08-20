@@ -81,7 +81,11 @@ grep -F 'level-triggered architecture reconciler' "$skill_root/SKILL.md" >/dev/n
 grep -F '## Bugs as counterexamples' "$skill_root/SKILL.md" >/dev/null
 grep -F 'ordinary counterexample theory' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Semantic observation domain' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Family predicate' "$skill_root/SKILL.md" >/dev/null
+grep -F 'interpretation family' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Violation reflection' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Invalidity precision' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Required-observation preservation' "$skill_root/SKILL.md" >/dev/null
+grep -F 'smallest **lawful' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Family-theory falsifier' "$skill_root/SKILL.md" >/dev/null
 grep -F 'OPERATE ARCHITECTONICALLY' "$skill_root/SKILL.md" >/dev/null
 grep -F 'one bounded co-refinement' "$skill_root/SKILL.md" >/dev/null
@@ -94,16 +98,19 @@ grep -F 'hotspot registry, score, threshold' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 
-grep -F 'Theta_0 = (Omega_0, L_0, Phi_0, A_0, O_0, C_0, Q_0)' \
+grep -F 'Theta_0 = (Omega_0, Alpha_0, L_0, Phi_0, A_0, O_0, C_0, Q_0)' \
+  "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Interpretation adequacy' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Bad_L(b) -> Phi(alpha_K(b))' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Phi(alpha_K(b)) -> Bad_L(b)' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Abstraction may forget representation; it may not forget violation.' \
   "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F '## Metanoetic challenge' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F '## OPERATE ARCHITECTONICALLY' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F '## One bounded co-refinement' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F '## Family-theory falsifier' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Theory and interpretation falsifiers' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'Admission cut' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'owner status' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Witness subject' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Applicability subject' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'contained' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'correctness Pareto frontier' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'No bug Ledger, hotspot registry' "$skill_root/references/semantic-hotspots.md" >/dev/null
@@ -121,8 +128,9 @@ grep -F 'Derived guards preserved:' "$codex_root/skills/reduce/SKILL.md" >/dev/n
 
 grep -F 'When Actuating supplies a bug-driven counterexample theory' \
   "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Enforcement locus or admission cut:' \
-  "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Interpretation totality:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Violation-reflection evidence:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Invalidity-precision evidence:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
 grep -F 'Candidate theory delta: none | proposed' \
   "$codex_root/skills/universalist/SKILL.md" >/dev/null
 
@@ -145,15 +153,15 @@ grep -F 'publication observation digest' "$skill_root/references/review-contract
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-generative-hotspot-reconciler-v2" and
+    "actuating-law-reflecting-hotspot-reconciler-v3" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-COUNTEREXAMPLE")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-HOTSPOT-002")) != null and
+    index("ACT-HOTSPOT-003")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-ARCHITECTURE-002")) != null and
+    index("ACT-ARCHITECTURE-003")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-CLOSURE-002")) != null and
+    index("ACT-CLOSURE-003")) != null and
   ([.skill_decision_contract.routes[].route_id] | sort) ==
     (["ACT-IMPLEMENT", "ACT-TRIAGE", "ACT-REMEDIATION",
       "ACT-REVIEW-CLOSEOUT", "ACT-SHIP-HANDOFF", "ACT-CLOSE"] | sort)
@@ -186,4 +194,4 @@ done
 
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
 
-echo "actuating counterexample-theory reconciler contract: pass"
+echo "actuating law-reflecting counterexample-theory reconciler contract: pass"
