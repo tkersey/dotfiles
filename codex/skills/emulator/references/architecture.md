@@ -15,7 +15,8 @@ repositories, tests, design       sessions through Seq
                  fresh actor runs
                          |
                          v
-        hard oracles -> state diff -> residual judgment
+ hard oracles -> state diff -> trace invariants -> protected dimensions
+              -> reward -> cost/latency -> residual judgment
                          |
                          v
                  EER-v1 and eligible datasets
@@ -23,6 +24,8 @@ repositories, tests, design       sessions through Seq
 
 Historical material nominates decisions and evaluators. It never supplies a
 fresh comparison arm.
+The complete normative precedence and failure semantics are owned by
+`eer-v1.md`; this diagram does not shorten or override them.
 
 ## Responsibility split
 

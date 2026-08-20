@@ -1027,10 +1027,15 @@ surfaces with the hidden evaluator semantics without inventing historical
 events or discarding available source bytes.
 
 An `actor-hidden-target/v1` object is closed with exactly `schema` and `chart`;
-`schema` is the literal `actor-hidden-target/v1`, and `chart` is one complete
-chart-entry object from the target union above, not a ref or reduced
-projection. Its RFC 8785 bytes are content-addressed. The chart fingerprint equals the actor's chart, and its tagged entry is
-constructed by the same rules even when no holdout target exists. Thus every
+`schema` is the literal `actor-hidden-target/v1`. Its `chart` is the
+hidden-only projection of one target entry: remove actor-visible-state and
+prompt pairs, retain chart fingerprint/kind, hidden evaluator, and every
+available historical action/correction/recovery/outcome and source-evidence
+pair. Nullability still follows the tagged union. Legitimate actor input and
+prompt refs are therefore never classified as hidden merely because the full
+evaluator target also records them. Its RFC 8785 bytes are content-addressed.
+The chart fingerprint equals the actor's chart, and its tagged entry is
+constructed by the same projection even when no holdout target exists. Thus every
 selecting or preference-training actor has a non-vacuous semantic target for
 the evidence actually present.
 
@@ -1656,11 +1661,16 @@ enters training data. When deliberately consumed, retire it from holdout and
 replace it with an untouched group before another optimization cycle.
 
 Retirement never edits the fingerprinted chart or an earlier root in place.
+Before retirement, seal exact RFC 8785 `holdout-cycle-completion/v1` bytes
+containing the reservation fingerprint and one sorted row per reserved arm with
+candidate/comparison IDs plus exact EER and runs ref/fingerprint pairs. The
+union of those sealed runs must realize every reserved chart/repeat/harness
+tuple exactly once; a missing pair or tuple blocks retirement.
 Write the RFC 8785 canonical bytes of each marker at
 `holdout-retirements/markers/<marker-digest-hex>.json`:
 
 ~~~json
-{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"training_authorization_fingerprint":null,"training_authorization_ref":null}
+{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","cycle_completion_fingerprint":"sha256:<hex>","cycle_completion_ref":"holdout-retirements/evidence/<completion-digest-hex>.json","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"training_authorization_fingerprint":null,"training_authorization_ref":null}
 ~~~
 
 `consumption_purpose` is exactly one of `evaluation` or `training`; the example
@@ -1670,7 +1680,8 @@ to a canonical principal identity, the selected charts/groups, and the explicit
 training purpose; the emulator cannot self-authorize. Before writing the marker, copy the reservation's exact bytes
 to the static content-addressed `reservation_ref`, require its filename and
 fingerprint to agree, and include it in every successor closure that contains
-the marker. The identity array is the exact sorted, duplicate-free union of
+the marker. The cycle-completion pair likewise resolves the complete sealed
+arm/report set and is included transitively. The identity array is the exact sorted, duplicate-free union of
 the retired charts' `source_identity_fingerprints` in the named prior root and
 equals the identity set bound by the copied reservation's global lock evidence;
 the chart and group arrays equal that same reservation and prior-root cohort.
@@ -1903,8 +1914,12 @@ set or derive it completely from physical discovery metadata, then atomically
 publish the applicable claims. Retain and fingerprint the attestation or
 physical envelope; a merely asserted incomplete list is not holdout authority.
 The caller route uses exact RFC 8785
-`{"attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","complete":true,"schema":"identity-completeness-attestation/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}`
+`{"attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","complete":true,"issuance_id":"<opaque-issuance-id>","schema":"identity-completeness-attestation/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"source_state_fingerprint":"sha256:<hex>","source_state_ref":"identity/source-states/<digest-hex>.json"}`
 bytes. The physical route retains the exact non-semantic discovery envelope.
+The source-state pair binds the immutable physical snapshot/corpus selection
+and alias-bearing metadata observed for issuance. Reuse against any different
+source-state fingerprint is invalid; a newly discovered alias requires a new
+attestation and exposure reconciliation.
 Every session-derived chart binds exactly one per-chart physical or attested
 `identity_completeness_ref`/fingerprint; pure designed charts use
 `not_applicable` with both fields null. After chart fingerprints freeze, the
@@ -2214,7 +2229,7 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"holdout_exposure_attestations":[],"improvement_rule":{"chart_outcome":"strict_majority_of_paired_valid_repeats","maximum_targeted_regressed_charts":0,"minimum_targeted_improved_charts":1,"require_all_required_charts_determinate":true,"schema":"paired-stochastic-improvement-rule/v1","tie_disposition":"insufficient_evidence"},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<hex>","factor":"question_policy","targeted":true}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"holdout_exposure_attestations":[],"improvement_rule":{"chart_outcome":"strict_majority_of_paired_valid_repeats","maximum_targeted_regressed_charts":0,"minimum_targeted_improved_charts":1,"require_all_required_charts_determinate":true,"schema":"paired-stochastic-improvement-rule/v1","tie_disposition":"insufficient_evidence"},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"protected_dimensions":[],"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{"mode":"match_when_controllable","schema":"randomness-matching/v1"},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<hex>","factor":"question_policy","targeted":true}]}
 ~~~
 
 The already-materialized commitment has exact RFC 8785
@@ -2232,6 +2247,12 @@ exact bytes already durable before candidate generation. The commitment is
 evaluator-only and actor/optimizer-inaccessible. The final root, both arms,
 execution rows, EER, and comparison repeat its exact ref/fingerprint; no later
 draw selection or schedule substitution is admitted.
+`randomness_matching` is the closed
+`{"mode":"match_when_controllable","schema":"randomness-matching/v1"}`
+object and is the exact projection of root
+`stochastic_evidence.matched_randomness_when_available: true`. It applies to
+every paired chart/repeat: fixed or sampled controls must match; unavailable
+controls use the frozen repeat cohort without invented equality.
 
 The policy's `improvement_rule` equals
 `comparison_policy.stochastic_evidence.improvement_rule` byte-for-byte. It is

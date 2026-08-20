@@ -531,7 +531,8 @@ with result bytes, or a true flag without them is
 If reset starts but fails before valid result/prestate evidence, use
 `status: failed_after_start`, with `*_reset_started: true`,
 `*_reset_performed: false`, null result/prestate fields, and a nonempty reason
-matching the `invalid_environment` execution. The other arm retains its fields;
+matching a `runtime_error` or `invalid_environment` execution according to the
+observed failure owner. The other arm retains its fields;
 this is incomplete environment evidence, not an omitted tuple.
 
 Comparison-wide access proof maps every execution row that can contribute agent
@@ -683,8 +684,6 @@ validation pair as required above:
   "comparison_id": null,
   "contract_fingerprint": "sha256:...",
   "atlas_fingerprint": "sha256:...",
-  "storage_domain_id": null,
-  "exposure_registry_id": null,
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
   "chart_kind": "normative_decision",
