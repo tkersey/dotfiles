@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Review Fold"
-  short_description: "Classify counterexample families and causal pressure"
-  default_prompt: "Use $review-fold to bind owner-issued evidence to the exact current Goal and Git head, separate facts from suggested repairs, distinguish law boundaries from witness detection surfaces, quotient only same-law counterexample families, state witness-independence bases, and establish recurrence only from exact available owner evidence. Return a Review Fold without inferring admission frontiers, selecting architecture, granting mutation, counting review credit, persisting an artifact, or invoking Ledger."
+  short_description: "Classify evidence, Goal authority, and same-law recurrence"
+  default_prompt: "Use $review-fold to preserve every witness's original subject, classify current applicability, and decide whether each proposed law is entailed by the accepted Goal, an optional strengthening, a preference, a new requirement, or underdetermined. Only entailed current findings may become accepted counterexamples. Quotient observational same-law classes, distinguish predicted siblings from later discoveries, and report same-law/different-law/unknown relation to any active eliminated claim. Never revoke the claim, select a repair or architecture, grant review credit, persist an artifact, broaden the Goal, or invoke Ledger."
