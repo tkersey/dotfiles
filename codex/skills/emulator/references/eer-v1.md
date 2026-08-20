@@ -362,8 +362,10 @@ repeats one tuple from the frozen `single_arm_cohort.shrink_trials`, and binds
 its parent primary case/repeat; its `repeat_id` equals frozen `trial_repeat_id`.
 Executed shrink trials may be a subset of the frozen
 permitted set, but every fresh trial appears once in runs.jsonl and executions;
-the shrink-selection trace proves the ordered subset. A minimized artifact must
-cite a passingly accounted shrink-trial row. An unlisted or duplicate shrink
+the shrink-selection trace proves the ordered subset. A minimized artifact with
+`source_kind: shrink_trial` must cite a passingly accounted shrink-trial row;
+the explicit irreducible `source_kind: primary` variant cites its primary row
+and requires no nonexistent shrink trial. An unlisted or duplicate shrink
 trial is `invalid_environment`.
 For `mutate`, the runs block binds closed exact RFC 8785
 `shrink-selection-trace/v1` bytes:
@@ -1064,7 +1066,9 @@ pairs, and limitations. Curriculum rows are exact
 fingerprint, the five fields copied exactly from
 `claim.curriculum_metadata`, world fidelity, maximum supported claim, and
 limitations; no hidden evaluator payload is admitted and missing chart metadata
-makes the row ineligible. Counterexample rows are exact
+makes the row ineligible. A pending exact-fidelity executable chart is also
+ineligible until the implement successor binds both reset admissions; design
+never exports an unproved `world_fidelity: exact` curriculum row. Counterexample rows are exact
 `emulator-counterexample/v1` bytes containing chart ID/fingerprint, contract
 and harness fingerprints, sealed `runs.jsonl` and canonical run-row identity,
 mutation case ID, assignment
@@ -1092,7 +1096,7 @@ and `reward.aggregate` values into identically named fields;
 no exporter recomputes or drops the learning signal.
 
 ```json
-{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"reward":{"aggregate":0.0,"channels":{},"definition_fingerprint":"sha256:<hex>"},"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","successor_root_fingerprint":null,"successor_root_ref":null,"trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"reward":{"aggregate":0,"channels":{},"definition_fingerprint":"sha256:<hex>"},"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","successor_root_fingerprint":null,"successor_root_ref":null,"trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
 {"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","consumption_purpose":null,"contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_chart_tags":[],"required_tools":[],"retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-curriculum/v1","successor_root_fingerprint":null,"successor_root_ref":null,"world_fidelity":"exact"}
 {"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","consumption_purpose":null,"contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-digest-hex>.json","mutation_case_id":"sha256:<case-digest-hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```

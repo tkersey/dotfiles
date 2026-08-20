@@ -369,6 +369,12 @@ forbids run/comparison claims. Implement materializes exactly the plan, changes
 retains the plan pair, and changes only derived chart/root fingerprints. For
 every pending exact-fidelity executable chart, `admission_outputs` contains
 exactly two rows with distinct frozen admission IDs and destination refs.
+Within `admission_outputs`, `chart_fingerprint` is explicitly the pending-design
+chart identity. The emitted admission and root row use the implemented chart
+fingerprint; validation normalizes the implemented chart's planned fields back
+to their pending placeholders and requires the resulting bytes to hash to the
+plan row's pending fingerprint. Literal pending/implemented fingerprint
+equality is neither required nor allowed.
 Implement runs those two resets in distinct sandboxes, writes the transitive
 `reset-admission/v1`, result, prestate, and resolved-effect-policy assets at
 only those destinations,

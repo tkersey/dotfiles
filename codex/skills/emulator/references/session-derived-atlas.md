@@ -1666,6 +1666,11 @@ containing the reservation fingerprint and one sorted row per reserved arm with
 candidate/comparison IDs plus exact EER and runs ref/fingerprint pairs. The
 union of those sealed runs must realize every reserved chart/repeat/harness
 tuple exactly once; a missing pair or tuple blocks retirement.
+Its closed payload is
+`{"arms":[{"candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","eer_fingerprint":"sha256:<hex>","eer_ref":"reports/<comparison-id>/EER-v1.yaml","runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<comparison-id>/runs.jsonl"}],"reservation_fingerprint":"sha256:<hex>","schema":"holdout-cycle-completion/v1"}`.
+Arms sort by candidate ID with unique candidate/comparison IDs and equal the
+reservation arm set exactly; each EER/runs pair resolves and accounts its
+reserved tuples.
 Write the RFC 8785 canonical bytes of each marker at
 `holdout-retirements/markers/<marker-digest-hex>.json`:
 
@@ -1749,7 +1754,10 @@ The witness is exact RFC 8785 bytes at
 `{"active_reservation_fingerprint":"sha256:<hex>","added_markers":[{"canonical_ref":"holdout-retirements/markers/<digest-hex>.json","fingerprint":"sha256:<hex>","snapshot_ref":"runs/<run-group-id>/retirement-disjoint-assets/root/holdout-retirements/markers/<digest-hex>.json","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"current_snapshot_canonical_ref":"holdout-retirements/snapshots/<digest-hex>.json","current_snapshot_fingerprint":"sha256:<hex>","current_snapshot_ref":"runs/<run-group-id>/retirement-disjoint-assets/root/holdout-retirements/snapshots/<digest-hex>.json","predecessor_snapshot_fingerprint":"sha256:<hex>","predecessor_snapshot_ref":"roots/<root-digest-hex>/holdout-retirements/snapshots/<digest-hex>.json","schema":"retirement-snapshot-disjoint-advance/v1"}`.
 While holding both locks, copy and fsync the exact current snapshot and every
 added marker beneath the displayed run-local closure root while preserving
-their canonical relative layout. Embedded snapshot refs resolve within that
+their canonical relative layout. Recursively copy every added marker's
+reservation, cycle-completion, and non-null training-authorization dependency
+under the same root, preserving canonical relative refs and byte identity; the
+closure is invalid if any dependency is missing. Embedded snapshot refs resolve within that
 root; equality checks use `canonical_ref`, while offline reads use
 `snapshot_ref`. The
 predecessor ref resolves the archived root-bound snapshot. No witness or report
@@ -1920,6 +1928,11 @@ The source-state pair binds the immutable physical snapshot/corpus selection
 and alias-bearing metadata observed for issuance. Reuse against any different
 source-state fingerprint is invalid; a newly discovered alias requires a new
 attestation and exposure reconciliation.
+`source-state/v1` is closed exact RFC 8785
+`{"alias_identity_fingerprints":["sha256:<hex>"],"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","schema":"source-state/v1","source_file_fingerprints":["sha256:<hex>"]}`.
+Arrays are sorted and duplicate-free and are recomputed from the complete bound
+physical snapshot and non-semantic alias metadata; omission or mutable source
+selection invalidates the attestation.
 Every session-derived chart binds exactly one per-chart physical or attested
 `identity_completeness_ref`/fingerprint; pure designed charts use
 `not_applicable` with both fields null. After chart fingerprints freeze, the
@@ -2408,6 +2421,10 @@ path exactly. Entries are sorted by `(precedence, root_id, path)` and
 higher numeric precedence wins an effective-path collision. Precedence values
 are unique across distinct root declarations; all entries from one root repeat
 that root's same precedence.
+Before materialization, probe and bind the runtime volume's case and Unicode
+normalization semantics, compute an equivalence key for every effective path,
+and reject duplicate keys. `Foo`/`foo` or normalization-equivalent names can
+never alias one destination even when their contract strings differ.
 After exact-path precedence is resolved, no winning effective path may be a
 regular file or symlink ancestor of another winning path. Such
 ancestor/descendant collisions are `invalid_environment`; runners never invent

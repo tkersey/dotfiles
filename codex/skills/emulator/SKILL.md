@@ -76,6 +76,8 @@ emulator_request:
     eer_fingerprint:
     runs_ref:
     runs_fingerprint:
+    successor_root_ref:
+    successor_root_fingerprint:
   target:
     name:
     kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
@@ -148,7 +150,12 @@ an absent leaf never broadens authority. Probe cleanup and rollback use the same
 not positively admitted or matched by a forbidden entry MUST NOT be affected.
 Open and pin every authorized existing ancestor, then perform effects with
 descriptor-relative no-follow operations (`openat`/`renameat`/`unlinkat` or an
-equivalent race-free facility) and revalidate the pinned chain. Recursive
+equivalent race-free facility) and revalidate the pinned chain. Existing
+regular files are never modified in place: write a create-new sibling and
+atomically replace only the authorized directory entry. If replacement cannot
+be used, reject any target with link count greater than one or an unverified
+inode alias; an allowed hard link never grants authority over another name.
+Recursive
 removal is permitted only inside an invocation-owned isolated root while its
 exclusive owner lock is held; shared-tree recursive deletion is forbidden.
 This common pre-effect gate covers
@@ -228,6 +235,9 @@ The request's `export_origin` selects exactly one sealed EER by ref/fingerprint;
 its runs pair is both non-null for run/mutate/compare and both null for
 design/implement. Missing, mixed, or ambiguous origin fields are invalid; never
 select a mutable "latest" report.
+The successor-root pair is both non-null only for a deliberately retired
+holdout export and both null otherwise; it selects the exact training-authorized
+retirement successor required by exported rows and the manifest.
 
 ## Contract ownership
 
