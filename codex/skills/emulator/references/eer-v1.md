@@ -50,6 +50,8 @@ emulator_execution_report:
   runs:  # present only for run, mutate, or compare
     ref:
     fingerprint:
+    shrink_selection_trace_ref:
+    shrink_selection_trace_fingerprint:
 
   comparison:  # present only for one baseline/candidate compare pair
     comparison_id:
@@ -257,6 +259,17 @@ binds the two distinct admission reset refs/fingerprints that established exact
 fidelity; other charts are absent. Thus design and implement retain reset proof
 without inventing executions. Run modes repeat the same pairs in their chart's
 execution rows.
+Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
+
+```json
+{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
+```
+
+The two rows have different admission and sandbox instance IDs, equal chart,
+world, recipe, effect-policy, and observed-prestate fingerprints, and each
+observed prestate equals the chart's expected fingerprint. Reset-result
+fingerprints bind independently produced result bytes. Confinement validation
+requires both effect policies to admit only their distinct disposable roots.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_assignment_ref`, `mutation_assignment_fingerprint`,
 `mutation_generator_fingerprint`, and minimized-counterexample fields are null;
@@ -278,6 +291,17 @@ permitted set, but every fresh trial appears once in runs.jsonl and executions;
 the shrink-selection trace proves the ordered subset. A minimized artifact must
 cite a passingly accounted shrink-trial row. An unlisted or duplicate shrink
 trial is `invalid_environment`.
+For `mutate`, the runs block binds closed exact RFC 8785
+`shrink-selection-trace/v1` bytes:
+
+```json
+{"selected_trials":[{"parent_mutation_case_id":"<case-id>","parent_repeat_id":"<repeat-id>","run_id":"<run-id>","sequence":1,"trial_mutation_case_id":"<case-id>","trial_repeat_id":"<repeat-id>"}],"schema":"shrink-selection-trace/v1"}
+```
+
+Sequence starts at one and is contiguous; every row joins one frozen shrink
+tuple to exactly one shrink execution, in actual selection order. The array may
+be empty. The two trace fields are non-null for mutate and null for other modes;
+the trace row set equals the executed shrink subset exactly.
 
 ## Status and accounting laws
 

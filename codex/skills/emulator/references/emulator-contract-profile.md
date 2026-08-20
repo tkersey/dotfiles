@@ -356,6 +356,10 @@ digest from which they can be enumerated.
 The predicate is an ordered `targeted_chart_rules` array whose entries contain
 exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
 chart appears exactly once. Post-outcome classification is forbidden.
+The same pre-candidate policy contains closed
+`non_hard_regression_tolerance` canonical JSON keyed by protected dimension.
+It is frozen before candidate generation; a missing key means zero tolerance,
+and no outcome may alter the object.
 Before candidate generation, validation requires exact equality between the
 two policies' selected factor, factor-owner paths, structured byte selectors,
 runtime-configuration keys, approved derived runtime-surface fields, runtime
