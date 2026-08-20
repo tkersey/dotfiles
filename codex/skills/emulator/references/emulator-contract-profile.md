@@ -370,7 +370,7 @@ development evidence entry resolves by ref/fingerprint and records its
 partition. Its complete `optimizer_visible_policy` object equals the
 corresponding pre-candidate object and deterministically projects to the
 optimizer policy. The optimizer does not receive the factor-selection
-ref/fingerprint, evidence, selector identity, or baseline commitments. A
+ref/fingerprint, evidence, or baseline commitments. A
 missing, later-authored, unresolved, or mismatched asset is
 `holdout_contaminated`.
 
@@ -509,14 +509,17 @@ environment_chart:
       unsupported_default: true | false
 
   mutation:
+    law_refs: []
     dimensions:
       - dimension_id:
-        domain: []
-        case_kind: ordinary | negative | boundary
-        preserved_law_refs: []
-        violated_laws:
-          - law_ref:
-            authority_refs: []
+        domain:
+          - case_id:
+            value:
+            case_kind: ordinary | negative | boundary
+            preserved_law_refs: []
+            violated_laws:
+              - law_ref:
+                authority_refs: []
         shrink_strategy:
     generator_ref:
     generator_fingerprint:
@@ -616,14 +619,31 @@ result make the chart `invalid_environment`. Thus every admitted valid action
 has exactly one support class before evaluation, while `step` remains defined
 only for `executable`.
 
-Each mutation dimension classifies every generated case as ordinary,
-negative, or boundary evidence. An ordinary case has empty `violated_laws`.
-Every invariant-breaking negative or boundary case has at least one
-`violated_laws` entry; each `law_ref` is absent from `preserved_law_refs` and
-each nonempty, duplicate-free `authority_refs` array resolves inside the chart
-closure to evaluator authority that permits testing that exact law. Missing,
-conflicting, or out-of-chart violation authority makes the mutation case
-`invalid_environment`; a generator cannot declare its own authority.
+`mutation.law_refs` is the sorted, duplicate-free complete mutation-law
+universe. Every dimension has unique `case_id` values; its shrink strategy may
+select only declared case IDs. Each domain case, not the whole dimension,
+declares its value, case kind, preserved laws, and violated laws. Its preserved
+and violated law sets are disjoint and their union equals
+`mutation.law_refs`. An ordinary case has no violated laws. Every
+invariant-breaking negative or boundary case has at least one violated-law
+entry; each nonempty, duplicate-free `authority_refs` array resolves inside the
+chart closure to evaluator authority that permits testing that exact law. A
+generator can select declared cases but cannot create authority.
+
+A mutation assignment is the exact RFC 8785
+`{"assignment":[{"case_id":"<case-id>","dimension_id":"<dimension-id>"}],"schema":"mutation-assignment/v1"}`
+value with entries sorted by `dimension_id`, exactly one declared case for every
+dimension, and no other entry. Derive the assignment's violated laws as the
+law-keyed union of every selected case's violations, unioning and sorting their
+authority refs. Its preserved laws are `mutation.law_refs` minus that union.
+Its `case_kind` is `negative` when any selected case is negative, otherwise
+`boundary` when any selected case is boundary, otherwise `ordinary`.
+`mutation_case_id` is the SHA-256 of
+`"emulator-mutation-case/v1" NUL` followed by those exact assignment bytes.
+The execution row's assignment and chart fingerprint therefore recompute the
+case ID, kind, preserved laws, and violated laws without another authority
+field. Missing, conflicting, non-total, or out-of-chart case authority makes
+the mutation case `invalid_environment`.
 
 For a correction-derived chart to enter holdout or contribute to
 `harness_selection`, `promotion`, or `preference_training`, `correction_review`

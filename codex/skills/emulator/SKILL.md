@@ -77,7 +77,6 @@ emulator_request:
   atlas:
     atlas_id:
     storage_domain_root:
-    root:
     chart_kinds: [normative_decision, executable_episode, observational]
     partitions:
       discovery:

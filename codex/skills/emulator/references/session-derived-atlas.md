@@ -108,17 +108,17 @@ seq find-session \
 
 `seq find-session --prompt` is a semantic source read. Before running it,
 resolve and preflight the user-global exposure registry, acquire its
-`.partition-freeze.lock`, and publish immutable RFC 8785
-`semantic-discovery-exposure/v1` bytes under that registry:
+`.partition-freeze.lock`, and construct immutable RFC 8785
+`semantic-discovery-exposure/v1` bytes for that registry:
 
 ~~~json
-{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-exposure/v1","status":"discovery_exposed_on_read"}
+{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-exposure/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"status":"whole_snapshot_discovery_exposed_before_read"}
 ~~~
 
 Before the query, copy the complete physically selected corpus into a private,
 read-only snapshot root and materialize the referenced physical corpus snapshot
 from non-semantic metadata. The snapshot records that root plus every copied
-relative path, source identity, and exact source-file digest in query scope;
+relative path, source identity, source-group identity, and exact source-file digest in query scope;
 `corpus_snapshot_fingerprint` hashes those exact manifest bytes. Rewalk the
 copy and require every byte and path to match before querying. Run
 `seq find-session` against that copied snapshot root, never against the live
@@ -126,18 +126,30 @@ mutable sessions root. A copy or rewalk mismatch stops with
 `source_contaminated` before the semantic read.
 
 `query_fingerprint` binds the exact Seq query specification and snapshot
-fingerprint. Only after the exposure record is durable may the semantic read
-run. Retain exact RFC 8785 `semantic-discovery-result/v1` bytes containing the
-query ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
-ref/fingerprint. Before releasing the lock, append permanent
-`discovery_exposed` identity claims whose `exposure_evidence_ref` and
-`exposure_evidence_fingerprint` bind that result asset for every returned
-session and group. If the process stops after the read but before those
-result-bound claims publish, every identity in the pre-query corpus snapshot is
-conservatively discovery-only. Prompt matches are permanently
-`discovery_exposed` and cannot later enter development or holdout. The later
-source-bundle `corpus_digest` remains a post-selection closure identity and is
-never required by this pre-read record.
+fingerprint. Both identity arrays are sorted, duplicate-free, and equal the
+complete identities recorded by that immutable snapshot. Hash the exact
+exposure-record bytes and reserve the user-global path
+`semantic-discovery/exposures/<exposure-digest-hex>.json` beneath the registry.
+While still holding
+the lock and before the semantic read, stage permanent `discovery_exposed`
+claims for every identity in both arrays. Each claim binds the exact planned
+exposure-record ref and fingerprint. Publish the claims first, then the exposure
+record, and re-read both to require exact array coverage before invoking Seq.
+Only then may the semantic read run. Every identity in the whole snapshot is
+therefore durably discovery-exposed before the semantic read. A crash before
+the exposure record leaves
+one or more conservative claims with an unresolved evidence ref; those claims
+make the listed identities `source_contaminated` rather than holdout-eligible,
+and the query has not run. A durable exposure record therefore never exists
+without its complete claim set, and no read can precede either.
+
+Retain exact RFC 8785 `semantic-discovery-result/v1` bytes containing the query
+ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
+ref/fingerprint. Results do not narrow exposure: matching and non-matching
+sessions in the searched snapshot are all permanently discovery-only and
+cannot later enter development or holdout. The later source-bundle
+`corpus_digest` remains a post-selection closure identity and is never required
+by this pre-read record.
 To discover a holdout candidate, use only physical metadata after publishing a
 complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
@@ -334,8 +346,26 @@ the content-addressed dependency graph acyclic.
 The direct review asset is exact RFC 8785:
 
 ~~~json
-{"cut_fingerprint":"sha256:<hex>","evaluator_informed":true,"hard_oracle_interpretation_fingerprint":"sha256:<hex>","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","independent_of_candidate_generation":true,"reviewed_subject_fingerprint":"sha256:<hex>","reviewed_subject_ref":"evaluators/review-subjects/<digest-hex>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
+{"cut_fingerprint":"sha256:<hex>","cut_ref":"evaluators/review-inputs/<digest-hex>.cut.json","evaluator_informed":true,"hard_oracle_interpretation_fingerprint":"sha256:<hex>","hard_oracle_interpretation_ref":"evaluators/review-inputs/<digest-hex>.oracles.json","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","hidden_correction_ref":"evaluators/review-inputs/<digest-hex>.correction.json","independent_of_candidate_generation":true,"reviewed_subject_fingerprint":"sha256:<hex>","reviewed_subject_ref":"evaluators/review-subjects/<digest-hex>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
 ~~~
+
+Each of the three review-input refs is a normalized evaluator-only static ref
+whose companion fingerprint hashes its exact bytes. `cut_ref` has RFC 8785
+shape `{"cut":{},"schema":"correction-review-cut/v1"}` and copies the
+complete cut value from the reviewed subject. `hidden_correction_ref` contains
+exact RFC 8785
+`{"events":[{"event":{},"source_event_ref":"source-event:<id>"}],"schema":"correction-review-hidden-evidence/v1"}`
+bytes; each `event` is the complete sanitized source-event value, and entries
+are in source order and resolve through the bound source
+bundle. `hard_oracle_interpretation_ref` has RFC 8785 shape
+`{"evaluator_projection":{"hard_oracles":[],"state_diff":[],"success_condition":null,"trace_invariants":[]},"schema":"correction-review-oracle-interpretation/v1"}`
+and is projected from the complete corresponding evaluator values in the
+reviewed subject. The shown empty arrays and null are illustrative; the actual
+asset copies the exact values. None of these assets
+contains a correction-review ref or finalized
+chart fingerprint, so the closure remains acyclic. A missing ref, mismatched
+fingerprint, unresolved source event, or unequal projection is not review
+authority.
 
 The reviewed-pattern route binds exact RFC 8785 bytes:
 
@@ -756,7 +786,7 @@ discovery/development evidence. Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1","selector_identity_fingerprint":"sha256:<hex>"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
@@ -771,7 +801,7 @@ partition mutex before holdout compilation and binds the already-frozen
 baseline. The root, evaluator-only pre-candidate policy, and final reports bind
 its exact ref/fingerprint. The optimizer policy is the deterministic exact
 projection of `optimizer_visible_policy`; it receives no outer ref,
-fingerprint, evidence, selector identity, or baseline commitment. The
+fingerprint, evidence, or baseline commitment. The
 pre-candidate policy repeats that object byte-for-byte and adds evaluator-only
 fields. Neither the baseline nor factor selection can be revised
 after a holdout semantic read. If factor selection requires holdout contents,
@@ -935,28 +965,40 @@ is never merely a failed local run.
 
 Before any candidate-generation process can read an input or receive a
 message, choose a unique `generation_attempt_id`, acquire
-`.partition-freeze.lock`, and atomically create one immutable
-`<holdout_lock_root>/<holdout-key>.<cycle-id>.<candidate-id>.<generation-attempt-id>.optimizer-pending.json`
-for every holdout identity. Its exact RFC 8785 bytes are:
+`.partition-freeze.lock`, construct the exact RFC 8785 pending bytes below,
+and compute `pending_fingerprint = SHA-256(exact pending bytes)` before any
+write:
 
 ~~~json
 {"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","exposure_registry_id":"<registry-id>","generation_attempt_id":"<generation-attempt-id>","optimizer_visible_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"optimizer-exposure-intent/v1","source_identity_fingerprint":"sha256:<hex>"}
 ~~~
 
-After generation and both complete clear leakage reviews, create the immutable
-matching
-`<holdout_lock_root>/<holdout-key>.<cycle-id>.<candidate-id>.<generation-attempt-id>.optimizer-cleared.json`
-under the same lock. Its exact RFC 8785 bytes are:
+For every holdout identity, create the private directory and atomically create
+the immutable regular, non-symlink file
+`<holdout_lock_root>/optimizer-intents/<holdout-key>/<pending-digest-hex>.pending.json`.
+`holdout-key` and
+`pending-digest-hex` are validated 64-character lowercase hexadecimal digest
+suffixes, so path identity is injective and every component is bounded; raw
+cycle, candidate, and attempt IDs never enter the path.
+
+After generation and both complete clear leakage reviews, construct the exact
+RFC 8785 clear bytes below:
 
 ~~~json
-{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","post_generation_review_fingerprint":"sha256:<hex>","schema":"optimizer-cleared/v1","source_identity_fingerprint":"sha256:<hex>"}
+{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","post_generation_review_fingerprint":"sha256:<hex>","post_generation_review_ref":"optimizer-reviews/<review-digest-hex>.json","schema":"optimizer-cleared/v1","source_identity_fingerprint":"sha256:<hex>"}
 ~~~
 
-A clear marker matches only when cycle, candidate, generation attempt, and
-source identity equal the pending record and `pending_fingerprint` hashes those
-exact pending bytes. It clears only that attempt. Any pending intent without
-its exact matching clear blocks the source identity as `source_contaminated`;
-a later retry or another candidate cannot clear it, so crashes fail closed. On
+A clear writer first copies the exact post-generation leakage-review bytes to
+the user-global, registry-relative content-addressed review ref and requires its
+digest, filename, and fingerprint to agree.
+A clear marker is atomically created beside its pending file at
+`<pending-digest-hex>.cleared.json`. It matches only when cycle, candidate,
+generation attempt, and source identity equal the pending record,
+`pending_fingerprint` hashes those exact pending bytes and equals both path
+digest stems, and `post_generation_review_fingerprint` resolves to the complete
+clear review. It clears only that attempt. Any pending intent without its exact
+matching clear blocks the source identity as `source_contaminated`; a later
+retry or another candidate cannot clear it, so crashes fail closed. On
 `leak` or `uncertain`, do not clear the intent: first publish the durable
 `optimizer_exposed` partition claim and then return `holdout_contaminated`.
 Pending and cleared markers are global evidence, not a new store or campaign
@@ -1011,7 +1053,14 @@ retirement-index update lock in that fixed global order. Every path that needs
 both locks uses this order and releases them in reverse. Revalidate the exact global
 claim bytes against the root snapshots, resolve the current pointer, and require
 its target snapshot fingerprint to equal the root's bound snapshot. While still
-holding both locks, compute the complete canonical cycle-reservation bytes and
+holding both locks, enumerate every regular, non-symlink
+`optimizer-intents/<holdout-key>/*.pending.json` file for every selected source
+identity. Recompute each pending fingerprint from its exact bytes and require
+the exact matching `.cleared.json` file and clear-review preimage defined
+above. A malformed file, unrecognized path, mismatched pair, or unresolved
+optimizer intent stops with `source_contaminated` before reservation. Only
+after this complete pending/clear gate passes may the writer compute the
+complete canonical cycle-reservation bytes and
 fingerprint without publishing them. Acquire every user-global group lock in
 sorted key order with payloads that bind that precomputed fingerprint, then
 durably publish the exact precomputed bytes at the atlas-local reservation ref.
@@ -1206,8 +1255,11 @@ fingerprint in every affected run and EER.
 Immediately before the first actor receives any holdout byte, acquire
 `.partition-freeze.lock` and then `.retirement-index.lock` in the same global order,
 reread `current.json`, and require its resolved immutable snapshot to equal the
-root-bound retirement snapshot. Then revalidate every claim, lock, reservation,
-and consumption state against the frozen cycle and atomically create one immutable global
+root-bound retirement snapshot. Then rerun the complete optimizer pending/clear
+gate above and revalidate every claim, lock, reservation, and consumption state
+against the frozen cycle. Any newly unresolved optimizer intent stops with
+`source_contaminated` before actor handoff. Only after every revalidation passes
+may the runner atomically create one immutable global
 `<holdout_lock_root>/<hex>.consumed.json` per identity. Its exact RFC 8785 bytes
 are
 `{"atlas_instance_id":"sha256:<hex>","cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-consumption/v1","source_identity_fingerprint":"sha256:<hex>"}`.
@@ -1258,9 +1310,11 @@ For discovery or development, `partition` is that exact value and
 admitted status/partition combinations. Both exposure-evidence fields are null
 for a claim created without semantic discovery. A claim caused by semantic
 discovery has both non-null and binds the exact
-`semantic-discovery-result/v1` asset whose returned identity set contains this
-source; one null field, an unresolved asset, a mismatched result, or an
-unreturned identity makes the claim invalid. The filename's
+`semantic-discovery-exposure/v1` asset whose complete pre-read snapshot identity
+or group array contains this source; one null field, an unresolved asset, a
+mismatched snapshot, or an absent identity makes the claim invalid. The later
+`semantic-discovery-result/v1` is query provenance and cannot narrow the
+already-published exposure set. The filename's
 holdout-key hex, identity fingerprint, and registry ID must agree with the
 claimed identity and exposure registry. Aggregate group identity is deliberately
 absent: claims record exposure of each stable identity, so later alias discovery
@@ -1336,7 +1390,7 @@ semantic fields are exactly the deterministic projection frozen as
 `factor-selection/v1.optimizer_visible_policy`, plus only the referenced
 discovery/development inputs. Before candidate generation, require that object
 to equal the pre-candidate copy exactly. The optimizer policy contains no
-factor-selection ref, fingerprint, evidence, selector identity, baseline
+factor-selection ref, fingerprint, evidence, baseline
 fingerprint, or other outer commitment digest.
 The final root binds both exact policy refs and
 fingerprints; candidate manifests cannot rewrite either snapshot.
