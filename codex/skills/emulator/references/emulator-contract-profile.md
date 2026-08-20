@@ -163,6 +163,16 @@ emulator_contract:
             - mutation_case_id:
               mutation_assignment_ref:
               mutation_assignment_fingerprint:
+      shrink_trials:  # mutate only; empty when no shrink execution is allowed
+        - chart_fingerprint:
+          parent_mutation_case_id:
+          mutation_case_id:
+          mutation_assignment_ref:
+          mutation_assignment_fingerprint:
+    paired_cohort:  # paired_compare only
+      selected_chart_repeats:
+        - chart_fingerprint:
+          repeat_ids: []
     subject: harness
     pre_candidate_policy:
       ref:
@@ -296,8 +306,16 @@ resolve inside the frozen root closure, fingerprints match exact assignment
 bytes, and each tuple recomputes its case ID before any reset. Tuples sort by
 case ID and case IDs are unique. Execution rows equal
 the complete expansion of this cohort; missing, extra, or duplicate rows are
-`invalid_environment`. For `paired_compare`, `single_arm_cohort` is null and
-the holdout reservation owns the cohort.
+`invalid_environment`. `shrink_trials` is a sorted, duplicate-free finite set
+of permitted secondary assignments. It is frozen with the root before the
+primary mutation runs; every tuple names its parent primary case and recomputes
+its own case ID. It is empty outside `mutate`.
+
+For `paired_compare`, `single_arm_cohort` is null and `paired_cohort` is
+mandatory. It freezes every chart and repeat exactly once. For holdout charts it
+equals the cohort in the holdout reservation byte-for-byte; for a non-holdout
+paired comparison it is the authoritative cohort itself. Missing, extra,
+selectively retried, or duplicate arm rows are `comparison_drift`.
 Export preserves whichever state the existing root has. `execution_mode` does
 not replace the operation mode.
 
@@ -833,10 +851,12 @@ do not create an alternate world identity.
 
 Every support entry has a unique ID and deterministic predicate in the declared
 action schema plus nonempty authority references to source evidence, evaluator
-authority, or an explicit designed-chart decision. The inline predicate language is exact canonical-JSON equality
-at a JSON Pointer: `path` selects one action value and `value` is the required
-canonical value. Multiple conditions require separate, explicitly composed
-predicate assets rather than implicit prose. An asset matcher binds its
+authority, or an explicit designed-chart decision. Inline and asset predicates
+use the same closed DSL defined above: `json_pointer_equals` leaves plus bounded
+`all_of`, `any_of`, and `not` composition. Multiple conditions are explicit
+composed predicate values, never implicit prose. In particular,
+`matcher.kind: inline_predicates` admits composed inline `all_of`, `any_of`, and
+`not` values under the same limits. An asset matcher additionally binds its
 classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
 classifier that is missing, nondeterministic, or cannot prove the five classes
 disjoint makes the environment invalid.

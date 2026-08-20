@@ -266,14 +266,20 @@ source provenance.
 `source/<chart-id>/source-bundle.json`, whose exact RFC 8785 bytes are:
 
 ~~~json
-{"assets":[{"fingerprint":"sha256:<hex>","ref":"<closure-root-relative-ref>"}],"schema":"session-source-bundle/v1","source_map_fingerprint":"sha256:<hex>","source_map_ref":"source/<chart-id>/source-map.yaml"}
+{"assets":[{"fingerprint":"sha256:<hex>","ref":"<closure-root-relative-ref>"}],"schema":"session-source-bundle/v1","source_maps":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}]}
 ~~~
 
 Refs are normalized, nonempty POSIX paths relative to the closure root and
 cannot escape it. `assets` is sorted by ref, duplicate-free, and contains the
 source map plus every query specification, result envelope, selected raw event,
-attestation, and other byte transitively referenced by the source map; it
-contains no extra file. The source-map entry equals the two dedicated fields.
+attestation, and other byte transitively referenced by a source map; it
+contains no extra file. `source_maps` is sorted by ref, duplicate-free, and
+contains exactly one entry for every contributing physical source. Each entry
+also occurs byte-identically in `assets`. A single-session chart has one map;
+`session_corpus` and `mixed` charts bind all maps rather than selecting one.
+This typed `source_maps` array replaces ambiguous parallel
+`source_map_refs`/`source_map_fingerprints` arrays while preserving both values
+in each entry.
 `source_bundle_fingerprint` is SHA-256 of these exact manifest bytes, never a
 directory walk or archive digest. The corpus digest uses only these canonical
 bundle fingerprints.
@@ -665,7 +671,7 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"context_fingerprint":"sha256:<hex>","coverage":[{"provenance_class":"predates_source","result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
+`{"context_fingerprint":"sha256:<hex>","coverage":[{"inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
@@ -727,11 +733,17 @@ provenance may make the row clear but never removes it from coverage.
 Before review, materialize every exact surface preimage at the content-addressed
 `surface_ref`; its digest suffix, `surface_fingerprint`, and exact bytes agree.
 The semantic evaluator resolves and inspects those bytes rather than trusting a
-hash-only assertion. Coverage sorts by `(surface_kind, surface_fingerprint)` and contains exactly one
-row for every surface required by its phase. `provenance_class` is
-`predates_source`, `independent`, or `possibly_derived`; `result` is `clear`,
+hash-only assertion. Equal content may reuse one surface ref but never one
+coverage occurrence. `occurrence_id` hashes exact RFC 8785 bytes of
+`{"inventory_entry_ref":"<ref-or-message-index>","surface_fingerprint":"sha256:<hex>","surface_kind":"<kind>"}`.
+Coverage sorts by `occurrence_id` and contains exactly one row for every
+required occurrence. `inventory_entry_ref` points to its inventory row, message
+index, or trace-event pointer. `provenance_classes` is the sorted nonempty
+conservative union for that occurrence; `possibly_derived` dominates
+`independent`, which dominates `predates_source`. `result` is `clear`,
 `leak`, or `uncertain`. No missing, duplicate, or extra row is allowed. An
-evaluator-only semantic review compares every `possibly_derived` surface with
+evaluator-only semantic review compares every occurrence whose
+`provenance_classes` contains `possibly_derived` with
 the hidden action, correction, recovery, and outcome. Actor start requires a
 clear pre-start review; selection, promotion, and training require a clear
 post-run review whose pre-phase fingerprint matches. Runs and EER bind both
@@ -1603,6 +1615,19 @@ action, correction, recovery, and outcome projections. The target is frozen
 before any optimizer starts; both leakage reviews, the access proof, final root,
 and global attempt closure repeat it unchanged.
 
+The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
+
+~~~json
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","candidate_budget":1,"candidate_generation_commitments":[],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"comparison/factor-selection.json","holdout_semantic_target_fingerprint":null,"holdout_semantic_target_ref":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_visible_policy":{},"partition_snapshot_fingerprint":"sha256:<hex>","protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}]}
+~~~
+
+The arrays are sorted by their displayed identities and duplicate-free. The two
+holdout-target fields are both non-null exactly when a holdout chart is selected
+and otherwise both null. Every ref/fingerprint resolves exact bytes, all
+selected charts and candidate commitments are complete, and no extra field is
+allowed. The root policy fingerprint is valid only after this closed payload
+and every transitive ref validate.
+
 The policy also carries sorted `candidate_generation_commitments` keyed by
 candidate ID. Each binds a run-independent
 `optimizer-inventory-template/v1` describing logical input/output entries,
@@ -1702,19 +1727,20 @@ after capture and require byte-identical path, type, mode, link target, and
 digest results before freezing the manifest; any drift restarts capture.
 Source symlinks are resolved exactly once within that stable capture;
 dangling links and loops are invalid. A symlink manifest entry records
-`file_type: symlink`, its exact raw relative `link_target`, and the included
+`file_type: symlink`, its exact raw relative `link_target_base64url`, and the included
 target entry; it omits regular-file mode/digest. The archive stores this
 description as regular manifest bytes, and the isolated runtime recreates the
-same link only after proving its effective resolution remains beneath the
+same link from decoded bytes only after proving its effective resolution remains beneath the
 runtime root and reaches the bound target. Thus raw `readlink` and resolved-path
-behavior are preserved. A harness whose behavior observes symlink ownership,
+behavior are preserved, including non-UTF-8 targets. Encoding is unpadded RFC
+4648 base64url of exact `readlink` bytes. A harness whose behavior observes symlink ownership,
 timestamps, inode, link count, or other unbound `lstat` metadata is ineligible;
 those observations are not silently claimed equivalent. A link that cannot be
 safely recreated makes the harness ineligible rather than being silently
 flattened.
 A separately fingerprinted,
 evaluator-only `harness-capture-provenance/v1` asset binds every source link
-path, owning root ID, source-root path, raw target, and final resolved source
+path, owning root ID, source-root path, raw-target base64url, and final resolved source
 path, plus a complete walk of every declared source root. Its canonical
 `roots` entries contain `root_id`, absolute source root, every regular or
 symlink path with mode/digest and included flag, and any excluded path with a
@@ -2041,7 +2067,10 @@ authority stronger than model judgment alone
 
 Rows exported from a deliberately retired holdout additionally bind the exact
 `holdout-retirement/v1` marker, successor snapshot, and `training` retirement
-purpose by ref and fingerprint. Missing or mismatched retirement evidence keeps
+purpose by ref and fingerprint. They also bind `successor_root_ref` and
+`successor_root_fingerprint`; that root transitively contains the marker and
+snapshot and names the originating root as predecessor. The deferred export
+manifest repeats the same successor-root pair. Missing or mismatched retirement evidence keeps
 the row ineligible.
 
 Do not export a historical recovery as chosen unless separately re-executed or

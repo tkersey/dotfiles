@@ -157,6 +157,8 @@ emulator_execution_report:
       harness_fingerprint:
       factor:
       repeat_id:
+      run_purpose: primary | shrink_trial
+      parent_mutation_case_id:
       mutation_case_id:
       mutation_assignment:
       mutation_assignment_ref:
@@ -248,7 +250,7 @@ For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_assignment_ref`, `mutation_assignment_fingerprint`,
 `mutation_generator_fingerprint`, and minimized-counterexample fields are null;
 a non-null value is `invalid_environment`.
-For `run` and `mutate`, execution rows equal the complete
+For `run` and `mutate`, primary execution rows equal the complete
 `comparison_policy.single_arm_cohort` expansion. `run` has null mutation fields
 and empty per-chart `mutation_assignments`; `mutate` rows cover every selected
 chart/repeat and that chart entry's case/ref/fingerprint tuple exactly once.
@@ -256,6 +258,14 @@ Each execution repeats the cohort's assignment ref/fingerprint and its inline
 `mutation_assignment` equals those resolved exact bytes. Case IDs never
 cross chart entries. Missing, extra, or duplicate tuples are
 `invalid_environment`.
+Every primary row has `run_purpose: primary` and null
+`parent_mutation_case_id`. A shrink execution has `run_purpose: shrink_trial`,
+repeats one tuple from the frozen `single_arm_cohort.shrink_trials`, and binds
+its parent primary case. Executed shrink trials may be a subset of the frozen
+permitted set, but every fresh trial appears once in runs.jsonl and executions;
+the shrink-selection trace proves the ordered subset. A minimized artifact must
+cite a passingly accounted shrink-trial row. An unlisted or duplicate shrink
+trial is `invalid_environment`.
 
 ## Status and accounting laws
 
@@ -479,6 +489,8 @@ and leaves comparison-only fields null:
   "harness_fingerprint": "sha256:...",
   "factor": null,
   "repeat_id": "repeat-1",
+  "run_purpose": "primary",
+  "parent_mutation_case_id": null,
   "mutation_case_id": null,
   "mutation_assignment": null,
   "mutation_assignment_ref": null,
@@ -752,21 +764,27 @@ Dataset references appear only when rows were emitted:
 Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 
 ```json
-{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-map.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>"}
+{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-map.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Refs/fingerprints resolve exact eligible bytes; static refs use the archived
 root. `state_ref`/fingerprint are the row's `actor_input_ref` identity and equal
 the archived form of the chart's exact `actor.input_ref`/fingerprint.
 `rejected_action_ref`/fingerprint are the `historical_action_ref` identity and equal one exact
-entry from the chart's `source.historical_action_refs` and its source-bundle
-fingerprint; no conventional actor or source-event path is synthesized. The
+action asset entry and that entry's own fingerprint in the chart's
+`session-source-bundle/v1.assets`; the separate source-bundle fingerprint
+continues to bind the manifest. No conventional path or bundle-as-action
+fingerprint is synthesized. The
 chosen-action artifact is the exact selected action projection, not a
 whole trace. Authority, chart, contract, harness, and surface equal the run and
-chart. Evidence arrays sort by ref and are duplicate-free. Retirement fields
+chart. `run_id`, `run_row_fingerprint`, and the sealed `runs_jsonl` pair bind
+the same fresh passing row as the chosen action and hard-oracle evidence.
+Evidence arrays sort by ref and are duplicate-free. Retirement fields
 are all null for discovery/development rows and all non-null for a holdout
-retired for training, binding the exact training-authorized marker and successor
-snapshot. Mixed nullability or extra fields are invalid.
+retired for training, binding the exact training-authorized marker, successor
+snapshot, and non-null `successor_root_ref`/fingerprint. The successor root
+transitively owns both retirement assets and names the originating root.
+Mixed nullability or extra fields are invalid.
 
 Trajectory rows are exact RFC 8785 `emulator-trajectory/v1` bytes containing
 chart ID/fingerprint, contract and harness fingerprints, the sealed
@@ -789,11 +807,15 @@ root, and active holdout rows remain forbidden. `run_row_fingerprint` is
 SHA-256 of the exact RFC 8785 `emulator-run/v1` JSONL row bytes excluding the
 line terminator; `run_id` selects that unique row, and
 `runs_jsonl_ref`/fingerprint bind the sealed containing file.
+Every dataset row has nullable `successor_root_ref`/fingerprint. Both are null
+for ordinary discovery/development rows and both are non-null for a retired
+holdout row, where they bind the exact successor root that contains the cited
+retirement marker and snapshot. The export manifest repeats that same pair.
 
 ```json
-{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
-{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_chart_tags":[],"required_tools":[],"schema":"emulator-curriculum/v1","world_fidelity":"exact"}
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-id>.json","mutation_case_id":"<case-id>","run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","successor_root_fingerprint":null,"successor_root_ref":null,"trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_chart_tags":[],"required_tools":[],"schema":"emulator-curriculum/v1","successor_root_fingerprint":null,"successor_root_ref":null,"world_fidelity":"exact"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-id>.json","mutation_case_id":"<case-id>","run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Every row retains chart, authority, closure, harness, and evidence provenance.
@@ -811,14 +833,14 @@ For `run`, `mutate`, or `compare`, the manifest has this exact execution-origin
 payload:
 
 ```json
-{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"preferences","ref":"datasets/<dataset-digest-hex>.preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1"}
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"preferences","ref":"datasets/<dataset-digest-hex>.preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 For `design` or `implement`, it instead has this exact contract-origin payload
 and does not invent a run group:
 
 ```json
-{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"curriculum","ref":"datasets/<dataset-digest-hex>.curriculum.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/contracts/<root-digest-hex>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"runs_fingerprint":null,"runs_ref":null,"schema":"emulator-export-manifest/v1"}
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"curriculum","ref":"datasets/<dataset-digest-hex>.curriculum.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/contracts/<root-digest-hex>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"runs_fingerprint":null,"runs_ref":null,"schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Both are the same closed schema; only the mode-constrained originating EER path,
