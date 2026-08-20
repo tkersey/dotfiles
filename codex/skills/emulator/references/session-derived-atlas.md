@@ -884,15 +884,19 @@ selection and requires a new untouched holdout group.
 
 The candidate-independent optimizer tool policy template is exact RFC 8785
 `optimizer-tool-policy-template/v1` bytes containing allowed tool names,
-logical schema IDs/fingerprints, denied names, and effect permissions expressed
-only as logical root roles. It contains no candidate ID, candidate path,
-absolute sandbox root, or fresh process identity. A concrete candidate policy
-resolves the same schema bytes and maps root roles to that candidate's sandbox;
-removing those runtime paths and restoring roles yields the exact frozen
-template.
+logical schema IDs/fingerprints, denied names, per-tool effects, external-effect
+policy, network policy, and every filesystem permission expressed as a logical
+root role. It contains no candidate ID, candidate path, absolute sandbox root,
+or fresh process identity. A concrete candidate policy resolves the same schema
+bytes and maps every root role to that candidate's sandbox. Projecting the
+concrete policy back verifies its `template_fingerprint`, replaces each verified
+schema ref with its logical schema ID, replaces each absolute root with its
+frozen role, removes only `template_fingerprint`, and changes only the schema
+tag. The result MUST equal the frozen template byte-for-byte; no permission or
+effect field is discarded.
 
 ~~~json
-{"allowed":[{"name":"<tool>","schema_fingerprint":"sha256:<hex>","schema_id":"<logical-schema-id>"}],"denied":[],"effects":{"filesystem_root_roles":["candidate_output"],"network":"deny"},"schema":"optimizer-tool-policy-template/v1"}
+{"allowed_tools":[{"effects":["filesystem_read","filesystem_write"],"name":"<tool-name>","schema_fingerprint":"sha256:<hex>","schema_id":"<logical-schema-id>"}],"denied_tools":[],"external_side_effects":"deny","filesystem_root_roles":[{"access":"isolated_write","role":"candidate_output"},{"access":"read_only","role":"optimizer_input"}],"network":"deny","schema":"optimizer-tool-policy-template/v1"}
 ~~~
 
 Each authorized message projection ref resolves exact RFC 8785
@@ -1069,15 +1073,19 @@ have byte-identical `output_roots` and differ only in `phase` and `entries`.
 The input inventory is re-enumerated after generation and must remain
 byte-identical. Candidate output roots are accessible only under the output
 policy, not as immutable input roots. The runner inventories them immediately
-before and after generation. Their ref/fingerprint pairs are the exact fields
-bound by the access proof and pre-candidate policy. Only differences represented by the
+before and after generation. Their concrete ref/fingerprint pairs are bound
+after enumeration by the access proof; the pre-candidate policy binds only
+their run-independent projection templates and MUST NOT contain a concrete
+pre- or post-generation output inventory ref/fingerprint. Only differences represented by the
 frozen candidate manifest and completely covered by
 `factor-delta-validation/v1` may appear. An arbitrary writable root, an input
 mutation, or an unaccounted output byte is `holdout_contaminated` or
 `multiple_factors` as applicable.
 
-The pre-candidate policy also binds the exact
-`optimizer_tool_policy_ref`/fingerprint. That policy permits only declared
+The pre-candidate policy binds the exact candidate-independent tool-policy
+template ref/fingerprint. After the sandbox exists, the access proof binds the
+concrete `optimizer_tool_policy_ref`/fingerprint and proves its lossless
+template projection. That policy permits only declared
 tools, schemas, filesystem roots, and effects; network and
 `external_side_effects` are denied unless a fixture-only exception is frozen
 there. The runner enforces it and retains an exact ordered
@@ -1090,11 +1098,12 @@ cannot emit `status: completed` otherwise.
 The policy is exact RFC 8785 `optimizer-tool-policy/v1`:
 
 ~~~json
-{"allowed_tools":[{"effects":["filesystem_read","filesystem_write"],"name":"<tool-name>","schema_fingerprint":"sha256:<hex>","schema_ref":"harnesses/candidates/<candidate-id>/tool-schemas/<tool-name>.json"}],"external_side_effects":"deny","filesystem_roots":[{"access":"read_only","path":"<canonical-absolute-input-root>","root_id":"<input-root-id>"},{"access":"isolated_write","path":"<canonical-absolute-output-root>","root_id":"<output-root-id>"}],"network":"deny","schema":"optimizer-tool-policy/v1"}
+{"allowed_tools":[{"effects":["filesystem_read","filesystem_write"],"name":"<tool-name>","schema_fingerprint":"sha256:<hex>","schema_ref":"harnesses/candidates/<candidate-id>/tool-schemas/<tool-name>.json"}],"denied_tools":[],"external_side_effects":"deny","filesystem_roots":[{"access":"read_only","path":"<canonical-absolute-input-root>","role":"optimizer_input","root_id":"<input-root-id>"},{"access":"isolated_write","path":"<canonical-absolute-output-root>","role":"candidate_output","root_id":"<output-root-id>"}],"network":"deny","schema":"optimizer-tool-policy/v1","template_fingerprint":"sha256:<hex>"}
 ~~~
 
-Tools sort by name, roots by root ID, effects lexically; all arrays are
-duplicate-free. `filesystem_write` is admitted only for the predeclared output
+Tools sort by name, denied names lexically, roots by `(role, root_id)`, and
+effects lexically; all arrays are duplicate-free. `template_fingerprint` equals
+the frozen `optimizer-tool-policy-template/v1` bytes. `filesystem_write` is admitted only for the predeclared output
 roots whose access is `isolated_write`; input roots remain `read_only`, and no
 other output roots are writable. Unlisted tools, roots, and effects are denied. The trace is
 exact RFC 8785 `optimizer-tool-trace/v1`:
@@ -1602,9 +1611,11 @@ tool policy, and allowed root roles without absolute sandbox paths or
 deterministic instantiation of its template; candidate-specific sandboxes may
 differ without sharing a concrete fingerprint.
 The exact template is RFC 8785
-`{"candidate_id":"<candidate-id>","input_projection":{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"root_roles":["optimizer_input"],"schema":"optimizer-input-projection/v1","tool_policy_fingerprint":"sha256:<hex>"},"poststate_projection":{"entry_policy":"generation_effects_exact","phase":"post_generation","root_roles":["candidate_output"],"schema":"candidate-output-projection/v1"},"prestate_projection":{"entries":[],"phase":"pre_generation","root_roles":["candidate_output"],"schema":"candidate-output-projection/v1"},"schema":"optimizer-inventory-template/v1"}`.
+`{"candidate_id":"<candidate-id>","input_projection":{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"root_roles":["optimizer_input"],"schema":"optimizer-input-projection/v1","tool_policy_template_fingerprint":"sha256:<hex>"},"poststate_projection":{"entry_policy":"generation_effects_exact","phase":"post_generation","root_roles":["candidate_output"],"schema":"candidate-output-projection/v1"},"prestate_projection":{"entries":[],"phase":"pre_generation","root_roles":["candidate_output"],"schema":"candidate-output-projection/v1"},"schema":"optimizer-inventory-template/v1"}`.
 `input_projection` removes `sandbox_instance_id`, maps `input_roots` to their
-frozen roles, and changes only the schema tag. `prestate_projection` performs
+frozen roles, proves the concrete tool policy instantiates the frozen template,
+replaces `tool_policy_fingerprint` with that template fingerprint under the
+`tool_policy_template_fingerprint` key, and changes the schema tag. `prestate_projection` performs
 the analogous output-root mapping and requires exact empty entries.
 `poststate_projection` first proves concrete entries equal the complete
 generation effects, then replaces those entries with the literal
@@ -1612,6 +1623,11 @@ generation effects, then replaces those entries with the literal
 template-to-concrete projections must equal the candidate's frozen template;
 no rename, phase, or field is implicit. The access proof repeats the template
 ref/fingerprint and the validator rejects any other delta.
+The pre-candidate policy contains this inventory template and the independent
+tool-policy template only. Concrete optimizer input, output-prestate,
+output-poststate, and tool-policy refs/fingerprints are created and bound by the
+post-generation access proof; they cannot be required by or written back into
+the already-frozen pre-candidate policy.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate optimizer policy whose
 semantic fields are exactly the deterministic projection frozen as

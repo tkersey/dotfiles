@@ -159,6 +159,8 @@ emulator_execution_report:
       repeat_id:
       mutation_case_id:
       mutation_assignment:
+      mutation_assignment_ref:
+      mutation_assignment_fingerprint:
       mutation_generator_fingerprint:
       minimized_counterexample_ref:
       minimized_counterexample_fingerprint:
@@ -201,7 +203,10 @@ emulator_execution_report:
       evaluator_fingerprint:
       residual_judgment_ref:
       residual_judgment_fingerprint:
-      support_result: executable | judgeable | denied | observed_only | unsupported | null
+      support_results:
+        - action_index:
+          action_fingerprint:
+          support_class: executable | judgeable | denied | observed_only | unsupported
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
       status_reason:
@@ -240,12 +245,15 @@ group, an empty `runs.jsonl`, or runtime counters. For `run`, `mutate`, and
 `compare`, the three run sections are required and the parsed `runs.jsonl` rows
 must equal `executions` as specified below.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
+`mutation_assignment_ref`, `mutation_assignment_fingerprint`,
 `mutation_generator_fingerprint`, and minimized-counterexample fields are null;
 a non-null value is `invalid_environment`.
 For `run` and `mutate`, execution rows equal the complete
 `comparison_policy.single_arm_cohort` expansion. `run` has null mutation fields
-and empty per-chart `mutation_case_ids`; `mutate` rows cover every selected
-chart/repeat and that chart entry's case tuple exactly once. Case IDs never
+and empty per-chart `mutation_assignments`; `mutate` rows cover every selected
+chart/repeat and that chart entry's case/ref/fingerprint tuple exactly once.
+Each execution repeats the cohort's assignment ref/fingerprint and its inline
+`mutation_assignment` equals those resolved exact bytes. Case IDs never
 cross chart entries. Missing, extra, or duplicate tuples are
 `invalid_environment`.
 
@@ -274,12 +282,15 @@ runtime-error, ambiguous, or skipped row records a reason and the evidence
 available before termination. No historical run appears as a baseline
 execution.
 
-`support_result` is null exactly when execution ended before support
-classification was reached, including pre-start `runner_unavailable` and
-malformed actor/action output rejected before a valid action exists. Once the
-classifier runs, the field is exactly its one support class even when a later
-oracle, environment, or runtime outcome fails. No run invents a support class
-to fill a pre-classification row.
+`support_results` is an ordered array with exactly one row for every
+consequential action that reached support classification. `action_index` starts
+at zero and is contiguous; `action_fingerprint` binds the exact classified
+action projection, and `support_class` is that action's one exclusive class.
+The array is empty exactly when execution ended before any support
+classification, including pre-start `runner_unavailable` and malformed output
+rejected before a valid action exists. A full-turn or full-episode run retains
+all classified actions, including an executable action followed by a denied or
+unsupported action; no execution-level scalar may collapse the history.
 
 Every execution row binds its root contract and atlas fingerprints. A selecting
 root also binds its current partition-snapshot fingerprint and validation
@@ -470,6 +481,8 @@ and leaves comparison-only fields null:
   "repeat_id": "repeat-1",
   "mutation_case_id": null,
   "mutation_assignment": null,
+  "mutation_assignment_ref": null,
+  "mutation_assignment_fingerprint": null,
   "mutation_generator_fingerprint": null,
   "minimized_counterexample_ref": null,
   "minimized_counterexample_fingerprint": null,
@@ -512,7 +525,13 @@ and leaves comparison-only fields null:
   "evaluator_fingerprint": "sha256:...",
   "residual_judgment_ref": null,
   "residual_judgment_fingerprint": null,
-  "support_result": "judgeable",
+  "support_results": [
+    {
+      "action_index": 0,
+      "action_fingerprint": "sha256:...",
+      "support_class": "judgeable"
+    }
+  ],
   "status": "pass",
   "termination_reason": "decision_emitted",
   "status_reason": null,
@@ -733,11 +752,16 @@ Dataset references appear only when rows were emitted:
 Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 
 ```json
-{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"roots/<root-digest-hex>/source/<chart-id>/events/<event-id>.json","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-map.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"roots/<root-digest-hex>/actors/<chart-id>.md"}
+{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-map.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>"}
 ```
 
 Refs/fingerprints resolve exact eligible bytes; static refs use the archived
-root. The chosen-action artifact is the exact selected action projection, not a
+root. `state_ref`/fingerprint are the row's `actor_input_ref` identity and equal
+the archived form of the chart's exact `actor.input_ref`/fingerprint.
+`rejected_action_ref`/fingerprint are the `historical_action_ref` identity and equal one exact
+entry from the chart's `source.historical_action_refs` and its source-bundle
+fingerprint; no conventional actor or source-event path is synthesized. The
+chosen-action artifact is the exact selected action projection, not a
 whole trace. Authority, chart, contract, harness, and surface equal the run and
 chart. Evidence arrays sort by ref and are duplicate-free. Retirement fields
 are all null for discovery/development rows and all non-null for a holdout
@@ -745,25 +769,31 @@ retired for training, binding the exact training-authorized marker and successor
 snapshot. Mixed nullability or extra fields are invalid.
 
 Trajectory rows are exact RFC 8785 `emulator-trajectory/v1` bytes containing
-chart ID/fingerprint, contract and harness fingerprints, run ref/fingerprint,
-world/reset fingerprints, trace ref/fingerprint, sorted hard-oracle
+chart ID/fingerprint, contract and harness fingerprints, the sealed
+`runs.jsonl` ref/fingerprint plus run ID and canonical run-row fingerprint,
+world fingerprint, both reset recipe and reset-result fingerprints, trace ref/fingerprint, sorted hard-oracle
 ref/fingerprint pairs, nullable all-or-none training-retirement marker/snapshot
 pairs, and limitations. Curriculum rows are exact
 `emulator-curriculum/v1` bytes containing chart ID/fingerprint, contract
-fingerprint, family, difficulty, sorted required tools and prerequisite tags,
-failure cluster, world fidelity, maximum supported claim, and limitations; no
-hidden evaluator payload is admitted. Counterexample rows are exact
+fingerprint, the five fields copied exactly from
+`claim.curriculum_metadata`, world fidelity, maximum supported claim, and
+limitations; no hidden evaluator payload is admitted and missing chart metadata
+makes the row ineligible. Counterexample rows are exact
 `emulator-counterexample/v1` bytes containing chart ID/fingerprint, contract
-and harness fingerprints, run ref/fingerprint, mutation case ID, assignment
+and harness fingerprints, sealed `runs.jsonl` and canonical run-row identity,
+mutation case ID, assignment
 ref/fingerprint, generator fingerprint, minimized artifact ref/fingerprint,
 sorted evaluator-evidence ref/fingerprint pairs, and limitations. Every object
 is closed; arrays are sorted and duplicate-free, static refs use the archived
-root, and active holdout rows remain forbidden.
+root, and active holdout rows remain forbidden. `run_row_fingerprint` is
+SHA-256 of the exact RFC 8785 `emulator-run/v1` JSONL row bytes excluding the
+line terminator; `run_id` selects that unique row, and
+`runs_jsonl_ref`/fingerprint bind the sealed containing file.
 
 ```json
-{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_fingerprint":"sha256:<hex>","run_ref":"runs/<run-group-id>/runs/<run-id>.json","schema":"emulator-trajectory/v1","trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
-{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_tags":[],"required_tools":[],"schema":"emulator-curriculum/v1","world_fidelity":"exact"}
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"roots/<root-digest-hex>/mutation/assignments/<case-id>.json","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-id>.json","mutation_case_id":"<case-id>","run_fingerprint":"sha256:<hex>","run_ref":"runs/<run-group-id>/runs/<run-id>.json","schema":"emulator-counterexample/v1"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_chart_tags":[],"required_tools":[],"schema":"emulator-curriculum/v1","world_fidelity":"exact"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-id>.json","mutation_case_id":"<case-id>","run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1"}
 ```
 
 Every row retains chart, authority, closure, harness, and evidence provenance.

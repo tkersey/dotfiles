@@ -12,7 +12,8 @@ fidelity, or claim strength.
 Every chart provides semantic equivalents of:
 
 ```text
-reset(chart_id, repeat_id)
+reset(chart_id, repeat_id, mutation_case_id,
+      mutation_assignment_ref, mutation_assignment_fingerprint)
 observe()
 support(action)
 evaluate(output_or_trace)
@@ -22,6 +23,11 @@ trace()
 `step(action)` is provided only for actions classified `executable`.
 Synthetic worlds may declare `transition_model: total`; session-derived worlds
 are commonly partial or have no transition model.
+
+The three mutation inputs are all null outside `mutate`. In `mutate`, all three
+are non-null, equal the chart-local frozen cohort tuple, and the implementation
+resolves and fingerprints the assignment before reset. Implementations MUST NOT
+recover the assignment from ambient state or from the case ID alone.
 
 ## Deterministic
 

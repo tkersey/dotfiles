@@ -159,7 +159,10 @@ emulator_contract:
       selected_chart_repeats:
         - chart_fingerprint:
           repeat_ids: []
-          mutation_case_ids: []
+          mutation_assignments:
+            - mutation_case_id:
+              mutation_assignment_ref:
+              mutation_assignment_fingerprint:
     subject: harness
     pre_candidate_policy:
       ref:
@@ -285,9 +288,13 @@ EC-v1 mutation evidence is single-arm only.
 For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
-For `run`, every chart entry's `mutation_case_ids` is empty. For `mutate`, each
-chart entry carries only that chart's sorted, duplicate-free exact case set
-selected before execution. Execution rows equal
+For `run`, every chart entry's `mutation_assignments` is empty. For `mutate`,
+each chart entry carries only that chart's sorted, duplicate-free exact
+`mutation_case_id`, `mutation_assignment_ref`, and
+`mutation_assignment_fingerprint` tuples selected before execution. Refs
+resolve inside the frozen root closure, fingerprints match exact assignment
+bytes, and each tuple recomputes its case ID before any reset. Tuples sort by
+case ID and case IDs are unique. Execution rows equal
 the complete expansion of this cohort; missing, extra, or duplicate rows are
 `invalid_environment`. For `paired_compare`, `single_arm_cohort` is null and
 the holdout reservation owns the cohort.
@@ -624,9 +631,23 @@ environment_chart:
   claim:
     class: diagnostic | preference_training | harness_selection | promotion
     maximum_supported_claim: diagnostic | preference_training | harness_selection | promotion
+    curriculum_metadata:  # null unless curriculum export is authorized
+      family:
+      difficulty:
+      prerequisite_chart_tags: []
+      required_tools: []
+      failure_cluster:
     invalidators: []
     limitations: []
 ~~~
+
+When non-null, `claim.curriculum_metadata` is evaluator-visible chart-authored
+source for curriculum export. Its two arrays are sorted and duplicate-free;
+`required_tools` is a subset of `environment.tools.allowed`. The curriculum row
+copies these five fields exactly and derives only chart ID/fingerprint, contract
+fingerprint, world fidelity, and maximum supported claim from their named chart
+or root fields. Missing metadata makes curriculum export ineligible; an
+exporter MUST NOT infer or invent it.
 
 Tool permission is fail closed. `allowed` and `denied` are duplicate-free and
 disjoint. Every allowed tool has exactly one schema in `schemas`; a tool name
