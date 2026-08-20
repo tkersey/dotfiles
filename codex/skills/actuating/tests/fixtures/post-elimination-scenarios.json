@@ -1,0 +1,331 @@
+{
+  "schema": "actuating-post-elimination-scenarios/v1",
+  "defaults": {
+    "law_authority": "entailed",
+    "prior_eliminated": true,
+    "same_law": true,
+    "current_applicable": true,
+    "premise_failure": "unknown",
+    "witness_within_phi": false,
+    "path_already_covered": false,
+    "interpretation_reflects_witness": false,
+    "reissue_attempted": false,
+    "successor_theory_restated": false,
+    "family_level_proof": false,
+    "repaired_examples_only": false,
+    "sibling_prediction_status": "absent",
+    "sibling_probes_passed": false
+  },
+  "scenarios": [
+    {
+      "id": "initial-entailed-finding",
+      "inputs": {
+        "prior_eliminated": false,
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "not-applicable",
+        "next": "normal-reconciliation",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "optional-strengthening",
+      "inputs": {
+        "law_authority": "strengthening",
+        "prior_eliminated": false
+      },
+      "expected": {
+        "authority": "follow-up",
+        "lease": "not-applicable",
+        "next": "non-blocking-follow-up",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "reviewer-preference",
+      "inputs": {
+        "law_authority": "preference",
+        "prior_eliminated": false
+      },
+      "expected": {
+        "authority": "rejected",
+        "lease": "not-applicable",
+        "next": "reject-finding",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "new-requirement",
+      "inputs": {
+        "law_authority": "new-requirement",
+        "prior_eliminated": false
+      },
+      "expected": {
+        "authority": "reopen-goal",
+        "lease": "not-applicable",
+        "next": "reopen-goal",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "underdetermined-requirement",
+      "inputs": {
+        "law_authority": "underdetermined",
+        "prior_eliminated": false
+      },
+      "expected": {
+        "authority": "blocked",
+        "lease": "not-applicable",
+        "next": "seek-authority",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-realization-failure",
+      "inputs": {
+        "premise_failure": "realization",
+        "witness_within_phi": true,
+        "path_already_covered": true,
+        "interpretation_reflects_witness": true
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "retain-theory-reprove",
+        "next": "repair-realization",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-proof-failure",
+      "inputs": {
+        "premise_failure": "proof",
+        "witness_within_phi": true,
+        "path_already_covered": true,
+        "interpretation_reflects_witness": true
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "retain-theory-reprove",
+        "next": "rebuild-proof",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-witness-outside-phi",
+      "inputs": {
+        "premise_failure": "theory"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-theory",
+        "next": "recompile-theory",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-family-split",
+      "inputs": {
+        "premise_failure": "theory-split"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "split-theory",
+        "next": "recompile-theory",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-omitted-path",
+      "inputs": {
+        "premise_failure": "admission"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-admission",
+        "next": "recompile-theory",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-law-erasing-alpha",
+      "inputs": {
+        "premise_failure": "interpretation"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-interpretation",
+        "next": "recompile-theory",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-owner-failure",
+      "inputs": {
+        "premise_failure": "owner"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-owner",
+        "next": "recompile-theory",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "post-elimination-unknown-premise",
+      "inputs": {
+        "premise_failure": "unknown"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "unresolved",
+        "next": "blocked",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "different-law-after-elimination",
+      "inputs": {
+        "same_law": false,
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "not-applicable",
+        "next": "normal-reconciliation",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "strengthening-after-elimination",
+      "inputs": {
+        "law_authority": "strengthening",
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "follow-up",
+        "lease": "non-authoritative",
+        "next": "non-blocking-follow-up",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "new-requirement-after-elimination",
+      "inputs": {
+        "law_authority": "new-requirement",
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "reopen-goal",
+        "lease": "non-authoritative",
+        "next": "reopen-goal",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "unchanged-theory-repaired-examples-only",
+      "inputs": {
+        "premise_failure": "realization",
+        "witness_within_phi": true,
+        "path_already_covered": true,
+        "interpretation_reflects_witness": true,
+        "reissue_attempted": true,
+        "successor_theory_restated": true,
+        "family_level_proof": false,
+        "repaired_examples_only": true,
+        "sibling_prediction_status": "absent"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "retain-theory-reprove",
+        "next": "repair-realization",
+        "reissue": "ineligible"
+      }
+    },
+    {
+      "id": "successor-theory-predicts-siblings",
+      "inputs": {
+        "premise_failure": "theory",
+        "reissue_attempted": true,
+        "successor_theory_restated": true,
+        "family_level_proof": true,
+        "sibling_prediction_status": "stated",
+        "sibling_probes_passed": true
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-theory",
+        "next": "recompile-theory",
+        "reissue": "eligible"
+      }
+    },
+    {
+      "id": "exhaustive-finite-successor",
+      "inputs": {
+        "premise_failure": "admission",
+        "reissue_attempted": true,
+        "successor_theory_restated": true,
+        "family_level_proof": true,
+        "sibling_prediction_status": "exhaustive",
+        "sibling_probes_passed": true
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-admission",
+        "next": "recompile-theory",
+        "reissue": "eligible"
+      }
+    },
+    {
+      "id": "sibling-probe-fails",
+      "inputs": {
+        "premise_failure": "theory",
+        "reissue_attempted": true,
+        "successor_theory_restated": true,
+        "family_level_proof": true,
+        "sibling_prediction_status": "stated",
+        "sibling_probes_passed": false
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "revise-theory",
+        "next": "recompile-theory",
+        "reissue": "ineligible"
+      }
+    },
+    {
+      "id": "retain-theory-with-stronger-family-proof",
+      "inputs": {
+        "premise_failure": "proof",
+        "witness_within_phi": true,
+        "path_already_covered": true,
+        "interpretation_reflects_witness": true,
+        "reissue_attempted": true,
+        "successor_theory_restated": true,
+        "family_level_proof": true,
+        "sibling_prediction_status": "stated",
+        "sibling_probes_passed": true
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "retain-theory-reprove",
+        "next": "rebuild-proof",
+        "reissue": "eligible"
+      }
+    },
+    {
+      "id": "post-elimination-not-current",
+      "inputs": {
+        "current_applicable": false,
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "not-current",
+        "lease": "not-applicable",
+        "next": "reject-current-liability",
+        "reissue": "not-applicable"
+      }
+    }
+  ]
+}

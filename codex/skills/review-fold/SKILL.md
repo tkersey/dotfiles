@@ -1,31 +1,28 @@
 ---
 name: review-fold
-description: "Classify and quotient current review findings, failing tests, incidents, bug reports, migration failures, and other witnessed falsifiers against the current Goal and Git head while preserving each witness's original subject. Separate facts from suggestions, distinguish law boundaries from detection surfaces, return observational same-law classes with owner sets, family hypotheses, current applicability, and independence evidence, and never select admission frontiers, repairs, architecture, review credit, or durable artifacts."
+description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, an optional strengthening, a preference, a new requirement, or underdetermined. Return observational same-law classes and post-elimination relations without selecting repairs, architecture, review credit, or durable artifacts."
 ---
 
 # Review Fold
 
 ## Mission
 
-Turn current witnessed falsification pressure into one bounded analytical fold:
+Turn owner-issued falsification evidence into one bounded analytical fold:
 
 ```text
-owner-issued evidence
-+ current Goal
+owner evidence
++ accepted Goal
 + exact current Git head
--> classified facts, observational classes, causal pressure, and blockers
++ optional current elimination-lease excerpt
+-> facts, law authority, applicability, observational classes, blockers
 -> no mutation authority
 ```
 
-`$review-fold` owns evidence classification, quotienting, and observational
-class evidence. `$actuating` owns family finalization, admission-frontier or cut
-analysis, semantic-hotspot judgment, architecture evaluation, target selection,
-review credit, next action, and closure. Source owners retain their receipts and
-durable history.
+`$review-fold` owns evidence classification, Goal-law relation, quotienting, and
+observational-class evidence. `$actuating` owns family finalization,
+post-elimination revocation, architecture selection, next action, and closure.
 
 ## Input
-
-Require:
 
 ```yaml
 review_fold_input:
@@ -33,6 +30,12 @@ review_fold_input:
   repository:
   base:
   current_head:
+  current_elimination_claim: null | {
+    law:
+    family:
+    disposition: eliminated
+    issued_head:
+  }
   source_batches:
     - owner:
       exact_receipt_or_output:
@@ -45,12 +48,11 @@ review_fold_input:
   relevant_prior_owner_evidence: []
 ```
 
-CAS-derived evidence must include the exact terminal CAS receipt. Tests,
-incidents, provider review threads, migration failures, and compatibility
-failures retain their native owner evidence and original subject.
+CAS-derived evidence requires the exact terminal CAS receipt. Historical tests,
+incidents, and failures retain their original subjects.
 
-Do not require an Actuating campaign event, Construction identifier,
-Counterexample Set, hotspot registry, or Ledger record.
+Do not require an Actuating event, Construction identifier, Counterexample Set,
+hotspot registry, or Ledger record.
 
 ## Minimal law
 
@@ -58,13 +60,57 @@ Counterexample Set, hotspot registry, or Ledger record.
 claim != observed fact
 observed fact != current liability
 witness subject != current applicability subject
-current liability != accepted scope
-accepted scope != observational class
-observational class != predicate-defined family
-family hypothesis != admission frontier or cut
-admission frontier or cut != selected repair
+reviewer-desired property != accepted Goal law
+current liability != observational class
+observational class != final family
+same-law after elimination != another patch instruction
 Review Fold != mutation authority
 ```
+
+## Law-authority classification
+
+For every proposed governing law, choose:
+
+```text
+entailed
+  exact evidence shows the property follows from accepted Goal authority
+
+strengthening
+  property is beneficial but not required by the current Goal
+
+preference
+  property is a design preference without a current correctness obligation
+
+new-requirement
+  property is legitimate but requires new source/user authority
+
+underdetermined
+  current Goal evidence cannot decide
+```
+
+Record an `entailment_basis` or `non_entailment_basis`.
+
+Mapping to current disposition:
+
+```text
+entailed + current falsifier
+  -> accepted
+
+strengthening
+  -> follow-up, non-blocking
+
+preference
+  -> rejected
+
+new-requirement
+  -> follow-up with authority_action: reopen-goal
+
+underdetermined
+  -> blocked with authority_action: seek-authority
+```
+
+Do not infer entailment merely because several reviewers agree or because the
+property sounds safer.
 
 ## Output
 
@@ -80,12 +126,17 @@ review_fold:
       law:
       law_provenance: goal | public-contract | type-invariant | protocol |
         test-law | derived | hypothesized
+      law_authority: entailed | strengthening | preference |
+        new-requirement | underdetermined
+      authority_basis:
+      authority_action: none | follow-up | reject | reopen-goal | seek-authority
       law_boundary:
       current_owner_set: []
       owner_status: canonical | distributed | absent | contested | unknown
       discrepancy: excess | deficit | incoherence | partiality | misbinding
       severity: critical | high | medium | low
       disposition: accepted | rejected | blocked | follow-up
+      post_elimination_relation: none | same-law | different-law | unknown
       witnesses:
         - observed_fact:
           witness_subject:
@@ -104,6 +155,8 @@ review_fold:
       family_hypothesis:
         predicate_or_generator:
         domain:
+        predicted_sibling_classes: []
+        prediction_basis:
         claim_strength: proved | exhaustive-finite | bounded |
           property-tested | sampled | hypothesized | unknown
         family_basis:
@@ -116,156 +169,96 @@ review_fold:
   handoff:
 ```
 
-Class IDs are stable semantic names within the available evidence horizon. They
-derive from the governing law, law boundary, discrepancy, and family hypothesis
-—not attempt, thread, commit, filename, detection surface, campaign,
-publication epoch, current owner identity, or proposed patch.
-
-A class may contain witnesses detected at different boundaries and implemented
-by different current owner sites. Review Fold does not infer that a detection
-boundary or law boundary is an admission frontier.
-
-## Witness provenance and current applicability
-
-Never bind a historical incident or failure to the current head as though it
-occurred there.
-
-For every witness retain:
-
-```text
-original witness subject
-current applicability subject
-applicability status
-applicability basis
-```
-
-Only `still-present` and `transformed-applicable` witnesses establish current
-liability. `already-excluded` may explain the repository but does not establish
-current pressure. `not-comparable` and `unknown` cannot establish recurrence,
-family coverage, or a current hotspot.
-
-## Evidence horizon
-
-Use every currently available owner source relevant to the Goal:
-
-- exact CAS receipts and findings;
-- unresolved provider review threads;
-- current failing tests and verifier outputs;
-- supplied incidents and bug reports with original subjects;
-- migration and compatibility failures;
-- prior owner evidence explicitly available in the active context.
-
-Do not maintain a parallel retained class or hotspot register.
-
-When historical evidence needed to prove recurrence is unavailable:
-
-```text
-recurrence.status = unknown
-```
-
-Do not infer `first-observed` or `recurring` from memory or a previous summary.
+Class IDs derive from the law, boundary, discrepancy, and family hypothesis—not
+attempt, thread, file, reviewer, current owner, or proposed patch.
 
 ## Procedure
 
-1. Preserve each source's original subject and bind the applicability judgment
-   separately to the current Goal and head.
-2. Separate claim, observed fact, suggested repair, and transport status.
-3. Decide whether each fact is a current liability under an attributed Goal law.
-4. For each witness, name the detection boundary, exact evidence, applicability
-   status, and independence basis.
-5. For each observational class, name law, provenance, law boundary, current
-   owner set, owner status, discrepancy, applicability, and family hypothesis.
-6. Quotient duplicate rows and same-law observations only when the semantic and
-   applicability basis agree.
-7. Permit a class to span several current owner sites when distributed ownership
-   may itself be the defect.
-8. State the family predicate or generator and domain as a hypothesis; use
-   `unknown` when they cannot be stated honestly.
-9. Compare exact available prior owner evidence to classify recurrence and
-   causal hypotheses.
-10. Assign one disposition:
-    - `accepted`: current in-scope falsification is established;
-    - `rejected`: evidence establishes stale, false, already satisfied,
-      unsupported-path, preference-only, or non-liability pressure;
-    - `blocked`: validity, applicability, law, class basis, provenance, or
-      current identity remains unknown;
-    - `follow-up`: valid pressure lies outside the current Goal.
-11. Return the fold directly to Actuating.
+1. Preserve every witness's original subject.
+2. Judge current applicability separately against the current Goal/head.
+3. Separate claim, observed fact, suggested repair, and transport status.
+4. Attribute the proposed law and classify its Goal authority.
+5. Assign disposition from authority plus current applicability.
+6. Name detection boundaries and exact evidence.
+7. Quotient duplicates only when law, authority, applicability, discrepancy,
+   and causal evidence agree.
+8. Permit one class to span current owner sites when distributed ownership may
+   be the defect.
+9. State the family only as a hypothesis. Include predicted siblings when
+   current evidence supports them; otherwise mark prediction unknown.
+10. Compare exact prior owner evidence to classify recurrence.
+11. When an active eliminated claim is supplied, classify whether an accepted
+    class is same-law, different-law, or unknown. Do not revoke or retain the
+    claim; Actuating owns that effect.
+12. Return the fold directly.
 
-A current clean source may return an empty `classes` list.
+A clean source may return an empty `classes` list.
 
-## Observational classes and family hypotheses
+## Current applicability
 
-Group witnesses only when current evidence supports:
+Only `still-present` and `transformed-applicable` witnesses establish current
+pressure. `already-excluded` is historical explanation. `not-comparable` and
+`unknown` cannot establish current recurrence, family coverage, or a
+post-elimination falsifier.
+
+## Observational classes
+
+Group witnesses only when evidence supports:
 
 ```text
-same violated law
-compatible current applicability
-compatible discrepancy
+same proposed law
+same law-authority classification
+compatible applicability and discrepancy
 plausible shared causal relation
 ```
 
-Do not require the same current owner. Report the owner set and status.
+Observed witnesses support a family hypothesis; they do not define its complete
+extension.
 
-A family hypothesis must state a predicate or generator, domain, and claim
-strength. The observed witnesses support the hypothesis; they do not define its
-complete extension.
+Independent witnesses differ materially in input partition, state/transition,
+admission path, producer/consumer, external incident, generator, or temporal
+trace. Duplicate reports, copied tests, repeated prose, and multiple failures
+from one root execution are not independent.
 
-Witness independence requires a material difference in input partition, state
-or transition, call path, producer or consumer, external incident, generator,
-or temporal trace.
+## Post-elimination relation
 
-Duplicate reports, copied tests, repeated reviewer prose, and multiple failures
-from one root execution are not independent evidence.
+When the input supplies an active `eliminated` claim:
 
-File proximity is not a class basis. Different files may witness one class; one
-file may contain several unrelated classes.
+```text
+same accepted law and currently applicable
+  -> post_elimination_relation: same-law
 
-Review Fold reports the observational class and causal evidence. Actuating may
-partition it by candidate admission frontiers, derive a minimal admission cut,
-finalize a predicate-defined family, or leave the topology unresolved.
+different accepted law
+  -> different-law
 
-## Source revisions
+authority/applicability insufficient
+  -> unknown or non-current disposition
+```
 
-When the accepted source changes, re-run the fold over every currently
-available applicable owner source. Reclassify current applicability and
-disposition under the new Goal without rewriting witness provenance.
+A strengthening or preference does not falsify the current Goal's elimination
+claim. A new requirement reopens Goal authority rather than retroactively
+falsifying the old Goal.
 
-Do not copy predecessor Sets or create carry-forward references. Missing owner
-history is explicit uncertainty, not evidence erasure.
-
-## Causal pressure
-
-On a demonstrated recurrence, several independent same-law witnesses, a
-distributed owner set, or several current compensating sites for one law,
-Actuating must reconsider whether another pointwise realization repair is
-architecturally closed.
-
-Review Fold reports the pressure. It does not choose the family partition,
-admission frontier, admission cut, candidate semantic owner, repair locus,
-replacement architecture, or correctness delta.
+Review Fold reports the relation. Actuating must revoke and adjudicate a current
+`entailed` same-law claim before mutation.
 
 ## Guardrails
 
-- Do not choose a family partition, admission frontier, admission cut,
-  architecture, repair, work node, operation, publication, next action, review
-  credit, or closure.
-- Do not turn suggested patches into accepted facts.
-- Do not equate detection surface with law boundary, frontier, or cut.
-- Do not require one current owner when distributed ownership may be the defect.
-- Do not define a family as only the witnesses observed.
-- Do not rewrite historical witness provenance as current-head provenance.
-- Do not create or register a Counterexample or hotspot artifact.
-- Do not invoke Ledger.
-- Do not claim historical continuity, current applicability, or witness
-  independence without exact evidence.
-- Do not broaden Goal scope.
-- Do not treat CAS process exit as a semantic verdict.
+- Do not choose a final family, frontier, cut, owner, repair, architecture, next
+  action, review credit, publication, or closure.
+- Do not turn suggested patches into facts.
+- Do not treat reviewer consensus as Goal authority.
+- Do not broaden the Goal.
+- Do not label a strengthening as a current blocker.
+- Do not rewrite historical provenance.
+- Do not define a family as observed examples.
+- Do not infer recurrence or post-elimination relation without exact evidence.
+- Do not create a Counterexample/hotspot artifact or invoke Ledger.
+- Do not treat process exit as a semantic verdict.
 
 ## Handoff
 
-Return the current Review Fold, exact source evidence references, accepted and
-blocked observational classes, owner sets and statuses, family hypotheses,
-witness provenance and current-applicability judgments, independence bases,
-causal hypotheses, evidence-horizon gaps, and unresolved questions. Actuating
-decides what those facts require.
+Return exact evidence references, law-authority classifications, applicability,
+observational classes, post-elimination relations, family hypotheses, sibling
+predictions when evidenced, recurrence status, evidence gaps, and unresolved
+questions. Actuating decides what those facts require.

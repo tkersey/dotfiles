@@ -4,12 +4,12 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-observational-class-v1"
+      "source_fingerprint": "review-fold-law-authority-v2"
     },
     "triggers": [
       {
         "trigger_id": "RF-SOURCE",
-        "description": "Current or historical owner-issued falsification evidence needs current classification.",
+        "description": "Owner-issued falsification evidence needs current classification.",
         "cue_literals": [
           "review finding",
           "failing test",
@@ -22,12 +22,24 @@
         "exclusions": []
       },
       {
+        "trigger_id": "RF-LAW-AUTHORITY",
+        "description": "A proposed review law must be related to accepted Goal authority.",
+        "cue_literals": [
+          "entailed",
+          "strengthening",
+          "preference",
+          "new requirement",
+          "underdetermined"
+        ],
+        "cue_regexes": [],
+        "exclusions": []
+      },
+      {
         "trigger_id": "RF-OBSERVATIONAL-CLASS",
-        "description": "Several observations may support one same-law observational class or family hypothesis.",
+        "description": "Several observations may support one same-law observational class.",
         "cue_literals": [
           "counterexample family",
           "semantic hotspot",
-          "detection boundary",
           "independent witness",
           "same law",
           "distributed owner",
@@ -36,13 +48,17 @@
         "cue_regexes": [],
         "exclusions": [
           "file proximity alone",
-          "duplicate reports or copied tests alone"
+          "duplicate reports alone"
         ]
       },
       {
-        "trigger_id": "RF-SOURCE-REVISION",
-        "description": "Changed accepted authority requires current evidence to be reclassified against the new Goal.",
-        "cue_literals": ["source revision", "successor Goal", "changed scope", "follow-up"],
+        "trigger_id": "RF-POST-ELIMINATION",
+        "description": "Evidence may relate to an active eliminated claim.",
+        "cue_literals": [
+          "post-elimination witness",
+          "eliminated family",
+          "same-law recurrence"
+        ],
         "cue_regexes": [],
         "exclusions": []
       }
@@ -51,108 +67,153 @@
       {
         "route_id": "RF-FOLD",
         "description": "Return the current analytical Review Fold.",
-        "aliases": ["accepted", "rejected", "follow-up"],
+        "aliases": [
+          "accepted",
+          "rejected",
+          "follow-up"
+        ],
         "terminal": true
       },
       {
         "route_id": "RF-BLOCK",
-        "description": "Block a classification when evidence, applicability, provenance, law, class basis, or identity is unknown.",
-        "aliases": ["blocked"],
+        "description": "Block when evidence, authority, applicability, provenance, or class basis is unknown.",
+        "aliases": [
+          "blocked"
+        ],
         "terminal": true
       }
     ],
     "clauses": [
       {
-        "clause_id": "RF-CLASSIFY-002",
-        "trigger_refs": ["RF-SOURCE"],
-        "expected_routes": ["RF-FOLD", "RF-BLOCK"],
+        "clause_id": "RF-CLASSIFY-003",
+        "trigger_refs": [
+          "RF-SOURCE"
+        ],
+        "expected_routes": [
+          "RF-FOLD",
+          "RF-BLOCK"
+        ],
         "prohibited_routes": [],
         "required_artifacts": [
           "current Goal",
           "exact current Git head",
-          "owner-issued source evidence",
+          "owner-issued evidence",
           "original witness subject",
-          "current applicability subject and basis",
-          "one disposition per current class"
+          "current applicability subject"
         ],
         "success_signals": [
-          "claims, facts, suggested repairs, and transport status are separate",
-          "historical witness provenance is preserved",
+          "claims, facts, repairs, and transport status are separate",
+          "historical provenance is preserved",
           "current applicability is judged separately",
-          "law boundaries and witness detection boundaries are distinct",
-          "a clean source is representable",
-          "output is returned directly to Actuating"
+          "clean source is representable"
         ],
         "failure_signals": [
           "review prose selects work",
-          "historical evidence is rebound as though observed at the current head",
-          "a detection boundary is presented as an admission frontier",
+          "historical evidence is rebound to the current head",
           "unknown evidence is treated as current",
-          "a Counterexample Set, hotspot artifact, or Ledger record is created"
+          "durable Review Fold artifact is created"
         ],
-        "rationale": "Classification remains current analysis while preserving the owner-issued subject of every witness."
+        "rationale": "Classification remains current analysis over owner evidence."
       },
       {
-        "clause_id": "RF-OBSERVATIONAL-001",
-        "trigger_refs": ["RF-OBSERVATIONAL-CLASS"],
-        "expected_routes": ["RF-FOLD", "RF-BLOCK"],
+        "clause_id": "RF-LAW-AUTHORITY-001",
+        "trigger_refs": [
+          "RF-LAW-AUTHORITY",
+          "RF-SOURCE"
+        ],
+        "expected_routes": [
+          "RF-FOLD",
+          "RF-BLOCK"
+        ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "governing law and provenance",
+          "proposed law",
+          "law provenance",
+          "law-authority classification",
+          "entailment or non-entailment basis"
+        ],
+        "success_signals": [
+          "entailed finding may become accepted",
+          "strengthening becomes non-blocking follow-up",
+          "preference is rejected",
+          "new requirement requests Goal reopening",
+          "underdetermined requirement blocks pending authority"
+        ],
+        "failure_signals": [
+          "reviewer consensus manufactures entailment",
+          "optional strengthening blocks closure",
+          "preference is treated as a bug",
+          "Goal scope is silently broadened"
+        ],
+        "rationale": "Review evidence may falsify accepted semantics but does not own requirements."
+      },
+      {
+        "clause_id": "RF-OBSERVATIONAL-002",
+        "trigger_refs": [
+          "RF-OBSERVATIONAL-CLASS"
+        ],
+        "expected_routes": [
+          "RF-FOLD",
+          "RF-BLOCK"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "law and authority",
           "law boundary",
-          "current owner set and owner status",
-          "discrepancy",
-          "witness subjects and detection boundaries",
-          "current applicability per witness",
-          "family predicate or generator hypothesis",
-          "family domain and claim strength",
-          "independence basis per witness",
+          "current owner set",
+          "witness subjects",
+          "applicability",
+          "family hypothesis",
+          "independence bases",
           "exact evidence references"
         ],
         "success_signals": [
-          "duplicates collapse without collapsing independent witnesses",
-          "different detection surfaces and current owners may remain one same-law observational class",
-          "distributed ownership is representable",
-          "observed witnesses support but do not define the complete family",
-          "file proximity never defines a class",
-          "recurrence is established only from exact available prior evidence",
-          "shared causal hypotheses are evidenced"
+          "duplicates collapse without erasing independent witnesses",
+          "different detection surfaces may remain one class",
+          "observed witnesses do not define the complete family",
+          "predicted siblings are distinguished from observed examples",
+          "recurrence uses exact available prior evidence"
         ],
         "failure_signals": [
-          "attempt, patch, file, reviewer, or current owner identity defines a class",
-          "duplicate reports count as independent witnesses",
-          "observed examples are asserted as the complete family",
-          "memory or summary manufactures recurrence or applicability",
-          "Review Fold selects a family partition, admission frontier, admission cut, candidate owner, or repair"
+          "file or reviewer identity defines a class",
+          "duplicates count as independent witnesses",
+          "newly found siblings are called prior predictions",
+          "Review Fold selects architecture"
         ],
-        "rationale": "Actuating receives current observational evidence without a retained class register or a cyclic frontier assumption."
+        "rationale": "Actuating receives bounded observational evidence rather than a retained class register."
       },
       {
-        "clause_id": "RF-REVISION-002",
-        "trigger_refs": ["RF-SOURCE-REVISION"],
-        "expected_routes": ["RF-FOLD", "RF-BLOCK"],
+        "clause_id": "RF-POST-ELIMINATION-001",
+        "trigger_refs": [
+          "RF-POST-ELIMINATION"
+        ],
+        "expected_routes": [
+          "RF-FOLD",
+          "RF-BLOCK"
+        ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "current revised Goal",
-          "currently available owner evidence with original witness subjects"
+          "active eliminated-claim excerpt when available",
+          "current law authority and applicability",
+          "same-law/different-law/unknown relation"
         ],
         "success_signals": [
-          "all available relevant evidence is reclassified under current authority",
-          "witness provenance remains unchanged",
-          "missing historical sources remain explicit"
+          "current entailed same-law relation is reported",
+          "strengthening does not retroactively falsify the Goal",
+          "new requirement requests Goal reopening",
+          "Actuating retains revocation authority"
         ],
         "failure_signals": [
-          "predecessor Set carry-forward is required",
-          "source revision erases known current evidence",
-          "missing owner history is invented",
-          "historical evidence is rewritten to match the current source"
+          "Review Fold revokes or preserves the theory itself",
+          "post-elimination relation is inferred from memory",
+          "different-law finding is merged into the old family"
         ],
-        "rationale": "Current owner facts are reinterpreted directly without copying or rewriting their provenance."
+        "rationale": "Review Fold reports the falsifier relation; Actuating owns its architectural consequence."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The Review Fold is returned in the active workflow; durable facts remain with their source owners."
+      "rationale": "The fold is returned in context; durable facts remain with source owners."
     }
   }
 }

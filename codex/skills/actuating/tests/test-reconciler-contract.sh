@@ -20,40 +20,21 @@ do
   fi
 done
 
-for removed in \
-  "$skill_root/references/artifact-kernel.md" \
-  "$skill_root/references/construction-contract.md" \
-  "$skill_root/references/evidence-ledger.md" \
-  "$skill_root/references/review-accretion.md" \
-  "$codex_root/skills/goal-contract/references/artifact-kernel-v1.md" \
-  "$codex_root/skills/cas/definitions/ledger/review-finding.json" \
-  "$codex_root/skills/cas/definitions/ledger/review-receipt.json"
-do
-  if [ -e "$removed" ]; then
-    echo "retired file remains: $removed" >&2
-    exit 1
-  fi
-done
-
 active_files="
 $skill_root/SKILL.md
 $skill_root/references/architecture-reconciliation.md
 $skill_root/references/semantic-hotspots.md
+$skill_root/references/post-elimination-falsification.md
 $skill_root/references/closure.md
 $skill_root/references/review-contract.md
 $codex_root/skills/goal-contract/SKILL.md
 $codex_root/skills/review-fold/SKILL.md
 $codex_root/skills/ship/SKILL.md
-$codex_root/skills/ship/references/ship-record.md
 $codex_root/skills/cas/references/review-proof-boundary.md
 $codex_root/skills/evidence-fold/SKILL.md
-$codex_root/skills/complexity-mitigator/SKILL.md
 $codex_root/skills/reduce/SKILL.md
 $codex_root/skills/universalist/SKILL.md
-$codex_root/skills/universalist/README.md
-$codex_root/skills/negative-ledger/references/counterexample-construction-integration.md
 $codex_root/agents/review-reducer.toml
-$codex_root/agents/one-seam-operator.toml
 "
 
 for pattern in \
@@ -65,11 +46,7 @@ for pattern in \
   'register-construction' \
   'register-counterexamples' \
   'prepare-operation' \
-  'publication_observed' \
-  'goal_contract_ref' \
-  'construction_ref' \
-  'expected_subject_digest' \
-  'proof_obligation_refs'
+  'publication_observed'
 do
   if printf '%s\n' "$active_files" | xargs grep -n -F "$pattern" >/dev/null 2>&1; then
     echo "retired protocol term remains: $pattern" >&2
@@ -78,68 +55,41 @@ do
 done
 
 grep -F 'level-triggered architecture reconciler' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Bugs as counterexamples' "$skill_root/SKILL.md" >/dev/null
-grep -F 'ordinary counterexample theory' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Semantic observation domain' "$skill_root/SKILL.md" >/dev/null
-grep -F 'interpretation family' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Violation reflection' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Abstract exclusion' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Required-valid preservation' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Diagnostic exactness' "$skill_root/SKILL.md" >/dev/null
-grep -F 'least discriminating **sound abstraction**' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Family-theory falsifier' "$skill_root/SKILL.md" >/dev/null
-grep -F 'OPERATE ARCHITECTONICALLY' "$skill_root/SKILL.md" >/dev/null
-grep -F 'one bounded co-refinement' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Witness provenance' "$skill_root/SKILL.md" >/dev/null
-grep -F 'current applicability' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Admission frontier or cut' "$skill_root/SKILL.md" >/dev/null
-grep -F 'correctness Pareto frontier' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Disposition: eliminated | contained | obstructed | unresolved' "$skill_root/SKILL.md" >/dev/null
-grep -F 'hotspot registry, score, threshold' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Review-finding authority' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Elimination is a revocable theory lease' "$skill_root/SKILL.md" >/dev/null
+grep -F 'revokes that elimination' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Generative reach and sibling prediction' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Passing repaired examples alone never reissues elimination' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 
-grep -F 'Theta_0 = (Omega_0, Alpha_0, L_0, Phi_0, A_0, O_0, C_0, Q_0)' \
+grep -F '# Post-Elimination Falsification' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+grep -F '## Immediate revocation' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+grep -F '## Failed-premise localization' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+grep -F '## Sibling prediction' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+grep -F '## Reissuing elimination' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+grep -F 'No unchanged-theory re-elimination from repaired examples' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+
+grep -F 'Law authority' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'post-elimination-falsification.md' \
   "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F '## Safety adequacy, Goal adequacy, and diagnostic exactness' \
+grep -F 'predicted sibling counterexamples' \
   "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Bad_L(u) -> Phi(alpha_K(u))' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'b in B_K -> not Phi(alpha_K(b))' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Abstraction may overapproximate danger.' \
-  "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F '## Metanoetic challenge' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F '## OPERATE ARCHITECTONICALLY' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F '## One bounded co-refinement' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F '## Theory, safety, Goal, and exactness counterevidence' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'admission cut' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Owner status' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'contained' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'correctness Pareto' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'No bug Ledger, hotspot registry' "$skill_root/references/semantic-hotspots.md" >/dev/null
 
-grep -F 'class_kind: observational' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'current_owner_set:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'witness_subject:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'current_applicability:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'predicate_or_generator:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'does not infer that a detection' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-
-grep -F 'derived-boundary-guard' "$codex_root/skills/reduce/SKILL.md" >/dev/null
-grep -F 'compensating-guard' "$codex_root/skills/reduce/SKILL.md" >/dev/null
-grep -F 'Derived guards preserved:' "$codex_root/skills/reduce/SKILL.md" >/dev/null
-
-grep -F 'When Actuating supplies a bug-driven counterexample theory' \
-  "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Interpretation totality:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Violation-reflection evidence:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Abstract-exclusion evidence:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Required valid behaviors preserved:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Diagnostic-exactness status' "$codex_root/skills/universalist/SKILL.md" >/dev/null
-grep -F 'Candidate theory delta: none | proposed' \
-  "$codex_root/skills/universalist/SKILL.md" >/dev/null
-
-grep -F 'start a fresh full wave' "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'publication observation digest' "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'law_authority: entailed | strengthening | preference' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'post_elimination_relation: none | same-law | different-law | unknown' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'reviewer consensus as Goal authority' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'Actuating must revoke and adjudicate' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
   .schema == "actuating-review-contract/v2" and
@@ -157,45 +107,31 @@ grep -F 'publication observation digest' "$skill_root/references/review-contract
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-sound-abstraction-hotspot-reconciler-v4" and
+    "actuating-post-elimination-falsifier-v5" and
   ([.skill_decision_contract.triggers[].trigger_id] |
-    index("ACT-COUNTEREXAMPLE")) != null and
+    index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-HOTSPOT-004")) != null and
+    index("ACT-LAW-AUTHORITY-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-ARCHITECTURE-004")) != null and
+    index("ACT-POST-ELIMINATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-CLOSURE-004")) != null and
-  ([.skill_decision_contract.routes[].route_id] | sort) ==
-    (["ACT-IMPLEMENT", "ACT-TRIAGE", "ACT-REMEDIATION",
-      "ACT-REVIEW-CLOSEOUT", "ACT-SHIP-HANDOFF", "ACT-CLOSE"] | sort)
+    index("ACT-CLOSURE-005")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "review-fold-observational-class-v1" and
+    "review-fold-law-authority-v2" and
   ([.skill_decision_contract.triggers[].trigger_id] |
-    index("RF-OBSERVATIONAL-CLASS")) != null and
+    index("RF-LAW-AUTHORITY")) != null and
+  ([.skill_decision_contract.triggers[].trigger_id] |
+    index("RF-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("RF-OBSERVATIONAL-001")) != null
+    index("RF-LAW-AUTHORITY-001")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("RF-POST-ELIMINATION-001")) != null
 ' "$codex_root/skills/review-fold/references/decision-contract.json" >/dev/null
 
-"$jaq_bin" -e '
-  .ledger == [{
-    "id": "cas/fork-inquiry-receipt",
-    "path": "ledger/fork-inquiry-receipt.json"
-  }]
-' "$codex_root/skills/cas/definitions/manifest.json" >/dev/null
-
-for lens in standard-review.md \
-  lenses/footgun-review.md \
-  lenses/invariant-review.md \
-  lenses/complexity-review.md \
-  lenses/fresh-eyes-review.md
-do
-  test -s "$skill_root/references/$lens"
-done
-
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
+JAQ_BIN="$jaq_bin" "$skill_root/tests/test-post-elimination-scenarios.sh"
 
-echo "actuating sound-abstraction counterexample-theory reconciler contract: pass"
+echo "actuating post-elimination falsifier contract: pass"
