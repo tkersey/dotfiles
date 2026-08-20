@@ -169,7 +169,9 @@ digest of the exact target leaf. Before creating a replacement temp, recover
 same-target orphan temps left by crashed invocations: validate the complete
 name, hold one exclusive per-target replacement lock, prove the named owner is
 dead, require a regular single-link file in the same pinned directory, and
-unlink only that admitted entry through the common gate. Ambiguous, aliased,
+atomically rename that orphan to the current invocation's admitted temp name
+before unlinking it through the common gate. This rename is the ownership
+transfer. Ambiguous, aliased,
 malformed, or wrong-target entries stop the operation. The current temp is
 removed on failure before the operation returns.
 Recursive

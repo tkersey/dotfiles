@@ -230,6 +230,10 @@ The marker is always `<private_staging_root_path>/.semantic-discovery-owner.json
 and contains exact RFC 8785 bytes
 `{"attempt_id":"<opaque-attempt-id>","nonce":"<base64url>","owner_process_opaque_id":"<opaque-process-id>","private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-owner/v1"}`.
 No other marker path or shape is admitted.
+The exclusive lock is the create-new file
+`<cleanup-namespace>/.semantic-discovery-locks/<attempt-id>.lock`; its exact path
+is bound by the pending record. Lock acquisition is no-follow and atomic, and a
+dead holder is reclaimed only after OS-backed process-death proof.
 Seq runs
 behind a wrapper that exposes no semantic payload on stdout or to the compiler;
 its raw output is create-new mode-0600 bytes only in that staging root. The
@@ -251,7 +255,7 @@ durable. If scrubbing would destroy required provenance, stop or downgrade the
 claim rather than publishing sensitive bytes globally.
 
 ~~~json
-{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_lock_path":"<canonical-absolute-lock-path>","private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
 {"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 ~~~
@@ -285,6 +289,11 @@ deleting it without reading payload bytes. Before deletion it atomically
 replaces that marker with exact `semantic-discovery-staging-transfer/v1` bytes
 binding the prior marker fingerprint, recovery invocation/process, and root;
 that compare-and-swap transfers the isolated root to the recovery invocation.
+The transfer bytes also bind the pending fingerprint and previous transfer
+fingerprint (null for the first transfer). If recovery crashes, a later
+dead-owner recovery validates that transfer marker, atomically chains a new
+transfer to itself under the same lock, and resumes deletion. Thus every
+transfer state is recoverable and no prior-owner marker must reappear.
 A missing or unequal marker forbids
 cleanup and cannot become evidence. It may clear the attempt only after proving
 the wrapper never returned or delivered semantic bytes; otherwise the attempt remains unresolved and returns
@@ -1783,8 +1792,8 @@ key preimage
 `{"schema":"holdout-retirement-snapshot-key/v1","snapshot_mode":"<mode>","source_fingerprint":"sha256:<hex>","source_mode":"<same-mode>","source_ref":"<normalized-runs-reports-or-roots-ref>"}`.
 The preimage explicitly excludes `snapshot_ref`; its SHA-256 suffix is
 `<snapshot-key-digest-hex>`, which is inserted afterward. `<mode>` is the exact
-admitted regular-file mode (`100600`, `100644`, or `100755`) and source/snapshot
-modes are equal. Source refs may originate under `runs/`, `reports/`, or an
+regular-file mode admitted by the source closure, without a narrower retirement
+whitelist, and source/snapshot modes are equal. Source refs may originate under `runs/`, `reports/`, or an
 archived `roots/` prefix. They
 cover every distinct transitive ref embedded in the copied EER, runs rows, and
 their dependencies, including `runs/`, `reports/`, and
@@ -2011,10 +2020,11 @@ Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
 `comparison_policy.cycle_id`; `atlas_instance_id` equals the recomputed root
-instance identity. Before any directory creation, the cycle ID is reserved in
-the atlas-wide runs-namespace index and must be distinct from every existing or
-frozen `run_group_id` and `comparison_id`; those IDs are reciprocally forbidden
-from every reserved cycle ID. Each pair keeps its own EER and run group under
+instance identity. IDs use disjoint syntax before any directory creation:
+`cycle_id` starts `cycle-`, `run_group_id` starts `run-`, and `comparison_id`
+starts `cmp-`; the remainder obeys the ordinary component grammar. A value with
+the wrong prefix is invalid, so the three owners cannot alias without a shared
+reservation index. Each pair keeps its own EER and run group under
 that one cycle reservation. Later arms/repeats validate and reuse the exact
 bytes and matching group locks; they do not create them again. Holdout use
 outside compare mode is unsupported. Bind that atlas-root-relative reservation

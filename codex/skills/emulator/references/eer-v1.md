@@ -1073,6 +1073,14 @@ Dataset references appear only when rows were emitted:
 - Historical assistant responses are not chosen labels merely because they
   occurred.
 
+For every run action that could later supply an eligible preference row, the
+originating run create-news the exact indexed chosen-action projection at
+`runs/<run-group-id>/chosen-actions/<run-id>-<action-index>.json` when that
+action is evaluated. Its fingerprint equals the indexed support result's action
+fingerprint. Seal these artifacts before `runs.jsonl` and EER publication and
+include them in retirement dependency copying. Deferred export may reference
+only this pre-existing sealed artifact; it never creates run evidence.
+
 Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 
 ```json

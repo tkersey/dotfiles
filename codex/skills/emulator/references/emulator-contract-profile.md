@@ -336,8 +336,9 @@ exact RFC 8785 `session-provenance/v1` bytes:
 ~~~
 
 The companion fingerprint hashes those exact bytes. The identity pair equals
-the root source pair, claim refs/fingerprints are same-length positionally
-joined arrays sorted by ref, and the validation pair covers them exactly. The
+the root source pair, `partition_claims` is a duplicate-free object array sorted
+by `ref` with each ref inseparably paired to its fingerprint, and the validation
+pair covers it exactly. The
 legacy arrays are same-length, sorted by ref, and nonempty only for
 pre-registry groups admitted to holdout; discovery/development sources may keep
 both empty and remain permanently
@@ -370,19 +371,23 @@ tools, or unstated input bytes are denied. Each entry freezes a unique
 `witness_destination_ref`. Implement writes closed exact RFC 8785
 `emulator-materialization-witness/v1` bytes there before constructing the
 successor:
-`{"chart_fingerprint":"sha256:<pending-chart-hex>","field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","schema":"emulator-materialization-witness/v1"}`.
+`{"chart_fingerprint":"sha256:<pending-chart-hex>","field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","primary_sandbox_instance_id":"<opaque-id>","replica_normalized_prestate_fingerprint":"sha256:<same-hex>","replica_output_fingerprint":"sha256:<same-hex>","replica_sandbox_instance_id":"<different-opaque-id>","schema":"emulator-materialization-witness/v1"}`.
 The successor's sorted `materialization_witnesses` array contains one
 ref/fingerprint pair for every plan entry, keyed and sorted by
 `(chart_fingerprint, field_pointer)`, and no others. Every witness equals the
-plan/materializer and observed staging
-execution; its output fingerprint equals the finalized planned pair. Missing
+plan/materializer and two observed staging executions; primary and replica
+prestate/output fingerprints are equal while sandbox IDs differ. The observed
+output fingerprint equals the finalized planned pair. Missing
 or unequal witnesses make the successor invalid.
 The exact payload is
 `{"arguments":[],"command_fingerprint":"sha256:<hex>","command_ref":"materializers/commands/<digest-hex>","input_closure_fingerprint":"sha256:<hex>","input_closure_ref":"materializers/inputs/<digest-hex>.json","normalized_prestate_fingerprint":"sha256:<hex>","normalized_prestate_ref":"materializers/prestates/<digest-hex>.json","output_contract_fingerprint":"sha256:<hex>","output_contract_ref":"materializers/output-contracts/<digest-hex>.json","runtime_fingerprint":"sha256:<hex>","runtime_ref":"materializers/runtimes/<digest-hex>.json","schema":"emulator-materializer/v1"}`.
 The output contract binds only schema, semantic projection, and validation
 rules; it contains no expected implementation payload or payload digest.
-Implement validates observed bytes against it, and the witness alone binds the
-observed output fingerprint.
+Implement executes the frozen materializer twice from independently created but
+byte-identical normalized prestates, validates both outputs against the contract,
+and requires byte-identical output fingerprints. The witness binds primary and
+replica prestate/output fingerprints plus distinct sandbox identities; unequal
+outputs are `invalid_environment`. No design-time golden payload is required.
 Every destination across `entries` (including witness destinations), all four
 fields of `admission_outputs`, and `derivations` is globally unique; aliases or
 write-order ownership are invalid.
