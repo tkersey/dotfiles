@@ -79,6 +79,10 @@ emulator_execution_report:
     holdout_consumptions:              # holdout runs only
       - ref:
         fingerprint:
+    optimizer_clear_validations:       # holdout runs only
+      - phase: pre_reservation | pre_actor
+        ref:
+        fingerprint:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     generation_attempt_id:
@@ -167,6 +171,10 @@ emulator_execution_report:
       holdout_lock_validation_fingerprint: # holdout runs only
       holdout_consumptions:              # holdout runs only
         - ref:
+          fingerprint:
+      optimizer_clear_validations:       # holdout runs only
+        - phase: pre_reservation | pre_actor
+          ref:
           fingerprint:
       harness_id:
       harness_fingerprint:
@@ -465,6 +473,14 @@ reasons; two failed arms retain two independent reasons. The other arm retains i
 observed started flag and context fingerprint. No other row may use that
 variant; omitting it or fabricating a context fingerprint is
 `comparison_drift`.
+An actor that started but failed before context capture uses the distinct
+`status: unavailable_postlaunch` variant: the affected `*_actor_started` is
+true, context fingerprint is null, normalized equality is null, authorized
+field list is empty, and the nonempty reason matches a `runtime_error` or
+`invalid_environment` execution row. The other arm retains its observed
+fields. This variant is incomplete evidence, not a fabricated context or a
+comparison drift. It is invalid for an actor that did not start or one with a
+durable context.
 
 Every paired comparison also binds one report-owned exact RFC 8785
 `paired-reset-state-validation/v1` artifact. Its complete pair domain contains
@@ -564,9 +580,11 @@ An unmapped descriptor delta is `comparison_drift`.
 Missing observation, recorded secret material, or unequal observed/requested
 values is `comparison_drift`.
 
-A sampled failure schedule binds both a run-owned `failure_schedule_ref` and
-its exact fingerprint; both are null when no schedule exists. Matched-schedule
-claims compare the referenced bytes, not a free-standing digest.
+A sampled failure schedule uses the archived static
+`randomness-cohort-commitment/v1` schedule ref and exact fingerprint; both are
+null when no schedule exists. Execution rows repeat that canonical static asset
+identity after archive-prefix normalization and do not create a run-owned copy.
+Matched-schedule claims compare the referenced bytes, not a free-standing digest.
 The root and EER comparison bind the exact pre-candidate
 `randomness-cohort-commitment/v1` pair defined in
 `session-derived-atlas.md`; every execution row repeats it. Each row's seed
@@ -797,6 +815,7 @@ wrapper pair and rejects a case/path/digest-only join.
   "holdout_lock_validation_ref": "runs/cmp-.../holdout-lock-validation.json",
   "holdout_lock_validation_fingerprint": "sha256:...",
   "holdout_consumptions": [{"fingerprint":"sha256:...","ref":"runs/cmp-.../holdout-consumption/<digest-hex>.json"}],
+  "optimizer_clear_validations": [{"fingerprint":"sha256:...","phase":"pre_actor","ref":"runs/cmp-.../optimizer-clear-validation-pre_actor.json"},{"fingerprint":"sha256:...","phase":"pre_reservation","ref":"runs/cmp-.../optimizer-clear-validation-pre_reservation.json"}],
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
   "generation_attempt_id": "generation-attempt-...",
@@ -865,6 +884,12 @@ wrapper pair and rejects a case/path/digest-only join.
 binds the bytes at its paired ref; comparison and every affected execution row
 repeat the same complete arrays. Parallel ref and fingerprint arrays are
 invalid.
+`optimizer_clear_validations` is empty for non-holdout runs and contains
+exactly the `pre_actor` and `pre_reservation` phase rows for holdout runs, sorted
+by phase with unique phases. Each pair resolves the run-local
+`optimizer-clear-validation/v1` evidence defined by the atlas; comparison and
+every affected execution repeat both exact rows. Missing, duplicate, stale, or
+unresolved gate evidence is `source_contaminated` and cannot select.
 
 Residual evidence refs and fingerprints are ordered, same-length pairs. Each
 fingerprint binds the exact judgment-result bytes. Missing, mismatched, or

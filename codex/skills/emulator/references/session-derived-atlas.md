@@ -137,8 +137,10 @@ and duplicate-free; regular files only are admitted. The manifest covers every
 copied file exactly once, and its exact-byte SHA-256 is
 `corpus_snapshot_fingerprint`.
 
-The fixed private cleanup namespace is
-`${CODEX_HOME:-$HOME/.codex}/emulator-private/raw-snapshots/v1/`, mode `0700`.
+The fixed private cleanup namespace for one selected storage domain is
+`<storage_domain_root>/private/raw-snapshots/v1/`, mode `0700`. It is custody
+data, not exposure authority; changing it never changes the distinct
+OS-account-global exposure registry.
 It contains only `roots/<snapshot-key>/`, `markers/<snapshot-key>.json`, and
 `markers/<snapshot-key>.lock`. `snapshot-key` is the lowercase SHA-256 hex of
 exact RFC 8785
@@ -149,7 +151,8 @@ namespace and the one intended root/marker/lock set must be positively present
 in `authorized_files.allowed` before copying; otherwise stop before reading raw
 bytes.
 
-Before copying any raw byte, acquire the adjacent `<marker-path>.lock`
+Before copying any raw byte, acquire the already-derived
+`markers/<snapshot-key>.lock`
 exclusive owner lock, then create and fsync an owner-only cleanup marker outside
 the raw root with exact RFC 8785
 `{"owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":null}`
@@ -204,7 +207,7 @@ exposure registry. Let `<pending-digest-hex>` be the lowercase SHA-256 hex of
 those exact bytes. Its only directory is
 `semantic-discovery/attempts/<pending-digest-hex>/`, containing exactly
 `pending.json`, optional `result-envelope.json`, optional `result.json`, and
-optional `completed.json`; the pending filename bytes hash to the directory
+optional `completed.json`; the exact `pending.json` contents hash to the directory
 digest. Create-new each file and fsync the attempt directory after every file
 publication. The pending record binds the owner invocation/process, snapshot
 pair, query spec pair, and complete physically known identity set. Seq runs behind a
@@ -1365,7 +1368,12 @@ Every non-policy message index appears exactly once in
 `authorized_input_messages`; its evidence ref/fingerprint is frozen in the
 pre-candidate policy and resolves bytes whose contracted message projection
 equals the delivered role/content. Missing, extra, or mismatched mappings are
-`holdout_contaminated`.
+`holdout_contaminated`. After removing policy-message indexes, the remaining
+delivered message sequence is an ordered exactly-once projection of
+`factor-selection.optimizer_visible_policy.authorized_input_evidence`: same
+cardinality and order, contiguous message indexes, and byte-equal role/content
+for each referenced projection. Omission, duplication, or reordering is
+`holdout_contaminated` even when each surviving message is individually valid.
 The optimizer input inventory is immutable and is exactly the RFC 8785 bytes:
 
 ~~~json
@@ -1714,7 +1722,25 @@ transitive evidence closure defined above. A malformed file, unrecognized
 path, mismatched cohort, dangling closure, or unresolved
 optimizer intent stops with `source_contaminated` before reservation. Only
 after this complete pending/clear gate passes may the writer use the already
-precomputed canonical cycle-reservation bytes. Acquire every user-global group lock in
+precomputed canonical cycle-reservation bytes.
+
+Each successful gate seals exact RFC 8785
+`optimizer-clear-validation/v1` bytes at
+`runs/<cycle-id>/optimizer-clear-validation-<phase>.json`, where phase is
+`pre_reservation` for this gate and `pre_actor` for the repeated gate:
+`{"cycle_id":"<cycle-id>","phase":"pre_reservation","rows":[{"candidate_id":"<candidate-id>","clear_fingerprint":"sha256:<hex>","clear_ref":"runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/clear.json","evidence_closure_fingerprint":"sha256:<hex>","evidence_closure_ref":"runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/closure.json","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","pending_ref":"runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/pending.json","sentinel_fingerprints":["sha256:<hex>"],"sentinel_refs":["runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/sentinels/<holdout-key>.json"],"source_identity_fingerprints":["sha256:<hex>"]}],"schema":"optimizer-clear-validation/v1"}`.
+Before releasing the mutex, copy and recursively verify the exact global
+pending, clear, sentinel, and evidence-closure bytes into those run-local refs.
+Rows sort by candidate ID; every array is sorted and duplicate-free; ref and
+fingerprint arrays are same-length ordered pairs. The rows cover every
+enumerated cohort pending/sentinel exactly once, and every clear/closure joins
+the same candidate, attempt, pending fingerprint, and identity set. An
+unresolved attempt cannot be represented as a successful validation. Every
+holdout execution and its pairwise EER bind both phase artifacts; offline
+validation therefore replays both gates without consulting mutable registry
+state.
+
+Acquire every user-global group lock in
 sorted key order with payloads that bind that precomputed fingerprint, then
 durably publish the exact precomputed bytes at the atlas-local reservation ref.
 Release the retirement lock and then the partition lock only after the
@@ -1876,10 +1902,20 @@ roots use the single user-global registry at canonical-realpath
 resolved from the effective OS account record (for example
 `getpwuid(geteuid())`) and never from caller-controlled `HOME` or `CODEX_HOME`.
 Bind it as `exposure_registry_root`, and
-bind `exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonical-realpath-UTF-8)`.
+bind exact persistent `registry-filesystem-identity/v1` bytes at
+`<exposure_registry_root>/registry-filesystem-identity.json`:
+`{"filesystem_uuid":"<host-filesystem-uuid>","home_directory_file_id":"<stable-host-file-id>","registry_directory_file_id":"<stable-host-file-id>","schema":"registry-filesystem-identity/v1","shared_host_backed":true}`.
+The runtime derives these values from the effective account's host-backed home
+mount and verifies them from a second independent host process. It rejects a
+container/mount namespace whose same pathname resolves to a different
+filesystem identity or whose host sharing cannot be proved. Create the asset
+once with create-new semantics and fsync its directory; later compilers require
+byte equality. Then bind
+`exposure_registry_id = SHA-256("emulator-exposure-registry/v1" NUL canonical-realpath-UTF-8 NUL registry-filesystem-identity-fingerprint)`.
 `holdout_lock_root` equals that registry root. Changing `CODEX_HOME`, atlas
 location, caller storage root, or process `HOME` therefore cannot create a fresh exposure
 namespace. Before any holdout read, the actual compiler runtime MUST prove that
+the bound filesystem-identity asset matches the host-backed mount and that
 it can create, lock, atomically replace, and fsync a probe file under that exact
 registry, then remove only the probe. When filesystem policy denies the probe,
 request the smallest user-approved permission grant for the exact registry root;
@@ -1892,23 +1928,29 @@ holdout, requires the registry. A pure designed root with no holdout may proceed
 without it.
 For any source identity whose semantic exposure outside this registry cannot be
 excluded—including pre-registry sources and newer sessions reachable through
-ordinary Seq or file access—first bind exact RFC 8785
-`pre-registry-exposure-attestation/v1` bytes:
+ordinary Seq or file access—and for every designed holdout, first bind exact
+RFC 8785 `holdout-exposure-attestation/v1` bytes:
 
 ~~~json
-{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","baseline_harness_fingerprint":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","holdout_blind":true,"independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
+{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","baseline_harness_fingerprint":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","holdout_blind":true,"independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"holdout-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"],"source_kind":"designed"}
 ~~~
 
 The sorted, duplicate-free identity array is complete for the group and the
 human attester is holdout-blind and independent of candidate generation.
+`source_kind` is exactly `pre_registry`, `registry_bypass_risk`, or `designed`.
 The baseline and factor-selection fingerprints equal the exact frozen selection
 that admits this legacy source; changing either requires a new attestation from
 an independently blind principal and never reuses stale evidence.
 `no_prior_baseline_harness_exposure` means no selected source content, correction,
 outcome, or evaluator interpretation was used to author, tune, choose, or review
 the frozen baseline harness. The
-attestation ref/fingerprint is evaluator-only and bound by the pre-candidate
-policy and final root. False, unknown, incomplete, missing, or self-authored
+attestation ref/fingerprint is evaluator-only and appears in the
+pre-candidate policy and final-root `holdout_exposure_attestations` arrays.
+Those arrays cover every selected holdout requiring evidence exactly once,
+including pure designed charts even though their `session_provenance` is null.
+For `source_kind: pre_registry`, the session-provenance legacy pair references
+the same attestation; other kinds never misuse that legacy slot. False,
+unknown, incomplete, missing, or self-authored
 outside-registry exposure evidence makes every affected source ineligible for
 holdout; it may be discovery/development only. Creating a new registry never
 resets exposure history.
@@ -1959,7 +2001,8 @@ partition-validation disjoint-advance witness. Revalidate that witness and
 require no later pointer advance. Then rerun the complete optimizer pending/clear
 gate above and revalidate every claim, lock, reservation, and consumption state
 against the frozen cycle. Any newly unresolved optimizer intent stops with
-`source_contaminated` before actor handoff. Only after every revalidation passes
+`source_contaminated` before actor handoff. Seal the `pre_actor` optimizer-clear
+validation artifact under the same mutex before proceeding. Only after every revalidation passes
 may the runner atomically create one immutable global
 `<holdout_lock_root>/<hex>.consumed.json` per identity. Its exact RFC 8785 bytes
 are
@@ -2087,8 +2130,9 @@ leakage threat model; do not build a cryptographic broker.
 
 ## 8. Freeze harness bundles
 
-Before candidate generation, write and fingerprint an evaluator-only
-pre-candidate policy asset containing the selecting chart commitments,
+Before candidate generation, first sample, write, and fsync the complete
+evaluator-only `randomness-cohort-commitment/v1` described below. Then write and
+fingerprint the pre-candidate policy asset containing its exact pair plus the selecting chart commitments,
 partition snapshot, model/runtime configuration, repeat counts, randomness
 matching, improvement rule, protected dimensions, candidate budget, and
 the exact pre-generation `factor-selection/v1` ref/fingerprint and comparison-
@@ -2108,11 +2152,11 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_rule":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"holdout_exposure_attestations":[{"fingerprint":"sha256:<hex>","ref":"partitions/holdout-exposure-attestations/<digest-hex>.json"}],"improvement_rule":{"chart_outcome":"strict_majority_of_paired_valid_repeats","maximum_targeted_regressed_charts":0,"minimum_targeted_improved_charts":1,"require_all_required_charts_determinate":true,"schema":"paired-stochastic-improvement-rule/v1","tie_disposition":"insufficient_evidence"},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
 
-Before any optimizer or comparison arm starts, the evaluator samples and fsyncs
-the exact RFC 8785 `randomness-cohort-commitment/v1` bytes bound by the policy:
+The already-materialized commitment has exact RFC 8785
+`randomness-cohort-commitment/v1` bytes:
 
 ~~~json
 {"rows":[{"actor_seed":null,"actor_seed_control":"unavailable","chart_fingerprint":"sha256:<hex>","environment_seed":17,"environment_seed_control":"sampled","failure_schedule_fingerprint":"sha256:<hex>","failure_schedule_ref":"comparison/failure-schedules/<chart-hex>-<repeat-id>.json","repeat_id":"<repeat-id>"}],"schema":"randomness-cohort-commitment/v1"}

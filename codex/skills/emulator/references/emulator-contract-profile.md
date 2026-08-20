@@ -201,6 +201,9 @@ emulator_contract:
     pre_candidate_policy:
       ref:
       fingerprint:
+    holdout_exposure_attestations:
+      - ref:
+        fingerprint:
     provenance_derivation:
       ref:
       fingerprint:
@@ -242,6 +245,12 @@ emulator_contract:
       matched_randomness_when_available: true
       uncontrolled_repeat_count:
       improvement_rule:
+        schema: paired-stochastic-improvement-rule/v1
+        chart_outcome: strict_majority_of_paired_valid_repeats
+        minimum_targeted_improved_charts: 1
+        maximum_targeted_regressed_charts: 0
+        require_all_required_charts_determinate: true
+        tie_disposition: insufficient_evidence
       frozen_before_candidate_generation: true
     order_blinding: true
     swapped_judge_order: true
@@ -409,6 +418,13 @@ selection claim.
 The pre-candidate policy's `improvement_rule` is byte-identical to
 `stochastic_evidence.improvement_rule`; there is no threshold alias or
 post-outcome projection. A mismatch is `comparison_drift`.
+The displayed rule is the complete closed schema; empty objects, unknown
+fields, alternate aggregation, and missing fields are invalid. A stochastic
+chart is improved or regressed only when strictly more than half of its frozen
+paired valid repeats have that determinate direction. A tied or indeterminate
+chart yields `insufficient_evidence`. Adoption requires at least one targeted
+improved chart and zero targeted regressed charts, after hard/protected
+precedence. The comparison implementation applies these exact values.
 For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
@@ -418,15 +434,18 @@ each chart entry carries only that chart's sorted, duplicate-free exact
 `mutation_assignment_fingerprint` tuples selected before execution. Refs
 resolve inside the frozen root closure, fingerprints match exact assignment
 bytes, and each tuple recomputes its case ID before any reset. Tuples sort by
-case ID and case IDs are unique. Execution rows equal
-the complete expansion of this cohort; missing, extra, or duplicate rows are
-`invalid_environment`. `shrink_trials` is a sorted, duplicate-free finite set
+case ID and case IDs are unique. Primary execution rows equal the complete
+expansion of selected charts, repeats, and primary mutation assignments;
+missing, extra, or duplicate primary rows are `invalid_environment`.
+`shrink_trials` is a sorted, duplicate-free finite set
 of permitted secondary assignments. It is frozen with the root before the
 primary mutation runs; every tuple names its parent primary case and
 `parent_repeat_id`, freezes its own `trial_repeat_id`, and recomputes its own
 case ID. The parent chart/case/repeat tuple names exactly one primary row; the
 trial repeat is not chosen or retried after observing outcomes. It is empty
-outside `mutate`.
+outside `mutate`. Executed shrink trials may be any ordered subset selected by
+the sealed `shrink-selection-trace/v1`; an unselected permitted trial creates
+no execution-row obligation.
 
 For `paired_compare`, `single_arm_cohort` is null and `paired_cohort` is
 mandatory. It freezes every chart and repeat exactly once. For holdout charts it
@@ -490,7 +509,8 @@ constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
 Each factor-selection candidate template row contains exactly the candidate ID,
-optimizer-inventory-template pair, and candidate-metadata-template pair. The
+generation attempt ID, optimizer-inventory-template pair, and
+candidate-metadata-template pair. The
 pre-candidate `candidate-generation-commitment/v1` repeats those fields without
 renaming or transforming either ref; deleting only its schema, author, and
 tool-policy-template fields yields byte-identical canonical row bytes. This
@@ -529,8 +549,9 @@ pre-start failures use the sandbox-aware `unavailable_prestart` variant and
 preserve a frozen-mount inventory when one exists rather than disappearing from
 the cohort.
 The report-owned `actor-context-delta-validation/v1` has the same complete
-pair domain and explicit `unavailable_prestart` variant; it never fabricates a
-context fingerprint for an actor that did not start.
+pair domain plus explicit `unavailable_prestart` and
+`unavailable_postlaunch` variants; it never fabricates a context fingerprint
+for an actor that did not produce one.
 
 `comparison_implementation` binds the exact aggregation, delta, precedence,
 and recommendation implementation. Its ref/fingerprint MUST equal the
@@ -888,6 +909,10 @@ than partially total.
 For `transition_model: none`, `support.executable` is empty. Any nonempty
 executable set requires `partial` or `total` plus a fingerprinted transition
 implementation; otherwise the chart is `invalid_environment`.
+Any nonempty `support.executable` also requires `reset.kind` to be
+`git_worktree`, `fixture`, or `custom`, with its contracted recipe and expected
+prestate. `reset.kind: none` is admitted only when executable support is empty;
+there is no stateful no-reset comparison route.
 
 Support classification has exactly one authoritative representation. With
 `matcher.kind: inline_predicates`, `classifier_ref` and
