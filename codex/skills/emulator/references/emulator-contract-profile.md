@@ -150,7 +150,7 @@ emulator_contract:
       selected_chart_repeats:
         - chart_fingerprint:
           repeat_ids: []
-      mutation_case_ids: []
+          mutation_case_ids: []
     subject: harness
     pre_candidate_policy:
       ref:
@@ -263,8 +263,9 @@ EC-v1 mutation evidence is single-arm only.
 For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
-For `run`, `mutation_case_ids` is empty. For `mutate`, it is the sorted,
-duplicate-free exact case set selected before execution. Execution rows equal
+For `run`, every chart entry's `mutation_case_ids` is empty. For `mutate`, each
+chart entry carries only that chart's sorted, duplicate-free exact case set
+selected before execution. Execution rows equal
 the complete expansion of this cohort; missing, extra, or duplicate rows are
 `invalid_environment`. For `paired_compare`, `single_arm_cohort` is null and
 the holdout reservation owns the cohort.
@@ -640,13 +641,17 @@ function from every action admitted by `actions.schema` to exactly one rule in
 exact RFC 8785 `support-classifier/v1` bytes:
 
 ~~~json
-{"rules":[{"authority_refs":["<static-ref>"],"predicate":{},"support_class":"executable","support_id":"<support-id>"}],"schema":"support-classifier/v1"}
+{"classifier_implementation_fingerprint":"sha256:<hex>","classifier_implementation_ref":"environment/support-classifier-implementation.json","coverage_proof_fingerprint":"sha256:<hex>","coverage_proof_ref":"environment/support-classifier-coverage.json","rules":[{"authority_refs":["<static-ref>"],"predicate":{"kind":"json_pointer_equals","path":"/action_class","value":"inspect"},"support_class":"executable","support_id":"<support-id>"}],"schema":"support-classifier/v1"}
 ~~~
 
 Rules are sorted by `support_id`, have unique IDs, use exactly the five support
 classes, and each has nonempty, duplicate-free authority refs resolving inside
 the chart closure. Predicates are total and disjoint over admitted actions;
-authority-free or self-authorizing rules are invalid.
+the only predicate language is the same closed `json_pointer_equals` form used
+by inline rules. The bound implementation evaluates exactly that DSL, and the
+coverage proof exhaustively checks total/disjoint coverage over the admitted
+action schema. Missing or mismatched implementation/proof bytes,
+authority-free rules, or self-authorizing rules are invalid.
 Mixed representations, a zero-class result after fallback, or a multiple-class
 result make the chart `invalid_environment`. Thus every admitted valid action
 has exactly one support class before evaluation, while `step` remains defined

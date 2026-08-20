@@ -131,6 +131,8 @@ identity is itself a contracted law.
 
 Generated implementations and candidate worktrees are disposable. On invalid
 closure, leakage, drift, or failed proof, stop actors and discard the isolated
-candidate/reset workspace. Preserve private source and evaluation evidence by
-default for diagnosis; remove it only with explicit authorization. No emulator
+candidate/reset workspace. Preserve sensitive source or evaluation payloads
+only with explicit retention authorization. Without it, delete unauthorized
+temporary copies and retain only permitted sanitized identities and diagnostics.
+No emulator
 result edits or rolls back the live harness.

@@ -644,12 +644,14 @@ validation artifact incomplete.
 
 `actor_context_ref` retains the exact RFC 8785 `actor-context/v1` bytes under
 the run directory, and `actor_context_fingerprint` hashes those bytes:
-`{"messages":[{"content":"<exact-UTF-8>","role":"system"}],"run_id":"<run-id>","schema":"actor-context/v1"}`.
+`{"actor_input_message_indexes":[1],"messages":[{"content":"<exact-UTF-8>","role":"system"},{"content":"<exact-actor-input-UTF-8>","role":"user"}],"run_id":"<run-id>","schema":"actor-context/v1"}`.
 The ordered message array admits roles `system`, `developer`, `user`, and
 `assistant` and contains every delivered exact content value. The context includes system/developer instructions and
 any reused history; selecting and training runs require a fresh context with no
 prior messages. `actor_input_fingerprint` equals the separately frozen actor
-packet delivered in that context. Extra, missing, prepended, or reused messages
+packet and SHA-256 of the exact UTF-8 content at
+`actor_input_message_indexes[0]`. The array has exactly one index and names a user
+message. Extra, missing, prepended, or reused messages
 invalidate the proof.
 
 Run the forbidden-ref and excerpt scan over every byte in the complete
@@ -662,13 +664,15 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"context_fingerprint":"sha256:<hex>","coverage":[{"provenance_class":"predates_source","result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
+`{"context_fingerprint":"sha256:<hex>","coverage":[{"provenance_class":"predates_source","result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
 `post_generation` phases. Optimizer forms have non-null
 `generation_attempt_id` and `pending_fingerprint` equal to the candidate access
-proof and pending intent; actor forms require both null. Both
+proof and pending intent plus non-null `holdout_target_ref` and fingerprint
+equal to the frozen pre-candidate policy and global attempt closure. Actor
+forms require all four fields null. Both
 artifacts are evaluator-visible and never actor input.
 
 `inventories` is sorted by `kind`, duplicate-free, and every ref/fingerprint
@@ -887,13 +891,21 @@ outer evidence and is absent from the optimizer policy projection.
 
 Before the first semantic holdout read, while holding the user-global partition
 mutex, atomically create one immutable `holdout-selection-intent/v1` marker per
-source identity. It binds the exposure registry, atlas instance, source
-identity, baseline harness fingerprint, exact factor-selection ref/fingerprint,
-and canonical selector principal. Store it at
+source identity with exact RFC 8785 bytes:
+
+~~~json
+{"atlas_instance_id":"sha256:<hex>","baseline_harness_fingerprint":"sha256:<hex>","exposure_registry_id":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","schema":"holdout-selection-intent/v1","source_identity_fingerprint":"sha256:<hex>"}
+~~~
+
+Store it at
 `holdout-selection-intents/<holdout-key>.json`. A byte-identical marker may be
 reused only by the same frozen selection; an absent, partial, or mismatched
 marker blocks the read as `source_contaminated`. A crash after the semantic read
 cannot reopen the identity for another baseline or factor.
+The pre-candidate policy and final root bind every `selection_intent_ref` and
+fingerprint. Reservation creation and the immediate pre-actor gate revalidate
+the global bytes against those snapshots; a missing or changed selection intent
+stops before exposure.
 
 After each holdout chart and evaluator closure is compiled, recursively verified,
 and structurally validated—but before candidate generation, actor execution, or
@@ -948,12 +960,18 @@ output roots contain no holdout semantics; it is a result of the retained
 access and leakage evidence, not a reviewer attestation.
 `optimizer_context_ref` retains the exact RFC 8785 bytes and
 `optimizer_context_fingerprint` hashes them:
-`{"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-UTF-8>","role":"system"}],"schema":"optimizer-context/v1"}`
+`{"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-optimizer-policy-UTF-8>","role":"system"}],"optimizer_policy_message_indexes":[0],"schema":"optimizer-context/v1"}`
 with the same closed roles and complete ordered message semantics. The generation
 runner creates that context with `parent_context_id: null`; reuse, import, or
 hidden prior messages invalidate the proof. The context receives only the
 frozen optimizer policy and discovery/development inputs and is covered by the
 same leakage review as the readable inventory.
+`optimizer_policy_message_indexes` is nonempty, sorted, and duplicate-free;
+the exact RFC 8785 ordered message projection it names is the rendered optimizer
+policy, and its SHA-256 equals `optimizer_policy_fingerprint` in the pending
+intent and access proof. Every other message is a separately inventoried
+authorized discovery/development input; an unbound extra message is
+`holdout_contaminated`.
 The optimizer input inventory is immutable and is exactly the RFC 8785 bytes:
 
 ~~~json
@@ -1319,7 +1337,7 @@ registry was created, first bind exact RFC 8785
 `pre-registry-exposure-attestation/v1` bytes:
 
 ~~~json
-{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
+{"atlas_instance_id":"sha256:<hex>","attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","independent_of_candidate_generation":true,"no_prior_baseline_harness_exposure":true,"no_prior_candidate_or_evaluator_exposure":true,"schema":"pre-registry-exposure-attestation/v1","source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
 The sorted, duplicate-free identity array is complete for the group and the
@@ -1704,7 +1722,7 @@ candidate's validation never covers another candidate.
 The attestation is exact RFC 8785:
 
 ~~~json
-{"attester_identity_fingerprint":"sha256:<hex>","baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","factor":"<factor>","holdout_blind":true,"hunks":[{"baseline_end":0,"baseline_fingerprint":"sha256:<hex>","baseline_start":0,"candidate_end":0,"candidate_fingerprint":"sha256:<hex>","candidate_start":0,"factor_only_justification":"<nonempty-text>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"independent_of_candidate_generation":true,"ownership_authority_fingerprints":["sha256:<hex>"],"pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"semantic-delta-attestation/v1"}
+{"attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","factor":"<factor>","holdout_blind":true,"hunks":[{"baseline_end":0,"baseline_fingerprint":"sha256:<hex>","baseline_start":0,"candidate_end":0,"candidate_fingerprint":"sha256:<hex>","candidate_start":0,"factor_only_justification":"<nonempty-text>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"independent_of_candidate_generation":true,"ownership_authority_fingerprints":["sha256:<hex>"],"pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"semantic-delta-attestation/v1"}
 ~~~
 
 Hunk offsets are half-open byte ranges; a zero-length side represents an
