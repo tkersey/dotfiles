@@ -337,6 +337,11 @@ repeat one `actor_process_opaque_id`. Starting in another sandbox is invalid
 unless a separately contracted state-transfer witness is added by a future
 designed chart. Reuse across a different mutation tuple is
 `invalid_environment`.
+For standalone `run`, the referenced prestate's normalized observed-state
+fingerprint equals the chart's expected prestate. For `mutate`, it equals the
+deterministic expected prestate derived from the chart plus the exact frozen
+assignment by the bound reset implementation. An ID-only join with wrong state
+is `invalid_environment` and cannot yield a training row.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_assignment_ref`, `mutation_assignment_fingerprint`,
 `mutation_generator_fingerprint`, and minimized-counterexample fields are null;
@@ -663,7 +668,10 @@ mode uses the comparison ID as the run-group ID; standalone run mode uses an
 independent run-group ID, stores its report under `reports/<run-group-id>/`,
 and leaves comparison-only fields null. The displayed row is specifically a
 pure designed, non-holdout example, so registry and partition-claim fields are
-null/empty. A session-derived discovery/development row MUST instead populate
+omitted. Every field annotated `selecting roots only` or `holdout runs only` is
+omitted—not serialized as null/empty—when inapplicable; the YAML shape above is
+a field-domain catalog, not a demand to emit mode-inapplicable keys. A
+session-derived discovery/development row MUST instead populate
 its storage domain, exposure registry, complete claim pairs, and claim-
 validation pair as required above:
 

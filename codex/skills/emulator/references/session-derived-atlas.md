@@ -208,7 +208,9 @@ those exact bytes. Its only directory is
 `semantic-discovery/attempts/<pending-digest-hex>/`, containing exactly
 `pending.json`, optional `result-envelope.json`, optional `result.json`, and
 optional `completed.json`; the exact `pending.json` contents hash to the directory
-digest. Create-new each file and fsync the attempt directory after every file
+digest. After create-new of the digest directory, fsync the parent
+`semantic-discovery/attempts/` directory before launching Seq. Create-new each
+file and fsync the attempt directory after every file
 publication. The pending record binds the owner invocation/process, snapshot
 pair, query spec pair, and complete physically known identity set. Seq runs behind a
 wrapper that does not expose semantic payload on stdout or to the compiler; its
@@ -219,7 +221,7 @@ pair and the complete sorted stable-alias identity descriptors/fingerprints.
 Only after that asset is durable may the wrapper return its fingerprint.
 
 ~~~json
-{"attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
 {"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/attempts/<pending-digest-hex>/result-envelope.json","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 ~~~
@@ -231,6 +233,9 @@ the bound registry root and holdout key; the completion record never stores an
 atlas-local snapshot ref. Recovery locates `result.json` and `completed.json`
 from the enumerated pending directory alone; no adjacency convention or
 caller-chosen filename participates.
+Initial extraction and envelope-only recovery both execute the exact extractor
+ref/fingerprint bound by the pending record; drift or an unresolved extractor
+is `source_contaminated`.
 
 While still holding `.partition-freeze.lock`, the compiler resolves the result,
 publishes or preserves the required exposed claim and marker for every alias,
@@ -790,7 +795,13 @@ Readable roots, tool policy, and every inventory entry outside factor-owned
 manifest deltas MUST be byte-equal between arms. Each differing, added, or
 removed entry MUST correspond exactly to one declared factor-owned harness
 delta and to the matching arm's manifest bytes, type, mode, and path. No other
-readable-surface delta is allowed. Pairs sort by `(chart_id, repeat_id,
+readable-surface delta is allowed.
+For each arm independently, the validator also derives the complete expected
+runtime inventory from that arm's frozen harness manifest plus chart/runtime
+assets and requires exact set equality with the observed inventory before
+cross-arm comparison. An equal undeclared file in both arms is still
+`comparison_drift`.
+Pairs sort by `(chart_id, repeat_id,
 baseline_run_id, candidate_run_id)`, are complete and unique for the frozen
 cohort, and each contains the complete sorted root-qualified factor path set.
 The pairwise comparison and EER bind this post-run ref/fingerprint separately
@@ -1245,12 +1256,13 @@ mutex, atomically create one immutable `holdout-selection-intent/v1` marker per
 source identity with exact RFC 8785 bytes:
 
 ~~~json
-{"atlas_instance_id":"sha256:<hex>","baseline_harness_fingerprint":"sha256:<hex>","exposure_registry_id":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","schema":"holdout-selection-intent/v1","source_identity_fingerprint":"sha256:<hex>"}
+{"atlas_instance_id":"sha256:<hex>","baseline_capture_provenance_fingerprint":"sha256:<hex>","baseline_capture_provenance_ref":"harnesses/baseline/capture-provenance.json","baseline_harness_fingerprint":"sha256:<hex>","exposure_registry_id":"sha256:<hex>","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_exposure_attestation_fingerprints":["sha256:<hex>"],"holdout_exposure_attestation_refs":["partitions/holdout-exposure-attestations/<digest-hex>.json"],"schema":"holdout-selection-intent/v1","source_identity_fingerprint":"sha256:<hex>"}
 ~~~
 
 Store it at
 `holdout-selection-intents/<holdout-key>.json`. A byte-identical marker may be
-reused only by the same frozen selection; an absent, partial, or mismatched
+reused only by the same frozen selection and pre-read witnesses. Fsync the
+new file and containing directory before any semantic holdout read. An absent, partial, or mismatched
 marker blocks the read as `source_contaminated`. A crash after the semantic read
 cannot reopen the identity for another baseline or factor.
 The pre-candidate policy and final root bind every `selection_intent_ref` and
@@ -1270,6 +1282,10 @@ canonical intent path, snapshot ref/fingerprint, and holdout key resolves exact
 byte equality under the named registry. The
 pre-candidate policy and root bind this validation ref/fingerprint; reservation
 and pre-actor checks rerun the mapping under the global mutex.
+Validation also enumerates every global intent matching this atlas instance,
+baseline fingerprint, and factor-selection fingerprint and requires exact set
+equality with the root snapshots. An omitted matching intent is
+`holdout_contaminated`; semantically read groups cannot be cherry-picked away.
 
 After each holdout chart and evaluator closure is compiled, recursively verified,
 and structurally validated—but before candidate generation, actor execution, or

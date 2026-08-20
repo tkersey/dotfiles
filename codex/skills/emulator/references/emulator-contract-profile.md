@@ -356,6 +356,9 @@ ref/fingerprint pair that is exactly null in the pending chart plus one exact
 deterministic materializer asset frozen by design. Implement executes only
 those bytes; two distinct outputs from one unchanged materializer/plan are
 `invalid_environment`. Mode-gated
+Every destination across `entries`, all four fields of `admission_outputs`, and
+`derivations` is globally unique; aliases or write-order ownership are invalid.
+Mode-gated
 `admission_outputs` sorts by `(chart_fingerprint, admission_id)`, has unique
 IDs and four destination refs per row, and contains only the two reset-admission slots for
 each pending exact-fidelity executable chart. Mode-gated
@@ -441,7 +444,8 @@ For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
 For `run`, every chart entry's `mutation_assignments` is empty. For `mutate`,
-each chart entry carries only that chart's sorted, duplicate-free exact
+every selected chart has a nonempty assignment array, the cohort has at least
+one primary tuple overall, and each chart entry carries only that chart's sorted, duplicate-free exact
 `mutation_case_id`, `mutation_assignment_ref`, and
 `mutation_assignment_fingerprint` tuples selected before execution. Refs
 resolve inside the frozen root closure, fingerprints match exact assignment

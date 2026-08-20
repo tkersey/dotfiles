@@ -71,6 +71,11 @@ emulator_request:
     fingerprint:
     evidence_refs: []
   contract_path:
+  export_origin:  # required only for export
+    eer_ref:
+    eer_fingerprint:
+    runs_ref:
+    runs_fingerprint:
   target:
     name:
     kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
@@ -174,10 +179,13 @@ provision an actor runtime; execute the chart; or introduce a native subsystem.
 Validate the design-authored pending closure and its closed materialization plan,
 allowing only the implementation assets declared as pending. Materialize those
 assets in an isolated staging root, compute their exact identities, then create
-and fully validate one deterministic implemented successor closure that changes
+and fully validate one content-addressed implemented successor closure that changes
 only the pending asset refs/fingerprints, root reset-admission fingerprints
 emitted at the materialization plan's frozen destinations, and
 root/chart closure fingerprints.
+Fresh admission sandbox identities may give a repeated implement attempt a
+different content address; determinism applies to each frozen materializer and
+normalized prestate, not to opaque runtime IDs across attempts.
 The successor also requires `operation_mode: implement` and a
 `predecessor_root_fingerprint` equal to the design root; these are the only
 additional identity changes. It may also update exactly the deterministic
@@ -216,6 +224,10 @@ fresh evidence, authority, partition, and visibility rules make them eligible.
 Export emits no new EER and does not rewrite the root, sealed report, or
 originating `operation_mode`. A deferred export emits a content-addressed
 export manifest that binds the original EER/runs and every emitted dataset.
+The request's `export_origin` selects exactly one sealed EER by ref/fingerprint;
+its runs pair is both non-null for run/mutate/compare and both null for
+design/implement. Missing, mixed, or ambiguous origin fields are invalid; never
+select a mutable "latest" report.
 
 ## Contract ownership
 
