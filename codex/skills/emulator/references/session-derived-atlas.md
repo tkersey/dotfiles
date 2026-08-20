@@ -211,34 +211,36 @@ fsync one owner-global `semantic-discovery-attempt/v1` pending record under the
 exposure registry. Let `<pending-digest-hex>` be the lowercase SHA-256 hex of
 those exact bytes. Its only directory is
 `semantic-discovery/attempts/<pending-digest-hex>/`, containing exactly
-`pending.json`, optional `result-envelope.json`, optional `result.json`, and
-optional `completed.json`; the exact `pending.json` contents hash to the directory
+`pending.json`, optional `result.json`, and optional `completed.json`; the exact
+`pending.json` contents hash to the directory
 digest. After create-new of the digest directory, fsync the parent
 `semantic-discovery/attempts/` directory before launching Seq. Create-new each
 file and fsync the attempt directory after every file
 publication. The pending record binds the owner invocation/process, snapshot
-pair, query spec pair, and complete physically known identity set. Seq runs behind a
-wrapper that does not expose semantic payload on stdout or to the compiler; its
-only semantic output is create-new `result-envelope.json`, followed by
-`result.json`; both are fsynced with the directory before return. The latter is
-`semantic-discovery-attempt-result/v1` asset containing the exact result-envelope
-pair and the complete sorted stable-alias identity descriptors/fingerprints.
-Only after that asset is durable may the wrapper return its fingerprint.
-Before publishing the later `semantic-discovery-result/v1`, apply the retention
-gate in Privacy and rollback below to the attempt-local envelope. Copy only the
-authorized or scrubbed retained projection with create-new semantics to
+pair, query spec pair, complete physically known identity set, and one exact
+invocation-owned private staging root outside the exposure registry. Seq runs
+behind a wrapper that exposes no semantic payload on stdout or to the compiler;
+its raw output is create-new mode-0600 bytes only in that staging root. The
+wrapper computes the raw digest, extracts stable aliases there, and applies the
+Privacy and rollback retention gate before any result bytes enter the global
+registry. Copy only the authorized or scrubbed retained projection with
+create-new semantics to
 `semantic-discovery/results/<result-digest-hex>.json`, require the filename and
 fingerprint to agree, and fsync the results directory. That content-addressed
-copy is the recorded result-envelope ref. A raw envelope containing credentials,
-secret values, or private tool output is never copied to the global registry;
-other indispensable sensitive bytes require explicit bounded retention
-authorization. Delete an unauthorized raw attempt-local envelope after the
-retained projection and its physical identity descriptors are durable, or stop
-if scrubbing would destroy required provenance.
+copy is the recorded retained projection. Then publish
+`semantic-discovery-attempt-result/v1` as `result.json`; it binds the raw digest
+without a global raw ref, the retained projection pair and disposition, and the
+complete sorted stable-alias identity descriptors/fingerprints. Only after that
+asset is durable may the wrapper return its fingerprint. Credentials, secret
+values, and private tool output are never written to the global registry. An
+exact raw preimage needed for a later chart stays only in separately authorized
+private source-bundle custody; otherwise delete it after `result.json` is
+durable. If scrubbing would destroy required provenance, stop or downgrade the
+claim rather than publishing sensitive bytes globally.
 
 ~~~json
-{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
-{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/attempts/<pending-digest-hex>/result-envelope.json","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
+{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized-or-scrubbed","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 ~~~
 
@@ -249,9 +251,12 @@ the bound registry root and holdout key; the completion record never stores an
 atlas-local snapshot ref. Recovery locates `result.json` and `completed.json`
 from the enumerated pending directory alone; no adjacency convention or
 caller-chosen filename participates.
-Initial extraction and envelope-only recovery both execute the exact extractor
+Initial extraction and private-staging recovery both execute the exact extractor
 ref/fingerprint bound by the pending record; drift or an unresolved extractor
-is `source_contaminated`.
+is `source_contaminated`. `retention_disposition` is exactly
+`exact_authorized` or `scrubbed`. The latter proves physical discovery and alias
+exposure but is not an exact semantic-payload preimage; any later claim needing
+removed bytes must resolve an authorized private source-bundle copy or stop.
 
 While still holding `.partition-freeze.lock`, the compiler resolves the result,
 publishes or preserves the required exposed claim and marker for every alias,
@@ -260,14 +265,14 @@ completion record, fsyncing each affected registry directory after claim,
 marker, and completion publication. Capability preflight and holdout admission enumerate every
 pending attempt before proceeding. For a dead owner with a durable result,
 recovery must publish and revalidate all result aliases before completion; with
-`result-envelope.json` but no `result.json`, recovery runs the same frozen
-query-adapter/alias-extraction implementation over that envelope, creates the
-deterministic `result.json` with create-new semantics, fsyncs it, then follows the durable-result
-route. With neither file it may clear the attempt only after proving the wrapper never
-returned or delivered semantic bytes. Unprovable owner/output state is
-`source_contaminated`. Raw-snapshot cleanup therefore never erases the only
-durable alias evidence, and no unresolved semantic-discovery attempt permits a
-new `holdout_unexposed` claim.
+no `result.json`, recovery may use only the exact pending-bound private staging
+root: validate its custody, run the same frozen extraction and retention gate,
+and publish the deterministic retained projection and result. If that root is
+missing or unverifiable, it may clear the attempt only after proving the wrapper
+never returned or delivered semantic bytes. Unprovable owner/output state is
+`source_contaminated`. No raw semantic byte is a registry recovery dependency,
+and no unresolved semantic-discovery attempt permits a new
+`holdout_unexposed` claim.
 
 For each individual source identity, construct exact RFC 8785
 `semantic-discovery-identity-exposure/v1` bytes:
@@ -306,8 +311,9 @@ query-spec fingerprint. Result records pair `query_ref` only with this record
 fingerprint and carry the spec fingerprint separately.
 
 Retain exact RFC 8785 `semantic-discovery-result/v1` bytes containing the query
-provenance ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
-ref/fingerprint. Results do not narrow exposure: matching and non-matching
+provenance ref/fingerprint, snapshot ref/fingerprint, raw Seq-envelope digest,
+and retained projection ref/fingerprint. Results do not narrow exposure:
+matching and non-matching
 sessions in the searched snapshot are all permanently excluded from holdout.
 New claims are discovery-only, while existing development/optimizer exposure
 remains at that status. The later source-bundle
@@ -316,12 +322,13 @@ by this pre-read record. Query completion never rewrites an existing exposure
 claim.
 
 ~~~json
-{"query_record_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<spec-digest-hex>.json","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/results/<result-digest-hex>.json","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
+{"query_record_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<spec-digest-hex>.json","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized-or-scrubbed","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
 ~~~
 
-Those are the exact closed fields; all four pairs resolve exact retained bytes
-and the query bytes name the same snapshot pair.
-After the result envelope and every required sanitized selected-source asset
+Those are the exact closed fields; all four pairs resolve exact retained bytes,
+the query bytes name the same snapshot pair, and raw digest plus retained
+projection fields equal the attempt result. No missing raw ref is synthesized.
+After the retained projection and every required sanitized selected-source asset
 are durable, unmount and delete the copied raw corpus root through the common
 write/removal authority gate. The content-addressed snapshot manifest, query,
 result, and sanitized source evidence remain; raw session/tool payload copies
@@ -508,9 +515,10 @@ diagnostic/development-only and cannot enter holdout, harness selection,
 promotion, or preference training. There is no same-reviewer exception whose
 choices can be revised after correction reveal.
 
-First parse the finalized chart as data. For a pending design or its implement
-successor, normalize only the `ref`/`fingerprint` pair at every field pointer
-named by the frozen materialization plan to the same closed
+First parse the finalized chart as data. For a pending design and every
+materialized descendant that retains its frozen materialization plan, normalize
+only the `ref`/`fingerprint` pair at every field pointer named by that plan to
+the same closed
 `{"field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json"}`
 placeholder taken from that field's plan entry. Preserve every sibling field,
 including seed control, seed, failure schedule, and other execution semantics,
@@ -1475,18 +1483,25 @@ consumes these bytes; producers cannot assert replay without the sealed log.
 
 The closed tagged-union variants are:
 
-- `create`: null source/before; non-null after and payload; after equals payload.
-- `overwrite`: null source; non-null before, after, and payload; after equals payload.
+- `create`: null source/before; non-null after and payload; the after-state's
+  content projection equals the payload fingerprint.
+- `overwrite`: null source; non-null before, after, and payload; the after-state's
+  content projection equals the payload fingerprint.
 - `rename`: non-null source and after, nullable before, null payload; the source
-  entry fingerprint equals after and replay removes the source.
+  entry-state fingerprint equals after and replay removes the source.
 - `symlink`: null source/before; non-null after and payload, where payload is
   the exact link-target bytes.
 - `mkdir`: null source/before/payload and non-null after.
 - `delete`: null source/after/payload and non-null before.
 
-Before/after values fingerprint the exact canonical inventory-entry bytes, so
-directory and symlink effects have identities even when their inventory variant
-has no content digest. Mixed variants are invalid.
+Before/after values fingerprint exact canonical, path-independent entry-state
+bytes containing file type, mode, and the content digest, link-target digest,
+or directory marker appropriate to that type. Payload fingerprints hash only
+raw regular-file or link-target bytes. Replay verifies the payload digest inside
+the entry state, then derives the path-qualified inventory entry from `root_id`,
+`path`, and that state. Rename requires its source entry state to equal the
+after state even though the path-qualified inventory fingerprints differ.
+Mixed variants are invalid.
 
 The pre-generation semantic leakage review covers every entry in both the
 optimizer input inventory and `candidate_output_prestate`, plus every delivered
@@ -1705,7 +1720,16 @@ blocks retirement. Before sealing, copy each exact EER and runs file into the
 static successor-owned `holdout-retirements/evidence/cycles/<cycle-id>/`
 namespace, recursively copy every EER/runs dependency, and fsync the complete
 tree; runtime directories are never transitive refs. A sealed reference mapping
-maps every embedded canonical runtime ref to its static snapshot pair.
+maps every embedded canonical runtime or prior-root ref to its static snapshot
+pair. It is closed exact RFC 8785
+`holdout-retirement-reference-mapping/v1` bytes:
+`{"entries":[{"source_fingerprint":"sha256:<hex>","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>","snapshot_fingerprint":"sha256:<same-hex>","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<digest-hex>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
+Entries sort by `source_ref`, are duplicate-free, preserve fingerprints, and
+cover every distinct transitive ref embedded in the copied EER, runs rows, and
+their dependencies, including `runs/`, `reports/`, and
+`roots/<prior-root-digest-hex>/` refs. The snapshot ref resolves inside the
+successor closure. Missing, extra, conflicting, or recursively unmapped refs
+block retirement.
 Its closed payload is
 `{"arms":[{"candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","eer_fingerprint":"sha256:<hex>","eer_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/EER-v1.yaml","reference_mapping_fingerprint":"sha256:<hex>","reference_mapping_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/reference-mapping.json","runs_fingerprint":"sha256:<hex>","runs_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/runs.jsonl"}],"reservation_fingerprint":"sha256:<hex>","schema":"holdout-cycle-completion/v1"}`.
 Arms sort by candidate ID with unique candidate/comparison IDs and equal the
@@ -2821,17 +2845,11 @@ that run. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
 Apply the same total precedence rule as EER-v1 on every selecting surface.
-First evaluate every selecting, environment-valid, determinate row;
-observational and other non-selecting rows remain diagnostic. Any selecting row
-proving a new candidate `hard_fail`, protected regression, or contracted non-hard
-regression beyond the frozen tolerance yields `reject`, even when other
-required holdout evidence is incomplete. A decisive valid regression is never
-downgraded to `insufficient_evidence`. If no decisive regression exists, any
-invalid, unsupported, skipped, or ambiguous required holdout yields
-`insufficient_evidence`. Otherwise return `adopt` only when every adoption
-condition above holds. All remaining cases, including ties, disagreement, and
-inadequate stochastic evidence, are `insufficient_evidence`. Exactly one
-disposition is emitted.
+This reference supplies selecting holdout inputs only: observational and other
+non-selecting rows remain diagnostic. EER-v1 exclusively owns aggregation,
+decisive-regression precedence, incomplete-coverage handling, and the exact
+`adopt | reject | insufficient_evidence` disposition; do not reimplement that
+law in atlas code.
 
 Record paired_replay_delta, observed_association, regression, or
 insufficient_evidence as the evidence relation, separately from the adoption

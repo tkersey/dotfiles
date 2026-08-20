@@ -94,7 +94,8 @@ emulator_contract:
     ref:
     fingerprint:
   materialization_witnesses:     # empty while pending; complete after implement
-    - field_pointer:
+    - chart_fingerprint:
+      field_pointer:
       ref:
       fingerprint:
 
@@ -368,10 +369,11 @@ tools, or unstated input bytes are denied. Each entry freezes a unique
 `witness_destination_ref`. Implement writes closed exact RFC 8785
 `emulator-materialization-witness/v1` bytes there before constructing the
 successor:
-`{"field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","schema":"emulator-materialization-witness/v1"}`.
+`{"chart_fingerprint":"sha256:<pending-chart-hex>","field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","schema":"emulator-materialization-witness/v1"}`.
 The successor's sorted `materialization_witnesses` array contains one
-ref/fingerprint pair for every plan entry, keyed by `field_pointer`, and no
-others. Every witness equals the plan/materializer and observed staging
+ref/fingerprint pair for every plan entry, keyed and sorted by
+`(chart_fingerprint, field_pointer)`, and no others. Every witness equals the
+plan/materializer and observed staging
 execution; its output fingerprint equals the finalized planned pair. Missing
 or unequal witnesses make the successor invalid.
 The exact payload is
@@ -512,7 +514,11 @@ is the fieldwise AND of frozen authorization and exact four-boolean
 frozen false to true, and prior true cannot emit an unselected dataset. At least
 one effective selection must be true. An all-false or wholly unauthorized
 selection stops before manifest publication with `insufficient_evidence`;
-`mode: export` cannot report success for a no-op.
+`mode: export` cannot report success for a no-op. After chart-level eligibility
+and privacy filtering, at least one selected dataset must contain at least one
+eligible row. An authorized selection whose eligible row set is empty likewise
+returns `insufficient_evidence` and publishes neither an empty dataset nor an
+export manifest.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),

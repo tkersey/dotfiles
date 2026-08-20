@@ -43,7 +43,8 @@ emulator_execution_report:
     closure_inventory_ref:
     closure_inventory_fingerprint:
     materialization_witnesses:  # empty while pending; retained after implement
-      - field_pointer:
+      - chart_fingerprint:
+        field_pointer:
         ref:
         fingerprint:
     contract_reset_admissions:
@@ -291,7 +292,8 @@ must equal `executions` as specified below.
 the root's sorted witness array after implementation, including later run-mode
 descendants. Every ref resolves through the closure inventory to the closed
 witness schema in the contract profile. Missing, extra, or unequal witness
-evidence makes the EER invalid.
+evidence makes the EER invalid. Each `chart_fingerprint` is the frozen pending
+plan identity and joins the witness by `(chart_fingerprint, field_pointer)`.
 `contract.contract_reset_admissions` is present in every mode and has one row
 for each fully materialized exact-fidelity executable chart, sorted by chart fingerprint. A pending design chart is absent until its implement successor
 materializes and proves both resets. Each row
@@ -416,7 +418,11 @@ with `sandbox_created: true, actor_started: false` require a non-null unique
 sandbox ID and null process ID. Because `runtime-observation/v1` is
 process-owned, its ref/fingerprint and runtime surface fingerprint are null;
 the row retains the inventory and pre-start leakage artifacts actually
-produced, while access proof and actor context remain null. This is the admitted mounts-frozen/process-not-
+produced. When that review exists, the row also retains its exact planned
+`actor_context_ref`/fingerprint and the review's `context_fingerprint` equals
+it; this proves reviewed bytes, not actor delivery. Access proof remains null.
+If no context was constructed, both the context pair and leakage-review pair
+are null. This is the admitted mounts-frozen/process-not-
 started state. Started rows require both booleans true and non-null process and
 sandbox IDs. No other combination is valid.
 Across the complete run group, every non-null `actor_process_opaque_id` and
@@ -1066,7 +1072,7 @@ Dataset references appear only when rows were emitted:
 Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 
 ```json
-{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-maps/<source-id>.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>","successor_root_fingerprint":null,"successor_root_ref":null}
+{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_index":0,"chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>-0.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-maps/<source-id>.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Refs/fingerprints resolve exact eligible bytes; static refs use the archived
@@ -1085,8 +1091,13 @@ attributed authority and is one of `explicit_user_correction`,
 preference authority. The displayed row is the explicit-correction variant;
 the closed schema admits every listed value without renaming it. The
 chosen-action artifact is the exact selected action projection, not a
-whole trace. Authority, chart, contract, harness, and surface equal the run and
-chart. `source_evidence` copies every actual ref/fingerprint entry from the
+whole trace. `chosen_action_index` is a nonnegative index into that run's
+`support_results`; the indexed result is `judgeable` or `executable`, passed its
+bound hard oracles, and its exact action projection equals the chosen-action
+artifact and fingerprint. A one-step chart therefore uses index zero; a
+full-turn or full-episode row must select the one specifically evaluated action
+and cannot substitute another action from the trace. Authority, chart,
+contract, harness, and surface equal the run and chart. `source_evidence` copies every actual ref/fingerprint entry from the
 chart bundle's sorted `source_maps` array; it never reconstructs a legacy
 singular path. `run_id`, `run_row_fingerprint`, and the sealed `runs_jsonl` pair bind
 the same fresh passing row as the chosen action and hard-oracle evidence.
