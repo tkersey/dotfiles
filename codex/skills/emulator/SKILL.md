@@ -170,7 +170,9 @@ and fully validate one deterministic implemented successor closure that changes
 only the pending asset refs/fingerprints and root/chart closure fingerprints.
 The successor also requires `operation_mode: implement` and a
 `predecessor_root_fingerprint` equal to the design root; these are the only
-additional identity changes.
+additional identity changes. It may also update exactly the deterministic
+transitive proof assets enumerated by the plan's `derivations`; no unplanned
+derived asset or semantic field may change.
 Any task semantics, evaluator policy, scope, or plan change routes back to
 `design`; implement does not independently author them. Do not edit source
 repositories or target skills without separate authority.

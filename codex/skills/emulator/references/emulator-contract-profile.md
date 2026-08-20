@@ -414,7 +414,8 @@ ref/fingerprint and required complete trace schema,
 exact candidate-generation runner ref/fingerprint, and exact
 comparison-implementation ref/fingerprint, plus exact runtime-surface and
 actor-readable-surface derivation-implementation refs/fingerprints and the
-semantic-leakage-evaluator ref/fingerprint. It is never
+nullable optional semantic-diagnostic evaluator ref/fingerprint. Access-lineage
+provenance remains the admission authority. The policy is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy is the exact deterministic projection of the complete
 `factor-selection/v1.optimizer_visible_policy` object frozen before candidate
@@ -425,10 +426,15 @@ digest from which they can be enumerated.
 The predicate is an ordered `targeted_chart_rules` array whose entries contain
 exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
 chart appears exactly once. Post-outcome classification is forbidden.
-The same pre-candidate policy contains closed
-`non_hard_regression_tolerance` canonical JSON keyed by protected dimension.
-It is frozen before candidate generation; a missing key means zero tolerance,
-and no outcome may alter the object.
+The same pre-candidate policy contains closed exact RFC 8785
+`non-hard-regression-tolerance/v1` bytes:
+`{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{"<channel>":{"direction":"higher_is_better","tolerance":0}},"schema":"non-hard-regression-tolerance/v1"}`.
+Costs are lower-is-better and values are nonnegative maximum regressions;
+reward/residual entries each declare direction and nonnegative tolerance.
+Missing supported channels have zero tolerance. These channels are distinct
+from hard protected dimensions. The comparison implementation binds this exact
+object and deterministically classifies any excess regression before residual
+preference; no outcome may alter it.
 Before candidate generation, validation requires exact equality between the
 two policies' selected factor, factor-owner paths, structured byte selectors,
 runtime-configuration keys, approved derived runtime-surface fields, runtime
@@ -649,6 +655,8 @@ environment_chart:
     tools:
       asset_ref:
       asset_fingerprint:
+      metadata_observation_policy_ref:
+      metadata_observation_policy_fingerprint:
       allowed: []
       denied: []
       schemas: {}

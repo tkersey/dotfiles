@@ -204,6 +204,8 @@ emulator_execution_report:
       reset_result_fingerprint:
       effect_policy_fingerprint:
       tool_access_policy_fingerprint:
+      metadata_observation_policy_ref:
+      metadata_observation_policy_fingerprint:
       actor_input_ref:
       actor_input_fingerprint:
       actor_context_ref:
@@ -363,6 +365,10 @@ boundary was malformed or unverifiable.
 Started rows require non-null process and sandbox IDs. A pre-start row requires
 both null and binds no runtime observation, inventory, or access proof; mixed
 nullability is invalid.
+Across the complete run group, every non-null `actor_process_opaque_id` and
+`sandbox_instance_id` is unique to one execution row. Baseline/candidate arms,
+repeats, and charts never reuse a process or sandbox; duplicate launch identity
+is `comparison_drift` even when run IDs differ.
 
 Every pass or hard failure has a fresh trace. Every invalid, unsupported,
 runtime-error, ambiguous, or skipped row records a reason and the evidence
@@ -621,6 +627,8 @@ validation pair as required above:
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
   "tool_access_policy_fingerprint": "sha256:...",
+  "metadata_observation_policy_ref": "roots/<root-digest-hex>/environment/metadata-observation-policy.json",
+  "metadata_observation_policy_fingerprint": "sha256:...",
   "actor_input_ref": "roots/<root-digest-hex>/actors/chart-....md",
   "actor_input_fingerprint": "sha256:...",
   "actor_context_ref": "runs/run-group-.../actor-context/run-....json",
@@ -686,7 +694,7 @@ plus the exact `mutation-assignment/v1` bytes. A minimized failure ref resolves
 closed exact RFC 8785 `emulator-minimized-counterexample/v1` bytes:
 
 ```json
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"irreducibility_evidence":[{"assignment_fingerprint":"sha256:<hex>","run_id":"<run-id>","status":"pass"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"irreducibility_evidence":[{"assignment_fingerprint":"sha256:<hex>","evidence_fingerprint":"sha256:<hex>","evidence_ref":"runs/<run-group-id>/inapplicable/<assignment-digest-hex>.json","run_id":null,"status":"inapplicable"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
 ```
 
 Every identity equals the originating execution, assignment, chart, and
@@ -695,7 +703,9 @@ evaluator result; the payload pair binds the actual minimized bytes.
 trial row; `primary` requires both fields null. In either variant,
 `irreducibility_evidence` is the sorted complete strict-descendant set derived
 from the chart's shrink graphs. Every descendant is either a fresh hard-oracle
-passing run or a deterministic inapplicable proof; no failing descendant may
+passing run (`status: pass`, non-null run ID and oracle evidence pair) or a
+deterministic inapplicable proof (`status: inapplicable`, null run ID and
+non-null proof pair); all rows have the same closed fields. No failing descendant may
 remain. An empty descendant set is valid. Thus minimality means no smaller
 failing applicable assignment, not merely trial selection or absence of any
 smaller case. Export copies this
@@ -876,10 +886,10 @@ Dataset references appear only when rows were emitted:
   observable trace evidence.
 - Counterexample rows require a fresh valid mutation case, exact assignment,
   external-generator or chart-bound finite-enumeration identity, and a
-  fingerprinted minimized failing artifact. Ordinary rows have null retirement
-  and successor fields. A holdout-derived row is eligible only after retirement
-  with `consumption_purpose: training`; all retirement/snapshot/successor pairs
-  are non-null and bind the exact training-authorized successor closure.
+  fingerprinted minimized failing artifact. The chart partition is
+  discovery/development and every retirement/successor field is null. EC-v1 has
+  no identity-preserving post-retirement holdout mutation route, so active or
+  retired holdout charts never yield counterexample training rows.
 - Active holdouts and hidden evaluator material are never exported.
 - Historical assistant responses are not chosen labels merely because they
   occurred.
