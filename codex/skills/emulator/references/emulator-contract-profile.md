@@ -961,8 +961,11 @@ fingerprinted; `unavailable` is recorded rather than replaced with an invented
 seed.
 
 actor's `action_projection` deterministically extracts exactly one action from
-the validated output before support classification; projection failure is
-`hard_fail`.
+the validated output before support classification. Chart admission proves the
+pointer is total and cardinality-one over every output admitted by
+`output_schema`; a missing/incompatible pointer or cardinality failure is a
+contract-owned `invalid_environment`, never an agent `hard_fail`. Only output
+that itself violates the declared actor output schema is agent-attributed.
 
 Executable charts also bind exactly one canonical `world_ref` and
 `world_fingerprint`; closure assets may contain supporting world material but

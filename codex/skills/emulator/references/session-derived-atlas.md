@@ -603,7 +603,7 @@ After mounts and tool policy freeze but before actor instructions are
 delivered, the runner emits exact RFC 8785 `actor-readable-inventory/v1` bytes:
 
 ~~~json
-{"entries":[{"fingerprint":"sha256:<hex>","kind":"regular","mode":"100644","path":"<sandbox-relative-path>"},{"kind":"directory","mode":"040700","path":"<sandbox-relative-path>"},{"kind":"symlink","link_target_base64url":"<base64url>","path":"<sandbox-relative-path>"}],"readable_roots":["<sandbox-relative-path>"],"run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-readable-inventory/v1","tool_access_policy_fingerprint":"sha256:<hex>"}
+{"effect_policy_fingerprint":"sha256:<hex>","entries":[{"fingerprint":"sha256:<hex>","kind":"regular","mode":"100644","path":"<sandbox-relative-path>"},{"kind":"directory","mode":"040700","path":"<sandbox-relative-path>"},{"kind":"symlink","link_target_base64url":"<base64url>","path":"<sandbox-relative-path>"}],"readable_roots":["<sandbox-relative-path>"],"run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-readable-inventory/v1","tool_access_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 `entries` is the complete recursive `lstat` walk of every readable root after
@@ -616,15 +616,19 @@ the namespace unchanged for the actor lifetime. The inventory fingerprint is
 SHA-256 of those exact bytes. `tool_access_policy_fingerprint` equals the
 contract-owned `environment.tools.asset_fingerprint` repeated by the world;
 a runtime-generated substitute is invalid.
+`effect_policy_fingerprint` equals the chart's complete resolved effect-policy
+identity, the world/reset boundary, and the execution row; it covers filesystem,
+network, and external-effect authority independently of the tool manifest.
 
 The same runner then emits exact RFC 8785 `actor-access-proof/v1` bytes:
 
 ~~~json
-{"actor_context_fingerprint":"sha256:<hex>","actor_context_ref":"runs/<run-group-id>/actor-context/<run-id>.json","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
+{"actor_context_fingerprint":"sha256:<hex>","actor_context_ref":"runs/<run-group-id>/actor-context/<run-id>.json","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 The proof is emitted only for the actual fresh process created inside that
-already-observed sandbox. Its run, sandbox, inventory, runner, and tool policy
+already-observed sandbox. Its run, sandbox, inventory, runner, tool policy, and
+effect policy
 plus actor input and context fingerprints must equal the execution row and
 frozen assets; proof reuse across runs is
 invalid. A runner that cannot enforce and completely enumerate this surface
@@ -1119,7 +1123,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":null,"holdout_target_ref":null,"optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
+{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_target_fingerprint":null,"holdout_target_ref":null,"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
 ~~~
 
 The displayed payload is the exact non-holdout variant. The exact holdout
@@ -1137,6 +1141,9 @@ fingerprint. The proof's cycle, runner, input inventory, optimizer context and f
 context identity, optimizer policy, and
 pre-candidate policy must equal the frozen cycle commitments, and its candidate
 fingerprint must equal the frozen candidate manifest. The pre-candidate
+generation-runner and model/runtime ref/fingerprint pairs equal factor selection
+and the pre-candidate policy exactly; fingerprint-only or post-freeze runtime
+selection is invalid. The pre-candidate
 commitment and access proof repeat the same metadata-template pair; final
 candidate metadata is post-generation and binds that template without being a
 pre-candidate dependency. Candidate metadata,
@@ -1314,12 +1321,14 @@ SHA-256. Construct the exact RFC 8785 pending bytes below and compute
 ~~~
 
 This global `optimizer-exposure-intent/v1`, its registry ID, lock, sentinels,
-memberships, and semantic holdout target are the `holdout_intent` route and are
+and semantic holdout target are the `holdout_intent` route and are
 required only when `holdout_evidence` is non-null. For a non-holdout comparison,
 the registry and lock roots are not applicable and no global record is created.
-Instead the run directory contains closed exact RFC 8785
+Instead the candidate directory contains closed exact RFC 8785
 `{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","optimizer_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"candidate-generation-intent/v1"}`
-bytes at the access proof's canonical `pending_ref`. Create-new and fsync that
+bytes exactly at
+`harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json`,
+which is the access proof's canonical `pending_ref`. Create-new and fsync that
 file before the optimizer receives any message or readable root. Its digest is
 the access proof's `pending_fingerprint`, and the sealed attempt evidence
 closure includes the exact file under role `generation_intent`; holdout target
@@ -1331,7 +1340,7 @@ The pending policy fingerprint equals the candidate-generation access proof's
 `optimizer-policy/v1` bytes defined above. Authorized discovery/development
 inputs remain separate context messages and never alter that policy payload.
 
-The remaining mutex, holdout-key, sentinel, membership, cohort-intent, and
+The remaining mutex, holdout-key, sentinel, cohort-intent, and
 global clearing steps in this subsection apply to the `holdout_intent` route
 only. The non-holdout route ends its intent work after the local
 `candidate-generation-intent/v1` becomes durable and resumes directly at the
@@ -1342,18 +1351,15 @@ While still holding the partition mutex, first atomically create one immutable
 `pending_sentinel` per source identity at
 `optimizer-intent-sentinels/<holdout-key>/<pending-digest-hex>.json`, with exact
 RFC 8785 `{"pending_fingerprint":"sha256:<hex>","schema":"optimizer-intent-pending-sentinel/v1","source_identity_fingerprint":"sha256:<hex>"}` bytes.
-Reservation and generation gates scan both sentinel and membership directories;
-an orphan sentinel blocks and triggers reconciliation against the cohort-intent
-directory. Only after all sentinels are durable may the compiler atomically
+The sentinel is the sole durable per-identity intent record. Reservation and
+generation gates scan that directory and join every row to the one cohort
+intent; an orphan sentinel blocks. Only after all sentinels are durable may the compiler atomically
 create the one immutable cohort intent at
 `<holdout_lock_root>/optimizer-intents/<pending-digest-hex>.pending.json`.
-For every individual identity, atomically create exact RFC 8785
-`{"pending_fingerprint":"sha256:<hex>","schema":"optimizer-intent-membership/v1","source_identity_fingerprint":"sha256:<hex>"}`
-bytes at `optimizer-intent-memberships/<holdout-key>/<pending-digest-hex>.json`.
-Memberships cover exactly the intent identity array. The access proof and both
+Sentinels cover exactly the intent identity array. The access proof and both
 leakage reviews bind the one cohort `pending_fingerprint`, so every identity is
-cleared by the same attempt evidence without collapsing membership.
-After the complete pending intent and membership set is durable, release the
+cleared by the same attempt evidence.
+After the complete pending intent and sentinel set is durable, release the
 partition mutex before launching the optimizer. A later leakage transition
 reacquires that mutex; no path recursively acquires a lock it still holds.
 Required ordering is: release partition mutex before optimizer launch.
@@ -1470,14 +1476,12 @@ both locks uses this order and releases them in reverse. Revalidate the exact gl
 claim bytes against the root snapshots, resolve the current pointer, and require
 its target snapshot fingerprint to equal the root's bound snapshot. While still
 holding both locks, enumerate every regular, non-symlink
-`optimizer-intent-sentinels/<holdout-key>/*.json` file before memberships. Each
+`optimizer-intent-sentinels/<holdout-key>/*.json`. Each
 sentinel's pending fingerprint must resolve one cohort pending intent and the
-complete matching membership set; an orphan sentinel is reconciled only by an
+complete matching source-identity array; an orphan sentinel is reconciled only by an
 exact matching cleared closure or stops `source_contaminated`. Only after the
-sentinel domain is complete, recognized, and duplicate-free may the gate enumerate
-`optimizer-intent-memberships/<holdout-key>/*.json` file for every selected
-source identity. Resolve each common pending fingerprint, require identical
-cohort membership, its exact matching `.cleared.json`, and the complete
+sentinel domain is complete, recognized, and duplicate-free may the gate
+require each common pending fingerprint's exact matching `.cleared.json` and the complete
 transitive evidence closure defined above. A malformed file, unrecognized
 path, mismatched cohort, dangling closure, or unresolved
 optimizer intent stops with `source_contaminated` before reservation. Only
@@ -1533,7 +1537,10 @@ create the exclusive RFC 8785 `holdout-use/v1` reservation at
 `arms` contains the full frozen candidate set and is sorted by `candidate_id`;
 each arm's `chart_repeats` contains every selected chart exactly once, sorted by
 chart fingerprint. Each chart's `repeat_ids` is sorted, duplicate-free, and has
-the exact deterministic or stochastic count frozen by policy. Both top-level
+the exact deterministic or stochastic count frozen by policy. Every arm's
+complete `chart_repeats` bytes are identical to every other arm and to the
+root's singular `comparison_policy.paired_cohort`; candidates cannot choose
+different repeat IDs. Both top-level
 fingerprint arrays are sorted and duplicate-free. Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
@@ -1867,7 +1874,12 @@ candidate ID, baseline harness fingerprint, selected factor, author principal,
 hypothesis, expected delta, falsifier, and declared changed paths. It contains
 no candidate harness, access-proof, factor-delta, or final metadata fingerprint,
 so the dependency graph is acyclic. Final candidate metadata is authored after
-generation and binds this template pair plus the generated evidence.
+generation and binds this template pair plus the generated evidence. Its
+candidate, baseline, factor, author, hypothesis, expected delta, falsifier, and
+declared changed-path values equal the referenced template byte-for-byte. The
+factor-delta validation's complete actual changed-file set equals the sorted
+declared `changed_paths`; a missing, extra, or rewritten path is
+`comparison_drift`.
 `targeted_chart_rules` covers every selected chart exactly once. Each closed
 row has exactly `chart_fingerprint`, `factor`, and boolean `targeted`, as
 required by the contract profile. It is frozen before candidate generation;

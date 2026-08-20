@@ -278,6 +278,23 @@ and prestate refs resolve exact retained `reset-result/v1` and
 `reset-prestate/v1` bytes whose fingerprints equal their companion fields;
 result bytes are independently produced. Confinement validation
 requires both effect policies to admit only their distinct disposable roots.
+The referenced prestate is closed exact RFC 8785 `reset-prestate/v1` bytes:
+
+```json
+{"chart_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":null,"mutation_assignment_ref":null,"mutation_case_id":null,"observed_state_fingerprint":"sha256:<hex>","repeat_id":null,"sandbox_instance_id":"<runner-opaque-id>","schema":"reset-prestate/v1","world_fingerprint":"sha256:<hex>"}
+```
+
+The reset result is closed exact RFC 8785 `reset-result/v1` bytes:
+
+```json
+{"chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":null,"mutation_assignment_ref":null,"mutation_case_id":null,"prestate_fingerprint":"sha256:<hex>","prestate_ref":"<reset-prestate-ref>","repeat_id":null,"reset_recipe_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-result/v1","status":"pass","world_fingerprint":"sha256:<hex>"}
+```
+
+Admission resets use null repeat/mutation fields. Execution resets repeat the
+exact chart/repeat and, for `mutate`, the case and assignment identities from
+the execution row. The prestate pair, sandbox, world, recipe, and effect policy
+join the same reset invocation; reuse across a different mutation tuple is
+`invalid_environment`.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_assignment_ref`, `mutation_assignment_fingerprint`,
 `mutation_generator_fingerprint`, and minimized-counterexample fields are null;
@@ -448,10 +465,13 @@ runner identity is not a selectable harness factor. A mismatch is
 
 Each started execution also binds a run-owned `runtime-observation/v1` artifact
 by ref and fingerprint. Its exact RFC 8785 payload is
-`{"credential_binding":{"descriptor_fingerprint":"sha256:<hex>","descriptor_ref":"runs/<run-group-id>/runtime/<run-id>-credential-binding.json","secret_material_recorded":false},"observed_runtime_config":{},"observed_runtime_surface":{},"requested_runtime_fingerprint":"sha256:<hex>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"schema":"runtime-observation/v1"}`.
+`{"actor_process_opaque_id":"<runner-opaque-id>","credential_binding":{"descriptor_fingerprint":"sha256:<hex>","descriptor_ref":"runs/<run-group-id>/runtime/<run-id>-credential-binding.json","secret_material_recorded":false},"observed_runtime_config":{},"observed_runtime_surface":{},"requested_runtime_fingerprint":"sha256:<hex>","run_id":"<run-id>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"sandbox_instance_id":"<runner-opaque-id>","schema":"runtime-observation/v1"}`.
 `observed_runtime_config` is the closed projection of behavior-bearing,
 non-secret requested keys and its canonical digest equals both
 `requested_runtime_fingerprint` and the execution's `runtime_fingerprint`.
+The observation's run, sandbox, and actor-process identities equal the same
+execution row and `actor-access-proof/v1`; copied observations from another
+fresh process are `comparison_drift`.
 `observed_runtime_surface` follows the runner-owned closed schema bound by
 `actor_runner_fingerprint` and MUST include resolved model/version and reasoning
 mode, OS/runtime identity, locale, timezone, working-directory policy,
@@ -637,12 +657,16 @@ plus the exact `mutation-assignment/v1` bytes. A minimized failure ref resolves
 closed exact RFC 8785 `emulator-minimized-counterexample/v1` bytes:
 
 ```json
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"failing_run_id":"<run-id>","mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":"sha256:<hex>","shrink_selection_trace_ref":"runs/<run-group-id>/shrink-selection-trace.json"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
 ```
 
-Every identity equals the originating execution, assignment, chart, evaluator
-result, and sealed shrink trace; the payload pair binds the actual minimized
-bytes. Export copies this wrapper pair and rejects a case/path/digest-only join.
+Every identity equals the originating execution, assignment, chart, and
+evaluator result; the payload pair binds the actual minimized bytes.
+`source_kind: shrink_trial` requires the all-non-null shrink pair and a selected
+trial row. `source_kind: primary` requires both shrink fields null and proof
+that the frozen permitted set has no smaller applicable assignment (including
+an empty set), so the failing primary row is irreducible. Export copies this
+wrapper pair and rejects a case/path/digest-only join.
 
 ## comparison.json
 

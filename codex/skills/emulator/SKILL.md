@@ -122,15 +122,19 @@ user-global registry; a pure designed non-holdout root does not.
 
 ### Filesystem write authority
 
-Before every filesystem create or update in any mode, resolve the destination
+Before every filesystem create, update, unlink, rename-away, or recursive
+removal in any mode, resolve every affected destination
 against `authorized_files.allowed` and `authorized_files.forbidden`. Missing or
 empty `allowed` denies every write; there is no implicit wildcard. Each entry is
 a closed `{kind: file | directory, path: <canonical-absolute-path>}` object. A
 `file` matches only that exact real path. A `directory` matches itself and
 component-bound descendants after symlink-free canonical resolution; string-
 prefix and glob matching are forbidden. `forbidden` uses the same component-
-safe semantics and wins over `allowed`. A destination not positively admitted
-or matched by a forbidden entry MUST NOT be written. This common pre-effect gate covers
+safe semantics and wins over `allowed`. Recursive removal first enumerates and
+checks every descendant; admitting a parent never authorizes removal of a
+forbidden child. Probe cleanup and rollback use the same gate. A destination
+not positively admitted or matched by a forbidden entry MUST NOT be affected.
+This common pre-effect gate covers
 contract, source, actor, partition, evaluator, world, reset, fixture, tool,
 reward, mutation-generator, harness, run, trace, report, and dataset artifacts.
 The four dataset flags remain `false` unless the user explicitly sets a
@@ -150,10 +154,13 @@ provision an actor runtime; execute the chart; or introduce a native subsystem.
 
 ### implement
 
-Validate an already-authored contract closure, then materialize its executable
-world, reset, tool, fixture, reward, mutation-generator, and evaluator-
-implementation assets. Contract repair routes back to `design`; `implement`
-does not acquire a second contract-authoring identity. Do not edit source
+Validate the design-authored contract shape and its closed materialization plan,
+allowing only the implementation assets declared as pending. Materialize those
+assets in an isolated staging root, compute their exact identities, then create
+and fully validate one deterministic implemented successor closure that changes
+only the pending asset refs/fingerprints and root/chart closure fingerprints.
+Any task semantics, evaluator policy, scope, or plan change routes back to
+`design`; implement does not independently author them. Do not edit source
 repositories or target skills without separate authority.
 Reward and mutation-generator assets are materialized when their chart fields
 require them and the common write-authority gate admits their destinations.
