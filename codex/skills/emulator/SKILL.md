@@ -132,7 +132,11 @@ component-bound descendants after symlink-free canonical resolution; string-
 prefix and glob matching are forbidden. `forbidden` uses the same component-
 safe semantics and wins over `allowed`. Recursive removal first enumerates and
 checks every descendant; admitting a parent never authorizes removal of a
-forbidden child. Probe cleanup and rollback use the same gate. A destination
+forbidden child. Unlink checks its target path; rename checks both source and
+destination plus both parent directory entries. For a not-yet-created path,
+canonicalize and authorize the existing parent with no symlink components,
+validate the exact leaf name, and create with no-follow/create-new semantics;
+an absent leaf never broadens authority. Probe cleanup and rollback use the same gate. A destination
 not positively admitted or matched by a forbidden entry MUST NOT be affected.
 This common pre-effect gate covers
 contract, source, actor, partition, evaluator, world, reset, fixture, tool,
@@ -154,11 +158,14 @@ provision an actor runtime; execute the chart; or introduce a native subsystem.
 
 ### implement
 
-Validate the design-authored contract shape and its closed materialization plan,
+Validate the design-authored pending closure and its closed materialization plan,
 allowing only the implementation assets declared as pending. Materialize those
 assets in an isolated staging root, compute their exact identities, then create
 and fully validate one deterministic implemented successor closure that changes
 only the pending asset refs/fingerprints and root/chart closure fingerprints.
+The successor also requires `operation_mode: implement` and a
+`predecessor_root_fingerprint` equal to the design root; these are the only
+additional identity changes.
 Any task semantics, evaluator policy, scope, or plan change routes back to
 `design`; implement does not independently author them. Do not edit source
 repositories or target skills without separate authority.
@@ -187,11 +194,11 @@ trajectory is never an arm.
 
 ### export
 
-Emit EER-v1 and only datasets whose fresh evidence, authority, partition, and
-visibility rules make them eligible. Export reads an existing contract closure;
-it does not rewrite the root, its sealed EER, or change the root's originating
-`operation_mode`. A deferred export emits a content-addressed export manifest
-that binds the original EER/runs and every emitted dataset.
+Validate and bind the originating sealed EER, then emit only datasets whose
+fresh evidence, authority, partition, and visibility rules make them eligible.
+Export emits no new EER and does not rewrite the root, sealed report, or
+originating `operation_mode`. A deferred export emits a content-addressed
+export manifest that binds the original EER/runs and every emitted dataset.
 
 ## Contract ownership
 

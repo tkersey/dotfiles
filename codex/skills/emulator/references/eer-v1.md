@@ -187,6 +187,8 @@ emulator_execution_report:
       runtime_observation_fingerprint:
       runtime_surface_fingerprint:
       actor_runner_fingerprint:
+      actor_process_opaque_id:
+      sandbox_instance_id:
       actor_started: true | false
       actor_seed:
       actor_seed_control: fixed | sampled | unavailable
@@ -260,23 +262,27 @@ group, an empty `runs.jsonl`, or runtime counters. For `run`, `mutate`, and
 `compare`, the three run sections are required and the parsed `runs.jsonl` rows
 must equal `executions` as specified below.
 `contract.contract_reset_admissions` is present in every mode and has one row
-for each exact-fidelity executable chart, sorted by chart fingerprint. Each row
+for each fully materialized exact-fidelity executable chart, sorted by chart fingerprint. A pending design chart is absent until its implement successor
+materializes and proves both resets. Each row
 binds the two distinct admission reset refs/fingerprints that established exact
-fidelity; other charts are absent. Thus design and implement retain reset proof
+fidelity; other charts are absent. Thus design may retain pre-existing proof and implement retains new proof
 without inventing executions. Run modes repeat the same pairs in their chart's
 execution rows.
 Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
 
 ```json
-{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
+{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
 ```
 
 The two rows have different admission and sandbox instance IDs, equal chart,
 world, recipe, effect-policy, and observed-prestate fingerprints, and each
 observed prestate equals the chart's expected fingerprint. Reset-result
 and prestate refs resolve exact retained `reset-result/v1` and
-`reset-prestate/v1` bytes whose fingerprints equal their companion fields;
-result bytes are independently produced. Confinement validation
+`reset-prestate/v1` bytes. `observed_prestate_artifact_fingerprint` hashes the
+whole sandbox-specific prestate artifact and therefore differs across
+admissions; `observed_prestate_fingerprint` hashes only its normalized
+`observed_state_fingerprint` projection and is equal across resets. Result
+bytes are independently produced. Confinement validation
 requires both effect policies to admit only their distinct disposable roots.
 The referenced prestate is closed exact RFC 8785 `reset-prestate/v1` bytes:
 
@@ -293,7 +299,12 @@ The reset result is closed exact RFC 8785 `reset-result/v1` bytes:
 Admission resets use null repeat/mutation fields. Execution resets repeat the
 exact chart/repeat and, for `mutate`, the case and assignment identities from
 the execution row. The prestate pair, sandbox, world, recipe, and effect policy
-join the same reset invocation; reuse across a different mutation tuple is
+join the same reset invocation. For a started execution, the reset-result,
+execution row, runtime observation, readable inventory, and actor access proof
+all repeat the same `sandbox_instance_id`; the execution and access proof also
+repeat one `actor_process_opaque_id`. Starting in another sandbox is invalid
+unless a separately contracted state-transfer witness is added by a future
+designed chart. Reuse across a different mutation tuple is
 `invalid_environment`.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_assignment_ref`, `mutation_assignment_fingerprint`,

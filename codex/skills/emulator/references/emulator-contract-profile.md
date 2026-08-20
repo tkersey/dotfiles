@@ -88,6 +88,10 @@ emulator_contract:
   contract_id: EC-<stable-id>
   origin: source_faithful | designed | mixed
   operation_mode: design | implement | run | mutate | compare
+  predecessor_root_fingerprint:  # non-null only for implement successor
+  materialization_plan:          # non-null for pending design and its implement successor
+    ref:
+    fingerprint:
 
   source:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
@@ -312,6 +316,25 @@ is byte-identical to this referenced asset. In `design`, `implement`, `run`, and
 `mutate`, the root source and partition evidence construct the same asset
 directly; no pre-candidate policy is required. A root without a recursive
 session source has a null `session_provenance` pair.
+
+A design root with pending implementation assets binds exact RFC 8785
+`emulator-materialization-plan/v1` bytes:
+
+~~~json
+{"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
+~~~
+
+Entries sort by `(chart_fingerprint, field_pointer)`, are unique, and admit only
+world, reset, fixture, tool, reward, mutation_generator, and
+evaluator_implementation roles. Each names one otherwise required
+ref/fingerprint pair that is exactly null in the pending chart. Mode-gated
+design validation admits those null pairs only with complete plan coverage and
+forbids run/comparison claims. Implement materializes exactly the plan, changes
+`operation_mode` from `design` to `implement`, sets
+`predecessor_root_fingerprint` to the design root, fills every planned pair,
+retains the plan pair, and changes only derived chart/root fingerprints. The
+successor then passes ordinary complete-closure validation; any other delta is
+`invalid_environment`.
 
 `operation_mode` is the operation that authored or executed the closure and is
 immutable for the closure and report. The `$emulator` `export` request reads an
@@ -661,7 +684,8 @@ environment_chart:
             violated_laws:
               - law_ref:
                 authority_refs: []
-        shrink_strategy:
+        shrink_strategy_ref:
+        shrink_strategy_fingerprint:
     interactions:
       - interaction_id:
         when:
@@ -840,8 +864,18 @@ applicable mutation run emits every bound result; a preserved law passes and a
 violated law fails in agreement with the recomputed assignment classification.
 Missing, unrelated, or contradictory results are `invalid_environment`.
 `dimension_id` values are chart-wide unique before assignment or
-interaction derivation. Every dimension has unique `case_id` values; its shrink strategy may
-select only declared case IDs. Each domain case, not the whole dimension,
+interaction derivation. Every dimension has unique `case_id` values. Its shrink
+pair resolves exact RFC 8785 `mutation-shrink-strategy/v1` bytes:
+
+~~~json
+{"cases":[{"case_id":"<case-id>","smaller_case_ids":["<case-id>"]}],"dimension_id":"<dimension-id>","schema":"mutation-shrink-strategy/v1"}
+~~~
+
+Cases cover the dimension domain exactly; arrays are sorted and duplicate-free;
+every edge targets a declared case; and the graph is acyclic. The permitted
+shrink set is the canonical sorted transitive closure of assignments formed by
+replacing one dimension case along these edges, ordered by exact assignment
+bytes. Empty reachability proves an irreducible primary case. Each domain case, not the whole dimension,
 declares its value, case kind, preserved laws, and violated laws. Its preserved
 and violated law sets are disjoint and their union equals
 `mutation.law_refs`. An ordinary case has no violated laws. Every
