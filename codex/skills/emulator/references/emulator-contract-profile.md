@@ -94,6 +94,9 @@ emulator_contract:
     refs: []
     corpus_digest:
     current_session_excluded: true | false | not_applicable
+    identity_completeness_route: physical | attested | mixed | not_applicable
+    identity_completeness_ref:
+    identity_completeness_fingerprint:
     limitations: []
 
   target:
@@ -253,6 +256,19 @@ excluded session component. A closure with no session-derived component uses
 `false` only for a pure `user_design` source and `not_applicable` otherwise.
 No wrapper may hide a nested session source behind `not_applicable`.
 
+Every session-derived chart has a non-null typed identity-completeness
+ref/fingerprint and `physical` or `attested` route. The root pair binds exact
+RFC 8785 `identity-completeness-manifest/v1` bytes listing every chart
+fingerprint, its route, and its chart ref/fingerprint; root route is that one
+route when uniform and `mixed` otherwise. The pre-candidate policy repeats the
+same manifest identity, and recursive validation requires exact chart-entry
+equality and complete chart coverage. Pure non-session charts use
+`not_applicable` with null fields.
+
+~~~json
+{"charts":[{"chart_fingerprint":"sha256:<hex>","fingerprint":"sha256:<hex>","ref":"identity/<digest-hex>.json","route":"physical"}],"schema":"identity-completeness-manifest/v1"}
+~~~
+
 `operation_mode` is the operation that authored or executed the closure and is
 immutable for the closure and report. The `$emulator` `export` request reads an
 existing closure and emits eligible outputs without rewriting it; it preserves
@@ -296,8 +312,8 @@ non-hard regression tolerance, candidate budget, exact baseline harness
 fingerprint, candidate-keyed immutable optimizer-inventory template
 refs/fingerprints and
 predeclared candidate-output root roles,
-exact optimizer tool/effect policy ref/fingerprint and required complete trace
-schema,
+exact candidate-independent optimizer tool/effect policy template
+ref/fingerprint and required complete trace schema,
 exact candidate-generation runner ref/fingerprint, and exact
 comparison-implementation ref/fingerprint, plus exact runtime-surface and
 actor-readable-surface derivation-implementation refs/fingerprints. It is never
@@ -450,6 +466,9 @@ environment_chart:
     source_group_fingerprint:
     source_identity_descriptors: []
     source_identity_fingerprints: []
+    identity_completeness_route: physical | attested | not_applicable
+    identity_completeness_ref:
+    identity_completeness_fingerprint:
     partition: discovery | development | holdout
 
   cut:
@@ -662,7 +681,8 @@ the closed predicate DSL consists of `json_pointer_equals` leaves plus
 duplicate-free; `not` contains exactly one. Depth is at most eight and total
 nodes at most 128. Inline and asset rules use this same DSL. The bound implementation evaluates exactly that DSL, and the
 coverage proof exhaustively checks total/disjoint coverage over the admitted
-action schema. Missing or mismatched implementation/proof bytes,
+remaining action domain after tool denial; denied actions are excluded and all
+asset predicates are false for them. Missing or mismatched implementation/proof bytes,
 authority-free rules, or self-authorizing rules are invalid.
 Mixed representations, a zero-class result after fallback, or a multiple-class
 result make the chart `invalid_environment`. Thus every admitted valid action
@@ -718,6 +738,11 @@ The execution row's assignment and chart fingerprint therefore recompute the
 case ID, kind, preserved laws, and violated laws without another authority
 field. Missing, conflicting, non-total, or out-of-chart case authority makes
 the mutation case `invalid_environment`.
+Every mutate reset receives the non-null `mutation_case_id`,
+`mutation_assignment_ref`, and assignment fingerprint from its chart-local
+single-arm cohort. The ref resolves the exact assignment and recomputes the
+case ID before reset; non-mutate resets require all three null. Ambient mutation
+state is forbidden.
 
 For a correction-derived chart to enter holdout or contribute to
 `harness_selection`, `promotion`, or `preference_training`, `correction_review`

@@ -744,6 +744,28 @@ are all null for discovery/development rows and all non-null for a holdout
 retired for training, binding the exact training-authorized marker and successor
 snapshot. Mixed nullability or extra fields are invalid.
 
+Trajectory rows are exact RFC 8785 `emulator-trajectory/v1` bytes containing
+chart ID/fingerprint, contract and harness fingerprints, run ref/fingerprint,
+world/reset fingerprints, trace ref/fingerprint, sorted hard-oracle
+ref/fingerprint pairs, nullable all-or-none training-retirement marker/snapshot
+pairs, and limitations. Curriculum rows are exact
+`emulator-curriculum/v1` bytes containing chart ID/fingerprint, contract
+fingerprint, family, difficulty, sorted required tools and prerequisite tags,
+failure cluster, world fidelity, maximum supported claim, and limitations; no
+hidden evaluator payload is admitted. Counterexample rows are exact
+`emulator-counterexample/v1` bytes containing chart ID/fingerprint, contract
+and harness fingerprints, run ref/fingerprint, mutation case ID, assignment
+ref/fingerprint, generator fingerprint, minimized artifact ref/fingerprint,
+sorted evaluator-evidence ref/fingerprint pairs, and limitations. Every object
+is closed; arrays are sorted and duplicate-free, static refs use the archived
+root, and active holdout rows remain forbidden.
+
+```json
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_fingerprint":"sha256:<hex>","run_ref":"runs/<run-group-id>/runs/<run-id>.json","schema":"emulator-trajectory/v1","trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_tags":[],"required_tools":[],"schema":"emulator-curriculum/v1","world_fidelity":"exact"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"roots/<root-digest-hex>/mutation/assignments/<case-id>.json","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-id>.json","mutation_case_id":"<case-id>","run_fingerprint":"sha256:<hex>","run_ref":"runs/<run-group-id>/runs/<run-id>.json","schema":"emulator-counterexample/v1"}
+```
+
 Every row retains chart, authority, closure, harness, and evidence provenance.
 
 A deferred `export` never edits a sealed EER. It emits immutable eligible

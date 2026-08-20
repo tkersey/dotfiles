@@ -193,7 +193,8 @@ comparison.
 Every chart exposes semantic equivalents of:
 
 ```text
-reset(chart_id, repeat_id) -> observation
+reset(chart_id, repeat_id, mutation_case_id,
+      mutation_assignment_ref, mutation_assignment_fingerprint) -> observation
 observe() -> current actor-visible observation
 support(action) -> executable | judgeable | denied | observed_only | unsupported
 evaluate(output_or_trace) -> oracle vector + state diff + reward + residual judgment
@@ -204,6 +205,9 @@ Harness, candidate, arm, and subject identity are not reset inputs. For a
 paired comparison, the same chart and repeat must produce the same reset
 observation and pre-state fingerprint before either actor starts; any
 identity-dependent reset behavior is `comparison_drift`.
+Outside `mutate`, all three mutation inputs are null. In `mutate`, they are
+non-null, resolve the exact chart-bound assignment, and equal the frozen
+single-arm cohort row; reset never reads ambient mutation state.
 
 Validate actor output against `actor.output_schema` and the action schema before
 support routing; malformed actor output is `hard_fail`, not an unsupported

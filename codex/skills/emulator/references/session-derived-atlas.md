@@ -812,10 +812,13 @@ tasks share an attested duplicate cluster instead of becoming independent
 holdouts merely because their actor-input bytes differ. `<digest>` is SHA-256
 of those exact bytes.
 Approval is exact RFC 8785
-`{"approved":true,"cluster_digest":"sha256:<hex>","member_source_identity_fingerprints":["sha256:<hex>"],"principal_identity_fingerprint":"sha256:<hex>","principal_identity_ref":"principals/<principal-digest-hex>.json","schema":"duplicate-cluster-attestation/v1"}`
+`{"approved":true,"cluster_digest":"sha256:<hex>","holdout_blind":true,"independent_of_candidate_generation":true,"member_source_identity_fingerprints":["sha256:<hex>"],"principal_identity_fingerprint":"sha256:<hex>","principal_identity_ref":"principals/<principal-digest-hex>.json","schema":"duplicate-cluster-attestation/v1"}`
 bytes. The member set equals the cluster preimage exactly; the chart and
 pre-candidate policy bind the approval ref/fingerprint. Missing, split, or
 self-authored approval makes the cluster ineligible for holdout.
+The attester principal differs from the factor selector and every candidate
+author/attester principal for the cycle; otherwise the cluster is
+discovery/development-only.
 The cluster then uses identity kind `duplicate_cluster` and ref
 `duplicate-cluster:sha256:<digest>`; its descriptor preimage is exactly
 `{"identity_kind":"duplicate_cluster","identity_ref":"duplicate-cluster:sha256:<digest>","schema":"emulator-source-identity/v1"}`.
@@ -853,7 +856,7 @@ discovery/development evidence. Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"optimizer/tool-policy.json","runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>","message_projection_ref":"evidence/projections/<digest-hex>.json"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
@@ -878,6 +881,25 @@ after a holdout semantic read. If factor selection requires holdout contents,
 those charts become discovery/development and a new untouched group is
 required. Any baseline drift after this artifact is published restarts factor
 selection and requires a new untouched holdout group.
+
+The candidate-independent optimizer tool policy template is exact RFC 8785
+`optimizer-tool-policy-template/v1` bytes containing allowed tool names,
+logical schema IDs/fingerprints, denied names, and effect permissions expressed
+only as logical root roles. It contains no candidate ID, candidate path,
+absolute sandbox root, or fresh process identity. A concrete candidate policy
+resolves the same schema bytes and maps root roles to that candidate's sandbox;
+removing those runtime paths and restoring roles yields the exact frozen
+template.
+
+~~~json
+{"allowed":[{"name":"<tool>","schema_fingerprint":"sha256:<hex>","schema_id":"<logical-schema-id>"}],"denied":[],"effects":{"filesystem_root_roles":["candidate_output"],"network":"deny"},"schema":"optimizer-tool-policy-template/v1"}
+~~~
+
+Each authorized message projection ref resolves exact RFC 8785
+`{"content":"<exact-UTF-8>","role":"user","schema":"optimizer-authorized-message/v1"}`
+bytes. The projection_implementation is the fixed direct role/content equality
+rule; its fingerprint is the projection bytes themselves. Delivered message
+role/content must equal this preimage exactly.
 
 Every human-role identity ref resolves exact RFC 8785
 `{"aliases":[{"issuer":"<authority-namespace>","principal_id":"<issuer-subject-id>"}],"person_id":"<owner-assigned-stable-person-id>","schema":"emulator-principal-identity/v1"}`
@@ -916,8 +938,15 @@ the global bytes against those snapshots; a missing or changed selection intent
 stops before exposure.
 Each `selection_intent_ref` is the atlas-relative immutable copy at
 `partitions/selection-intents/<holdout-key>.json`. Exact RFC 8785
-`selection-intent-validation/v1` bytes map every snapshot ref/fingerprint and
-holdout key to its canonical user-global path and require byte equality. The
+`selection-intent-validation/v1` bytes are:
+
+~~~json
+{"exposure_registry_id":"sha256:<hex>","intents":[{"canonical_intent_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"partitions/selection-intents/<holdout-key>.json"}],"schema":"selection-intent-validation/v1"}
+~~~
+
+Entries sort by `holdout_key` with unique keys, paths, and snapshot refs; each
+canonical intent path, snapshot ref/fingerprint, and holdout key resolves exact
+byte equality under the named registry. The
 pre-candidate policy and root bind this validation ref/fingerprint; reservation
 and pre-actor checks rerun the mapping under the global mutex.
 
@@ -953,7 +982,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":"sha256:<hex>","holdout_target_ref":"comparison/holdout-semantic-target.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":"sha256:<hex>","holdout_target_ref":"comparison/holdout-semantic-target.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
@@ -1000,8 +1029,11 @@ The optimizer input inventory is immutable and is exactly the RFC 8785 bytes:
 The candidate output inventory is exactly:
 
 ~~~json
-{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
+{"entries":[],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
 ~~~
+
+The post-generation form uses `phase: post_generation` and contains the exact
+generated regular-file entries.
 
 The pre-generation output inventory has an empty `entries` array; only the
 predeclared isolated output roots exist. Every post-generation entry is covered
@@ -1570,12 +1602,16 @@ tool policy, and allowed root roles without absolute sandbox paths or
 deterministic instantiation of its template; candidate-specific sandboxes may
 differ without sharing a concrete fingerprint.
 The exact template is RFC 8785
-`{"candidate_id":"<candidate-id>","input_entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"input_root_roles":["optimizer_input"],"output_entries":[],"output_root_roles":["candidate_output"],"schema":"optimizer-inventory-template/v1","tool_policy_fingerprint":"sha256:<hex>"}`.
-Concrete inventories add only the fresh `sandbox_instance_id` and absolute root
-paths assigned to those roles. Remove those runtime fields and map absolute
-roots back to roles; the resulting exact value equals the candidate's frozen
-template. The access proof repeats the template ref/fingerprint and the
-template-to-concrete validator rejects any other delta.
+`{"candidate_id":"<candidate-id>","input_projection":{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"root_roles":["optimizer_input"],"schema":"optimizer-input-projection/v1","tool_policy_fingerprint":"sha256:<hex>"},"poststate_projection":{"entry_policy":"generation_effects_exact","phase":"post_generation","root_roles":["candidate_output"],"schema":"candidate-output-projection/v1"},"prestate_projection":{"entries":[],"phase":"pre_generation","root_roles":["candidate_output"],"schema":"candidate-output-projection/v1"},"schema":"optimizer-inventory-template/v1"}`.
+`input_projection` removes `sandbox_instance_id`, maps `input_roots` to their
+frozen roles, and changes only the schema tag. `prestate_projection` performs
+the analogous output-root mapping and requires exact empty entries.
+`poststate_projection` first proves concrete entries equal the complete
+generation effects, then replaces those entries with the literal
+`generation_effects_exact` policy. These three deterministic
+template-to-concrete projections must equal the candidate's frozen template;
+no rename, phase, or field is implicit. The access proof repeats the template
+ref/fingerprint and the validator rejects any other delta.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate optimizer policy whose
 semantic fields are exactly the deterministic projection frozen as
