@@ -93,10 +93,10 @@ emulator_request:
     forbidden: []
   output:
     report: EER-v1
-    preferences: true | false
-    trajectories: true | false
-    curriculum: true | false
-    counterexamples: true | false
+    preferences: false
+    trajectories: false
+    curriculum: false
+    counterexamples: false
 ```
 
 Session-derived atlases default to
@@ -120,6 +120,17 @@ or a repository-local registry. If authority remains unavailable, stop with
 `source_contaminated`. Every holdout, including a designed holdout, requires the
 user-global registry; a pure designed non-holdout root does not.
 
+### Filesystem write authority
+
+Before every filesystem create or update in any mode, resolve the destination
+against `authorized_files.allowed` and `authorized_files.forbidden`. A
+destination absent from a nonempty allowlist or matched by a forbidden path is
+out of authority and MUST NOT be written. This common pre-effect gate covers
+contract, source, actor, partition, evaluator, world, reset, fixture, tool,
+reward, mutation-generator, harness, run, trace, report, and dataset artifacts.
+The four dataset flags remain `false` unless the user explicitly sets a
+specific flag to `true`; mode selection never grants dataset-export authority.
+
 ## Modes
 
 Choose exactly one mode.
@@ -128,7 +139,7 @@ Choose exactly one mode.
 
 Compile or repair the root contract and its charts. Design may create only the
 contract-owned source-bundle, actor-projection, partition, evaluator, world,
-reset, fixture, and tool assets required to close the selected chart, regardless
+reset, fixture, tool, reward, and mutation-generator assets required to close the selected chart, regardless
 of chart kind. It does not provision an actor runtime, execute the chart, or
 introduce a native subsystem.
 For an executable chart, these include its contract-owned world/reset/evaluator
@@ -140,10 +151,8 @@ not runtime provisioning.
 Author or validate the contract closure when needed, then materialize its
 executable world, reset, tool, fixture, and evaluator assets. Do not edit source
 repositories or target skills without separate authority.
-Before every create or update, resolve the destination against
-`authorized_files.allowed` and `authorized_files.forbidden`. A destination not
-admitted by the allowlist or matched by a forbidden path is out of authority
-and MUST NOT be materialized, including world, report, and dataset artifacts.
+Reward and mutation-generator assets are materialized when their chart fields
+require them and the common write-authority gate admits their destinations.
 
 ### run
 

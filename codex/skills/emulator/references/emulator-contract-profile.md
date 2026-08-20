@@ -294,6 +294,23 @@ equality and complete chart coverage. Pure non-session charts use
 {"charts":[{"chart_fingerprint":"sha256:<hex>","fingerprint":"sha256:<hex>","ref":"identity/<digest-hex>.json","route":"physical"}],"schema":"identity-completeness-manifest/v1"}
 ~~~
 
+For every recursively session-derived root, `session_provenance.ref` resolves
+exact RFC 8785 `session-provenance/v1` bytes:
+
+~~~json
+{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprint":null,"legacy_exposure_attestation_ref":null,"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}
+~~~
+
+The companion fingerprint hashes those exact bytes. The identity pair equals
+the root source pair, claim refs/fingerprints are same-length positionally
+joined arrays sorted by ref, and the validation pair covers them exactly. The
+legacy pair is all-null except for an admitted pre-registry source. In
+`paired_compare`, the pre-candidate policy's inline `session_provenance` value
+is byte-identical to this referenced asset. In `design`, `implement`, `run`, and
+`mutate`, the root source and partition evidence construct the same asset
+directly; no pre-candidate policy is required. A root without a recursive
+session source has a null `session_provenance` pair.
+
 `operation_mode` is the operation that authored or executed the closure and is
 immutable for the closure and report. The `$emulator` `export` request reads an
 existing closure and emits eligible outputs without rewriting it; it preserves
@@ -414,8 +431,9 @@ the frozen cohort runs, the evaluator emits the report-owned
 `actor-readable-surface-validation/v1` defined by
 `session-derived-atlas.md`. Its complete unique pair set covers every
 chart/repeat execution tuple and permits only the already-frozen factor delta.
-The EER and comparison bind its exact ref/fingerprint. Missing, incomplete, or
-non-passing coverage is `comparison_drift`.
+The EER and comparison bind its exact ref/fingerprint. Missing or incomplete
+coverage, or a status other than `pass` or `unavailable_prestart`, is
+`comparison_drift`; a complete unavailable row is admitted incomplete evidence.
 The asset also binds the pre-candidate actor-readable-surface derivation
 implementation. It has exactly one closed pair row per chart/repeat tuple;
 pre-start failures use `unavailable_prestart` with the required null fields

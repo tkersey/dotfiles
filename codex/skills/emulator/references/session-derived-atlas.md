@@ -636,8 +636,8 @@ readable-surface delta is allowed. Pairs sort by `(chart_id, repeat_id,
 baseline_run_id, candidate_run_id)`, are complete and unique for the frozen
 cohort, and each contains the complete sorted root-qualified factor path set.
 The pairwise comparison and EER bind this post-run ref/fingerprint separately
-from the pre-run `factor-delta-validation/v1`. Missing, incomplete, or
-non-passing readable-surface validation is `comparison_drift`, even when both
+from the pre-run `factor-delta-validation/v1`. Missing/incomplete coverage or
+a status other than `pass` or `unavailable_prestart` is `comparison_drift`, even when both
 per-arm access proofs pass.
 
 ~~~json
@@ -679,7 +679,7 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"derivation_evidence_fingerprint":"sha256:<hex>","derivation_evidence_ref":"runs/<run-group-id>/semantic-leakage-derivations/<occurrence-id>.json","hidden_access":"excluded","inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","semantic_overlap":"none","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json"}`.
+`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"derivation_evidence_fingerprint":"sha256:<hex>","derivation_evidence_ref":"runs/<run-group-id>/semantic-leakage-derivations/<occurrence-digest-hex>.json","hidden_access":"excluded","inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","semantic_overlap":"none","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
@@ -756,6 +756,8 @@ coverage occurrence. `occurrence_id` hashes exact RFC 8785 bytes of
 The locus includes the complete inventory ref plus pointer or actor-context ref
 plus message index; an index alone is invalid. Equal content in distinct arms
 or repeats therefore retains distinct occurrence and derivation evidence.
+`<occurrence-digest-hex>` is the validated lowercase 64-hex suffix of the
+prefixed `occurrence_id`; the `sha256:` prefix never enters a path component.
 Coverage sorts by `occurrence_id` and contains exactly one row for every
 required occurrence. `inventory_entry_ref` points to its inventory row, message
 index, or trace-event pointer. `provenance_classes` is the sorted nonempty
@@ -1028,6 +1030,11 @@ reviewer identity ref/fingerprint pair in the selected cohort's
 roles compare `person_id` under this alias-normalized scheme, so alternate
 emails, accounts, or issuer namespaces cannot manufacture inequality. Selector identity is evaluator-only
 outer evidence and is absent from the optimizer policy projection.
+Before candidate generation, every candidate-author principal in the frozen
+generation commitments MUST likewise have a different normalized `person_id`
+from every correction reviewer for every selected holdout chart. The access
+proof repeats that author identity; missing or equal identity is
+`holdout_contaminated` and cannot yield `candidate_generation_blind: true`.
 
 Before the first semantic holdout read, while holding the user-global partition
 mutex, atomically create one immutable `holdout-selection-intent/v1` marker per
@@ -1136,9 +1143,14 @@ hidden prior messages invalidate the proof. The context receives only the
 frozen optimizer policy and discovery/development inputs and is covered by the
 same leakage review as the readable inventory.
 `optimizer_policy_message_indexes` is nonempty, sorted, and duplicate-free;
-the exact RFC 8785 ordered message projection it names is the rendered optimizer
-policy, and its SHA-256 equals `optimizer_policy_fingerprint` in the pending
-intent and access proof. Every other message is a separately inventoried
+the selected message content is exactly the UTF-8 RFC 8785 bytes of a closed
+two-field object. Its `schema` is the literal `optimizer-policy/v1`; its
+`policy` value is the complete exact
+`factor-selection.optimizer_visible_policy` JSON object.
+No prose rendering, omission, added instruction, or alternate interpretation is
+admitted. The SHA-256 of those exact bytes equals `optimizer_policy_fingerprint`
+in the pending intent and access proof, and the frozen pre-candidate policy's
+byte-identical `optimizer_visible_policy` recomputes the wrapper. Every other message is a separately inventoried
 authorized discovery/development input; an unbound extra message is
 `holdout_contaminated`.
 Every non-policy message index appears exactly once in
@@ -1289,10 +1301,9 @@ fields remain null. Both routes retain one attempt identity without fabricating
 holdout authority.
 
 The pending policy fingerprint equals the candidate-generation access proof's
-`optimizer_policy_fingerprint`; both hash the same rendered optimizer policy
-bytes, whose
-semantic fields equal the frozen `factor-selection/v1.optimizer_visible_policy`
-projection plus only the separately authorized discovery/development inputs.
+`optimizer_policy_fingerprint`; both hash the same canonical
+`optimizer-policy/v1` bytes defined above. Authorized discovery/development
+inputs remain separate context messages and never alter that policy payload.
 
 The remaining mutex, holdout-key, sentinel, membership, cohort-intent, and
 global clearing steps in this subsection apply to the `holdout_intent` route
@@ -1556,7 +1567,14 @@ permanently discovery-only. If a newly discovered alias already has a
 selection lock/reservation but no consumption marker, atomically replace its
 `holdout_unexposed` claim with `discovery_exposed`; the selector's mandatory
 pre-actor revalidation then fails. If its consumption marker exists, the alias
-is already consumed and cannot be reused. In either case stop with
+is already consumed and cannot be reused as holdout. A later semantic read is
+admitted only after the exact retirement marker and successor snapshot prove
+that identity's holdout group retired with `consumption_purpose: evaluation |
+training`; while holding the partition lock, atomically replace its claim with
+`discovery_exposed` and retain both consumption and retirement evidence
+permanently. The identity can then be discovery/development or authorized
+training input but can never become holdout again. Without that retirement
+evidence, stop with
 `source_contaminated`; any other incompatible claim also stops. Claims never
 transition from an exposed state back to holdout. This fallback makes the
 unavoidable first read honest without pretending the alias was knowable.
@@ -1745,7 +1763,8 @@ incompatible before exposure, remove only staged or published claims created by
 that attempt while still holding the global lock; compatible pre-existing
 claims are never removed. The only replacement exceptions are atomic
 `holdout_unexposed` to `discovery_exposed` for discovery fallback and
-`holdout_unexposed` to `optimizer_exposed` for optimizer leakage. Both preserve
+retirement-backed consumed exposure, plus `holdout_unexposed` to
+`optimizer_exposed` for optimizer leakage. All preserve
 exposure and invalidate the stale holdout snapshot.
 The `optimizer_exposed` replacement is therefore explicitly admitted.
 Bind only atlas-relative claim snapshots in the
@@ -1830,8 +1849,10 @@ dimensions have zero tolerance.
 of partition and otherwise null. Its closed value is
 `{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprint":null,"legacy_exposure_attestation_ref":null,"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}`.
 The legacy pair is both non-null exactly for a pre-registry source. The final
-root repeats this complete object; these provenance fields are not hidden inside
-holdout-only evidence.
+root's `session_provenance` ref/fingerprint resolves exact bytes equal to this
+complete object; the root never embeds a competing inline shape. Non-compare
+session roots author that same referenced asset directly from their root source
+and partition evidence. These provenance fields are not hidden inside holdout-only evidence.
 For a pure designed holdout, `session_provenance` is null and identity
 completeness remains `not_applicable`; holdout selection alone never makes
 session identity-completeness fields non-null. Any recursive session source,
