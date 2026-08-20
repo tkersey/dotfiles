@@ -1029,7 +1029,8 @@ SHA-256. Construct the exact RFC 8785 pending bytes below and compute
 ~~~
 
 The pending policy fingerprint equals the candidate-generation access proof's
-`optimizer_policy_fingerprint`; both hash the same rendered bytes, whose
+`optimizer_policy_fingerprint`; both hash the same rendered optimizer policy
+bytes, whose
 semantic fields equal the frozen `factor-selection/v1.optimizer_visible_policy`
 projection plus only the separately authorized discovery/development inputs.
 
