@@ -144,6 +144,8 @@ emulator_execution_report:
   executions:  # present only for run, mutate, or compare
     - schema: emulator-run/v1
       run_id:
+      execution_intent_ref:
+      execution_intent_fingerprint:
       run_group_id:
       comparison_id:
       contract_fingerprint:
@@ -418,7 +420,8 @@ available before termination. No historical run appears as a baseline
 execution.
 
 `support_results` is an ordered array with exactly one row for every
-consequential action that reached support classification. `action_index` starts
+successfully projected actor action or tool-action event in the fresh trace;
+no separate "consequential" filter exists. `action_index` starts
 at zero and is contiguous. `action_ref` resolves retained exact RFC 8785 action-
 projection bytes even when no full trace exists, and `action_fingerprint` is
 their SHA-256. `support_class` is that action's one exclusive class.
@@ -554,6 +557,13 @@ The execution rows are also an exact one-to-one realization of the frozen
 chart × harness-arm × repeat cohort. Missing, extra, or duplicate cohort tuples
 invalidate comparison; favorable retry selection is impossible within one
 comparison identity.
+Before sandbox or process creation, create-new and fsync one
+`execution-intent/v1` file per frozen tuple under the run group's
+`execution-intents/` directory. Its exact bytes bind run ID, chart, harness,
+repeat, comparison/run-group, and mutation identities; the filename digest,
+row intent pair, and bytes agree. A crash leaves the tuple reserved: recovery
+emits a terminal runtime-error row or invalidates that comparison identity, but
+never relaunches the tuple.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
@@ -682,6 +692,8 @@ validation pair as required above:
 {
   "schema": "emulator-run/v1",
   "run_id": "run-...",
+  "execution_intent_ref": "runs/run-group-.../execution-intents/<tuple-digest-hex>.json",
+  "execution_intent_fingerprint": "sha256:...",
   "run_group_id": "run-group-...",
   "comparison_id": null,
   "contract_fingerprint": "sha256:...",
@@ -823,6 +835,11 @@ remain. An empty descendant set is valid. Thus minimality means no smaller
 failing applicable assignment, not merely trial selection or absence of any
 smaller case. Export copies this
 wrapper pair and rejects a case/path/digest-only join.
+For sampled or unavailable actor/environment seed control, every applicable
+strict descendant must bind the complete frozen repeat cohort and its
+contracted aggregation result proving nonfailure. One passing repeat is
+insufficient. Single-run irreducibility is admitted only when all relevant
+controls are fixed/deterministic.
 
 ## comparison.json
 

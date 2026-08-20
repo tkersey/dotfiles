@@ -219,6 +219,11 @@ only semantic output is create-new `result-envelope.json`, followed by
 `semantic-discovery-attempt-result/v1` asset containing the exact result-envelope
 pair and the complete sorted stable-alias identity descriptors/fingerprints.
 Only after that asset is durable may the wrapper return its fingerprint.
+Before publishing the later `semantic-discovery-result/v1`, copy the exact
+attempt-local envelope with create-new semantics to
+`semantic-discovery/results/<result-digest-hex>.json`, require the filename and
+fingerprint to agree, and fsync the results directory. That content-addressed
+copy is the recorded result-envelope ref.
 
 ~~~json
 {"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
@@ -1665,9 +1670,13 @@ Before retirement, seal exact RFC 8785 `holdout-cycle-completion/v1` bytes
 containing the reservation fingerprint and one sorted row per reserved arm with
 candidate/comparison IDs plus exact EER and runs ref/fingerprint pairs. The
 union of those sealed runs must realize every reserved chart/repeat/harness
-tuple exactly once; a missing pair or tuple blocks retirement.
+tuple exactly once per comparison; tuple identity is `(comparison_id,
+chart_fingerprint, repeat_id, harness_fingerprint)`. A missing pair or tuple
+blocks retirement. Before sealing, copy each exact EER and runs file into the
+static successor-owned `holdout-retirements/evidence/cycles/<cycle-id>/`
+namespace and fsync it; runtime directories are never transitive refs.
 Its closed payload is
-`{"arms":[{"candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","eer_fingerprint":"sha256:<hex>","eer_ref":"reports/<comparison-id>/EER-v1.yaml","runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<comparison-id>/runs.jsonl"}],"reservation_fingerprint":"sha256:<hex>","schema":"holdout-cycle-completion/v1"}`.
+`{"arms":[{"candidate_id":"<candidate-id>","comparison_id":"<comparison-id>","eer_fingerprint":"sha256:<hex>","eer_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/EER-v1.yaml","runs_fingerprint":"sha256:<hex>","runs_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/runs.jsonl"}],"reservation_fingerprint":"sha256:<hex>","schema":"holdout-cycle-completion/v1"}`.
 Arms sort by candidate ID with unique candidate/comparison IDs and equal the
 reservation arm set exactly; each EER/runs pair resolves and accounts its
 reserved tuples.
@@ -2453,6 +2462,9 @@ Capture from an immutable snapshot or locked worktree. If the source cannot be
 made immutable, perform a complete ordered second metadata-and-content scan
 after capture and require byte-identical path, type, mode, link target, and
 digest results before freezing the manifest; any drift restarts capture.
+Reject any captured regular file with link count greater than one; EC-v1
+harness manifests do not encode or recreate hard-link equivalence groups, so
+silently materializing separate files would change harness behavior.
 Source symlinks are resolved exactly once within that stable capture;
 dangling links and loops are invalid. A symlink manifest entry records
 `file_type: symlink`, its exact raw relative `link_target_base64url`, and the included
