@@ -201,7 +201,7 @@ emulator_execution_report:
       evaluator_fingerprint:
       residual_judgment_ref:
       residual_judgment_fingerprint:
-      support_result:
+      support_result: executable | judgeable | denied | observed_only | unsupported | null
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
       status_reason:
@@ -267,6 +267,13 @@ Every pass or hard failure has a fresh trace. Every invalid, unsupported,
 runtime-error, ambiguous, or skipped row records a reason and the evidence
 available before termination. No historical run appears as a baseline
 execution.
+
+`support_result` is null exactly when execution ended before support
+classification was reached, including pre-start `runner_unavailable` and
+malformed actor/action output rejected before a valid action exists. Once the
+classifier runs, the field is exactly its one support class even when a later
+oracle, environment, or runtime outcome fails. No run invents a support class
+to fill a pre-classification row.
 
 Every execution row binds its root contract and atlas fingerprints. A selecting
 root also binds its current partition-snapshot fingerprint and validation

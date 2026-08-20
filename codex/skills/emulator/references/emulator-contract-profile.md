@@ -370,7 +370,9 @@ development evidence entry resolves by ref/fingerprint and records its
 partition. Its complete `optimizer_visible_policy` object equals the
 corresponding pre-candidate object and deterministically projects to the
 optimizer policy. The optimizer does not receive the factor-selection
-ref/fingerprint, evidence, or baseline commitments. A
+ref or outer fingerprint, discovery/development evidence,
+factor-selector identity, or baseline/holdout commitments. Selector ownership
+fingerprints inside the projected policy remain required. A
 missing, later-authored, unresolved, or mismatched asset is
 `holdout_contaminated`.
 
@@ -629,7 +631,8 @@ has exactly one support class before evaluation, while `step` remains defined
 only for `executable`.
 
 `mutation.law_refs` is the sorted, duplicate-free complete mutation-law
-universe. Every dimension has unique `case_id` values; its shrink strategy may
+universe. `dimension_id` values are chart-wide unique before assignment or
+interaction derivation. Every dimension has unique `case_id` values; its shrink strategy may
 select only declared case IDs. Each domain case, not the whole dimension,
 declares its value, case kind, preserved laws, and violated laws. Its preserved
 and violated law sets are disjoint and their union equals
@@ -642,7 +645,10 @@ generator can select declared cases but cannot create authority.
 A mutation interaction has a unique `interaction_id`, at least two `when`
 entries sorted by `dimension_id`, no repeated dimension, and only declared
 dimension/case pairs. Its violated-law authority follows the same closure rule
-as a domain case. Interaction `when` tuples are unique. Every interaction whose
+as a domain case. Because every interaction is negative or boundary,
+`violated_laws` is nonempty, sorted by unique `law_ref`, and every law is a
+member of `mutation.law_refs` with a nonempty, duplicate-free authority-ref
+set. Interaction `when` tuples are unique. Every interaction whose
 complete tuple is a subset of an assignment matches; interaction order grants
 no precedence.
 
