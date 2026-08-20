@@ -963,9 +963,12 @@ select exactly one member of `recovery_refs`/`outcome_refs`, or both null when
 the historical session ended without that artifact; null is canonical absence,
 not permission to fabricate evidence. Non-null pairs resolve exact
 chart/source-bundle assets.
-The holdout and actor leakage targets copy these four pairs, the rejected-action
-pair, chart semantics, and evaluator pair byte-for-byte; conventional paths or
-post-chart selections are invalid.
+The holdout target copies these four pairs, the rejected-action pair, chart
+semantics, and evaluator pair byte-for-byte. The actor leakage target is the
+hidden-only projection: it excludes the actor-visible prompt pair while copying
+the correction, recovery, outcome, rejected-action, chart-semantics, and
+evaluator pairs byte-for-byte. Conventional paths or post-chart selections are
+invalid.
 
 For `transition_model: total`, support predicates exhaustively and exclusively
 cover every action admitted by `actions.schema`, `unsupported_default` is

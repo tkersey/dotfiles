@@ -580,6 +580,9 @@ RFC 8785 tuple bytes containing comparison/run-group, chart, harness, repeat,
 run purpose, and nullable mutation/parent identities—but not run ID. The closed
 intent bytes are
 `{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":"<comparison-id-or-null>","harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":"<sha256-or-null>","mutation_case_id":"<case-id-or-null>","parent_mutation_case_id":"<case-id-or-null>","parent_repeat_id":"<repeat-id-or-null>","repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary"}}`.
+The shrink-trial variant has the same closed outer shape and exact tuple keys,
+with `run_purpose: shrink_trial`, non-null mutation and parent identities, and
+the frozen trial repeat ID. These are the only two tagged variants.
 For `compare`, `comparison_id` is the exact non-null comparison ID and every
 mutation/parent field is null. For `run`, all comparison, mutation, and parent
 fields are null. For `mutate`, the mutation pair equals the frozen assignment;
@@ -1185,7 +1188,9 @@ For a retired holdout export, use the execution-origin shape with non-null
 static successor-owned snapshot refs named by the sealed cycle-completion arm,
 not the former runtime paths. Resolve the arm's admitted reference mapping and
 rewrite every embedded runtime evidence ref in each emitted dataset row to its
-mapped static successor pair; the mapped fingerprint must be unchanged. Export
+mapped static successor pair, then prefix that closure-relative ref with the
+exact `roots/<successor-root-digest-hex>/` archive prefix before hashing the
+emitted row; the mapped fingerprint must be unchanged. Export
 using only the successor closure must therefore resolve the EER, runs, and every
 row dependency after runtime directories are absent. A missing, ambiguous, or
 unmapped ref makes export `invalid_environment`.

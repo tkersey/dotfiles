@@ -140,7 +140,9 @@ prefix and glob matching are forbidden. `forbidden` uses the same component-
 safe semantics and wins over `allowed`. Recursive removal first enumerates and
 checks every descendant; admitting a parent never authorizes removal of a
 forbidden child. Unlink checks its target path; rename checks both source and
-destination plus both parent directory entries. The sole exception is atomic
+destination plus both parent directory entries. Directory rename additionally
+requires an exclusive lock that prevents membership changes in both source and
+destination trees from enumeration through rename completion. The sole exception is atomic
 replacement under one exact `kind: file` grant: that grant authorizes the
 invocation-owned temporary source entry and the exact granted destination
 entry, but no other operation or name in their parent directory. Before
@@ -157,15 +159,16 @@ descriptor-relative no-follow operations (`openat`/`renameat`/`unlinkat` or an
 equivalent race-free facility) and revalidate the pinned chain. Existing
 regular files are never modified in place: write a create-new sibling and
 atomically replace only the authorized directory entry. If replacement cannot
-be used, reject any target with link count greater than one or an unverified
-inode alias; an allowed hard link never grants authority over another name.
+be used, stop; in-place or non-atomic fallback is forbidden. An allowed hard
+link never grants authority over another name.
 A `kind: file` grant implicitly admits exactly one unpredictable,
 invocation-owned temporary entry in the same pinned directory solely for this
 atomic replacement. The temp must not match a forbidden path, is never exposed
 as a general sibling grant, and its name binds the invocation identity and a
 digest of the exact target leaf. Before creating a replacement temp, recover
 same-target orphan temps left by crashed invocations: validate the complete
-name, require a regular single-link file in the same pinned directory, and
+name, hold one exclusive per-target replacement lock, prove the named owner is
+dead, require a regular single-link file in the same pinned directory, and
 unlink only that admitted entry through the common gate. Ambiguous, aliased,
 malformed, or wrong-target entries stop the operation. The current temp is
 removed on failure before the operation returns.

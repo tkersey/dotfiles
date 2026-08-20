@@ -218,7 +218,13 @@ digest. After create-new of the digest directory, fsync the parent
 file and fsync the attempt directory after every file
 publication. The pending record binds the owner invocation/process, snapshot
 pair, query spec pair, complete physically known identity set, and one exact
-invocation-owned private staging root outside the exposure registry. Seq runs
+invocation-owned private staging root outside the exposure registry.
+The staging root is beneath the atlas's invocation-owned cleanup namespace.
+Before publishing pending bytes, create and fsync a mode-0600 owner marker that
+binds attempt ID, process identity, canonical root path, and an unpredictable
+nonce; the pending record binds its fingerprint. Hold the namespace owner lock
+through live use.
+Seq runs
 behind a wrapper that exposes no semantic payload on stdout or to the compiler;
 its raw output is create-new mode-0600 bytes only in that staging root. The
 wrapper computes the raw digest, extracts stable aliases there, and applies the
@@ -239,7 +245,7 @@ durable. If scrubbing would destroy required provenance, stop or downgrade the
 claim rather than publishing sensitive bytes globally.
 
 ~~~json
-{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"private_staging_owner_fingerprint":"sha256:<hex>","private_staging_root_path":"<canonical-absolute-path-outside-registry>","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
 {"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","raw_result_envelope_fingerprint":"sha256:<hex>","retained_projection_fingerprint":"sha256:<hex>","retained_projection_ref":"semantic-discovery/results/<result-digest-hex>.json","retention_disposition":"exact_authorized","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 ~~~
@@ -266,9 +272,12 @@ marker, and completion publication. Capability preflight and holdout admission e
 pending attempt before proceeding. For a dead owner with a durable result,
 recovery must publish and revalidate all result aliases before completion. With
 no durable `result.json`, recovery never opens, interprets, or deletes the
-path-named private staging bytes: path reuse cannot become evidence. It may
-clear the attempt only after proving the wrapper never returned or delivered
-semantic bytes; otherwise the attempt remains unresolved and returns
+path-named private staging payload as evidence. After proving the owner process
+dead, recovery acquires the exclusive cleanup-namespace lock, opens the root
+no-follow, and requires the exact pending-bound owner marker before recursively
+deleting it without reading payload bytes. A missing or unequal marker forbids
+cleanup and cannot become evidence. It may clear the attempt only after proving
+the wrapper never returned or delivered semantic bytes; otherwise the attempt remains unresolved and returns
 `source_contaminated`. Unprovable owner/output state is
 `source_contaminated`. No raw semantic byte is a registry recovery dependency,
 and no unresolved semantic-discovery attempt permits a new
@@ -1729,8 +1738,10 @@ tree; runtime directories are never transitive refs. A sealed reference mapping
 maps every embedded canonical runtime or prior-root ref to its static snapshot
 pair. It is closed exact RFC 8785
 `holdout-retirement-reference-mapping/v1` bytes:
-`{"entries":[{"source_fingerprint":"sha256:<hex>","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>","snapshot_fingerprint":"sha256:<same-hex>","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<digest-hex>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
-Entries sort by `source_ref`, are duplicate-free, preserve fingerprints, and
+`{"entries":[{"snapshot_fingerprint":"sha256:<same-hex>","snapshot_mode":"100755","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<mapping-entry-digest-hex>","source_fingerprint":"sha256:<hex>","source_mode":"100755","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
+Entries sort by `source_ref`, are duplicate-free, preserve fingerprints and
+exact modes, and derive each snapshot path digest from the complete mapping
+entry identity rather than content digest alone. They
 cover every distinct transitive ref embedded in the copied EER, runs rows, and
 their dependencies, including `runs/`, `reports/`, and
 `roots/<prior-root-digest-hex>/` refs. The snapshot ref resolves inside the
@@ -1873,7 +1884,9 @@ no other fields or mapping row shapes are admitted.
 Rows sort by candidate ID; every array is sorted and duplicate-free; ref and
 fingerprint arrays are same-length ordered pairs. The rows cover every
 enumerated cohort pending/sentinel exactly once, and every clear/closure joins
-the same candidate, attempt, pending fingerprint, and identity set. An
+the same candidate, attempt, pending fingerprint, identity set, and cycle ID.
+The validation top-level cycle, every pending/clear/access-proof embedded cycle,
+and the final root `comparison_policy.cycle_id` are equal. An
 unresolved attempt cannot be represented as a successful validation. Every
 pair-local artifact covers the complete cycle candidate set but owns only refs
 beneath that comparison's run group. Every holdout execution and its pairwise
