@@ -147,7 +147,9 @@ replacement under one exact `kind: file` grant: that grant authorizes the
 invocation-owned temporary source entry and the exact granted destination
 entry. During locked crash recovery it also authorizes exactly one validated
 dead-owner same-target orphan source solely for atomic transfer to the current
-temp name; no other operation or name in the parent is admitted. Before
+temp name. These are narrowly implied authority over those named parent-directory
+entries, not authority over the parent path or any sibling; no other operation
+or name in the parent is admitted. Before
 renaming a directory,
 recursively enumerate it without following symlinks and authorize every
 descendant at both its source path and corresponding destination path; a
@@ -168,8 +170,9 @@ invocation-owned temporary entry in the same pinned directory solely for this
 atomic replacement. The temp must not match a forbidden path, is never exposed
 as a general sibling grant, and its name binds the invocation identity and a
 process-incarnation fingerprint plus a digest of the exact target leaf. The
-incarnation asset is retained in the invocation cleanup namespace until the
-temp is replaced or recovered. Before creating a replacement temp, recover
+incarnation asset uses the immutable `os-process-incarnation/v1` schema and
+private custody defined in `references/session-derived-atlas.md` and is retained
+until the temp is replaced or recovered. Before creating a replacement temp, recover
 same-target orphan temps left by crashed invocations: validate the complete
 name, hold one exclusive per-target replacement lock, prove the named owner is
 dead, require a regular single-link file in the same pinned directory, and

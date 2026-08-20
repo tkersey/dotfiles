@@ -189,6 +189,13 @@ Every `owner_process_opaque_id` in cleanup evidence identifies a retained exact
 process start time, and a random launch nonce. Liveness requires all four to
 match the currently running process; PID reuse or reboot cannot match. Recovery
 proves absence of that exact incarnation, not mere PID absence.
+Incarnation assets live create-new at
+`<storage_domain_root>/private/process-incarnations/v1/<digest-hex>.json` with
+mode 0600 and exact RFC 8785 bytes
+`{"boot_id":"<os-boot-id>","launch_nonce":"<base64url>","pid":1,"process_start_time":"<os-immutable-start-value>","schema":"os-process-incarnation/v1"}`.
+The filename digest hashes those bytes; every cleanup ref/fingerprint resolves
+through this namespace and remains until all referencing cleanup obligations
+are terminal.
 
 `query_spec_fingerprint` binds the exact Seq query specification and snapshot
 fingerprint; `query_spec_ref` resolves those exact content-addressed bytes and
@@ -397,13 +404,21 @@ wrapper durably marks the complete physically identified snapshot
 leave semantic bytes observed without conservative exposure. Incomplete
 physical identity stops `source_contaminated`.
 Before invoking Seq, the wrapper create-news and fsyncs exact
-`physical-listing-attempt/v1` bytes under
-`semantic-discovery/physical-listing-attempts/<attempt-digest>.pending.json`,
-binding owner process-incarnation pair, query spec, repository/root snapshot,
-and projection implementation fingerprint. Preflight resumes any pending
-attempt under the same lock; it either publishes all conservative exposure
-claims and a terminal completion or proves the command never started. No raw
-listing is inspected without this durable attempt.
+`physical-listing-attempt/v1` bytes as
+`semantic-discovery/physical-listing-attempts/<attempt-digest>/pending.json`:
+`{"owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","projection_fingerprint":"sha256:<hex>","projection_ref":"semantic-discovery/physical-projections/<digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","repository_root_snapshot_fingerprint":"sha256:<hex>","schema":"physical-listing-attempt/v1"}`.
+Before process resume it create-news `started.json` with closed
+`physical-listing-started/v1` bytes binding pending fingerprint and the command
+process-incarnation pair. A safe projected result is create-new `result.json`
+binding pending/started fingerprints, raw-output digest without raw ref, and
+the retained projection pair. Terminal `completed.json` is exactly one of:
+`physical-listing-completed/v1` with result fingerprint plus sorted exposure
+claim pairs, `physical-listing-cancelled/v1` with null started/result after proof
+the command never started, or `physical-listing-exposed-uncertain/v1` with the
+started fingerprint and conservative claims for the complete physical snapshot.
+Preflight resumes every nonterminal directory under the same lock and publishes
+one of those closed terminal variants. No raw listing is inspected without this
+durable state machine.
 
 Exclude:
 
@@ -1825,10 +1840,10 @@ The preimage explicitly excludes `snapshot_ref`; its SHA-256 suffix is
 `<snapshot-key-digest-hex>`, which is inserted afterward. `<mode>` is the exact
 regular-file mode admitted by the source closure, without a narrower retirement
 whitelist, and source/snapshot modes are equal. Source refs may originate under `runs/`, `reports/`, or an
-archived `roots/` prefix. They
+archived `roots/` prefix, or `datasets/`. They
 cover every distinct transitive ref embedded in the copied EER, runs rows, and
 their dependencies, including `runs/`, `reports/`, and
-`roots/<prior-root-digest-hex>/` refs. The snapshot ref resolves inside the
+`roots/<prior-root-digest-hex>/`, and `datasets/` refs. The snapshot ref resolves inside the
 successor closure. Missing, extra, conflicting, or recursively unmapped refs
 block retirement.
 Its closed payload is
@@ -2073,7 +2088,10 @@ ID and per-chart repeat list across the baseline and named candidate harness
 fingerprints. Exactly one execution row
 consumes each tuple. Missing, extra, or duplicate tuples are
 `invalid_environment`; retries require a new comparison identity and cannot be
-selectively appended to the frozen cohort.
+selectively appended to the frozen cohort. That retry rule applies only before
+holdout reservation or to non-holdout comparisons. After a holdout reservation,
+the original tuple receives its one terminal row and no new comparison identity
+may reuse the consumed holdout.
 
 Before creating the reservation, atomically create-new
 `reports/<comparison-id>/` as the comparison-identity reservation for every
@@ -2276,10 +2294,11 @@ are
 `{"atlas_instance_id":"sha256:<hex>","cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","holdout_key":"<hex>","reservation_fingerprint":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-consumption/v1","source_identity_fingerprint":"sha256:<hex>"}`.
 The filename, key, identity, registry, atlas instance, cycle, root, and
 reservation must agree.
-Keep both locks held while the first actor packet or mount is handed to the
-fresh actor, and release them in reverse order only after every marker is
-durable and that actor has acknowledged loading the exact actor-input
-fingerprint. That acknowledgment is the first holdout exposure boundary. A
+Release both account-global locks in reverse order immediately after every
+consumption marker and the pair-local pre-actor validation are durable, before
+external actor handoff. The durable marker is the conservative holdout exposure
+boundary; actor acknowledgment is recorded pair-locally and never extends a
+global lock lifetime. A
 handoff failure leaves the identities consumed and yields
 `invalid_environment`; it does not reopen them. A concurrent retirement
 advance before lock acquisition makes the root stale and the run

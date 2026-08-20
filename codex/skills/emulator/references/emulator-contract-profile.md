@@ -371,13 +371,14 @@ tools, or unstated input bytes are denied. Each entry freezes a unique
 `witness_destination_ref`. Implement writes closed exact RFC 8785
 `emulator-materialization-witness/v1` bytes there before constructing the
 successor:
-`{"chart_fingerprint":"sha256:<pending-chart-hex>","field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","primary_sandbox_instance_id":"<opaque-id>","replica_normalized_prestate_fingerprint":"sha256:<same-hex>","replica_output_fingerprint":"sha256:<same-hex>","replica_sandbox_instance_id":"<different-opaque-id>","schema":"emulator-materialization-witness/v1"}`.
+`{"chart_fingerprint":"sha256:<pending-chart-hex>","field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","primary_sandbox_instance_id":"<opaque-id>","replica_normalized_prestate_fingerprint":"sha256:<same-hex>","replica_output_fingerprint":"sha256:<same-hex>","replica_runtime_fingerprint":"sha256:<same-runtime-hex>","replica_sandbox_instance_id":"<different-opaque-id>","schema":"emulator-materialization-witness/v1"}`.
 The successor's sorted `materialization_witnesses` array contains one
 ref/fingerprint pair for every plan entry, keyed and sorted by
 `(chart_fingerprint, field_pointer)`, and no others. Every witness equals the
 plan/materializer and two observed staging executions; primary and replica
 prestate/output fingerprints are equal while sandbox IDs differ. The observed
-output fingerprint equals the finalized planned pair. Missing
+and replica runtime fingerprints equal the plan runtime. The observed output
+fingerprint equals the finalized planned pair. Missing
 or unequal witnesses make the successor invalid.
 The exact payload is
 `{"arguments":[],"command_fingerprint":"sha256:<hex>","command_ref":"materializers/commands/<digest-hex>","input_closure_fingerprint":"sha256:<hex>","input_closure_ref":"materializers/inputs/<digest-hex>.json","normalized_prestate_fingerprint":"sha256:<hex>","normalized_prestate_ref":"materializers/prestates/<digest-hex>.json","output_contract_fingerprint":"sha256:<hex>","output_contract_ref":"materializers/output-contracts/<digest-hex>.json","runtime_fingerprint":"sha256:<hex>","runtime_ref":"materializers/runtimes/<digest-hex>.json","schema":"emulator-materializer/v1"}`.

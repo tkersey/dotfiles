@@ -609,6 +609,12 @@ emits exactly one terminal runtime-error or invalid-environment row for that
 reserved tuple and never relaunches it. Every reserved holdout tuple therefore
 remains accounted for and can participate in cycle completion; comparison
 identity is never discarded in lieu of a terminal row.
+Before actor input delivery, spawn the actor suspended, bind its process
+incarnation, and create-new/fsync closed `actor-launch-receipt/v1` bytes. Only
+then resume delivery. If the actor exits before `runtime-observation/v1` is
+durable, the terminal row uses `actor_started: true`, the receipt-bound process
+identity, null runtime observation, status `runtime_error`, and reason
+`runtime_observation_unavailable_after_launch`; it fabricates no actor evidence.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
