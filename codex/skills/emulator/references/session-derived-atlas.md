@@ -137,13 +137,25 @@ and duplicate-free; regular files only are admitted. The manifest covers every
 copied file exactly once, and its exact-byte SHA-256 is
 `corpus_snapshot_fingerprint`.
 
-Before copying any raw byte, create and fsync an owner-only cleanup marker
-outside the raw root with exact RFC 8785
-`{"raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":"sha256:<hex>"}`
-bytes. At capability preflight and before any new copy, enumerate this fixed
+Before copying any raw byte, acquire the adjacent `<marker-path>.lock`
+exclusive owner lock, then create and fsync an owner-only cleanup marker outside
+the raw root with exact RFC 8785
+`{"owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":null}`
+bytes. After the snapshot manifest is durable, atomically replace the marker
+under that lock with the same exact object except for its non-null matching
+snapshot fingerprint. At capability preflight and before any new copy, enumerate this fixed
 private temporary namespace, validate every marker/root remains beneath it,
-delete each orphan raw root through the common removal gate, then delete its
-marker. On normal success delete the raw root before its marker. A crash at any
+and acquire the marker-scoped exclusive recovery lock before inspecting an
+orphan. Recovery MUST prove the recorded owner process is absent, atomically
+replace the marker's owner fields with the recovery invocation/process while
+holding that lock, and only then treat the isolated root as invocation-owned
+under the common removal gate. A null snapshot fingerprint is valid only for a
+copy interrupted before manifest publication and does not weaken cleanup. If owner liveness or atomic transfer cannot be
+proved, stop with `source_contaminated`; a second invocation never deletes the
+first invocation's live root. Delete each recovered orphan root, then its
+marker, before releasing the recovery lock. On normal success the original
+owner holds the same marker-scoped lock and deletes the raw root before its
+marker. A crash at any
 point therefore leaves a discoverable cleanup obligation without retaining
 session contents in the marker. Explicitly authorized retention removes the
 marker only after its exact retained root and purpose are bound as source
@@ -210,10 +222,12 @@ fingerprint and carry the spec fingerprint separately.
 Retain exact RFC 8785 `semantic-discovery-result/v1` bytes containing the query
 provenance ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
 ref/fingerprint. Results do not narrow exposure: matching and non-matching
-sessions in the searched snapshot are all permanently discovery-only and
-cannot later enter development or holdout. The later source-bundle
+sessions in the searched snapshot are all permanently excluded from holdout.
+New claims are discovery-only, while existing development/optimizer exposure
+remains at that status. The later source-bundle
 `corpus_digest` remains a post-selection closure identity and is never required
-by this pre-read record.
+by this pre-read record. Query completion never rewrites an existing exposure
+claim.
 
 ~~~json
 {"query_record_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<spec-digest-hex>.json","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/results/<result-digest-hex>.json","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
@@ -664,8 +678,11 @@ a runtime-generated substitute is invalid.
 Each `metadata_fingerprint` hashes the entry's actor-observable ownership,
 timestamps, inode/link semantics, ACLs, extended attributes, and platform stat
 projection under the bound `metadata-observation-policy/v1`. Its ref/fingerprint
-equals the chart tools pair, access proof, execution row, and both arm
-inventories and resolves exact contract-owned bytes. That policy is
+has one canonical static asset identity: strip an exact
+`roots/<root-digest-hex>/` archive prefix before comparing the closure-relative
+suffix, then require that suffix plus fingerprint to equal the chart tools
+metadata-policy pair, access proof, execution row, and both arm inventories.
+All forms resolve the same exact contract-owned bytes. That policy is
 equal across arms and either virtualizes those observations to exact normalized
 values or proves the actor tool surface cannot observe them. A shell/stat-
 capable actor without normalization is ineligible; ambient metadata is never
@@ -998,7 +1015,10 @@ bytes. The member set equals the cluster preimage exactly; the chart and
 pre-candidate policy bind the approval ref/fingerprint. Missing, split, or
 self-authored approval makes the cluster ineligible for holdout.
 The attester principal differs from the factor selector and every candidate
-author/attester principal for the cycle; otherwise the cluster is
+author/attester principal for the cycle. It also differs by canonical person
+ID from every human named by a selected chart's
+`correction-human-review/v1` evidence; a correction reviewer has evaluator
+knowledge and is not holdout-blind for clustering that chart. Otherwise the cluster is
 discovery/development-only.
 The cluster then uses identity kind `duplicate_cluster` and ref
 `duplicate-cluster:sha256:<digest>`; its descriptor preimage is exactly
@@ -1512,7 +1532,7 @@ Write the RFC 8785 canonical bytes of each marker at
 `holdout-retirements/markers/<marker-digest-hex>.json`:
 
 ~~~json
-{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"],"training_authorization_fingerprint":null,"training_authorization_ref":null}
+{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"training_authorization_fingerprint":null,"training_authorization_ref":null}
 ~~~
 
 `consumption_purpose` is exactly one of `evaluation` or `training`; the example
@@ -1522,7 +1542,11 @@ to a canonical principal identity, the selected charts/groups, and the explicit
 training purpose; the emulator cannot self-authorize. Before writing the marker, copy the reservation's exact bytes
 to the static content-addressed `reservation_ref`, require its filename and
 fingerprint to agree, and include it in every successor closure that contains
-the marker. Both arrays are byte-lexicographically sorted and duplicate-free. The marker
+the marker. The identity array is the exact sorted, duplicate-free union of
+the retired charts' `source_identity_fingerprints` in the named prior root and
+equals the identity set bound by the copied reservation's global lock evidence;
+the chart and group arrays equal that same reservation and prior-root cohort.
+All three arrays are byte-lexicographically sorted and duplicate-free. The marker
 filename digest is SHA-256 of those exact bytes. Maintain immutable index
 snapshots as RFC 8785 bytes under
 `holdout-retirements/snapshots/<snapshot-digest-hex>.json`:
@@ -1578,7 +1602,11 @@ The witness is exact RFC 8785 bytes at
 `{"active_reservation_fingerprint":"sha256:<hex>","added_markers":[{"fingerprint":"sha256:<hex>","ref":"holdout-retirements/markers/<digest-hex>.json","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"current_snapshot_fingerprint":"sha256:<hex>","current_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","predecessor_snapshot_fingerprint":"sha256:<hex>","predecessor_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","schema":"retirement-snapshot-disjoint-advance/v1"}`.
 Added markers sort by ref and are unique; nested arrays are sorted and unique;
 the current snapshot equals the predecessor marker set plus exactly these
-markers; and all added identities/groups are disjoint from the reservation.
+markers. Every added row's source groups and identities equal its referenced
+marker exactly, so the marker's prior-root and reservation derivation is the
+identity preimage for this witness; no caller-supplied identity list is
+admitted. All added identities/groups are disjoint from the active reservation
+and selected cohort.
 While still
 holding both locks, enumerate every regular, non-symlink
 `optimizer-intent-sentinels/<holdout-key>/*.json`. Each
@@ -1630,7 +1658,10 @@ change sealed run evidence. `resolved_snapshot_fingerprint`,
 identical when the pointer has not advanced. The disjoint-advance pair is null
 in that case and non-null exactly for the admitted monotonic extension; then
 `resolved_snapshot_fingerprint` is current while `root_snapshot_fingerprint`
-remains the root-bound predecessor. Store it
+remains the root-bound predecessor. In that admitted branch every selecting
+run and EER sets `partition_snapshot_fingerprint` to the resolved current
+snapshot; the validation artifact retains the distinct root predecessor and
+sealed disjoint-advance witness. Store it
 at `runs/<run-group-id>/partition-validation.json`; runs and EER bind that ref
 and exact fingerprint. This runtime proof is distinct from the static
 `partition-claim-validation/v1` asset.
@@ -1640,7 +1671,7 @@ create the exclusive RFC 8785 `holdout-use/v1` reservation at
 `runs/<cycle-id>/holdout-reservation.json` with exactly:
 
 ~~~json
-{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","chart_repeats":[{"chart_fingerprint":"sha256:<hex>","repeat_ids":["<repeat-id>"]}],"comparison_id":"<comparison-id>"}],"atlas_instance_id":"sha256:<hex>","chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
+{"arms":[{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","chart_repeats":[{"chart_fingerprint":"sha256:<hex>","repeat_ids":["<repeat-id>"]}],"comparison_id":"<comparison-id>"}],"atlas_instance_id":"sha256:<hex>","chart_fingerprints":["sha256:<hex>"],"cycle_id":"<cycle-id>","exposure_registry_id":"sha256:<hex>","root_contract_fingerprint":"sha256:<hex>","schema":"holdout-use/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"storage_domain_id":"sha256:<hex>"}
 ~~~
 
 `arms` contains the full frozen candidate set and is sorted by `candidate_id`;
@@ -1649,8 +1680,10 @@ chart fingerprint. Each chart's `repeat_ids` is sorted, duplicate-free, and has
 the exact deterministic or stochastic count frozen by policy. Every arm's
 complete `chart_repeats` bytes are identical to every other arm and to the
 root's singular `comparison_policy.paired_cohort`; candidates cannot choose
-different repeat IDs. Both top-level
-fingerprint arrays are sorted and duplicate-free. Candidate IDs and comparison IDs are each unique,
+different repeat IDs. All three top-level fingerprint arrays are sorted and
+duplicate-free. The identity array is the exact union of the selected root
+chart identities and every acquired global group lock binds that same set.
+Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
 `comparison_policy.cycle_id`; `atlas_instance_id` equals the recomputed root
@@ -1706,11 +1739,13 @@ and each referenced per-chart identity set before publication.
 
 For registry-backed compilation, when completeness cannot be established
 without semantic source bytes, acquire
-the global partition-freeze lock, publish `discovery_exposed` claims for every
-physically known identity, perform the bounded semantic read while still
+the global partition-freeze lock, ensure every physically known identity has an
+exposed claim (publishing `discovery_exposed` only for an unclassified
+identity), perform the bounded semantic read while still
 holding the lock, derive all newly visible stable aliases, and publish
 `discovery_exposed` claims for them before releasing it. That group is
-permanently discovery-only. If a newly discovered alias already has a
+permanently holdout-ineligible; existing development/optimizer status remains
+unchanged. If a newly discovered alias already has a
 selection lock/reservation but no consumption marker, atomically replace its
 `holdout_unexposed` claim with `discovery_exposed`; the selector's mandatory
 pre-actor revalidation then fails. If its consumption marker exists, the alias
@@ -2007,7 +2042,8 @@ declared `changed_paths`; a missing, extra, or rewritten path is
 `comparison_drift`.
 Each candidate commitment also freezes exactly one globally unique
 `generation_attempt_id`, repeated by factor selection, pending intent, access
-proof, clear marker, candidate metadata, and final root. A second completed or
+proof, clear marker, candidate metadata, and the matching final-root
+`comparison_policy.candidate_harnesses` entry. A second completed or
 cleared attempt for the same `(cycle_id, candidate_id)` is
 `holdout_contaminated`; retries require a new cycle and untouched holdout.
 `targeted_chart_rules` covers every selected chart exactly once. Each closed
@@ -2197,6 +2233,7 @@ Candidate metadata:
 ~~~yaml
 candidate:
   candidate_id:
+  generation_attempt_id:
   candidate_metadata_template_ref:
   candidate_metadata_template_fingerprint:
   candidate_author_principal_identity_ref:
@@ -2305,7 +2342,7 @@ This candidate_author-to-attester person-ID inequality is mandatory.
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
+{"baseline_harness_fingerprint":"sha256:<hex>","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","changed_files":[{"baseline_fingerprint":"sha256:<hex>","candidate_fingerprint":"sha256:<hex>","path":"<logical-path>","root_id":"<root-id>","selector_ids":["<selector-id>"]}],"factor":"<factor>","generation_attempt_id":"<generation-attempt-id>","owner_policy_fingerprint":"sha256:<hex>","owner_policy_ref":"comparison/pre-candidate-policy.json","runtime_config_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","key":"<key>"}],"runtime_surface_changes":[{"baseline_value_fingerprint":"sha256:<hex>","candidate_value_fingerprint":"sha256:<hex>","derivation_path_refs":[{"path":"<logical-path>","root_id":"<root-id>"}],"derivation_runtime_keys":["<key>"],"field":"<field>"}],"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"factor-delta-validation/v1","semantic_delta_attestation_fingerprint":null,"semantic_delta_attestation_ref":null}
 ~~~
 
 `changed_files` is the complete regular-file content-difference set sorted by
@@ -2320,7 +2357,9 @@ file changes, when both contain the exact attestation asset ref and fingerprint
 bound by candidate metadata. `owner_policy_ref` and
 `owner_policy_fingerprint` exactly equal the evaluator-only frozen
 pre-candidate policy ref and `pre_candidate_policy_fingerprint` already bound
-by the root and generation-access proof. The validator receives that immutable
+by the root and generation-access proof. `generation_attempt_id` equals the
+candidate commitment, access proof, candidate metadata, and root candidate
+entry. The validator receives that immutable
 asset from the evaluator, never from candidate output; a stale, self-selected,
 or ref/fingerprint-mismatched policy is `evaluator_contaminated`. No other
 fields are admitted. The derivation ref/fingerprint names the immutable
@@ -2504,7 +2543,8 @@ Rows exported from a deliberately retired holdout additionally bind the exact
 `holdout-retirement/v1` marker, successor snapshot, and `training` retirement
 purpose by ref and fingerprint. They also bind `successor_root_ref` and
 `successor_root_fingerprint`; that root transitively contains the marker and
-snapshot and names the originating root as predecessor. The deferred export
+snapshot and sets `retirement_predecessor_root_fingerprint` to the marker's
+`prior_root_fingerprint`. The deferred export
 manifest repeats the same successor-root pair. Missing or mismatched retirement evidence keeps
 the row ineligible.
 
@@ -2525,8 +2565,9 @@ provenance.
 
 Counterexample rows require a fresh environment-valid mutation run, exact
 mutation assignment, a reproducible minimized failing artifact, evaluator
-evidence, and a chart that is not active holdout. Bind the external generator
-when one exists. For finite built-in enumeration, derive
+evidence, and a chart whose partition is exactly discovery or development.
+Active and retired holdouts are ineligible; every retirement and successor
+field is null. Bind the external generator when one exists. For finite built-in enumeration, derive
 `mutation_generator_fingerprint` from the chart fingerprint and complete
 mutation declaration, including dimensions, interactions, laws, and shrink
 strategies, exactly as specified by the contract profile. Both routes derive

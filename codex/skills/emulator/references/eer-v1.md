@@ -81,6 +81,7 @@ emulator_execution_report:
         fingerprint:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
+    generation_attempt_id:
     candidate_metadata_ref:
     candidate_metadata_fingerprint:
     candidate_generation_access_proof_ref:
@@ -93,6 +94,8 @@ emulator_execution_report:
     actor_readable_surface_validation_fingerprint:
     actor_context_delta_validation_ref:
     actor_context_delta_validation_fingerprint:
+    reset_state_validation_ref:
+    reset_state_validation_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     reason:
@@ -268,7 +271,9 @@ for each fully materialized exact-fidelity executable chart, sorted by chart fin
 materializes and proves both resets. Each row
 binds the two distinct admission reset refs/fingerprints that established exact
 fidelity; other charts are absent. Thus design may retain pre-existing proof and implement retains new proof
-without inventing executions. Run modes repeat the same pairs in their chart's
+without inventing executions. These rows equal the root contract's non-null
+`reset_admissions` entries; a pending design slot with a null fingerprint is
+not reportable proof. Run modes repeat the same pairs in their chart's
 execution rows.
 Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
 
@@ -449,6 +454,23 @@ observed started flag and context fingerprint. No other row may use that
 variant; omitting it or fabricating a context fingerprint is
 `comparison_drift`.
 
+Every paired comparison also binds one report-owned exact RFC 8785
+`paired-reset-state-validation/v1` artifact. Its complete pair domain contains
+one row for every executable chart/repeat in the frozen cohort and joins the
+baseline and candidate execution reset results, their referenced prestate
+artifacts, and the frozen world/reset/effect-policy identities. After removing
+only sandbox- and run-specific identity fields, the two observed prestate
+projections MUST be byte-equal and both MUST equal the chart's expected
+prestate fingerprint. A factor is never allowed to change world, reset, or
+effect policy in a harness comparison; any unequal normalized state or static
+identity is `comparison_drift`.
+
+The exact payload shape is
+`{"pairs":[{"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
+Pairs sort by `(chart_fingerprint, repeat_id)`, are complete and unique, and a
+non-`pass` status is not admitted. Normative charts have no pair row. Missing,
+extra, mismatched, or unresolved reset evidence is `comparison_drift`.
+
 Comparison-wide access proof maps every execution row that can contribute agent
 evidence to that row's nonempty `actor_access_proof_ref` and fingerprint. A row terminated before process launch records
 `actor_started: false`, null proof fields, and a pre-launch termination reason;
@@ -535,7 +557,11 @@ current pointer resolved to the root-bound immutable partition snapshot, plus
 every source-identity partition claim and the artifact validating those claims
 against the frozen pre-candidate policy. The canonical
 `partition-validation/v1` payload and run-group path are defined in
-`session-derived-atlas.md`; a different payload is invalid. Holdout runs
+`session-derived-atlas.md`; a different payload is invalid. Selecting rows
+set `partition_snapshot_fingerprint` to that artifact's
+`resolved_snapshot_fingerprint`. When a valid disjoint advance exists this is
+the current successor snapshot, while `root_snapshot_fingerprint` remains the
+separately bound predecessor inside the validation artifact. Holdout runs
 additionally bind the exclusive pre-exposure reservation, every canonical
 cross-atlas lock's atlas-relative snapshot ref and fingerprint, and a validation
 artifact proving those snapshots matched the canonical locks, root, storage
@@ -740,6 +766,7 @@ wrapper pair and rejects a case/path/digest-only join.
   "holdout_consumptions": [{"fingerprint":"sha256:...","ref":"runs/cmp-.../holdout-consumption/<digest-hex>.json"}],
   "baseline_harness_fingerprint": "sha256:...",
   "candidate_harness_fingerprint": "sha256:...",
+  "generation_attempt_id": "generation-attempt-...",
   "candidate_metadata_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/candidate.yaml",
   "candidate_metadata_fingerprint": "sha256:...",
   "candidate_generation_access_proof_ref": "roots/<root-digest-hex>/harnesses/candidates/candidate-1/generation-access-proof.json",
@@ -752,6 +779,8 @@ wrapper pair and rejects a case/path/digest-only join.
   "actor_readable_surface_validation_fingerprint": "sha256:...",
   "actor_context_delta_validation_ref": "reports/cmp-.../actor-context-delta-validation.json",
   "actor_context_delta_validation_fingerprint": "sha256:...",
+  "reset_state_validation_ref": "reports/cmp-.../paired-reset-state-validation.json",
+  "reset_state_validation_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
     "candidate": []
@@ -855,7 +884,8 @@ report before comparison. The comparison's factor-delta validation asset
 identity MUST equal the closure-relative fields on the root
 `candidate_harnesses` entry for its candidate ID and the same fields in that
 candidate's metadata. Literal prefixed and unprefixed ref strings are not
-compared. Each candidate has a distinct
+compared. The comparison's `generation_attempt_id` equals the root candidate
+entry, candidate metadata, access proof, and pre-candidate commitment. Each candidate has a distinct
 complete baseline/candidate manifest-diff validation; evidence from one
 candidate cannot validate another.
 
@@ -925,7 +955,9 @@ Evidence arrays sort by ref and are duplicate-free. Retirement fields
 are all null for discovery/development rows and all non-null for a holdout
 retired for training, binding the exact training-authorized marker, successor
 snapshot, and non-null `successor_root_ref`/fingerprint. The successor root
-transitively owns both retirement assets and names the originating root.
+transitively owns both retirement assets and its
+`retirement_predecessor_root_fingerprint` equals the marker's
+`prior_root_fingerprint`.
 Mixed nullability or extra fields are invalid.
 
 Trajectory rows are exact RFC 8785 `emulator-trajectory/v1` bytes containing

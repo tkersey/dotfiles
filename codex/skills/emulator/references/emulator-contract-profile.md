@@ -89,9 +89,17 @@ emulator_contract:
   origin: source_faithful | designed | mixed
   operation_mode: design | implement | run | mutate | compare
   predecessor_root_fingerprint:  # non-null only for implement successor
+  retirement_predecessor_root_fingerprint:  # non-null only for retirement successor
   materialization_plan:          # non-null for pending design and its implement successor
     ref:
     fingerprint:
+
+  reset_admissions:  # exact executable charts; pending fingerprints may be null in design
+    - chart_fingerprint:
+      admissions:
+        - admission_id:
+          ref: admissions/<admission-id>/admission.json
+          fingerprint:
 
   source:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | existing_contract | mixed
@@ -210,6 +218,7 @@ emulator_contract:
       capture_provenance_fingerprint:
     candidate_harnesses:
       - candidate_id:
+        generation_attempt_id:
         harness_id:
         ref:
         fingerprint:
@@ -324,24 +333,47 @@ A design root with pending implementation assets binds exact RFC 8785
 `emulator-materialization-plan/v1` bytes:
 
 ~~~json
-{"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
+{"admission_outputs":[{"admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-a>/admission.json"},{"admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-b>/admission.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
 ~~~
 
 Entries sort by `(chart_fingerprint, field_pointer)`, are unique, and admit only
 world, reset, fixture, tool, reward, mutation_generator, and
 evaluator_implementation roles. Each names one otherwise required
 ref/fingerprint pair that is exactly null in the pending chart. Mode-gated
+`admission_outputs` sorts by `(chart_fingerprint, admission_id)`, has unique
+IDs and destination refs, and contains only the two reset-admission slots for
+each pending exact-fidelity executable chart. Mode-gated
 design validation admits those null pairs only with complete plan coverage and
 forbids run/comparison claims. Implement materializes exactly the plan, changes
 `operation_mode` from `design` to `implement`, sets
 `predecessor_root_fingerprint` to the design root, fills every planned pair,
-retains the plan pair, and changes only derived chart/root fingerprints. The
+retains the plan pair, and changes only derived chart/root fingerprints. For
+every pending exact-fidelity executable chart, `admission_outputs` contains
+exactly two rows with distinct frozen admission IDs and destination refs.
+Implement runs those two resets in distinct sandboxes, writes the transitive
+`reset-admission/v1`, result, and prestate assets at only those destinations,
+and fills the matching root `reset_admissions` fingerprints. Each frozen
+admission destination is `admissions/<admission-id>/admission.json`;
+its closed admission bytes may reference only the sibling `result.json` and
+`prestate.json`, so all three output paths are predetermined by the plan row.
+A non-exact chart
+has no admission row; a third output, changed destination, or output for an
+unplanned chart is `invalid_environment`. The
 plan's sorted unique `derivations` also admits only deterministic
 identity-completeness-manifest, session-provenance, partition-validation, and
 archived-root assets whose bytes are recomputed solely from the listed changed
 fields; refs/fingerprints for that exact transitive set may change. The
-successor then passes ordinary complete-closure validation; any other delta is
-`invalid_environment`.
+successor then passes ordinary complete-closure validation; reset-admission
+bytes are observed evidence admitted only by their frozen output slots, not
+deterministic derivations. Any other delta is `invalid_environment`.
+
+`predecessor_root_fingerprint` and
+`retirement_predecessor_root_fingerprint` are mutually exclusive. The former
+is non-null only for an implement successor and names its pending design root.
+The latter is non-null only for a successor that incorporates a completed
+holdout retirement and names the exact originating root whose charts were
+retired. A root that is both materialized and retirement-updated requires two
+separate successors; one root never conflates those transitions.
 
 `operation_mode` is the operation that authored or executed the closure and is
 immutable for the closure and report. The `$emulator` `export` request reads an
@@ -350,6 +382,11 @@ the originating `operation_mode` rather than creating an export-identity
 variant. `comparison_policy` is absent for non-executing `design` and
 `implement` roots. It is required for `run`, `mutate`, and `compare`: `run` and
 `mutate` require `single_arm`, while `compare` requires `paired_compare`.
+`reset_admissions` is sorted by chart fingerprint and each nested admission
+array by admission ID. A pending design exact chart has exactly two frozen refs
+with null fingerprints; implement fills both and every later root that retains
+the chart repeats the exact pairs. Fully materialized exact charts may never
+omit them, while non-exact and non-executable charts have no row.
 When design or implement performs the first semantic read of a holdout,
 `holdout_authoring_baseline` is mandatory and binds the exact mode-neutral
 baseline manifest plus factor selection. It is absent otherwise. A later
@@ -503,8 +540,8 @@ exact harness manifest whose fingerprint the corresponding comparison and runs
 must repeat. It also binds the deterministic
 `harnesses/candidates/<candidate-id>/candidate.yaml` metadata bytes; candidate
 metadata, actual candidate-generation access proof, factor-delta validation,
-and pairwise EER repeat the same candidate, baseline, factor, and manifest
-identities.
+and pairwise EER repeat the same candidate, generation attempt, baseline,
+factor, and manifest identities.
 The candidate metadata, root candidate entry, factor-delta validation, and
 pairwise EER also repeat the same semantic-delta-attestation ref/fingerprint;
 both fields are null when no mixed-owner file changes and both are non-null

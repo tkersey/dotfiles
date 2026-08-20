@@ -133,7 +133,10 @@ prefix and glob matching are forbidden. `forbidden` uses the same component-
 safe semantics and wins over `allowed`. Recursive removal first enumerates and
 checks every descendant; admitting a parent never authorizes removal of a
 forbidden child. Unlink checks its target path; rename checks both source and
-destination plus both parent directory entries. For a not-yet-created path,
+destination plus both parent directory entries. Before renaming a directory,
+recursively enumerate it without following symlinks and authorize every
+descendant at both its source path and corresponding destination path; a
+forbidden descendant denies the entire rename. For a not-yet-created path,
 canonicalize and authorize the existing parent with no symlink components,
 validate the exact leaf name, and create with no-follow/create-new semantics;
 an absent leaf never broadens authority. Probe cleanup and rollback use the same gate. A destination
@@ -157,7 +160,10 @@ Choose exactly one mode.
 
 Compile or repair the root contract and its charts. Design may create only the
 contract, chart, source-bundle, actor-projection, partition, and declarative
-evaluator-policy assets. It does not materialize executable world, reset,
+evaluator-policy assets. When first authoring a holdout, it may also capture
+the exact mode-neutral baseline harness bundle and capture provenance plus the
+factor-selection asset required by `holdout_authoring_baseline`; it may not
+create a candidate bundle. It does not materialize executable world, reset,
 fixture, tool, reward, mutation-generator, or evaluator-implementation assets;
 provision an actor runtime; execute the chart; or introduce a native subsystem.
 
@@ -167,7 +173,8 @@ Validate the design-authored pending closure and its closed materialization plan
 allowing only the implementation assets declared as pending. Materialize those
 assets in an isolated staging root, compute their exact identities, then create
 and fully validate one deterministic implemented successor closure that changes
-only the pending asset refs/fingerprints and root/chart closure fingerprints.
+only the pending asset refs/fingerprints, the materialization plan's frozen
+reset-admission output fingerprints, and root/chart closure fingerprints.
 The successor also requires `operation_mode: implement` and a
 `predecessor_root_fingerprint` equal to the design root; these are the only
 additional identity changes. It may also update exactly the deterministic
