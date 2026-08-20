@@ -291,13 +291,16 @@ execution rows.
 Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
 
 ```json
-{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","resolved_effect_policy_fingerprint":"sha256:<hex>","resolved_effect_policy_ref":"admissions/<admission-id>/resolved-effect-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
+{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","effect_policy_template_ref":"<archived-chart-effect-policy-ref>","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","resolved_effect_policy_fingerprint":"sha256:<hex>","resolved_effect_policy_ref":"admissions/<admission-id>/resolved-effect-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
 ```
 
 The two rows have different admission and sandbox instance IDs, equal chart,
 world, recipe, logical effect-policy-template, and observed-prestate fingerprints, and each
-observed prestate equals the chart's expected fingerprint. Reset-result
-and prestate refs resolve exact retained `reset-result/v1` and
+observed prestate equals the chart's expected fingerprint. The template
+ref/fingerprint equals the chart/world effect-policy pair after
+archive-prefix normalization; resolved policies are deterministic substitutions
+of only that template's logical sandbox-root roles.
+Reset-result and prestate refs resolve exact retained `reset-result/v1` and
 `reset-prestate/v1` bytes. `observed_prestate_artifact_fingerprint` hashes the
 whole sandbox-specific prestate artifact and therefore differs across
 admissions; `observed_prestate_fingerprint` hashes only its normalized
@@ -496,16 +499,20 @@ artifacts, and the frozen world/reset/effect-policy identities. After removing
 only sandbox- and run-specific identity fields, the two observed prestate
 projections MUST be byte-equal and both MUST equal the chart's expected
 prestate fingerprint. A factor is never allowed to change world, reset, or
-effect policy in a harness comparison; any unequal normalized state or static
-identity is `comparison_drift`.
+the logical effect-policy template in a harness comparison; any unequal
+normalized state, template identity, or non-root resolved-policy projection is
+`comparison_drift`.
 
 The exact payload shape is
-`{"pairs":[{"baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_reset_started":true,"baseline_unavailable_reason":null,"candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_started":true,"candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
+`{"pairs":[{"baseline_normalized_prestate_fingerprint":"sha256:<hex>","baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_reset_started":true,"baseline_resolved_effect_policy_fingerprint":"sha256:<hex>","baseline_resolved_effect_policy_ref":"runs/<comparison-id>/resolved-effect-policies/<run-id>.json","baseline_unavailable_reason":null,"candidate_normalized_prestate_fingerprint":"sha256:<hex>","candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_started":true,"candidate_resolved_effect_policy_fingerprint":"sha256:<hex>","candidate_resolved_effect_policy_ref":"runs/<comparison-id>/resolved-effect-policies/<run-id>.json","candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","effect_policy_template_ref":"<archived-chart-effect-policy-ref>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","resolved_policies_normalized_equal":true,"status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
 Pairs sort by `(chart_fingerprint, repeat_id)` and are complete and unique.
 `pass` requires both `*_reset_started` and `*_reset_performed` true, non-null result pairs, null
-reasons, equal normalized prestates, and equal static identities. A tuple whose
+reasons, equal per-arm normalized prestates, one shared chart-owned policy
+template, and resolved policies equal after stripping only their verified
+sandbox-root substitutions. Raw resolved-policy fingerprints are expected to
+differ across sandboxes. A tuple whose
 runner stops before reset has `status: unavailable_prestart`, the affected
-started/performed flags false, null result pair and normalized prestate, and a
+started/performed flags false, null result, resolved-policy, and normalized-prestate fields, and a
 nonempty reason matching the execution row; the other arm retains its observed
 fields. Two unavailable arms retain two reasons. This variant yields incomplete
 evidence and never manufactures reset output. Missing/extra rows, a false flag

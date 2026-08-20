@@ -332,8 +332,9 @@ exact RFC 8785 `session-provenance/v1` bytes:
 The companion fingerprint hashes those exact bytes. The identity pair equals
 the root source pair, claim refs/fingerprints are same-length positionally
 joined arrays sorted by ref, and the validation pair covers them exactly. The
-legacy pair is non-null only for a pre-registry source admitted to holdout;
-discovery/development sources may keep it all-null and remain permanently
+legacy arrays are same-length, sorted by ref, and nonempty only for
+pre-registry groups admitted to holdout; discovery/development sources may keep
+both empty and remain permanently
 ineligible for holdout. In
 `paired_compare`, the pre-candidate policy's inline `session_provenance` value
 is byte-identical to this referenced asset. In `design`, `implement`, `run`, and
@@ -345,7 +346,7 @@ A design root with pending implementation assets binds exact RFC 8785
 `emulator-materialization-plan/v1` bytes:
 
 ~~~json
-{"admission_outputs":[{"admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-a>/admission.json"},{"admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-b>/admission.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
+{"admission_outputs":[{"admission_destination_ref":"admissions/<admission-id-a>/admission.json","admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","prestate_destination_ref":"admissions/<admission-id-a>/prestate.json","reset_result_destination_ref":"admissions/<admission-id-a>/result.json","resolved_effect_policy_destination_ref":"admissions/<admission-id-a>/resolved-effect-policy.json"},{"admission_destination_ref":"admissions/<admission-id-b>/admission.json","admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","prestate_destination_ref":"admissions/<admission-id-b>/prestate.json","reset_result_destination_ref":"admissions/<admission-id-b>/result.json","resolved_effect_policy_destination_ref":"admissions/<admission-id-b>/resolved-effect-policy.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
 ~~~
 
 Entries sort by `(chart_fingerprint, field_pointer)`, are unique, and admit only
@@ -356,7 +357,7 @@ deterministic materializer asset frozen by design. Implement executes only
 those bytes; two distinct outputs from one unchanged materializer/plan are
 `invalid_environment`. Mode-gated
 `admission_outputs` sorts by `(chart_fingerprint, admission_id)`, has unique
-IDs and destination refs, and contains only the two reset-admission slots for
+IDs and four destination refs per row, and contains only the two reset-admission slots for
 each pending exact-fidelity executable chart. Mode-gated
 design validation admits those null pairs only with complete plan coverage and
 forbids run/comparison claims. Implement materializes exactly the plan, changes
@@ -366,13 +367,14 @@ retains the plan pair, and changes only derived chart/root fingerprints. For
 every pending exact-fidelity executable chart, `admission_outputs` contains
 exactly two rows with distinct frozen admission IDs and destination refs.
 Implement runs those two resets in distinct sandboxes, writes the transitive
-`reset-admission/v1`, result, and prestate assets at only those destinations,
+`reset-admission/v1`, result, prestate, and resolved-effect-policy assets at
+only those destinations,
 and fills the matching root `reset_admissions` fingerprints. Each frozen
 admission destination is `admissions/<admission-id>/admission.json`;
-its closed admission bytes may reference only the sibling `result.json` and
-`prestate.json`, so all three output paths are predetermined by the plan row.
+its closed admission bytes may reference only the three sibling assets named by
+the row, so all four output paths are predetermined by the plan.
 A non-exact chart
-has no admission row; a third output, changed destination, or output for an
+has no admission row; a fifth output, changed destination, or output for an
 unplanned chart is `invalid_environment`. The
 plan's sorted unique `derivations` also admits only deterministic
 identity-completeness-manifest, session-provenance, and

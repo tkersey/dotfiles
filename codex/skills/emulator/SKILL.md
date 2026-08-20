@@ -163,7 +163,9 @@ contract, chart, source-bundle, actor-projection, partition, and declarative
 evaluator-policy assets. When first authoring a holdout, it may also capture
 the exact mode-neutral baseline harness bundle and capture provenance plus the
 factor-selection asset required by `holdout_authoring_baseline`; it may not
-create a candidate bundle. It does not materialize executable world, reset,
+create a candidate bundle. For a pending implementation it may freeze the
+materialization-plan and deterministic materializer assets, but not their
+implementation outputs. It does not materialize executable world, reset,
 fixture, tool, reward, mutation-generator, or evaluator-implementation assets;
 provision an actor runtime; execute the chart; or introduce a native subsystem.
 
@@ -173,8 +175,9 @@ Validate the design-authored pending closure and its closed materialization plan
 allowing only the implementation assets declared as pending. Materialize those
 assets in an isolated staging root, compute their exact identities, then create
 and fully validate one deterministic implemented successor closure that changes
-only the pending asset refs/fingerprints, the materialization plan's frozen
-reset-admission output fingerprints, and root/chart closure fingerprints.
+only the pending asset refs/fingerprints, root reset-admission fingerprints
+emitted at the materialization plan's frozen destinations, and
+root/chart closure fingerprints.
 The successor also requires `operation_mode: implement` and a
 `predecessor_root_fingerprint` equal to the design root; these are the only
 additional identity changes. It may also update exactly the deterministic

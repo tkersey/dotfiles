@@ -239,7 +239,10 @@ completion record, fsyncing each affected registry directory after claim,
 marker, and completion publication. Capability preflight and holdout admission enumerate every
 pending attempt before proceeding. For a dead owner with a durable result,
 recovery must publish and revalidate all result aliases before completion; with
-no result it may clear the attempt only after proving the wrapper never
+`result-envelope.json` but no `result.json`, recovery runs the same frozen
+query-adapter/alias-extraction implementation over that envelope, creates the
+deterministic `result.json` with create-new semantics, fsyncs it, then follows the durable-result
+route. With neither file it may clear the attempt only after proving the wrapper never
 returned or delivered semantic bytes. Unprovable owner/output state is
 `source_contaminated`. Raw-snapshot cleanup therefore never erases the only
 durable alias evidence, and no unresolved semantic-discovery attempt permits a
@@ -484,10 +487,17 @@ diagnostic/development-only and cannot enter holdout, harness selection,
 promotion, or preference training. There is no same-reviewer exception whose
 choices can be revised after correction reveal.
 
-First parse the finalized chart as data, remove the entire
-`/environment_chart/evaluator/authority/correction_review` subtree, and encode
-the remaining `environment_chart` value as the `chart_semantics` member of the
-exact RFC 8785 `correction-review-subject/v1` asset:
+First parse the finalized chart as data. For a pending design or its implement
+successor, normalize every field
+pointer named by the frozen materialization plan to the same closed
+`{"field_pointer":"<pointer>","materialization_plan_fingerprint":"sha256:<hex>"}`
+placeholder. Thus filling planned implementation bytes does not change the
+reviewed semantic subject; any unplanned or changed-plan field still changes it
+and requires fresh review.
+Then remove the entire `/environment_chart/evaluator/authority/correction_review`
+subtree and encode the remaining `environment_chart` value as the
+`chart_semantics` member of the exact RFC 8785
+`correction-review-subject/v1` asset:
 
 ~~~json
 {"chart_semantics":{"chart_version":"EC-chart-v1"},"schema":"correction-review-subject/v1"}
@@ -1748,6 +1758,9 @@ and its run-local snapshot ref/fingerprint. Mappings sort by canonical ref,
 are unique and complete; offline resolution substitutes only through this
 sealed map, so the copied clear marker's `optimizer-attempts/...` closure ref
 never consults the live registry.
+Its closed payload is
+`{"mappings":[{"canonical_ref":"optimizer-attempts/<pending-digest-hex>/closure.json","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"runs/<comparison-id>/optimizer-clear-evidence/<phase>/<candidate-id>/closure.json"}],"schema":"sealed-ref-mapping/v1"}`;
+no other fields or mapping row shapes are admitted.
 Rows sort by candidate ID; every array is sorted and duplicate-free; ref and
 fingerprint arrays are same-length ordered pairs. The rows cover every
 enumerated cohort pending/sentinel exactly once, and every clear/closure joins
