@@ -224,6 +224,10 @@ Before publishing pending bytes, create and fsync a mode-0600 owner marker that
 binds attempt ID, process identity, canonical root path, and an unpredictable
 nonce; the pending record binds its fingerprint. Hold the namespace owner lock
 through live use.
+The marker is always `<private_staging_root_path>/.semantic-discovery-owner.json`
+and contains exact RFC 8785 bytes
+`{"attempt_id":"<opaque-attempt-id>","nonce":"<base64url>","owner_process_opaque_id":"<opaque-process-id>","private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-owner/v1"}`.
+No other marker path or shape is admitted.
 Seq runs
 behind a wrapper that exposes no semantic payload on stdout or to the compiler;
 its raw output is create-new mode-0600 bytes only in that staging root. The
@@ -1664,6 +1668,13 @@ create the one immutable cohort intent at
 Sentinels cover exactly the intent identity array. The access proof and both
 leakage reviews bind the one cohort `pending_fingerprint`, so every identity is
 cleared by the same attempt evidence.
+If a crash leaves a partial or complete sentinel set before cohort-intent
+publication, recovery reacquires the partition mutex, resolves the exact frozen
+pending preimage from the atlas-local intent, verifies its digest and every
+existing sentinel, create-news any missing deterministic sentinel, and publishes
+that same cohort intent before release. If the preimage is unavailable or any
+sentinel differs, recovery proves the optimizer never launched and removes only
+the exact dead-attempt sentinel set; otherwise it stops `holdout_contaminated`.
 After the complete pending intent and sentinel set is durable, release the
 partition mutex before launching the optimizer. A later leakage transition
 reacquires that mutex; no path recursively acquires a lock it still holds.
@@ -1681,6 +1692,14 @@ frozen holdout target, inventories, generation effects, tool policy/trace and pa
 leakage reviews, every leakage surface preimage, and candidate output bytes
 under the private global attempt directory. It emits exact RFC 8785
 `candidate-generation-evidence-closure/v1` bytes:
+
+Before any copy, apply the same retention gate as semantic discovery to the
+complete transitive set. Credentials and private tool outputs are never copied
+globally. Other sensitive preimages require explicit bounded authorization.
+Scrubbing records the raw digest and retained projection separately only when
+the leakage proof remains exact; otherwise do not publish clear evidence,
+durably mark the affected identities `optimizer_exposed`, and return
+`holdout_contaminated`.
 
 ~~~json
 {"candidate_id":"<candidate-id>","closure_inventory":[{"dependency_kind":null,"fingerprint":"sha256:<hex>","ref":"access-proof.json","role":"access_proof"}],"cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"candidate-generation-evidence-closure/v1","source_identity_fingerprints":["sha256:<hex>"]}
@@ -1738,10 +1757,13 @@ tree; runtime directories are never transitive refs. A sealed reference mapping
 maps every embedded canonical runtime or prior-root ref to its static snapshot
 pair. It is closed exact RFC 8785
 `holdout-retirement-reference-mapping/v1` bytes:
-`{"entries":[{"snapshot_fingerprint":"sha256:<same-hex>","snapshot_mode":"100755","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<mapping-entry-digest-hex>","source_fingerprint":"sha256:<hex>","source_mode":"100755","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
+`{"entries":[{"snapshot_fingerprint":"sha256:<same-hex>","snapshot_mode":"100755","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<snapshot-key-digest-hex>","source_fingerprint":"sha256:<hex>","source_mode":"100755","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
 Entries sort by `source_ref`, are duplicate-free, preserve fingerprints and
 exact modes, and derive each snapshot path digest from the complete mapping
-entry identity rather than content digest alone. They
+key preimage
+`{"schema":"holdout-retirement-snapshot-key/v1","snapshot_mode":"100755","source_fingerprint":"sha256:<hex>","source_mode":"100755","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>"}`.
+The preimage explicitly excludes `snapshot_ref`; its SHA-256 suffix is
+`<snapshot-key-digest-hex>`, which is inserted afterward. They
 cover every distinct transitive ref embedded in the copied EER, runs rows, and
 their dependencies, including `runs/`, `reports/`, and
 `roots/<prior-root-digest-hex>/` refs. The snapshot ref resolves inside the
@@ -2845,21 +2867,10 @@ not count as promotion passes or failures.
 
 ### Candidate decision
 
-Return adopt, reject, or insufficient_evidence. Adopt requires:
-
-1. complete baseline and candidate arms are environment-valid for every required chart and repeat;
-2. every required chart comparison is determinate, with no required run or
-   comparison classified `ambiguous`;
-3. no new candidate `hard_fail` of any kind;
-4. no protected regression;
-5. at least one targeted untouched holdout improvement;
-6. any residual preference is order-stable;
-7. the exact frozen candidate fingerprint was evaluated;
-8. stochastic evidence satisfies the repeat count and improvement rule frozen
-   in the evaluator-only pre-candidate policy before candidate generation and
-   repeated unchanged in the final root; arms use matched seeds/schedules
-   when controllable, and uncontrolled nondeterminism that cannot meet that
-   predetermined rule yields `insufficient_evidence`.
+Return `adopt`, `reject`, or `insufficient_evidence` exclusively through the
+complete EER-v1 recommendation law. This reference contributes chart
+eligibility, untouched-holdout inputs, stochastic observations, and claim caps;
+it does not restate or independently decide adoption conditions.
 
 Promotion is only an evidence strength: it means these conditions and every
 included chart's realized claim eligibility support a separately authorized

@@ -1187,7 +1187,9 @@ For a retired holdout export, use the execution-origin shape with non-null
 `successor_root_ref`/fingerprint. The originating EER and runs refs are the
 static successor-owned snapshot refs named by the sealed cycle-completion arm,
 not the former runtime paths. Resolve the arm's admitted reference mapping and
-rewrite every embedded runtime evidence ref in each emitted dataset row to its
+rewrite every embedded ref covered by the sealed mapping in each emitted
+dataset row—whether originating under `runs/`, `reports/`, or a prior
+`roots/` archive—to its
 mapped static successor pair, then prefix that closure-relative ref with the
 exact `roots/<successor-root-digest-hex>/` archive prefix before hashing the
 emitted row; the mapped fingerprint must be unchanged. Export
