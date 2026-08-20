@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-generative-hotspot-reconciler-v1"
+      "source_fingerprint": "actuating-generative-hotspot-reconciler-v2"
     },
     "triggers": [
       {
@@ -38,6 +38,7 @@
           "illegal transition",
           "semantic hotspot",
           "counterexample family",
+          "counterexample theory",
           "admission frontier",
           "admission cut"
         ],
@@ -49,7 +50,7 @@
       },
       {
         "trigger_id": "ACT-RECONSIDER",
-        "description": "Current evidence falsifies or extends the incumbent architecture.",
+        "description": "Current evidence falsifies or extends the incumbent architecture or counterexample theory.",
         "cue_literals": [
           "semantic novelty",
           "causal recurrence",
@@ -57,7 +58,9 @@
           "distributed owner",
           "wrong representation",
           "architecture reconsideration",
-          "abstraction reconsideration"
+          "abstraction reconsideration",
+          "detection-shaped predicate",
+          "representation-bound predicate"
         ],
         "cue_regexes": [],
         "exclusions": [
@@ -157,7 +160,10 @@
           "named violated law and law provenance",
           "detection surface distinct from candidate admission frontier or cut",
           "current Review Fold observational class when multiple witnesses are claimed",
-          "family predicate or generator, domain, sanctioned admission relation, and claim strength",
+          "ordinary counterexample theory Theta_0",
+          "semantic observation domain and witness interpretation",
+          "family predicate or generator, sanctioned admission relation, validity horizon, and claim strength",
+          "family-theory falsifier",
           "current owner set and owner status",
           "bounded classified repository-native semantic scar tissue when applicable",
           "counterexample topology and correctness delta when architecture reopens"
@@ -166,12 +172,17 @@
           "a bug is treated as a witness rather than a patch instruction or complete family",
           "historical witness provenance remains distinct from current applicability",
           "distributed ownership may form one same-law observational class",
-          "Actuating partitions classes by frontier and selects a minimal admission cut when needed",
+          "a detection-shaped, enumerative, or representation-bound ordinary theory is challenged before finalization when a material alternative remains live",
+          "Metanoetic generates at most one challenger on one unchanged theory decision surface",
+          "OPERATE ARCHITECTONICALLY adjudicates law, semantic domain, ownership, construction, composition, and falsifier",
+          "Actuating partitions classes by theory/frontier and selects a minimal admission cut when needed",
           "one universal-law falsifier over a sanctioned path may reopen architecture immediately",
           "the selected target states disposition, invalid region eliminated, admission coverage, escape paths retired, derived guards preserved, and residual invalidity"
         ],
         "failure_signals": [
           "observed examples are treated as the complete family",
+          "the ordinary counterexample theory is finalized before a required Metanoetic challenge",
+          "architectonic language is used without adjudicating the organizing theory",
           "historical witness provenance is rewritten as current-head provenance",
           "one current owner is required when owner dilution may be the defect",
           "one frontier is invented when path coverage requires an admission cut",
@@ -179,7 +190,7 @@
           "containment or another compensating guard is called correct by construction",
           "a hotspot registry, score, threshold, receipt, or durable store is created"
         ],
-        "rationale": "Bugs improve architecture only when a predicate-defined invalid family is traced across sanctioned paths to sufficient semantic authority and excluded at an honest claim strength."
+        "rationale": "Bugs improve architecture when observed witnesses induce a falsifiable counterexample theory whose semantic domain, law, family, ownership, and admission structure survive Metanoetic challenge and architectonic adjudication."
       },
       {
         "clause_id": "ACT-ARCHITECTURE-002",
@@ -199,24 +210,29 @@
           "incumbent model reconstructed from the current tree",
           "architecture-closure judgment",
           "Architecture Working Set when selection reopens",
+          "selected counterexample theory and architectonic disposition when bug-driven",
+          "candidate interpretation into the selected semantic observation domain",
           "correctness-relation evidence for bug-driven candidates",
           "correctness Pareto frontier before cost minimization"
         ],
         "success_signals": [
-          "local repair preserves an incumbent already closed under the predicate-defined family",
+          "local repair preserves an incumbent already closed under the selected counterexample theory",
           "semantic novelty, sanctioned universal-law falsification, distributed ownership, or a semantic hotspot reopens selection before mutation",
+          "a live architecture candidate may trigger one bounded theory co-refinement before target selection",
+          "the same decision surface does not rerun Metanoetic during co-refinement",
           "correctness-equivalent candidates are minimized only after the Pareto frontier is established",
           "material correctness/cost tradeoffs remain incomparable",
-          "First Principles, Universalist, bounded Metanoetic challenge, and Reduce retain their authority boundaries"
+          "First Principles, Review Fold, Metanoetic, architectonic adjudication, Universalist, and Reduce retain their authority boundaries"
         ],
         "failure_signals": [
           "new semantics hide inside a realization repair",
-          "candidate comparison ignores family domain, admission coverage, escape paths, owner dilution, guard roles, or residual proof burden",
+          "candidate comparison ignores semantic interpretation, family domain, admission coverage, escape paths, owner dilution, guard roles, or residual proof burden",
+          "an architecture candidate silently redefines the family it claims to eliminate",
           "unsupported prose claims set inclusion or family elimination",
           "incomparable minima are collapsed into a scalar score",
           "prior analysis substitutes for current repository evidence"
         ],
-        "rationale": "Architecture selection minimizes admitted incorrectness at an explicit evidence strength while preserving every required valid observation and compatibility obligation."
+        "rationale": "Counterexample theory and architecture are co-discovered once, then architecture selection minimizes admitted incorrectness at an explicit evidence strength while preserving required valid observations."
       },
       {
         "clause_id": "ACT-REVIEW-001",
@@ -252,13 +268,17 @@
           "current validation",
           "current Ship evidence when required",
           "current CAS evidence when required",
+          "selected counterexample theory and family-theory falsifier when bug-driven",
+          "witness and candidate interpretations into the selected semantic observation domain",
           "witness rejection and family-exclusion proof when bug-driven",
           "explicit eliminated, contained, obstructed, or unresolved disposition"
         ],
         "success_signals": [
           "closure is reevaluated from live owner facts",
           "accepted current witnesses are rejected through sanctioned paths",
-          "eliminated families carry domain, admission, coverage, and claim-strength proof",
+          "the selected theory survives its falsifier under current evidence",
+          "required Metanoetic challenge, architectonic adjudication, and bounded co-refinement are complete",
+          "eliminated families carry semantic-domain, law, predicate, admission, interpretation, coverage, and claim-strength proof",
           "contained residuals are explicitly authorized, owned, observable, and never called correct by construction",
           "required derived guards remain coherent",
           "no closure receipt or Evidence event is required"
@@ -266,16 +286,18 @@
         "failure_signals": [
           "stored completion survives changed inputs",
           "rejection of observed examples substitutes for predicate-defined family exclusion",
+          "an unresolved or falsified counterexample theory reaches closure",
+          "a candidate silently changes the family during proof",
           "containment is reported as family elimination",
           "Ship requires an Actuating closure receipt",
           "publication, process exit, or a summary count substitutes for current proof"
         ],
-        "rationale": "Completion is a head-relative correctness predicate whose claim strength must match current evidence."
+        "rationale": "Completion is a head-relative correctness predicate over a selected, falsifiable counterexample theory whose claim strength matches current evidence."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The current Git tree and owner-issued evidence are the facts; Actuating reports its live judgment without persisting a peer authority artifact or hotspot registry."
+      "rationale": "The current Git tree and owner-issued evidence are the facts; Actuating reports its live theory and architecture judgment without persisting a peer authority artifact or hotspot registry."
     }
   }
 }

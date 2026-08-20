@@ -1,20 +1,18 @@
 # Architecture Reconciliation
 
-Actuating does not load a stored architecture. It reconstructs the incumbent
-from the exact current Git tree and recompiles a target only when current
-evidence makes the incumbent architecturally contestable.
+Actuating reconstructs the incumbent from the exact current Git tree. It does
+not load a stored architecture and recompiles a target only when current
+evidence makes the incumbent contestable.
 
 ## Incumbent model
 
 Inspect repository-native evidence for:
 
 ```text
-boundary and sanctioned inputs
-current owner set and authority
+boundaries and sanctioned inputs
+owner set and authority
 authoritative representation
-state dimensions
-events, transitions, and terminal states
-effects, handlers, ordering, and custody
+states, events, transitions, effects, ordering, and custody
 observations and public contracts
 compatibility, migration, retry, cancellation, and recovery
 proof mechanisms
@@ -22,199 +20,188 @@ primary enforcement, derived guards, bypasses, and residue
 ```
 
 Use code, types, schemas, tests, public interfaces, and ordinary architecture
-documentation. Historical Actuating analyses are hypotheses, not inputs unless
-their claims remain evidenced by the current tree.
+documentation. Historical analyses are hypotheses unless current-tree evidence
+still supports them.
 
 ## Bug-driven input
 
-An accepted bug is a counterexample to a required law, not a direct patch
-instruction.
+A bug is a counterexample to a required law, not a patch instruction.
 
-When a bug or falsifier touches a boundary, read
-[semantic-hotspots.md](semantic-hotspots.md). `$review-fold` returns an
-observational class with witness provenance, current applicability, law,
-current owner set, and a bounded family hypothesis. Actuating then derives:
+Review Fold supplies an observational class with provenance, applicability,
+law, current owner sites, and a bounded family hypothesis. Actuating derives an
+ordinary counterexample theory:
 
 ```text
-predicate-defined family and domain
-sanctioned admission relation
-claim strength
-admission frontier or minimal admission cut
-candidate semantic owner
-escape paths
-classified semantic scar tissue
+Theta_0 = (Omega_0, L_0, Phi_0, A_0, O_0, C_0, Q_0)
 ```
 
-Actuating may partition one observational class into several frontier-equivalent
-families. Review Fold does not select the partition, frontier, cut, or repair.
+`Omega` is a semantic observation domain independent of one candidate's
+representation; `L` the law; `Phi` the invalidity predicate; `A` sanctioned
+admission semantics; `O` the owner model; `C` a frontier/cut hypothesis; and `Q`
+claim strength. Include witness interpretation, validity horizon, and a
+family-theory falsifier.
 
-## Closure under an obligation
+Review Fold does not select the final theory, frontier, cut, or repair.
 
-Let `I(H)` be the incumbent model reconstructed from head `H`, and let `o` be a
-new obligation.
+## Theory synthesis and adjudication
 
-`I(H)` is closed under `o` when satisfying `o` requires only correcting the
-realization of an already represented law under the same authority,
-representation, state space, effects, observations, and compatibility posture.
+Invoke one bounded `$metanoetic` challenge before finalization when `Theta_0` is
+detection-shaped, enumerative, representation-bound, contradicted by a same-law
+witness, owner/topology-captive, or one of several materially different
+plausible explanations.
 
-For a bug-driven obligation, let:
+The challenger may revise the semantic domain, law, state-versus-trace
+interpretation, predicate, admission semantics, owner, frontier/cut, claim
+strength, or falsifier.
+
+Then **OPERATE ARCHITECTONICALLY**. Compare the ordinary and challenger theories
+by witness coverage, law provenance, representation independence, causal and
+conceptual compression, canonical ownership, lawful construction/elimination/
+composition, admission coverage, valid-observation preservation, falsifier, and
+proof surface.
+
+Return:
 
 ```text
-D = declared family domain
-Phi = invalidity predicate or generator
-A = sanctioned admission relation
-C = candidate admission frontier or cut
+retain | replace | combine | split | unresolved
 ```
 
-`I(H)` is closed only when its existing semantic authority and `C` can exclude
-`Phi` from `A` over `D` at the stated claim strength without adding another
-independent guard, semantic owner, representation, state dimension, transition
-law, effect, compatibility mode, recovery mode, or escape path.
+Select the smallest coherent organizing theory, not the most abstract wording.
 
-It is not closed when satisfying `o` requires any of:
+## Architecture closure
 
-- new state, event, transition, terminal mode, or ordering;
-- new authority, custody, ownership, or admitted domain;
-- new representation, interpreter, handler, or observation path;
-- new compatibility, retry, cancellation, timeout, or recovery semantics;
+For selected theory:
+
+```text
+Theta = (Omega, L, Phi, A, O, C, Q)
+```
+
+`I(H)` is closed under the bug only when:
+
+```text
+for every behavior b sanctioned by A:
+  not Phi(interpret_I(H)(b))
+```
+
+at strength `Q`, and its existing authority and frontier/cut preserve that
+exclusion without adding another independent guard, owner, representation,
+state dimension, transition law, effect, compatibility/recovery mode, or escape
+path.
+
+It is not closed when the correction requires:
+
+- a different semantic domain or governing law;
+- new state, transition, ordering, effect, authority, custody, or admission;
+- new representation, interpreter, handler, observation, compatibility, retry,
+  cancellation, timeout, or recovery semantics;
 - structural removal of a bypass, competing owner, or obsolete representation;
-- a shared mechanism exposed by recurring same-cause failures;
-- another downstream check while the same invalid family remains admitted;
-- a multi-frontier admission cut not represented by the incumbent.
+- another downstream check while the invalid family remains admitted;
+- a multi-frontier cut absent from the incumbent; or
+- a live candidate that falsifies the selected theory.
 
-When closed, preserve the architecture and repair the realization. When not
-closed, recompile before mutation.
+When closed, repair realization. Otherwise recompile before mutation.
 
 ## Reconsideration evidence
 
-Reopen architecture selection only from witnessed evidence:
+Reopen only from witnessed evidence:
 
 ```text
 source change
-law falsification over a sanctioned path
-semantic novelty
-causal recurrence
-predicate-defined semantic hotspot
-distributed, absent, contested, or unknown ownership
-incomplete frontier or cut coverage
+sanctioned-path law falsification
+semantic novelty or causal recurrence
+predicate-defined hotspot
+absent, distributed, contested, or unknown ownership
+incomplete frontier/cut coverage
 live dominated residue
 smaller correctness-non-dominated candidate
-incoherent or unrecoverable incumbent model
+incoherent incumbent model
+selected counterexample theory falsified by a witness or candidate
 ```
 
-One witness may be dispositive when it falsifies an attributed universal
-construction, transition, composition, ownership, or bypass law.
-
-Diff size, file proximity, elapsed time, bug count, test count, retry count,
-reviewer preference, and abstract vocabulary do not establish reconsideration.
-
-## Evidence horizon
-
-Architecture selection uses the complete currently available applicable
-evidence:
-
-- current accepted Goal;
-- current Git tree;
-- current failing tests and verifier outputs;
-- current CAS findings and exact receipts;
-- unresolved provider review threads;
-- supplied incidents, migration failures, and compatibility failures with their
-  original witness subjects;
-- current applicability evidence for the exact head;
-- current repository scar tissue at the implicated owner set and candidate cut;
-- targeted Git, issue, PR, CAS, or incident history when current evidence
-  justifies a recurrence inquiry;
-- active exact Negative Ledger exclusions when that skill's own gate is live.
-
-Missing historical owner evidence is `unknown`. Do not invent continuity,
-recurrence, or current applicability.
+Diff size, file proximity, elapsed time, bug/test/retry count, reviewer
+preference, and abstract vocabulary do not establish reconsideration.
 
 ## Candidate compilation
 
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
-2. Ask `$universalist` for concrete repository-native candidates.
-3. Require every candidate to cover the same Goal laws, observations,
-   compatibility, predicate-defined families, admission relation, effects, and
+2. Derive `Theta_0` from Review Fold evidence.
+3. Run one bounded `$metanoetic` challenge when its trigger is live.
+4. **OPERATE ARCHITECTONICALLY** to adjudicate the theory.
+5. Finalize one theory, frontier/cut, falsifier, and claim strength.
+6. Ask `$universalist` for repository-native candidates. Require each candidate
+   to interpret its behavior into the selected `Omega` and cover the same Goal,
+   valid observations, family, admission semantics, compatibility, effects, and
    resource constraints.
-4. Use `$metanoetic` once only when the incumbent may reflect a wrong model,
-   authority, representation, or merely adequate local optimum.
-5. Use `$reduce` to challenge factors lacking a distinct current obligation,
-   compensating guards, and candidates that merely move detection.
-6. Establish the correctness Pareto frontier using explicit relation evidence.
-7. Among correctness-equivalent candidates, select the least costly effective
-   realization.
-8. Keep material correctness/cost tradeoffs and incomparable minima explicit;
-   obtain authority or block rather than manufacturing dominance.
-9. State the correctness delta and its evidence strength before mutation.
+7. Permit one bounded co-refinement if a candidate exposes a materially simpler,
+   more representation-independent, or more causally adequate theory. Return
+   once to architectonic adjudication; do not rerun Metanoetic on the unchanged
+   decision surface.
+8. Ask `$reduce` to challenge unearned factors, witness-enumerating predicates,
+   compensating guards, and detection movement.
+9. Establish the correctness Pareto frontier from explicit relation evidence.
+10. Among correctness-equivalent candidates, select the least costly effective
+    realization; preserve material incomparability.
+11. State the selected theory, architecture delta, falsifier, evidence strength,
+    and proof before mutation.
 
 Compare candidates by:
 
 ```text
 required laws and observations
-predicate-defined invalid states or traces excluded
-sanctioned admission coverage
-frontier or admission-cut coverage
-current and candidate semantic owners
-derived guards preserved
-representations and escape paths
-compatibility and migration
-retirements and residue
-residual runtime and proof burden
-proof strength and proof surface
-resource and operational burden
+interpretation into selected Omega
+invalid family excluded
+sanctioned admission and frontier/cut coverage
+semantic ownership and derived guards
+representations, escape paths, compatibility, and migration
+retirements and residual proof burden
+proof strength, resources, and operational cost
 ```
 
-A candidate cannot win by omitting an orthogonal obligation. A candidate that
-preserves the same invalid region and merely relocates detection does not
-correctness-dominate its incumbent.
+A candidate cannot win by omitting an orthogonal obligation or merely moving
+detection.
+
+## One bounded co-refinement
+
+Universalist may return a candidate theory delta:
+
+```text
+accidental incumbent coordinate
+proposed semantic domain or law
+witness and candidate interpretations
+predicted sibling counterexamples
+falsifier
+```
+
+Actuating may return once to architectonic adjudication, then retain, revise,
+split, or block. A candidate may expose a better theory; it may not silently
+redefine the family it claims to eliminate.
 
 ## Architecture Working Set
 
-For active implementation, retain:
+For active implementation retain:
 
 ```text
-Bound head
-Goal
-Incumbent model
-Falsified or newly required laws
-Witness provenance and current applicability, when bug-driven
-Observational class, when bug-driven
-Family predicate, domain, admission relation, and claim strength, when bug-driven
-Current owner set and status, when bug-driven
-Admission frontier or admission cut, when bug-driven
-Escape paths and classified scar tissue, when bug-driven
-Selected target
-Candidate semantic owner
-Preserve
-Introduce or replace
-Retire
+Bound head / Goal / incumbent / falsified laws
+Witness provenance / applicability / observational class
+Theta_0 / Theta_1 / architectonic disposition
+Selected Omega / law / witness interpretation / Phi / A / falsifier / Q
+Owner set / frontier or cut / escape paths / classified scar tissue
+Selected target / candidate owner / candidate interpretation
+Co-refinement used: yes | no
+Preserve / introduce / retire
 Disposition: eliminated | contained | obstructed | unresolved
-Invalid region eliminated
-Admission coverage
-Residual invalidity and owner
-Evidence strength
-Proof commands
+Invalid region eliminated / admission coverage / residual / proof
 Reconsider when
 ```
 
-The Working Set is ephemeral. It coordinates the current run but grants no
-authority and has no schema, content identity, predecessor, store, or migration.
-
-Refresh it when the bound head, Goal, current applicability, family predicate,
-owner set, frontier/cut, or target changes. After implementation, the Git tree
-is the realized construction.
+The Working Set is ephemeral and grants no authority. Refresh it when the head,
+Goal, applicability, selected theory, owner set, frontier/cut, or target changes.
+After implementation, the Git tree is the realized construction.
 
 ## Architectural memory
 
-Persist architecture where maintainers naturally encounter it:
-
-- code structure and types;
-- executable regression, property, model, and invariant tests;
-- public schemas and API contracts;
-- an existing accepted specification;
-- a PR explanation;
-- an ADR only when the decision genuinely has long-lived human value.
-
-Do not create an Actuating-private source of truth. If a decision cannot be
-recovered from the repository, improve the repository's architecture
-legibility.
+Persist architecture where maintainers naturally encounter it: code and types,
+executable tests, schemas and API contracts, an accepted specification, a PR
+explanation, or a genuine long-lived ADR. Do not create an Actuating-private
+source of truth. If the decision cannot be recovered from the repository,
+improve repository legibility.

@@ -79,7 +79,12 @@ done
 
 grep -F 'level-triggered architecture reconciler' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Bugs as counterexamples' "$skill_root/SKILL.md" >/dev/null
+grep -F 'ordinary counterexample theory' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Semantic observation domain' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Family predicate' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Family-theory falsifier' "$skill_root/SKILL.md" >/dev/null
+grep -F 'OPERATE ARCHITECTONICALLY' "$skill_root/SKILL.md" >/dev/null
+grep -F 'one bounded co-refinement' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Witness provenance' "$skill_root/SKILL.md" >/dev/null
 grep -F 'current applicability' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Admission frontier or cut' "$skill_root/SKILL.md" >/dev/null
@@ -89,7 +94,12 @@ grep -F 'hotspot registry, score, threshold' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 
-grep -F 'F = { x in D | Phi(x) }' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Theta_0 = (Omega_0, L_0, Phi_0, A_0, O_0, C_0, Q_0)' \
+  "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Metanoetic challenge' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## OPERATE ARCHITECTONICALLY' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## One bounded co-refinement' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Family-theory falsifier' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'Admission cut' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'owner status' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'Witness subject' "$skill_root/references/semantic-hotspots.md" >/dev/null
@@ -109,9 +119,11 @@ grep -F 'derived-boundary-guard' "$codex_root/skills/reduce/SKILL.md" >/dev/null
 grep -F 'compensating-guard' "$codex_root/skills/reduce/SKILL.md" >/dev/null
 grep -F 'Derived guards preserved:' "$codex_root/skills/reduce/SKILL.md" >/dev/null
 
-grep -F 'When Actuating supplies a bug-driven counterexample topology' \
+grep -F 'When Actuating supplies a bug-driven counterexample theory' \
   "$codex_root/skills/universalist/SKILL.md" >/dev/null
 grep -F 'Enforcement locus or admission cut:' \
+  "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Candidate theory delta: none | proposed' \
   "$codex_root/skills/universalist/SKILL.md" >/dev/null
 
 grep -F 'start a fresh full wave' "$skill_root/references/review-contract.md" >/dev/null
@@ -133,7 +145,7 @@ grep -F 'publication observation digest' "$skill_root/references/review-contract
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-generative-hotspot-reconciler-v1" and
+    "actuating-generative-hotspot-reconciler-v2" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-COUNTEREXAMPLE")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
@@ -174,4 +186,4 @@ done
 
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
 
-echo "actuating generative semantic-hotspot reconciler contract: pass"
+echo "actuating counterexample-theory reconciler contract: pass"

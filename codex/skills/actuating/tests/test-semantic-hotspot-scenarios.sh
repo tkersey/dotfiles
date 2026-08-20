@@ -18,6 +18,37 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     else "candidate"
     end;
 
+  def theory_pressure:
+    (.inputs.theory_shape as $shape |
+      (["detection-shaped", "enumerative", "representation-bound"] |
+       index($shape)) != null) or
+    .inputs.same_law_witness_outside_phi == true or
+    .inputs.material_alternative_theory_plausible == true;
+
+  def theory_disposition:
+    if class_disposition != "candidate" then "not-applicable"
+    elif (.inputs.semantic_observation_domain_status != "stated" or
+          .inputs.family_theory_falsifier_status != "stated" or
+          .inputs.theory_shape == "unknown") then "blocked"
+    elif .inputs.architecture_reveals_better_theory == true then
+      if (.inputs.co_refinement_used == true and
+          (.inputs.architectonic_disposition as $disposition |
+           (["retain", "replace", "combine", "split"] |
+            index($disposition)) != null))
+      then "co-refined"
+      else "blocked"
+      end
+    elif theory_pressure then
+      if .inputs.metanoetic_run != true then "blocked"
+      elif .inputs.architectonic_disposition == "split" then "split"
+      elif (.inputs.architectonic_disposition as $disposition |
+            (["retain", "replace", "combine"] |
+             index($disposition)) != null) then "adjudicated"
+      else "blocked"
+      end
+    else "ordinary"
+    end;
+
   def frontier_shape:
     if class_disposition == "split" or class_disposition == "not-current" then
       "none"
@@ -32,8 +63,10 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
   def architecture_disposition:
     if class_disposition == "split" then "split"
     elif class_disposition == "not-current" then "no-current-liability"
-    elif class_disposition == "blocked" or frontier_shape == "unresolved" then
+    elif class_disposition == "blocked" or frontier_shape == "unresolved" or
+         theory_disposition == "blocked" then
       "blocked"
+    elif theory_disposition == "split" then "split"
     elif .inputs.external_prevention_possible == false then
       if .inputs.goal_accepts_containment == true then "contain" else "blocked" end
     elif (.inputs.architecture_claim_falsified == true or
@@ -55,8 +88,10 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     else "unsupported-path"
     end;
 
-  .schema == "actuating-semantic-hotspot-scenarios/v1" and
-  (.scenarios | length) >= 10 and
+  .defaults as $defaults |
+  .scenarios |= map(.inputs = ($defaults * .inputs)) |
+  .schema == "actuating-semantic-hotspot-scenarios/v2" and
+  (.scenarios | length) >= 20 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[];
     (.inputs.family_claim_strength as $strength |
@@ -68,11 +103,23 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     (.inputs.current_applicability as $applicability |
       ["still-present", "transformed-applicable", "already-excluded",
        "not-comparable", "unknown"] | index($applicability) != null) and
+    (.inputs.theory_shape as $shape |
+      ["governing", "detection-shaped", "enumerative",
+       "representation-bound", "unknown"] | index($shape) != null) and
+    (.inputs.architectonic_disposition as $disposition |
+      ["not-needed", "retain", "replace", "combine", "split", "unresolved"] |
+      index($disposition) != null) and
     (class_disposition == .expected.class_disposition) and
+    (theory_disposition == .expected.theory_disposition) and
     (frontier_shape == .expected.frontier_shape) and
     (architecture_disposition == .expected.architecture_disposition) and
     (hotspot_disposition == .expected.hotspot_disposition)
   ) and
+  ([.scenarios[].expected.theory_disposition] |
+    index("ordinary") != null and
+    index("adjudicated") != null and
+    index("co-refined") != null and
+    index("blocked") != null) and
   ([.scenarios[].expected.architecture_disposition] |
     index("preserve") != null and
     index("reopen") != null and
@@ -85,6 +132,18 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     index("cut") != null and
     index("unresolved") != null) and
   any(.scenarios[];
+    .inputs.theory_shape == "detection-shaped" and
+    .inputs.metanoetic_run == true and
+    .expected.theory_disposition == "adjudicated") and
+  any(.scenarios[];
+    .inputs.architecture_reveals_better_theory == true and
+    .inputs.co_refinement_used == true and
+    .expected.theory_disposition == "co-refined") and
+  any(.scenarios[];
+    .inputs.architecture_reveals_better_theory == true and
+    .inputs.co_refinement_used == false and
+    .expected.architecture_disposition == "blocked") and
+  any(.scenarios[];
     .inputs.derived_guards_required == true and
     .expected.architecture_disposition == "preserve") and
   any(.scenarios[];
@@ -92,4 +151,4 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     .expected.architecture_disposition == "reopen")
 ' "$fixture" >/dev/null
 
-echo "actuating semantic-hotspot scenarios: pass"
+echo "actuating semantic-hotspot theory scenarios: pass"

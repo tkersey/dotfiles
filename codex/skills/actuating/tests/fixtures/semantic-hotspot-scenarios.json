@@ -1,27 +1,41 @@
 {
-  "schema": "actuating-semantic-hotspot-scenarios/v1",
+  "schema": "actuating-semantic-hotspot-scenarios/v2",
+  "defaults": {
+    "witness_subject_recorded": true,
+    "applicability_subject_recorded": true,
+    "current_applicability": "still-present",
+    "same_law": true,
+    "family_predicate_status": "stated",
+    "family_claim_strength": "bounded",
+    "owner_status": "canonical",
+    "architecture_claim_falsified": false,
+    "existing_authority_excludes_family": false,
+    "frontier_candidates": 1,
+    "frontier_coverage": "complete",
+    "compensating_guard_only": false,
+    "external_prevention_possible": true,
+    "goal_accepts_containment": false,
+    "derived_guards_required": false,
+    "theory_shape": "governing",
+    "semantic_observation_domain_status": "stated",
+    "family_theory_falsifier_status": "stated",
+    "same_law_witness_outside_phi": false,
+    "material_alternative_theory_plausible": false,
+    "metanoetic_run": false,
+    "architectonic_disposition": "not-needed",
+    "architecture_reveals_better_theory": false,
+    "co_refinement_used": false
+  },
   "scenarios": [
     {
       "id": "isolated-realization-defect",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "proved",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": false,
-        "existing_authority_excludes_family": true,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "existing_authority_excludes_family": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "preserve",
         "hotspot_disposition": "realization"
@@ -30,24 +44,12 @@
     {
       "id": "public-invalid-representation",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "property-tested",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": true,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "architecture_claim_falsified": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
@@ -56,24 +58,12 @@
     {
       "id": "false-hotspot-same-file",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
         "same_law": false,
-        "family_predicate_status": "stated",
-        "family_claim_strength": "sampled",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": false,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "family_claim_strength": "sampled"
       },
       "expected": {
         "class_disposition": "split",
+        "theory_disposition": "not-applicable",
         "frontier_shape": "none",
         "architecture_disposition": "split",
         "hotspot_disposition": "false-hotspot"
@@ -82,24 +72,12 @@
     {
       "id": "distributed-semantic-owners",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
-        "family_claim_strength": "bounded",
         "owner_status": "distributed",
-        "architecture_claim_falsified": false,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
         "derived_guards_required": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
@@ -108,24 +86,13 @@
     {
       "id": "legitimate-derived-trust-boundary-guards",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "proved",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": false,
         "existing_authority_excludes_family": true,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
         "derived_guards_required": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "preserve",
         "hotspot_disposition": "realization"
@@ -134,24 +101,12 @@
     {
       "id": "historical-incident-still-applicable",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
         "current_applicability": "transformed-applicable",
-        "same_law": true,
-        "family_predicate_status": "stated",
-        "family_claim_strength": "bounded",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": true,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "architecture_claim_falsified": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
@@ -160,24 +115,13 @@
     {
       "id": "historical-incident-already-excluded",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
         "current_applicability": "already-excluded",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "proved",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": false,
-        "existing_authority_excludes_family": true,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "existing_authority_excludes_family": true
       },
       "expected": {
         "class_disposition": "not-current",
+        "theory_disposition": "not-applicable",
         "frontier_shape": "none",
         "architecture_disposition": "no-current-liability",
         "hotspot_disposition": "historical-only"
@@ -186,24 +130,14 @@
     {
       "id": "test-only-primitive-bypass",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
         "current_applicability": "not-comparable",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "sampled",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": false,
         "existing_authority_excludes_family": true,
-        "frontier_candidates": 0,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "frontier_candidates": 0
       },
       "expected": {
         "class_disposition": "not-current",
+        "theory_disposition": "not-applicable",
         "frontier_shape": "none",
         "architecture_disposition": "no-current-liability",
         "hotspot_disposition": "unsupported-path"
@@ -212,24 +146,13 @@
     {
       "id": "temporal-missing-generation-law",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
-        "family_claim_strength": "bounded",
         "owner_status": "absent",
         "architecture_claim_falsified": true,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": true,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "compensating_guard_only": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
@@ -238,24 +161,14 @@
     {
       "id": "distributed-admission-cut",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "exhaustive-finite",
-        "owner_status": "canonical",
         "architecture_claim_falsified": true,
-        "existing_authority_excludes_family": false,
         "frontier_candidates": 3,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
         "derived_guards_required": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "cut",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
@@ -264,24 +177,15 @@
     {
       "id": "external-authority-containment",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "sampled",
-        "owner_status": "canonical",
         "architecture_claim_falsified": true,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": false,
         "external_prevention_possible": false,
         "goal_accepts_containment": true,
         "derived_guards_required": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "contain",
         "hotspot_disposition": "contained"
@@ -290,24 +194,17 @@
     {
       "id": "unknown-family-predicate",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
         "family_predicate_status": "unknown",
         "family_claim_strength": "unknown",
         "owner_status": "unknown",
-        "architecture_claim_falsified": false,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
         "frontier_coverage": "unknown",
-        "compensating_guard_only": false,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "theory_shape": "unknown",
+        "semantic_observation_domain_status": "unknown",
+        "family_theory_falsifier_status": "unknown"
       },
       "expected": {
         "class_disposition": "blocked",
+        "theory_disposition": "not-applicable",
         "frontier_shape": "unresolved",
         "architecture_disposition": "blocked",
         "hotspot_disposition": "unresolved"
@@ -316,27 +213,144 @@
     {
       "id": "compensating-guard-movement",
       "inputs": {
-        "witness_subject_recorded": true,
-        "applicability_subject_recorded": true,
-        "current_applicability": "still-present",
-        "same_law": true,
-        "family_predicate_status": "stated",
         "family_claim_strength": "property-tested",
-        "owner_status": "canonical",
-        "architecture_claim_falsified": false,
-        "existing_authority_excludes_family": false,
-        "frontier_candidates": 1,
-        "frontier_coverage": "complete",
-        "compensating_guard_only": true,
-        "external_prevention_possible": true,
-        "goal_accepts_containment": false,
-        "derived_guards_required": false
+        "compensating_guard_only": true
       },
       "expected": {
         "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
+      }
+    },
+    {
+      "id": "detection-shaped-predicate",
+      "inputs": {
+        "family_claim_strength": "sampled",
+        "theory_shape": "detection-shaped",
+        "material_alternative_theory_plausible": true,
+        "metanoetic_run": true,
+        "architectonic_disposition": "replace",
+        "architecture_claim_falsified": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "adjudicated",
+        "frontier_shape": "single",
+        "architecture_disposition": "reopen",
+        "hotspot_disposition": "architectural"
+      }
+    },
+    {
+      "id": "enumerated-witness-predicate",
+      "inputs": {
+        "family_claim_strength": "hypothesized",
+        "theory_shape": "enumerative",
+        "material_alternative_theory_plausible": true,
+        "metanoetic_run": true,
+        "architectonic_disposition": "unresolved"
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "blocked",
+        "frontier_shape": "single",
+        "architecture_disposition": "blocked",
+        "hotspot_disposition": "unresolved"
+      }
+    },
+    {
+      "id": "same-law-witness-outside-phi",
+      "inputs": {
+        "family_claim_strength": "hypothesized",
+        "same_law_witness_outside_phi": true,
+        "metanoetic_run": true,
+        "architectonic_disposition": "replace",
+        "architecture_claim_falsified": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "adjudicated",
+        "frontier_shape": "single",
+        "architecture_disposition": "reopen",
+        "hotspot_disposition": "architectural"
+      }
+    },
+    {
+      "id": "representation-dependent-phi",
+      "inputs": {
+        "theory_shape": "representation-bound",
+        "material_alternative_theory_plausible": true,
+        "metanoetic_run": true,
+        "architectonic_disposition": "replace",
+        "architecture_claim_falsified": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "adjudicated",
+        "frontier_shape": "single",
+        "architecture_disposition": "reopen",
+        "hotspot_disposition": "architectural"
+      }
+    },
+    {
+      "id": "two-live-family-theories",
+      "inputs": {
+        "family_claim_strength": "hypothesized",
+        "material_alternative_theory_plausible": true,
+        "metanoetic_run": true,
+        "architectonic_disposition": "unresolved"
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "blocked",
+        "frontier_shape": "single",
+        "architecture_disposition": "blocked",
+        "hotspot_disposition": "unresolved"
+      }
+    },
+    {
+      "id": "clear-owner-invariant-skips-metanoetic",
+      "inputs": {
+        "family_claim_strength": "proved",
+        "existing_authority_excludes_family": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
+        "frontier_shape": "single",
+        "architecture_disposition": "preserve",
+        "hotspot_disposition": "realization"
+      }
+    },
+    {
+      "id": "architecture-reveals-better-family",
+      "inputs": {
+        "architecture_claim_falsified": true,
+        "architecture_reveals_better_theory": true,
+        "co_refinement_used": true,
+        "architectonic_disposition": "replace"
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "co-refined",
+        "frontier_shape": "single",
+        "architecture_disposition": "reopen",
+        "hotspot_disposition": "architectural"
+      }
+    },
+    {
+      "id": "architecture-theory-delta-unadjudicated",
+      "inputs": {
+        "architecture_reveals_better_theory": true,
+        "architectonic_disposition": "replace"
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "blocked",
+        "frontier_shape": "single",
+        "architecture_disposition": "blocked",
+        "hotspot_disposition": "unresolved"
       }
     }
   ]
