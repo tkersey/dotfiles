@@ -79,29 +79,64 @@ done
 
 grep -F 'level-triggered architecture reconciler' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Bugs as counterexamples' "$skill_root/SKILL.md" >/dev/null
-grep -F 'A semantic hotspot is the ephemeral conjunction:' "$skill_root/SKILL.md" >/dev/null
-grep -F 'complete evidenced counterexample family' "$skill_root/SKILL.md" >/dev/null
-grep -F 'smallest correctness-non-dominated candidate' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Invalid region eliminated:' "$skill_root/SKILL.md" >/dev/null
-grep -F 'No replacement database, bug Ledger, hotspot registry' "$skill_root/SKILL.md" >/dev/null
+grep -F 'ordinary counterexample theory' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Semantic observation domain' "$skill_root/SKILL.md" >/dev/null
+grep -F 'interpretation family' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Violation reflection' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Abstract exclusion' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Required-valid preservation' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Diagnostic exactness' "$skill_root/SKILL.md" >/dev/null
+grep -F 'least discriminating **sound abstraction**' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Family-theory falsifier' "$skill_root/SKILL.md" >/dev/null
+grep -F 'OPERATE ARCHITECTONICALLY' "$skill_root/SKILL.md" >/dev/null
+grep -F 'one bounded co-refinement' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Witness provenance' "$skill_root/SKILL.md" >/dev/null
+grep -F 'current applicability' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Admission frontier or cut' "$skill_root/SKILL.md" >/dev/null
+grep -F 'correctness Pareto frontier' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Disposition: eliminated | contained | obstructed | unresolved' "$skill_root/SKILL.md" >/dev/null
+grep -F 'hotspot registry, score, threshold' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 
-grep -F 'Semantic Hotspot H =' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Admission frontier' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Detection surface' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'correctness-dominates' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Theta_0 = (Omega_0, Alpha_0, L_0, Phi_0, A_0, O_0, C_0, Q_0)' \
+  "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Safety adequacy, Goal adequacy, and diagnostic exactness' \
+  "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Bad_L(u) -> Phi(alpha_K(u))' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'b in B_K -> not Phi(alpha_K(b))' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Abstraction may overapproximate danger.' \
+  "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Metanoetic challenge' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## OPERATE ARCHITECTONICALLY' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## One bounded co-refinement' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F '## Theory, safety, Goal, and exactness counterevidence' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'admission cut' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Owner status' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'contained' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'correctness Pareto' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'No bug Ledger, hotspot registry' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'False hotspot' "$skill_root/references/semantic-hotspots.md" >/dev/null
 
-grep -F 'detection_boundary:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'family_basis:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'independence_basis:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'does not infer that a detection boundary is the admission frontier' \
-  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'class_kind: observational' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'current_owner_set:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'witness_subject:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'current_applicability:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'predicate_or_generator:' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'does not infer that a detection' "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
-grep -F 'preserves the same invalid region' "$codex_root/skills/reduce/SKILL.md" >/dev/null
-grep -F 'Detection-only movement:' "$codex_root/skills/reduce/SKILL.md" >/dev/null
+grep -F 'derived-boundary-guard' "$codex_root/skills/reduce/SKILL.md" >/dev/null
+grep -F 'compensating-guard' "$codex_root/skills/reduce/SKILL.md" >/dev/null
+grep -F 'Derived guards preserved:' "$codex_root/skills/reduce/SKILL.md" >/dev/null
+
+grep -F 'When Actuating supplies a bug-driven counterexample theory' \
+  "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Interpretation totality:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Violation-reflection evidence:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Abstract-exclusion evidence:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Required valid behaviors preserved:' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Diagnostic-exactness status' "$codex_root/skills/universalist/SKILL.md" >/dev/null
+grep -F 'Candidate theory delta: none | proposed' \
+  "$codex_root/skills/universalist/SKILL.md" >/dev/null
 
 grep -F 'start a fresh full wave' "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'publication observation digest' "$skill_root/references/review-contract.md" >/dev/null
@@ -122,11 +157,15 @@ grep -F 'publication observation digest' "$skill_root/references/review-contract
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-semantic-hotspot-reconciler-v1" and
+    "actuating-sound-abstraction-hotspot-reconciler-v4" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-COUNTEREXAMPLE")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-HOTSPOT-001")) != null and
+    index("ACT-HOTSPOT-004")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-ARCHITECTURE-004")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-CLOSURE-004")) != null and
   ([.skill_decision_contract.routes[].route_id] | sort) ==
     (["ACT-IMPLEMENT", "ACT-TRIAGE", "ACT-REMEDIATION",
       "ACT-REVIEW-CLOSEOUT", "ACT-SHIP-HANDOFF", "ACT-CLOSE"] | sort)
@@ -134,11 +173,11 @@ grep -F 'publication observation digest' "$skill_root/references/review-contract
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "review-fold-counterexample-family-v1" and
+    "review-fold-observational-class-v1" and
   ([.skill_decision_contract.triggers[].trigger_id] |
-    index("RF-FAMILY")) != null and
+    index("RF-OBSERVATIONAL-CLASS")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("RF-FAMILY-001")) != null
+    index("RF-OBSERVATIONAL-001")) != null
 ' "$codex_root/skills/review-fold/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '
@@ -157,4 +196,6 @@ do
   test -s "$skill_root/references/$lens"
 done
 
-echo "actuating semantic-hotspot reconciler contract: pass"
+JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
+
+echo "actuating sound-abstraction counterexample-theory reconciler contract: pass"

@@ -4,16 +4,13 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-semantic-hotspot-reconciler-v1"
+      "source_fingerprint": "actuating-sound-abstraction-hotspot-reconciler-v4"
     },
     "triggers": [
       {
         "trigger_id": "ACT-BARE",
         "description": "Bare Actuating reconciles implementation, publication, review, and closure.",
-        "cue_literals": [
-          "$actuating",
-          "/goal $actuating"
-        ],
+        "cue_literals": ["$actuating", "/goal $actuating"],
         "cue_regexes": [],
         "exclusions": []
       },
@@ -31,7 +28,7 @@
       },
       {
         "trigger_id": "ACT-COUNTEREXAMPLE",
-        "description": "A current bug or falsifier may expose a semantic hotspot or architecture defect.",
+        "description": "A current or historically witnessed falsifier may expose a semantic hotspot, interpretation defect, or architecture defect.",
         "cue_literals": [
           "bug",
           "failing test",
@@ -41,7 +38,12 @@
           "illegal transition",
           "semantic hotspot",
           "counterexample family",
-          "admission frontier"
+          "counterexample theory",
+          "semantic observation domain",
+          "sound abstraction",
+          "diagnostic exactness",
+          "admission frontier",
+          "admission cut"
         ],
         "cue_regexes": [],
         "exclusions": [
@@ -51,30 +53,31 @@
       },
       {
         "trigger_id": "ACT-RECONSIDER",
-        "description": "Current evidence falsifies or extends the incumbent architecture.",
+        "description": "Current evidence falsifies or extends the incumbent architecture, counterexample theory, safety adequacy, or Goal adequacy.",
         "cue_literals": [
           "semantic novelty",
           "causal recurrence",
           "wrong owner",
+          "distributed owner",
           "wrong representation",
           "architecture reconsideration",
-          "abstraction reconsideration"
+          "abstraction reconsideration",
+          "detection-shaped predicate",
+          "representation-bound predicate",
+          "violation-erasing abstraction",
+          "coarse semantic domain",
+          "required behavior lost"
         ],
         "cue_regexes": [],
         "exclusions": [
           "diff size or implementation rewrite alone",
-          "one local defect whose complete family is already excluded by the incumbent"
+          "one local defect whose predicate-defined family is already excluded through a sound Goal-adequate incumbent interpretation"
         ]
       },
       {
         "trigger_id": "ACT-REVIEW-DEFAULT",
         "description": "Unqualified review, inspect, audit, or classify intent is non-mutating triage.",
-        "cue_literals": [
-          "review",
-          "inspect",
-          "audit",
-          "classify"
-        ],
+        "cue_literals": ["review", "inspect", "audit", "classify"],
         "cue_regexes": [],
         "exclusions": []
       }
@@ -83,62 +86,44 @@
       {
         "route_id": "ACT-IMPLEMENT",
         "description": "Reconcile and realize the current target locally.",
-        "aliases": [
-          "implement"
-        ],
+        "aliases": ["implement"],
         "terminal": false
       },
       {
         "route_id": "ACT-TRIAGE",
         "description": "Acquire and classify current owner evidence without mutation.",
-        "aliases": [
-          "triage"
-        ],
+        "aliases": ["triage"],
         "terminal": true
       },
       {
         "route_id": "ACT-REMEDIATION",
         "description": "Recompile a non-executable target architecture.",
-        "aliases": [
-          "remediation-plan"
-        ],
+        "aliases": ["remediation-plan"],
         "terminal": true
       },
       {
         "route_id": "ACT-REVIEW-CLOSEOUT",
         "description": "Resolve current review pressure, publish when required, and converge.",
-        "aliases": [
-          "review-closeout"
-        ],
+        "aliases": ["review-closeout"],
         "terminal": false
       },
       {
         "route_id": "ACT-SHIP-HANDOFF",
         "description": "Hand exact Git and validation facts to Ship.",
-        "aliases": [
-          "ship-handoff"
-        ],
+        "aliases": ["ship-handoff"],
         "terminal": false
       },
       {
         "route_id": "ACT-CLOSE",
         "description": "Evaluate the live closure predicate.",
-        "aliases": [
-          "continue",
-          "ready-to-ship",
-          "complete",
-          "blocked"
-        ],
+        "aliases": ["continue", "ready-to-ship", "complete", "blocked"],
         "terminal": true
       }
     ],
     "clauses": [
       {
         "clause_id": "ACT-OWNER-FACTS-001",
-        "trigger_refs": [
-          "ACT-BARE",
-          "ACT-ROUTE"
-        ],
+        "trigger_refs": ["ACT-BARE", "ACT-ROUTE"],
         "expected_routes": [
           "ACT-IMPLEMENT",
           "ACT-TRIAGE",
@@ -167,11 +152,8 @@
         "rationale": "Reconciliation remains current when durable facts stay with their owners and interpretations are recomputed."
       },
       {
-        "clause_id": "ACT-HOTSPOT-001",
-        "trigger_refs": [
-          "ACT-COUNTEREXAMPLE",
-          "ACT-RECONSIDER"
-        ],
+        "clause_id": "ACT-HOTSPOT-004",
+        "trigger_refs": ["ACT-COUNTEREXAMPLE", "ACT-RECONSIDER"],
         "expected_routes": [
           "ACT-IMPLEMENT",
           "ACT-TRIAGE",
@@ -180,31 +162,54 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "exact witnessed counterexample",
-          "named violated law",
-          "detection surface distinct from candidate admission frontier",
-          "current Review Fold family evidence when multiple witnesses are claimed",
-          "bounded repository-native semantic scar tissue when applicable",
+          "exact witness subject and current applicability subject",
+          "named violated law and law provenance",
+          "detection surface distinct from candidate admission frontier or cut",
+          "current Review Fold observational class when multiple witnesses are claimed",
+          "ordinary counterexample theory Theta_0",
+          "semantic observation domain and interpretation family",
+          "comparison universe and sanctioned behavior",
+          "witness interpretation and family predicate or generator",
+          "sanctioned admission relation, validity horizon, and claim strength",
+          "interpretation totality, violation reflection, and abstract exclusion",
+          "required-valid-behavior and required-observation preservation",
+          "safety/Goal evidence strengths and falsifiers",
+          "diagnostic-exactness status and counterexample",
+          "family-theory falsifier",
+          "current owner set and owner status",
+          "bounded classified repository-native semantic scar tissue when applicable",
           "counterexample topology and correctness delta when architecture reopens"
         ],
         "success_signals": [
-          "a bug is treated as a counterexample rather than a patch instruction",
-          "one universal-law falsifier may reopen architecture immediately",
-          "semantic hotspots require same-law owner evidence rather than file proximity",
-          "the incumbent is preserved only when its existing owner excludes the complete evidenced family",
-          "the selected target states invalid region eliminated, escape paths retired, and residual invalidity"
+          "a bug is treated as a witness rather than a patch instruction or complete family",
+          "historical witness provenance remains distinct from current applicability",
+          "distributed ownership may form one same-law observational class",
+          "a detection-shaped, enumerative, representation-bound, violation-erasing, or Goal-erasing ordinary theory is challenged before finalization when a material alternative remains live",
+          "Metanoetic generates at most one challenger on one unchanged theory decision surface",
+          "OPERATE ARCHITECTONICALLY selects the least discriminating sound abstraction and adjudicates law, semantic domain, interpretation, ownership, construction, composition, and falsifiers",
+          "Actuating partitions classes by theory/frontier and selects a minimal admission cut when needed",
+          "one universal-law falsifier over a sanctioned path may reopen architecture immediately",
+          "the selected target states safety adequacy, Goal adequacy, diagnostic exactness, disposition, concrete invalid region eliminated, admission coverage, escape paths retired, derived guards preserved, and residual invalidity"
         ],
         "failure_signals": [
-          "detection surface is treated as admission frontier without evidence",
-          "bug or finding maps directly to a patch",
+          "observed examples are treated as the complete family",
+          "representation independence is treated as safety adequacy",
+          "Omega or Alpha underapproximates danger or erases required behavior",
+          "diagnostic exactness is required as a premise of safety elimination",
+          "conservative rejection of optional safe behavior is treated as residual incorrectness",
+          "the ordinary counterexample theory is finalized before a required Metanoetic challenge",
+          "architectonic language is used without adjudicating the sound abstraction",
+          "historical witness provenance is rewritten as current-head provenance",
+          "one current owner is required when owner dilution may be the defect",
+          "one frontier is invented when path coverage requires an admission cut",
           "file proximity, churn, or an arbitrary bug count establishes a hotspot",
-          "another guard is called correct by construction while the same invalid family remains admitted",
+          "containment or another compensating guard is called correct by construction",
           "a hotspot registry, score, threshold, receipt, or durable store is created"
         ],
-        "rationale": "Bugs improve architecture only when their counterexample families are traced to the earliest owned admission seam and excluded there."
+        "rationale": "Bugs improve architecture when observed witnesses induce a falsifiable counterexample theory whose interpretation soundly reflects concrete law violations, excludes them from sanctioned behavior, and preserves required valid behavior before architecture selection."
       },
       {
-        "clause_id": "ACT-ARCHITECTURE-001",
+        "clause_id": "ACT-ARCHITECTURE-004",
         "trigger_refs": [
           "ACT-BARE",
           "ACT-ROUTE",
@@ -221,34 +226,41 @@
           "incumbent model reconstructed from the current tree",
           "architecture-closure judgment",
           "Architecture Working Set when selection reopens",
-          "correctness-dominance comparison for bug-driven candidates"
+          "selected counterexample theory and architectonic disposition when bug-driven",
+          "candidate interpretation into the selected semantic observation domain",
+          "candidate interpretation totality and violation-reflection evidence",
+          "candidate abstract-exclusion and Goal-adequacy evidence",
+          "candidate diagnostic-exactness status and optional safe behavior excluded",
+          "correctness-relation evidence for bug-driven candidates",
+          "correctness Pareto frontier before cost minimization"
         ],
         "success_signals": [
-          "local repair preserves an incumbent already closed under the complete obligation or counterexample family",
-          "semantic novelty, universal-law falsification, or semantic hotspot reopens selection before mutation",
-          "the smallest correctness-non-dominated candidate is selected",
-          "First Principles, Universalist, bounded Metanoetic challenge, and Reduce retain their authority boundaries"
+          "local repair preserves an incumbent already closed under the selected counterexample theory through a sound Goal-adequate interpretation",
+          "semantic novelty, sanctioned universal-law falsification, distributed ownership, a semantic hotspot, a violation-erasing abstraction, or lost required behavior reopens selection before mutation",
+          "a live architecture candidate may trigger one bounded theory or interpretation co-refinement before target selection",
+          "the same decision surface does not rerun Metanoetic during co-refinement",
+          "a candidate with partial, unknown, or violation-erasing interpretation or failed Goal adequacy is excluded from the correctness Pareto frontier",
+          "a sound conservative overapproximation may remain on the correctness Pareto frontier",
+          "safety- and Goal-equivalent candidates are compared by valid-behavior coverage, diagnostic exactness, compression, proof burden, and cost",
+          "material correctness/cost tradeoffs remain incomparable",
+          "First Principles, Review Fold, Metanoetic, architectonic adjudication, Universalist, and Reduce retain their authority boundaries"
         ],
         "failure_signals": [
           "new semantics hide inside a realization repair",
-          "candidate comparison ignores invalid states, escape paths, owner dilution, or residual proof burden",
+          "candidate comparison ignores safety adequacy, Goal adequacy, family domain, admission coverage, escape paths, owner dilution, guard roles, or residual proof burden",
+          "an architecture candidate silently redefines the family or interpretation it claims to realize",
+          "a candidate wins by abstracting away evidence of invalidity or rejecting required valid behavior",
+          "a sound candidate is rejected solely because its diagnostic exactness is conservative or unknown",
+          "unsupported prose claims set inclusion, safety adequacy, Goal adequacy, or family elimination",
           "incomparable minima are collapsed into a scalar score",
           "prior analysis substitutes for current repository evidence"
         ],
-        "rationale": "Architecture selection minimizes current admitted incorrectness while preserving every required valid observation and compatibility obligation."
+        "rationale": "Counterexample theory and architecture are co-discovered once, then candidates are compared first by sound concrete safety and Goal adequacy; diagnostic exactness is a secondary permissiveness property."
       },
       {
         "clause_id": "ACT-REVIEW-001",
-        "trigger_refs": [
-          "ACT-BARE",
-          "ACT-ROUTE",
-          "ACT-REVIEW-DEFAULT"
-        ],
-        "expected_routes": [
-          "ACT-TRIAGE",
-          "ACT-REVIEW-CLOSEOUT",
-          "ACT-CLOSE"
-        ],
+        "trigger_refs": ["ACT-BARE", "ACT-ROUTE", "ACT-REVIEW-DEFAULT"],
+        "expected_routes": ["ACT-TRIAGE", "ACT-REVIEW-CLOSEOUT", "ACT-CLOSE"],
         "prohibited_routes": [],
         "required_artifacts": [
           "static actuating-review-contract/v2",
@@ -269,16 +281,9 @@
         "rationale": "CAS-owned receipts provide durable attempt facts; Actuating derives credit without duplicating them."
       },
       {
-        "clause_id": "ACT-CLOSURE-001",
-        "trigger_refs": [
-          "ACT-BARE",
-          "ACT-ROUTE",
-          "ACT-COUNTEREXAMPLE"
-        ],
-        "expected_routes": [
-          "ACT-SHIP-HANDOFF",
-          "ACT-CLOSE"
-        ],
+        "clause_id": "ACT-CLOSURE-004",
+        "trigger_refs": ["ACT-BARE", "ACT-ROUTE", "ACT-COUNTEREXAMPLE"],
+        "expected_routes": ["ACT-SHIP-HANDOFF", "ACT-CLOSE"],
         "prohibited_routes": [],
         "required_artifacts": [
           "current Goal",
@@ -286,27 +291,44 @@
           "current validation",
           "current Ship evidence when required",
           "current CAS evidence when required",
-          "witness rejection and family-elimination proof when bug-driven"
+          "selected counterexample theory and family-theory falsifier when bug-driven",
+          "witness and candidate interpretations into the selected semantic observation domain",
+          "interpretation totality, violation reflection, and abstract exclusion",
+          "required-valid-behavior and required-observation preservation",
+          "safety/Goal falsifiers and evidence strengths",
+          "diagnostic-exactness status and counterexample",
+          "witness rejection and concrete family-exclusion proof when bug-driven",
+          "explicit eliminated, contained, obstructed, or unresolved disposition"
         ],
         "success_signals": [
           "closure is reevaluated from live owner facts",
-          "accepted witnesses are rejected through sanctioned paths",
-          "selected counterexample families are excluded at the canonical owner or residual invalidity is explicit and owned",
-          "publication-before-review adoption is bound through the Ship observation digest in CAS request fingerprints",
+          "accepted current witnesses are rejected through sanctioned paths",
+          "the selected theory, safety interpretation, and Goal adequacy survive their falsifiers under current evidence",
+          "required Metanoetic challenge, architectonic adjudication, and bounded co-refinement are complete",
+          "eliminated families carry semantic-domain, law, predicate, admission, totality, reflection, abstract-exclusion, Goal-preservation, coverage, and claim-strength proof",
+          "abstract exclusion plus violation reflection entails no concrete law violation",
+          "diagnostic exactness is classified separately from safety",
+          "contained residuals are explicitly authorized, owned, observable, and never called correct by construction",
+          "required derived guards remain coherent",
           "no closure receipt or Evidence event is required"
         ],
         "failure_signals": [
           "stored completion survives changed inputs",
+          "rejection of observed examples substitutes for predicate-defined family exclusion",
+          "abstract exclusion is treated as concrete correctness without totality and violation reflection",
+          "diagnostic inexactness alone is treated as residual incorrectness",
+          "an unresolved or falsified counterexample theory reaches closure",
+          "a candidate silently changes the family or interpretation during proof",
+          "containment is reported as family elimination",
           "Ship requires an Actuating closure receipt",
-          "rejection of one example substitutes for family elimination",
           "publication, process exit, or a summary count substitutes for current proof"
         ],
-        "rationale": "Completion is a head-relative correctness predicate, not durable control state."
+        "rationale": "Completion is a head-relative concrete correctness predicate over a selected theory whose interpretation is total and violation-reflecting, whose abstract unsafe region is excluded, and whose Goal-required valid behavior remains available."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The current Git tree and owner-issued evidence are the facts; Actuating reports its live judgment without persisting a peer authority artifact or hotspot registry."
+      "rationale": "The current Git tree and owner-issued evidence are the facts; Actuating reports its live theory, interpretation, and architecture judgment without persisting a peer authority artifact or hotspot registry."
     }
   }
 }
