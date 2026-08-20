@@ -280,6 +280,7 @@
     {
       "id": "reopened-authority-cannot-reissue",
       "inputs": {
+        "law_authority": "new-requirement",
         "premise_failure": "authority",
         "reissue_attempted": true,
         "successor_theory_restated": true,
@@ -288,8 +289,8 @@
         "sibling_probes_passed": true
       },
       "expected": {
-        "authority": "counterexample",
-        "lease": "reopen-goal",
+        "authority": "reopen-goal",
+        "lease": "non-authoritative",
         "next": "reopen-goal",
         "reissue": "ineligible"
       }
