@@ -733,13 +733,16 @@ Dataset references appear only when rows were emitted:
 Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 
 ```json
-{"authority":"explicit_user_correction","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/traces/<run-id>.json","hard_oracle_refs":["runs/<run-group-id>/oracle-results/<run-id>.json"],"harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"source/<chart-id>/events/<event-id>.json","schema":"emulator-preference/v1","source_refs":["source/<chart-id>/source-map.yaml"],"state_fingerprint":"sha256:<hex>","state_ref":"actors/<chart-id>.md"}
+{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"roots/<root-digest-hex>/source/<chart-id>/events/<event-id>.json","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-map.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"roots/<root-digest-hex>/actors/<chart-id>.md"}
 ```
 
-Refs/fingerprints resolve exact eligible bytes; authority and surface equal the
-chart, the chosen action is a fresh passing run, and the rejected action is the
-exact source-bound event. Arrays are sorted and duplicate-free. No extra fields
-are admitted.
+Refs/fingerprints resolve exact eligible bytes; static refs use the archived
+root. The chosen-action artifact is the exact selected action projection, not a
+whole trace. Authority, chart, contract, harness, and surface equal the run and
+chart. Evidence arrays sort by ref and are duplicate-free. Retirement fields
+are all null for discovery/development rows and all non-null for a holdout
+retired for training, binding the exact training-authorized marker and successor
+snapshot. Mixed nullability or extra fields are invalid.
 
 Every row retains chart, authority, closure, harness, and evidence provenance.
 

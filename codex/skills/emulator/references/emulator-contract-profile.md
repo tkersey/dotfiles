@@ -293,8 +293,9 @@ threshold, the factor-to-targeted-chart predicate, protected dimensions and
 their evaluator-result bindings, exact factor-owner paths, runtime-configuration
 keys, and deterministically derived runtime-surface fields,
 non-hard regression tolerance, candidate budget, exact baseline harness
-fingerprint, exact immutable optimizer-input inventory ref/fingerprint,
-predeclared candidate-output roots and pre-state inventory ref/fingerprint,
+fingerprint, candidate-keyed immutable optimizer-inventory template
+refs/fingerprints and
+predeclared candidate-output root roles,
 exact optimizer tool/effect policy ref/fingerprint and required complete trace
 schema,
 exact candidate-generation runner ref/fingerprint, and exact
@@ -655,8 +656,11 @@ exact RFC 8785 `support-classifier/v1` bytes:
 Rules are sorted by `support_id`, have unique IDs, use exactly the five support
 classes, and each has nonempty, duplicate-free authority refs resolving inside
 the chart closure. Predicates are total and disjoint over admitted actions;
-the only predicate language is the same closed `json_pointer_equals` form used
-by inline rules. The bound implementation evaluates exactly that DSL, and the
+the closed predicate DSL consists of `json_pointer_equals` leaves plus
+`{"all_of":[...]}`, `{"any_of":[...]}`, and `{"not":{...}}`. `all_of` and
+`any_of` contain at least two canonical predicates sorted by exact bytes and
+duplicate-free; `not` contains exactly one. Depth is at most eight and total
+nodes at most 128. Inline and asset rules use this same DSL. The bound implementation evaluates exactly that DSL, and the
 coverage proof exhaustively checks total/disjoint coverage over the admitted
 action schema. Missing or mismatched implementation/proof bytes,
 authority-free rules, or self-authorizing rules are invalid.

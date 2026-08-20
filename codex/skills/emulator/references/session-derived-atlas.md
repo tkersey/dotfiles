@@ -811,6 +811,11 @@ covered by the human attestation. Each member is a `root_session` or
 tasks share an attested duplicate cluster instead of becoming independent
 holdouts merely because their actor-input bytes differ. `<digest>` is SHA-256
 of those exact bytes.
+Approval is exact RFC 8785
+`{"approved":true,"cluster_digest":"sha256:<hex>","member_source_identity_fingerprints":["sha256:<hex>"],"principal_identity_fingerprint":"sha256:<hex>","principal_identity_ref":"principals/<principal-digest-hex>.json","schema":"duplicate-cluster-attestation/v1"}`
+bytes. The member set equals the cluster preimage exactly; the chart and
+pre-candidate policy bind the approval ref/fingerprint. Missing, split, or
+self-authored approval makes the cluster ineligible for holdout.
 The cluster then uses identity kind `duplicate_cluster` and ref
 `duplicate-cluster:sha256:<digest>`; its descriptor preimage is exactly
 `{"identity_kind":"duplicate_cluster","identity_ref":"duplicate-cluster:sha256:<digest>","schema":"emulator-source-identity/v1"}`.
@@ -848,7 +853,7 @@ discovery/development evidence. Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"optimizer/tool-policy.json","runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
@@ -856,9 +861,10 @@ fingerprint matches exact bytes, and its recorded partition equals the entry;
 holdout evidence is forbidden. Evidence entries, root-qualified owner paths,
 complete structured selectors, runtime keys, and derived runtime fields are sorted and
 duplicate-free. Each `evidence_ref`, `evidence_fingerprint`, and `partition`
-triple is validated as one resolvable identity. `optimizer_visible_policy` is the complete semantic policy the
-optimizer may later receive; no optimizer-visible selector, constraint, budget,
-path, key, or derived field may be added after this freeze. The artifact is created under the global
+triple is validated as one resolvable identity. `optimizer_visible_policy` is
+the complete semantic policy the optimizer may later receive, including tool
+policy, tool schemas, authorized message projections, and the inventory-template
+schema; none may be added or changed after this freeze. The artifact is created under the global
 partition mutex before holdout compilation and binds the already-frozen
 baseline. The root, evaluator-only pre-candidate policy, and final reports bind
 its exact ref/fingerprint. The optimizer policy is the deterministic exact
@@ -874,10 +880,11 @@ required. Any baseline drift after this artifact is published restarts factor
 selection and requires a new untouched holdout group.
 
 Every human-role identity ref resolves exact RFC 8785
-`{"issuer":"<authority-namespace>","principal_id":"<canonical-subject-id>","schema":"emulator-principal-identity/v1"}`
-bytes; its companion fingerprint, digest filename, and bytes agree. The human
-owner admits one issuer-specific canonical subject ID per person, and
-conflicting principal assets for the same issuer subject are invalid.
+`{"aliases":[{"issuer":"<authority-namespace>","principal_id":"<issuer-subject-id>"}],"person_id":"<owner-assigned-stable-person-id>","schema":"emulator-principal-identity/v1"}`
+bytes; aliases are sorted and duplicate-free, and the companion fingerprint,
+digest filename, and bytes agree. The human owner assigns one stable
+cross-issuer `person_id` and admits all verified aliases into that single asset;
+overlapping aliases or multiple assets for one person are invalid.
 In schemas below, `principal_identity_ref` denotes this common ref/fingerprint
 contract; role-specific fields retain their selector, reviewer, or attester
 prefix.
@@ -886,8 +893,8 @@ selected the factor. Before admitting any
 correction-derived chart, require it to differ from every
 reviewer identity ref/fingerprint pair in the selected cohort's
 `correction-human-review/v1` or `correction-reviewed-pattern/v1` assets. All
-roles use the same principal-identity scheme, so alternate emails or account
-aliases cannot manufacture inequality. Selector identity is evaluator-only
+roles compare `person_id` under this alias-normalized scheme, so alternate
+emails, accounts, or issuer namespaces cannot manufacture inequality. Selector identity is evaluator-only
 outer evidence and is absent from the optimizer policy projection.
 
 Before the first semantic holdout read, while holding the user-global partition
@@ -946,7 +953,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":"sha256:<hex>","holdout_target_ref":"comparison/holdout-semantic-target.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
@@ -1116,6 +1123,10 @@ bytes at `optimizer-intent-memberships/<holdout-key>/<pending-digest-hex>.json`.
 Memberships cover exactly the intent identity array. The access proof and both
 leakage reviews bind the one cohort `pending_fingerprint`, so every identity is
 cleared by the same attempt evidence without collapsing membership.
+After the complete pending intent and membership set is durable, release the
+partition mutex before launching the optimizer. A later leakage transition
+reacquires that mutex; no path recursively acquires a lock it still holds.
+Required ordering is: release partition mutex before optimizer launch.
 
 After generation and both complete clear leakage reviews, construct the exact
 RFC 8785 clear bytes below:
@@ -1300,6 +1311,12 @@ other semantic source byte, either obtain a caller-attested complete identity
 set or derive it completely from physical discovery metadata, then atomically
 publish the applicable claims. Retain and fingerprint the attestation or
 physical envelope; a merely asserted incomplete list is not holdout authority.
+The caller route uses exact RFC 8785
+`{"attester_identity_fingerprint":"sha256:<hex>","attester_identity_ref":"principals/<principal-digest-hex>.json","complete":true,"schema":"identity-completeness-attestation/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}`
+bytes. The physical route retains the exact non-semantic discovery envelope.
+Every chart, pre-candidate policy, and root binds exactly one common
+`identity_completeness_ref`/fingerprint route; claims, locks, and reservations
+revalidate its complete identity set before publication.
 
 For registry-backed compilation, when completeness cannot be established
 without semantic source bytes, acquire
@@ -1492,9 +1509,11 @@ discovery fallback publishes newly learned aliases before releasing the read.
 Claims are not deferred until partition freeze or execution. If any key is
 incompatible before exposure, remove only staged or published claims created by
 that attempt while still holding the global lock; compatible pre-existing
-claims are never removed. The sole replacement exception is the fallback's
-atomic `holdout_unexposed` to `discovery_exposed` contamination transition;
-it preserves the fact of exposure and invalidates the stale holdout snapshot.
+claims are never removed. The only replacement exceptions are atomic
+`holdout_unexposed` to `discovery_exposed` for discovery fallback and
+`holdout_unexposed` to `optimizer_exposed` for optimizer leakage. Both preserve
+exposure and invalidate the stale holdout snapshot.
+The `optimizer_exposed` replacement is therefore explicitly admitted.
 Bind only atlas-relative claim snapshots in the
 pre-candidate policy, final root closure, runs, and EER, plus their
 atlas-relative validation artifact.
@@ -1550,6 +1569,13 @@ tool policy, and allowed root roles without absolute sandbox paths or
 `sandbox_instance_id`. The concrete candidate inventory must be the
 deterministic instantiation of its template; candidate-specific sandboxes may
 differ without sharing a concrete fingerprint.
+The exact template is RFC 8785
+`{"candidate_id":"<candidate-id>","input_entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"input_root_roles":["optimizer_input"],"output_entries":[],"output_root_roles":["candidate_output"],"schema":"optimizer-inventory-template/v1","tool_policy_fingerprint":"sha256:<hex>"}`.
+Concrete inventories add only the fresh `sandbox_instance_id` and absolute root
+paths assigned to those roles. Remove those runtime fields and map absolute
+roots back to roles; the resulting exact value equals the candidate's frozen
+template. The access proof repeats the template ref/fingerprint and the
+template-to-concrete validator rejects any other delta.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate optimizer policy whose
 semantic fields are exactly the deterministic projection frozen as
@@ -1762,9 +1788,9 @@ Each side fingerprint hashes the exact selected slice, and every `selector_ids`
 array plus the ownership-authority fingerprint array is sorted and unique. Each
 hunk maps only to selectors declared by the pre-candidate policy. The candidate,
 baseline, factor, policy, owner authorities, and harness fingerprints equal the
-candidate metadata and factor-delta asset. `attester_identity_fingerprint` is
-an opaque stable identity fingerprint; both independence booleans are required
-true. Arbitrary bytes, an uncovered hunk, a mismatched authority, or an
+candidate metadata and factor-delta asset. The attester principal is canonical
+and differs from every correction reviewer principal in the selected cohort;
+both independence booleans are required true. Arbitrary bytes, an uncovered hunk, a mismatched authority, or an
 attestation produced by candidate generation is `multiple_factors`.
 
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
