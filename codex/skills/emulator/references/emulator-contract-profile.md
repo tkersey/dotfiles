@@ -962,7 +962,7 @@ interaction derivation. Every dimension has unique `case_id` values. Its shrink
 pair resolves exact RFC 8785 `mutation-shrink-strategy/v1` bytes:
 
 ~~~json
-{"cases":[{"case_id":"<case-id>","smaller_case_ids":["<case-id>"]}],"dimension_id":"<dimension-id>","schema":"mutation-shrink-strategy/v1"}
+{"cases":[{"case_id":"<case-id>","smaller_case_ids":[]}],"dimension_id":"<dimension-id>","schema":"mutation-shrink-strategy/v1"}
 ~~~
 
 Cases cover the dimension domain exactly; arrays are sorted and duplicate-free;

@@ -1702,7 +1702,11 @@ reservation and selected cohort. Any overlap, removal, or changed prior marker
 makes the root stale; a disjoint completed cycle does not abort an active one.
 The witness is exact RFC 8785 bytes at
 `runs/<run-group-id>/retirement-disjoint-advance.json`:
-`{"active_reservation_fingerprint":"sha256:<hex>","added_markers":[{"fingerprint":"sha256:<hex>","ref":"holdout-retirements/markers/<digest-hex>.json","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"current_snapshot_fingerprint":"sha256:<hex>","current_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","predecessor_snapshot_fingerprint":"sha256:<hex>","predecessor_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","schema":"retirement-snapshot-disjoint-advance/v1"}`.
+`{"active_reservation_fingerprint":"sha256:<hex>","added_markers":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/retirement-disjoint-assets/markers/<digest-hex>.json","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"current_snapshot_fingerprint":"sha256:<hex>","current_snapshot_ref":"runs/<run-group-id>/retirement-disjoint-assets/current-snapshot.json","predecessor_snapshot_fingerprint":"sha256:<hex>","predecessor_snapshot_ref":"roots/<root-digest-hex>/holdout-retirements/snapshots/<digest-hex>.json","schema":"retirement-snapshot-disjoint-advance/v1"}`.
+While holding both locks, copy and fsync the exact current snapshot and every
+added marker into those run-local refs before emitting the witness. The
+predecessor ref resolves the archived root-bound snapshot. No witness or report
+consults a later live retirement path.
 Added markers sort by ref and are unique; nested arrays are sorted and unique;
 the current snapshot equals the predecessor marker set plus exactly these
 markers. Every added row's source groups and identities equal its referenced
@@ -1726,9 +1730,10 @@ precomputed canonical cycle-reservation bytes.
 
 Each successful gate seals exact RFC 8785
 `optimizer-clear-validation/v1` bytes at
-`runs/<cycle-id>/optimizer-clear-validation-<phase>.json`, where phase is
-`pre_reservation` for this gate and `pre_actor` for the repeated gate:
-`{"cycle_id":"<cycle-id>","phase":"pre_reservation","rows":[{"candidate_id":"<candidate-id>","clear_fingerprint":"sha256:<hex>","clear_ref":"runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/clear.json","evidence_closure_fingerprint":"sha256:<hex>","evidence_closure_ref":"runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/closure.json","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","pending_ref":"runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/pending.json","sentinel_fingerprints":["sha256:<hex>"],"sentinel_refs":["runs/<cycle-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/sentinels/<holdout-key>.json"],"source_identity_fingerprints":["sha256:<hex>"]}],"schema":"optimizer-clear-validation/v1"}`.
+`runs/<comparison-id>/optimizer-clear-validation-<phase>.json` in every pair's
+already-reserved run group, where phase is `pre_reservation` for this gate and
+`pre_actor` for the repeated gate:
+`{"cycle_id":"<cycle-id>","phase":"pre_reservation","rows":[{"candidate_id":"<candidate-id>","clear_fingerprint":"sha256:<hex>","clear_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/clear.json","evidence_closure_fingerprint":"sha256:<hex>","evidence_closure_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/closure.json","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","pending_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/pending.json","sentinel_fingerprints":["sha256:<hex>"],"sentinel_refs":["runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/sentinels/<holdout-key>.json"],"source_identity_fingerprints":["sha256:<hex>"]}],"schema":"optimizer-clear-validation/v1"}`.
 Before releasing the mutex, copy and recursively verify the exact global
 pending, clear, sentinel, and evidence-closure bytes into those run-local refs.
 Rows sort by candidate ID; every array is sorted and duplicate-free; ref and
@@ -1736,7 +1741,9 @@ fingerprint arrays are same-length ordered pairs. The rows cover every
 enumerated cohort pending/sentinel exactly once, and every clear/closure joins
 the same candidate, attempt, pending fingerprint, and identity set. An
 unresolved attempt cannot be represented as a successful validation. Every
-holdout execution and its pairwise EER bind both phase artifacts; offline
+pair-local artifact covers the complete cycle candidate set but owns only refs
+beneath that comparison's run group. Every holdout execution and its pairwise
+EER bind its own two phase artifacts; offline
 validation therefore replays both gates without consulting mutable registry
 state.
 
@@ -1764,7 +1771,7 @@ While holding the retirement-index lock, write one run-group-local RFC 8785
 `partition-validation/v1` artifact with exactly:
 
 ~~~json
-{"current_pointer_snapshot_fingerprint":"sha256:<hex>","current_pointer_snapshot_ref":"runs/<run-group-id>/current-pointer-snapshot.json","disjoint_advance_fingerprint":null,"disjoint_advance_ref":null,"exposure_registry_id":"sha256:<hex>","resolved_snapshot_fingerprint":"sha256:<hex>","resolved_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","root_contract_fingerprint":"sha256:<hex>","root_snapshot_fingerprint":"sha256:<hex>","run_group_id":"<run-group-id>","schema":"partition-validation/v1","storage_domain_id":"sha256:<hex>"}
+{"current_pointer_snapshot_fingerprint":"sha256:<hex>","current_pointer_snapshot_ref":"runs/<run-group-id>/current-pointer-snapshot.json","disjoint_advance_fingerprint":null,"disjoint_advance_ref":null,"exposure_registry_id":"sha256:<hex>","resolved_snapshot_fingerprint":"sha256:<hex>","resolved_snapshot_ref":"roots/<root-digest-hex>/holdout-retirements/snapshots/<digest-hex>.json","root_contract_fingerprint":"sha256:<hex>","root_snapshot_fingerprint":"sha256:<hex>","run_group_id":"<run-group-id>","schema":"partition-validation/v1","storage_domain_id":"sha256:<hex>"}
 ~~~
 
 The writer copies the exact observed `holdout-retirements/current.json` bytes to
@@ -1780,7 +1787,8 @@ in that case and non-null exactly for the admitted monotonic extension; then
 `resolved_snapshot_fingerprint` is current while `root_snapshot_fingerprint`
 remains the root-bound predecessor. In that admitted branch every selecting
 run and EER sets `partition_snapshot_fingerprint` to the resolved current
-snapshot; the validation artifact retains the distinct root predecessor and
+snapshot and `resolved_snapshot_ref` equals the disjoint witness's run-local
+`current_snapshot_ref`; the validation artifact retains the distinct root predecessor and
 sealed disjoint-advance witness. Store it
 at `runs/<run-group-id>/partition-validation.json`; runs and EER bind that ref
 and exact fingerprint. This runtime proof is distinct from the static
@@ -2002,7 +2010,8 @@ require no later pointer advance. Then rerun the complete optimizer pending/clea
 gate above and revalidate every claim, lock, reservation, and consumption state
 against the frozen cycle. Any newly unresolved optimizer intent stops with
 `source_contaminated` before actor handoff. Seal the `pre_actor` optimizer-clear
-validation artifact under the same mutex before proceeding. Only after every revalidation passes
+validation artifact in every pair's run group under the same mutex before
+proceeding. Only after every revalidation passes
 may the runner atomically create one immutable global
 `<holdout_lock_root>/<hex>.consumed.json` per identity. Its exact RFC 8785 bytes
 are
@@ -2152,7 +2161,7 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"holdout_exposure_attestations":[{"fingerprint":"sha256:<hex>","ref":"partitions/holdout-exposure-attestations/<digest-hex>.json"}],"improvement_rule":{"chart_outcome":"strict_majority_of_paired_valid_repeats","maximum_targeted_regressed_charts":0,"minimum_targeted_improved_charts":1,"require_all_required_charts_determinate":true,"schema":"paired-stochastic-improvement-rule/v1","tie_disposition":"insufficient_evidence"},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"holdout_exposure_attestations":[],"improvement_rule":{"chart_outcome":"strict_majority_of_paired_valid_repeats","maximum_targeted_regressed_charts":0,"minimum_targeted_improved_charts":1,"require_all_required_charts_determinate":true,"schema":"paired-stochastic-improvement-rule/v1","tie_disposition":"insufficient_evidence"},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<hex>","factor":"question_policy","targeted":true}]}
 ~~~
 
 The already-materialized commitment has exact RFC 8785
