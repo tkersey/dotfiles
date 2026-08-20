@@ -210,6 +210,9 @@ emulator_contract:
     comparison_implementation:
       ref:
       fingerprint:
+    randomness_cohort_commitment:
+      ref: comparison/randomness-cohort-commitment.json
+      fingerprint:
     baseline_harness:
       harness_id:
       ref:
@@ -398,6 +401,11 @@ protocol; a holdout in `run` or `mutate` is an invalid contract rather than an
 unreserved execution route.
 `paired_compare` roots MUST NOT select a mutation assignment or mutation case;
 EC-v1 mutation evidence is single-arm only.
+For `paired_compare`, the randomness-cohort commitment pair is mandatory,
+equals the pre-candidate policy, and resolves the complete evaluator-owned
+draw/schedule commitment created before candidate generation. It is absent for
+`single_arm`, whose randomness remains a per-run fact without a paired
+selection claim.
 For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
@@ -514,8 +522,9 @@ coverage, or a status other than `pass` or `unavailable_prestart`, is
 `comparison_drift`; a complete unavailable row is admitted incomplete evidence.
 The asset also binds the pre-candidate actor-readable-surface derivation
 implementation. It has exactly one closed pair row per chart/repeat tuple;
-pre-start failures use `unavailable_prestart` with the required null fields
-rather than disappearing from the cohort.
+pre-start failures use the sandbox-aware `unavailable_prestart` variant and
+preserve a frozen-mount inventory when one exists rather than disappearing from
+the cohort.
 The report-owned `actor-context-delta-validation/v1` has the same complete
 pair domain and explicit `unavailable_prestart` variant; it never fabricates a
 context fingerprint for an actor that did not start.

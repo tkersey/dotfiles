@@ -96,6 +96,8 @@ emulator_execution_report:
     actor_context_delta_validation_fingerprint:
     reset_state_validation_ref:
     reset_state_validation_fingerprint:
+    randomness_cohort_commitment_ref:
+    randomness_cohort_commitment_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     reason:
@@ -192,7 +194,10 @@ emulator_execution_report:
       actor_runner_fingerprint:
       actor_process_opaque_id:
       sandbox_instance_id:
+      sandbox_created: true | false
       actor_started: true | false
+      randomness_cohort_commitment_ref:
+      randomness_cohort_commitment_fingerprint:
       actor_seed:
       actor_seed_control: fixed | sampled | unavailable
       environment_seed:
@@ -367,9 +372,14 @@ total execution rows =
 The former means an attempted action had `observed_only` or `unsupported`
 support; the latter means the chart, closure, visibility, reset, or comparison
 boundary was malformed or unverifiable.
-Started rows require non-null process and sandbox IDs. A pre-start row requires
-both null and binds no runtime observation, inventory, or access proof; mixed
-nullability is invalid.
+Rows with `sandbox_created: false` require `actor_started: false`, null process
+and sandbox IDs, and no runtime observation, inventory, or access proof. Rows
+with `sandbox_created: true, actor_started: false` require a non-null unique
+sandbox ID and null process ID; they retain every runtime observation,
+inventory, and pre-start leakage artifact actually produced, while access proof
+and actor context remain null. This is the admitted mounts-frozen/process-not-
+started state. Started rows require both booleans true and non-null process and
+sandbox IDs. No other combination is valid.
 Across the complete run group, every non-null `actor_process_opaque_id` and
 `sandbox_instance_id` is unique to one execution row. Baseline/candidate arms,
 repeats, and charts never reuse a process or sandbox; duplicate launch identity
@@ -426,8 +436,9 @@ or `unavailable_prestart` is `comparison_drift`; the complete closed
 `unavailable_prestart` variant is admitted and yields incomplete evidence.
 Its derivation-implementation ref/fingerprint equals the evaluator-only asset
 frozen before candidate generation. A pre-start execution still has one
-`unavailable_prestart` pair row with the closed null/started fields defined by
-the atlas contract; omitting that tuple is `comparison_drift`.
+`unavailable_prestart` pair row with the closed sandbox-created/actor-started
+variant defined by the atlas contract; an inventory is preserved when mounts
+were frozen before termination. Omitting that tuple is `comparison_drift`.
 
 Every paired comparison also binds exact
 `actor-context-delta-validation/v1` bytes by ref and fingerprint. That artifact
@@ -456,7 +467,9 @@ variant; omitting it or fabricating a context fingerprint is
 
 Every paired comparison also binds one report-owned exact RFC 8785
 `paired-reset-state-validation/v1` artifact. Its complete pair domain contains
-one row for every executable chart/repeat in the frozen cohort and joins the
+one row for every chart/repeat in the frozen cohort whose contracted reset kind
+is not `none`, regardless of chart kind or whether support is total or partial,
+and joins the
 baseline and candidate execution reset results, their referenced prestate
 artifacts, and the frozen world/reset/effect-policy identities. After removing
 only sandbox- and run-specific identity fields, the two observed prestate
@@ -466,10 +479,17 @@ effect policy in a harness comparison; any unequal normalized state or static
 identity is `comparison_drift`.
 
 The exact payload shape is
-`{"pairs":[{"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
-Pairs sort by `(chart_fingerprint, repeat_id)`, are complete and unique, and a
-non-`pass` status is not admitted. Normative charts have no pair row. Missing,
-extra, mismatched, or unresolved reset evidence is `comparison_drift`.
+`{"pairs":[{"baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_unavailable_reason":null,"candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
+Pairs sort by `(chart_fingerprint, repeat_id)` and are complete and unique.
+`pass` requires both `*_reset_performed: true`, non-null result pairs, null
+reasons, equal normalized prestates, and equal static identities. A tuple whose
+runner stops before reset has `status: unavailable_prestart`, the affected
+`*_reset_performed: false`, null result pair and normalized prestate, and a
+nonempty reason matching the execution row; the other arm retains its observed
+fields. Two unavailable arms retain two reasons. This variant yields incomplete
+evidence and never manufactures reset output. Missing/extra rows, a false flag
+with result bytes, or a true flag without them is
+`comparison_drift`.
 
 Comparison-wide access proof maps every execution row that can contribute agent
 evidence to that row's nonempty `actor_access_proof_ref` and fingerprint. A row terminated before process launch records
@@ -546,6 +566,12 @@ values is `comparison_drift`.
 A sampled failure schedule binds both a run-owned `failure_schedule_ref` and
 its exact fingerprint; both are null when no schedule exists. Matched-schedule
 claims compare the referenced bytes, not a free-standing digest.
+The root and EER comparison bind the exact pre-candidate
+`randomness-cohort-commitment/v1` pair defined in
+`session-derived-atlas.md`; every execution row repeats it. Each row's seed
+controls, seed values, and schedule pair equal its committed chart/repeat row.
+Missing commitment, post-candidate creation, or any mismatch is
+`comparison_drift`.
 For every paired chart/repeat whose frozen `randomness_matching` requires
 matching, controllable actor seeds and environment seeds are equal across arms,
 and sampled failure-schedule bytes/fingerprints are equal. A one-arm seed,
@@ -638,7 +664,10 @@ validation pair as required above:
   "actor_runner_fingerprint": "sha256:...",
   "actor_process_opaque_id": "<runner-opaque-id>",
   "sandbox_instance_id": "<runner-opaque-id>",
+  "sandbox_created": true,
   "actor_started": true,
+  "randomness_cohort_commitment_ref": null,
+  "randomness_cohort_commitment_fingerprint": null,
   "actor_seed": null,
   "actor_seed_control": "unavailable",
   "environment_seed": null,
@@ -706,9 +735,12 @@ no independent value. Any projection mismatch is `invalid_environment`.
 
 These rows are not a new global event store.
 
-Every non-pass status has a nonempty `status_reason`. Malformed actor/action
-output, a failed required state assertion, and a failed trace invariant each map
-to `hard_fail` before comparison or residual judgment. Mutation runs record the
+Every non-pass status has a nonempty `status_reason`. Actor output that violates
+the declared `actor.output_schema`, a failed required state assertion, and a
+failed trace invariant each map to `hard_fail` before comparison or residual
+judgment. Output that passed that schema but cannot be projected through the
+chart's admitted total cardinality-one `action_projection` is a contract-owned
+`invalid_environment`, never an agent failure. Mutation runs record the
 case identity and assignment plus a non-null
 `mutation_generator_fingerprint`. With an external generator it equals the
 verified chart asset fingerprint. With finite built-in enumeration it equals
@@ -781,6 +813,8 @@ wrapper pair and rejects a case/path/digest-only join.
   "actor_context_delta_validation_fingerprint": "sha256:...",
   "reset_state_validation_ref": "reports/cmp-.../paired-reset-state-validation.json",
   "reset_state_validation_fingerprint": "sha256:...",
+  "randomness_cohort_commitment_ref": "roots/<root-digest-hex>/comparison/randomness-cohort-commitment.json",
+  "randomness_cohort_commitment_fingerprint": "sha256:...",
   "evaluated_runs": {
     "baseline": [],
     "candidate": []

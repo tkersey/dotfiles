@@ -183,6 +183,41 @@ still held: valid marker/successor evidence makes it permanently
 `discovery_exposed`; absent retirement evidence is `source_contaminated`.
 query success never retroactively establishes completeness.
 
+The fallback semantic query is crash-closed. Before launching Seq, create and
+fsync one owner-global `semantic-discovery-attempt/v1` pending record under the
+exposure registry. It binds the owner invocation/process, snapshot pair, query
+spec pair, and complete physically known identity set. Seq runs behind a
+wrapper that does not expose semantic payload on stdout or to the compiler; its
+only semantic output is a create-new, fsynced result envelope followed by an
+adjacent
+`semantic-discovery-attempt-result/v1` asset containing the exact result-envelope
+pair and the complete sorted stable-alias identity descriptors/fingerprints.
+Only after that asset is durable may the wrapper return its fingerprint.
+
+~~~json
+{"attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
+{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/results/<digest-hex>.json","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
+{"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
+~~~
+
+Arrays are sorted and duplicate-free; descriptor fingerprints use the canonical
+identity preimage rule, and the claim/marker rows cover every physical and
+alias identity in the result. A claim's canonical global path is derived from
+the bound registry root and holdout key; the completion record never stores an
+atlas-local snapshot ref.
+
+While still holding `.partition-freeze.lock`, the compiler resolves the result,
+publishes or preserves the required exposed claim and marker for every alias,
+revalidates the complete union, and then writes the matching immutable
+completion record. Capability preflight and holdout admission enumerate every
+pending attempt before proceeding. For a dead owner with a durable result,
+recovery must publish and revalidate all result aliases before completion; with
+no result it may clear the attempt only after proving the wrapper never
+returned or delivered semantic bytes. Unprovable owner/output state is
+`source_contaminated`. Raw-snapshot cleanup therefore never erases the only
+durable alias evidence, and no unresolved semantic-discovery attempt permits a
+new `holdout_unexposed` claim.
+
 For each individual source identity, construct exact RFC 8785
 `semantic-discovery-identity-exposure/v1` bytes:
 
@@ -726,7 +761,7 @@ a status other than `pass` or `unavailable_prestart` is `comparison_drift`, even
 per-arm access proofs pass.
 
 ~~~json
-{"derivation_implementation_fingerprint":"sha256:<hex>","derivation_implementation_ref":"comparison/actor-readable-surface-validator.json","factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_actor_started":true,"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","baseline_run_id":"<run-id>","baseline_unavailable_reason":null,"candidate_actor_started":true,"candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_run_id":"<run-id>","candidate_unavailable_reason":null,"chart_id":"<chart-id>","nonfactor_entries_equal":true,"readable_roots_equal":true,"repeat_id":"<repeat-id>","status":"pass","tool_policy_equal":true}],"schema":"actor-readable-surface-validation/v1"}
+{"derivation_implementation_fingerprint":"sha256:<hex>","derivation_implementation_ref":"comparison/actor-readable-surface-validator.json","factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_actor_started":true,"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","baseline_run_id":"<run-id>","baseline_sandbox_created":true,"baseline_unavailable_reason":null,"candidate_actor_started":true,"candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_run_id":"<run-id>","candidate_sandbox_created":true,"candidate_unavailable_reason":null,"chart_id":"<chart-id>","nonfactor_entries_equal":true,"readable_roots_equal":true,"repeat_id":"<repeat-id>","status":"pass","tool_policy_equal":true}],"schema":"actor-readable-surface-validation/v1"}
 ~~~
 
 The derivation implementation is an evaluator-only immutable asset frozen by
@@ -734,9 +769,12 @@ the pre-candidate policy. The validator loads those exact bytes and recomputes
 root equality, tool-policy equality, and every authorized and non-factor delta;
 a self-described result without that recomputation is invalid. A cohort tuple
 whose actor never started still has exactly one pair row with
-`status: unavailable_prestart`, the affected `*_actor_started: false`, null
-inventory refs/fingerprints and equality booleans, and that arm's nonempty
-`*_unavailable_reason` matching its execution row. Each started arm has a null
+`status: unavailable_prestart` and the affected `*_actor_started: false`.
+`*_sandbox_created` equals the execution row. When it is false, inventory
+refs/fingerprints are null; when true, they preserve the observed inventory
+pair. Cross-arm equality booleans are null because agent evidence is
+unavailable, and that arm's nonempty `*_unavailable_reason` matches its
+execution row. Each started arm has a null
 reason; if both fail, both reasons are retained independently. The other arm's fields retain
 their observed values. No other row may use that variant. Thus pre-start
 failure makes the required comparison insufficient without making the runtime
@@ -1134,9 +1172,9 @@ In schemas below, `principal_identity_ref` denotes this common ref/fingerprint
 contract; role-specific fields retain their selector, reviewer, or attester
 prefix.
 `factor_selector_identity_ref` and fingerprint identify the principal that
-selected the factor. Before admitting any
+selected the factor. Before admitting any selected holdout
 correction-derived chart, require it to differ from every
-reviewer identity ref/fingerprint pair in the selected cohort's
+reviewer identity ref/fingerprint pair in that holdout chart's
 `correction-human-review/v1` or `correction-reviewed-pattern/v1` assets. All
 roles compare `person_id` under this alias-normalized scheme, so alternate
 emails, accounts, or issuer namespaces cannot manufacture inequality. Selector identity is evaluator-only
@@ -1216,8 +1254,14 @@ bytes of:
 The displayed payload is the exact non-holdout variant. The exact holdout
 variant has the identical closed field set, uses
 `schema: candidate-generation-access-proof/holdout-v1`, and replaces both null
-target values with the frozen holdout target pair. Its `pending_ref` points to
-the archived exact global pending-intent snapshot. The non-holdout schema is
+target values with the frozen holdout target pair. Before authoring the holdout
+proof, copy the exact global pending-intent bytes with create-new semantics to
+`harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json`,
+verify byte equality and fingerprint against the global record, and include
+that local snapshot transitively in the final root closure. Its `pending_ref`
+points only to this closure-local snapshot; after root archival the ordinary
+`roots/<root-digest-hex>/` prefix resolves it without consulting the live
+registry. The non-holdout schema is
 `candidate-generation-access-proof/non-holdout-v1`; mixed schema and target
 nullability is invalid.
 
@@ -1681,8 +1725,12 @@ the exact deterministic or stochastic count frozen by policy. Every arm's
 complete `chart_repeats` bytes are identical to every other arm and to the
 root's singular `comparison_policy.paired_cohort`; candidates cannot choose
 different repeat IDs. All three top-level fingerprint arrays are sorted and
-duplicate-free. The identity array is the exact union of the selected root
-chart identities and every acquired global group lock binds that same set.
+duplicate-free. The top-level chart, group, and identity arrays contain only
+selected holdout charts: charts are the holdout subset of `chart_repeats`,
+groups are their exact group set, and identities are their exact identity
+union. Discovery/development regression guards remain in every arm's execution
+cohort but never enter reservation, lock, consumption, or retirement domains.
+Every acquired global group lock binds that same holdout-only identity set.
 Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
@@ -2010,8 +2058,24 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"optimizer_visible_policy":{},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"optimizer_visible_policy":{},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
+
+Before any optimizer or comparison arm starts, the evaluator samples and fsyncs
+the exact RFC 8785 `randomness-cohort-commitment/v1` bytes bound by the policy:
+
+~~~json
+{"rows":[{"actor_seed":null,"actor_seed_control":"unavailable","chart_fingerprint":"sha256:<hex>","environment_seed":17,"environment_seed_control":"sampled","failure_schedule_fingerprint":"sha256:<hex>","failure_schedule_ref":"comparison/failure-schedules/<chart-hex>-<repeat-id>.json","repeat_id":"<repeat-id>"}],"schema":"randomness-cohort-commitment/v1"}
+~~~
+
+Rows sort by `(chart_fingerprint, repeat_id)`, are complete and unique for the
+frozen paired cohort, and record every controllable draw and sampled schedule.
+Fixed or sampled controls require a concrete seed; `unavailable` requires null.
+The schedule pair is both null when none is sampled and otherwise resolves
+exact bytes already durable before candidate generation. The commitment is
+evaluator-only and actor/optimizer-inaccessible. The final root, both arms,
+execution rows, EER, and comparison repeat its exact ref/fingerprint; no later
+draw selection or schedule substitution is admitted.
 
 The arrays are sorted by their displayed identities and duplicate-free. The
 top-level factor-selection pair is mandatory for every paired comparison,
