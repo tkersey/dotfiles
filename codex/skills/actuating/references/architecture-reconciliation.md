@@ -40,57 +40,90 @@ representation; `Alpha` the interpretation family for witnesses, incumbent,
 and candidates; `L` the law; `Phi` the invalidity predicate; `A` sanctioned
 admission semantics; `O` the owner model; `C` a frontier/cut hypothesis; and `Q`
 the weakest supporting claim strength. Include validity horizon, family-theory
-falsifier, and interpretation-adequacy argument and falsifier.
+falsifier, safety-adequacy argument and falsifier, Goal-adequacy evidence, and
+diagnostic-exactness status.
 
 Review Fold does not select the final theory, interpretation, frontier, cut, or
 repair.
 
-## Interpretation adequacy
+## Sound interpretation and diagnostic exactness
 
-For candidate `K`, sanctioned concrete behavior `B_K`, and interpretation
-`alpha_K : B_K -> Omega`, require at an explicit strength:
+For candidate `K`, let:
+
+```text
+U_K
+  concrete behaviors considered at K's sanctioned admission surfaces within the
+  declared validity horizon
+
+B_K subset U_K
+  behaviors K actually sanctions or admits
+
+alpha_K : U_K -> Omega
+  K's interpretation into the selected semantic observation domain
+```
+
+The elimination proof requires:
 
 ```text
 Totality
-  alpha_K is defined for every sanctioned behavior
+  alpha_K is defined for every u in U_K
 
 Violation reflection
-  Bad_L(b) -> Phi(alpha_K(b))
+  Bad_L(u) -> Phi(alpha_K(u))
 
-Invalidity precision
-  Phi(alpha_K(b)) -> Bad_L(b)
+Abstract exclusion
+  b in B_K -> not Phi(alpha_K(b))
+
+Required-valid preservation
+  every Goal-required valid behavior in the horizon belongs to B_K
 
 Required-observation preservation
-  alpha_K identifies behaviors only when they agree under L and every
-  Goal-required observation
+  every Goal-required observation remains available with accepted meaning
 ```
 
-The interpretation is therefore a lawful quotient of concrete behavior. It may
-remove accidental representation but cannot erase violation or required
-observable meaning.
+Totality and violation reflection make `Alpha` a sound abstraction of danger.
+Abstract exclusion then proves that no sanctioned concrete behavior violates
+`L`. Required-valid and required-observation preservation prevent the vacuous
+architecture that rejects everything.
+
+Diagnostic exactness is separate:
+
+```text
+Phi(alpha_K(u)) -> Bad_L(u)
+```
+
+Classify it as:
+
+```text
+exact | conservative-overapproximation | bounded | sampled | unknown
+```
+
+A conservative abstraction may reject safe optional behavior. That affects
+permissiveness and candidate quality, not safety, provided every Goal-required
+valid behavior and observation remains preserved.
 
 A theory or candidate is not architecture-comparable merely because an
-interpretation function has been named. State the totality, reflection,
-precision, observation-preservation, evidence strength, lost distinctions, and
-falsifier.
+interpretation function has been named. State totality, reflection, abstract
+exclusion, Goal preservation, diagnostic exactness, evidence strength, lost or
+intentionally excluded behavior, and falsifiers.
 
 ## Theory synthesis and adjudication
 
 Invoke one bounded `$metanoetic` challenge before finalization when `Theta_0` is
 detection-shaped, enumerative, representation-bound, contradicted by a same-law
 witness, owner/topology-captive, one of several materially different plausible
-explanations, or based on a domain/interpretation that collapses law-distinct
-behavior.
+explanations, or based on a domain/interpretation that underapproximates danger
+or erases a Goal-required observation.
 
 The challenger may revise the semantic domain, interpretation, law,
 state-versus-trace formulation, predicate, admission semantics, owner,
 frontier/cut, claim strength, or falsifier.
 
 Then **OPERATE ARCHITECTONICALLY**. Compare the ordinary and challenger theories
-by witness coverage, law provenance, representation independence,
-interpretation adequacy, causal and conceptual compression, canonical ownership,
-lawful construction/elimination/composition, admission coverage,
-valid-observation preservation, falsifiers, and proof surface.
+by witness coverage, law provenance, representation independence, safety
+adequacy, Goal adequacy, diagnostic exactness, causal and conceptual compression,
+canonical ownership, lawful construction/elimination/composition, admission
+coverage, falsifiers, and proof surface.
 
 Return:
 
@@ -98,8 +131,9 @@ Return:
 retain | replace | combine | split | unresolved
 ```
 
-Select the smallest lawful quotient and coherent organizing theory, not the most
-abstract wording or the coarsest domain.
+Select the least discriminating sound abstraction that reflects every violation
+and preserves every required observation. Do not retain distinctions merely to
+achieve diagnostic exactness when they provide no Goal-level or proof dividend.
 
 ## Architecture closure
 
@@ -109,32 +143,36 @@ For selected theory:
 Theta = (Omega, Alpha, L, Phi, A, O, C, Q)
 ```
 
-`I(H)` is closed under the bug only when its incumbent interpretation
-`alpha_I(H)` is total and adequate and:
+`I(H)` is closed under the bug only when its incumbent interpretation is total
+and violation-reflecting, every Goal-required valid behavior and observation is
+preserved, and:
 
 ```text
-for every behavior b sanctioned by A:
-  Bad_L(b) <-> Phi(alpha_I(H)(b))
-  and not Phi(alpha_I(H)(b))
+for every behavior b sanctioned by A in I(H):
+  not Phi(alpha_I(H)(b))
 ```
 
-at strength `Q`. Its existing authority and frontier/cut must preserve that
-concrete exclusion without adding another independent guard, owner,
-representation, state dimension, transition law, effect,
-compatibility/recovery mode, or escape path.
+at strength `Q`. Violation reflection and abstract exclusion imply that no
+sanctioned concrete behavior violates `L`. Diagnostic exactness is recorded but
+is not a premise of this safety conclusion.
+
+The existing authority and frontier/cut must preserve that concrete exclusion
+without adding another independent guard, owner, representation, state
+dimension, transition law, effect, compatibility/recovery mode, or escape path.
 
 It is not closed when the correction requires:
 
 - a different semantic domain, interpretation, or governing law;
-- recovery of a correctness-bearing distinction erased by the current domain;
+- recovery of a violation-bearing or Goal-required distinction erased by the
+  current domain;
 - new state, transition, ordering, effect, authority, custody, or admission;
 - new representation, interpreter, handler, observation, compatibility, retry,
   cancellation, timeout, or recovery semantics;
 - structural removal of a bypass, competing owner, or obsolete representation;
 - another downstream check while the invalid family remains admitted;
 - a multi-frontier cut absent from the incumbent; or
-- a live witness or candidate that falsifies the selected theory or its
-  interpretation adequacy.
+- a live witness or candidate that falsifies the selected theory, safety
+  adequacy, or Goal adequacy.
 
 When closed, repair realization. Otherwise recompile before mutation.
 
@@ -149,12 +187,16 @@ semantic novelty or causal recurrence
 predicate-defined hotspot
 absent, distributed, contested, or unknown ownership
 incomplete frontier/cut coverage
-law-erasing or partial interpretation
+partial or violation-erasing interpretation
+required-valid or required-observation loss
 live dominated residue
 smaller correctness-non-dominated candidate
 incoherent incumbent model
-selected counterexample theory or adequacy claim falsified by a witness/candidate
+selected counterexample theory or safety claim falsified by a witness/candidate
 ```
+
+A false-positive abstract classification downgrades diagnostic exactness but does
+not alone reopen a sound, Goal-adequate architecture.
 
 Diff size, file proximity, elapsed time, bug/test/retry count, reviewer
 preference, and abstract vocabulary do not establish reconsideration.
@@ -164,43 +206,53 @@ preference, and abstract vocabulary do not establish reconsideration.
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
 2. Derive `Theta_0` and `Alpha_0` from Review Fold evidence and the incumbent.
 3. Run one bounded `$metanoetic` challenge when its trigger is live.
-4. **OPERATE ARCHITECTONICALLY** to adjudicate the theory and lawful quotient.
-5. Finalize one theory, interpretation contract, frontier/cut, falsifiers, and
-   claim strength.
+4. **OPERATE ARCHITECTONICALLY** to adjudicate the theory and sound abstraction.
+5. Finalize one theory, interpretation contract, frontier/cut, falsifiers,
+   diagnostic-exactness status, and claim strength.
 6. Ask `$universalist` for repository-native candidates. Require each candidate
-   to interpret every sanctioned behavior into the selected `Omega`, establish
-   totality, violation reflection, invalidity precision, and required-observation
-   preservation, and cover the same Goal, family, admission semantics,
-   compatibility, effects, and resource constraints.
+   to interpret its declared comparison universe into the selected `Omega`,
+   establish totality and violation reflection, exclude `Phi` from sanctioned
+   behavior, preserve every Goal-required valid behavior and observation, and
+   classify diagnostic exactness. Require the same Goal, family, admission
+   semantics, compatibility, effects, and resource constraints.
 7. Permit one bounded co-refinement if a candidate exposes a materially simpler,
-   more representation-independent, more law-reflecting, or more causally
-   adequate theory. Return once to architectonic adjudication; do not rerun
-   Metanoetic on the unchanged decision surface.
+   more representation-independent, more sound, or more causally adequate
+   theory. Return once to architectonic adjudication; do not rerun Metanoetic on
+   the unchanged decision surface.
 8. Ask `$reduce` to challenge unearned factors, witness-enumerating predicates,
-   law-erasing quotients, compensating guards, and detection movement.
+   violation-erasing abstractions, unnecessary precision, compensating guards,
+   and detection movement.
 9. Establish the correctness Pareto frontier from explicit relation evidence.
-   Exclude candidates with partial, unknown, or law-erasing interpretations.
-10. Among correctness-equivalent candidates, select the least costly effective
-    realization; preserve material incomparability.
-11. State the selected theory, interpretation-adequacy argument, architecture
-    delta, falsifiers, evidence strength, and proof before mutation.
+   Exclude candidates with partial, unknown, or violation-erasing interpretations
+   or with failed Goal adequacy. Do not exclude a sound candidate solely because
+   diagnostic exactness is conservative or unknown.
+10. Among safety- and Goal-equivalent candidates, compare accepted valid-behavior
+    coverage, diagnostic exactness, conceptual compression, proof burden, and
+    realization cost; select the least costly effective realization and preserve
+    material incomparability.
+11. State the selected theory, safety-adequacy and Goal-adequacy arguments,
+    diagnostic-exactness status, architecture delta, falsifiers, evidence
+    strength, and proof before mutation.
 
 Compare candidates by:
 
 ```text
 required laws and observations
-total law-reflecting interpretation into selected Omega
+total violation-reflecting interpretation into selected Omega
+abstract exclusion of Phi from sanctioned behavior
+Goal-required valid behaviors retained
 correctness-bearing distinctions retained
-invalid concrete behavior excluded
+optional safe behavior conservatively excluded
 sanctioned admission and frontier/cut coverage
 semantic ownership and derived guards
 representations, escape paths, compatibility, and migration
 retirements and residual proof burden
-proof strength, resources, and operational cost
+diagnostic exactness, proof strength, resources, and operational cost
 ```
 
 A candidate cannot win by omitting an orthogonal obligation, merely moving
-detection, or abstracting away evidence of invalidity.
+detection, abstracting away evidence of invalidity, or rejecting required valid
+behavior.
 
 ## One bounded co-refinement
 
@@ -210,8 +262,10 @@ Universalist may return a candidate theory or interpretation delta:
 accidental incumbent coordinate
 proposed semantic domain or law
 witness and candidate interpretations
-adequacy argument and falsifier
+safety-adequacy and Goal-adequacy arguments
+diagnostic-exactness status and counterexample
 predicted sibling counterexamples
+falsifiers
 ```
 
 Actuating may return once to architectonic adjudication, then retain, revise,
@@ -227,7 +281,10 @@ Bound head / Goal / incumbent / falsified laws
 Witness provenance / applicability / observational class
 Theta_0 / Theta_1 / architectonic disposition
 Selected Omega / Alpha / law / Phi / A / falsifiers / Q
-Interpretation totality / reflection / precision / observation preservation
+Comparison universe U / sanctioned behavior B
+Interpretation totality / violation reflection / abstract exclusion
+Required-valid behavior / required observations preserved
+Diagnostic exactness / optional safe behavior excluded
 Correctness-bearing distinctions retained / distinctions intentionally quotiented
 Owner set / frontier or cut / escape paths / classified scar tissue
 Selected target / candidate owner / candidate interpretation
@@ -239,7 +296,7 @@ Reconsider when
 ```
 
 The Working Set is ephemeral and grants no authority. Refresh it when the head,
-Goal, applicability, selected theory, interpretation adequacy, owner set,
+Goal, applicability, selected theory, safety adequacy, Goal adequacy, owner set,
 frontier/cut, or target changes. After implementation, the Git tree is the
 realized construction.
 

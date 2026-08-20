@@ -34,13 +34,16 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
           .inputs.theory_shape == "unknown" or
           .inputs.ordinary_interpretation_adequacy == "unknown" or
           .inputs.selected_interpretation_adequacy == "unknown" or
-          .inputs.interpretation_adequacy_strength == "unknown") then
+          .inputs.interpretation_adequacy_strength == "unknown" or
+          .inputs.abstract_exclusion_established == "unknown" or
+          .inputs.required_valid_behaviors_preserved == "unknown" or
+          .inputs.required_observations_preserved == "unknown") then
       "blocked"
     elif (.inputs.selected_interpretation_adequacy == "inadequate" or
+          .inputs.abstract_exclusion_established != true or
+          .inputs.required_valid_behaviors_preserved != true or
           .inputs.required_observations_preserved != true) then
       "blocked"
-    elif .inputs.selected_interpretation_adequacy == "reflection-only" then
-      "bounded"
     elif .inputs.architecture_reveals_better_theory == true then
       if (.inputs.co_refinement_used == true and
           (.inputs.architectonic_disposition as $disposition |
@@ -78,8 +81,6 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
          theory_disposition == "blocked" then
       "blocked"
     elif theory_disposition == "split" then "split"
-    elif theory_disposition == "bounded" then
-      if .inputs.goal_accepts_containment == true then "contain" else "blocked" end
     elif .inputs.external_prevention_possible == false then
       if .inputs.goal_accepts_containment == true then "contain" else "blocked" end
     elif (.inputs.architecture_claim_falsified == true or
@@ -103,8 +104,8 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
 
   .defaults as $defaults |
   .scenarios |= map(.inputs = ($defaults * .inputs)) |
-  .schema == "actuating-semantic-hotspot-scenarios/v3" and
-  (.scenarios | length) >= 25 and
+  .schema == "actuating-semantic-hotspot-scenarios/v4" and
+  (.scenarios | length) >= 28 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[];
     (.inputs.family_claim_strength as $strength |
@@ -113,6 +114,9 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     (.inputs.interpretation_adequacy_strength as $strength |
       ["proved", "exhaustive-finite", "bounded", "property-tested",
        "sampled", "hypothesized", "unknown"] | index($strength) != null) and
+    (.inputs.diagnostic_exactness as $exactness |
+      ["exact", "conservative-overapproximation", "bounded", "sampled",
+       "unknown"] | index($exactness) != null) and
     (.inputs.owner_status as $owner |
       ["canonical", "distributed", "absent", "contested", "unknown"] |
       index($owner) != null) and
@@ -122,11 +126,10 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     (.inputs.theory_shape as $shape |
       ["governing", "detection-shaped", "enumerative",
        "representation-bound", "unknown"] | index($shape) != null) and
-    (.inputs.ordinary_interpretation_adequacy as $adequacy |
-      ["adequate", "coarse", "unknown"] | index($adequacy) != null) and
-    (.inputs.selected_interpretation_adequacy as $adequacy |
-      ["adequate", "reflection-only", "inadequate", "unknown"] |
-      index($adequacy) != null) and
+    (.inputs.ordinary_interpretation_adequacy as $soundness |
+      ["sound", "coarse", "unknown"] | index($soundness) != null) and
+    (.inputs.selected_interpretation_adequacy as $soundness |
+      ["sound", "inadequate", "unknown"] | index($soundness) != null) and
     (.inputs.architectonic_disposition as $disposition |
       ["not-needed", "retain", "replace", "combine", "split", "unresolved"] |
       index($disposition) != null) and
@@ -140,7 +143,6 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     index("ordinary") != null and
     index("adjudicated") != null and
     index("co-refined") != null and
-    index("bounded") != null and
     index("blocked") != null) and
   ([.scenarios[].expected.architecture_disposition] |
     index("preserve") != null and
@@ -161,9 +163,16 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     .id == "law-reflecting-quotient" and
     .expected.architecture_disposition == "preserve") and
   any(.scenarios[];
-    .id == "one-way-reflection-only" and
-    .expected.theory_disposition == "bounded" and
-    .expected.architecture_disposition == "contain") and
+    .id == "sound-overapproximation-preserves-required-behavior" and
+    .inputs.diagnostic_exactness == "conservative-overapproximation" and
+    .expected.architecture_disposition == "preserve") and
+  any(.scenarios[];
+    .id == "unknown-diagnostic-exactness-preserves-required-behavior" and
+    .inputs.diagnostic_exactness == "unknown" and
+    .expected.architecture_disposition == "preserve") and
+  any(.scenarios[];
+    .id == "sound-overapproximation-loses-required-behavior" and
+    .expected.architecture_disposition == "blocked") and
   any(.scenarios[];
     .id == "candidate-specific-erasure" and
     .expected.architecture_disposition == "blocked") and
@@ -186,4 +195,4 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     .expected.architecture_disposition == "reopen")
 ' "$fixture" >/dev/null
 
-echo "actuating law-reflecting semantic-hotspot scenarios: pass"
+echo "actuating sound-abstraction semantic-hotspot scenarios: pass"

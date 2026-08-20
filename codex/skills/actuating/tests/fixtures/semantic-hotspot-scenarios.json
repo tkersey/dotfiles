@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-semantic-hotspot-scenarios/v3",
+  "schema": "actuating-semantic-hotspot-scenarios/v4",
   "defaults": {
     "witness_subject_recorded": true,
     "applicability_subject_recorded": true,
@@ -25,10 +25,13 @@
     "architectonic_disposition": "not-needed",
     "architecture_reveals_better_theory": false,
     "co_refinement_used": false,
-    "ordinary_interpretation_adequacy": "adequate",
-    "selected_interpretation_adequacy": "adequate",
+    "ordinary_interpretation_adequacy": "sound",
+    "selected_interpretation_adequacy": "sound",
     "interpretation_adequacy_strength": "bounded",
+    "abstract_exclusion_established": true,
+    "required_valid_behaviors_preserved": true,
     "required_observations_preserved": true,
+    "diagnostic_exactness": "exact",
     "law_distinct_behaviors_collapsed": false
   },
   "scenarios": [
@@ -212,7 +215,9 @@
         "ordinary_interpretation_adequacy": "unknown",
         "selected_interpretation_adequacy": "unknown",
         "interpretation_adequacy_strength": "unknown",
-        "required_observations_preserved": "unknown"
+        "required_valid_behaviors_preserved": "unknown",
+        "required_observations_preserved": "unknown",
+        "diagnostic_exactness": "unknown"
       },
       "expected": {
         "class_disposition": "blocked",
@@ -374,7 +379,7 @@
         "material_alternative_theory_plausible": true,
         "metanoetic_run": true,
         "architectonic_disposition": "replace",
-        "selected_interpretation_adequacy": "adequate",
+        "selected_interpretation_adequacy": "sound",
         "architecture_claim_falsified": true
       },
       "expected": {
@@ -390,8 +395,29 @@
       "inputs": {
         "family_claim_strength": "proved",
         "interpretation_adequacy_strength": "proved",
-        "ordinary_interpretation_adequacy": "adequate",
-        "selected_interpretation_adequacy": "adequate",
+        "ordinary_interpretation_adequacy": "sound",
+        "selected_interpretation_adequacy": "sound",
+        "required_valid_behaviors_preserved": true,
+        "required_observations_preserved": true,
+        "diagnostic_exactness": "exact",
+        "existing_authority_excludes_family": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "ordinary",
+        "frontier_shape": "single",
+        "architecture_disposition": "preserve",
+        "hotspot_disposition": "realization"
+      }
+    },
+    {
+      "id": "sound-overapproximation-preserves-required-behavior",
+      "inputs": {
+        "family_claim_strength": "proved",
+        "interpretation_adequacy_strength": "proved",
+        "selected_interpretation_adequacy": "sound",
+        "diagnostic_exactness": "conservative-overapproximation",
+        "required_valid_behaviors_preserved": true,
         "required_observations_preserved": true,
         "existing_authority_excludes_family": true
       },
@@ -404,19 +430,38 @@
       }
     },
     {
-      "id": "one-way-reflection-only",
+      "id": "unknown-diagnostic-exactness-preserves-required-behavior",
       "inputs": {
-        "selected_interpretation_adequacy": "reflection-only",
-        "interpretation_adequacy_strength": "bounded",
-        "goal_accepts_containment": true,
-        "architecture_claim_falsified": true
+        "family_claim_strength": "proved",
+        "interpretation_adequacy_strength": "proved",
+        "selected_interpretation_adequacy": "sound",
+        "diagnostic_exactness": "unknown",
+        "required_valid_behaviors_preserved": true,
+        "required_observations_preserved": true,
+        "existing_authority_excludes_family": true
       },
       "expected": {
         "class_disposition": "candidate",
-        "theory_disposition": "bounded",
+        "theory_disposition": "ordinary",
         "frontier_shape": "single",
-        "architecture_disposition": "contain",
-        "hotspot_disposition": "contained"
+        "architecture_disposition": "preserve",
+        "hotspot_disposition": "realization"
+      }
+    },
+    {
+      "id": "sound-overapproximation-loses-required-behavior",
+      "inputs": {
+        "selected_interpretation_adequacy": "sound",
+        "diagnostic_exactness": "conservative-overapproximation",
+        "required_valid_behaviors_preserved": false,
+        "existing_authority_excludes_family": true
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "blocked",
+        "frontier_shape": "single",
+        "architecture_disposition": "blocked",
+        "hotspot_disposition": "unresolved"
       }
     },
     {

@@ -214,15 +214,19 @@ Candidate theory delta: none | proposed
 Candidate interpretation delta: none | proposed
 Accidental incumbent coordinate, when proposed:
 Proposed semantic observation domain or law, when proposed:
+Comparison universe U / sanctioned behavior B:
 Witness interpretation into the selected or proposed domain:
 Candidate interpretation into the selected or proposed domain:
 Interpretation totality:
 Violation-reflection evidence:
-Invalidity-precision evidence:
+Abstract-exclusion evidence:
+Required valid behaviors preserved:
+Required observations preserved:
 Correctness-bearing distinctions preserved:
 Distinctions intentionally quotiented:
-Required observations preserved:
-Interpretation-adequacy strength and falsifier:
+Optional safe behavior excluded:
+Safety/Goal strength and falsifiers:
+Diagnostic-exactness status, strength, and counterexample:
 Predicted sibling counterexamples, when proposed:
 Theory-delta falsifier, when proposed:
 Current owner set and status:
@@ -243,24 +247,28 @@ Transition and retirement:
 ```
 
 A candidate may expose a materially simpler, more representation-independent,
-more law-reflecting, or more causally adequate counterexample theory. Report
-that as a candidate theory or interpretation delta; do not silently redefine
-the family or erase the violation the candidate claims to eliminate. Actuating
-alone decides whether to use its single bounded co-refinement before target
-selection.
+more sound, or more causally adequate counterexample theory. Report that as a
+candidate theory or interpretation delta; do not silently redefine the family,
+underapproximate danger, or erase required behavior. Actuating alone decides
+whether to use its single bounded co-refinement before target selection.
 
 A named interpretation is not enough. A candidate is not correctness-comparable
-unless its interpretation is total over sanctioned behavior, reflects every
-concrete violation into the invalidity predicate, preserves invalidity precision
-for the declared horizon, and retains every Goal-required observation at an
-explicit evidence strength.
+unless its interpretation is total over the declared comparison universe,
+reflects every concrete violation into the invalidity predicate, excludes that
+predicate from sanctioned behavior, and preserves every Goal-required valid
+behavior and observation at an explicit evidence strength.
+
+Diagnostic exactness is separate. A conservative overapproximation may remain a
+correct-by-construction candidate when its false positives exclude only optional
+safe behavior. Report that restriction so Actuating can compare permissiveness,
+conceptual compression, and cost among safety-equivalent candidates.
 
 Do not define the family as only the observed witnesses. Do not invent one
 frontier when the repository requires a minimal admission cut. Do not collapse
 primary enforcement, derived trust-boundary guards, compatibility adapters,
 observability guards, and compensating guards into one undifferentiated layer.
-Do not nominate a candidate as correct by construction when its semantic quotient
-collapses behaviors that differ under the governing law.
+Do not nominate a candidate as correct by construction when its semantic
+abstraction underapproximates danger or rejects required valid behavior.
 
 Universalist must not:
 
