@@ -814,6 +814,12 @@ action asset entry and that entry's own fingerprint in the chart's
 `session-source-bundle/v1.assets`; the separate source-bundle fingerprint
 continues to bind the manifest. No conventional path or bundle-as-action
 fingerprint is synthesized. The
+`authority` value is copied exactly from the chart evaluator's directly
+attributed authority and is one of `explicit_user_correction`,
+`deterministic_test`, `state_assertion`, `trace_invariant`, or
+`human_attestation`. `ambiguous` and `fresh_comparison` are not source-bound
+preference authority. The displayed row is the explicit-correction variant;
+the closed schema admits every listed value without renaming it. The
 chosen-action artifact is the exact selected action projection, not a
 whole trace. Authority, chart, contract, harness, and surface equal the run and
 chart. `source_evidence` copies every actual ref/fingerprint entry from the
@@ -851,19 +857,23 @@ line terminator; `run_id` selects that unique row, and
 Every dataset row has nullable `successor_root_ref`/fingerprint. Both are null
 for ordinary discovery/development rows and both are non-null for a retired
 holdout row, where they bind the exact successor root that contains the cited
-retirement marker and snapshot. The export manifest repeats that same pair.
+retirement marker and snapshot. One dataset file is successor-homogeneous:
+every row has the same successor pair, including the all-null ordinary case.
+One export manifest may bind only dataset files with that same pair and repeats
+it exactly. Rows with different successor roots, or ordinary and retired rows,
+are emitted in separate dataset files and separate manifests.
 For curriculum, `consumption_purpose` and both retirement ref/fingerprint pairs
 are null with the successor pair for ordinary rows; all are non-null with
 `consumption_purpose: training` for a retired holdout row.
 Trajectory `reward` is null exactly when run reward was disabled. When enabled,
-it copies the run's `reward_definition_fingerprint`, complete canonical
-`reward_channels` object under `channels`, and observed aggregate value exactly;
+it copies the run's nested `reward.definition_fingerprint`, `reward.channels`,
+and `reward.aggregate` values into identically named fields;
 no exporter recomputes or drops the learning signal.
 
 ```json
-{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"reward":{"aggregate":0.0,"channels":{},"reward_definition_fingerprint":"sha256:<hex>"},"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","successor_root_fingerprint":null,"successor_root_ref":null,"trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
+{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"reward":{"aggregate":0.0,"channels":{},"definition_fingerprint":"sha256:<hex>"},"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","successor_root_fingerprint":null,"successor_root_ref":null,"trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
 {"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","consumption_purpose":null,"contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_chart_tags":[],"required_tools":[],"retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-curriculum/v1","successor_root_fingerprint":null,"successor_root_ref":null,"world_fidelity":"exact"}
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-id>.json","mutation_case_id":"<case-id>","run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1","successor_root_fingerprint":null,"successor_root_ref":null}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-digest-hex>.json","mutation_case_id":"sha256:<case-digest-hex>","run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Every row retains chart, authority, closure, harness, and evidence provenance.

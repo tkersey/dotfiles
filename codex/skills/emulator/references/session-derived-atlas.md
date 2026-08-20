@@ -143,13 +143,21 @@ For each individual source identity, construct exact RFC 8785
 Its query-independent global ref is
 `semantic-discovery/identity-exposures/<holdout-key>.json`. While still holding
 the lock and before the semantic read, stage a permanent `discovery_exposed`
-partition claim for every identity in `source_identity_fingerprints`; each
-claim binds its own identity-exposure ref and fingerprint. Publish each claim
-before its marker, then re-read the complete marker/claim set and require exact
-coverage of the individual identity array. A missing marker leaves an
-unresolved conservative claim and is `source_contaminated`; the query has not
-run. A byte-identical existing marker and claim are reused, so later overlapping
-queries do not replace query-independent exposure authority.
+partition claim for every identity not already classified
+`discovery_exposed` or `development_exposed` in
+`source_identity_fingerprints`; each new claim binds its own identity-exposure
+ref and fingerprint. An existing `discovery_exposed` or
+`development_exposed` claim is already conservative enough and is retained
+without replacement, including a legacy claim whose semantic-discovery
+evidence fields are null. Publish each new claim before its marker; for an
+already-exposed identity, publish or reuse the query-independent marker as a
+monotonic evidence supplement without rewriting the claim. Then re-read the
+complete marker/claim set and require each identity to have both an exposed
+claim and its exact marker. A missing marker leaves an unresolved conservative
+claim and is `source_contaminated`; the query has not run. This exposed-claim
+plus marker union is the only admitted upgrade. It never changes an exposed
+identity back to holdout-eligible state, while later overlapping queries may
+record new query provenance without requiring byte-identical old claim bytes.
 
 Hash the query-provenance bytes and publish them at
 `semantic-discovery/queries/<query-digest-hex>.json` only after the complete
@@ -671,7 +679,7 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1"}`.
+`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
@@ -683,9 +691,10 @@ variant requires both target fields null and binds only the local intent. Actor
 forms require generation, pending, and optimizer holdout-target fields null.
 For a selecting actor or any chart with `claim.class: preference_training`,
 `actor_hidden_target_ref`/fingerprint are non-null and
-bind the exact chart-local hidden action/correction/recovery/outcome projection
-used by the semantic comparison; only a nonselecting, non-training actor
-requires both null. Both
+bind exact `actor-hidden-target/v1` bytes containing the chart-local tagged
+target entry defined below. The target therefore binds historical projections
+when they exist and hidden evaluator semantics when history does not. Only a
+nonselecting, non-training actor requires both null. Both
 artifacts are evaluator-visible and never actor input.
 A `preference_training` actor_hidden_target binding is therefore mandatory even
 outside holdout selection.
@@ -769,26 +778,53 @@ actor outputs, tool observations, and every unresolved case. The evaluator
 recomputes each row from retained occurrence evidence; producers cannot choose
 the class.
 
-Optimizer reviews also bind an evaluator-only content-addressed
+Every review also binds one frozen evaluator-owned
+`semantic-leakage-evaluator/v1` ref/fingerprint. Its closed exact RFC 8785 bytes
+are
+`{"configuration_fingerprint":"sha256:<hex>","configuration_ref":"evaluators/semantic-leakage-configuration.json","implementation_fingerprint":"sha256:<hex>","implementation_ref":"evaluators/semantic-leakage-implementation.json","model_runtime_fingerprint":null,"model_runtime_ref":null,"rubric_fingerprint":"sha256:<hex>","rubric_ref":"evaluators/semantic-leakage-rubric.json","schema":"semantic-leakage-evaluator/v1"}`.
+Every pair resolves exact bytes. The model-runtime pair is both null for a
+deterministic evaluator and both non-null for a model-backed evaluator. The
+pre-candidate policy freezes this evaluator pair, and every pre/post review in
+both arms repeats it exactly. A `clear` verdict from any other implementation,
+model/runtime, rubric, or configuration is `evaluator_contaminated` rather than
+interchangeable evidence.
+
+When `holdout_evidence` is non-null, optimizer reviews also bind an
+evaluator-only content-addressed
 `holdout-semantic-target/v1` asset containing every selected chart's
 actor-visible pre-cut state, prompt, source bytes, chart semantics, hidden
 action, correction, recovery, and outcome projections. Every possibly-derived
 optimizer surface is compared with that complete target corpus. Suffix-only
 comparison is invalid and cannot yield `candidate_generation_blind: true`.
+For a non-holdout comparison both holdout-target fields are null: the review
+still validates complete surface coverage, provenance, authorized inputs, and
+the frozen semantic evaluator, but it neither fabricates nor claims comparison
+against a holdout corpus.
 
 The target is closed exact RFC 8785 bytes:
-`{"charts":[{"actor_visible_state_fingerprint":"sha256:<hex>","actor_visible_state_ref":"actors/<chart-id>.md","chart_fingerprint":"sha256:<hex>","chart_semantics_fingerprint":"sha256:<hex>","chart_semantics_ref":"charts/<chart-id>.yaml","correction_fingerprint":"sha256:<hex>","correction_ref":"source/<chart-id>/correction.json","hidden_action_fingerprint":"sha256:<hex>","hidden_action_ref":"source/<chart-id>/historical-action.json","outcome_projection_fingerprint":"sha256:<hex>","outcome_projection_ref":"source/<chart-id>/outcome.json","prompt_fingerprint":"sha256:<hex>","prompt_ref":"actors/<chart-id>-prompt.md","recovery_fingerprint":"sha256:<hex>","recovery_ref":"source/<chart-id>/recovery.json","source_byte_evidence":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}],"target_kind":"historical_correction"}],"schema":"holdout-semantic-target/v1"}`.
+`{"charts":[{"actor_visible_state_fingerprint":"sha256:<hex>","actor_visible_state_ref":"actors/<chart-id>.md","chart_fingerprint":"sha256:<hex>","chart_semantics_fingerprint":"sha256:<hex>","chart_semantics_ref":"charts/<chart-id>.yaml","correction_fingerprint":"sha256:<hex>","correction_ref":"source/<chart-id>/correction.json","hidden_action_fingerprint":"sha256:<hex>","hidden_action_ref":"source/<chart-id>/historical-action.json","hidden_evaluator_fingerprint":"sha256:<hex>","hidden_evaluator_ref":"evaluators/<chart-id>.json","outcome_projection_fingerprint":"sha256:<hex>","outcome_projection_ref":"source/<chart-id>/outcome.json","prompt_fingerprint":"sha256:<hex>","prompt_ref":"actors/<chart-id>-prompt.md","recovery_fingerprint":"sha256:<hex>","recovery_ref":"source/<chart-id>/recovery.json","source_byte_evidence":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}],"target_kind":"historical_correction"}],"schema":"holdout-semantic-target/v1"}`.
 Charts sort by fingerprint and equal the complete selected holdout chart set;
 every nested pair resolves exact closure bytes and source evidence arrays are
 sorted and duplicate-free. No omitted selected chart or hidden projection can
 validate.
-Each chart entry is a tagged union. `target_kind: historical_correction` uses
-the displayed non-null historical pairs. `target_kind: designed_no_history`
-uses the same fields but requires hidden-action, correction, recovery, outcome,
-and source-evidence fields null or empty; actor-visible state, prompt, chart
-semantics, and fingerprint remain non-null. This no-history variant covers pure
-designed and executable holdouts without historical correction evidence; it
-never invents history.
+Each chart entry is a tagged union. Actor-visible state, prompt, chart
+semantics, chart fingerprint, and the exact hidden evaluator pair are non-null
+in every variant. `target_kind: historical_correction` uses the displayed
+non-null historical pairs and its complete source-evidence array.
+`target_kind: source_no_history` requires hidden-action, correction, recovery,
+and outcome pairs null while retaining a nonempty complete source-evidence
+array. `target_kind: designed_no_history` requires those four pairs null and
+the source-evidence array empty. The latter two compare possibly-derived
+surfaces with the hidden evaluator semantics without inventing historical
+events or discarding available source bytes.
+
+An `actor-hidden-target/v1` object is closed with exactly `schema` and `chart`;
+`schema` is the literal `actor-hidden-target/v1`, and `chart` is one complete
+chart-entry object from the target union above, not a ref or reduced
+projection. Its RFC 8785 bytes are content-addressed. The chart fingerprint equals the actor's chart, and its tagged entry is
+constructed by the same rules even when no holdout target exists. Thus every
+selecting or preference-training actor has a non-vacuous semantic target for
+the evidence actually present.
 
 A file containing both projections is not separation. For harness selection,
 promotion, or training, absent actor-readable inventory or access proof makes
@@ -894,13 +930,13 @@ partition registry locks every member identity as well as the cluster identity.
 - holdout is frozen before candidate generation and hidden from the author,
   optimizer prompt, candidate worktree, and development reports.
 
-Before the first semantic read of any holdout chart, freeze the exact baseline
-harness and have the human owner select exactly one factor from
-discovery/development evidence. Publish immutable
+For every paired comparison, freeze the exact baseline harness and have the
+human owner select exactly one factor from discovery/development evidence.
+Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>","message_projection_ref":"evidence/projections/<digest-hex>.json"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","pre_holdout_optimizer_templates":[{"candidate_id":"candidate-1","input_inventory_template_fingerprint":"sha256:<hex>","input_inventory_template_ref":"optimizer/candidate-1-input-template.json","metadata_template_fingerprint":"sha256:<hex>","metadata_template_ref":"optimizer/candidate-1-metadata-template.json"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"authorized_input_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_projection_fingerprint":"sha256:<hex>","message_projection_ref":"evidence/projections/<digest-hex>.json"}],"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"inventory_template_schema_fingerprint":"sha256:<hex>","inventory_template_schema_ref":"optimizer/inventory-template-schema.json","non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","pre_holdout_optimizer_templates":[{"candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"],"tool_schema_fingerprints":["sha256:<hex>"]},"schema":"factor-selection/v1"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
@@ -911,15 +947,22 @@ duplicate-free. Each `evidence_ref`, `evidence_fingerprint`, and `partition`
 triple is validated as one resolvable identity. `optimizer_visible_policy` is
 the complete semantic policy the optimizer may later receive, including tool
 policy, tool schemas, authorized message projections, and the inventory-template
-schema; none may be added or changed after this freeze. The artifact is created under the global
-partition mutex before holdout compilation and binds the already-frozen
-baseline. The root, evaluator-only pre-candidate policy, and final reports bind
-its exact ref/fingerprint. `pre_holdout_optimizer_templates` is keyed by
+schema; none may be added or changed after this freeze. When any selected chart
+is holdout, the artifact is created under the global partition mutex before the
+first semantic holdout read. A comparison with no holdout creates the same
+closed asset locally before candidate generation and does not acquire or claim
+the global holdout mutex. In both routes it binds the already-frozen baseline,
+and the root, evaluator-only pre-candidate policy, and final reports bind its
+exact ref/fingerprint. `pre_holdout_optimizer_templates` is keyed by
 candidate ID, has exactly the candidate budget rows, and binds the exact
 optimizer input inventory and metadata templates—including discovery file
 selection, hypothesis, and changed paths—before the first semantic holdout
-read. Pre-candidate commitments are a deterministic projection of these pairs;
-a holdout-seeing compiler cannot choose or rewrite them. The optimizer policy is the deterministic exact
+read or, without holdout, before candidate generation. For each candidate, the
+corresponding `candidate-generation-commitment/v1` repeats the same candidate
+ID and both ref/fingerprint pairs exactly. Its canonical projection obtained by
+removing only its `schema`, author, and tool-policy-template fields MUST equal the factor-
+selection row byte-for-byte; no ref transformation or field rename is allowed.
+A holdout-seeing compiler therefore cannot choose or rewrite them. The optimizer policy is the deterministic exact
 projection of `optimizer_visible_policy`; it receives no outer ref,
 outer fingerprint, discovery/development evidence, selector-principal identity,
 or baseline/holdout commitment. Selector ownership fingerprints inside
@@ -1028,7 +1071,7 @@ all chart, evaluator, and partition fingerprints before that handoff.
 Do not rely on prompts or same-user file modes to hide holdout material from an
 optimizer with filesystem tools. Run optimization in a workspace where holdout
 roots are not mounted/readable. The pre-candidate policy binds the exact
-optimizer-readable inventory and the evaluator-owned candidate-generation
+run-independent `optimizer-inventory-template/v1` and the evaluator-owned candidate-generation
 runner ref/fingerprint. That runner creates the readable-root boundary, keeps
 its mounts immutable for the optimizer process lifetime, and, after the process
 exits but before teardown, re-enumerates the complete readable roots and
@@ -1200,9 +1243,13 @@ optimizer tool trace, and every candidate-output entry. The access proof's pre/p
 fingerprints bind those two complete `semantic-leakage-review/v1` artifacts.
 The runner may emit `status: completed` only after input equality, output-delta
 coverage, policy/trace completeness, and a clear post-generation review are
-proved. Missing, stale, `leak`, or `uncertain` evidence first triggers the
-durable exposure transition below and then returns `holdout_contaminated`; it
-is never merely a failed local run.
+proved. When `holdout_evidence` is non-null, missing, stale, `leak`, or
+`uncertain` evidence first triggers the durable exposure transition below and
+then returns `holdout_contaminated`; it is never merely a failed local run. On
+the non-holdout route there is no global exposure authority to mutate: retain
+the local leakage evidence and return `status: invalid_environment` with
+`status_reason: historical_leakage`. That route MUST NOT execute a holdout
+claim or registry transition.
 
 Before any candidate-generation process can read an input or receive a
 message, choose a unique `generation_attempt_id`. When `holdout_evidence` is
@@ -1618,11 +1665,16 @@ For discovery or development, `partition` is that exact value and
 `development_exposed`. Candidate-generation leakage uses partition
 `development` and exposure status `optimizer_exposed`; these are the only
 admitted status/partition combinations. Both exposure-evidence fields are null
-for a claim created without semantic discovery. A claim caused by semantic
+for a claim created without semantic discovery. A new claim caused by semantic
 discovery has both non-null and binds the exact
 query-independent `semantic-discovery-identity-exposure/v1` asset whose source
 identity equals this claim. One null field, an unresolved asset, or a mismatched
-identity or registry makes the claim invalid. Query-specific
+identity or registry makes that new-claim variant invalid. An already
+`discovery_exposed` or `development_exposed` claim with both fields null remains
+valid when semantic discovery later occurs only if the same exact identity-
+exposure asset exists and the semantic-discovery gate validates the claim plus
+marker union described in Section 2. The marker augments evidence; it does not
+replace or downgrade the permanent exposed claim. Query-specific
 `semantic-discovery-query/v1` and `semantic-discovery-result/v1` assets are
 provenance and cannot replace or narrow the already-published exposure set.
 Aggregate group fingerprints never enter this claim schema; group eligibility
@@ -1692,13 +1744,13 @@ Before candidate generation, write and fingerprint an evaluator-only
 pre-candidate policy asset containing the selecting chart commitments,
 partition snapshot, model/runtime configuration, repeat counts, randomness
 matching, improvement threshold, protected dimensions, candidate budget, and
-the exact pre-holdout `factor-selection/v1` ref/fingerprint and comparison-
+the exact pre-generation `factor-selection/v1` ref/fingerprint and comparison-
 implementation ref/fingerprint that will aggregate results and choose the
 recommendation.
 It also repeats the complete `factor-selection/v1.optimizer_visible_policy`
 object byte-for-byte and binds the actor-readable-surface derivation-
 implementation ref/fingerprint used after execution.
-Before candidate generation it additionally binds one canonical
+When `holdout_evidence` is non-null it additionally binds one canonical
 `holdout-semantic-target/v1` ref/fingerprint. Its exact projection contains the
 sorted selected chart fingerprints and, for each chart, complete actor-visible
 pre-cut state, prompt, source-byte refs/fingerprints, chart semantics, hidden
@@ -1709,14 +1761,18 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","inventory_template_fingerprint":"sha256:<hex>","inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json","session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
 
-The arrays are sorted by their displayed identities and duplicate-free.
+The arrays are sorted by their displayed identities and duplicate-free. The
+top-level factor-selection pair is mandatory for every paired comparison,
+whether or not a holdout is selected, and equals the root partition-policy
+pair. The semantic-evaluator pair equals every semantic leakage review in the
+cycle.
 `candidate_generation_commitments` has exactly `candidate_budget` rows, keyed
 by candidate ID, each with exactly the displayed
 `candidate-generation-commitment/v1` fields. The access proof repeats the
-candidate ID, author principal, inventory-template pair, tool-policy-template
+candidate ID, author principal, optimizer-inventory-template pair, tool-policy-template
 pair, and candidate-metadata-template pair exactly. The referenced template is
 closed pre-generation `candidate-metadata-template/v1` bytes containing only
 candidate ID, baseline harness fingerprint, selected factor, author principal,

@@ -361,11 +361,13 @@ exact candidate-independent optimizer tool/effect policy template
 ref/fingerprint and required complete trace schema,
 exact candidate-generation runner ref/fingerprint, and exact
 comparison-implementation ref/fingerprint, plus exact runtime-surface and
-actor-readable-surface derivation-implementation refs/fingerprints. It is never
+actor-readable-surface derivation-implementation refs/fingerprints and the
+semantic-leakage-evaluator ref/fingerprint. It is never
 mounted or supplied to candidate optimization. The separately fingerprinted
 optimizer policy is the exact deterministic projection of the complete
-`factor-selection/v1.optimizer_visible_policy` object frozen before any
-holdout semantic read, plus discovery/development inputs. It contains no holdout IDs,
+`factor-selection/v1.optimizer_visible_policy` object frozen before candidate
+generation and, when applicable, before any holdout semantic read, plus
+discovery/development inputs. It contains no holdout IDs,
 tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
 digest from which they can be enumerated.
 The predicate is an ordered `targeted_chart_rules` array whose entries contain
@@ -381,6 +383,14 @@ runtime-configuration keys, approved derived runtime-surface fields, runtime
 constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
 not make divergent policy values compatible.
+Each factor-selection candidate template row contains exactly the candidate ID,
+optimizer-inventory-template pair, and candidate-metadata-template pair. The
+pre-candidate `candidate-generation-commitment/v1` repeats those fields without
+renaming or transforming either ref; deleting only its schema, author, and
+tool-policy-template fields yields byte-identical canonical row bytes. This
+equality is validated before candidate generation. The pre-candidate semantic-
+evaluator pair also equals every pre/post semantic leakage review in both arms;
+an evaluator identity change is `evaluator_contaminated`.
 Every factor-owner file path is the root-qualified pair
 `{"root_id":"<root-id>","path":"<logical-path>"}`; a flat path is invalid
 because layered roots may contain the same logical name.
@@ -449,8 +459,8 @@ execution subject and all candidate and candidate-generation fields are absent.
 For `execution_mode: paired_compare`, both arms and the applicable candidate policies are
 mandatory. This is a mode-neutral subject binding, not invented comparison
 state for a standalone run.
-When a paired comparison contains holdout charts, `partition_policy.factor_selection`
-is mandatory and binds the exact pre-holdout `factor-selection/v1` asset. Its
+For every paired comparison, `partition_policy.factor_selection` is mandatory
+and binds the exact pre-generation `factor-selection/v1` asset. Its
 baseline fingerprint equals the frozen baseline harness. Every discovery or
 development evidence entry resolves by ref/fingerprint and records its
 partition. Its complete `optimizer_visible_policy` object equals the
@@ -460,7 +470,11 @@ ref or outer fingerprint, discovery/development evidence,
 factor-selector identity, or baseline/holdout commitments. Selector ownership
 fingerprints inside the projected policy remain required. A
 missing, later-authored, unresolved, or mismatched asset is
-`holdout_contaminated`.
+`comparison_drift`. When any selected chart is holdout, this same artifact is
+frozen under the partition mutex before the first semantic holdout read and a
+missing, later-authored, unresolved, or mismatched asset is
+`holdout_contaminated`. With no holdout it is authored locally before candidate
+generation and grants no global holdout authority.
 
 For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
 equals chart `kind`, root `split_group` equals chart `split.group_id`, root
