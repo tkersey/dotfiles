@@ -375,9 +375,10 @@ boundary was malformed or unverifiable.
 Rows with `sandbox_created: false` require `actor_started: false`, null process
 and sandbox IDs, and no runtime observation, inventory, or access proof. Rows
 with `sandbox_created: true, actor_started: false` require a non-null unique
-sandbox ID and null process ID; they retain every runtime observation,
-inventory, and pre-start leakage artifact actually produced, while access proof
-and actor context remain null. This is the admitted mounts-frozen/process-not-
+sandbox ID and null process ID. Because `runtime-observation/v1` is
+process-owned, its ref/fingerprint and runtime surface fingerprint are null;
+the row retains the inventory and pre-start leakage artifacts actually
+produced, while access proof and actor context remain null. This is the admitted mounts-frozen/process-not-
 started state. Started rows require both booleans true and non-null process and
 sandbox IDs. No other combination is valid.
 Across the complete run group, every non-null `actor_process_opaque_id` and

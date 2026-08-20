@@ -363,7 +363,7 @@ A non-exact chart
 has no admission row; a third output, changed destination, or output for an
 unplanned chart is `invalid_environment`. The
 plan's sorted unique `derivations` also admits only deterministic
-identity-completeness-manifest, session-provenance, partition-validation, and
+identity-completeness-manifest, session-provenance, and
 archived-root assets whose bytes are recomputed solely from the listed changed
 fields; refs/fingerprints for that exact transitive set may change. The
 successor then passes ordinary complete-closure validation; reset-admission
@@ -406,6 +406,9 @@ equals the pre-candidate policy, and resolves the complete evaluator-owned
 draw/schedule commitment created before candidate generation. It is absent for
 `single_arm`, whose randomness remains a per-run fact without a paired
 selection claim.
+The pre-candidate policy's `improvement_rule` is byte-identical to
+`stochastic_evidence.improvement_rule`; there is no threshold alias or
+post-outcome projection. A mismatch is `comparison_drift`.
 For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
@@ -634,6 +637,8 @@ environment_chart:
     outcome_refs: []
     hidden_outcome_ref:
     hidden_outcome_fingerprint:
+    designed_authorship_ref:
+    designed_authorship_fingerprint:
     contamination: []
     limitations: []
 

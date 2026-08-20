@@ -137,25 +137,40 @@ and duplicate-free; regular files only are admitted. The manifest covers every
 copied file exactly once, and its exact-byte SHA-256 is
 `corpus_snapshot_fingerprint`.
 
+The fixed private cleanup namespace is
+`${CODEX_HOME:-$HOME/.codex}/emulator-private/raw-snapshots/v1/`, mode `0700`.
+It contains only `roots/<snapshot-key>/`, `markers/<snapshot-key>.json`, and
+`markers/<snapshot-key>.lock`. `snapshot-key` is the lowercase SHA-256 hex of
+exact RFC 8785
+`{"atlas_instance_id":"sha256:<hex>","invocation_id":"<opaque-invocation-id>","schema":"raw-snapshot-key/v1"}`
+bytes. The marker's `raw_root`, marker path, and lock path MUST equal those
+three component-safe derivations; no caller-chosen path is admitted. This exact
+namespace and the one intended root/marker/lock set must be positively present
+in `authorized_files.allowed` before copying; otherwise stop before reading raw
+bytes.
+
 Before copying any raw byte, acquire the adjacent `<marker-path>.lock`
 exclusive owner lock, then create and fsync an owner-only cleanup marker outside
 the raw root with exact RFC 8785
 `{"owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":null}`
-bytes. After the snapshot manifest is durable, atomically replace the marker
-under that lock with the same exact object except for its non-null matching
-snapshot fingerprint. At capability preflight and before any new copy, enumerate this fixed
+bytes, then fsync the marker directory. After the snapshot manifest is durable,
+atomically replace the marker under that lock with the same exact object except
+for its non-null matching snapshot fingerprint, and fsync the marker directory
+again. At capability preflight and before any new copy, enumerate this fixed
 private temporary namespace, validate every marker/root remains beneath it,
 and acquire the marker-scoped exclusive recovery lock before inspecting an
 orphan. Recovery MUST prove the recorded owner process is absent, atomically
 replace the marker's owner fields with the recovery invocation/process while
 holding that lock, and only then treat the isolated root as invocation-owned
-under the common removal gate. A null snapshot fingerprint is valid only for a
-copy interrupted before manifest publication and does not weaken cleanup. If owner liveness or atomic transfer cannot be
+under the common removal gate. A null snapshot fingerprint covers the complete
+interval before the marker replacement is directory-durable, including a crash
+after manifest publication; recovery may verify an extant manifest but never
+requires it to delete the invocation-owned raw root. If owner liveness or atomic transfer cannot be
 proved, stop with `source_contaminated`; a second invocation never deletes the
 first invocation's live root. Delete each recovered orphan root, then its
-marker, before releasing the recovery lock. On normal success the original
+marker, and fsync the marker directory before releasing the recovery lock. On normal success the original
 owner holds the same marker-scoped lock and deletes the raw root before its
-marker. A crash at any
+marker, then fsyncs the marker directory. A crash at any
 point therefore leaves a discoverable cleanup obligation without retaining
 session contents in the marker. Explicitly authorized retention removes the
 marker only after its exact retained root and purpose are bound as source
@@ -185,18 +200,24 @@ query success never retroactively establishes completeness.
 
 The fallback semantic query is crash-closed. Before launching Seq, create and
 fsync one owner-global `semantic-discovery-attempt/v1` pending record under the
-exposure registry. It binds the owner invocation/process, snapshot pair, query
-spec pair, and complete physically known identity set. Seq runs behind a
+exposure registry. Let `<pending-digest-hex>` be the lowercase SHA-256 hex of
+those exact bytes. Its only directory is
+`semantic-discovery/attempts/<pending-digest-hex>/`, containing exactly
+`pending.json`, optional `result-envelope.json`, optional `result.json`, and
+optional `completed.json`; the pending filename bytes hash to the directory
+digest. Create-new each file and fsync the attempt directory after every file
+publication. The pending record binds the owner invocation/process, snapshot
+pair, query spec pair, and complete physically known identity set. Seq runs behind a
 wrapper that does not expose semantic payload on stdout or to the compiler; its
-only semantic output is a create-new, fsynced result envelope followed by an
-adjacent
+only semantic output is create-new `result-envelope.json`, followed by
+`result.json`; both are fsynced with the directory before return. The latter is
 `semantic-discovery-attempt-result/v1` asset containing the exact result-envelope
 pair and the complete sorted stable-alias identity descriptors/fingerprints.
 Only after that asset is durable may the wrapper return its fingerprint.
 
 ~~~json
 {"attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
-{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/results/<digest-hex>.json","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
+{"attempt_id":"<opaque-attempt-id>","pending_fingerprint":"sha256:<hex>","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/attempts/<pending-digest-hex>/result-envelope.json","schema":"semantic-discovery-attempt-result/v1","stable_alias_identity_descriptors":[{"identity_kind":"external_task","identity_ref":"task-uri:<base64url>"}],"stable_alias_identity_fingerprints":["sha256:<hex>"]}
 {"attempt_id":"<opaque-attempt-id>","exposure_claims":[{"fingerprint":"sha256:<hex>","holdout_key":"<hex>"}],"identity_exposure_markers":[{"fingerprint":"sha256:<hex>","ref":"semantic-discovery/identity-exposures/<holdout-key>.json"}],"pending_fingerprint":"sha256:<hex>","result_fingerprint":"sha256:<hex>","schema":"semantic-discovery-attempt-completed/v1"}
 ~~~
 
@@ -204,12 +225,15 @@ Arrays are sorted and duplicate-free; descriptor fingerprints use the canonical
 identity preimage rule, and the claim/marker rows cover every physical and
 alias identity in the result. A claim's canonical global path is derived from
 the bound registry root and holdout key; the completion record never stores an
-atlas-local snapshot ref.
+atlas-local snapshot ref. Recovery locates `result.json` and `completed.json`
+from the enumerated pending directory alone; no adjacency convention or
+caller-chosen filename participates.
 
 While still holding `.partition-freeze.lock`, the compiler resolves the result,
 publishes or preserves the required exposed claim and marker for every alias,
 revalidates the complete union, and then writes the matching immutable
-completion record. Capability preflight and holdout admission enumerate every
+completion record, fsyncing each affected registry directory after claim,
+marker, and completion publication. Capability preflight and holdout admission enumerate every
 pending attempt before proceeding. For a dead owner with a durable result,
 recovery must publish and revalidate all result aliases before completion; with
 no result it may clear the attempt only after proving the wrapper never
@@ -1126,8 +1150,8 @@ projection of `optimizer_visible_policy`; it receives no outer ref,
 outer fingerprint, discovery/development evidence, selector-principal identity,
 or baseline/holdout commitment. Selector ownership fingerprints inside
 `non_holdout_selectors` are policy-local proof and remain present. The
-pre-candidate policy repeats that object byte-for-byte and adds evaluator-only
-fields. Neither the baseline nor factor selection can be revised
+pre-candidate policy binds the factor-selection pair and adds evaluator-only
+fields; it does not duplicate that semantic object. Neither the baseline nor factor selection can be revised
 after a holdout semantic read. If factor selection requires holdout contents,
 those charts become discovery/development and a new untouched group is
 required. Any baseline drift after this artifact is published restarts factor
@@ -1171,6 +1195,19 @@ overlapping aliases or multiple assets for one person are invalid.
 In schemas below, `principal_identity_ref` denotes this common ref/fingerprint
 contract; role-specific fields retain their selector, reviewer, or attester
 prefix.
+
+A chart with `source_kind: user_design`, or `mixed` containing designed
+material, binds non-null exact RFC 8785
+`designed-chart-authorship/v1` bytes through its source authorship pair:
+`{"actor_input_fingerprint":"sha256:<hex>","author_principal_identity_fingerprint":"sha256:<hex>","author_principal_identity_ref":"principals/<digest-hex>.json","schema":"designed-chart-authorship/v1","source_identity_fingerprints":["sha256:<hex>"]}`.
+The identity array equals the chart split exactly and the actor input equals the
+chart actor packet. Purely source-derived charts keep both authorship fields
+null. For a selected designed holdout, the normalized author `person_id` MUST
+differ from the factor selector and every candidate author/attester in the
+cycle; otherwise that chart is discovery/development-only. This is the
+designed-holdout blindness witness—`holdout_semantics_seen: false` cannot
+override a person-ID collision.
+
 `factor_selector_identity_ref` and fingerprint identify the principal that
 selected the factor. Before admitting any selected holdout
 correction-derived chart, require it to differ from every
@@ -1248,7 +1285,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_effects_fingerprint":"sha256:<hex>","generation_effects_ref":"harnesses/candidates/<candidate-id>/generation-effects.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_target_fingerprint":null,"holdout_target_ref":null,"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_runtime_observation_fingerprint":"sha256:<hex>","optimizer_runtime_observation_ref":"harnesses/candidates/<candidate-id>/optimizer-runtime-observation.json","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
+{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_effects_fingerprint":"sha256:<hex>","generation_effects_ref":"harnesses/candidates/<candidate-id>/generation-effects.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_target_fingerprint":null,"holdout_target_ref":null,"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_process_opaque_id":"<runner-opaque-id>","optimizer_runtime_observation_fingerprint":"sha256:<hex>","optimizer_runtime_observation_ref":"harnesses/candidates/<candidate-id>/optimizer-runtime-observation.json","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
 ~~~
 
 The displayed payload is the exact non-holdout variant. The exact holdout
@@ -1298,10 +1335,15 @@ The optimizer runtime-observation pair resolves exact RFC 8785
 `{"fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","model_runtime_configuration_fingerprint":"sha256:<hex>","observed_runtime_config":{},"optimizer_process_opaque_id":"<runner-opaque-id>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-runtime-observation/v1"}`.
 The runner observes these values from the actual fresh optimizer process; they
 equal the frozen model/runtime asset, access proof, context, attempt, and
-sandbox. Requested-only or copied runtime evidence is `holdout_contaminated`.
+sandbox. Before inventory capture the runner allocates exactly one optimizer
+process ID and then launches only that process in the sandbox. The access proof,
+runtime observation, optimizer context, input inventory, both output inventories, generation
+effects, and tool trace all repeat that ID. A missing/mismatched ID or a second
+optimizer process in the sandbox is `holdout_contaminated`; evidence cannot be
+spliced across processes. Requested-only or copied runtime evidence is `holdout_contaminated`.
 `optimizer_context_ref` retains the exact RFC 8785 bytes and
 `optimizer_context_fingerprint` hashes them:
-`{"authorized_input_messages":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_index":1}],"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-optimizer-policy-UTF-8>","role":"system"},{"content":"<authorized-input-UTF-8>","role":"user"}],"optimizer_policy_message_indexes":[0],"schema":"optimizer-context/v1"}`
+`{"authorized_input_messages":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_index":1}],"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-optimizer-policy-UTF-8>","role":"system"},{"content":"<authorized-input-UTF-8>","role":"user"}],"optimizer_policy_message_indexes":[0],"optimizer_process_opaque_id":"<runner-opaque-id>","schema":"optimizer-context/v1"}`
 with the same closed roles and complete ordered message semantics. The generation
 runner creates that context with `parent_context_id: null`; reuse, import, or
 hidden prior messages invalidate the proof. The context receives only the
@@ -1315,7 +1357,8 @@ two-field object. Its `schema` is the literal `optimizer-policy/v1`; its
 No prose rendering, omission, added instruction, or alternate interpretation is
 admitted. The SHA-256 of those exact bytes equals `optimizer_policy_fingerprint`
 in the pending intent and access proof, and the frozen pre-candidate policy's
-byte-identical `optimizer_visible_policy` recomputes the wrapper. Every other message is a separately inventoried
+factor-selection pair resolves the sole `optimizer_visible_policy` that
+recomputes the wrapper. Every other message is a separately inventoried
 authorized discovery/development input; an unbound extra message is
 `holdout_contaminated`.
 Every non-policy message index appears exactly once in
@@ -1326,13 +1369,13 @@ equals the delivered role/content. Missing, extra, or mismatched mappings are
 The optimizer input inventory is immutable and is exactly the RFC 8785 bytes:
 
 ~~~json
-{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"input_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-input-inventory/v1","tool_policy_fingerprint":"sha256:<hex>"}
+{"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"input_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"optimizer_process_opaque_id":"<runner-opaque-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-input-inventory/v1","tool_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 The candidate output inventory is exactly:
 
 ~~~json
-{"entries":[],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
+{"entries":[],"optimizer_process_opaque_id":"<runner-opaque-id>","output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
 ~~~
 
 The post-generation form uses `phase: post_generation` and contains every exact
@@ -1354,7 +1397,7 @@ The access proof's generation-effects pair resolves exact RFC 8785
 `generation-effects/v1` bytes:
 
 ~~~json
-{"effects":[{"after_fingerprint":"sha256:<hex>","before_fingerprint":null,"kind":"create","path":"<logical-path>","payload_fingerprint":"sha256:<hex>","payload_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/<sequence>-payload.json","root_id":"<root-id>","sequence":1,"source_path":null}],"generation_attempt_id":"<generation-attempt-id>","schema":"generation-effects/v1"}
+{"effects":[{"after_fingerprint":"sha256:<hex>","before_fingerprint":null,"kind":"create","path":"<logical-path>","payload_fingerprint":"sha256:<hex>","payload_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/<sequence>-payload.json","root_id":"<root-id>","sequence":1,"source_path":null}],"generation_attempt_id":"<generation-attempt-id>","optimizer_process_opaque_id":"<runner-opaque-id>","schema":"generation-effects/v1"}
 ~~~
 
 Sequence starts at one and is contiguous. `kind` is `create`, `overwrite`,
@@ -1427,7 +1470,7 @@ other output roots are writable. Unlisted tools, roots, and effects are denied. 
 exact RFC 8785 `optimizer-tool-trace/v1`:
 
 ~~~json
-{"events":[{"arguments_fingerprint":"sha256:<hex>","arguments_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000001-arguments.json","call_id":"<runner-call-id>","effects":[],"error_fingerprint":null,"error_ref":null,"kind":"tool_call","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":null,"result_ref":null,"sequence":1,"tool":"<tool-name>"},{"arguments_fingerprint":null,"arguments_ref":null,"call_id":"<runner-call-id>","effects":[{"effect_fingerprint":"sha256:<hex>","effect_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000002-effect-000001.json"}],"error_fingerprint":null,"error_ref":null,"kind":"tool_result","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":"sha256:<hex>","result_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000002-result.json","sequence":2,"tool":"<tool-name>"}],"policy_fingerprint":"sha256:<hex>","policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-tool-trace/v1"}
+{"events":[{"arguments_fingerprint":"sha256:<hex>","arguments_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000001-arguments.json","call_id":"<runner-call-id>","effects":[],"error_fingerprint":null,"error_ref":null,"kind":"tool_call","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":null,"result_ref":null,"sequence":1,"tool":"<tool-name>"},{"arguments_fingerprint":null,"arguments_ref":null,"call_id":"<runner-call-id>","effects":[{"effect_fingerprint":"sha256:<hex>","effect_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000002-effect-000001.json"}],"error_fingerprint":null,"error_ref":null,"kind":"tool_result","observation_fingerprint":null,"observation_ref":null,"result_fingerprint":"sha256:<hex>","result_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/000002-result.json","sequence":2,"tool":"<tool-name>"}],"optimizer_process_opaque_id":"<runner-opaque-id>","policy_fingerprint":"sha256:<hex>","policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-tool-trace/v1"}
 ~~~
 
 Each event has exactly those fields. `kind` is `observation`, `tool_call`, or
@@ -1631,6 +1674,14 @@ only when it is not a retirement successor. A retirement successor that removes
 the last holdout retains the updated `retirement_index` and every effective
 marker in its closure so deferred training evidence remains resolvable.
 
+Before acquiring either validation lock, compute—but do not publish—the exact
+canonical `holdout-use/v1` bytes from the already-frozen root, paired cohort,
+candidate manifests, chart repeats, and holdout-only identity/group sets. Its
+SHA-256 is the active reservation fingerprint used by any disjoint-advance
+witness below. This computation has no dependency on the pending/clear gate or
+live retirement pointer; those gates decide whether the precomputed bytes may
+later be published, not what their identity is.
+
 Before every selecting run, acquire `.partition-freeze.lock`, then the
 retirement-index update lock in that fixed global order. Every path that needs
 both locks uses this order and releases them in reverse. Revalidate the exact global
@@ -1662,9 +1713,8 @@ require each common pending fingerprint's exact matching `.cleared.json` and the
 transitive evidence closure defined above. A malformed file, unrecognized
 path, mismatched cohort, dangling closure, or unresolved
 optimizer intent stops with `source_contaminated` before reservation. Only
-after this complete pending/clear gate passes may the writer compute the
-complete canonical cycle-reservation bytes and
-fingerprint without publishing them. Acquire every user-global group lock in
+after this complete pending/clear gate passes may the writer use the already
+precomputed canonical cycle-reservation bytes. Acquire every user-global group lock in
 sorted key order with payloads that bind that precomputed fingerprint, then
 durably publish the exact precomputed bytes at the atlas-local reservation ref.
 Release the retirement lock and then the partition lock only after the
@@ -2040,13 +2090,13 @@ leakage threat model; do not build a cryptographic broker.
 Before candidate generation, write and fingerprint an evaluator-only
 pre-candidate policy asset containing the selecting chart commitments,
 partition snapshot, model/runtime configuration, repeat counts, randomness
-matching, improvement threshold, protected dimensions, candidate budget, and
+matching, improvement rule, protected dimensions, candidate budget, and
 the exact pre-generation `factor-selection/v1` ref/fingerprint and comparison-
 implementation ref/fingerprint that will aggregate results and choose the
-recommendation.
-It also repeats the complete `factor-selection/v1.optimizer_visible_policy`
-object byte-for-byte and binds the actor-readable-surface derivation-
-implementation ref/fingerprint used after execution.
+recommendation. It binds the actor-readable-surface derivation-implementation
+ref/fingerprint used after execution. The optimizer-visible policy is derived
+only from the already-bound factor-selection asset; it is not copied into a
+second authority field.
 When `holdout_evidence` is non-null it additionally binds one canonical
 `holdout-semantic-target/v1` ref/fingerprint. Its exact projection contains the
 sorted selected chart fingerprints and, for each chart, complete actor-visible
@@ -2058,7 +2108,7 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"optimizer_visible_policy":{},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","generation_attempt_id":"<generation-attempt-id>","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_rule":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{"cost":{"input_tokens":0,"latency_ms":0,"output_tokens":0},"residual_dimensions":{},"reward_channels":{},"schema":"non-hard-regression-tolerance/v1"},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_cohort_commitment_fingerprint":"sha256:<hex>","randomness_cohort_commitment_ref":"comparison/randomness-cohort-commitment.json","randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
 
 Before any optimizer or comparison arm starts, the evaluator samples and fsyncs
@@ -2076,6 +2126,11 @@ exact bytes already durable before candidate generation. The commitment is
 evaluator-only and actor/optimizer-inaccessible. The final root, both arms,
 execution rows, EER, and comparison repeat its exact ref/fingerprint; no later
 draw selection or schedule substitution is admitted.
+
+The policy's `improvement_rule` equals
+`comparison_policy.stochastic_evidence.improvement_rule` byte-for-byte. It is
+the sole stochastic adoption rule; the final root cannot rename, project, or
+replace it after outcomes.
 
 The arrays are sorted by their displayed identities and duplicate-free. The
 top-level factor-selection pair is mandatory for every paired comparison,
@@ -2095,14 +2150,16 @@ candidate ID, author principal, optimizer-inventory-template pair, tool-policy-t
 pair, and candidate-metadata-template pair exactly. The referenced template is
 closed pre-generation `candidate-metadata-template/v1` bytes containing only
 candidate ID, baseline harness fingerprint, selected factor, author principal,
-hypothesis, expected delta, falsifier, and declared changed paths. It contains
+hypothesis, expected delta, falsifier, and declared root-qualified changed-path
+objects. It contains
 no candidate harness, access-proof, factor-delta, or final metadata fingerprint,
 so the dependency graph is acyclic. Final candidate metadata is authored after
 generation and binds this template pair plus the generated evidence. Its
 candidate, baseline, factor, author, hypothesis, expected delta, falsifier, and
 declared changed-path values equal the referenced template byte-for-byte. The
 factor-delta validation's complete actual changed-file set equals the sorted
-declared `changed_paths`; a missing, extra, or rewritten path is
+declared `changed_paths` as `(root_id, path)` objects; arrays sort by that pair
+and are duplicate-free. A missing, extra, root-ambiguous, or rewritten path is
 `comparison_drift`.
 Each candidate commitment also freezes exactly one globally unique
 `generation_attempt_id`, repeated by factor selection, pending intent, access
@@ -2183,7 +2240,8 @@ optimizer. Candidate generation receives a separate optimizer policy whose
 semantic fields are exactly the deterministic projection frozen as
 `factor-selection/v1.optimizer_visible_policy`, plus only the referenced
 discovery/development inputs. Before candidate generation, require that object
-to equal the pre-candidate copy exactly. The optimizer policy contains no
+to equal the subobject resolved through the pre-candidate factor-selection pair
+exactly. The optimizer policy contains no
 factor-selection ref or outer fingerprint, discovery/development evidence,
 selector-principal identity, baseline or holdout fingerprint, or other outer
 commitment digest. Policy-local ownership and tool fingerprints required to
@@ -2312,7 +2370,9 @@ candidate:
   semantic_delta_attestation_ref:  # null unless a mixed-owner file changes
   semantic_delta_attestation_fingerprint:
   hypothesis:
-  changed_paths: []
+  changed_paths:
+    - root_id:
+      path:
   affected_chart_tags: []
   protected_chart_tags: []
   expected_delta:
@@ -2581,11 +2641,14 @@ recommendation. Do not claim a causal mechanism from an uncontrolled comparison.
 
 ## 11. Export
 
-Originating `run`, `mutate`, and `compare` modes emit chart-aware EER-v1 and
-runs.jsonl as specified in eer-v1.md. `compare` additionally emits one
+Originating `run`, `mutate`, and `compare` modes emit chart-aware EER-v1 plus
+runs.jsonl as specified in eer-v1.md. Originating `design` and `implement`
+emit the contract-only EER-v1 with no runs artifact and may authorize only
+contract-derived curriculum. `compare` additionally emits one
 comparison.json per baseline/candidate pair; standalone `run` omits comparison
 artifacts and uses an independent run-group directory. Explicit deferred
-`mode: export` validates and binds that sealed originating EER/runs pair, then
+`mode: export` validates and binds that sealed originating EER and its
+mode-correct nullable runs pair, then
 emits only eligible datasets and `emulator-export-manifest/v1`; it never creates
 or rewrites EER or runs evidence.
 For compare, `<run-group-id>` is the comparison ID; for standalone run it is
