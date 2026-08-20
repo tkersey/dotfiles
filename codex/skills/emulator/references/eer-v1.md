@@ -326,7 +326,7 @@ authorized by `factor-delta-validation/v1.runtime_surface_changes`. Missing,
 extra, or non-factor context drift is `comparison_drift`.
 
 Its exact RFC 8785 payload is
-`{"factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_runtime_surface_fields":["actor_context.messages[0].content"],"baseline_actor_context_fingerprint":"sha256:<hex>","baseline_actor_started":true,"baseline_run_id":"<run-id>","candidate_actor_context_fingerprint":"sha256:<hex>","candidate_actor_started":true,"candidate_run_id":"<run-id>","chart_id":"<chart-id>","normalized_equal":false,"repeat_id":"<repeat-id>","status":"pass","unavailable_reason":null}],"schema":"actor-context-delta-validation/v1"}`.
+`{"factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_runtime_surface_fields":["actor_context.messages[0].content"],"baseline_actor_context_fingerprint":"sha256:<hex>","baseline_actor_started":true,"baseline_run_id":"<run-id>","baseline_unavailable_reason":null,"candidate_actor_context_fingerprint":"sha256:<hex>","candidate_actor_started":true,"candidate_run_id":"<run-id>","candidate_unavailable_reason":null,"chart_id":"<chart-id>","normalized_equal":false,"repeat_id":"<repeat-id>","status":"pass"}],"schema":"actor-context-delta-validation/v1"}`.
 Pairs sort by `(chart_id, repeat_id, baseline_run_id, candidate_run_id)` and are
 complete and unique. Each field array is sorted and duplicate-free. It is empty
 when normalized contexts are equal; otherwise it contains every and only
@@ -336,8 +336,9 @@ approved derivation.
 A tuple whose actor never started still has exactly one pair row with
 `status: unavailable_prestart`, the affected `*_actor_started: false`, null
 actor-context fingerprints, `normalized_equal: null`, an empty
-`authorized_runtime_surface_fields` array, and a nonempty pre-launch
-`unavailable_reason` matching its execution row. The other arm retains its
+`authorized_runtime_surface_fields` array, and that arm's nonempty pre-launch
+`*_unavailable_reason` matching its execution row. Started arms have null
+reasons; two failed arms retain two independent reasons. The other arm retains its
 observed started flag and context fingerprint. No other row may use that
 variant; omitting it or fabricating a context fingerprint is
 `comparison_drift`.
@@ -728,6 +729,17 @@ Dataset references appear only when rows were emitted:
 - Active holdouts and hidden evaluator material are never exported.
 - Historical assistant responses are not chosen labels merely because they
   occurred.
+
+Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
+
+```json
+{"authority":"explicit_user_correction","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_ref":"runs/<run-group-id>/traces/<run-id>.json","hard_oracle_refs":["runs/<run-group-id>/oracle-results/<run-id>.json"],"harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"source/<chart-id>/events/<event-id>.json","schema":"emulator-preference/v1","source_refs":["source/<chart-id>/source-map.yaml"],"state_fingerprint":"sha256:<hex>","state_ref":"actors/<chart-id>.md"}
+```
+
+Refs/fingerprints resolve exact eligible bytes; authority and surface equal the
+chart, the chosen action is a fresh passing run, and the rejected action is the
+exact source-bound event. Arrays are sorted and duplicate-free. No extra fields
+are admitted.
 
 Every row retains chart, authority, closure, harness, and evidence provenance.
 

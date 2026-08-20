@@ -627,7 +627,7 @@ non-passing readable-surface validation is `comparison_drift`, even when both
 per-arm access proofs pass.
 
 ~~~json
-{"derivation_implementation_fingerprint":"sha256:<hex>","derivation_implementation_ref":"comparison/actor-readable-surface-validator.json","factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_actor_started":true,"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","baseline_run_id":"<run-id>","candidate_actor_started":true,"candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_run_id":"<run-id>","chart_id":"<chart-id>","nonfactor_entries_equal":true,"readable_roots_equal":true,"repeat_id":"<repeat-id>","status":"pass","tool_policy_equal":true,"unavailable_reason":null}],"schema":"actor-readable-surface-validation/v1"}
+{"derivation_implementation_fingerprint":"sha256:<hex>","derivation_implementation_ref":"comparison/actor-readable-surface-validator.json","factor_delta_validation_fingerprint":"sha256:<hex>","pairs":[{"authorized_factor_delta_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"baseline_actor_started":true,"baseline_inventory_fingerprint":"sha256:<hex>","baseline_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","baseline_run_id":"<run-id>","baseline_unavailable_reason":null,"candidate_actor_started":true,"candidate_inventory_fingerprint":"sha256:<hex>","candidate_inventory_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json","candidate_run_id":"<run-id>","candidate_unavailable_reason":null,"chart_id":"<chart-id>","nonfactor_entries_equal":true,"readable_roots_equal":true,"repeat_id":"<repeat-id>","status":"pass","tool_policy_equal":true}],"schema":"actor-readable-surface-validation/v1"}
 ~~~
 
 The derivation implementation is an evaluator-only immutable asset frozen by
@@ -636,8 +636,9 @@ root equality, tool-policy equality, and every authorized and non-factor delta;
 a self-described result without that recomputation is invalid. A cohort tuple
 whose actor never started still has exactly one pair row with
 `status: unavailable_prestart`, the affected `*_actor_started: false`, null
-inventory refs/fingerprints and equality booleans, and a nonempty pre-launch
-`unavailable_reason` matching its execution row. The other arm's fields retain
+inventory refs/fingerprints and equality booleans, and that arm's nonempty
+`*_unavailable_reason` matching its execution row. Each started arm has a null
+reason; if both fail, both reasons are retained independently. The other arm's fields retain
 their observed values. No other row may use that variant. Thus pre-start
 failure makes the required comparison insufficient without making the runtime
 validation artifact incomplete.
@@ -906,6 +907,12 @@ The pre-candidate policy and final root bind every `selection_intent_ref` and
 fingerprint. Reservation creation and the immediate pre-actor gate revalidate
 the global bytes against those snapshots; a missing or changed selection intent
 stops before exposure.
+Each `selection_intent_ref` is the atlas-relative immutable copy at
+`partitions/selection-intents/<holdout-key>.json`. Exact RFC 8785
+`selection-intent-validation/v1` bytes map every snapshot ref/fingerprint and
+holdout key to its canonical user-global path and require byte equality. The
+pre-candidate policy and root bind this validation ref/fingerprint; reservation
+and pre-actor checks rerun the mapping under the global mutex.
 
 After each holdout chart and evaluator closure is compiled, recursively verified,
 and structurally validated—but before candidate generation, actor execution, or
@@ -960,7 +967,7 @@ output roots contain no holdout semantics; it is a result of the retained
 access and leakage evidence, not a reviewer attestation.
 `optimizer_context_ref` retains the exact RFC 8785 bytes and
 `optimizer_context_fingerprint` hashes them:
-`{"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-optimizer-policy-UTF-8>","role":"system"}],"optimizer_policy_message_indexes":[0],"schema":"optimizer-context/v1"}`
+`{"authorized_input_messages":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_index":1}],"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-optimizer-policy-UTF-8>","role":"system"},{"content":"<authorized-input-UTF-8>","role":"user"}],"optimizer_policy_message_indexes":[0],"schema":"optimizer-context/v1"}`
 with the same closed roles and complete ordered message semantics. The generation
 runner creates that context with `parent_context_id: null`; reuse, import, or
 hidden prior messages invalidate the proof. The context receives only the
@@ -971,6 +978,11 @@ the exact RFC 8785 ordered message projection it names is the rendered optimizer
 policy, and its SHA-256 equals `optimizer_policy_fingerprint` in the pending
 intent and access proof. Every other message is a separately inventoried
 authorized discovery/development input; an unbound extra message is
+`holdout_contaminated`.
+Every non-policy message index appears exactly once in
+`authorized_input_messages`; its evidence ref/fingerprint is frozen in the
+pre-candidate policy and resolves bytes whose contracted message projection
+equals the delivered role/content. Missing, extra, or mismatched mappings are
 `holdout_contaminated`.
 The optimizer input inventory is immutable and is exactly the RFC 8785 bytes:
 
@@ -1113,7 +1125,7 @@ RFC 8785 clear bytes below:
 ~~~
 
 A clear writer recursively copies the access proof, contexts, rendered policy,
-inventories, generation effects, tool policy/trace and payload preimages, both
+frozen holdout target, inventories, generation effects, tool policy/trace and payload preimages, both
 leakage reviews, every leakage surface preimage, and candidate output bytes
 under the private global attempt directory. It emits exact RFC 8785
 `candidate-generation-evidence-closure/v1` bytes with a sorted, duplicate-free
@@ -1143,11 +1155,14 @@ Write the RFC 8785 canonical bytes of each marker at
 `holdout-retirements/markers/<marker-digest-hex>.json`:
 
 ~~~json
-{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"]}
+{"chart_fingerprints":["sha256:<hex>"],"consumption_purpose":"evaluation","prior_root_fingerprint":"sha256:<hex>","reservation_fingerprint":"sha256:<hex>","reservation_ref":"holdout-retirements/evidence/<reservation-digest-hex>.json","schema":"holdout-retirement/v1","source_group_fingerprints":["sha256:<hex>"],"training_authorization_fingerprint":null,"training_authorization_ref":null}
 ~~~
 
 `consumption_purpose` is exactly one of `evaluation` or `training`; the example
-shows evaluation. Before writing the marker, copy the reservation's exact bytes
+shows evaluation. Evaluation requires both training-authorization fields null.
+Training requires both non-null and resolving exact human approval bytes bound
+to a canonical principal identity, the selected charts/groups, and the explicit
+training purpose; the emulator cannot self-authorize. Before writing the marker, copy the reservation's exact bytes
 to the static content-addressed `reservation_ref`, require its filename and
 fingerprint to agree, and include it in every successor closure that contains
 the marker. Both arrays are byte-lexicographically sorted and duplicate-free. The marker
@@ -1520,6 +1535,21 @@ recommendation.
 It also repeats the complete `factor-selection/v1.optimizer_visible_policy`
 object byte-for-byte and binds the actor-readable-surface derivation-
 implementation ref/fingerprint used after execution.
+Before candidate generation it additionally binds one canonical
+`holdout-semantic-target/v1` ref/fingerprint. Its exact projection contains the
+sorted selected chart fingerprints and, for each chart, complete actor-visible
+pre-cut state, prompt, source-byte refs/fingerprints, chart semantics, hidden
+action, correction, recovery, and outcome projections. The target is frozen
+before any optimizer starts; both leakage reviews, the access proof, final root,
+and global attempt closure repeat it unchanged.
+
+The policy also carries sorted `candidate_generation_commitments` keyed by
+candidate ID. Each binds a run-independent
+`optimizer-inventory-template/v1` describing logical input/output entries,
+tool policy, and allowed root roles without absolute sandbox paths or
+`sandbox_instance_id`. The concrete candidate inventory must be the
+deterministic instantiation of its template; candidate-specific sandboxes may
+differ without sharing a concrete fingerprint.
 Do not expose that asset, its holdout fields, or its evaluator criteria to the
 optimizer. Candidate generation receives a separate optimizer policy whose
 semantic fields are exactly the deterministic projection frozen as

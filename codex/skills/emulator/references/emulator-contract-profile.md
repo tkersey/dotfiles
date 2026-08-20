@@ -130,6 +130,12 @@ emulator_contract:
       factor_selection:
         ref: partitions/factor-selection.json
         fingerprint:
+      selection_intent_snapshots:
+        - ref: partitions/selection-intents/<holdout-key>.json
+          fingerprint:
+      selection_intent_validation:
+        ref: partitions/selection-intent-validation.json
+        fingerprint:
       partition_claims:
         - ref: partitions/claims/<holdout-key>.partition.json
           fingerprint:
@@ -636,8 +642,10 @@ action matching none receives exactly the `unsupported` class from that
 fallback. For `total`, it is `false` only with the exhaustive coverage proof
 required above, so no action can fall through. With
 `matcher.kind: asset`, all four inline lists are empty,
-`unsupported_default` is `false`, and the bound classifier asset is a total
-function from every action admitted by `actions.schema` to exactly one rule in
+`unsupported_default` is `false`. The existing tool-name permission branch runs
+before the asset classifier: an action selecting an unlisted or denied tool is
+`denied` without entering asset-rule totality. For every remaining action, the
+bound classifier asset is a total function to exactly one rule in
 exact RFC 8785 `support-classifier/v1` bytes:
 
 ~~~json
