@@ -14,6 +14,7 @@ emulator_execution_report:
   contract:
     ref:
     fingerprint:
+    operation_mode: design | implement | run | mutate | compare
     atlas_chart_fingerprints: []
     closure_inventory_ref:
     closure_inventory_fingerprint:
@@ -49,8 +50,10 @@ emulator_execution_report:
       repeat_id:
       implementation_fingerprint:
       runtime_fingerprint:
-      seed:
-      seed_control: fixed | sampled | unavailable
+      actor_seed:
+      actor_seed_control: fixed | sampled | unavailable
+      environment_seed:
+      environment_seed_control: fixed | sampled | unavailable
       failure_schedule_fingerprint:
       world_fingerprint:
       actor_input_fingerprint:
@@ -124,12 +127,16 @@ candidate so every delta and recommendation has a single arm owner.
 
 ## runs.jsonl
 
-Each fresh run emits one append-only row within its comparison directory:
+Each fresh run emits one append-only row. Compare rows live under their
+comparison directory and bind non-null `comparison_id` and `factor`. Standalone
+`run`/`mutate` rows live under `runs/<run-group-id>/`, bind non-null
+`run_group_id`, and omit `comparison_id` and `factor`.
 
 ```json
 {
   "schema": "emulator-run/v1",
   "run_id": "run-...",
+  "run_group_id": null,
   "comparison_id": "cmp-...",
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
@@ -142,8 +149,10 @@ Each fresh run emits one append-only row within its comparison directory:
   "repeat_id": 1,
   "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
-  "seed": null,
-  "seed_control": "unavailable",
+  "actor_seed": null,
+  "actor_seed_control": "unavailable",
+  "environment_seed": 7,
+  "environment_seed_control": "fixed",
   "failure_schedule_fingerprint": null,
   "world_fingerprint": null,
   "actor_input_fingerprint": "sha256:...",
@@ -167,6 +176,11 @@ Each fresh run emits one append-only row within its comparison directory:
 ```
 
 These rows are not a new global event store.
+The displayed row is the compare variant. In standalone mode `run_group_id` is
+non-null and the comparison/factor keys are absent; in compare mode
+`run_group_id` is null and comparison/factor are non-null. Mixed ownership is
+invalid. `contract.operation_mode` selects the variant and cannot be inferred
+from omitted fields.
 
 ## comparison.json
 
@@ -193,10 +207,14 @@ These rows are not a new global event store.
     "evidence_refs": []
   },
   "recommendation": "adopt | reject | insufficient_evidence",
+  "evidence_relation": "paired_replay_delta | observed_association | regression | insufficient_evidence",
   "reason": "",
   "authority_granted": false
 }
 ```
+
+`comparison.json.evidence_relation` equals the EER comparison field exactly;
+the standalone artifact is not a lossy projection.
 
 ## Evaluation order
 

@@ -526,8 +526,9 @@ not count as promotion passes or failures.
 
 Return adopt, reject, or insufficient_evidence. Adopt requires:
 
-1. all required candidate runs are environment-valid;
-2. no new critical hard failure;
+1. complete baseline and candidate arms are environment-valid for every
+   required chart and repeat;
+2. no new candidate hard-oracle failure of any kind;
 3. no protected regression;
 4. at least one targeted untouched holdout improvement;
 5. any residual preference is order-stable;

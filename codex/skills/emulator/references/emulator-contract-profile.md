@@ -29,6 +29,7 @@ emulator_contract:
   packet_version: EC-v1
   contract_id: EC-<stable-id>
   origin: source_faithful | designed | mixed
+  operation_mode: design | implement | run | mutate | compare
 
   source:
     kind: session | session_corpus | repository | specification | tests | traces | user_design | mixed
@@ -127,6 +128,8 @@ environment_chart:
     allowed_context_refs: []
     forbidden_context_refs: []
     output_schema:
+    seed_control: fixed | sampled | unavailable
+    seed:
 
   environment:
     world_fidelity: exact | approximate | transcript_only | absent
@@ -134,8 +137,8 @@ environment_chart:
     implementation:
       ref:
       fingerprint:
-      seed_control: fixed | sampled | unavailable
-      seed:
+      environment_seed_control: fixed | sampled | unavailable
+      environment_seed:
       failure_schedule_ref:
       failure_schedule_fingerprint:
     reset:
@@ -155,7 +158,10 @@ environment_chart:
       policy_ref:
       policy_fingerprint:
     termination:
-      terminal_conditions: []
+      terminal_conditions:
+        - condition_id:
+          predicate:
+          authority_refs: []
       max_steps:
       timeout_ms:
     support:
@@ -165,6 +171,7 @@ environment_chart:
         classifier_fingerprint:
       executable:
         - support_id:
+          authority_refs: []
           predicate:
             kind: json_pointer_equals
             path:
@@ -177,7 +184,12 @@ environment_chart:
   mutation:
     dimensions:
       - dimension_id:
-        domain: []
+        domain:
+          - case_id:
+            value:
+            kind: ordinary | boundary | negative
+            expected_preserved_law_refs: []
+            expected_violated_law_refs: []
         preserved_law_refs: []
         shrink_strategy:
     generator_ref:
@@ -204,7 +216,7 @@ environment_chart:
     assets:
       - ref:
         sha256:
-        role: source | actor | world | reset | fixture | tool | evaluator
+        role: source | actor | world | reset | fixture | tool | evaluator | mutation_generator
 
   claim:
     class: diagnostic | preference_training | harness_selection | promotion
@@ -216,19 +228,22 @@ environment_chart:
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
-`policy_ref` and `policy_fingerprint` are required whenever effects use
-`allow_recorded`, `declared_roots`, or `explicit`; the referenced asset defines
-the exact recordings, roots, operations, and authority. They are absent only
-for fully closed effect modes. A `full_episode` requires at least one terminal
+`policy_ref` and `policy_fingerprint` are required for every effect mode except
+an effect-free normative chart with no tools, `network: deny`,
+`external_side_effects: deny`, and a read-only filesystem with zero readable
+roots. The asset defines exact readable/writable roots, fixtures, recordings,
+operations, and authority for `read_only`, `isolated_write`, `declared_roots`,
+both `fixture_only` uses, `allow_recorded`, and `explicit`. A `full_episode` requires at least one terminal
 condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
 smallest applicable limit.
 
-Every executable implementation has an exact identity. Its seed-control mode,
-seed when controlled, and any sampled failure schedule are explicit and
+Every executable implementation has an exact identity. Actor and environment
+seed-control modes are independent; each seed is present only when its own
+control is fixed or sampled. Any sampled failure schedule is explicit and
 fingerprinted; `unavailable` is recorded rather than replaced with an invented
 seed.
 
-Every support entry has a unique ID and deterministic predicate in the declared
+Every support entry has a unique ID, at least one authority ref, and a deterministic predicate in the declared
 action schema. The inline predicate language is exact canonical-JSON equality
 at a JSON Pointer: `path` selects one action value and `value` is the required
 canonical value. Multiple conditions require separate, explicitly composed
@@ -236,12 +251,18 @@ predicate assets rather than implicit prose. An asset matcher binds its
 classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
 classifier that is missing, nondeterministic, or cannot prove the five classes
 disjoint makes the environment invalid.
+Every terminal condition likewise has nonempty authority refs; timeout and step
+bounds do not invent permission to terminate successfully.
 
 Mutation dimensions are optional outside `mode: mutate`. Mutation requires at
 least one finite or otherwise bounded domain, preserved-law references, and a
 deterministic shrink strategy. An external generator is fingerprinted and
 included in the chart closure. No mutation widens action support or source
 authority.
+Every generated assignment emits a closed case classification naming its exact
+dimension cases, `ordinary | boundary | negative` kind, expected preserved
+laws, and expected violated laws. Combination-only violations are declared on
+the assignment classification rather than guessed from one dimension.
 
 ## Chart classes
 
