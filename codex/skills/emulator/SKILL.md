@@ -140,7 +140,11 @@ prefix and glob matching are forbidden. `forbidden` uses the same component-
 safe semantics and wins over `allowed`. Recursive removal first enumerates and
 checks every descendant; admitting a parent never authorizes removal of a
 forbidden child. Unlink checks its target path; rename checks both source and
-destination plus both parent directory entries. Before renaming a directory,
+destination plus both parent directory entries. The sole exception is atomic
+replacement under one exact `kind: file` grant: that grant authorizes the
+invocation-owned temporary source entry and the exact granted destination
+entry, but no other operation or name in their parent directory. Before
+renaming a directory,
 recursively enumerate it without following symlinks and authorize every
 descendant at both its source path and corresponding destination path; a
 forbidden descendant denies the entire rename. For a not-yet-created path,
@@ -158,8 +162,13 @@ inode alias; an allowed hard link never grants authority over another name.
 A `kind: file` grant implicitly admits exactly one unpredictable,
 invocation-owned temporary entry in the same pinned directory solely for this
 atomic replacement. The temp must not match a forbidden path, is never exposed
-as a general sibling grant, and is removed on failure before the operation
-returns.
+as a general sibling grant, and its name binds the invocation identity and a
+digest of the exact target leaf. Before creating a replacement temp, recover
+same-target orphan temps left by crashed invocations: validate the complete
+name, require a regular single-link file in the same pinned directory, and
+unlink only that admitted entry through the common gate. Ambiguous, aliased,
+malformed, or wrong-target entries stop the operation. The current temp is
+removed on failure before the operation returns.
 Recursive
 removal is permitted only inside an invocation-owned isolated root while its
 exclusive owner lock is held; shared-tree recursive deletion is forbidden.
@@ -176,8 +185,10 @@ Choose exactly one mode.
 ### design
 
 Compile or repair the root contract and its charts. Design may create only the
-contract, chart, source-bundle, actor-projection, partition, and declarative
-evaluator-policy assets. When first authoring a holdout, it may also capture
+contract, chart, source-bundle, actor-projection, partition, declarative
+evaluator-policy, required closure archive/inventory/EER report, and, for a
+retirement successor, its required static retirement evidence and mapping
+assets. When first authoring a holdout, it may also capture
 the exact mode-neutral baseline harness bundle and capture provenance plus the
 factor-selection asset required by `holdout_authoring_baseline`; it may not
 create a candidate bundle. For a pending implementation it may freeze the
@@ -193,14 +204,14 @@ allowing only the implementation assets declared as pending. Materialize those
 assets in an isolated staging root, compute their exact identities, then create
 and fully validate one content-addressed implemented successor closure that changes
 only the pending asset refs/fingerprints, root reset-admission fingerprints
-emitted at the materialization plan's frozen destinations, and
-root/chart closure fingerprints.
+and materialization-witness pairs emitted at the plan's frozen destinations,
+and root/chart closure fingerprints.
 Fresh admission sandbox identities may give a repeated implement attempt a
 different content address; determinism applies to each frozen materializer and
 normalized prestate, not to opaque runtime IDs across attempts.
 The successor also requires `operation_mode: implement` and a
 `predecessor_root_fingerprint` equal to the design root; these are the only
-additional identity changes. It may also update exactly the deterministic
+additional identity changes beyond the plan-bound witnesses. It may also update exactly the deterministic
 transitive proof assets enumerated by the plan's `derivations`; no unplanned
 derived asset or semantic field may change.
 Any task semantics, evaluator policy, scope, or plan change routes back to

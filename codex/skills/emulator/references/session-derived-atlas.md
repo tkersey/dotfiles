@@ -224,11 +224,17 @@ only semantic output is create-new `result-envelope.json`, followed by
 `semantic-discovery-attempt-result/v1` asset containing the exact result-envelope
 pair and the complete sorted stable-alias identity descriptors/fingerprints.
 Only after that asset is durable may the wrapper return its fingerprint.
-Before publishing the later `semantic-discovery-result/v1`, copy the exact
-attempt-local envelope with create-new semantics to
+Before publishing the later `semantic-discovery-result/v1`, apply the retention
+gate in Privacy and rollback below to the attempt-local envelope. Copy only the
+authorized or scrubbed retained projection with create-new semantics to
 `semantic-discovery/results/<result-digest-hex>.json`, require the filename and
 fingerprint to agree, and fsync the results directory. That content-addressed
-copy is the recorded result-envelope ref.
+copy is the recorded result-envelope ref. A raw envelope containing credentials,
+secret values, or private tool output is never copied to the global registry;
+other indispensable sensitive bytes require explicit bounded retention
+authorization. Delete an unauthorized raw attempt-local envelope after the
+retained projection and its physical identity descriptors are durable, or stop
+if scrubbing would destroy required provenance.
 
 ~~~json
 {"alias_extractor_fingerprint":"sha256:<hex>","alias_extractor_ref":"semantic-discovery/alias-extractors/<digest-hex>.json","attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<opaque-invocation-id>","owner_process_opaque_id":"<opaque-process-id>","physically_known_source_identity_fingerprints":["sha256:<hex>"],"query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","schema":"semantic-discovery-attempt/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json"}
@@ -503,10 +509,12 @@ promotion, or preference training. There is no same-reviewer exception whose
 choices can be revised after correction reveal.
 
 First parse the finalized chart as data. For a pending design or its implement
-successor, normalize every field
-pointer named by the frozen materialization plan to the same closed
+successor, normalize only the `ref`/`fingerprint` pair at every field pointer
+named by the frozen materialization plan to the same closed
 `{"field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json"}`
-placeholder taken from that field's plan entry. The subject does not contain
+placeholder taken from that field's plan entry. Preserve every sibling field,
+including seed control, seed, failure schedule, and other execution semantics,
+verbatim. The subject does not contain
 the plan fingerprint or finalized chart fingerprint. Thus filling planned implementation bytes does not change the
 reviewed semantic subject; any unplanned or changed-plan field still changes it
 and requires fresh review.
@@ -1464,6 +1472,21 @@ within that one `root_id`; cross-root rename is denied by the tool policy and
 must be expressed as separately evidenced create/delete effects. Every tool-trace effect ref resolves one identical row, in order, and
 the envelope contains no extra or missing row. The fixed replay implementation
 consumes these bytes; producers cannot assert replay without the sealed log.
+
+The closed tagged-union variants are:
+
+- `create`: null source/before; non-null after and payload; after equals payload.
+- `overwrite`: null source; non-null before, after, and payload; after equals payload.
+- `rename`: non-null source and after, nullable before, null payload; the source
+  entry fingerprint equals after and replay removes the source.
+- `symlink`: null source/before; non-null after and payload, where payload is
+  the exact link-target bytes.
+- `mkdir`: null source/before/payload and non-null after.
+- `delete`: null source/after/payload and non-null before.
+
+Before/after values fingerprint the exact canonical inventory-entry bytes, so
+directory and symlink effects have identities even when their inventory variant
+has no content digest. Mixed variants are invalid.
 
 The pre-generation semantic leakage review covers every entry in both the
 optimizer input inventory and `candidate_output_prestate`, plus every delivered
@@ -2798,8 +2821,9 @@ that run. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
 Apply the same total precedence rule as EER-v1 on every selecting surface.
-First evaluate every environment-valid, determinate row. Any such row proving
-a new candidate `hard_fail`, protected regression, or contracted non-hard
+First evaluate every selecting, environment-valid, determinate row;
+observational and other non-selecting rows remain diagnostic. Any selecting row
+proving a new candidate `hard_fail`, protected regression, or contracted non-hard
 regression beyond the frozen tolerance yields `reject`, even when other
 required holdout evidence is incomplete. A decisive valid regression is never
 downgraded to `insufficient_evidence`. If no decisive regression exists, any

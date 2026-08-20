@@ -42,6 +42,10 @@ emulator_execution_report:
     atlas_chart_fingerprints: []
     closure_inventory_ref:
     closure_inventory_fingerprint:
+    materialization_witnesses:  # empty while pending; retained after implement
+      - field_pointer:
+        ref:
+        fingerprint:
     contract_reset_admissions:
       - chart_fingerprint:
         admission_reset_refs: []
@@ -283,6 +287,11 @@ eligible non-run outputs, and limitations. These modes do not invent a run
 group, an empty `runs.jsonl`, or runtime counters. For `run`, `mutate`, and
 `compare`, the three run sections are required and the parsed `runs.jsonl` rows
 must equal `executions` as specified below.
+`contract.materialization_witnesses` is empty for a pending design and equals
+the root's sorted witness array after implementation, including later run-mode
+descendants. Every ref resolves through the closure inventory to the closed
+witness schema in the contract profile. Missing, extra, or unequal witness
+evidence makes the EER invalid.
 `contract.contract_reset_admissions` is present in every mode and has one row
 for each fully materialized exact-fidelity executable chart, sorted by chart fingerprint. A pending design chart is absent until its implement successor
 materializes and proves both resets. Each row
@@ -365,7 +374,8 @@ its parent primary case/repeat; its `repeat_id` equals frozen `trial_repeat_id`.
 Executed shrink trials may be a subset of the frozen
 permitted set, but every fresh trial appears once in runs.jsonl and executions;
 the shrink-selection trace proves the ordered subset. A minimized artifact with
-`source_kind: shrink_trial` must cite a passingly accounted shrink-trial row;
+`source_kind: shrink_trial` must cite the accounted failing shrink-trial row
+whose failure the minimized artifact preserves;
 the explicit irreducible `source_kind: primary` variant cites its primary row
 and requires no nonexistent shrink trial. An unlisted or duplicate shrink
 trial is `invalid_environment`.
@@ -563,7 +573,13 @@ Before sandbox or process creation, create-new and fsync one
 RFC 8785 tuple bytes containing comparison/run-group, chart, harness, repeat,
 run purpose, and nullable mutation/parent identities—but not run ID. The closed
 intent bytes are
-`{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":null,"harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":null,"mutation_case_id":null,"parent_mutation_case_id":null,"parent_repeat_id":null,"repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary"}}`.
+`{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":"<comparison-id-or-null>","harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":"<sha256-or-null>","mutation_case_id":"<case-id-or-null>","parent_mutation_case_id":"<case-id-or-null>","parent_repeat_id":"<repeat-id-or-null>","repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary-or-shrink_trial"}}`.
+For `compare`, `comparison_id` is the exact non-null comparison ID and every
+mutation/parent field is null. For `run`, all comparison, mutation, and parent
+fields are null. For `mutate`, the mutation pair equals the frozen assignment;
+primary rows have null parents and `run_purpose: primary`, while shrink rows
+have `run_purpose: shrink_trial` and exact frozen parent identities. No other
+field combination is admitted, and the intent tuple equals its execution row.
 The row intent fingerprint hashes those bytes and its run ID equals the intent;
 the tuple-key filename prevents a new run ID from reserving the same tuple. A crash leaves the tuple reserved: recovery
 emits a terminal runtime-error row or invalidates that comparison identity, but
@@ -823,18 +839,20 @@ plus the exact `mutation-assignment/v1` bytes. A minimized failure ref resolves
 closed exact RFC 8785 `emulator-minimized-counterexample/v1` bytes:
 
 ```json
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"irreducibility_evidence":[{"assignment_fingerprint":"sha256:<hex>","evidence_fingerprint":"sha256:<hex>","evidence_ref":"runs/<run-group-id>/inapplicable/<assignment-digest-hex>.json","run_id":null,"status":"inapplicable"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"irreducibility_evidence":[{"assignment_fingerprint":"sha256:<hex>","evidence_fingerprint":"sha256:<hex>","evidence_ref":"runs/<run-group-id>/oracle-results/<descendant-run-id>.json","run_id":"<descendant-run-id>","status":"pass"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
 ```
 
 Every identity equals the originating execution, assignment, chart, and
 evaluator result; the payload pair binds the actual minimized bytes.
 `source_kind: shrink_trial` requires the all-non-null shrink pair and a selected
 trial row; `primary` requires both fields null. In either variant,
-`irreducibility_evidence` is the sorted complete strict-descendant set derived
-from the chart's shrink graphs. Every descendant is either a fresh hard-oracle
-passing run (`status: pass`, non-null run ID and oracle evidence pair) or a
-deterministic inapplicable proof (`status: inapplicable`, null run ID and
-non-null proof pair). For sampled/unavailable controls, use the distinct closed
+`irreducibility_evidence` is the sorted complete applicable strict-descendant
+set derived from the chart's shrink graphs. Applicability is decided by the
+frozen graph before execution; inapplicable assignments are not graph members
+and cannot be asserted by an exporter. Every descendant is a fresh hard-oracle
+passing run with the closed row
+`{"assignment_fingerprint":"sha256:<hex>","evidence_fingerprint":"sha256:<hex>","evidence_ref":"runs/<run-group-id>/oracle-results/<run-id>.json","run_id":"<run-id>","status":"pass"}`.
+For sampled/unavailable controls, use the distinct closed
 `status: cohort_pass` row:
 `{"aggregation":{"result":"nonfailure","rule":"<frozen-rule>"},"assignment_fingerprint":"sha256:<hex>","evidence_fingerprints":["sha256:<hex>"],"evidence_refs":["runs/<run-group-id>/oracle-results/<run-id>.json"],"run_ids":["<run-id>"],"status":"cohort_pass"}`.
 Its arrays cover the complete frozen repeat cohort and are same-length ordered
@@ -1008,8 +1026,10 @@ entry, candidate metadata, access proof, and pre-candidate commitment. Each cand
 complete baseline/candidate manifest-diff validation; evidence from one
 candidate cannot validate another.
 
-Use one exclusive precedence rule. First evaluate every environment-valid,
-determinate row. If any such row proves a new candidate `hard_fail`, protected
+Use one exclusive precedence rule. First evaluate every selecting,
+environment-valid, determinate row. Observational and other non-selecting rows
+remain diagnostic and cannot affect recommendation. If any selecting row proves
+a new candidate `hard_fail`, protected
 regression, or contracted non-hard regression beyond tolerance, the candidate
 is `reject` even when another required holdout is invalid, unsupported,
 skipped, or ambiguous. A decisive witnessed regression is not erased by
@@ -1148,6 +1168,16 @@ and does not invent a run group:
 ```json
 {"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"curriculum","ref":"datasets/<dataset-digest-hex>.curriculum.jsonl"}],"export_selection":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/contracts/<root-digest-hex>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"runs_fingerprint":null,"runs_ref":null,"schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
+
+For a retired holdout export, use the execution-origin shape with non-null
+`successor_root_ref`/fingerprint. The originating EER and runs refs are the
+static successor-owned snapshot refs named by the sealed cycle-completion arm,
+not the former runtime paths. Resolve the arm's admitted reference mapping and
+rewrite every embedded runtime evidence ref in each emitted dataset row to its
+mapped static successor pair; the mapped fingerprint must be unchanged. Export
+using only the successor closure must therefore resolve the EER, runs, and every
+row dependency after runtime directories are absent. A missing, ambiguous, or
+unmapped ref makes export `invalid_environment`.
 
 Both are the same closed schema; only the mode-constrained originating EER path,
 runs nullability, authorized dataset set, and their values differ. `datasets`

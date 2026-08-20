@@ -93,6 +93,10 @@ emulator_contract:
   materialization_plan:          # non-null for pending design and its implement successor
     ref:
     fingerprint:
+  materialization_witnesses:     # empty while pending; complete after implement
+    - field_pointer:
+      ref:
+      fingerprint:
 
   reset_admissions:  # exact executable charts; pending fingerprints may be null in design
     - chart_fingerprint:
@@ -346,7 +350,7 @@ A design root with pending implementation assets binds exact RFC 8785
 `emulator-materialization-plan/v1` bytes:
 
 ~~~json
-{"admission_outputs":[{"admission_destination_ref":"admissions/<admission-id-a>/admission.json","admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","prestate_destination_ref":"admissions/<admission-id-a>/prestate.json","reset_result_destination_ref":"admissions/<admission-id-a>/result.json","resolved_effect_policy_destination_ref":"admissions/<admission-id-a>/resolved-effect-policy.json"},{"admission_destination_ref":"admissions/<admission-id-b>/admission.json","admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","prestate_destination_ref":"admissions/<admission-id-b>/prestate.json","reset_result_destination_ref":"admissions/<admission-id-b>/result.json","resolved_effect_policy_destination_ref":"admissions/<admission-id-b>/resolved-effect-policy.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
+{"admission_outputs":[{"admission_destination_ref":"admissions/<admission-id-a>/admission.json","admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","prestate_destination_ref":"admissions/<admission-id-a>/prestate.json","reset_result_destination_ref":"admissions/<admission-id-a>/result.json","resolved_effect_policy_destination_ref":"admissions/<admission-id-a>/resolved-effect-policy.json"},{"admission_destination_ref":"admissions/<admission-id-b>/admission.json","admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","prestate_destination_ref":"admissions/<admission-id-b>/prestate.json","reset_result_destination_ref":"admissions/<admission-id-b>/result.json","resolved_effect_policy_destination_ref":"admissions/<admission-id-b>/resolved-effect-policy.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json","mode":"100600","role":"world","witness_destination_ref":"materialization-witnesses/<chart-id>-implementation.json"}],"schema":"emulator-materialization-plan/v1"}
 ~~~
 
 Entries sort by `(chart_fingerprint, field_pointer)`, are unique, and admit only
@@ -360,12 +364,21 @@ Each `materializer_ref` resolves closed `emulator-materializer/v1` bytes that
 bind the complete input-closure ref/fingerprint, normalized staging-prestate
 ref/fingerprint, toolchain/runtime identity, deterministic command/arguments,
 and expected output projection for that field. Ambient environment, unbound
-tools, or unstated input bytes are denied; the implement witness records the
-exact materializer/runtime and output digest.
+tools, or unstated input bytes are denied. Each entry freezes a unique
+`witness_destination_ref`. Implement writes closed exact RFC 8785
+`emulator-materialization-witness/v1` bytes there before constructing the
+successor:
+`{"field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","observed_output_fingerprint":"sha256:<hex>","observed_runtime_fingerprint":"sha256:<hex>","schema":"emulator-materialization-witness/v1"}`.
+The successor's sorted `materialization_witnesses` array contains one
+ref/fingerprint pair for every plan entry, keyed by `field_pointer`, and no
+others. Every witness equals the plan/materializer and observed staging
+execution; its output fingerprint equals the finalized planned pair. Missing
+or unequal witnesses make the successor invalid.
 The exact payload is
 `{"arguments":[],"command_fingerprint":"sha256:<hex>","command_ref":"materializers/commands/<digest-hex>","expected_output_fingerprint":"sha256:<hex>","expected_output_ref":"materializers/outputs/<digest-hex>.json","input_closure_fingerprint":"sha256:<hex>","input_closure_ref":"materializers/inputs/<digest-hex>.json","normalized_prestate_fingerprint":"sha256:<hex>","normalized_prestate_ref":"materializers/prestates/<digest-hex>.json","runtime_fingerprint":"sha256:<hex>","runtime_ref":"materializers/runtimes/<digest-hex>.json","schema":"emulator-materializer/v1"}`.
-Every destination across `entries`, all four fields of `admission_outputs`, and
-`derivations` is globally unique; aliases or write-order ownership are invalid.
+Every destination across `entries` (including witness destinations), all four
+fields of `admission_outputs`, and `derivations` is globally unique; aliases or
+write-order ownership are invalid.
 Mode-gated
 `admission_outputs` sorts by `(chart_fingerprint, admission_id)`, has unique
 IDs and four destination refs per row, and contains only the two reset-admission slots for
@@ -374,7 +387,8 @@ design validation admits those null pairs only with complete plan coverage and
 forbids run/comparison claims. Implement materializes exactly the plan, changes
 `operation_mode` from `design` to `implement`, sets
 `predecessor_root_fingerprint` to the design root, fills every planned pair,
-retains the plan pair, and changes only derived chart/root fingerprints. For
+binds the complete materialization-witness array, retains the plan pair, and
+changes only derived chart/root fingerprints. For
 every pending exact-fidelity executable chart, `admission_outputs` contains
 exactly two rows with distinct frozen admission IDs and destination refs.
 Within `admission_outputs`, `chart_fingerprint` is explicitly the pending-design
@@ -495,8 +509,10 @@ is `true` and whose current export request flag is explicitly `true`, and still
 applies chart-level eligibility and privacy rules. The effective authorization
 is the fieldwise AND of frozen authorization and exact four-boolean
 `export_selection`; omitted selection flags are false. A request cannot rewrite
-frozen false to true, and prior true cannot emit an unselected dataset. Missing
-authorization or selection is a valid empty export.
+frozen false to true, and prior true cannot emit an unselected dataset. At least
+one effective selection must be true. An all-false or wholly unauthorized
+selection stops before manifest publication with `insufficient_evidence`;
+`mode: export` cannot report success for a no-op.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
@@ -538,7 +554,10 @@ reward/residual entries each declare direction and nonnegative tolerance.
 Missing supported channels have zero tolerance. These channels are distinct
 from hard protected dimensions. The comparison implementation binds this exact
 object and deterministically classifies any excess regression before residual
-preference; no outcome may alter it.
+preference; no outcome may alter it. Every channel named by this policy requires
+paired numeric observations for every selecting cohort row. A null or missing
+observation yields `insufficient_evidence` and can never be omitted from the
+delta or permit `adopt`.
 Before candidate generation, validation dereferences the pre-candidate
 `factor_selection_ref`/fingerprint and requires exact equality between that
 asset's `optimizer_visible_policy` and the concrete optimizer policy for selected factor, factor-owner paths, structured byte selectors,
