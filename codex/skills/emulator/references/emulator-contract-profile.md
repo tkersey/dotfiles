@@ -193,6 +193,9 @@ emulator_contract:
     pre_candidate_policy:
       ref:
       fingerprint:
+    provenance_derivation:
+      ref:
+      fingerprint:
     optimizer_policy:
       ref:
       fingerprint:

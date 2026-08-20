@@ -138,6 +138,11 @@ canonicalize and authorize the existing parent with no symlink components,
 validate the exact leaf name, and create with no-follow/create-new semantics;
 an absent leaf never broadens authority. Probe cleanup and rollback use the same gate. A destination
 not positively admitted or matched by a forbidden entry MUST NOT be affected.
+Open and pin every authorized existing ancestor, then perform effects with
+descriptor-relative no-follow operations (`openat`/`renameat`/`unlinkat` or an
+equivalent race-free facility) and revalidate the pinned chain. Recursive
+removal is permitted only inside an invocation-owned isolated root while its
+exclusive owner lock is held; shared-tree recursive deletion is forbidden.
 This common pre-effect gate covers
 contract, source, actor, partition, evaluator, world, reset, fixture, tool,
 reward, mutation-generator, harness, run, trace, report, and dataset artifacts.

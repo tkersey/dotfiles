@@ -360,6 +360,9 @@ total execution rows =
 The former means an attempted action had `observed_only` or `unsupported`
 support; the latter means the chart, closure, visibility, reset, or comparison
 boundary was malformed or unverifiable.
+Started rows require non-null process and sandbox IDs. A pre-start row requires
+both null and binds no runtime observation, inventory, or access proof; mixed
+nullability is invalid.
 
 Every pass or hard failure has a fresh trace. Every invalid, unsupported,
 runtime-error, ambiguous, or skipped row records a reason and the evidence
@@ -515,6 +518,11 @@ values is `comparison_drift`.
 A sampled failure schedule binds both a run-owned `failure_schedule_ref` and
 its exact fingerprint; both are null when no schedule exists. Matched-schedule
 claims compare the referenced bytes, not a free-standing digest.
+For every paired chart/repeat whose frozen `randomness_matching` requires
+matching, controllable actor seeds and environment seeds are equal across arms,
+and sampled failure-schedule bytes/fingerprints are equal. A one-arm seed,
+schedule, or control-mode delta is `comparison_drift`; `unavailable` remains
+explicit and relies on the frozen repeat cohort rather than an invented seed.
 
 Selecting runs bind the exact validation artifact that proves the atlas's
 current pointer resolved to the root-bound immutable partition snapshot, plus
@@ -551,7 +559,11 @@ candidate so every delta and recommendation has a single arm owner.
 Each fresh run emits one append-only row under `runs/<run-group-id>/`. Compare
 mode uses the comparison ID as the run-group ID; standalone run mode uses an
 independent run-group ID, stores its report under `reports/<run-group-id>/`,
-and leaves comparison-only fields null:
+and leaves comparison-only fields null. The displayed row is specifically a
+pure designed, non-holdout example, so registry and partition-claim fields are
+null/empty. A session-derived discovery/development row MUST instead populate
+its storage domain, exposure registry, complete claim pairs, and claim-
+validation pair as required above:
 
 ```json
 {
@@ -674,15 +686,19 @@ plus the exact `mutation-assignment/v1` bytes. A minimized failure ref resolves
 closed exact RFC 8785 `emulator-minimized-counterexample/v1` bytes:
 
 ```json
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-assignment-ref>","chart_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"irreducibility_evidence":[{"assignment_fingerprint":"sha256:<hex>","run_id":"<run-id>","status":"pass"}],"mutation_case_id":"sha256:<case-digest-hex>","payload_fingerprint":"sha256:<hex>","payload_ref":"runs/<run-group-id>/counterexample-payloads/<case-digest-hex>.json","schema":"emulator-minimized-counterexample/v1","shrink_selection_trace_fingerprint":null,"shrink_selection_trace_ref":null,"source_kind":"primary","source_run_id":"<run-id>"}
 ```
 
 Every identity equals the originating execution, assignment, chart, and
 evaluator result; the payload pair binds the actual minimized bytes.
 `source_kind: shrink_trial` requires the all-non-null shrink pair and a selected
-trial row. `source_kind: primary` requires both shrink fields null and proof
-that the frozen permitted set has no smaller applicable assignment (including
-an empty set), so the failing primary row is irreducible. Export copies this
+trial row; `primary` requires both fields null. In either variant,
+`irreducibility_evidence` is the sorted complete strict-descendant set derived
+from the chart's shrink graphs. Every descendant is either a fresh hard-oracle
+passing run or a deterministic inapplicable proof; no failing descendant may
+remain. An empty descendant set is valid. Thus minimality means no smaller
+failing applicable assignment, not merely trial selection or absence of any
+smaller case. Export copies this
 wrapper pair and rejects a case/path/digest-only join.
 
 ## comparison.json

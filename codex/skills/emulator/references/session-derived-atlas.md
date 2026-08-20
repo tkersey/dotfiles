@@ -112,7 +112,7 @@ resolve and preflight the user-global exposure registry, acquire its
 `semantic-discovery-query/v1` provenance bytes for that registry:
 
 ~~~json
-{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-query/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"status":"whole_snapshot_discovery_query"}
+{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-query/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"status":"whole_snapshot_discovery_query"}
 ~~~
 
 Before the query, copy the complete physically selected corpus into a private,
@@ -125,7 +125,31 @@ copy and require every byte and path to match before querying. Run
 mutable sessions root. A copy or rewalk mismatch stops with
 `source_contaminated` before the semantic read.
 
-`query_fingerprint` binds the exact Seq query specification and snapshot
+The retained manifest is exact RFC 8785 `physical-corpus-snapshot/v1` bytes:
+
+~~~json
+{"entries":[{"relative_path_base64url":"<base64url>","sha256":"sha256:<hex>","source_format":"<adapter-format>","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"raw_root":"<canonical-absolute-root>","schema":"physical-corpus-snapshot/v1"}
+~~~
+
+Relative paths are unpadded RFC 4648 base64url of exact path bytes. Entries sort
+by decoded path bytes with unique paths; nested fingerprint arrays are sorted
+and duplicate-free; regular files only are admitted. The manifest covers every
+copied file exactly once, and its exact-byte SHA-256 is
+`corpus_snapshot_fingerprint`.
+
+Before copying any raw byte, create and fsync an owner-only cleanup marker
+outside the raw root with exact RFC 8785
+`{"raw_root":"<canonical-absolute-root>","schema":"raw-snapshot-cleanup/v1","snapshot_fingerprint":"sha256:<hex>"}`
+bytes. At capability preflight and before any new copy, enumerate this fixed
+private temporary namespace, validate every marker/root remains beneath it,
+delete each orphan raw root through the common removal gate, then delete its
+marker. On normal success delete the raw root before its marker. A crash at any
+point therefore leaves a discoverable cleanup obligation without retaining
+session contents in the marker. Explicitly authorized retention removes the
+marker only after its exact retained root and purpose are bound as source
+limitations.
+
+`query_spec_fingerprint` binds the exact Seq query specification and snapshot
 fingerprint. Both identity arrays are sorted, duplicate-free, and equal the
 complete identities recorded by that immutable snapshot. Group fingerprints
 remain query provenance; partition claims range only over individual source
@@ -140,7 +164,10 @@ discovery-only fallback before reading: keep `.partition-freeze.lock` through
 the semantic query, extract every newly visible stable alias from the complete
 result/source window, publish its `discovery_exposed` claim and marker, and
 revalidate the union before releasing the lock. A post-read alias absent from
-the locked union, or already consumed as holdout, is `source_contaminated`;
+the locked union is `source_contaminated`. An already consumed alias applies
+the same retirement-backed transition defined in Section 7 while the lock is
+still held: valid marker/successor evidence makes it permanently
+`discovery_exposed`; absent retirement evidence is `source_contaminated`.
 query success never retroactively establishes completeness.
 
 For each individual source identity, construct exact RFC 8785
@@ -174,6 +201,10 @@ Hash the query-provenance bytes and publish them at
 identity gate passes. Only then may the semantic read run. Every individual
 identity in the whole snapshot is therefore durably discovery-exposed before
 the semantic read, while no query record controls permanent claim identity.
+`query_record_fingerprint` is the SHA-256 of those complete exact record bytes
+and `<query-digest-hex>` is its suffix; it is distinct from the embedded
+query-spec fingerprint. Result records pair `query_ref` only with this record
+fingerprint and carry the spec fingerprint separately.
 
 Retain exact RFC 8785 `semantic-discovery-result/v1` bytes containing the query
 provenance ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
@@ -184,7 +215,7 @@ cannot later enter development or holdout. The later source-bundle
 by this pre-read record.
 
 ~~~json
-{"query_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/results/<result-digest-hex>.json","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
+{"query_record_fingerprint":"sha256:<hex>","query_ref":"semantic-discovery/queries/<query-digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","result_envelope_fingerprint":"sha256:<hex>","result_envelope_ref":"semantic-discovery/results/<result-digest-hex>.json","schema":"semantic-discovery-result/v1","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"semantic-discovery/snapshots/<snapshot-digest-hex>.json"}
 ~~~
 
 Those are the exact closed fields; all three pairs resolve exact retained bytes
@@ -616,7 +647,7 @@ After mounts and tool policy freeze but before actor instructions are
 delivered, the runner emits exact RFC 8785 `actor-readable-inventory/v1` bytes:
 
 ~~~json
-{"effect_policy_fingerprint":"sha256:<hex>","entries":[{"fingerprint":"sha256:<hex>","kind":"regular","mode":"100644","path":"<sandbox-relative-path>"},{"kind":"directory","mode":"040700","path":"<sandbox-relative-path>"},{"kind":"symlink","link_target_base64url":"<base64url>","path":"<sandbox-relative-path>"}],"readable_roots":["<sandbox-relative-path>"],"run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-readable-inventory/v1","tool_access_policy_fingerprint":"sha256:<hex>"}
+{"effect_policy_fingerprint":"sha256:<hex>","entries":[{"fingerprint":"sha256:<hex>","kind":"regular","metadata_fingerprint":"sha256:<hex>","mode":"100644","path":"<sandbox-relative-path>"},{"kind":"directory","metadata_fingerprint":"sha256:<hex>","mode":"040700","path":"<sandbox-relative-path>"},{"kind":"symlink","link_target_base64url":"<base64url>","metadata_fingerprint":"sha256:<hex>","path":"<sandbox-relative-path>"}],"metadata_observation_policy_fingerprint":"sha256:<hex>","readable_roots":["<sandbox-relative-path>"],"run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-readable-inventory/v1","tool_access_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 `entries` is the complete recursive `lstat` walk of every readable root after
@@ -629,6 +660,13 @@ the namespace unchanged for the actor lifetime. The inventory fingerprint is
 SHA-256 of those exact bytes. `tool_access_policy_fingerprint` equals the
 contract-owned `environment.tools.asset_fingerprint` repeated by the world;
 a runtime-generated substitute is invalid.
+Each `metadata_fingerprint` hashes the entry's actor-observable ownership,
+timestamps, inode/link semantics, ACLs, extended attributes, and platform stat
+projection under the bound `metadata-observation-policy/v1`. That policy is
+equal across arms and either virtualizes those observations to exact normalized
+values or proves the actor tool surface cannot observe them. A shell/stat-
+capable actor without normalization is ineligible; ambient metadata is never
+left unbound.
 `effect_policy_fingerprint` equals the chart's complete resolved effect-policy
 identity, the world/reset boundary, and the execution row; it covers filesystem,
 network, and external-effect authority independently of the tool manifest.
@@ -636,7 +674,7 @@ network, and external-effect authority independently of the tool manifest.
 The same runner then emits exact RFC 8785 `actor-access-proof/v1` bytes:
 
 ~~~json
-{"actor_context_fingerprint":"sha256:<hex>","actor_context_ref":"runs/<run-group-id>/actor-context/<run-id>.json","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
+{"actor_context_fingerprint":"sha256:<hex>","actor_context_ref":"runs/<run-group-id>/actor-context/<run-id>.json","actor_input_fingerprint":"sha256:<hex>","actor_process_opaque_id":"<runner-opaque-id>","actor_readable_inventory_fingerprint":"sha256:<hex>","actor_runner_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","metadata_observation_policy_fingerprint":"sha256:<hex>","run_id":"<run-id>","sandbox_instance_id":"<runner-opaque-id>","schema":"actor-access-proof/v1","status":"observed","tool_access_policy_fingerprint":"sha256:<hex>"}
 ~~~
 
 The proof is emitted only for the actual fresh process created inside that
@@ -686,7 +724,7 @@ validation artifact incomplete.
 
 `actor_context_ref` retains the exact RFC 8785 `actor-context/v1` bytes under
 the run directory, and `actor_context_fingerprint` hashes those bytes:
-`{"actor_input_message_indexes":[1],"messages":[{"content":"<exact-UTF-8>","role":"system"},{"content":"<exact-actor-input-UTF-8>","role":"user"}],"prompt_message_indexes":[0],"run_id":"<run-id>","schema":"actor-context/v1"}`.
+`{"actor_input_message_indexes":[2],"harness_instruction_message_indexes":[0],"messages":[{"content":"<exact-arm-harness-instructions-UTF-8>","role":"system"},{"content":"<exact-task-prompt-UTF-8>","role":"user"},{"content":"<exact-actor-input-UTF-8>","role":"user"}],"prompt_message_indexes":[1],"run_id":"<run-id>","schema":"actor-context/v1"}`.
 The ordered message array admits roles `system`, `developer`, `user`, and
 `assistant` and contains every delivered exact content value. The context includes system/developer instructions and
 any reused history; selecting and training runs require a fresh context with no
@@ -696,10 +734,14 @@ packet and SHA-256 of the exact UTF-8 content at
 message. Extra, missing, prepended, or reused messages
 invalidate the proof.
 `prompt_message_indexes` likewise has exactly one index and names the system or
-developer message whose exact UTF-8 content SHA-256 equals the chart's
+user message whose exact UTF-8 content SHA-256 equals the chart's
 `actor.prompt_fingerprint` and whose bytes equal `actor.prompt_ref`. Prompt and
 actor-input indexes are distinct; omitted or substituted prompt bytes make the
 run `invalid_environment` even when both arms receive the same context.
+`harness_instruction_message_indexes` names every system/developer instruction
+message. Those bytes come from the frozen arm harness; paired context validation
+requires equality except exact message deltas derived from the selected harness
+factor. Task prompt and actor input are never factor-owned deltas.
 
 Run the forbidden-ref and excerpt scan over every byte in the complete
 actor-readable inventory, including harness, memory, tool fixtures, and mounted
@@ -1143,7 +1185,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_effects_fingerprint":"sha256:<hex>","generation_effects_ref":"harnesses/candidates/<candidate-id>/generation-effects.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_target_fingerprint":null,"holdout_target_ref":null,"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
+{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_effects_fingerprint":"sha256:<hex>","generation_effects_ref":"harnesses/candidates/<candidate-id>/generation-effects.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_target_fingerprint":null,"holdout_target_ref":null,"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_runtime_observation_fingerprint":"sha256:<hex>","optimizer_runtime_observation_ref":"harnesses/candidates/<candidate-id>/optimizer-runtime-observation.json","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","pending_ref":"harnesses/candidates/<candidate-id>/generation-intents/<generation-attempt-id>.json","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/non-holdout-v1","status":"completed"}
 ~~~
 
 The displayed payload is the exact non-holdout variant. The exact holdout
@@ -1182,6 +1224,12 @@ proof cannot be reused across attempts even when candidate and cycle IDs match.
 the optimizer context, readable input roots, tool observations, and writable
 output roots contain no holdout semantics; it is a result of the retained
 access and leakage evidence, not a reviewer attestation.
+The optimizer runtime-observation pair resolves exact RFC 8785
+`optimizer-runtime-observation/v1` bytes:
+`{"fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","model_runtime_configuration_fingerprint":"sha256:<hex>","observed_runtime_config":{},"optimizer_process_opaque_id":"<runner-opaque-id>","runner":{"binary_sha256":"sha256:<hex>","name":"<name>","version":"<version>"},"sandbox_instance_id":"<runner-opaque-id>","schema":"optimizer-runtime-observation/v1"}`.
+The runner observes these values from the actual fresh optimizer process; they
+equal the frozen model/runtime asset, access proof, context, attempt, and
+sandbox. Requested-only or copied runtime evidence is `holdout_contaminated`.
 `optimizer_context_ref` retains the exact RFC 8785 bytes and
 `optimizer_context_fingerprint` hashes them:
 `{"authorized_input_messages":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","message_index":1}],"fresh_context_id":"<runner-opaque-id>","messages":[{"content":"<exact-optimizer-policy-UTF-8>","role":"system"},{"content":"<authorized-input-UTF-8>","role":"user"}],"optimizer_policy_message_indexes":[0],"schema":"optimizer-context/v1"}`
@@ -1403,7 +1451,7 @@ After generation and both complete clear leakage reviews, construct the exact
 RFC 8785 clear bytes below:
 
 ~~~json
-{"candidate_generation_evidence_closure_fingerprint":"sha256:<hex>","candidate_generation_evidence_closure_ref":"optimizer-attempts/<pending-digest-hex>/closure.json","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"optimizer-cleared/v1","source_identity_fingerprints":["sha256:<hex>"]}
+{"candidate_generation_access_proof_fingerprint":"sha256:<hex>","candidate_generation_evidence_closure_fingerprint":"sha256:<hex>","candidate_generation_evidence_closure_ref":"optimizer-attempts/<pending-digest-hex>/closure.json","candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"optimizer-cleared/v1","source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
 A clear writer recursively copies the access proof, contexts, rendered policy,
@@ -1444,6 +1492,11 @@ retry or another candidate cannot clear it, so crashes fail closed. On
 `optimizer_exposed` partition claim and then return `holdout_contaminated`.
 Pending and cleared markers are global evidence, not a new store or campaign
 protocol, and are never hidden in an atlas-local namespace.
+
+The clear marker's access-proof and candidate-harness fingerprints equal the
+copied closure assets. Reservation, candidate metadata, and the final root entry
+repeat those exact fingerprints; substituting a later proof or harness under
+the same administrative IDs is `holdout_contaminated`.
 
 Use holdout only after candidate fingerprints freeze. An active holdout never
 enters training data. When deliberately consumed, retire it from holdout and
@@ -1509,7 +1562,13 @@ Before every selecting run, acquire `.partition-freeze.lock`, then the
 retirement-index update lock in that fixed global order. Every path that needs
 both locks uses this order and releases them in reverse. Revalidate the exact global
 claim bytes against the root snapshots, resolve the current pointer, and require
-its target snapshot fingerprint to equal the root's bound snapshot. While still
+its target snapshot fingerprint to equal the root's bound snapshot or admit one
+exact `retirement-snapshot-disjoint-advance/v1` witness. That witness proves the
+current index is an append-only extension, every prior marker is byte-identical,
+and every added marker's source groups/identities are disjoint from the active
+reservation and selected cohort. Any overlap, removal, or changed prior marker
+makes the root stale; a disjoint completed cycle does not abort an active one.
+While still
 holding both locks, enumerate every regular, non-symlink
 `optimizer-intent-sentinels/<holdout-key>/*.json`. Each
 sentinel's pending fingerprint must resolve one cohort pending intent and the
@@ -1546,7 +1605,7 @@ While holding the retirement-index lock, write one run-group-local RFC 8785
 `partition-validation/v1` artifact with exactly:
 
 ~~~json
-{"current_pointer_snapshot_fingerprint":"sha256:<hex>","current_pointer_snapshot_ref":"runs/<run-group-id>/current-pointer-snapshot.json","exposure_registry_id":"sha256:<hex>","resolved_snapshot_fingerprint":"sha256:<hex>","resolved_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","root_contract_fingerprint":"sha256:<hex>","root_snapshot_fingerprint":"sha256:<hex>","run_group_id":"<run-group-id>","schema":"partition-validation/v1","storage_domain_id":"sha256:<hex>"}
+{"current_pointer_snapshot_fingerprint":"sha256:<hex>","current_pointer_snapshot_ref":"runs/<run-group-id>/current-pointer-snapshot.json","disjoint_advance_fingerprint":null,"disjoint_advance_ref":null,"exposure_registry_id":"sha256:<hex>","resolved_snapshot_fingerprint":"sha256:<hex>","resolved_snapshot_ref":"holdout-retirements/snapshots/<digest-hex>.json","root_contract_fingerprint":"sha256:<hex>","root_snapshot_fingerprint":"sha256:<hex>","run_group_id":"<run-group-id>","schema":"partition-validation/v1","storage_domain_id":"sha256:<hex>"}
 ~~~
 
 The writer copies the exact observed `holdout-retirements/current.json` bytes to
@@ -1556,7 +1615,10 @@ pointer bytes and requires their target ref/fingerprint to equal the root-bound
 snapshot before emitting the artifact. Later live-pointer replacement cannot
 change sealed run evidence. `resolved_snapshot_fingerprint`,
 `root_snapshot_fingerprint`, and the EER `partition_snapshot_fingerprint` are
-identical. Store it
+identical when the pointer has not advanced. The disjoint-advance pair is null
+in that case and non-null exactly for the admitted monotonic extension; then
+`resolved_snapshot_fingerprint` is current while `root_snapshot_fingerprint`
+remains the root-bound predecessor. Store it
 at `runs/<run-group-id>/partition-validation.json`; runs and EER bind that ref
 and exact fingerprint. This runtime proof is distinct from the static
 `partition-claim-validation/v1` asset.
@@ -1683,8 +1745,9 @@ cannot be excluded for the candidate/optimizer contexts in scope, stop with
 creatable registry is not unavailable. Any holdout, including a designed
 holdout, requires the registry. A pure designed root with no holdout may proceed
 without it.
-For a source identity that existed or may have been inspected before this
-registry was created, first bind exact RFC 8785
+For any source identity whose semantic exposure outside this registry cannot be
+excluded—including pre-registry sources and newer sessions reachable through
+ordinary Seq or file access—first bind exact RFC 8785
 `pre-registry-exposure-attestation/v1` bytes:
 
 ~~~json
@@ -1701,9 +1764,12 @@ outcome, or evaluator interpretation was used to author, tune, choose, or review
 the frozen baseline harness. The
 attestation ref/fingerprint is evaluator-only and bound by the pre-candidate
 policy and final root. False, unknown, incomplete, missing, or self-authored
-legacy exposure evidence makes every affected legacy source ineligible for
+outside-registry exposure evidence makes every affected source ineligible for
 holdout; it may be discovery/development only. Creating a new registry never
 resets exposure history.
+The attestation may be omitted only when owner evidence proves every semantic
+read since source creation was mediated by this exact registry; source creation
+time alone is never that proof.
 Claims and canonical
 locks bind the exposure-registry ID; reservations, partition validations,
 selecting runs, and reports bind both the registry and storage-domain IDs. The
@@ -1894,13 +1960,16 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
 
 The arrays are sorted by their displayed identities and duplicate-free. The
 top-level factor-selection pair is mandatory for every paired comparison,
 whether or not a holdout is selected, and equals the root partition-policy
-pair. The semantic-evaluator pair equals every semantic leakage review in the
+pair. The provenance-derivation pair is frozen before candidate generation,
+repeated by the final root comparison policy, and equals every leakage review;
+post-output derivation selection is `evaluator_contaminated`. The optional
+semantic-evaluator pair equals every semantic leakage review in the
 cycle.
 `candidate_generation_commitments` has exactly `candidate_budget` rows, keyed
 by candidate ID, each with exactly the displayed
@@ -2386,9 +2455,13 @@ recommendation. Do not claim a causal mechanism from an uncontrolled comparison.
 
 ## 11. Export
 
-Emit chart-aware EER-v1 and runs.jsonl as specified in eer-v1.md. `compare`
-additionally emits one comparison.json per baseline/candidate pair; standalone
-`run` omits comparison artifacts and uses an independent run-group directory.
+Originating `run`, `mutate`, and `compare` modes emit chart-aware EER-v1 and
+runs.jsonl as specified in eer-v1.md. `compare` additionally emits one
+comparison.json per baseline/candidate pair; standalone `run` omits comparison
+artifacts and uses an independent run-group directory. Explicit deferred
+`mode: export` validates and binds that sealed originating EER/runs pair, then
+emits only eligible datasets and `emulator-export-manifest/v1`; it never creates
+or rewrites EER or runs evidence.
 For compare, `<run-group-id>` is the comparison ID; for standalone run it is
 the independent `run_group_id` recorded in every row and EER execution.
 
