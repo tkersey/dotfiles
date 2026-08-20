@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-law-authority-v2"
+      "source_fingerprint": "review-fold-law-authority-v3"
     },
     "triggers": [
       {
@@ -172,12 +172,14 @@
           "different detection surfaces may remain one class",
           "observed witnesses do not define the complete family",
           "predicted siblings are distinguished from observed examples",
-          "recurrence uses exact available prior evidence"
+          "recurrence uses exact available prior evidence",
+          "incomplete historical evidence yields unknown recurrence"
         ],
         "failure_signals": [
           "file or reviewer identity defines a class",
           "duplicates count as independent witnesses",
           "newly found siblings are called prior predictions",
+          "absence in incomplete history is labeled first-observed",
           "Review Fold selects architecture"
         ],
         "rationale": "Actuating receives bounded observational evidence rather than a retained class register."
@@ -193,12 +195,13 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "active eliminated-claim excerpt when available",
+          "active eliminated-claim excerpt with family, validity horizon, and reconsideration falsifier when available",
           "current law authority and applicability",
-          "same-law/different-law/unknown relation"
+          "same-claim, same-law-different-family, outside-horizon, different-law, or unknown relation with exact basis"
         ],
         "success_signals": [
-          "current entailed same-law relation is reported",
+          "current entailed same-claim relation is reported only inside the declared validity horizon",
+          "same-law disjoint families do not falsify the scoped claim",
           "strengthening does not retroactively falsify the Goal",
           "new requirement requests Goal reopening",
           "Actuating retains revocation authority"
@@ -206,7 +209,9 @@
         "failure_signals": [
           "Review Fold revokes or preserves the theory itself",
           "post-elimination relation is inferred from memory",
-          "different-law finding is merged into the old family"
+          "different-law finding is merged into the old family",
+          "same law alone revokes a family-scoped claim",
+          "out-of-horizon evidence is treated as falsifying the scoped elimination claim"
         ],
         "rationale": "Review Fold reports the falsifier relation; Actuating owns its architectural consequence."
       }

@@ -38,12 +38,16 @@ underdetermined to blocked.
 For each observational class report law, provenance, law authority, owner set,
 discrepancy, witnesses, applicability, family hypothesis, independence, and
 recurrence. Observed examples do not define the complete family. Distinguish
-predicted siblings from examples discovered later.
+predicted siblings from examples discovered later. If the evidence horizon is
+incomplete for recurrence, report unknown rather than first-observed.
 
 When an active eliminated claim is supplied, report
-post_elimination_relation = same-law | different-law | none | unknown. Only a
-currently applicable entailed finding may be same-law pressure under the current
-Goal. Do not revoke or retain the claim; Actuating owns that decision.
+post_elimination_relation = same-claim | same-law-different-family |
+outside-horizon | different-law | none | unknown, with an exact basis. Report
+same-claim only when a currently applicable entailed witness is inside the
+claim's validity horizon and belongs to or satisfies the reconsideration
+falsifier of the claimed family. Do not revoke or retain the claim; Actuating
+owns that decision.
 
 Return one Review Fold bound to the exact current head. Never select a family
 partition, admission cut, owner, repair, architecture, review credit,

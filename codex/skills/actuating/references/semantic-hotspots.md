@@ -34,7 +34,7 @@ Detection surface
   where incorrectness became visible
 
 Counterexample theory
-  Theta = (Omega, Alpha, L, Phi, A, O, C, Q)
+  Theta = (Omega, Alpha, L, Phi, A, O, C, Vh, Q)
 ```
 
 Only currently applicable `entailed` evidence creates automatic pressure on the
@@ -121,7 +121,8 @@ theory is:
 - witness-enumerating;
 - representation-bound;
 - violation-erasing;
-- contradicted by a same-law witness;
+- contradicted by a witness that falsifies the family claim inside its validity
+  horizon;
 - captive to the incumbent owner or topology; or
 - one of several materially different live explanations.
 
@@ -185,8 +186,8 @@ that cannot predict or reflect the witness.
 
 ## Post-elimination witness
 
-When a current `entailed` same-law witness arrives after `eliminated`, stop this
-module's normal repair path and read
+When a current `entailed` witness falsifies an eliminated family inside its
+validity horizon, stop this module's normal repair path and read
 [post-elimination-falsification.md](post-elimination-falsification.md).
 
 That witness revokes the prior elimination lease. It must be localized to a
@@ -216,7 +217,8 @@ Passing repaired examples alone is not family exclusion.
   predecessor chain, or durable Actuating state.
 - Do not define a family as only observed examples.
 - Do not let review prose silently create a new Goal law.
-- Do not preserve elimination after a current entailed same-law witness.
+- Do not preserve elimination after a current entailed witness falsifies its
+  exact family claim inside the validity horizon.
 - Do not patch under a revoked elimination lease.
 - Do not call newly discovered siblings prior predictions.
 - Do not conflate detection with admission, conservative restriction with

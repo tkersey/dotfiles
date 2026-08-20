@@ -40,9 +40,10 @@ realization repair.
 For an `entailed` boundary-relevant witness, derive:
 
 ```text
-Theta = (Omega, Alpha, L, Phi, A, O, C, Q)
+Theta = (Omega, Alpha, L, Phi, A, O, C, Vh, Q)
 comparison universe U
 admitted behavior B
+validity horizon Vh
 family-theory falsifier
 soundness and Goal-adequacy evidence
 diagnostic-exactness status
@@ -74,8 +75,8 @@ A convenient place for another validator is not closure.
 
 ## Post-elimination back-edge
 
-When a current `entailed` same-law witness follows `eliminated`, the normal
-realization path is disabled. Read
+When a current `entailed` witness falsifies the eliminated family inside its
+validity horizon, the normal realization path is disabled. Read
 [post-elimination-falsification.md](post-elimination-falsification.md).
 
 Before mutation, Actuating must:

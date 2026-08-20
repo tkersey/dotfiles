@@ -84,7 +84,13 @@ tr '\n' ' ' < "$skill_root/references/semantic-hotspots.md" |
 
 grep -F 'law_authority: entailed | strengthening | preference' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
-grep -F 'post_elimination_relation: none | same-law | different-law | unknown' \
+grep -F 'post_elimination_relation: none | same-claim |' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'same-law-different-family | outside-horizon | different-law | unknown' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'recurrence.status = unknown' \
+  "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+grep -F 'validity_horizon:' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 grep -F 'reviewer consensus as Goal authority' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
@@ -107,7 +113,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-post-elimination-falsifier-v5" and
+    "actuating-post-elimination-falsifier-v6" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
@@ -120,7 +126,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "review-fold-law-authority-v2" and
+    "review-fold-law-authority-v3" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("RF-LAW-AUTHORITY")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |

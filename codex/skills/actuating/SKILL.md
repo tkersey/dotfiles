@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Treat bugs as witnessed counterexamples to attributed Goal laws, synthesize sound counterexample theories and repository-native architectures, and make every post-elimination same-law witness revoke the prior elimination lease before another mutation. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store and invokes no Ledger gate."
+description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Treat bugs as witnessed counterexamples to attributed Goal laws, synthesize sound counterexample theories and repository-native architectures, and make every post-elimination witness that falsifies the active claim revoke its lease before another mutation. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store and invokes no Ledger gate."
 ---
 
 # Actuating
@@ -132,7 +132,7 @@ For boundary-relevant bugs, read
 [semantic-hotspots.md](references/semantic-hotspots.md). A selected theory is:
 
 ```text
-Theta = (Omega, Alpha, L, Phi, A, O, C, Q)
+Theta = (Omega, Alpha, L, Phi, A, O, C, Vh, Q)
 ```
 
 where:
@@ -145,11 +145,13 @@ Phi    abstract invalidity predicate or generator
 A      sanctioned admission semantics
 O      current and candidate owner model
 C      one admission frontier or a minimal admission cut
+Vh     validity horizon over version, schema, environment, and time
 Q      weakest supporting claim strength
 ```
 
 For candidate `K`, comparison universe `U_K`, admitted behavior
-`B_K subset U_K`, and `alpha_K : U_K -> Omega`, concrete safety requires:
+`B_K subset U_K`, and `alpha_K : U_K -> Omega`, concrete safety requires over
+the declared validity horizon `Vh`:
 
 ```text
 Totality
@@ -185,10 +187,12 @@ change.
 
 `eliminated` is a head- and evidence-relative claim, not stored truth.
 
-A currently applicable `entailed` witness to the same law discovered after
-Actuating declared the family `eliminated` **revokes that elimination
-immediately**. It is not another realization class under the unchanged
-elimination narrative.
+A currently applicable `entailed` witness that belongs to or satisfies the
+reconsideration falsifier of the eliminated family, within its declared validity
+horizon, **revokes that elimination immediately**. A same-law witness from an
+established disjoint family or outside that horizon does not falsify the scoped
+claim. Unknown family or horizon relation is `unresolved`, not revocation or
+retention by assumption.
 
 Before any further mutation, read
 [post-elimination-falsification.md](references/post-elimination-falsification.md)
@@ -197,6 +201,7 @@ and identify the failed premise:
 ```text
 Goal/law authority
 current applicability
+validity horizon Vh
 Omega / Alpha
 Phi or family partition
 comparison universe U / admitted behavior B
@@ -217,6 +222,7 @@ revise-admission
 revise-interpretation
 revise-owner
 reopen-goal
+follow-up
 reject-finding
 unresolved
 ```
@@ -289,11 +295,12 @@ Bound head / Goal / incumbent / falsified laws
 Witness provenance / applicability / law authority / detection surface
 Observational class
 Theta_0 / Metanoetic challenger / architectonic disposition
-Omega / Alpha / Phi / A / O / C / Q
+Omega / Alpha / Phi / A / O / C / Vh / Q
 Safety adequacy / Goal adequacy / diagnostic exactness
 Selected target / preserve / introduce / retire
 Current elimination lease, if any:
-  issued head / theory / family / proof / claim strength
+  issued head / theory / family / validity horizon / reconsideration falsifier
+  proof / claim strength
   predicted siblings / probes
 Post-elimination falsifier, if any:
   witness / failed premise / lease disposition
@@ -389,8 +396,8 @@ publication, and exact-head review convergence.
   migration layer.
 - Do not map a finding directly to a patch.
 - Do not let review author a new Goal silently.
-- Do not preserve an `eliminated` disposition after a current entailed same-law
-  counterexample.
+- Do not preserve an `eliminated` disposition after a current entailed witness
+  falsifies the exact family claim inside its validity horizon.
 - Do not mutate under a revoked lease before failed-premise localization.
 - Do not reissue elimination from repaired examples alone.
 - Do not call sibling discovery after the fact a prior prediction.

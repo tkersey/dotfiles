@@ -1,9 +1,11 @@
 {
-  "schema": "actuating-post-elimination-scenarios/v1",
+  "schema": "actuating-post-elimination-scenarios/v2",
   "defaults": {
     "law_authority": "entailed",
     "prior_eliminated": true,
     "same_law": true,
+    "claim_family_relation": "falsifies-claim",
+    "validity_horizon_relation": "inside",
     "current_applicable": true,
     "premise_failure": "unknown",
     "witness_within_phi": false,
@@ -198,6 +200,58 @@
       }
     },
     {
+      "id": "same-law-different-family",
+      "inputs": {
+        "claim_family_relation": "different-family",
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "not-applicable",
+        "next": "normal-reconciliation",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "same-law-unknown-family",
+      "inputs": {
+        "claim_family_relation": "unknown",
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "unresolved",
+        "next": "blocked",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "outside-validity-horizon",
+      "inputs": {
+        "validity_horizon_relation": "outside",
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "not-applicable",
+        "next": "normal-reconciliation",
+        "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "unknown-validity-horizon",
+      "inputs": {
+        "validity_horizon_relation": "unknown",
+        "premise_failure": "none"
+      },
+      "expected": {
+        "authority": "counterexample",
+        "lease": "unresolved",
+        "next": "blocked",
+        "reissue": "not-applicable"
+      }
+    },
+    {
       "id": "strengthening-after-elimination",
       "inputs": {
         "law_authority": "strengthening",
@@ -221,6 +275,24 @@
         "lease": "non-authoritative",
         "next": "reopen-goal",
         "reissue": "not-applicable"
+      }
+    },
+    {
+      "id": "reopened-authority-cannot-reissue",
+      "inputs": {
+        "law_authority": "new-requirement",
+        "premise_failure": "authority",
+        "reissue_attempted": true,
+        "successor_theory_restated": true,
+        "family_level_proof": true,
+        "sibling_prediction_status": "stated",
+        "sibling_probes_passed": true
+      },
+      "expected": {
+        "authority": "reopen-goal",
+        "lease": "non-authoritative",
+        "next": "reopen-goal",
+        "reissue": "ineligible"
       }
     },
     {
