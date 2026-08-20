@@ -140,6 +140,10 @@ not runtime provisioning.
 Author or validate the contract closure when needed, then materialize its
 executable world, reset, tool, fixture, and evaluator assets. Do not edit source
 repositories or target skills without separate authority.
+Before every create or update, resolve the destination against
+`authorized_files.allowed` and `authorized_files.forbidden`. A destination not
+admitted by the allowlist or matched by a forbidden path is out of authority
+and MUST NOT be materialized, including world, report, and dataset artifacts.
 
 ### run
 

@@ -202,6 +202,7 @@ emulator_execution_report:
       reset_result_fingerprint:
       effect_policy_fingerprint:
       tool_access_policy_fingerprint:
+      actor_input_ref:
       actor_input_fingerprint:
       actor_context_ref:
       actor_context_fingerprint:
@@ -285,8 +286,10 @@ For `run` and `mutate`, primary execution rows equal the complete
 `comparison_policy.single_arm_cohort` expansion. `run` has null mutation fields
 and empty per-chart `mutation_assignments`; `mutate` rows cover every selected
 chart/repeat and that chart entry's case/ref/fingerprint tuple exactly once.
-Each execution repeats the cohort's assignment ref/fingerprint and its inline
-`mutation_assignment` equals those resolved exact bytes. Case IDs never
+Each execution's archived assignment ref has the cohort ref as its exact
+closure-relative suffix, repeats the cohort fingerprint, and resolves the same
+exact bytes; the required `roots/<root-digest-hex>/` prefix is not part of
+cohort identity. Its inline `mutation_assignment` equals those bytes. Case IDs never
 cross chart entries. Missing, extra, or duplicate tuples are
 `invalid_environment`.
 Every primary row has `run_purpose: primary` and null
@@ -377,7 +380,8 @@ chart/repeat tuple in the frozen cohort. It is created only after those runtime
 inventories exist and is not part of the root closure or static factor-delta
 validation. Every pair permits only the root-qualified paths already authorized
 by the frozen factor delta; missing, extra, or non-passing pairs are
-`comparison_drift`.
+`comparison_drift`, except that the closed `unavailable_prestart` row below is
+the sole admitted non-pass variant.
 Its derivation-implementation ref/fingerprint equals the evaluator-only asset
 frozen before candidate generation. A pre-start execution still has one
 `unavailable_prestart` pair row with the closed null/started fields defined by
@@ -568,6 +572,7 @@ and leaves comparison-only fields null:
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
   "tool_access_policy_fingerprint": "sha256:...",
+  "actor_input_ref": "roots/<root-digest-hex>/actors/chart-....md",
   "actor_input_fingerprint": "sha256:...",
   "actor_context_ref": "runs/run-group-.../actor-context/run-....json",
   "actor_context_fingerprint": "sha256:...",

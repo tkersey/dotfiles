@@ -752,7 +752,10 @@ Before review, materialize every exact surface preimage at the content-addressed
 The semantic evaluator resolves and inspects those bytes rather than trusting a
 hash-only assertion. Equal content may reuse one surface ref but never one
 coverage occurrence. `occurrence_id` hashes exact RFC 8785 bytes of
-`{"inventory_entry_ref":"<ref-or-message-index>","surface_fingerprint":"sha256:<hex>","surface_kind":"<kind>"}`.
+`{"execution_id":"<run-or-generation-attempt-id>","inventory_entry_ref":"<complete-ref-or-message-locus>","surface_fingerprint":"sha256:<hex>","surface_kind":"<kind>"}`.
+The locus includes the complete inventory ref plus pointer or actor-context ref
+plus message index; an index alone is invalid. Equal content in distinct arms
+or repeats therefore retains distinct occurrence and derivation evidence.
 Coverage sorts by `occurrence_id` and contains exactly one row for every
 required occurrence. `inventory_entry_ref` points to its inventory row, message
 index, or trace-event pointer. `provenance_classes` is the sorted nonempty
@@ -810,7 +813,7 @@ the frozen semantic evaluator, but it neither fabricates nor claims comparison
 against a holdout corpus.
 
 The target is closed exact RFC 8785 bytes:
-`{"charts":[{"actor_visible_state_fingerprint":"sha256:<hex>","actor_visible_state_ref":"actors/<chart-id>.md","chart_fingerprint":"sha256:<hex>","chart_semantics_fingerprint":"sha256:<hex>","chart_semantics_ref":"charts/<chart-id>.yaml","correction_fingerprint":"sha256:<hex>","correction_ref":"source/<chart-id>/correction.json","hidden_action_fingerprint":"sha256:<hex>","hidden_action_ref":"source/<chart-id>/historical-action.json","hidden_evaluator_fingerprint":"sha256:<hex>","hidden_evaluator_ref":"evaluators/<chart-id>.json","outcome_projection_fingerprint":"sha256:<hex>","outcome_projection_ref":"source/<chart-id>/outcome.json","prompt_fingerprint":"sha256:<hex>","prompt_ref":"actors/<chart-id>-prompt.md","recovery_fingerprint":"sha256:<hex>","recovery_ref":"source/<chart-id>/recovery.json","source_byte_evidence":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}],"target_kind":"historical_correction"}],"schema":"holdout-semantic-target/v1"}`.
+`{"charts":[{"actor_visible_state_fingerprint":"sha256:<hex>","actor_visible_state_ref":"actors/<chart-id>.md","chart_fingerprint":"sha256:<hex>","chart_semantics_fingerprint":"sha256:<hex>","chart_semantics_ref":"charts/<chart-id>.yaml","correction_fingerprint":"sha256:<hex>","correction_ref":"source/<chart-id>/correction.json","hidden_action_fingerprint":"<rejected_historical_action_fingerprint>","hidden_action_ref":"<rejected_historical_action_ref>","hidden_evaluator_fingerprint":"sha256:<hex>","hidden_evaluator_ref":"evaluators/<chart-id>.json","outcome_projection_fingerprint":"sha256:<hex>","outcome_projection_ref":"source/<chart-id>/outcome.json","prompt_fingerprint":"sha256:<hex>","prompt_ref":"actors/<chart-id>-prompt.md","recovery_fingerprint":"sha256:<hex>","recovery_ref":"source/<chart-id>/recovery.json","source_byte_evidence":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}],"target_kind":"historical_correction"}],"schema":"holdout-semantic-target/v1"}`.
 Charts sort by fingerprint and equal the complete selected holdout chart set;
 every nested pair resolves exact closure bytes and source evidence arrays are
 sorted and duplicate-free. No omitted selected chart or hidden projection can
@@ -818,7 +821,9 @@ validate.
 Each chart entry is a tagged union. Actor-visible state, prompt, chart
 semantics, chart fingerprint, and the exact hidden evaluator pair are non-null
 in every variant. `target_kind: historical_correction` uses the displayed
-non-null historical pairs and its complete source-evidence array.
+non-null historical pairs and its complete source-evidence array. Its hidden-
+action pair is copied exactly from the chart's singular rejected historical
+action fields and never synthesized from a conventional path.
 `target_kind: source_no_history` requires hidden-action, correction, recovery,
 and outcome pairs null while retaining a nonempty complete source-evidence
 array. `target_kind: designed_no_history` requires those four pairs null and
@@ -1330,15 +1335,20 @@ under the private global attempt directory. It emits exact RFC 8785
 `candidate-generation-evidence-closure/v1` bytes:
 
 ~~~json
-{"candidate_id":"<candidate-id>","closure_inventory":[{"fingerprint":"sha256:<hex>","ref":"access-proof.json","role":"access_proof"}],"cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"candidate-generation-evidence-closure/v1","source_identity_fingerprints":["sha256:<hex>"]}
+{"candidate_id":"<candidate-id>","closure_inventory":[{"dependency_kind":null,"fingerprint":"sha256:<hex>","ref":"access-proof.json","role":"access_proof"}],"cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"candidate-generation-evidence-closure/v1","source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
 The exact top-level fields are those displayed. `closure_inventory` is sorted
-by `(role, ref)`, has unique refs, and admits only `access_proof`,
+by `(role, ref)`, has unique refs, and admits `access_proof`,
 `candidate_output`, `generation_effect`, `holdout_target`, `leakage_review`,
-`leakage_surface`, `optimizer_context`, `optimizer_input`, `optimizer_policy`,
+`leakage_surface`, `derivation_evidence`, `optimizer_context`, `optimizer_input`, `optimizer_policy`,
 `pre_candidate_policy`, `tool_payload`, `tool_policy`, and `tool_trace`.
-It contains every copied asset exactly once under its semantic role. The source
+Any recursively referenced asset without a primary role uses `dependency` and
+sets nonempty `dependency_kind` to the referring field name; primary entries
+set it null. This covers comparison implementations, generation runners,
+factor selection, partition/selection/retirement evidence, manifests, and
+evaluator assets without adding a role per field. Derivation-evidence assets
+and their dependencies are copied and verified. The inventory contains every copied asset exactly once. The source
 identity array is sorted and duplicate-free and equals both pending and clear
 records. Every recursive ref
 resolves within that immutable directory; no atlas-local ref remains.
