@@ -797,6 +797,10 @@ asset fingerprint.
 In both routes, `mutation_case_id` is SHA-256 of
 `"emulator-mutation-case/v1" NUL chart_fingerprint NUL mutation_generator_fingerprint NUL`
 followed by the exact assignment bytes.
+The `mutation_case_id` field is the textual `sha256:` prefix followed by the 64
+lowercase hexadecimal digest characters. A `<case-id>` filename component uses
+only that validated 64-character lowercase hex suffix, never the prefix; raw
+digest bytes and uppercase hex are invalid.
 The execution row's assignment and chart fingerprint therefore recompute the
 case ID, kind, preserved laws, and violated laws without another authority
 field. Missing, conflicting, non-total, or out-of-chart case authority makes
