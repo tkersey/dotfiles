@@ -21,6 +21,12 @@ fixture="$skill_root/tests/fixtures/post-elimination-scenarios.json"
       "not-applicable"
     elif authority != "counterexample" then
       "non-authoritative"
+    elif .inputs.validity_horizon_relation == "outside" or
+         .inputs.claim_family_relation == "different-family" then
+      "not-applicable"
+    elif .inputs.validity_horizon_relation == "unknown" or
+         .inputs.claim_family_relation == "unknown" then
+      "unresolved"
     elif .inputs.premise_failure == "realization" or
          .inputs.premise_failure == "proof" then
       if .inputs.witness_within_phi == true and
@@ -48,6 +54,7 @@ fixture="$skill_root/tests/fixtures/post-elimination-scenarios.json"
     elif lease == "retain-theory-reprove" and
          .inputs.premise_failure == "realization" then "repair-realization"
     elif lease == "retain-theory-reprove" then "rebuild-proof"
+    elif lease == "reopen-goal" then "reopen-goal"
     elif (lease | startswith("revise-")) or lease == "split-theory" then
       "recompile-theory"
     else "blocked"
@@ -57,7 +64,7 @@ fixture="$skill_root/tests/fixtures/post-elimination-scenarios.json"
     if .inputs.reissue_attempted != true then "not-applicable"
     elif authority != "counterexample" then "ineligible"
     elif lease == "unresolved" or lease == "non-authoritative" or
-         lease == "not-applicable" then "ineligible"
+         lease == "not-applicable" or lease == "reopen-goal" then "ineligible"
     elif .inputs.successor_theory_restated != true or
          .inputs.family_level_proof != true or
          .inputs.repaired_examples_only == true then "ineligible"
@@ -70,7 +77,7 @@ fixture="$skill_root/tests/fixtures/post-elimination-scenarios.json"
 
   .defaults as $defaults |
   .scenarios |= map(.inputs = ($defaults * .inputs)) |
-  .schema == "actuating-post-elimination-scenarios/v1" and
+  .schema == "actuating-post-elimination-scenarios/v2" and
   (.scenarios | length) >= 20 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[];
@@ -81,6 +88,11 @@ fixture="$skill_root/tests/fixtures/post-elimination-scenarios.json"
       ["none", "realization", "proof", "theory", "theory-split",
        "admission", "interpretation", "owner", "authority", "unknown"] |
       index($v) != null) and
+    (.inputs.claim_family_relation as $v |
+      ["falsifies-claim", "different-family", "unknown"] |
+      index($v) != null) and
+    (.inputs.validity_horizon_relation as $v |
+      ["inside", "outside", "unknown"] | index($v) != null) and
     (.inputs.sibling_prediction_status as $v |
       ["stated", "exhaustive", "absent", "unknown"] | index($v) != null) and
     authority == .expected.authority and
@@ -105,7 +117,19 @@ fixture="$skill_root/tests/fixtures/post-elimination-scenarios.json"
     .expected.reissue == "eligible") and
   any(.scenarios[];
     .id == "strengthening-after-elimination" and
-    .expected.lease == "non-authoritative")
+    .expected.lease == "non-authoritative") and
+  any(.scenarios[];
+    .id == "same-law-different-family" and
+    .expected.lease == "not-applicable") and
+  any(.scenarios[];
+    .id == "outside-validity-horizon" and
+    .expected.lease == "not-applicable") and
+  any(.scenarios[];
+    .id == "unknown-validity-horizon" and
+    .expected.lease == "unresolved") and
+  any(.scenarios[];
+    .id == "reopened-authority-cannot-reissue" and
+    .expected.reissue == "ineligible")
 ' "$fixture" >/dev/null
 
 echo "actuating post-elimination scenarios: pass"

@@ -41,9 +41,10 @@ underdetermined current obligation.
 ## Elimination lease
 
 `eliminated` is a revocable claim over the current theory, architecture, proof,
-and evidence horizon.
+family, and explicit validity horizon.
 
-A current `entailed` same-law witness after elimination:
+A current `entailed` witness that falsifies the eliminated family inside its
+validity horizon:
 
 ```text
 revokes the lease
@@ -82,7 +83,7 @@ failed premise identified
 successor theory/proof restated
 prior lease explicitly superseded
 new falsifier stated
-unpredicted same-law siblings treated as theory evidence
+unpredicted same-claim siblings treated as theory evidence
 ```
 
 ## Local implementation
@@ -153,7 +154,7 @@ head changed
 new finding
   -> Review Fold and authority classification
 
-post-elimination same-law witness
+post-elimination same-claim falsifier
   -> revoke lease and localize failed premise
 
 theory/proof falsifier established

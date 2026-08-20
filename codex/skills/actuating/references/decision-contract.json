@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-post-elimination-falsifier-v5"
+      "source_fingerprint": "actuating-post-elimination-falsifier-v6"
     },
     "triggers": [
       {
@@ -50,7 +50,7 @@
       },
       {
         "trigger_id": "ACT-POST-ELIMINATION",
-        "description": "A current same-law witness appears after an eliminated disposition.",
+        "description": "A current witness may falsify an exact eliminated family claim inside its validity horizon.",
         "cue_literals": [
           "post-elimination witness",
           "family was eliminated",
@@ -62,7 +62,9 @@
         "exclusions": [
           "unadopted strengthening",
           "reviewer preference",
-          "different-law finding"
+          "different-law finding",
+          "same-law disjoint family",
+          "witness outside the validity horizon"
         ]
       },
       {
@@ -216,7 +218,7 @@
           "entailed law when current pressure is claimed",
           "ordinary counterexample theory",
           "sound interpretation and Goal-adequacy evidence",
-          "family predicate, admission relation, owner model, cut, and claim strength",
+          "family predicate, admission relation, owner model, cut, validity horizon, and claim strength",
           "family-theory falsifier",
           "exhaustive-domain basis or sibling predictions and probes"
         ],
@@ -249,24 +251,26 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "prior elimination lease excerpt",
-          "current entailed same-law witness",
+          "current entailed witness that falsifies the exact family claim inside its validity horizon",
           "failed-premise localization",
           "one successor disposition",
           "successor sibling predictions or exhaustive-domain proof"
         ],
         "success_signals": [
-          "prior eliminated disposition is revoked immediately",
+          "prior eliminated disposition is revoked immediately on a same-claim falsifier",
+          "same-law disjoint families and out-of-horizon witnesses do not revoke the scoped claim",
           "mutation waits for failed-premise localization",
           "theory is retained only for localized realization/proof failure",
           "theory/admission/interpretation/owner is revised when its premise failed",
           "unknown failure location returns unresolved",
-          "successor elimination uses family-level proof and sibling probes"
+          "successor elimination uses accepted Goal authority, family-level proof, and sibling probes"
         ],
         "failure_signals": [
           "post-elimination witness becomes another patch under the unchanged claim",
-          "elimination remains live after a same-law current counterexample",
+          "elimination remains live after a current same-claim counterexample",
           "failed premise is not named",
-          "successor elimination is issued from repaired examples alone"
+          "successor elimination is issued from repaired examples alone",
+          "elimination is reissued while Goal authority remains reopened"
         ],
         "rationale": "A post-elimination counterexample is evidence that the prior correctness claim failed."
       },
@@ -351,7 +355,7 @@
         "required_artifacts": [
           "current Goal, Git head, validation, publication, and CAS evidence when required",
           "finding authority classifications",
-          "current counterexample theory and proof",
+          "current counterexample theory, validity horizon, and proof",
           "post-elimination adjudication when applicable",
           "explicit eliminated, contained, obstructed, or unresolved disposition"
         ],

@@ -33,6 +33,8 @@ review_fold_input:
   current_elimination_claim: null | {
     law:
     family:
+    validity_horizon:
+    reconsideration_falsifier:
     disposition: eliminated
     issued_head:
   }
@@ -136,7 +138,9 @@ review_fold:
       discrepancy: excess | deficit | incoherence | partiality | misbinding
       severity: critical | high | medium | low
       disposition: accepted | rejected | blocked | follow-up
-      post_elimination_relation: none | same-law | different-law | unknown
+      post_elimination_relation: none | same-claim |
+        same-law-different-family | outside-horizon | different-law | unknown
+      post_elimination_basis:
       witnesses:
         - observed_fact:
           witness_subject:
@@ -186,10 +190,13 @@ attempt, thread, file, reviewer, current owner, or proposed patch.
    be the defect.
 9. State the family only as a hypothesis. Include predicted siblings when
    current evidence supports them; otherwise mark prediction unknown.
-10. Compare exact prior owner evidence to classify recurrence.
+10. Compare exact prior owner evidence to classify recurrence. When the evidence
+    horizon is incomplete for that distinction, report `unknown`, never
+    `first-observed`.
 11. When an active eliminated claim is supplied, classify whether an accepted
-    class is same-law, different-law, or unknown. Do not revoke or retain the
-    claim; Actuating owns that effect.
+    class falsifies that exact claim, concerns a different family or law, lies
+    outside its validity horizon, or remains unknown. Do not revoke or retain
+    the claim; Actuating owns that effect.
 12. Return the fold directly.
 
 A clean source may return an empty `classes` list.
@@ -200,6 +207,19 @@ Only `still-present` and `transformed-applicable` witnesses establish current
 pressure. `already-excluded` is historical explanation. `not-comparable` and
 `unknown` cannot establish current recurrence, family coverage, or a
 post-elimination falsifier.
+
+## Evidence horizon
+
+Use every currently available owner source relevant to the Goal. When the
+historical evidence needed to distinguish first occurrence from recurrence is
+unavailable:
+
+```text
+recurrence.status = unknown
+```
+
+Do not infer `first-observed` or `recurring` from absence in an incomplete
+evidence horizon, memory, or a prior summary.
 
 ## Observational classes
 
@@ -225,13 +245,23 @@ from one root execution are not independent.
 When the input supplies an active `eliminated` claim:
 
 ```text
-same accepted law and currently applicable
-  -> post_elimination_relation: same-law
+same accepted law, inside the claim's validity horizon, with exact evidence
+that the witness belongs to the claimed family or satisfies its reconsideration
+falsifier
+  -> post_elimination_relation: same-claim
+
+same accepted law and validity horizon, but exact evidence establishes a
+disjoint family
+  -> same-law-different-family
+
+same accepted law but outside the declared validity horizon
+  -> outside-horizon; the witness may remain a current counterexample but does
+     not falsify the scoped elimination claim
 
 different accepted law
   -> different-law
 
-authority/applicability insufficient
+authority, applicability, family relation, or horizon evidence insufficient
   -> unknown or non-current disposition
 ```
 
@@ -239,8 +269,8 @@ A strengthening or preference does not falsify the current Goal's elimination
 claim. A new requirement reopens Goal authority rather than retroactively
 falsifying the old Goal.
 
-Review Fold reports the relation. Actuating must revoke and adjudicate a current
-`entailed` same-law claim before mutation.
+Review Fold reports the relation. Actuating must revoke and adjudicate only a
+current `entailed` `same-claim` falsifier before mutation.
 
 ## Guardrails
 

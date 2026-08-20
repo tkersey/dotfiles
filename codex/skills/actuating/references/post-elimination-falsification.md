@@ -1,14 +1,15 @@
 # Post-Elimination Falsification
 
 Normative only when a currently applicable review finding, bug, test failure,
-incident, migration failure, or compatibility failure appears after Actuating
-declared the same law/family `eliminated`.
+incident, migration failure, or compatibility failure falsifies an exact family
+claim that Actuating declared `eliminated` inside its validity horizon.
 
 ## Governing law
 
-> A current entailed same-law witness discovered after elimination revokes the
-> elimination claim immediately. It is evidence that at least one premise of the
-> theory, architecture, or proof was false or incomplete.
+> A current entailed witness that belongs to or satisfies the reconsideration
+> falsifier of the eliminated family inside its validity horizon revokes the
+> elimination claim immediately. It is evidence that at least one premise of
+> the theory, architecture, or proof was false or incomplete.
 
 The witness is not another realization class under the unchanged elimination
 narrative.
@@ -44,7 +45,8 @@ The active Working Set may retain this ephemeral claim:
 Elimination lease
   issued head
   accepted Goal and law
-  selected Theta = (Omega, Alpha, L, Phi, A, O, C, Q)
+  selected Theta = (Omega, Alpha, L, Phi, A, O, C, Vh, Q)
+  validity horizon Vh
   realized architecture K
   proof and path coverage
   predicted sibling counterexamples or exhaustive-domain basis
@@ -57,7 +59,7 @@ always win.
 
 ## Immediate revocation
 
-On a current entailed same-law witness:
+On a current entailed witness that falsifies the scoped claim:
 
 ```text
 prior disposition -> revoked
@@ -77,8 +79,9 @@ Identify the earliest failed premise supported by evidence:
 |---|---|---|
 | Goal/law authority | finding is not entailed | reject, follow-up, reopen Goal, or block |
 | Applicability | witness is stale or not comparable | reject current liability |
+| `Vh` | witness is outside the eliminated claim's validity horizon | preserve the scoped claim; reconcile the witness separately |
 | `Omega` / `Alpha` | witness's invalid distinction is erased or uninterpretable | revise interpretation/domain |
-| `Phi` / family partition | same-law witness lies outside the family | revise or split theory |
+| `Phi` / family partition | witness lies outside `Phi` but satisfies the claim's reconsideration falsifier, proving the partition incomplete | revise or split theory |
 | `U` / `B` | comparison universe omitted relevant concrete behavior | revise theory/proof universe |
 | `A` / `C` | sanctioned path or cut was omitted | revise admission model/cut |
 | `O` | selected owner lacks authority or ownership is distributed | revise owner model |
@@ -115,8 +118,11 @@ revise-owner
 reopen-goal
   the finding is a new requirement
 
+follow-up
+  the finding is a valid strengthening outside the current Goal
+
 reject-finding
-  the finding is stale, false, preference-only, unsupported, or strengthening
+  the finding is stale, false, preference-only, or unsupported
 
 unresolved
   authority or failed premise remains unknown
@@ -172,14 +178,15 @@ A successor `eliminated` disposition is eligible only when:
 
 1. the prior lease is revoked;
 2. the finding is `entailed`;
-3. the failed premise is identified;
-4. the successor theory/interpretation/admission/owner/proof is restated;
-5. soundness and Goal adequacy are re-established;
-6. every required retirement and escape-path correction is realized;
-7. the current witness and predicted siblings are probed;
-8. either the relevant finite domain is exhausted or a family-level
+3. any reopened Goal authority has been accepted and the finding reclassified;
+4. the failed premise is identified;
+5. the successor theory/interpretation/admission/owner/proof is restated;
+6. soundness and Goal adequacy are re-established;
+7. every required retirement and escape-path correction is realized;
+8. the current witness and predicted siblings are probed;
+9. either the relevant finite domain is exhausted or a family-level
    property/model/schema/type proof succeeds;
-9. the claim strength matches the weakest evidence.
+10. the claim strength matches the weakest evidence.
 
 These are insufficient:
 
@@ -205,7 +212,7 @@ predicted and excluded
 predicted but admitted
   realization/proof remains false
 
-same-law but unpredicted
+same-claim but unpredicted
   theory/family/admission model remains incomplete
 
 not entailed
@@ -217,7 +224,7 @@ not entailed
 
 Static contract and scenario tests are regression guards, not proof of live
 compliance. In the next watched Actuating session containing a post-elimination
-same-law witness, verify that the next decision is lease revocation plus
+same-claim falsifier, verify that the next decision is lease revocation plus
 failed-premise localization, theory/proof revision, Goal reopening, rejection,
 or `unresolved`—not another unchanged-theory patch.
 
@@ -228,7 +235,7 @@ post-falsifier repair waves
 standard-clean attainment
 cumulative edit churn
 whether sibling predictions precede the next review wave
-whether new same-law findings were predicted or theory-revising
+whether new same-claim findings were predicted or theory-revising
 ```
 
 
