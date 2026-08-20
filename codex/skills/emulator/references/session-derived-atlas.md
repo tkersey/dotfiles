@@ -182,7 +182,13 @@ marker, then fsyncs the marker directory. A crash at any
 point therefore leaves a discoverable cleanup obligation without retaining
 session contents in the marker. Explicitly authorized retention removes the
 marker only after its exact retained root and purpose are bound as source
-limitations.
+evidence and limitations.
+
+Every `owner_process_opaque_id` in cleanup evidence identifies a retained exact
+`os-process-incarnation/v1` asset containing OS boot identity, PID, immutable
+process start time, and a random launch nonce. Liveness requires all four to
+match the currently running process; PID reuse or reboot cannot match. Recovery
+proves absence of that exact incarnation, not mere PID absence.
 
 `query_spec_fingerprint` binds the exact Seq query specification and snapshot
 fingerprint; `query_spec_ref` resolves those exact content-addressed bytes and
@@ -231,7 +237,8 @@ and contains exact RFC 8785 bytes
 `{"attempt_id":"<opaque-attempt-id>","nonce":"<base64url>","owner_process_opaque_id":"<opaque-process-id>","private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-owner/v1"}`.
 No other marker path or shape is admitted.
 The exclusive lock is the create-new file
-`<cleanup-namespace>/.semantic-discovery-locks/<attempt-id>.lock`; its exact path
+`<storage_domain_root>/private/semantic-discovery-locks/v1/<attempt-id>.lock`, a
+separate admitted namespace outside the closed raw-snapshot layout; its exact path
 is bound by the pending record. Lock acquisition is no-follow and atomic, and a
 dead holder is reclaimed only after OS-backed process-death proof.
 Seq runs
@@ -289,6 +296,10 @@ deleting it without reading payload bytes. Before deletion it atomically
 replaces that marker with exact `semantic-discovery-staging-transfer/v1` bytes
 binding the prior marker fingerprint, recovery invocation/process, and root;
 that compare-and-swap transfers the isolated root to the recovery invocation.
+The first transfer's exact RFC 8785 payload is
+`{"attempt_id":"<opaque-attempt-id>","owner_invocation_id":"<recovery-invocation-id>","owner_process_opaque_id":"<recovery-process-id>","pending_fingerprint":"sha256:<hex>","previous_marker_fingerprint":"sha256:<hex>","previous_transfer_fingerprint":null,"private_staging_root_path":"<canonical-absolute-path>","schema":"semantic-discovery-staging-transfer/v1"}`.
+Later transfers use the same closed fields with non-null
+`previous_transfer_fingerprint` equal to the replaced transfer bytes.
 The transfer bytes also bind the pending fingerprint and previous transfer
 fingerprint (null for the first transfer). If recovery crashes, a later
 dead-owner recovery validates that transfer marker, atomically chains a new
@@ -367,12 +378,17 @@ complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
 identity cannot be known without prompt search, use the discovery-only
 fallback; do not retroactively call the match untouched.
-The physical `seq sessions` route uses one frozen verified projection containing
+The physical `seq sessions` route runs behind a registry-aware wrapper while
+holding the partition-freeze lock; raw command output is never delivered to the
+compiler or selector. The wrapper emits one frozen verified projection containing
 only session ID, source path digest, repository identity, source adapter, event
 range, lineage IDs, and lifecycle status. It excludes thread/session names,
 prompt excerpts, summaries, tags, and every adapter field derived from message
-or tool content. Unknown or extra fields make the projection invalid and route
-to the locked discovery-only fallback before exposure.
+or tool content. If raw output contains an unknown or excluded field, the
+wrapper durably marks the complete physically identified snapshot
+`discovery_exposed` before returning only a fallback status; a crash cannot
+leave semantic bytes observed without conservative exposure. Incomplete
+physical identity stops `source_contaminated`.
 
 Exclude:
 
@@ -2021,8 +2037,9 @@ and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
 `comparison_policy.cycle_id`; `atlas_instance_id` equals the recomputed root
 instance identity. IDs use disjoint syntax before any directory creation:
-`cycle_id` starts `cycle-`, `run_group_id` starts `run-`, and `comparison_id`
-starts `cmp-`; the remainder obeys the ordinary component grammar. A value with
+`cycle_id` starts `cycle-`, standalone `run_group_id` starts `run-`, and
+`comparison_id` starts `cmp-`; in compare mode `run_group_id` equals that
+`cmp-` comparison ID. The remainder obeys the ordinary component grammar. A value with
 the wrong prefix is invalid, so the three owners cannot alias without a shared
 reservation index. Each pair keeps its own EER and run group under
 that one cycle reservation. Later arms/repeats validate and reuse the exact

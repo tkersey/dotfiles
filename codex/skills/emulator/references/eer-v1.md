@@ -271,7 +271,7 @@ emulator_execution_report:
       cost:
       limitations: []
 
-  datasets:
+  datasets:  # only datasets emitted before this EER is sealed; otherwise absent
     preferences_ref:
     preferences_fingerprint:
     trajectories_ref:
@@ -290,6 +290,10 @@ eligible non-run outputs, and limitations. These modes do not invent a run
 group, an empty `runs.jsonl`, or runtime counters. For `run`, `mutate`, and
 `compare`, the three run sections are required and the parsed `runs.jsonl` rows
 must equal `executions` as specified below.
+`datasets` is absent unless the originating operation emits and seals those
+datasets before sealing this EER. A later `mode: export` never fills or rewrites
+this block; its immutable export manifest exclusively owns deferred dataset
+pairs.
 `contract.materialization_witnesses` is empty for a pending design and equals
 the root's sorted witness array after implementation, including later run-mode
 descendants. Every ref resolves through the closure inventory to the closed
@@ -580,6 +584,9 @@ Before sandbox or process creation, create-new and fsync one
 `execution-intents/<tuple-key-hex>.json` path. `tuple_key` is SHA-256 of exact
 RFC 8785 tuple bytes containing comparison/run-group, chart, harness, repeat,
 run purpose, and nullable mutation/parent identities—but not run ID. The closed
+run-ID set is duplicate-free within the run group; reserving an intent whose
+`run_id` already appears in any intent or execution row is
+`invalid_environment` before launch. The closed
 intent bytes are
 `{"run_id":"<run-id>","schema":"execution-intent/v1","tuple_key":"sha256:<tuple-key-hex>","tuple":{"chart_fingerprint":"sha256:<hex>","comparison_id":"<comparison-id-or-null>","harness_fingerprint":"sha256:<hex>","mutation_assignment_fingerprint":"<sha256-or-null>","mutation_case_id":"<case-id-or-null>","parent_mutation_case_id":"<case-id-or-null>","parent_repeat_id":"<repeat-id-or-null>","repeat_id":"<repeat-id>","run_group_id":"<run-group-id>","run_purpose":"primary"}}`.
 The shrink-trial variant has the same closed outer shape and exact tuple keys,
@@ -1036,9 +1043,10 @@ entry, candidate metadata, access proof, and pre-candidate commitment. Each cand
 complete baseline/candidate manifest-diff validation; evidence from one
 candidate cannot validate another.
 
-Use one exclusive precedence rule. First evaluate every selecting,
-environment-valid, determinate row. Observational and other non-selecting rows
-remain diagnostic and cannot affect recommendation. If any selecting row proves
+Use one exclusive precedence rule. First evaluate every comparison-eligible,
+environment-valid, determinate row: required selecting holdouts plus explicitly
+designated discovery/development regression guards. Observational and other
+diagnostic rows cannot affect recommendation. If any comparison-eligible row proves
 a new candidate `hard_fail`, protected
 regression, or contracted non-hard regression beyond tolerance, the candidate
 is `reject` even when another required holdout is invalid, unsupported,
@@ -1073,18 +1081,10 @@ Dataset references appear only when rows were emitted:
 - Historical assistant responses are not chosen labels merely because they
   occurred.
 
-For every run action that could later supply an eligible preference row, the
-originating run create-news the exact indexed chosen-action projection at
-`runs/<run-group-id>/chosen-actions/<run-id>-<action-index>.json` when that
-action is evaluated. Its fingerprint equals the indexed support result's action
-fingerprint. Seal these artifacts before `runs.jsonl` and EER publication and
-include them in retirement dependency copying. Deferred export may reference
-only this pre-existing sealed artifact; it never creates run evidence.
-
 Each preference JSONL row is exact RFC 8785 `emulator-preference/v1`:
 
 ```json
-{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_index":0,"chosen_action_ref":"runs/<run-group-id>/chosen-actions/<run-id>-0.json","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-maps/<source-id>.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>","successor_root_fingerprint":null,"successor_root_ref":null}
+{"authority":"explicit_user_correction","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","chosen_action_fingerprint":"sha256:<hex>","chosen_action_index":0,"chosen_action_ref":"<indexed-support-result-action-ref>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","harness_id":"<harness-id>","harness_surface":"question_policy","limitations":[],"rejected_action_fingerprint":"sha256:<hex>","rejected_action_ref":"<archived-chart-historical-action-ref>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-preference/v1","source_evidence":[{"fingerprint":"sha256:<hex>","ref":"roots/<root-digest-hex>/source/<chart-id>/source-maps/<source-id>.yaml"}],"state_fingerprint":"sha256:<hex>","state_ref":"<archived-chart-actor-input-ref>","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Refs/fingerprints resolve exact eligible bytes; static refs use the archived
@@ -1106,7 +1106,9 @@ chosen-action artifact is the exact selected action projection, not a
 whole trace. `chosen_action_index` is a nonnegative index into that run's
 `support_results`; the indexed result is `judgeable` or `executable`, passed its
 bound hard oracles, and its exact action projection equals the chosen-action
-artifact and fingerprint. A one-step chart therefore uses index zero; a
+ref/fingerprint pair exactly; no duplicate chosen-action artifact is created at
+export time. Because that pair is embedded in the sealed run row, retirement
+dependency mapping owns it transitively. A one-step chart therefore uses index zero; a
 full-turn or full-episode row must select the one specifically evaluated action
 and cannot substitute another action from the trace. Authority, chart,
 contract, harness, and surface equal the run and chart. `source_evidence` copies every actual ref/fingerprint entry from the

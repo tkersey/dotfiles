@@ -91,7 +91,7 @@ emulator_contract:
   operation_mode: design | implement | run | mutate | compare
   predecessor_root_fingerprint:  # non-null only for implement successor
   retirement_predecessor_root_fingerprint:  # non-null only for retirement successor
-  materialization_plan:          # non-null for pending design and its implement successor
+  materialization_plan:          # retained whenever materialization witnesses exist
     ref:
     fingerprint:
   materialization_witnesses:     # empty while pending; complete after implement
@@ -434,6 +434,10 @@ The latter is non-null only for a successor that incorporates a completed
 holdout retirement and names the exact originating root whose charts were
 retired. A root that is both materialized and retirement-updated requires two
 separate successors; one root never conflates those transitions.
+Every later `run`, `mutate`, or `compare` descendant that retains
+`materialization_witnesses` also retains and resolves the exact originating
+`materialization_plan` pair. Witness validation always joins through that plan;
+neither the implement predecessor link nor prose substitutes for it.
 A retirement successor uses `operation_mode: design`, has no
 `comparison_policy` or run sections, and binds the completed reservation,
 cycle-completion, retirement marker/index, and predecessor through its static
@@ -535,7 +539,7 @@ chart entries (`chart_id`, fingerprint, split group, partition, and `required`),
 exact atlas-relative source-identity partition-claim snapshot
 refs/fingerprints and their validation asset, factor, partition
 snapshot, runtime configuration, repeats, randomness policy, improvement
-threshold, the factor-to-targeted-chart predicate, protected dimensions and
+improvement rule, the factor-to-targeted-chart predicate, protected dimensions and
 their evaluator-result bindings, exact factor-owner paths, runtime-configuration
 keys, and deterministically derived runtime-surface fields,
 non-hard regression tolerance, candidate budget, exact baseline harness
@@ -595,7 +599,7 @@ Every factor-owner file path is the root-qualified pair
 because layered roots may contain the same logical name.
 After candidate fingerprints freeze, the final root's selecting chart list,
 chart/evaluator fingerprints, partition snapshot, runtime configuration,
-repeats, randomness policy, protected dimensions, threshold, and budget MUST
+repeats, randomness policy, protected dimensions, improvement rule, and budget MUST
 equal the evaluator-only pre-candidate commitment. Candidate manifest refs are
 added afterward together with the corresponding derived per-candidate
 factor-delta validation refs and fingerprints. Those validation assets MUST be

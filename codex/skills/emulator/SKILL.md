@@ -145,7 +145,9 @@ requires an exclusive lock that prevents membership changes in both source and
 destination trees from enumeration through rename completion. The sole exception is atomic
 replacement under one exact `kind: file` grant: that grant authorizes the
 invocation-owned temporary source entry and the exact granted destination
-entry, but no other operation or name in their parent directory. Before
+entry. During locked crash recovery it also authorizes exactly one validated
+dead-owner same-target orphan source solely for atomic transfer to the current
+temp name; no other operation or name in the parent is admitted. Before
 renaming a directory,
 recursively enumerate it without following symlinks and authorize every
 descendant at both its source path and corresponding destination path; a
