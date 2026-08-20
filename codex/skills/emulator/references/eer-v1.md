@@ -291,19 +291,23 @@ execution rows.
 Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
 
 ```json
-{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
+{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","resolved_effect_policy_fingerprint":"sha256:<hex>","resolved_effect_policy_ref":"admissions/<admission-id>/resolved-effect-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
 ```
 
 The two rows have different admission and sandbox instance IDs, equal chart,
-world, recipe, effect-policy, and observed-prestate fingerprints, and each
+world, recipe, logical effect-policy-template, and observed-prestate fingerprints, and each
 observed prestate equals the chart's expected fingerprint. Reset-result
 and prestate refs resolve exact retained `reset-result/v1` and
 `reset-prestate/v1` bytes. `observed_prestate_artifact_fingerprint` hashes the
 whole sandbox-specific prestate artifact and therefore differs across
 admissions; `observed_prestate_fingerprint` hashes only its normalized
 `observed_state_fingerprint` projection and is equal across resets. Result
-bytes are independently produced. Confinement validation
-requires both effect policies to admit only their distinct disposable roots.
+bytes are independently produced. Each resolved-effect-policy asset is the
+deterministic template projection for that admission's sandbox and admits only
+its distinct disposable root; resolved fingerprints differ when concrete roots
+differ. The reset result's `effect_policy_fingerprint` equals its admission's
+resolved-policy fingerprint. Confinement validates the shared template plus
+each resolved policy.
 The referenced prestate is closed exact RFC 8785 `reset-prestate/v1` bytes:
 
 ```json
@@ -496,17 +500,22 @@ effect policy in a harness comparison; any unequal normalized state or static
 identity is `comparison_drift`.
 
 The exact payload shape is
-`{"pairs":[{"baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_unavailable_reason":null,"candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
+`{"pairs":[{"baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_reset_started":true,"baseline_unavailable_reason":null,"candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_started":true,"candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","normalized_prestate_fingerprint":"sha256:<hex>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
 Pairs sort by `(chart_fingerprint, repeat_id)` and are complete and unique.
-`pass` requires both `*_reset_performed: true`, non-null result pairs, null
+`pass` requires both `*_reset_started` and `*_reset_performed` true, non-null result pairs, null
 reasons, equal normalized prestates, and equal static identities. A tuple whose
 runner stops before reset has `status: unavailable_prestart`, the affected
-`*_reset_performed: false`, null result pair and normalized prestate, and a
+started/performed flags false, null result pair and normalized prestate, and a
 nonempty reason matching the execution row; the other arm retains its observed
 fields. Two unavailable arms retain two reasons. This variant yields incomplete
 evidence and never manufactures reset output. Missing/extra rows, a false flag
 with result bytes, or a true flag without them is
 `comparison_drift`.
+If reset starts but fails before valid result/prestate evidence, use
+`status: failed_after_start`, with `*_reset_started: true`,
+`*_reset_performed: false`, null result/prestate fields, and a nonempty reason
+matching the `invalid_environment` execution. The other arm retains its fields;
+this is incomplete environment evidence, not an omitted tuple.
 
 Comparison-wide access proof maps every execution row that can contribute agent
 evidence to that row's nonempty `actor_access_proof_ref` and fingerprint. A row terminated before process launch records

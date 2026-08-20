@@ -1082,7 +1082,8 @@ self-authored approval makes the cluster ineligible for holdout.
 The attester principal differs from the factor selector and every candidate
 author/attester principal for the cycle. It also differs by canonical person
 ID from every human named by a selected chart's
-`correction-human-review/v1` evidence; a correction reviewer has evaluator
+`correction-human-review/v1` or `correction-reviewed-pattern/v1` evidence; any
+such reviewer has evaluator
 knowledge and is not holdout-blind for clustering that chart. Otherwise the cluster is
 discovery/development-only.
 The cluster then uses identity kind `duplicate_cluster` and ref
@@ -1412,7 +1413,9 @@ Sequence starts at one and is contiguous. `kind` is `create`, `overwrite`,
 `rename`, `symlink`, `mkdir`, or `delete`; each kind has exact nullability for
 source path, before/after digests, and payload. Paths are logical output-root
 paths qualified by `root_id`; `(root_id, path)` identifies one output entry
-even when several roots contain the same logical path. Every tool-trace effect ref resolves one identical row, in order, and
+even when several roots contain the same logical path. Rename is admitted only
+within that one `root_id`; cross-root rename is denied by the tool policy and
+must be expressed as separately evidenced create/delete effects. Every tool-trace effect ref resolves one identical row, in order, and
 the envelope contains no extra or missing row. The fixed replay implementation
 consumes these bytes; producers cannot assert replay without the sealed log.
 
@@ -1702,12 +1705,15 @@ reservation and selected cohort. Any overlap, removal, or changed prior marker
 makes the root stale; a disjoint completed cycle does not abort an active one.
 The witness is exact RFC 8785 bytes at
 `runs/<run-group-id>/retirement-disjoint-advance.json`:
-`{"active_reservation_fingerprint":"sha256:<hex>","added_markers":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/retirement-disjoint-assets/markers/<digest-hex>.json","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"current_snapshot_fingerprint":"sha256:<hex>","current_snapshot_ref":"runs/<run-group-id>/retirement-disjoint-assets/current-snapshot.json","predecessor_snapshot_fingerprint":"sha256:<hex>","predecessor_snapshot_ref":"roots/<root-digest-hex>/holdout-retirements/snapshots/<digest-hex>.json","schema":"retirement-snapshot-disjoint-advance/v1"}`.
+`{"active_reservation_fingerprint":"sha256:<hex>","added_markers":[{"canonical_ref":"holdout-retirements/markers/<digest-hex>.json","fingerprint":"sha256:<hex>","snapshot_ref":"runs/<run-group-id>/retirement-disjoint-assets/root/holdout-retirements/markers/<digest-hex>.json","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}],"current_snapshot_canonical_ref":"holdout-retirements/snapshots/<digest-hex>.json","current_snapshot_fingerprint":"sha256:<hex>","current_snapshot_ref":"runs/<run-group-id>/retirement-disjoint-assets/root/holdout-retirements/snapshots/<digest-hex>.json","predecessor_snapshot_fingerprint":"sha256:<hex>","predecessor_snapshot_ref":"roots/<root-digest-hex>/holdout-retirements/snapshots/<digest-hex>.json","schema":"retirement-snapshot-disjoint-advance/v1"}`.
 While holding both locks, copy and fsync the exact current snapshot and every
-added marker into those run-local refs before emitting the witness. The
+added marker beneath the displayed run-local closure root while preserving
+their canonical relative layout. Embedded snapshot refs resolve within that
+root; equality checks use `canonical_ref`, while offline reads use
+`snapshot_ref`. The
 predecessor ref resolves the archived root-bound snapshot. No witness or report
 consults a later live retirement path.
-Added markers sort by ref and are unique; nested arrays are sorted and unique;
+Added markers sort by canonical ref and are unique; nested arrays are sorted and unique;
 the current snapshot equals the predecessor marker set plus exactly these
 markers. Every added row's source groups and identities equal its referenced
 marker exactly, so the marker's prior-root and reservation derivation is the
@@ -1733,9 +1739,15 @@ Each successful gate seals exact RFC 8785
 `runs/<comparison-id>/optimizer-clear-validation-<phase>.json` in every pair's
 already-reserved run group, where phase is `pre_reservation` for this gate and
 `pre_actor` for the repeated gate:
-`{"cycle_id":"<cycle-id>","phase":"pre_reservation","rows":[{"candidate_id":"<candidate-id>","clear_fingerprint":"sha256:<hex>","clear_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/clear.json","evidence_closure_fingerprint":"sha256:<hex>","evidence_closure_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/closure.json","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","pending_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/pending.json","sentinel_fingerprints":["sha256:<hex>"],"sentinel_refs":["runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/sentinels/<holdout-key>.json"],"source_identity_fingerprints":["sha256:<hex>"]}],"schema":"optimizer-clear-validation/v1"}`.
+`{"cycle_id":"<cycle-id>","phase":"pre_reservation","rows":[{"candidate_id":"<candidate-id>","clear_fingerprint":"sha256:<hex>","clear_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/clear.json","evidence_closure_fingerprint":"sha256:<hex>","evidence_closure_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/closure.json","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","pending_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/pending.json","reference_mapping_fingerprint":"sha256:<hex>","reference_mapping_ref":"runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/reference-mapping.json","sentinel_fingerprints":["sha256:<hex>"],"sentinel_refs":["runs/<comparison-id>/optimizer-clear-evidence/pre_reservation/<candidate-id>/sentinels/<holdout-key>.json"],"source_identity_fingerprints":["sha256:<hex>"]}],"schema":"optimizer-clear-validation/v1"}`.
 Before releasing the mutex, copy and recursively verify the exact global
 pending, clear, sentinel, and evidence-closure bytes into those run-local refs.
+The reference-mapping pair resolves exact RFC 8785 `sealed-ref-mapping/v1`
+bytes containing every transitive canonical ref embedded in those copied bytes
+and its run-local snapshot ref/fingerprint. Mappings sort by canonical ref,
+are unique and complete; offline resolution substitutes only through this
+sealed map, so the copied clear marker's `optimizer-attempts/...` closure ref
+never consults the live registry.
 Rows sort by candidate ID; every array is sorted and duplicate-free; ref and
 fingerprint arrays are same-length ordered pairs. The rows cover every
 enumerated cohort pending/sentinel exactly once, and every clear/closure joins
@@ -1946,6 +1958,10 @@ RFC 8785 `holdout-exposure-attestation/v1` bytes:
 The sorted, duplicate-free identity array is complete for the group and the
 human attester is holdout-blind and independent of candidate generation.
 `source_kind` is exactly `pre_registry`, `registry_bypass_risk`, or `designed`.
+By canonical `person_id`, the attester differs from the factor selector, every
+candidate author/attester, every correction-human or reviewed-pattern reviewer
+for the covered charts, and every covered designed-chart author. A collision
+makes the attestation invalid regardless of its booleans.
 The baseline and factor-selection fingerprints equal the exact frozen selection
 that admits this legacy source; changing either requires a new attestation from
 an independently blind principal and never reuses stale evidence.
@@ -2086,14 +2102,18 @@ fallback above; the policy binds their final fingerprints. Claims never point
 back to that policy. The atlas copies each canonical claim's
 exact bytes to the atlas-relative
 `partitions/claims/<holdout-key>.partition.json` and binds those snapshot refs
-and fingerprints in the pre-candidate policy and root closure. It then creates
+and fingerprints in the pre-candidate policy and root closure. For every
+non-null exposure-evidence pair it also copies the canonical identity-exposure
+bytes to `partitions/identity-exposures/<holdout-key>.json`. It then creates
 an atlas-relative `partition-claim-validation/v1` asset mapping every snapshot
 to its canonical holdout key, global claim location, exposure-registry ID, and
 identical fingerprint. The validation asset is evaluator-only and is bound by
 the final root, runs, and EER; external absolute claim paths are runtime facts,
 not closure refs. Its RFC 8785 payload is exactly
-`{"claims":[{"canonical_claim_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"partitions/claims/<hex>.partition.json"}],"exposure_registry_id":"sha256:<hex>","schema":"partition-claim-validation/v1"}`
-with claims sorted by `holdout_key`; no other fields are admitted. An existing
+`{"claims":[{"canonical_claim_path":"<absolute-path>","holdout_key":"<hex>","snapshot_fingerprint":"sha256:<hex>","snapshot_ref":"partitions/claims/<hex>.partition.json"}],"exposure_registry_id":"sha256:<hex>","identity_exposures":[{"canonical_ref":"semantic-discovery/identity-exposures/<holdout-key>.json","fingerprint":"sha256:<hex>","holdout_key":"<hex>","snapshot_ref":"partitions/identity-exposures/<holdout-key>.json"}],"schema":"partition-claim-validation/v1"}`
+with both arrays sorted by `holdout_key`; identity-exposure rows cover every
+non-null claim evidence pair exactly once and provide the only closure-local
+resolution mapping. No other fields are admitted. An existing
 byte-identical compatible claim is reused. An existing claim for
 another partition, or any prior
 discovery/development exposure when the new claim is holdout, is
@@ -2230,9 +2250,10 @@ the contract profile and covers every supported reward, residual, cost, and
 latency channel; missing channels have zero tolerance.
 `session_provenance` is non-null for every session-derived comparison regardless
 of partition and otherwise null. Its closed value is
-`{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprint":null,"legacy_exposure_attestation_ref":null,"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}`.
-The legacy pair is both non-null exactly for a pre-registry source admitted to
-holdout. A pre-registry discovery/development source may keep both null and is
+`{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprints":[],"legacy_exposure_attestation_refs":[],"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}`.
+The legacy arrays are sorted same-length ref/fingerprint pairs and contain every
+pre-registry group attestation admitted to holdout. A pre-registry
+discovery/development source may keep both empty and is
 therefore permanently holdout-ineligible. The final
 root's `session_provenance` ref/fingerprint resolves exact bytes equal to this
 complete object; the root never embeds a competing inline shape. Non-compare

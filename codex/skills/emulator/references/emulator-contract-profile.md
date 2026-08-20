@@ -174,6 +174,10 @@ emulator_contract:
     factor_selection_ref: partitions/factor-selection.json
     factor_selection_fingerprint:
 
+  holdout_exposure_attestations:  # mode-neutral; frozen before first holdout read
+    - ref:
+      fingerprint:
+
   comparison_policy:  # required only for run, mutate, and compare
     execution_mode: single_arm | paired_compare
     cycle_id:  # paired_compare only
@@ -201,9 +205,6 @@ emulator_contract:
     pre_candidate_policy:
       ref:
       fingerprint:
-    holdout_exposure_attestations:
-      - ref:
-        fingerprint:
     provenance_derivation:
       ref:
       fingerprint:
@@ -243,7 +244,6 @@ emulator_contract:
     deterministic_repeats: 1
     stochastic_evidence:
       matched_randomness_when_available: true
-      uncontrolled_repeat_count:
       improvement_rule:
         schema: paired-stochastic-improvement-rule/v1
         chart_outcome: strict_majority_of_paired_valid_repeats
@@ -326,7 +326,7 @@ For every recursively session-derived root, `session_provenance.ref` resolves
 exact RFC 8785 `session-provenance/v1` bytes:
 
 ~~~json
-{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprint":null,"legacy_exposure_attestation_ref":null,"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}
+{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprints":[],"legacy_exposure_attestation_refs":[],"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}
 ~~~
 
 The companion fingerprint hashes those exact bytes. The identity pair equals
@@ -345,13 +345,16 @@ A design root with pending implementation assets binds exact RFC 8785
 `emulator-materialization-plan/v1` bytes:
 
 ~~~json
-{"admission_outputs":[{"admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-a>/admission.json"},{"admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-b>/admission.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
+{"admission_outputs":[{"admission_id":"<admission-id-a>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-a>/admission.json"},{"admission_id":"<admission-id-b>","chart_fingerprint":"sha256:<hex>","destination_ref":"admissions/<admission-id-b>/admission.json"}],"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
 ~~~
 
 Entries sort by `(chart_fingerprint, field_pointer)`, are unique, and admit only
 world, reset, fixture, tool, reward, mutation_generator, and
 evaluator_implementation roles. Each names one otherwise required
-ref/fingerprint pair that is exactly null in the pending chart. Mode-gated
+ref/fingerprint pair that is exactly null in the pending chart plus one exact
+deterministic materializer asset frozen by design. Implement executes only
+those bytes; two distinct outputs from one unchanged materializer/plan are
+`invalid_environment`. Mode-gated
 `admission_outputs` sorts by `(chart_fingerprint, admission_id)`, has unique
 IDs and destination refs, and contains only the two reset-admission slots for
 each pending exact-fidelity executable chart. Mode-gated
@@ -404,6 +407,10 @@ When design or implement performs the first semantic read of a holdout,
 baseline manifest plus factor selection. It is absent otherwise. A later
 compare root repeats those exact pairs in its comparison policy; the
 non-executing root never invents execution state.
+The root-level `holdout_exposure_attestations` array is likewise mode-neutral,
+sorted by ref, duplicate-free, and frozen before the first holdout read in
+design, implement, or compare. Later pre-candidate policy and compare roots
+repeat it exactly; comparison-policy absence never removes this evidence.
 `single_arm` roots MUST NOT select a holdout chart. Holdout execution is valid
 only in `paired_compare` under the reservation, locking, and consumption
 protocol; a holdout in `run` or `mutate` is an invalid contract rather than an
@@ -425,6 +432,9 @@ paired valid repeats have that determinate direction. A tied or indeterminate
 chart yields `insufficient_evidence`. Adoption requires at least one targeted
 improved chart and zero targeted regressed charts, after hard/protected
 precedence. The comparison implementation applies these exact values.
+When seed control is unavailable, the already-frozen `stochastic_repeats`
+count is the sole cohort-size authority; there is no second uncontrolled-repeat
+field or post-generation override.
 For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
 chart array is sorted by chart fingerprint, contains every selected chart
 exactly once, and each sorted, duplicate-free repeat list has the frozen count.
@@ -502,8 +512,9 @@ Missing supported channels have zero tolerance. These channels are distinct
 from hard protected dimensions. The comparison implementation binds this exact
 object and deterministically classifies any excess regression before residual
 preference; no outcome may alter it.
-Before candidate generation, validation requires exact equality between the
-two policies' selected factor, factor-owner paths, structured byte selectors,
+Before candidate generation, validation dereferences the pre-candidate
+`factor_selection_ref`/fingerprint and requires exact equality between that
+asset's `optimizer_visible_policy` and the concrete optimizer policy for selected factor, factor-owner paths, structured byte selectors,
 runtime-configuration keys, approved derived runtime-surface fields, runtime
 constraints, and candidate budget.
 Missing or unequal shared fields stop with `comparison_drift`; fingerprints do
