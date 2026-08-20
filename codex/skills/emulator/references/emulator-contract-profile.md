@@ -332,7 +332,7 @@ For every recursively session-derived root, `session_provenance.ref` resolves
 exact RFC 8785 `session-provenance/v1` bytes:
 
 ~~~json
-{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprints":[],"legacy_exposure_attestation_refs":[],"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}
+{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprints":[],"legacy_exposure_attestation_refs":[],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","partition_claims":[{"fingerprint":"sha256:<hex>","ref":"partitions/claims/<holdout-key>.partition.json"}],"schema":"session-provenance/v1"}
 ~~~
 
 The companion fingerprint hashes those exact bytes. The identity pair equals
@@ -365,7 +365,7 @@ those bytes; two distinct outputs from one unchanged materializer/plan are
 Each `materializer_ref` resolves closed `emulator-materializer/v1` bytes that
 bind the complete input-closure ref/fingerprint, normalized staging-prestate
 ref/fingerprint, toolchain/runtime identity, deterministic command/arguments,
-and expected output projection for that field. Ambient environment, unbound
+and output contract for that field. Ambient environment, unbound
 tools, or unstated input bytes are denied. Each entry freezes a unique
 `witness_destination_ref`. Implement writes closed exact RFC 8785
 `emulator-materialization-witness/v1` bytes there before constructing the
@@ -378,7 +378,11 @@ plan/materializer and observed staging
 execution; its output fingerprint equals the finalized planned pair. Missing
 or unequal witnesses make the successor invalid.
 The exact payload is
-`{"arguments":[],"command_fingerprint":"sha256:<hex>","command_ref":"materializers/commands/<digest-hex>","expected_output_fingerprint":"sha256:<hex>","expected_output_ref":"materializers/outputs/<digest-hex>.json","input_closure_fingerprint":"sha256:<hex>","input_closure_ref":"materializers/inputs/<digest-hex>.json","normalized_prestate_fingerprint":"sha256:<hex>","normalized_prestate_ref":"materializers/prestates/<digest-hex>.json","runtime_fingerprint":"sha256:<hex>","runtime_ref":"materializers/runtimes/<digest-hex>.json","schema":"emulator-materializer/v1"}`.
+`{"arguments":[],"command_fingerprint":"sha256:<hex>","command_ref":"materializers/commands/<digest-hex>","input_closure_fingerprint":"sha256:<hex>","input_closure_ref":"materializers/inputs/<digest-hex>.json","normalized_prestate_fingerprint":"sha256:<hex>","normalized_prestate_ref":"materializers/prestates/<digest-hex>.json","output_contract_fingerprint":"sha256:<hex>","output_contract_ref":"materializers/output-contracts/<digest-hex>.json","runtime_fingerprint":"sha256:<hex>","runtime_ref":"materializers/runtimes/<digest-hex>.json","schema":"emulator-materializer/v1"}`.
+The output contract binds only schema, semantic projection, and validation
+rules; it contains no expected implementation payload or payload digest.
+Implement validates observed bytes against it, and the witness alone binds the
+observed output fingerprint.
 Every destination across `entries` (including witness destinations), all four
 fields of `admission_outputs`, and `derivations` is globally unique; aliases or
 write-order ownership are invalid.

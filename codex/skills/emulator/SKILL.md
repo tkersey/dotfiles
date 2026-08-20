@@ -193,7 +193,10 @@ evaluator-policy, required closure archive/inventory/EER report, and, for a
 retirement successor, its required static retirement evidence and mapping
 assets. When first authoring a holdout, it may also capture
 the exact mode-neutral baseline harness bundle and capture provenance plus the
-factor-selection asset required by `holdout_authoring_baseline`; it may not
+factor-selection asset required by `holdout_authoring_baseline`, along with the
+pre-candidate metadata/inventory templates, optimizer tool-policy, generation
+runner, and runtime assets that must be frozen before the first semantic
+holdout read; it may not
 create a candidate bundle. For a pending implementation it may freeze the
 materialization-plan and deterministic materializer assets, but not their
 implementation outputs. It does not materialize executable world, reset,

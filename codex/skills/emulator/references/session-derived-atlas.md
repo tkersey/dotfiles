@@ -213,8 +213,10 @@ those exact bytes. Its only directory is
 `semantic-discovery/attempts/<pending-digest-hex>/`, containing exactly
 `pending.json`, optional `result.json`, and optional `completed.json`; the exact
 `pending.json` contents hash to the directory
-digest. After create-new of the digest directory, fsync the parent
-`semantic-discovery/attempts/` directory before launching Seq. Create-new each
+digest. Construct the directory privately, create and fsync `pending.json`
+inside it, then atomically rename the complete directory to its digest path and
+fsync `semantic-discovery/attempts/` before launching Seq. An empty or
+pending-less digest directory is never globally visible. Create-new each later
 file and fsync the attempt directory after every file
 publication. The pending record binds the owner invocation/process, snapshot
 pair, query spec pair, complete physically known identity set, and one exact
@@ -279,7 +281,11 @@ no durable `result.json`, recovery never opens, interprets, or deletes the
 path-named private staging payload as evidence. After proving the owner process
 dead, recovery acquires the exclusive cleanup-namespace lock, opens the root
 no-follow, and requires the exact pending-bound owner marker before recursively
-deleting it without reading payload bytes. A missing or unequal marker forbids
+deleting it without reading payload bytes. Before deletion it atomically
+replaces that marker with exact `semantic-discovery-staging-transfer/v1` bytes
+binding the prior marker fingerprint, recovery invocation/process, and root;
+that compare-and-swap transfers the isolated root to the recovery invocation.
+A missing or unequal marker forbids
 cleanup and cannot become evidence. It may clear the attempt only after proving
 the wrapper never returned or delivered semantic bytes; otherwise the attempt remains unresolved and returns
 `source_contaminated`. Unprovable owner/output state is
@@ -352,6 +358,12 @@ complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
 identity cannot be known without prompt search, use the discovery-only
 fallback; do not retroactively call the match untouched.
+The physical `seq sessions` route uses one frozen verified projection containing
+only session ID, source path digest, repository identity, source adapter, event
+range, lineage IDs, and lifecycle status. It excludes thread/session names,
+prompt excerpts, summaries, tags, and every adapter field derived from message
+or tool content. Unknown or extra fields make the projection invalid and route
+to the locked discovery-only fallback before exposure.
 
 Exclude:
 
@@ -1160,7 +1172,9 @@ author/attester principal for the cycle. It also differs by canonical person
 ID from every human named by a selected chart's
 `correction-human-review/v1` or `correction-reviewed-pattern/v1` evidence; any
 such reviewer has evaluator
-knowledge and is not holdout-blind for clustering that chart. Otherwise the cluster is
+knowledge and is not holdout-blind for clustering that chart. It likewise
+differs from every `designed-chart-authorship/v1` principal for any member
+designed task. Otherwise the cluster is
 discovery/development-only.
 The cluster then uses identity kind `duplicate_cluster` and ref
 `duplicate-cluster:sha256:<digest>`; its descriptor preimage is exactly
@@ -1656,6 +1670,11 @@ only. The non-holdout route ends its intent work after the local
 candidate-generation runner; it MUST NOT execute any global step below.
 
 Both arrays are complete, sorted, and duplicate-free for the frozen cohort.
+Before the first global sentinel, create-new and fsync the exact holdout pending
+preimage at atlas-local
+`partitions/optimizer-intents/<pending-digest-hex>.pending.json`; its digest must
+equal the pending fingerprint. This private frozen copy is the sole recovery
+source and is never optimizer-readable.
 While still holding the partition mutex, first atomically create one immutable
 `pending_sentinel` per source identity at
 `optimizer-intent-sentinels/<holdout-key>/<pending-digest-hex>.json`, with exact
@@ -1757,13 +1776,16 @@ tree; runtime directories are never transitive refs. A sealed reference mapping
 maps every embedded canonical runtime or prior-root ref to its static snapshot
 pair. It is closed exact RFC 8785
 `holdout-retirement-reference-mapping/v1` bytes:
-`{"entries":[{"snapshot_fingerprint":"sha256:<same-hex>","snapshot_mode":"100755","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<snapshot-key-digest-hex>","source_fingerprint":"sha256:<hex>","source_mode":"100755","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
+`{"entries":[{"snapshot_fingerprint":"sha256:<same-hex>","snapshot_mode":"<mode>","snapshot_ref":"holdout-retirements/evidence/cycles/<cycle-id>/<candidate-id>/dependencies/<snapshot-key-digest-hex>","source_fingerprint":"sha256:<hex>","source_mode":"<same-mode>","source_ref":"<normalized-runs-reports-or-roots-ref>"}],"schema":"holdout-retirement-reference-mapping/v1"}`.
 Entries sort by `source_ref`, are duplicate-free, preserve fingerprints and
 exact modes, and derive each snapshot path digest from the complete mapping
 key preimage
-`{"schema":"holdout-retirement-snapshot-key/v1","snapshot_mode":"100755","source_fingerprint":"sha256:<hex>","source_mode":"100755","source_ref":"roots/<prior-root-digest-hex>/<relative-ref>"}`.
+`{"schema":"holdout-retirement-snapshot-key/v1","snapshot_mode":"<mode>","source_fingerprint":"sha256:<hex>","source_mode":"<same-mode>","source_ref":"<normalized-runs-reports-or-roots-ref>"}`.
 The preimage explicitly excludes `snapshot_ref`; its SHA-256 suffix is
-`<snapshot-key-digest-hex>`, which is inserted afterward. They
+`<snapshot-key-digest-hex>`, which is inserted afterward. `<mode>` is the exact
+admitted regular-file mode (`100600`, `100644`, or `100755`) and source/snapshot
+modes are equal. Source refs may originate under `runs/`, `reports/`, or an
+archived `roots/` prefix. They
 cover every distinct transitive ref embedded in the copied EER, runs rows, and
 their dependencies, including `runs/`, `reports/`, and
 `roots/<prior-root-digest-hex>/` refs. The snapshot ref resolves inside the
@@ -1989,7 +2011,10 @@ Candidate IDs and comparison IDs are each unique,
 and every selecting holdout chart/group in the frozen cycle appears. The
 reservation filename cycle ID equals the payload and the root's
 `comparison_policy.cycle_id`; `atlas_instance_id` equals the recomputed root
-instance identity. Each pair keeps its own EER and run group under
+instance identity. Before any directory creation, the cycle ID is reserved in
+the atlas-wide runs-namespace index and must be distinct from every existing or
+frozen `run_group_id` and `comparison_id`; those IDs are reciprocally forbidden
+from every reserved cycle ID. Each pair keeps its own EER and run group under
 that one cycle reservation. Later arms/repeats validate and reuse the exact
 bytes and matching group locks; they do not create them again. Holdout use
 outside compare mode is unsupported. Bind that atlas-root-relative reservation
@@ -2436,7 +2461,7 @@ the contract profile and covers every supported reward, residual, cost, and
 latency channel; missing channels have zero tolerance.
 `session_provenance` is non-null for every session-derived comparison regardless
 of partition and otherwise null. Its closed value is
-`{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprints":[],"legacy_exposure_attestation_refs":[],"partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","schema":"session-provenance/v1"}`.
+`{"identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","legacy_exposure_attestation_fingerprints":[],"legacy_exposure_attestation_refs":[],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","partition_claims":[{"fingerprint":"sha256:<hex>","ref":"partitions/claims/<holdout-key>.partition.json"}],"schema":"session-provenance/v1"}`.
 The legacy arrays are sorted same-length ref/fingerprint pairs and contain every
 pre-registry group attestation admitted to holdout. A pre-registry
 discovery/development source may keep both empty and is
@@ -2453,7 +2478,7 @@ holdout or not, requires the non-null session object.
 then closed exact RFC 8785 bytes within the policy:
 
 ~~~json
-{"factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","holdout_semantic_target_fingerprint":"sha256:<hex>","holdout_semantic_target_ref":"comparison/holdout-semantic-target.json","partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","retirement_index_fingerprint":"sha256:<hex>","retirement_index_ref":"holdout-retirements/snapshots/<digest-hex>.json","selection_intent_snapshots":[{"fingerprint":"sha256:<hex>","ref":"partitions/selection-intents/<holdout-key>.json"}],"selection_intent_validation_fingerprint":"sha256:<hex>","selection_intent_validation_ref":"partitions/selection-intent-validation.json"}
+{"factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","holdout_semantic_target_fingerprint":"sha256:<hex>","holdout_semantic_target_ref":"comparison/holdout-semantic-target.json","partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","partition_claims":[{"fingerprint":"sha256:<hex>","ref":"partitions/claims/<holdout-key>.partition.json"}],"retirement_index_fingerprint":"sha256:<hex>","retirement_index_ref":"holdout-retirements/snapshots/<digest-hex>.json","selection_intent_snapshots":[{"fingerprint":"sha256:<hex>","ref":"partitions/selection-intents/<holdout-key>.json"}],"selection_intent_validation_fingerprint":"sha256:<hex>","selection_intent_validation_ref":"partitions/selection-intent-validation.json"}
 ~~~
 
 The access proof's scalar `holdout_target_ref` and
@@ -2726,7 +2751,8 @@ baseline, factor, policy, owner authorities, and harness fingerprints equal the
 candidate metadata and factor-delta asset. The attester principal is canonical
 and differs by canonical person ID from every correction reviewer and the
 `candidate_author_principal_identity` in candidate metadata/access proof;
-both independence booleans are required true. Arbitrary bytes, an uncovered hunk, a mismatched authority, or an
+it also differs from every selected designed-holdout author. Both independence
+booleans are required true. Arbitrary bytes, an uncovered hunk, a mismatched authority, or an
 attestation produced by candidate generation is `multiple_factors`.
 This candidate_author-to-attester person-ID inequality is mandatory.
 

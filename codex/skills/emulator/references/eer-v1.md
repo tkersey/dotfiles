@@ -70,8 +70,9 @@ emulator_execution_report:
     partition_snapshot_fingerprint:  # selecting roots only
     partition_validation_ref:        # selecting roots only
     partition_validation_fingerprint: # selecting roots only
-    partition_claim_refs: []          # selecting roots only
-    partition_claim_fingerprints: []  # selecting roots only
+    partition_claims:                 # selecting roots only
+      - ref:
+        fingerprint:
     partition_claim_validation_ref:   # selecting roots only
     partition_claim_validation_fingerprint: # selecting roots only
     holdout_reservation_ref:          # holdout runs only
@@ -165,8 +166,9 @@ emulator_execution_report:
       partition_snapshot_fingerprint:  # selecting roots only
       partition_validation_ref:        # selecting roots only
       partition_validation_fingerprint: # selecting roots only
-      partition_claim_refs: []          # source-bound runs with partition claims
-      partition_claim_fingerprints: []  # source-bound runs with partition claims
+      partition_claims:                 # source-bound runs with partition claims
+        - ref:
+          fingerprint:
       partition_claim_validation_ref:   # source-bound runs with partition claims
       partition_claim_validation_fingerprint: # source-bound runs with partition claims
       holdout_reservation_ref:          # holdout runs only
@@ -891,8 +893,7 @@ irreducibility is admitted only when all relevant controls are fixed/determinist
   "partition_snapshot_fingerprint": "sha256:...",
   "partition_validation_ref": "runs/cmp-.../partition-validation.json",
   "partition_validation_fingerprint": "sha256:...",
-  "partition_claim_refs": ["roots/<root-digest-hex>/partitions/claims/<digest-hex>.partition.json"],
-  "partition_claim_fingerprints": ["sha256:..."],
+  "partition_claims": [{"fingerprint":"sha256:...","ref":"roots/<root-digest-hex>/partitions/claims/<digest-hex>.partition.json"}],
   "partition_claim_validation_ref": "roots/<root-digest-hex>/partitions/partition-claim-validation.json",
   "partition_claim_validation_fingerprint": "sha256:...",
   "holdout_reservation_ref": "runs/<cycle-id>/holdout-reservation.json",
