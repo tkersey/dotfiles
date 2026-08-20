@@ -146,6 +146,11 @@ emulator_contract:
   comparison_policy:  # required only for run, mutate, and compare
     execution_mode: single_arm | paired_compare
     cycle_id:  # paired_compare only
+    single_arm_cohort:  # single_arm only
+      selected_chart_repeats:
+        - chart_fingerprint:
+          repeat_ids: []
+      mutation_case_ids: []
     subject: harness
     pre_candidate_policy:
       ref:
@@ -255,6 +260,14 @@ protocol; a holdout in `run` or `mutate` is an invalid contract rather than an
 unreserved execution route.
 `paired_compare` roots MUST NOT select a mutation assignment or mutation case;
 EC-v1 mutation evidence is single-arm only.
+For `single_arm`, `single_arm_cohort` is mandatory and `cycle_id` is null. Its
+chart array is sorted by chart fingerprint, contains every selected chart
+exactly once, and each sorted, duplicate-free repeat list has the frozen count.
+For `run`, `mutation_case_ids` is empty. For `mutate`, it is the sorted,
+duplicate-free exact case set selected before execution. Execution rows equal
+the complete expansion of this cohort; missing, extra, or duplicate rows are
+`invalid_environment`. For `paired_compare`, `single_arm_cohort` is null and
+the holdout reservation owns the cohort.
 Export preserves whichever state the existing root has. `execution_mode` does
 not replace the operation mode.
 
@@ -623,8 +636,17 @@ fallback. For `total`, it is `false` only with the exhaustive coverage proof
 required above, so no action can fall through. With
 `matcher.kind: asset`, all four inline lists are empty,
 `unsupported_default` is `false`, and the bound classifier asset is a total
-function from every action admitted by `actions.schema` to exactly one of
-`executable`, `judgeable`, `denied`, `observed_only`, or `unsupported`.
+function from every action admitted by `actions.schema` to exactly one rule in
+exact RFC 8785 `support-classifier/v1` bytes:
+
+~~~json
+{"rules":[{"authority_refs":["<static-ref>"],"predicate":{},"support_class":"executable","support_id":"<support-id>"}],"schema":"support-classifier/v1"}
+~~~
+
+Rules are sorted by `support_id`, have unique IDs, use exactly the five support
+classes, and each has nonempty, duplicate-free authority refs resolving inside
+the chart closure. Predicates are total and disjoint over admitted actions;
+authority-free or self-authorizing rules are invalid.
 Mixed representations, a zero-class result after fallback, or a multiple-class
 result make the chart `invalid_environment`. Thus every admitted valid action
 has exactly one support class before evaluation, while `step` remains defined

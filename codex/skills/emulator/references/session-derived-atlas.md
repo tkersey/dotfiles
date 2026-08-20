@@ -360,7 +360,7 @@ the content-addressed dependency graph acyclic.
 The direct review asset is exact RFC 8785:
 
 ~~~json
-{"cut_fingerprint":"sha256:<hex>","cut_ref":"evaluators/review-inputs/<digest-hex>.cut.json","evaluator_informed":true,"hard_oracle_interpretation_fingerprint":"sha256:<hex>","hard_oracle_interpretation_ref":"evaluators/review-inputs/<digest-hex>.oracles.json","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","hidden_correction_ref":"evaluators/review-inputs/<digest-hex>.correction.json","independent_of_candidate_generation":true,"reviewed_subject_fingerprint":"sha256:<hex>","reviewed_subject_ref":"evaluators/review-subjects/<digest-hex>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
+{"cut_fingerprint":"sha256:<hex>","cut_ref":"evaluators/review-inputs/<digest-hex>.cut.json","evaluator_informed":true,"hard_oracle_interpretation_fingerprint":"sha256:<hex>","hard_oracle_interpretation_ref":"evaluators/review-inputs/<digest-hex>.oracles.json","harness_surface":"<surface>","hidden_correction_fingerprint":"sha256:<hex>","hidden_correction_ref":"evaluators/review-inputs/<digest-hex>.correction.json","independent_of_candidate_generation":true,"reviewed_subject_fingerprint":"sha256:<hex>","reviewed_subject_ref":"evaluators/review-subjects/<digest-hex>.json","reviewer_identity_fingerprint":"sha256:<hex>","reviewer_identity_ref":"principals/<principal-digest-hex>.json","schema":"correction-human-review/v1","source_event_refs":["source-event:<id>"]}
 ~~~
 
 Each of the three review-input refs is a normalized evaluator-only static ref
@@ -384,7 +384,7 @@ authority.
 The reviewed-pattern route binds exact RFC 8785 bytes:
 
 ~~~json
-{"evaluator_informed":true,"independent_of_candidate_generation":true,"pattern_id":"<stable-pattern-id>","predicate_fingerprint":"sha256:<hex>","predicate_ref":"evaluators/correction-patterns/<pattern-id>.json","reviewer_identity_fingerprint":"sha256:<hex>","schema":"correction-reviewed-pattern/v1"}
+{"evaluator_informed":true,"independent_of_candidate_generation":true,"pattern_id":"<stable-pattern-id>","predicate_fingerprint":"sha256:<hex>","predicate_ref":"evaluators/correction-patterns/<pattern-id>.json","reviewer_identity_fingerprint":"sha256:<hex>","reviewer_identity_ref":"principals/<principal-digest-hex>.json","schema":"correction-reviewed-pattern/v1"}
 ~~~
 
 and exact applicability bytes:
@@ -681,7 +681,8 @@ inventory bindings are `historical_leakage`.
 
 `surface_kind` is exactly `filesystem_entry`, `delivered_message`,
 `filesystem_root_descriptor`, `tool_definition`, `tool_policy`,
-`tool_observation`, or `optimizer_trace_event`. A filesystem identity hashes
+`tool_observation`, `optimizer_trace_event`, `regular_file_content`,
+`observation_payload`, `result_payload`, or `error_payload`. A filesystem identity hashes
 the exact RFC 8785 bytes of
 `{"entry":{},"inventory_kind":"<kind>","schema":"leakage-filesystem-entry/v1"}`,
 where `entry` is the complete type-specific inventory value;
@@ -700,6 +701,14 @@ runner appears exactly once as either that standalone event or the
 observation/result/error preimage of its tool event; an observation outside the
 retained trace is invalid. This is the `standalone_observation` case of the
 closed `optimizer_trace_event` surface.
+
+Every readable regular file additionally contributes a
+`regular_file_content` surface whose preimage is the exact raw file bytes at a
+content-addressed ref, not its inventory row. Every optimizer trace observation,
+result, or error ref additionally contributes the corresponding payload surface
+whose preimage is the exact delivered JSON value or contracted lossless binary
+representation. Trace-event metadata never substitutes for these semantic
+payload rows.
 
 A filesystem-root-descriptor identity hashes the exact retained descriptor
 delivered to the process, including normalized path and access mode. A
@@ -724,6 +733,13 @@ post-run review whose pre-phase fingerprint matches. Runs and EER bind both
 review refs/fingerprints. A paraphrase, encoded derivative, `leak`, or
 `uncertain` result is `historical_leakage`; when it cannot be excluded, the
 chart is diagnostic-only and cannot enter holdout, selection, or training.
+
+Optimizer reviews also bind an evaluator-only content-addressed
+`holdout-semantic-target/v1` asset containing every selected chart's
+actor-visible pre-cut state, prompt, source bytes, chart semantics, hidden
+action, correction, recovery, and outcome projections. Every possibly-derived
+optimizer surface is compared with that complete target corpus. Suffix-only
+comparison is invalid and cannot yield `candidate_generation_blind: true`.
 
 A file containing both projections is not separation. For harness selection,
 promotion, or training, absent actor-readable inventory or access proof makes
@@ -827,7 +843,7 @@ discovery/development evidence. Publish immutable
 RFC 8785 `factor-selection/v1` bytes:
 
 ~~~json
-{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1"}
+{"baseline_harness_fingerprint":"sha256:<hex>","discovery_development_evidence":[{"evidence_fingerprint":"sha256:<hex>","evidence_ref":"evidence/<digest-hex>.json","partition":"development"}],"factor_selector_identity_fingerprint":"sha256:<hex>","factor_selector_identity_ref":"principals/<principal-digest-hex>.json","holdout_semantics_seen":false,"optimizer_visible_policy":{"candidate_budget":1,"factor":"question_policy","factor_owner_paths":[{"path":"<logical-path>","root_id":"<root-id>"}],"non_holdout_selectors":[{"kind":"whole_file","ownership_authority_fingerprint":"sha256:<hex>","ownership_authority_ref":"<static-ref>","path":"<logical-path>","root_id":"<root-id>","selector_id":"<selector-id>"}],"runtime_configuration_keys":["<key>"],"runtime_constraints":{},"runtime_surface_fields":["<field>"]},"schema":"factor-selection/v1"}
 ~~~
 
 Every evidence ref resolves inside discovery or development material, its
@@ -852,13 +868,32 @@ those charts become discovery/development and a new untouched group is
 required. Any baseline drift after this artifact is published restarts factor
 selection and requires a new untouched holdout group.
 
-`factor_selector_identity_fingerprint` is an opaque stable fingerprint for the
-human or independent process that selected the factor. Before admitting any
+Every human-role identity ref resolves exact RFC 8785
+`{"issuer":"<authority-namespace>","principal_id":"<canonical-subject-id>","schema":"emulator-principal-identity/v1"}`
+bytes; its companion fingerprint, digest filename, and bytes agree. The human
+owner admits one issuer-specific canonical subject ID per person, and
+conflicting principal assets for the same issuer subject are invalid.
+In schemas below, `principal_identity_ref` denotes this common ref/fingerprint
+contract; role-specific fields retain their selector, reviewer, or attester
+prefix.
+`factor_selector_identity_ref` and fingerprint identify the principal that
+selected the factor. Before admitting any
 correction-derived chart, require it to differ from every
-`reviewer_identity_fingerprint` in the selected cohort's
-`correction-human-review/v1` or `correction-reviewed-pattern/v1` assets. It is
-evaluator-only outer evidence and is absent from the optimizer policy
-projection.
+reviewer identity ref/fingerprint pair in the selected cohort's
+`correction-human-review/v1` or `correction-reviewed-pattern/v1` assets. All
+roles use the same principal-identity scheme, so alternate emails or account
+aliases cannot manufacture inequality. Selector identity is evaluator-only
+outer evidence and is absent from the optimizer policy projection.
+
+Before the first semantic holdout read, while holding the user-global partition
+mutex, atomically create one immutable `holdout-selection-intent/v1` marker per
+source identity. It binds the exposure registry, atlas instance, source
+identity, baseline harness fingerprint, exact factor-selection ref/fingerprint,
+and canonical selector principal. Store it at
+`holdout-selection-intents/<holdout-key>.json`. A byte-identical marker may be
+reused only by the same frozen selection; an absent, partial, or mismatched
+marker blocks the read as `source_contaminated`. A crash after the semantic read
+cannot reopen the identity for another baseline or factor.
 
 After each holdout chart and evaluator closure is compiled, recursively verified,
 and structurally validated—but before candidate generation, actor execution, or
@@ -930,6 +965,14 @@ The candidate output inventory is exactly:
 ~~~json
 {"entries":[{"file_type":"regular","mode":"100644","path":"<logical-path>","root_id":"<root-id>","sha256":"sha256:<hex>"}],"output_roots":[{"path":"<canonical-absolute-root>","root_id":"<root-id>"}],"phase":"pre_generation","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-output-inventory/v1"}
 ~~~
+
+The pre-generation output inventory has an empty `entries` array; only the
+predeclared isolated output roots exist. Every post-generation entry is covered
+by a retained filesystem-write effect in the bound optimizer tool trace, and
+the ordered complete write-effect set is the attempt's `generation_effects`.
+An unchanged prestate byte, a poststate byte without one generating effect, or
+an effect without its resulting poststate entry invalidates candidate
+provenance.
 
 The pre-generation semantic leakage review covers every entry in both the
 optimizer input inventory and `candidate_output_prestate`, plus every delivered
@@ -1025,7 +1068,7 @@ SHA-256. Construct the exact RFC 8785 pending bytes below and compute
 `pending_fingerprint = SHA-256(exact pending bytes)` before any write:
 
 ~~~json
-{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","exposure_registry_id":"<registry-id>","generation_attempt_id":"<generation-attempt-id>","optimizer_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"optimizer-exposure-intent/v1","source_identity_fingerprint":"sha256:<hex>"}
+{"candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","exposure_registry_id":"<registry-id>","generation_attempt_id":"<generation-attempt-id>","optimizer_policy_fingerprint":"sha256:<hex>","pre_candidate_policy_fingerprint":"sha256:<hex>","schema":"optimizer-exposure-intent/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
 The pending policy fingerprint equals the candidate-generation access proof's
@@ -1034,34 +1077,38 @@ bytes, whose
 semantic fields equal the frozen `factor-selection/v1.optimizer_visible_policy`
 projection plus only the separately authorized discovery/development inputs.
 
-For every holdout identity, create the private directory and atomically create
-the immutable regular, non-symlink file
-`<holdout_lock_root>/optimizer-intents/<holdout-key>/<pending-digest-hex>.pending.json`.
-`holdout-key` and
-`pending-digest-hex` are validated 64-character lowercase hexadecimal digest
-suffixes, so path identity is injective and every component is bounded; raw
-cycle, candidate, and attempt IDs never enter the path.
+Both arrays are complete, sorted, and duplicate-free for the frozen cohort.
+Atomically create the one immutable cohort intent at
+`<holdout_lock_root>/optimizer-intents/<pending-digest-hex>.pending.json`.
+For every individual identity, atomically create exact RFC 8785
+`{"pending_fingerprint":"sha256:<hex>","schema":"optimizer-intent-membership/v1","source_identity_fingerprint":"sha256:<hex>"}`
+bytes at `optimizer-intent-memberships/<holdout-key>/<pending-digest-hex>.json`.
+Memberships cover exactly the intent identity array. The access proof and both
+leakage reviews bind the one cohort `pending_fingerprint`, so every identity is
+cleared by the same attempt evidence without collapsing membership.
 
 After generation and both complete clear leakage reviews, construct the exact
 RFC 8785 clear bytes below:
 
 ~~~json
-{"candidate_generation_access_proof_fingerprint":"sha256:<hex>","candidate_generation_access_proof_ref":"optimizer-access-proofs/<proof-digest-hex>.json","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","post_generation_review_fingerprint":"sha256:<hex>","post_generation_review_ref":"optimizer-reviews/<review-digest-hex>.json","schema":"optimizer-cleared/v1","source_identity_fingerprint":"sha256:<hex>"}
+{"candidate_generation_evidence_closure_fingerprint":"sha256:<hex>","candidate_generation_evidence_closure_ref":"optimizer-attempts/<pending-digest-hex>/closure.json","candidate_id":"<candidate-id>","cycle_id":"<cycle-id>","generation_attempt_id":"<generation-attempt-id>","pending_fingerprint":"sha256:<hex>","schema":"optimizer-cleared/v1","source_identity_fingerprints":["sha256:<hex>"]}
 ~~~
 
-A clear writer first copies the exact candidate-generation access proof and
-post-generation leakage-review bytes to their user-global, registry-relative
-content-addressed refs and requires each digest, filename, and fingerprint to
-agree.
+A clear writer recursively copies the access proof, contexts, rendered policy,
+inventories, generation effects, tool policy/trace and payload preimages, both
+leakage reviews, every leakage surface preimage, and candidate output bytes
+under the private global attempt directory. It emits exact RFC 8785
+`candidate-generation-evidence-closure/v1` bytes with a sorted, duplicate-free
+`closure_inventory` of ref/fingerprint/role entries. Every recursive ref
+resolves within that immutable directory; no atlas-local ref remains.
 A clear marker is atomically created beside its pending file at
 `<pending-digest-hex>.cleared.json`. It matches only when cycle, candidate,
-generation attempt, and source identity equal the pending record,
+generation attempt, and complete source identity array equal the pending record,
 `pending_fingerprint` hashes those exact pending bytes and equals both path
-digest stems, and `post_generation_review_fingerprint` resolves to the complete
-clear review. That review's `generation_attempt_id` and `pending_fingerprint`
-equal the clear marker and access proof. The copied access proof's candidate,
-cycle, attempt, pending, optimizer-policy, and pre-candidate-policy fields equal
-the pending intent. It clears only that attempt. Any pending intent without its exact
+digest stems, and the evidence closure resolves and verifies transitively. Its
+review and access proof attempt and pending fields equal the clear marker. The
+copied access proof's candidate, cycle, optimizer-policy, and pre-candidate-policy
+fields equal the pending intent. It clears only that attempt. Any pending intent without its exact
 matching clear blocks the source identity as `source_contaminated`; a later
 retry or another candidate cannot clear it, so crashes fail closed. On
 `leak` or `uncertain`, do not clear the intent: first publish the durable
@@ -1119,10 +1166,11 @@ both locks uses this order and releases them in reverse. Revalidate the exact gl
 claim bytes against the root snapshots, resolve the current pointer, and require
 its target snapshot fingerprint to equal the root's bound snapshot. While still
 holding both locks, enumerate every regular, non-symlink
-`optimizer-intents/<holdout-key>/*.pending.json` file for every selected source
-identity. Recompute each pending fingerprint from its exact bytes and require
-the exact matching `.cleared.json` file and clear-review preimage defined
-above. A malformed file, unrecognized path, mismatched pair, or unresolved
+`optimizer-intent-memberships/<holdout-key>/*.json` file for every selected
+source identity. Resolve each common pending fingerprint, require identical
+cohort membership, its exact matching `.cleared.json`, and the complete
+transitive evidence closure defined above. A malformed file, unrecognized
+path, mismatched cohort, dangling closure, or unresolved
 optimizer intent stops with `source_contaminated` before reservation. Only
 after this complete pending/clear gate passes may the writer compute the
 complete canonical cycle-reservation bytes and
@@ -1876,7 +1924,10 @@ objectively validated.
 Trajectory rows require fresh executable runs, a valid reset fingerprint,
 complete observable transition trace, hard-oracle results, no evaluator leakage,
 and permitted data handling. Historical trajectories are not training
-trajectories by default.
+trajectories by default. A holdout-derived trajectory is eligible only after it
+binds the exact retirement marker and successor snapshot with
+`consumption_purpose: training`; evaluation-only retirement never authorizes a
+trajectory training export.
 
 Curriculum rows may record family, difficulty, tools, prerequisites, failure
 cluster, fidelity, and supported claim. Every export retains chart and authority

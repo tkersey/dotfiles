@@ -242,6 +242,11 @@ must equal `executions` as specified below.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_generator_fingerprint`, and minimized-counterexample fields are null;
 a non-null value is `invalid_environment`.
+For `run` and `mutate`, execution rows equal the complete
+`comparison_policy.single_arm_cohort` expansion. `run` has null mutation fields
+and an empty cohort `mutation_case_ids`; `mutate` rows cover every selected
+chart/repeat/case tuple exactly once. Missing, extra, or duplicate tuples are
+`invalid_environment`.
 
 ## Status and accounting laws
 
