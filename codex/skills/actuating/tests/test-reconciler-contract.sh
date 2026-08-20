@@ -79,8 +79,8 @@ grep -F 'No unchanged-theory re-elimination from repaired examples' \
 grep -F 'Law authority' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'post-elimination-falsification.md' \
   "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'predicted sibling counterexamples' \
-  "$skill_root/references/semantic-hotspots.md" >/dev/null
+tr '\n' ' ' < "$skill_root/references/semantic-hotspots.md" |
+  grep -F 'predicted sibling counterexamples' >/dev/null
 
 grep -F 'law_authority: entailed | strengthening | preference' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
