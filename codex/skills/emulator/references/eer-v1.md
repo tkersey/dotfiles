@@ -380,8 +380,7 @@ chart/repeat tuple in the frozen cohort. It is created only after those runtime
 inventories exist and is not part of the root closure or static factor-delta
 validation. Every pair permits only the root-qualified paths already authorized
 by the frozen factor delta; missing, extra, or non-passing pairs are
-`comparison_drift`, except that the closed `unavailable_prestart` row below is
-the sole admitted non-pass variant.
+`comparison_drift`. The closed `unavailable_prestart` row below is the sole admitted non-pass variant.
 Its derivation-implementation ref/fingerprint equals the evaluator-only asset
 frozen before candidate generation. A pre-start execution still has one
 `unavailable_prestart` pair row with the closed null/started fields defined by
