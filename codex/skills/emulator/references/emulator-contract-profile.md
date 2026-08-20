@@ -521,6 +521,15 @@ environment_chart:
               - law_ref:
                 authority_refs: []
         shrink_strategy:
+    interactions:
+      - interaction_id:
+        when:
+          - dimension_id:
+            case_id:
+        case_kind: negative | boundary
+        violated_laws:
+          - law_ref:
+            authority_refs: []
     generator_ref:
     generator_fingerprint:
 
@@ -630,16 +639,36 @@ entry; each nonempty, duplicate-free `authority_refs` array resolves inside the
 chart closure to evaluator authority that permits testing that exact law. A
 generator can select declared cases but cannot create authority.
 
+A mutation interaction has a unique `interaction_id`, at least two `when`
+entries sorted by `dimension_id`, no repeated dimension, and only declared
+dimension/case pairs. Its violated-law authority follows the same closure rule
+as a domain case. Interaction `when` tuples are unique. Every interaction whose
+complete tuple is a subset of an assignment matches; interaction order grants
+no precedence.
+
 A mutation assignment is the exact RFC 8785
 `{"assignment":[{"case_id":"<case-id>","dimension_id":"<dimension-id>"}],"schema":"mutation-assignment/v1"}`
 value with entries sorted by `dimension_id`, exactly one declared case for every
 dimension, and no other entry. Derive the assignment's violated laws as the
-law-keyed union of every selected case's violations, unioning and sorting their
-authority refs. Its preserved laws are `mutation.law_refs` minus that union.
-Its `case_kind` is `negative` when any selected case is negative, otherwise
-`boundary` when any selected case is boundary, otherwise `ordinary`.
-`mutation_case_id` is the SHA-256 of
-`"emulator-mutation-case/v1" NUL` followed by those exact assignment bytes.
+law-keyed union of every selected case and matched interaction violation,
+unioning and sorting authority refs. Its preserved laws are
+`mutation.law_refs` minus that union. Its `case_kind` is `negative` when any
+selected case or matched interaction is negative, otherwise `boundary` when
+any is boundary, otherwise `ordinary`.
+
+For finite built-in enumeration, `generator_ref` and `generator_fingerprint`
+are null in the chart. Encode the exact RFC 8785 value
+`{"dimensions":[],"interactions":[],"law_refs":[],"schema":"emulator-finite-mutation-declaration/v1"}`
+with the shown arrays replaced by the complete corresponding chart values,
+and derive the execution-row `mutation_generator_fingerprint` as SHA-256 of
+`"emulator-finite-mutation-generator/v1" NUL chart_fingerprint NUL` followed
+by those exact declaration bytes. For an external generator, both chart fields
+are non-null and the execution-row fingerprint equals the verified generator
+asset fingerprint.
+
+In both routes, `mutation_case_id` is SHA-256 of
+`"emulator-mutation-case/v1" NUL chart_fingerprint NUL mutation_generator_fingerprint NUL`
+followed by the exact assignment bytes.
 The execution row's assignment and chart fingerprint therefore recompute the
 case ID, kind, preserved laws, and violated laws without another authority
 field. Missing, conflicting, non-total, or out-of-chart case authority makes

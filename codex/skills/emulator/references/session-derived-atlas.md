@@ -109,10 +109,10 @@ seq find-session \
 `seq find-session --prompt` is a semantic source read. Before running it,
 resolve and preflight the user-global exposure registry, acquire its
 `.partition-freeze.lock`, and construct immutable RFC 8785
-`semantic-discovery-exposure/v1` bytes for that registry:
+`semantic-discovery-query/v1` provenance bytes for that registry:
 
 ~~~json
-{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-exposure/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"status":"whole_snapshot_discovery_exposed_before_read"}
+{"corpus_snapshot_fingerprint":"sha256:<hex>","corpus_snapshot_ref":"semantic-discovery/snapshots/<digest-hex>.json","query_fingerprint":"sha256:<hex>","registry_id":"sha256:<hex>","schema":"semantic-discovery-query/v1","source_group_fingerprints":["sha256:<hex>"],"source_identity_fingerprints":["sha256:<hex>"],"status":"whole_snapshot_discovery_query"}
 ~~~
 
 Before the query, copy the complete physically selected corpus into a private,
@@ -127,24 +127,38 @@ mutable sessions root. A copy or rewalk mismatch stops with
 
 `query_fingerprint` binds the exact Seq query specification and snapshot
 fingerprint. Both identity arrays are sorted, duplicate-free, and equal the
-complete identities recorded by that immutable snapshot. Hash the exact
-exposure-record bytes and reserve the user-global path
-`semantic-discovery/exposures/<exposure-digest-hex>.json` beneath the registry.
-While still holding
-the lock and before the semantic read, stage permanent `discovery_exposed`
-claims for every identity in both arrays. Each claim binds the exact planned
-exposure-record ref and fingerprint. Publish the claims first, then the exposure
-record, and re-read both to require exact array coverage before invoking Seq.
-Only then may the semantic read run. Every identity in the whole snapshot is
-therefore durably discovery-exposed before the semantic read. A crash before
-the exposure record leaves
-one or more conservative claims with an unresolved evidence ref; those claims
-make the listed identities `source_contaminated` rather than holdout-eligible,
-and the query has not run. A durable exposure record therefore never exists
-without its complete claim set, and no read can precede either.
+complete identities recorded by that immutable snapshot. Group fingerprints
+remain query provenance; partition claims range only over individual source
+identities. A group is holdout-eligible only when every member identity is
+holdout-eligible, so one exposed member makes the group discovery-only without
+inventing an aggregate identity claim.
+
+For each individual source identity, construct exact RFC 8785
+`semantic-discovery-identity-exposure/v1` bytes:
+
+~~~json
+{"exposure_registry_id":"sha256:<hex>","exposure_status":"discovery_exposed","schema":"semantic-discovery-identity-exposure/v1","source_identity_fingerprint":"sha256:<hex>"}
+~~~
+
+Its query-independent global ref is
+`semantic-discovery/identity-exposures/<holdout-key>.json`. While still holding
+the lock and before the semantic read, stage a permanent `discovery_exposed`
+partition claim for every identity in `source_identity_fingerprints`; each
+claim binds its own identity-exposure ref and fingerprint. Publish each claim
+before its marker, then re-read the complete marker/claim set and require exact
+coverage of the individual identity array. A missing marker leaves an
+unresolved conservative claim and is `source_contaminated`; the query has not
+run. A byte-identical existing marker and claim are reused, so later overlapping
+queries do not replace query-independent exposure authority.
+
+Hash the query-provenance bytes and publish them at
+`semantic-discovery/queries/<query-digest-hex>.json` only after the complete
+identity gate passes. Only then may the semantic read run. Every individual
+identity in the whole snapshot is therefore durably discovery-exposed before
+the semantic read, while no query record controls permanent claim identity.
 
 Retain exact RFC 8785 `semantic-discovery-result/v1` bytes containing the query
-ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
+provenance ref/fingerprint, snapshot ref/fingerprint, and exact Seq result-envelope
 ref/fingerprint. Results do not narrow exposure: matching and non-matching
 sessions in the searched snapshot are all permanently discovery-only and
 cannot later enter development or holdout. The later source-bundle
@@ -648,16 +662,29 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"context_fingerprint":"sha256:<hex>","coverage":[{"provenance_class":"predates_source","result":"clear","surface_identity":"sha256:<hex>","surface_kind":"filesystem_entry"}],"execution_id":"<run-id>","execution_kind":"actor","inventory_fingerprint":"sha256:<hex>","phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
+`{"context_fingerprint":"sha256:<hex>","coverage":[{"provenance_class":"predates_source","result":"clear","surface_identity":"sha256:<hex>","surface_kind":"filesystem_entry"}],"execution_id":"<run-id>","execution_kind":"actor","inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","schema":"semantic-leakage-review/v1"}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
 `post_generation` phases. Both
 artifacts are evaluator-visible and never actor input.
 
+`inventories` is sorted by `kind`, duplicate-free, and every ref/fingerprint
+pair resolves exact retained bytes. Actor phases contain exactly
+`actor_readable`. Optimizer `pre_generation` contains exactly
+`optimizer_input` and `candidate_output_prestate`; `post_generation` contains
+those two plus `candidate_output_poststate`. The refs and fingerprints equal
+the candidate-generation access proof. Missing, extra, or phase-wrong
+inventory bindings are `historical_leakage`.
+
 `surface_kind` is exactly `filesystem_entry`, `delivered_message`,
-`tool_observation`, or `optimizer_trace_event`. A filesystem identity hashes the exact RFC 8785 bytes of its
-type-specific inventory entry. A message identity hashes
+`filesystem_root_descriptor`, `tool_definition`, `tool_policy`,
+`tool_observation`, or `optimizer_trace_event`. A filesystem identity hashes
+the exact RFC 8785 bytes of
+`{"entry":{},"inventory_kind":"<kind>","schema":"leakage-filesystem-entry/v1"}`,
+where `entry` is the complete type-specific inventory value;
+including inventory kind keeps equal entries from distinct inventories
+separately accountable. A message identity hashes
 `{"content":"<exact-UTF-8>","index":<zero-based-index>,"role":"<role>","schema":"delivered-message/v1"}`.
 A tool-observation identity hashes the exact RFC 8785 bytes
 `{"call_arguments":<exact-JSON-value>,"call_id":"<id>","index":<zero-based-index>,"result":<exact-JSON-value>,"schema":"tool-observation/v1","tool":"<tool-name>"}`;
@@ -671,6 +698,15 @@ runner appears exactly once as either that standalone event or the
 observation/result/error preimage of its tool event; an observation outside the
 retained trace is invalid. This is the `standalone_observation` case of the
 closed `optimizer_trace_event` surface.
+
+A filesystem-root-descriptor identity hashes the exact retained descriptor
+delivered to the process, including normalized path and access mode. A
+tool-definition identity hashes the exact ordered tool name, description, and
+input/output schema value delivered through the tool API. A tool-policy
+identity hashes the complete exact tool/effect policy value delivered to that
+process. Every root descriptor, tool definition, and policy input appears once
+in both phases for which the process can observe it; deterministic pre-holdout
+provenance may make the row clear but never removes it from coverage.
 
 Coverage sorts by `(surface_kind, surface_identity)` and contains exactly one
 row for every surface required by its phase. `provenance_class` is
@@ -1310,11 +1346,13 @@ For discovery or development, `partition` is that exact value and
 admitted status/partition combinations. Both exposure-evidence fields are null
 for a claim created without semantic discovery. A claim caused by semantic
 discovery has both non-null and binds the exact
-`semantic-discovery-exposure/v1` asset whose complete pre-read snapshot identity
-or group array contains this source; one null field, an unresolved asset, a
-mismatched snapshot, or an absent identity makes the claim invalid. The later
-`semantic-discovery-result/v1` is query provenance and cannot narrow the
-already-published exposure set. The filename's
+query-independent `semantic-discovery-identity-exposure/v1` asset whose source
+identity equals this claim. One null field, an unresolved asset, or a mismatched
+identity or registry makes the claim invalid. Query-specific
+`semantic-discovery-query/v1` and `semantic-discovery-result/v1` assets are
+provenance and cannot replace or narrow the already-published exposure set.
+Aggregate group fingerprints never enter this claim schema; group eligibility
+is derived from its complete member identities. The filename's
 holdout-key hex, identity fingerprint, and registry ID must agree with the
 claimed identity and exposure registry. Aggregate group identity is deliberately
 absent: claims record exposure of each stable identity, so later alias discovery
@@ -1813,8 +1851,12 @@ provenance.
 Counterexample rows require a fresh environment-valid mutation run, exact
 mutation assignment, a reproducible minimized failing artifact, evaluator
 evidence, and a chart that is not active holdout. Bind the external generator
-when one exists; finite built-in enumeration instead derives case identity from
-the chart fingerprint, ordered dimension assignment, and shrink strategy. A
+when one exists. For finite built-in enumeration, derive
+`mutation_generator_fingerprint` from the chart fingerprint and complete
+mutation declaration, including dimensions, interactions, laws, and shrink
+strategies, exactly as specified by the contract profile. Both routes derive
+`mutation_case_id` from the chart fingerprint, generator fingerprint, and exact
+ordered assignment bytes under the same profile formula. A
 historical failure alone is not an exportable counterexample row.
 
 ## Stop and rollback

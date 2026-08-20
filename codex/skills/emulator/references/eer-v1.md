@@ -530,8 +530,14 @@ These rows are not a new global event store.
 Every non-pass status has a nonempty `status_reason`. Malformed actor/action
 output, a failed required state assertion, and a failed trace invariant each map
 to `hard_fail` before comparison or residual judgment. Mutation runs record the
-case identity and assignment plus either the external generator identity or the
-chart-bound finite-enumeration identity; a minimized failure binds its
+case identity and assignment plus a non-null
+`mutation_generator_fingerprint`. With an external generator it equals the
+verified chart asset fingerprint. With finite built-in enumeration it equals
+SHA-256 of `"emulator-finite-mutation-generator/v1" NUL chart_fingerprint NUL`
+plus the exact complete mutation-declaration bytes defined by the contract
+profile. In either route, `mutation_case_id` is SHA-256 of
+`"emulator-mutation-case/v1" NUL chart_fingerprint NUL mutation_generator_fingerprint NUL`
+plus the exact `mutation-assignment/v1` bytes. A minimized failure binds its
 counterexample artifact by reference and fingerprint.
 
 ## comparison.json
@@ -721,13 +727,23 @@ digest is recomputed from the exact bytes. Missing or mismatched originating
 evidence makes export `invalid_environment`; the manifest grants no publication
 authority.
 
-The manifest has exactly this payload:
+For `run`, `mutate`, or `compare`, the manifest has this exact execution-origin
+payload:
 
 ```json
 {"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"preferences","ref":"datasets/<dataset-digest-hex>.preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1"}
 ```
 
-`datasets` is sorted by `kind`, duplicate-free, and contains every and only
+For `design` or `implement`, it instead has this exact contract-origin payload
+and does not invent a run group:
+
+```json
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"curriculum","ref":"datasets/<dataset-digest-hex>.curriculum.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/contracts/<root-digest-hex>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"runs_fingerprint":null,"runs_ref":null,"schema":"emulator-export-manifest/v1"}
+```
+
+Both are the same closed schema; only the mode-constrained originating EER path,
+runs nullability, authorized dataset set, and their values differ. `datasets`
+is sorted by `kind`, duplicate-free, and contains every and only
 emitted dataset whose matching authorization is `true`; kind/ref suffixes are
 fixed by the dataset schemas, and `<dataset-digest-hex>` is the lowercase hex
 component of that entry's `fingerprint`. `originating_eer_ref` and fingerprint identify
