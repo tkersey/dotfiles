@@ -189,6 +189,12 @@ by this pre-read record.
 
 Those are the exact closed fields; all three pairs resolve exact retained bytes
 and the query bytes name the same snapshot pair.
+After the result envelope and every required sanitized selected-source asset
+are durable, unmount and delete the copied raw corpus root through the common
+write/removal authority gate. The content-addressed snapshot manifest, query,
+result, and sanitized source evidence remain; raw session/tool payload copies
+do not. Retaining the raw copy requires separate explicit user authorization
+for that exact root and purpose and is recorded as a source limitation.
 To discover a holdout candidate, use only physical metadata after publishing a
 complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
@@ -705,7 +711,7 @@ actor start, emit exact RFC 8785 `semantic-leakage-review/v1` bytes over every
 readable inventory entry and every delivered message. After actor termination,
 emit a second review over those surfaces plus every tool result or other tool
 observation delivered to the actor. The post-run payload is
-`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"derivation_evidence_fingerprint":"sha256:<hex>","derivation_evidence_ref":"runs/<run-group-id>/semantic-leakage-derivations/<occurrence-digest-hex>.json","hidden_access":"excluded","inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","semantic_overlap":"none","surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json"}`.
+`{"actor_hidden_target_fingerprint":null,"actor_hidden_target_ref":null,"context_fingerprint":"sha256:<hex>","coverage":[{"derivation_evidence_fingerprint":"sha256:<hex>","derivation_evidence_ref":"runs/<run-group-id>/semantic-leakage-derivations/<occurrence-digest-hex>.json","hidden_access":"excluded","inventory_entry_ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json#/<pointer>","occurrence_id":"sha256:<hex>","provenance_classes":["predates_source"],"result":"clear","semantic_overlap":null,"surface_fingerprint":"sha256:<hex>","surface_kind":"filesystem_entry","surface_ref":"runs/<run-group-id>/semantic-leakage-surfaces/<surface-digest-hex>.json"}],"execution_id":"<run-id>","execution_kind":"actor","generation_attempt_id":null,"holdout_target_fingerprint":null,"holdout_target_ref":null,"inventories":[{"fingerprint":"sha256:<hex>","kind":"actor_readable","ref":"runs/<run-group-id>/actor-readable-inventory/<run-id>.json"}],"pending_fingerprint":null,"phase":"post_run","pre_phase_review_fingerprint":"sha256:<hex>","provenance_derivation_fingerprint":"sha256:<hex>","provenance_derivation_ref":"evaluators/provenance-derivation.json","schema":"semantic-leakage-review/v1","semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null}`.
 The pre-start form uses `phase: pre_start`, a null
 `pre_phase_review_fingerprint`, and contains no tool-observation rows. Optimizer
 reviews instead use `execution_kind: optimizer` with `pre_generation` and
@@ -736,7 +742,8 @@ inventory bindings are `historical_leakage`.
 `surface_kind` is exactly `filesystem_entry`, `delivered_message`,
 `filesystem_root_descriptor`, `tool_definition`, `tool_policy`,
 `tool_observation`, `optimizer_trace_event`, `regular_file_content`,
-`observation_payload`, `result_payload`, or `error_payload`. A filesystem identity hashes
+`arguments_payload`, `effect_payload`, `observation_payload`, `result_payload`,
+or `error_payload`. A filesystem identity hashes
 the exact RFC 8785 bytes of
 `{"entry":{},"inventory_kind":"<kind>","schema":"leakage-filesystem-entry/v1"}`,
 where `entry` is the complete type-specific inventory value;
@@ -750,16 +757,18 @@ back to the actor. Non-JSON or binary values first use their contracted lossless
 JSON representation; an unrepresentable or unscannable observation is
 `historical_leakage`. An optimizer-trace-event identity hashes the complete
 exact RFC 8785 event row, including a standalone `kind: observation` row that
-is not paired with a tool call. Every observation delivered by the optimizer
+is not paired with a tool call. Every tool-call arguments ref and every
+generation-effect payload ref contributes its own exact payload surface before
+candidate generation can be certified. Every observation delivered by the optimizer
 runner appears exactly once as either that standalone event or the
-observation/result/error preimage of its tool event; an observation outside the
+observation/result/error preimage of its tool event; an argument, effect, or observation outside the
 retained trace is invalid. This is the `standalone_observation` case of the
 closed `optimizer_trace_event` surface.
 
 Every readable regular file additionally contributes a
 `regular_file_content` surface whose preimage is the exact raw file bytes at a
-content-addressed ref, not its inventory row. Every optimizer trace observation,
-result, or error ref additionally contributes the corresponding payload surface
+content-addressed ref, not its inventory row. Every optimizer trace argument,
+generation-effect payload, observation, result, or error ref additionally contributes the corresponding payload surface
 whose preimage is the exact delivered JSON value or contracted lossless binary
 representation. Trace-event metadata never substitutes for these semantic
 payload rows.
@@ -775,8 +784,8 @@ provenance may make the row clear but never removes it from coverage.
 
 Before review, materialize every exact surface preimage at the content-addressed
 `surface_ref`; its digest suffix, `surface_fingerprint`, and exact bytes agree.
-The semantic evaluator resolves and inspects those bytes rather than trusting a
-hash-only assertion. Equal content may reuse one surface ref but never one
+The access-lineage validator resolves and inspects those bytes rather than
+trusting a hash-only assertion. Equal content may reuse one surface ref but never one
 coverage occurrence. `occurrence_id` hashes exact RFC 8785 bytes of
 `{"execution_id":"<run-or-generation-attempt-id>","inventory_entry_ref":"<complete-ref-or-message-locus>","surface_fingerprint":"sha256:<hex>","surface_kind":"<kind>"}`.
 The locus includes the complete inventory ref plus pointer or actor-context ref
@@ -791,7 +800,8 @@ conservative union for that occurrence; `possibly_derived` dominates
 `independent`, which dominates `predates_source`. Each exact derivation-evidence
 pair resolves the complete transitive access lineage used to assign that
 class. `hidden_access` is `excluded`, `witnessed`, or `unresolved`;
-`semantic_overlap` is `none`, `possible`, or `material` and is diagnostic only.
+`semantic_overlap` is null by default; when optional diagnostics are enabled it
+is `none`, `possible`, or `material` and remains non-authoritative.
 `result` is `clear` exactly for excluded access, `leak` exactly for witnessed
 hidden access, and `uncertain` exactly for unresolved access. Semantic overlap
 without an access witness never changes `clear` to `leak` or `uncertain`. No
@@ -817,27 +827,25 @@ outputs and tool observations with incomplete lineage remain
 recomputes each row from retained occurrence evidence; producers cannot choose
 the class.
 
-Every review also binds one frozen evaluator-owned
-`semantic-leakage-evaluator/v1` ref/fingerprint. Its closed exact RFC 8785 bytes
-are
+An optional diagnostic review may bind one frozen evaluator-owned
+`semantic-leakage-evaluator/v1` ref/fingerprint. Its closed exact RFC 8785 bytes are
 `{"configuration_fingerprint":"sha256:<hex>","configuration_ref":"evaluators/semantic-leakage-configuration.json","implementation_fingerprint":"sha256:<hex>","implementation_ref":"evaluators/semantic-leakage-implementation.json","model_runtime_fingerprint":null,"model_runtime_ref":null,"rubric_fingerprint":"sha256:<hex>","rubric_ref":"evaluators/semantic-leakage-rubric.json","schema":"semantic-leakage-evaluator/v1"}`.
-Every pair resolves exact bytes. The model-runtime pair is both null for a
-deterministic evaluator and both non-null for a model-backed evaluator. The
-pre-candidate policy freezes this evaluator pair, and every pre/post review in
-both arms repeats it exactly. A `clear` verdict from any other implementation,
-model/runtime, rubric, or configuration is `evaluator_contaminated` rather than
-interchangeable evidence.
+Every pair resolves exact bytes. Both outer fields are null when diagnostics
+are disabled. When enabled, the pre-candidate policy freezes the pair and every
+pre/post review in both arms repeats it exactly; disagreement degrades only the
+diagnostic result and never changes `hidden_access` or admission status.
 
 When `holdout_evidence` is non-null, optimizer reviews also bind an
 evaluator-only content-addressed
 `holdout-semantic-target/v1` asset containing every selected chart's
 actor-visible pre-cut state, prompt, source bytes, chart semantics, hidden
-action, correction, recovery, and outcome projections. Every possibly-derived
-optimizer surface is compared with that complete target corpus. Suffix-only
-comparison is invalid and cannot yield `candidate_generation_blind: true`.
+action, correction, recovery, and outcome projections. The access-lineage
+validator uses this as the complete hidden-asset set; optional semantic
+comparison may inspect it but is never an admission gate. Hash-only or omitted
+hidden assets cannot yield `candidate_generation_blind: true`.
 For a non-holdout comparison both holdout-target fields are null: the review
-still validates complete surface coverage, provenance, authorized inputs, and
-the frozen semantic evaluator, but it neither fabricates nor claims comparison
+still validates complete surface coverage, provenance, and authorized inputs,
+but it neither fabricates nor claims comparison
 against a holdout corpus.
 
 The target is closed exact RFC 8785 bytes:
@@ -1229,13 +1237,14 @@ The access proof's generation-effects pair resolves exact RFC 8785
 `generation-effects/v1` bytes:
 
 ~~~json
-{"effects":[{"after_fingerprint":"sha256:<hex>","before_fingerprint":null,"kind":"create","path":"<logical-path>","payload_fingerprint":"sha256:<hex>","payload_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/<sequence>-payload.json","sequence":1,"source_path":null}],"generation_attempt_id":"<generation-attempt-id>","schema":"generation-effects/v1"}
+{"effects":[{"after_fingerprint":"sha256:<hex>","before_fingerprint":null,"kind":"create","path":"<logical-path>","payload_fingerprint":"sha256:<hex>","payload_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-events/<sequence>-payload.json","root_id":"<root-id>","sequence":1,"source_path":null}],"generation_attempt_id":"<generation-attempt-id>","schema":"generation-effects/v1"}
 ~~~
 
 Sequence starts at one and is contiguous. `kind` is `create`, `overwrite`,
 `rename`, `symlink`, `mkdir`, or `delete`; each kind has exact nullability for
 source path, before/after digests, and payload. Paths are logical output-root
-paths. Every tool-trace effect ref resolves one identical row, in order, and
+paths qualified by `root_id`; `(root_id, path)` identifies one output entry
+even when several roots contain the same logical path. Every tool-trace effect ref resolves one identical row, in order, and
 the envelope contains no extra or missing row. The fixed replay implementation
 consumes these bytes; producers cannot assert replay without the sealed log.
 
@@ -1885,7 +1894,7 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":"sha256:<hex>","semantic_evaluator_ref":"evaluators/semantic-leakage-evaluator.json","session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"semantic_evaluator_fingerprint":null,"semantic_evaluator_ref":null,"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
 
 The arrays are sorted by their displayed identities and duplicate-free. The

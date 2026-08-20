@@ -321,7 +321,7 @@ A design root with pending implementation assets binds exact RFC 8785
 `emulator-materialization-plan/v1` bytes:
 
 ~~~json
-{"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
+{"derivations":[{"destination_ref":"identity/completeness-manifest.json","kind":"identity_completeness_manifest","source_field_pointers":["/atlas/charts"]}],"entries":[{"chart_fingerprint":"sha256:<hex>","destination_ref":"worlds/<chart-id>/implementation.json","field_pointer":"/environment/implementation","file_type":"regular","mode":"100600","role":"world"}],"schema":"emulator-materialization-plan/v1"}
 ~~~
 
 Entries sort by `(chart_fingerprint, field_pointer)`, are unique, and admit only
@@ -333,6 +333,10 @@ forbids run/comparison claims. Implement materializes exactly the plan, changes
 `operation_mode` from `design` to `implement`, sets
 `predecessor_root_fingerprint` to the design root, fills every planned pair,
 retains the plan pair, and changes only derived chart/root fingerprints. The
+plan's sorted unique `derivations` also admits only deterministic
+identity-completeness-manifest, session-provenance, partition-validation, and
+archived-root assets whose bytes are recomputed solely from the listed changed
+fields; refs/fingerprints for that exact transitive set may change. The
 successor then passes ordinary complete-closure validation; any other delta is
 `invalid_environment`.
 
@@ -383,9 +387,12 @@ not replace the operation mode.
 
 The four output booleans bind user authorization to emit each eligible dataset.
 They are frozen before execution. Export may emit only a dataset whose boolean
-is `true`, and still applies the chart-level eligibility and privacy rules; it
-does not rewrite `false` to `true`. Missing authorization is a valid empty
-export, not permission inferred from the export request.
+is `true` and whose current export request flag is explicitly `true`, and still
+applies chart-level eligibility and privacy rules. The effective authorization
+is the fieldwise AND of frozen authorization and exact four-boolean
+`export_selection`; omitted selection flags are false. A request cannot rewrite
+frozen false to true, and prior true cannot emit an unselected dataset. Missing
+authorization or selection is a valid empty export.
 
 The evaluator-only pre-candidate policy asset includes the ordered selecting
 chart entries (`chart_id`, fingerprint, split group, partition, and `required`),

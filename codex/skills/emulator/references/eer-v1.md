@@ -503,7 +503,11 @@ runner emits the referenced exact RFC 8785 sanitized
 `credential-binding-descriptor/v1` bytes containing provider kind, non-secret
 endpoint identity, access-policy fingerprint, and a runner-derived opaque
 binding ID (or `kind: none`). The observation fingerprint recomputes from those
-bytes, and descriptor bytes MUST be equal across arms.
+bytes. Descriptor bytes are equal across arms unless provider kind, endpoint,
+or access-policy fields are deterministic projections of exact approved
+runtime-factor keys in factor-delta validation; only those mapped fields may
+differ, while opaque binding identity and secret-nonserialization remain equal.
+An unmapped descriptor delta is `comparison_drift`.
 `actor_runner_fingerprint` is SHA-256 of the exact RFC 8785 `runner` object.
 Missing observation, recorded secret material, or unequal observed/requested
 values is `comparison_drift`.
@@ -588,6 +592,8 @@ and leaves comparison-only fields null:
   "runtime_observation_fingerprint": "sha256:...",
   "runtime_surface_fingerprint": "sha256:...",
   "actor_runner_fingerprint": "sha256:...",
+  "actor_process_opaque_id": "<runner-opaque-id>",
+  "sandbox_instance_id": "<runner-opaque-id>",
   "actor_started": true,
   "actor_seed": null,
   "actor_seed_control": "unavailable",
@@ -854,7 +860,10 @@ Dataset references appear only when rows were emitted:
   observable trace evidence.
 - Counterexample rows require a fresh valid mutation case, exact assignment,
   external-generator or chart-bound finite-enumeration identity, and a
-  fingerprinted minimized failing artifact.
+  fingerprinted minimized failing artifact. Ordinary rows have null retirement
+  and successor fields. A holdout-derived row is eligible only after retirement
+  with `consumption_purpose: training`; all retirement/snapshot/successor pairs
+  are non-null and bind the exact training-authorized successor closure.
 - Active holdouts and hidden evaluator material are never exported.
 - Historical assistant responses are not chosen labels merely because they
   occurred.
@@ -933,7 +942,7 @@ no exporter recomputes or drops the learning signal.
 ```json
 {"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","hard_oracle_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"harness_fingerprint":"sha256:<hex>","limitations":[],"reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"reward":{"aggregate":0.0,"channels":{},"definition_fingerprint":"sha256:<hex>"},"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-trajectory/v1","successor_root_fingerprint":null,"successor_root_ref":null,"trace_fingerprint":"sha256:<hex>","trace_ref":"runs/<run-group-id>/traces/<run-id>.json","world_fingerprint":"sha256:<hex>"}
 {"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","consumption_purpose":null,"contract_fingerprint":"sha256:<hex>","difficulty":"bounded","failure_cluster":"<cluster>","family":"<family>","limitations":[],"maximum_supported_claim":"diagnostic","prerequisite_chart_tags":[],"required_tools":[],"retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"schema":"emulator-curriculum/v1","successor_root_fingerprint":null,"successor_root_ref":null,"world_fidelity":"exact"}
-{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-digest-hex>.json","mutation_case_id":"sha256:<case-digest-hex>","run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1","successor_root_fingerprint":null,"successor_root_ref":null}
+{"assignment_fingerprint":"sha256:<hex>","assignment_ref":"<archived-cohort-mutation-assignment-ref>","chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","consumption_purpose":null,"contract_fingerprint":"sha256:<hex>","evaluator_evidence":[{"fingerprint":"sha256:<hex>","ref":"runs/<run-group-id>/oracle-results/<run-id>.json"}],"generator_fingerprint":"sha256:<hex>","harness_fingerprint":"sha256:<hex>","limitations":[],"minimized_artifact_fingerprint":"sha256:<hex>","minimized_artifact_ref":"runs/<run-group-id>/counterexamples/<case-digest-hex>.json","mutation_case_id":"sha256:<case-digest-hex>","retirement_marker_fingerprint":null,"retirement_marker_ref":null,"retirement_snapshot_fingerprint":null,"retirement_snapshot_ref":null,"run_id":"<run-id>","run_row_fingerprint":"sha256:<hex>","runs_jsonl_fingerprint":"sha256:<hex>","runs_jsonl_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-counterexample/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Every row retains chart, authority, closure, harness, and evidence provenance.
@@ -951,14 +960,14 @@ For `run`, `mutate`, or `compare`, the manifest has this exact execution-origin
 payload:
 
 ```json
-{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"preferences","ref":"datasets/<dataset-digest-hex>.preferences.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"preferences","ref":"datasets/<dataset-digest-hex>.preferences.jsonl"}],"export_selection":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/<run-group-id>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":false,"preferences":true,"trajectories":false},"runs_fingerprint":"sha256:<hex>","runs_ref":"runs/<run-group-id>/runs.jsonl","schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 For `design` or `implement`, it instead has this exact contract-origin payload
 and does not invent a run group:
 
 ```json
-{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"curriculum","ref":"datasets/<dataset-digest-hex>.curriculum.jsonl"}],"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/contracts/<root-digest-hex>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"runs_fingerprint":null,"runs_ref":null,"schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
+{"contract_fingerprint":"sha256:<hex>","datasets":[{"fingerprint":"sha256:<dataset-digest-hex>","kind":"curriculum","ref":"datasets/<dataset-digest-hex>.curriculum.jsonl"}],"export_selection":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"originating_eer_fingerprint":"sha256:<hex>","originating_eer_ref":"reports/contracts/<root-digest-hex>/EER-v1.yaml","output_authorization":{"counterexamples":false,"curriculum":true,"preferences":false,"trajectories":false},"runs_fingerprint":null,"runs_ref":null,"schema":"emulator-export-manifest/v1","successor_root_fingerprint":null,"successor_root_ref":null}
 ```
 
 Both are the same closed schema; only the mode-constrained originating EER path,
@@ -970,7 +979,9 @@ component of that entry's `fingerprint`. `originating_eer_ref` and fingerprint i
 the exact sealed EER, and `contract_fingerprint` equals that EER's root
 contract. For `run`, `mutate`, and `compare`, both runs fields are non-null and
 identify the exact sealed `runs.jsonl`; for `design` and `implement`, both are
-null. Mixed nullability is invalid. The output-authorization object exactly
-equals the originating contract snapshot. The export filename digest is
+null. Mixed nullability is invalid. `export_selection` exactly records the
+current request's four booleans; omitted values are false.
+`output_authorization` is their fieldwise AND with the originating contract
+snapshot, and `datasets` contains every and only eligible true result. The export filename digest is
 SHA-256 of these exact canonical bytes, so no two payload preimages share one
 manifest identity.
