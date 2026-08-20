@@ -99,6 +99,10 @@ emulator_contract:
     identity_completeness_fingerprint:
     limitations: []
 
+  session_provenance:  # null when no recursive session source exists
+    ref: comparison/session-provenance.json
+    fingerprint:
+
   target:
     name:
     kind: agentic_harness | skill | agent_loop | tool_loop | workflow | library_protocol
@@ -151,6 +155,12 @@ emulator_contract:
       retirement_markers:
         - ref:
           fingerprint:
+
+  holdout_authoring_baseline:  # design/implement with holdout only
+    ref: harnesses/baseline/harness-manifest.json
+    fingerprint:
+    factor_selection_ref: partitions/factor-selection.json
+    factor_selection_fingerprint:
 
   comparison_policy:  # required only for run, mutate, and compare
     execution_mode: single_arm | paired_compare
@@ -291,6 +301,11 @@ the originating `operation_mode` rather than creating an export-identity
 variant. `comparison_policy` is absent for non-executing `design` and
 `implement` roots. It is required for `run`, `mutate`, and `compare`: `run` and
 `mutate` require `single_arm`, while `compare` requires `paired_compare`.
+When design or implement performs the first semantic read of a holdout,
+`holdout_authoring_baseline` is mandatory and binds the exact mode-neutral
+baseline manifest plus factor selection. It is absent otherwise. A later
+compare root repeats those exact pairs in its comparison policy; the
+non-executing root never invents execution state.
 `single_arm` roots MUST NOT select a holdout chart. Holdout execution is valid
 only in `paired_compare` under the reservation, locking, and consumption
 protocol; a holdout in `run` or `mutate` is an invalid contract rather than an
@@ -827,6 +842,11 @@ independent correction, test, assertion, invariant, or human-attestation ref.
 the exact recordings, roots, operations, and authority. They are absent only
 when network, filesystem, and external side effects are all `deny`. A
 `filesystem: deny` actor receives no filesystem root or filesystem-capable tool.
+The all-deny case still has a reportable canonical identity: its
+`effect_policy_fingerprint` is SHA-256 of exact RFC 8785
+`{"external_side_effects":"deny","filesystem":"deny","network":"deny","schema":"inline-deny-effect-policy/v1"}`
+bytes. It has no policy ref; every reset and execution uses this same derived
+fingerprint.
 A `read_only` policy enumerates every readable
 root and excludes evaluator-only, session, credential, and unrelated host
 paths. A `full_episode` requires at least one terminal

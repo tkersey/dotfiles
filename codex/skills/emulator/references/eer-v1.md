@@ -262,13 +262,15 @@ execution rows.
 Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
 
 ```json
-{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
+{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
 ```
 
 The two rows have different admission and sandbox instance IDs, equal chart,
 world, recipe, effect-policy, and observed-prestate fingerprints, and each
 observed prestate equals the chart's expected fingerprint. Reset-result
-fingerprints bind independently produced result bytes. Confinement validation
+and prestate refs resolve exact retained `reset-result/v1` and
+`reset-prestate/v1` bytes whose fingerprints equal their companion fields;
+result bytes are independently produced. Confinement validation
 requires both effect policies to admit only their distinct disposable roots.
 For `compare`, every execution's `mutation_case_id`, `mutation_assignment`,
 `mutation_assignment_ref`, `mutation_assignment_fingerprint`,
@@ -295,7 +297,7 @@ For `mutate`, the runs block binds closed exact RFC 8785
 `shrink-selection-trace/v1` bytes:
 
 ```json
-{"selected_trials":[{"parent_mutation_case_id":"<case-id>","parent_repeat_id":"<repeat-id>","run_id":"<run-id>","sequence":1,"trial_mutation_case_id":"<case-id>","trial_repeat_id":"<repeat-id>"}],"schema":"shrink-selection-trace/v1"}
+{"schema":"shrink-selection-trace/v1","selected_trials":[{"parent_mutation_case_id":"<case-id>","parent_repeat_id":"<repeat-id>","run_id":"<run-id>","sequence":1,"trial_mutation_case_id":"<case-id>","trial_repeat_id":"<repeat-id>"}]}
 ```
 
 Sequence starts at one and is contiguous; every row joins one frozen shrink
