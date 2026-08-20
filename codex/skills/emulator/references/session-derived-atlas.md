@@ -189,8 +189,8 @@ Every `owner_process_opaque_id` in cleanup evidence identifies a retained exact
 process start time, and a random launch nonce. Liveness requires all four to
 match the currently running process; PID reuse or reboot cannot match. Recovery
 proves absence of that exact incarnation, not mere PID absence.
-Incarnation assets live create-new at
-`<storage_domain_root>/private/process-incarnations/v1/<digest-hex>.json` with
+Incarnation assets live create-new in the account-global exposure registry at
+`process-incarnations/<digest-hex>.json` with
 mode 0600 and exact RFC 8785 bytes
 `{"boot_id":"<os-boot-id>","launch_nonce":"<base64url>","pid":1,"process_start_time":"<os-immutable-start-value>","schema":"os-process-incarnation/v1"}`.
 The filename digest hashes those bytes; every cleanup ref/fingerprint resolves
@@ -392,9 +392,12 @@ complete `holdout_unexposed` identity claim, then perform the first semantic
 read under the partition-freeze and selection rules in Section 7. If complete
 identity cannot be known without prompt search, use the discovery-only
 fallback; do not retroactively call the match untouched.
-The physical `seq sessions` route runs behind a registry-aware wrapper while
-holding the partition-freeze lock; raw command output is never delivered to the
-compiler or selector. The wrapper emits one frozen verified projection containing
+The physical `seq sessions` route is not a second crash protocol. It runs as a
+`semantic-discovery-attempt/v1` using a frozen physical-listing query spec,
+projection implementation, and alias extractor; the existing pending/result/
+completed/cancelled state machine, immutable snapshot ref, process-incarnation
+custody, staging cleanup, and recovery rules apply unchanged. Raw command output
+is never delivered to the compiler or selector. The retained projection contains
 only session ID, source path digest, repository identity, source adapter, event
 range, lineage IDs, and lifecycle status. It excludes thread/session names,
 prompt excerpts, summaries, tags, and every adapter field derived from message
@@ -403,22 +406,9 @@ wrapper durably marks the complete physically identified snapshot
 `discovery_exposed` before returning only a fallback status; a crash cannot
 leave semantic bytes observed without conservative exposure. Incomplete
 physical identity stops `source_contaminated`.
-Before invoking Seq, the wrapper create-news and fsyncs exact
-`physical-listing-attempt/v1` bytes as
-`semantic-discovery/physical-listing-attempts/<attempt-digest>/pending.json`:
-`{"owner_process_incarnation_fingerprint":"sha256:<hex>","owner_process_incarnation_ref":"process-incarnations/<digest-hex>.json","projection_fingerprint":"sha256:<hex>","projection_ref":"semantic-discovery/physical-projections/<digest-hex>.json","query_spec_fingerprint":"sha256:<hex>","query_spec_ref":"semantic-discovery/query-specs/<digest-hex>.json","repository_root_snapshot_fingerprint":"sha256:<hex>","schema":"physical-listing-attempt/v1"}`.
-Before process resume it create-news `started.json` with closed
-`physical-listing-started/v1` bytes binding pending fingerprint and the command
-process-incarnation pair. A safe projected result is create-new `result.json`
-binding pending/started fingerprints, raw-output digest without raw ref, and
-the retained projection pair. Terminal `completed.json` is exactly one of:
-`physical-listing-completed/v1` with result fingerprint plus sorted exposure
-claim pairs, `physical-listing-cancelled/v1` with null started/result after proof
-the command never started, or `physical-listing-exposed-uncertain/v1` with the
-started fingerprint and conservative claims for the complete physical snapshot.
-Preflight resumes every nonterminal directory under the same lock and publishes
-one of those closed terminal variants. No raw listing is inspected without this
-durable state machine.
+The attempt's already-required `snapshot_ref` resolves the immutable complete
+physical identity set recovery must expose. No separate physical-listing
+pending, started, result, or terminal schema exists.
 
 Exclude:
 

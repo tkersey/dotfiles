@@ -213,6 +213,10 @@ emulator_execution_report:
       sandbox_instance_id:
       sandbox_created: true | false
       actor_started: true | false
+      sandbox_creation_receipt_ref:
+      sandbox_creation_receipt_fingerprint:
+      actor_launch_receipt_ref:
+      actor_launch_receipt_fingerprint:
       randomness_cohort_commitment_ref:
       randomness_cohort_commitment_fingerprint:
       actor_seed:
@@ -419,9 +423,10 @@ The former means an attempted action had `observed_only` or `unsupported`
 support; the latter means the chart, closure, visibility, reset, or comparison
 boundary was malformed or unverifiable.
 Rows with `sandbox_created: false` require `actor_started: false`, null process
-and sandbox IDs, and no runtime observation, inventory, or access proof. Rows
+and sandbox IDs, null receipt pairs, and no runtime observation, inventory, or access proof. Rows
 with `sandbox_created: true, actor_started: false` require a non-null unique
-sandbox ID and null process ID. Because `runtime-observation/v1` is
+sandbox ID, null process ID, non-null sandbox-creation receipt, and null launch
+receipt. Because `runtime-observation/v1` is
 process-owned, its ref/fingerprint and runtime surface fingerprint are null;
 the row retains the inventory and pre-start leakage artifacts actually
 produced. When that review exists, the row also retains its exact planned
@@ -429,8 +434,8 @@ produced. When that review exists, the row also retains its exact planned
 it; this proves reviewed bytes, not actor delivery. Access proof remains null.
 If no context was constructed, both the context pair and leakage-review pair
 are null. This is the admitted mounts-frozen/process-not-
-started state. Started rows require both booleans true and non-null process and
-sandbox IDs. No other combination is valid.
+started state. Started rows require both booleans true, non-null process and
+sandbox IDs, and both receipt pairs. No other combination is valid.
 Across the complete run group, every non-null `actor_process_opaque_id` and
 `sandbox_instance_id` is unique to one execution row. Baseline/candidate arms,
 repeats, and charts never reuse a process or sandbox; duplicate launch identity
@@ -609,12 +614,20 @@ emits exactly one terminal runtime-error or invalid-environment row for that
 reserved tuple and never relaunches it. Every reserved holdout tuple therefore
 remains accounted for and can participate in cycle completion; comparison
 identity is never discarded in lieu of a terminal row.
+Immediately after sandbox allocation and before any later effect, create-new and
+fsync exact `sandbox-creation-receipt/v1` bytes
+`{"run_id":"<run-id>","sandbox_instance_id":"<opaque-id>","schema":"sandbox-creation-receipt/v1","tuple_key":"sha256:<hex>"}`.
 Before actor input delivery, spawn the actor suspended, bind its process
 incarnation, and create-new/fsync closed `actor-launch-receipt/v1` bytes. Only
 then resume delivery. If the actor exits before `runtime-observation/v1` is
 durable, the terminal row uses `actor_started: true`, the receipt-bound process
 identity, null runtime observation, status `runtime_error`, and reason
 `runtime_observation_unavailable_after_launch`; it fabricates no actor evidence.
+The launch receipt is exact
+`{"actor_process_incarnation_fingerprint":"sha256:<hex>","actor_process_incarnation_ref":"runs/<run-group-id>/process-incarnations/<digest-hex>.json","actor_process_opaque_id":"<opaque-id>","run_id":"<run-id>","sandbox_creation_receipt_fingerprint":"sha256:<hex>","schema":"actor-launch-receipt/v1","tuple_key":"sha256:<hex>"}`.
+Every execution row binds both receipt pairs when `actor_started: true`; a
+sandbox-created prestart row binds only the sandbox receipt, and a pre-sandbox
+row binds neither.
 
 Every execution separately binds the environment-transition implementation and
 the evaluator implementation declared by its chart. Missing or unequal
@@ -667,8 +680,10 @@ runtime-factor keys in factor-delta validation; only those mapped fields may
 differ, while opaque binding identity and secret-nonserialization remain equal.
 An unmapped descriptor delta is `comparison_drift`.
 `actor_runner_fingerprint` is SHA-256 of the exact RFC 8785 `runner` object.
-Missing observation, recorded secret material, or unequal observed/requested
-values is `comparison_drift`.
+Missing observation is `comparison_drift` except the exact receipt-bound
+`runtime_observation_unavailable_after_launch` terminal variant above. Recorded
+secret material or unequal observed/requested values is always
+`comparison_drift`.
 
 A sampled failure schedule uses the archived static
 `randomness-cohort-commitment/v1` schedule ref and exact fingerprint; both are
