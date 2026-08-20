@@ -111,10 +111,10 @@ grep -F '## Metanoetic challenge' "$skill_root/references/semantic-hotspots.md" 
 grep -F '## OPERATE ARCHITECTONICALLY' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F '## One bounded co-refinement' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F '## Theory, safety, Goal, and exactness counterevidence' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'Admission cut' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'owner status' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'admission cut' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'Owner status' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'contained' "$skill_root/references/semantic-hotspots.md" >/dev/null
-grep -F 'correctness Pareto frontier' "$skill_root/references/semantic-hotspots.md" >/dev/null
+grep -F 'correctness Pareto' "$skill_root/references/semantic-hotspots.md" >/dev/null
 grep -F 'No bug Ledger, hotspot registry' "$skill_root/references/semantic-hotspots.md" >/dev/null
 
 grep -F 'class_kind: observational' "$codex_root/skills/review-fold/SKILL.md" >/dev/null

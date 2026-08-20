@@ -179,8 +179,7 @@ exclusion.
 ### Abstract exclusion
 
 ```text
-for every b in B_K:
-  not Phi(alpha_K(b))
+b in B_K -> not Phi(alpha_K(b))
 ```
 
 The candidate sanctions no behavior that its sound abstraction marks unsafe.
