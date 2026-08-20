@@ -1023,7 +1023,7 @@ requires them to equal the planned inventory. It then emits the exact RFC 8785
 bytes of:
 
 ~~~json
-{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":null,"holdout_target_ref":null,"optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
+{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_generation_blind":true,"candidate_harness_fingerprint":"sha256:<hex>","candidate_id":"<candidate-id>","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/<candidate-id>/candidate-metadata-template.json","candidate_output_poststate_fingerprint":"sha256:<hex>","candidate_output_poststate_ref":"harnesses/candidates/<candidate-id>/output-poststate.json","candidate_output_prestate_fingerprint":"sha256:<hex>","candidate_output_prestate_ref":"harnesses/candidates/<candidate-id>/output-prestate.json","cycle_id":"<cycle-id>","fresh_context_id":"<runner-opaque-id>","generation_attempt_id":"<generation-attempt-id>","generation_runner_fingerprint":"sha256:<hex>","holdout_target_fingerprint":null,"holdout_target_ref":null,"optimizer_context_fingerprint":"sha256:<hex>","optimizer_context_ref":"harnesses/candidates/<candidate-id>/optimizer-context.json","optimizer_input_inventory_fingerprint":"sha256:<hex>","optimizer_input_inventory_ref":"harnesses/candidates/<candidate-id>/optimizer-input-inventory.json","optimizer_inventory_template_fingerprint":"sha256:<hex>","optimizer_inventory_template_ref":"harnesses/candidates/<candidate-id>/inventory-template.json","optimizer_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_fingerprint":"sha256:<hex>","optimizer_tool_policy_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-policy.json","optimizer_tool_policy_template_fingerprint":"sha256:<hex>","optimizer_tool_policy_template_ref":"optimizer/tool-policy-template.json","optimizer_tool_trace_fingerprint":"sha256:<hex>","optimizer_tool_trace_ref":"harnesses/candidates/<candidate-id>/optimizer-tool-trace.json","parent_context_id":null,"pending_fingerprint":"sha256:<hex>","post_generation_leakage_review_fingerprint":"sha256:<hex>","post_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-postgeneration.json","pre_candidate_policy_fingerprint":"sha256:<hex>","pre_generation_leakage_review_fingerprint":"sha256:<hex>","pre_generation_leakage_review_ref":"harnesses/candidates/<candidate-id>/leakage-pregeneration.json","sandbox_instance_id":"<runner-opaque-id>","schema":"candidate-generation-access-proof/v1","status":"completed"}
 ~~~
 
 The runner emits this artifact only for the actual process that produced the
@@ -1032,8 +1032,11 @@ cycle. Candidate metadata and the root candidate entry bind its static ref and
 fingerprint. The proof's cycle, runner, input inventory, optimizer context and fresh
 context identity, optimizer policy, and
 pre-candidate policy must equal the frozen cycle commitments, and its candidate
-fingerprint must equal the frozen candidate manifest. Candidate metadata,
-pre-candidate commitment, and access proof repeat the same canonical
+fingerprint must equal the frozen candidate manifest. The pre-candidate
+commitment and access proof repeat the same metadata-template pair; final
+candidate metadata is post-generation and binds that template without being a
+pre-candidate dependency. Candidate metadata,
+commitment, and access proof repeat the same canonical
 `candidate_author_principal_identity_ref`/fingerprint; duplicate-cluster
 independence compares that principal with the attester. Missing, mismatched,
 pre-run, or externally supplied access
@@ -1683,7 +1686,7 @@ and global attempt closure repeat it unchanged.
 The policy is closed exact RFC 8785 `pre-candidate-policy/v1` bytes:
 
 ~~~json
-{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_fingerprint":"sha256:<hex>","candidate_metadata_ref":"harnesses/candidates/candidate-1/candidate.yaml","inventory_template_fingerprint":"sha256:<hex>","inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
+{"actor_readable_surface_derivation_fingerprint":"sha256:<hex>","actor_readable_surface_derivation_ref":"comparison/actor-readable-surface-validator.json","baseline_harness_fingerprint":"sha256:<hex>","baseline_harness_ref":"harnesses/baseline/harness-manifest.json","candidate_budget":1,"candidate_generation_commitments":[{"candidate_author_principal_identity_fingerprint":"sha256:<hex>","candidate_author_principal_identity_ref":"principals/<digest-hex>.json","candidate_id":"candidate-1","candidate_metadata_template_fingerprint":"sha256:<hex>","candidate_metadata_template_ref":"harnesses/candidates/candidate-1/candidate-metadata-template.json","inventory_template_fingerprint":"sha256:<hex>","inventory_template_ref":"harnesses/candidates/candidate-1/inventory-template.json","schema":"candidate-generation-commitment/v1","tool_policy_template_fingerprint":"sha256:<hex>","tool_policy_template_ref":"optimizer/tool-policy-template.json"}],"comparison_implementation_fingerprint":"sha256:<hex>","comparison_implementation_ref":"comparison/implementation.json","generation_runner_fingerprint":"sha256:<hex>","generation_runner_ref":"comparison/candidate-generation-runner.json","holdout_evidence":null,"improvement_threshold":{},"model_runtime_configuration_fingerprint":"sha256:<hex>","model_runtime_configuration_ref":"comparison/model-runtime.json","non_hard_regression_tolerance":{},"optimizer_visible_policy":{},"protected_dimensions":[],"randomness_matching":{},"repeat_policy":{"deterministic":1,"stochastic":3},"runtime_surface_derivation_fingerprint":"sha256:<hex>","runtime_surface_derivation_ref":"comparison/runtime-surface-derivation.json","schema":"pre-candidate-policy/v1","selected_charts":[{"chart_fingerprint":"sha256:<hex>","chart_id":"<chart-id>","partition":"development","required":true,"split_group":"<group-id>"}],"session_provenance":null,"targeted_chart_rules":[{"chart_fingerprint":"sha256:<target-hex>","factor":"question_policy","targeted":true},{"chart_fingerprint":"sha256:<guard-hex>","factor":"question_policy","targeted":false}]}
 ~~~
 
 The arrays are sorted by their displayed identities and duplicate-free.
@@ -1691,11 +1694,17 @@ The arrays are sorted by their displayed identities and duplicate-free.
 by candidate ID, each with exactly the displayed
 `candidate-generation-commitment/v1` fields. The access proof repeats the
 candidate ID, author principal, inventory-template pair, tool-policy-template
-pair, and candidate metadata pair exactly.
-`targeted_chart_rules` covers every selected chart exactly once using the exact
-closed shape `{"chart_fingerprint":"sha256:<hex>","factor":"<factor>","targeted":true}`
+pair, and candidate-metadata-template pair exactly. The referenced template is
+closed pre-generation `candidate-metadata-template/v1` bytes containing only
+candidate ID, baseline harness fingerprint, selected factor, author principal,
+hypothesis, expected delta, falsifier, and declared changed paths. It contains
+no candidate harness, access-proof, factor-delta, or final metadata fingerprint,
+so the dependency graph is acyclic. Final candidate metadata is authored after
+generation and binds this template pair plus the generated evidence.
+`targeted_chart_rules` covers every selected chart exactly once. Each closed
+row has exactly `chart_fingerprint`, `factor`, and boolean `targeted`, as
 required by the contract profile. It is frozen before candidate generation;
-`targeted` is a boolean and both true targets and false regression guards are
+both targeted true or false values are admitted and false regression guards are
 preserved. The factor and result cannot depend on outcomes. `non_hard_regression_tolerance`
 is also a required frozen canonical JSON object in the policy and contains every
 dimension-specific tolerance used by the comparison implementation; absent
@@ -1706,11 +1715,15 @@ of partition and otherwise null. Its closed value is
 The legacy pair is both non-null exactly for a pre-registry source. The final
 root repeats this complete object; these provenance fields are not hidden inside
 holdout-only evidence.
+For a pure designed holdout, `session_provenance` is null and identity
+completeness remains `not_applicable`; holdout selection alone never makes
+session identity-completeness fields non-null. Any recursive session source,
+holdout or not, requires the non-null session object.
 `holdout_evidence` is non-null exactly when any selected chart is holdout and is
 then closed exact RFC 8785 bytes within the policy:
 
 ~~~json
-{"factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","holdout_semantic_target_fingerprint":"sha256:<hex>","holdout_semantic_target_ref":"comparison/holdout-semantic-target.json","identity_completeness_fingerprint":"sha256:<hex>","identity_completeness_ref":"identity/completeness-manifest.json","partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","retirement_index_fingerprint":"sha256:<hex>","retirement_index_ref":"holdout-retirements/snapshots/<digest-hex>.json","selection_intent_snapshots":[{"fingerprint":"sha256:<hex>","ref":"partitions/selection-intents/<holdout-key>.json"}],"selection_intent_validation_fingerprint":"sha256:<hex>","selection_intent_validation_ref":"partitions/selection-intent-validation.json"}
+{"factor_selection_fingerprint":"sha256:<hex>","factor_selection_ref":"partitions/factor-selection.json","holdout_semantic_target_fingerprint":"sha256:<hex>","holdout_semantic_target_ref":"comparison/holdout-semantic-target.json","partition_claim_fingerprints":["sha256:<hex>"],"partition_claim_refs":["partitions/claims/<holdout-key>.partition.json"],"partition_claim_validation_fingerprint":"sha256:<hex>","partition_claim_validation_ref":"partitions/partition-claim-validation.json","retirement_index_fingerprint":"sha256:<hex>","retirement_index_ref":"holdout-retirements/snapshots/<digest-hex>.json","selection_intent_snapshots":[{"fingerprint":"sha256:<hex>","ref":"partitions/selection-intents/<holdout-key>.json"}],"selection_intent_validation_fingerprint":"sha256:<hex>","selection_intent_validation_ref":"partitions/selection-intent-validation.json"}
 ~~~
 
 The access proof's scalar `holdout_target_ref` and
@@ -1871,6 +1884,10 @@ Candidate metadata:
 ~~~yaml
 candidate:
   candidate_id:
+  candidate_metadata_template_ref:
+  candidate_metadata_template_fingerprint:
+  candidate_author_principal_identity_ref:
+  candidate_author_principal_identity_fingerprint:
   baseline_harness_fingerprint:  # harness subject only
   candidate_harness_fingerprint: # harness subject only
   factor:
@@ -1966,9 +1983,11 @@ array plus the ownership-authority fingerprint array is sorted and unique. Each
 hunk maps only to selectors declared by the pre-candidate policy. The candidate,
 baseline, factor, policy, owner authorities, and harness fingerprints equal the
 candidate metadata and factor-delta asset. The attester principal is canonical
-and differs from every correction reviewer principal in the selected cohort;
+and differs by canonical person ID from every correction reviewer and the
+`candidate_author_principal_identity` in candidate metadata/access proof;
 both independence booleans are required true. Arbitrary bytes, an uncovered hunk, a mismatched authority, or an
 attestation produced by candidate generation is `multiple_factors`.
+This candidate_author-to-attester person-ID inequality is mandatory.
 
 The validation asset is exact RFC 8785 `factor-delta-validation/v1`:
 
