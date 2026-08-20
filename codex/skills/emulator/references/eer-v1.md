@@ -219,6 +219,8 @@ emulator_execution_report:
       reset_result_ref:
       reset_result_fingerprint:
       effect_policy_fingerprint:
+      resolved_effect_policy_ref:
+      resolved_effect_policy_fingerprint:
       tool_access_policy_fingerprint:
       metadata_observation_policy_ref:
       metadata_observation_policy_fingerprint:
@@ -291,14 +293,16 @@ execution rows.
 Each admission ref resolves closed exact RFC 8785 `reset-admission/v1` bytes:
 
 ```json
-{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","effect_policy_template_ref":"<archived-chart-effect-policy-ref>","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","resolved_effect_policy_fingerprint":"sha256:<hex>","resolved_effect_policy_ref":"admissions/<admission-id>/resolved-effect-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
+{"admission_id":"<admission-id>","chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","effect_policy_template_ref":"environment/effect-policy.json","observed_prestate_artifact_fingerprint":"sha256:<hex>","observed_prestate_fingerprint":"sha256:<hex>","observed_prestate_ref":"admissions/<admission-id>/prestate.json","reset_recipe_fingerprint":"sha256:<hex>","reset_result_fingerprint":"sha256:<hex>","reset_result_ref":"admissions/<admission-id>/result.json","resolved_effect_policy_fingerprint":"sha256:<hex>","resolved_effect_policy_ref":"admissions/<admission-id>/resolved-effect-policy.json","sandbox_instance_id":"<runner-opaque-id>","schema":"reset-admission/v1","world_fingerprint":"sha256:<hex>"}
 ```
 
 The two rows have different admission and sandbox instance IDs, equal chart,
 world, recipe, logical effect-policy-template, and observed-prestate fingerprints, and each
 observed prestate equals the chart's expected fingerprint. The template
-ref/fingerprint equals the chart/world effect-policy pair after
-archive-prefix normalization; resolved policies are deterministic substitutions
+ref/fingerprint equals the closure-relative chart/world effect-policy pair.
+For the inline all-deny variant the ref is null and the fingerprint equals the
+contracted derived inline-policy fingerprint. Report projections add archive
+prefixes only to non-null static refs. Resolved policies are deterministic substitutions
 of only that template's logical sandbox-root roles.
 Reset-result and prestate refs resolve exact retained `reset-result/v1` and
 `reset-prestate/v1` bytes. `observed_prestate_artifact_fingerprint` hashes the
@@ -504,13 +508,14 @@ normalized state, template identity, or non-root resolved-policy projection is
 `comparison_drift`.
 
 The exact payload shape is
-`{"pairs":[{"baseline_normalized_prestate_fingerprint":"sha256:<hex>","baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_reset_started":true,"baseline_resolved_effect_policy_fingerprint":"sha256:<hex>","baseline_resolved_effect_policy_ref":"runs/<comparison-id>/resolved-effect-policies/<run-id>.json","baseline_unavailable_reason":null,"candidate_normalized_prestate_fingerprint":"sha256:<hex>","candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_started":true,"candidate_resolved_effect_policy_fingerprint":"sha256:<hex>","candidate_resolved_effect_policy_ref":"runs/<comparison-id>/resolved-effect-policies/<run-id>.json","candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","effect_policy_template_ref":"<archived-chart-effect-policy-ref>","repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","resolved_policies_normalized_equal":true,"status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
+`{"pairs":[{"baseline_normalized_prestate_fingerprint":"sha256:<hex>","baseline_reset_performed":true,"baseline_reset_result_fingerprint":"sha256:<hex>","baseline_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","baseline_reset_started":true,"baseline_resolved_effect_policy_fingerprint":"sha256:<hex>","baseline_resolved_effect_policy_ref":"runs/<comparison-id>/resolved-effect-policies/<run-id>.json","baseline_unavailable_reason":null,"candidate_normalized_prestate_fingerprint":"sha256:<hex>","candidate_reset_performed":true,"candidate_reset_result_fingerprint":"sha256:<hex>","candidate_reset_result_ref":"runs/<comparison-id>/reset-results/<run-id>.json","candidate_reset_started":true,"candidate_resolved_effect_policy_fingerprint":"sha256:<hex>","candidate_resolved_effect_policy_ref":"runs/<comparison-id>/resolved-effect-policies/<run-id>.json","candidate_unavailable_reason":null,"chart_fingerprint":"sha256:<hex>","effect_policy_template_fingerprint":"sha256:<hex>","effect_policy_template_ref":null,"repeat_id":"<repeat-id>","reset_recipe_fingerprint":"sha256:<hex>","resolved_policies_normalized_equal":true,"status":"pass","world_fingerprint":"sha256:<hex>"}],"schema":"paired-reset-state-validation/v1"}`.
 Pairs sort by `(chart_fingerprint, repeat_id)` and are complete and unique.
 `pass` requires both `*_reset_started` and `*_reset_performed` true, non-null result pairs, null
 reasons, equal per-arm normalized prestates, one shared chart-owned policy
 template, and resolved policies equal after stripping only their verified
 sandbox-root substitutions. Raw resolved-policy fingerprints are expected to
-differ across sandboxes. A tuple whose
+differ across sandboxes. The template ref is null exactly for the inline
+all-deny fingerprint and otherwise is the archive-qualified chart ref. A tuple whose
 runner stops before reset has `status: unavailable_prestart`, the affected
 started/performed flags false, null result, resolved-policy, and normalized-prestate fields, and a
 nonempty reason matching the execution row; the other arm retains its observed
@@ -636,6 +641,10 @@ The report binds the exact emitted `runs.jsonl` bytes. Its parsed rows MUST equa
 `executions` in order and content. Every executable run also binds the observed
 reset-result/pre-state artifact; a missing or mismatched result is
 `invalid_environment`, even when the reset recipe itself is unchanged.
+Every executable row also binds the exact run-owned resolved-effect-policy
+ref/fingerprint whose digest equals the reset result, inventory, and access
+proof. This applies to `run`, `mutate`, and both compare arms; paired validation
+reuses the two row-owned pairs rather than owning their only preimages.
 Every exact-fidelity executable run additionally binds the two distinct,
 byte-identical-prestate admission reset artifacts required before chart
 admission; missing or duplicate proof refs invalidate the fidelity claim.
@@ -716,6 +725,8 @@ validation pair as required above:
   "reset_result_ref": null,
   "reset_result_fingerprint": null,
   "effect_policy_fingerprint": "sha256:...",
+  "resolved_effect_policy_ref": "runs/run-group-.../resolved-effect-policies/run-....json",
+  "resolved_effect_policy_fingerprint": "sha256:...",
   "tool_access_policy_fingerprint": "sha256:...",
   "metadata_observation_policy_ref": "roots/<root-digest-hex>/environment/metadata-observation-policy.json",
   "metadata_observation_policy_fingerprint": "sha256:...",

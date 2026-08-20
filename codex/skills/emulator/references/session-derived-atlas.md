@@ -490,8 +490,9 @@ choices can be revised after correction reveal.
 First parse the finalized chart as data. For a pending design or its implement
 successor, normalize every field
 pointer named by the frozen materialization plan to the same closed
-`{"field_pointer":"<pointer>","materialization_plan_fingerprint":"sha256:<hex>"}`
-placeholder. Thus filling planned implementation bytes does not change the
+`{"field_pointer":"<pointer>","materializer_fingerprint":"sha256:<hex>","materializer_ref":"materializers/<digest-hex>.json"}`
+placeholder taken from that field's plan entry. The subject does not contain
+the plan fingerprint or finalized chart fingerprint. Thus filling planned implementation bytes does not change the
 reviewed semantic subject; any unplanned or changed-plan field still changes it
 and requires fresh review.
 Then remove the entire `/environment_chart/evaluator/authority/correction_review`
@@ -986,11 +987,14 @@ but it neither fabricates nor claims comparison
 against a holdout corpus.
 
 The target is closed exact RFC 8785 bytes:
-`{"charts":[{"actor_visible_state_fingerprint":"sha256:<hex>","actor_visible_state_ref":"actors/<chart-id>.md","chart_fingerprint":"sha256:<hex>","chart_semantics_fingerprint":"sha256:<hex>","chart_semantics_ref":"charts/<chart-id>.yaml","correction_fingerprint":"sha256:<hex>","correction_ref":"source/<chart-id>/correction.json","hidden_action_fingerprint":"<rejected_historical_action_fingerprint>","hidden_action_ref":"<rejected_historical_action_ref>","hidden_evaluator_fingerprint":"sha256:<hex>","hidden_evaluator_ref":"evaluators/<chart-id>.json","outcome_projection_fingerprint":"sha256:<hex>","outcome_projection_ref":"source/<chart-id>/outcome.json","prompt_fingerprint":"sha256:<hex>","prompt_ref":"actors/<chart-id>-prompt.md","recovery_fingerprint":"sha256:<hex>","recovery_ref":"source/<chart-id>/recovery.json","source_byte_evidence":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}],"target_kind":"historical_correction"}],"schema":"holdout-semantic-target/v1"}`.
+`{"charts":[{"actor_visible_state_fingerprint":"sha256:<hex>","actor_visible_state_ref":"actors/<chart-id>.md","chart_fingerprint":"sha256:<hex>","chart_semantics_fingerprint":"sha256:<hex>","chart_semantics_ref":"<root-chart-ref>","correction_fingerprint":"sha256:<hex>","correction_ref":"source/<chart-id>/correction.json","hidden_action_fingerprint":"<rejected_historical_action_fingerprint>","hidden_action_ref":"<rejected_historical_action_ref>","hidden_evaluator_fingerprint":"sha256:<hex>","hidden_evaluator_ref":"evaluators/<chart-id>.json","outcome_projection_fingerprint":"sha256:<hex>","outcome_projection_ref":"source/<chart-id>/outcome.json","prompt_fingerprint":"sha256:<hex>","prompt_ref":"actors/<chart-id>-prompt.md","recovery_fingerprint":"sha256:<hex>","recovery_ref":"source/<chart-id>/recovery.json","source_byte_evidence":[{"fingerprint":"sha256:<hex>","ref":"source/<chart-id>/source-maps/<source-id>.yaml"}],"target_kind":"historical_correction"}],"schema":"holdout-semantic-target/v1"}`.
 Charts sort by fingerprint and equal the complete selected holdout chart set;
 every nested pair resolves exact closure bytes and source evidence arrays are
 sorted and duplicate-free. No omitted selected chart or hidden projection can
 validate.
+`chart_semantics_ref`/fingerprint is exactly that chart's root
+`chart_ref`/`chart_fingerprint` pair for every chart kind; no synthesized or
+correction-only alternate preimage is admitted.
 Each chart entry is a tagged union. Actor-visible state, prompt, chart
 semantics, chart fingerprint, and the exact hidden evaluator pair are non-null
 in every variant. `actor_visible_state_ref`/fingerprint equal the chart's exact

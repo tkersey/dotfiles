@@ -500,8 +500,11 @@ optimizer policy is the exact deterministic projection of the complete
 `factor-selection/v1.optimizer_visible_policy` object frozen before candidate
 generation and, when applicable, before any holdout semantic read, plus
 discovery/development inputs. It contains no holdout IDs,
-tags, partitions, fingerprints, evaluator criteria, thresholds, or commitment
-digest from which they can be enumerated.
+tags, partitions, evaluator criteria, thresholds, or outer baseline/holdout/
+commitment fingerprints from which protected material can be enumerated.
+Policy-local template, tool-schema, message-projection, and ownership-authority
+fingerprints defined inside `optimizer_visible_policy` remain required; the
+projection removes no field from that subobject.
 The predicate is an ordered `targeted_chart_rules` array whose entries contain
 exact `factor`, `chart_fingerprint`, and boolean `targeted`; every selecting
 chart appears exactly once. Post-outcome classification is forbidden.
