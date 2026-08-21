@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Land"
-  short_description: "Safely merge a ready GitHub PR and clean its state"
-  default_prompt: "Use $land to verify the exact PR and head commit, merge or wait for queue completion, prove live merged state, and safely clean branches and associated worktrees."
+  short_description: "Reconcile reviews, merge the exact PR, and clean state"
+  default_prompt: "Use $land to reconcile every unresolved review thread through evidence-backed repair or disposition, bind each successor head as a fresh landing epoch, establish current exact-head merge admission, prove live merged state, and safely clean branches and associated worktrees."

@@ -1,24 +1,37 @@
 ---
 name: land
-description: "Safely finish an explicitly selected GitHub PR: bind exact repository/base/head identity, close review blockers, verify required checks, merge or wait for queue/auto-merge completion, prove live MERGED state, and then clean remote/local branches and associated worktrees. Use only for explicit `$land` or unmistakable merge/land intent. Do not use merely to watch CI, close an unmerged PR, delete a branch, sync local state, or open/update a PR."
+description: "Safely finish an explicitly selected GitHub PR: reconcile every unresolved review thread, bind each successor head as a fresh landing epoch, verify merge admission, merge the exact approved head or wait for queue/auto-merge completion, prove live MERGED state, and then clean remote/local branches and associated worktrees. Use only for explicit `$land` or unmistakable merge/land intent. Do not use merely to watch CI, close an unmerged PR, delete a branch, sync local state, or open/update a PR."
 ---
 
 # Land
 
 ## Purpose
 
-Land one explicitly selected pull request as a fail-closed transaction.
+Finish one explicitly selected pull request as a proof-preserving landing
+protocol.
 
-Core rule:
+Core laws:
 
 ```text
+An unresolved review thread means merge not ready, not workflow terminal.
+Every unresolved review thread must reach a justified disposition before merge.
+Thread resolution records proof; it never creates proof.
 Mutation success is not landing success.
-Do not clean branches or worktrees until live GitHub state proves the intended PR is MERGED.
 ```
 
-`$ship` owns PR creation, proof publication, and draft-to-ready promotion. `$land`
-consumes live state and may consume SHIP-v1 as a hint, but copied receipts are
-never authoritative for merge readiness.
+`$land` owns end-to-end completion: review-thread inventory, review closure,
+fresh merge admission, exact-head merge, live terminal readback, and cleanup.
+It does not duplicate semantic owners:
+
+- `$review-fold` classifies a concern's authority and current applicability;
+- `$actuating review-closeout` repairs accepted current concerns, with its direct
+  owner-local repair path available for an isolated mistake;
+- `$ship` publishes a validated successor head;
+- `$land` proves the resulting disposition, resolves the GitHub thread, and
+  restarts landing against the successor head.
+
+Copied receipts and thread metadata are never authoritative for current merge
+readiness.
 
 ## Activation boundary
 
@@ -36,7 +49,7 @@ The skill is side-effecting and must remain explicit-invocation only.
 
 ## Input
 
-Establish one immutable target before any mutation:
+Bind one immutable landing epoch before any mutation:
 
 ```yaml
 land_input:
@@ -56,43 +69,121 @@ land_input:
     associated_worktrees: yes | no
 ```
 
-Resolve the repository and PR explicitly. Never infer an irreversible target
-from a branch name alone. Require the live repository, PR number, base ref, head
-repository, head ref, and head OID to match the target. Record the base OID as a
-preflight fact; merge queues may legitimately advance the base before the PR
-lands.
+Never infer an irreversible target from a branch name alone. Require the live
+repository, PR number, base ref, head repository, head ref, and head OID to match
+the epoch. Record the base OID as an observation; a merge queue may legitimately
+advance the base before the PR lands.
 
 ## State model
 
-Choose exactly one mode:
+Choose exactly one route:
 
 ```text
+reconcile-reviews
+rebind-successor-head
 merge-now
 queue-and-wait
 auto-merge-and-wait
 cleanup-only
-blocked
+obstructed
 ```
 
-- `merge-now`: every gate passes and the repository permits immediate merge.
-- `queue-and-wait`: every admission gate passes and repository policy requires a merge queue.
-- `auto-merge-and-wait`: every admission gate passes and explicit repository/user policy selects auto-merge.
-- `cleanup-only`: the exact PR is already merged and only post-merge cleanup remains.
-- `blocked`: target identity, evidence, policy, or authority is incomplete or inconsistent.
+- `reconcile-reviews`: merge is not ready, but review closure can progress.
+- `rebind-successor-head`: a repair or authorized branch update published a new
+  head; supersede the old epoch and rebuild all evidence.
+- `merge-now`: every admission gate passes and immediate merge is permitted.
+- `queue-and-wait`: every queue-admission gate passes; submit and wait for live
+  merged state.
+- `auto-merge-and-wait`: every admission gate passes and explicit policy selects
+  auto-merge; enable it and wait for live merged state.
+- `cleanup-only`: the exact PR/head is already merged.
+- `obstructed`: no safe authorized successor action exists.
 
-A draft PR, closed-unmerged PR, conflicting PR, changed head, active requested
-changes, incomplete review inventory, missing approval, or non-green required
-check is `blocked`. Do not silently reopen, promote, update, override, or retarget.
+A repairable review concern is never `obstructed` before repair is attempted.
+Reserve obstruction for missing mutation authority, an undecidable user-owned
+requirement, required reviewer clarification, an unrepairable conflict, invalid
+or unavailable evidence, or a repair whose strongest relevant validation fails.
 
-## Freshness invariant
+## Landing epochs
 
-Every push, branch update, review-thread resolution, approval change, or other
-material PR mutation invalidates all cached landing evidence.
+A landing epoch is immutable in repository/PR/base/head identity. Any push,
+branch update, review repair, or other head mutation supersedes the current
+epoch rather than retargeting it.
 
-After the final mutation, rebuild one fresh snapshot containing:
+After `$ship` publishes successor head `H[n+1]`:
+
+```text
+close epoch H[n] as superseded
+bind H[n+1] as a new immutable target
+discard every admission observation from H[n]
+fetch the complete review inventory again
+run complete fresh preflight
+```
+
+Do not carry approvals, checks, mergeability, thread counts, or resolution proof
+across a head change without fresh current-head evidence.
+
+## Review reconciliation
+
+Every unresolved review thread is owned work for `$land`, not merely a reason to
+stop. Land must drive every unresolved thread to a justified resolution before
+merge or prove an exact obstruction.
+
+For each unresolved thread:
+
+1. Fetch enough of the complete conversation to understand the concern. A bare
+   thread ID, latest-comment excerpt, `isOutdated`, or status count is
+   insufficient.
+2. Preserve the concern as a witness and ask `$review-fold` for law authority and
+   current applicability when the disposition is not mechanically evident.
+3. Choose exactly one disposition:
+
+   ```text
+   fixed-and-evidenced
+   already-satisfied-and-evidenced
+   obsolete-and-evidenced
+   reviewer-withdrawn
+   nonblocking-by-authority
+   needs-authority
+   needs-reviewer-clarification
+   repair-failed
+   ```
+
+4. For a current accepted concern that is directly repairable, do not return
+   terminal obstruction. Use the smallest authorized repair path:
+
+   ```text
+   patch -> validate -> publish successor head -> prove current-head discharge
+   ```
+
+   Then enter `rebind-successor-head` and restart complete preflight.
+5. Resolve the GitHub thread only after the disposition is evidenced at the
+   current head and live resolution readback succeeds.
+6. Refetch every review-thread page after each resolution batch and require zero
+   unresolved threads before merge admission.
+
+`fixed-and-evidenced` requires a successor head distinct from the head on which
+the current defect was observed. Use `already-satisfied-and-evidenced` when the
+current head already falsifies the concern. `isOutdated` alone never proves
+obsolescence.
+
+A generic continuation instruction such as "continue", "finish it", or "do your
+job" is not reviewer withdrawal, defect invalidation, new-requirement adoption,
+or permission to dismiss a current substantive concern.
+
+Never bulk-resolve from bare thread IDs. Batch execution is permitted only after
+each thread is bound to an individual evidence-bearing disposition. Preserve a
+current substantive concern at an unchanged head; do not resolve or merge it.
+
+See [landing-protocol.md](references/landing-protocol.md).
+
+## Merge admission
+
+After review reconciliation is complete, rebuild one current-head snapshot with:
 
 - exact target identity and `headRefOid`;
-- complete paginated review-thread inventory;
+- complete paginated review-thread inventory and unresolved thread IDs;
+- per-thread reconciliation records for every thread resolved by this landing;
 - structured review decision, latest reviews, and review requests;
 - final required-check buckets;
 - conflict, branch-freshness, merge-method, queue, and repository-policy state.
@@ -103,34 +194,16 @@ Run the pure evaluator:
 uv run python3 codex/skills/land/scripts/evaluate_preflight.py <snapshot.json>
 ```
 
-Proceed only when its route matches the intended mode. See
-[references/landing-protocol.md](references/landing-protocol.md).
-
-## Review gate
-
-Fetch every review-thread page. Require the collected node count to equal
-`totalCount`, the final `hasNextPage` to be false, and every page to report the
-same expected head OID. API failure, missing counts, duplicate/partial pages, or
-head drift blocks landing.
-
-Every unresolved thread requires one explicit disposition:
+Interpret its result:
 
 ```text
-fixed-and-evidenced
-obsolete-and-explicitly-withdrawn
-resolve-only-with-user-authorization
-still-blocking
-needs-reviewer-clarification
+exit 0 / verdict pass      merge admission is ready
+exit 3 / verdict continue  follow the returned nonterminal route
+exit 2 / verdict block     preserve state and report the exact obstruction
 ```
 
-Do not equate `isOutdated` with resolved. Resolve a GitHub thread only when the
-concern is objectively fixed or explicitly withdrawn; ambiguous design concerns,
-questions, and reviewer-owned blockers remain open. After any resolution,
-rebuild the complete inventory.
-
-Use structured `reviewDecision`, `latestReviews`, and `reviewRequests` before
-interpreting free-form top-level comments. An explicit unresolved human blocker
-still blocks even when GitHub's normalized review decision appears permissive.
+`REVIEW_THREADS_UNRESOLVED` routes to `reconcile-reviews`; it is never by itself
+a terminal workflow result.
 
 ## Required-check gate
 
@@ -140,28 +213,34 @@ final snapshot with `name`, `state`, `bucket`, and `link`.
 For required checks:
 
 - `pass` is accepted;
-- `fail`, `pending`, or `cancel` blocks;
-- `skipping` blocks unless repository policy explicitly accepts that required context as skipped;
-- an empty required-check set is accepted only after proving repository policy requires none.
+- `fail`, `pending`, or `cancel` obstructs merge admission;
+- `skipping` obstructs unless live repository policy explicitly accepts it;
+- an empty required-check set is accepted only after proving policy requires
+  none.
 
 Never interpret command exit zero alone as green.
 
 ## Merge mutation
 
-Immediately before mutation, recapture the exact live `headRefOid`. Pass that
-same OID to the merge command's exact-head guard.
+Immediately before mutation, repeat the complete current-head review sweep and
+merge-admission readback, then recapture `headRefOid`. Pass that same OID to the
+merge command's exact-head guard.
 
 - Never bundle cleanup into the merge command; do not use `--delete-branch`.
-- Never use `--admin` unless the user explicitly authorizes a named protection bypass after seeing the exact blocked rule.
-- Keep the merge method aligned with repository policy.
-- A queue or auto-merge submission is nonterminal. Continue monitoring until live state is actually merged.
+- Ordinary `$land` never performs an administrator protection bypass.
+- Keep the merge method aligned with live repository policy.
+- Queue and auto-merge submission are nonterminal; continue until live state is
+  actually merged.
+- A merge queue does not require the source branch to be current merely because
+  direct strict merging would; derive branch freshness from the selected route
+  and live policy.
 
-If the head OID changes, the merge must fail or stop. Do not retarget the attempt
-to the new head automatically.
+If the head changes, stop the mutation, supersede the epoch, and restart against
+the newly authorized head. Never retarget an in-flight merge attempt.
 
 ## Landing postcondition
 
-Before reporting success or cleaning anything, read live PR state and prove:
+Before reporting success or cleaning anything, prove from live state:
 
 ```text
 repository and PR still match the target
@@ -171,13 +250,12 @@ mergeCommit OID is non-null
 landed head OID == expected head OID
 ```
 
-For queue and auto-merge modes, wait through all nonterminal states. A successful
-submission, enabled auto-merge request, or queue admission is not a completed
-landing.
+A successful command, queue admission, or enabled auto-merge request is not a
+completed landing.
 
 ## Cleanup transaction
 
-Cleanup is post-merge and independently reported. A cleanup blocker does not
+Cleanup is post-merge and independently reported. A cleanup obstruction does not
 undo a successful merge; it produces a degraded cleanup result.
 
 Order:
@@ -205,46 +283,57 @@ For every associated worktree:
 
 - require its `HEAD` and branch ref to equal the landed head OID;
 - require a clean tracked and untracked status;
-- preserve and report locked worktrees, inaccessible paths, head drift, unique commits, or dirty state;
-- never use `git worktree remove --force` and never delete the directory with `rm -rf`;
-- if it is the primary worktree, switch it to the base branch and fast-forward rather than removing it;
-- if it is a linked worktree, move the running shell outside that path, run `git worktree remove -- <path>`, and verify the record disappeared;
-- prune only stale administrative metadata after path-safe removal and then refetch the full worktree inventory.
+- preserve and report locked worktrees, inaccessible paths, head drift, unique
+  commits, or dirty state;
+- never use `git worktree remove --force` and never delete the directory with
+  `rm -rf`;
+- switch the primary worktree to the base branch and fast-forward it rather than
+  removing it;
+- move the running shell outside a linked worktree, run
+  `git worktree remove -- <path>`, and verify the record disappeared;
+- prune only stale administrative metadata after path-safe removal and refetch
+  the complete worktree inventory.
 
-All associated worktrees must be removed or switched away from the head branch
-before deleting the local branch. See the exact algorithm in
-[references/landing-protocol.md](references/landing-protocol.md).
+All associated worktrees must be removed or switched away before deleting the
+local branch.
 
 ### Branches
 
-Delete the remote branch only when the live remote ref still equals the landed
-head OID and the head repository is the intended deletion target. Delete the
-local branch only when its ref still equals the landed head OID, no worktree is associated with it, and the current worktree is on the updated base branch.
-If requested cleanup observes that the exact local or remote branch ref is
-already absent, report `already-absent` as a successful no-op; never claim that
-the landing workflow deleted it.
+Delete the remote branch only when its live ref still equals the landed head OID
+and the head repository is the intended deletion target. Delete the local branch
+only when its ref still equals the landed head OID, no worktree is associated,
+and the current worktree is on the updated base branch.
 
-Under squash merge, a force branch deletion may be necessary because the landed
-commit is not an ancestor of the squash commit. Use it only after the OID and
-worktree proofs above; never inherit an implicit force-delete from `gh pr merge`.
+If an exact requested ref is already absent, report `already-absent` as a
+successful no-op; never claim that this landing deleted it.
+
+Under squash or rebase merge, local branch deletion may require force because the
+landed commit is rewritten. Use it only after exact-OID and worktree proof; never
+inherit implicit force deletion from `gh pr merge`.
 
 ## Output
 
-Emit one `LAND-v1` record after terminal readback and cleanup. Keep merge outcome,
-remote cleanup, local cleanup, and per-worktree cleanup separate. Use
-[references/land-record.md](references/land-record.md).
+Emit one `LAND-v2` record after terminal readback and cleanup attempts. Preserve
+landing epochs, per-thread review dispositions, merge admission, postcondition,
+remote cleanup, local cleanup, per-worktree cleanup, and plural obstructions as
+separate facts. See [land-record.md](references/land-record.md).
 
 ## Guardrails
 
 - Never merge an ambiguous PR target.
-- Never reuse evidence from before the final material mutation.
+- Never treat unresolved review threads as terminal when safe repair can progress.
+- Never resolve a current substantive concern without current-head discharge
+  evidence.
+- Never resolve threads from bare IDs or generic user encouragement.
+- Never reuse evidence across a material head mutation.
 - Never merge with an unresolved or incompletely inventoried review thread.
 - Never treat canceled required checks as green.
-- Never bypass protections with `--admin` without explicit user authorization.
+- Never use `--admin` in ordinary `$land`.
 - Never report queued, auto-enabled, or command-success state as merged.
 - Never clean a branch or worktree before a live `MERGED` postcondition.
 - Never force-remove a dirty, locked, drifted, or unidentified worktree.
-- If blocked, preserve state and report the exact failed gate and next safe action.
+- If obstructed, preserve state and report every exact obstruction and next safe
+  action.
 
 ## Resources
 
