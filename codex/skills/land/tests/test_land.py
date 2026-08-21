@@ -8,11 +8,11 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL = (ROOT / "SKILL.md").read_text()
-PROTOCOL = (ROOT / "references" / "landing-protocol.md").read_text()
-RECORD = (ROOT / "references" / "land-record.md").read_text()
-CONTRACT = json.loads((ROOT / "references" / "decision-contract.json").read_text())
-AGENT = (ROOT / "agents" / "openai.yaml").read_text()
-SCRIPT = ROOT / "scripts" / "evaluate_preflight.py"
+PROTOCOL = (ROOT / "references/landing-protocol.md").read_text()
+RECORD = (ROOT / "references/land-record.md").read_text()
+CONTRACT = json.loads((ROOT / "references/decision-contract.json").read_text())
+AGENT = (ROOT / "agents/openai.yaml").read_text()
+SCRIPT = ROOT / "scripts/evaluate_preflight.py"
 SPEC = importlib.util.spec_from_file_location("land_preflight", SCRIPT)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
