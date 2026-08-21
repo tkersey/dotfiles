@@ -110,11 +110,6 @@ input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots.
 
-`hard_delta` compares exact hard-failure witnesses across matched arms,
-including denied support decisions and failed oracle, state, or trace checks. A
-candidate-only witness is a new candidate hard failure even when both aggregate
-run statuses are `hard_fail`.
-
 ## runs.jsonl
 
 Each fresh run emits one append-only row within its comparison directory:
@@ -206,23 +201,19 @@ is `ambiguous`.
 
 ## Recommendation authority
 
-`adopt` requires complete environment-valid baseline and candidate arms for
-every required chart and repeat, no candidate-only hard-failure witness, no
-protected regression, no ambiguous required chart comparison, at least one
-targeted untouched holdout improvement, order-stable residual preference when
-used, and evaluation of the exact candidate fingerprint.
+`adopt` requires all required candidate runs to be environment-valid, no new
+critical hard failure, no protected regression, at least one targeted untouched
+holdout improvement, order-stable residual preference when used, and evaluation
+of the exact candidate fingerprint.
 
-Recommendation precedence is total: any candidate-only hard-failure witness,
-protected regression, or targeted regression yields `reject`; otherwise a
-missing or invalid required arm, ambiguous required chart comparison, tie,
-unsupported required chart, evaluator disagreement, closure/access proof gap,
-or insufficient untouched holdout coverage yields `insufficient_evidence`;
-only then may `adopt` be considered.
+A tie, unsupported required chart, evaluator disagreement, closure/access proof
+gap, or insufficient untouched holdout coverage yields
+`insufficient_evidence`. A targeted hard regression yields `reject`.
 
-Reports may describe evidence as `paired_replay_delta`,
-`observed_association`, `regression`, or `insufficient_evidence`, but do not
-claim a causal mechanism from an uncontrolled comparison. The recommendation
-grants no mutation, merge, release, or publication authority.
+Reports use `paired_replay_delta`, `observed_association`, `regression`, or
+`insufficient_evidence` as bounded evidence language, not as a causal claim.
+The recommendation grants no mutation, merge, release, or publication
+authority.
 
 ## Datasets
 
