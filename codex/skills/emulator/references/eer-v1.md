@@ -210,10 +210,11 @@ A tie, unsupported required chart, evaluator disagreement, closure/access proof
 gap, or insufficient untouched holdout coverage yields
 `insufficient_evidence`. A targeted hard regression yields `reject`.
 
-Reports use `paired_replay_delta`, `observed_association`, `regression`, or
-`insufficient_evidence` as bounded evidence language, not as a causal claim.
-The recommendation grants no mutation, merge, release, or publication
-authority.
+In prose summaries and limitations, use `paired_replay_delta`,
+`observed_association`, `regression`, or `insufficient_evidence` as bounded
+evidence language, not as a causal claim. These are non-normative prose labels,
+not an EER field or alternate recommendation enum. The recommendation grants no
+mutation, merge, release, or publication authority.
 
 ## Datasets
 
