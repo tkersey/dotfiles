@@ -509,7 +509,9 @@ valid trajectories are allowed.
 ### Status mapping
 
 ~~~text
-executable or judgeable + oracle pass -> pass
+executable or judgeable + oracle pass + required terminal proof -> pass
+healthy actor exhausts max_steps/timeout without terminal proof -> hard_fail
+infrastructure fails to deliver contracted budget -> runtime_error
 executable or judgeable + hard oracle failure -> hard_fail
 denied action -> hard_fail
 attempted observed_only or unsupported transition -> unsupported_counterfactual

@@ -167,12 +167,15 @@ environment_chart:
     termination:
       terminal_conditions:
         - condition_id:
+          input: post_transition_observation
+          observation_schema_fingerprint:
           predicate:
             kind: json_pointer_equals | asset
             path:
             value:
             predicate_ref:
             predicate_fingerprint:
+            interpreter_fingerprint:
           authority_refs: []
       max_steps:
       timeout_ms:
@@ -298,8 +301,11 @@ its exact output is `{support_class, support_id, authority_refs}` with
 mapping; inline and asset classifications never coexist.
 Every terminal condition likewise has nonempty authority refs; timeout and step
 bounds do not invent permission to terminate successfully. A terminal predicate
-uses the same exact JSON-Pointer equality language as inline support, or
+uses the same exact JSON-Pointer equality language as inline support over the
+post-transition observation named by `observation_schema_fingerprint`, or
 `kind: asset` with non-null predicate ref/fingerprint and null inline fields.
+The asset ABI receives exact `{observation, trace_position}` canonical JSON and
+returns exact `{"terminal":true|false}` through the bound interpreter.
 Mixed or prose predicates are invalid.
 
 Mutation dimensions are optional unless the selected emulator invocation mode
@@ -321,7 +327,8 @@ aggregate `kind`, sorted `expected_preserved_law_refs`, and sorted
 `expected_violated_law_refs`. Case identity is the qualified
 `(dimension_id, case_id)` pair. The chart-bound assignment classifier/table is
 fingerprinted and deterministically derives aggregate kind and laws before the
-run; generator self-report is not authority. Every
+run; it also requires every assignment value to equal the chart-domain value
+for its qualified `(dimension_id, case_id)` pair. Generator self-report is not authority. Every
 mutate run binds the resulting assignment ref/fingerprint in runs.jsonl and
 EER; omission is `invalid_environment`.
 

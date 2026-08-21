@@ -156,6 +156,10 @@ and row ownership. They are equal except for deferred export: then
 `invocation_mode: export`, `evidence_mode` equals the referenced source EER's
 run/mutate/compare mode, and the source EER pair is non-null and resolves exact
 sealed bytes. The source pair is null otherwise.
+An export EER projects contract identity, chart fingerprints, closure inventory,
+comparison/run-group ownership, executions, chart comparisons, limitations,
+and evidence fields byte-identically from that source EER; only authorized
+dataset refs are new. Current atlas state cannot replace source evidence.
 
 `run` mode omits `comparison` and emits executions plus applicable datasets and
 limitations. It does not invent a candidate fingerprint or recommendation.
@@ -185,7 +189,7 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "harness_fingerprint": "sha256:...",
   "factor": "question_policy",
   "repeat_id": 1,
-  "randomness_cohort_ref": "runs/cmp-.../randomness/repeat-1.json",
+  "randomness_cohort_ref": "runs/cmp-.../randomness/<chart-fingerprint-hex>/repeat-1.json",
   "randomness_cohort_fingerprint": "sha256:...",
   "mutation_assignment_ref": null,
   "mutation_assignment_fingerprint": null,
@@ -206,6 +210,9 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "support_result": "judgeable",
   "status": "pass",
   "termination_reason": "decision_emitted",
+  "terminal_condition_id": null,
+  "terminal_evidence_ref": null,
+  "terminal_evidence_fingerprint": null,
   "status_reason": null,
   "hard_oracle_results_ref": "oracle-results/run-....json",
   "state_diff_ref": null,
@@ -232,7 +239,10 @@ A mutate attempt failing before assignment records both null only with
 `status: invalid_environment` and `status_reason: mutation_assignment_unavailable`.
 They are null for non-mutate rows.
 Actor/environment seed keys are always serialized and are null exactly when
-their corresponding control is `unavailable`.
+their corresponding control is `unavailable`. A sampled control may also have a
+null seed only on a pre-allocation `invalid_environment` row with
+`status_reason: seed_allocation_unavailable`; all other sampled rows bind the
+realized seed.
 
 ## comparison.json
 
@@ -289,8 +299,9 @@ to harness identity, and is run in both presentation orders. Order disagreement
 is `ambiguous`.
 For `full_episode`, `status: pass` requires non-null terminal condition ID and
 evidence resolving the declared predicate result. Reaching only max steps or
-timeout without a true terminal condition is non-passing
-`runtime_error: bounded_stop_without_terminal_condition`.
+timeout without a true terminal condition is `hard_fail` when the healthy actor
+exhausted the bound, and `runtime_error` only when infrastructure failed to
+deliver the contracted budget.
 
 ## Recommendation authority
 
@@ -316,6 +327,14 @@ stochastic evidence. All other pairs are invalid.
 `study_relation` independently preserves paired versus uncontrolled study
 design for every outcome, including regressions; `outcome` preserves direction.
 Both fields are identical in EER and comparison.json.
+Admissible four-field tuples are exactly:
+
+- `adopt + improved + paired_replay_delta + paired_replay_delta`;
+- `adopt + improved + observed_association + observed_association`;
+- `reject + regressed + <either study_relation> + regression`;
+- `insufficient_evidence + noninferior|ambiguous|invalid + <either study_relation> + insufficient_evidence`.
+
+No other recommendation/outcome/study/evidence combination is valid.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`
 records `paired_replay_delta`, `observed_association`, `regression`, or
