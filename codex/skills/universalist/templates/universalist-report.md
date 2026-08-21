@@ -2,6 +2,16 @@
 
 ## Track
 
+## Trigger evidence
+
+## Incoming incumbent or ordinary candidate
+
+## Boundary disposition
+
+## Material decision delta
+
+## Mechanic: ordinary / card:<id>
+
 ## Signal
 
 ## Current encoding

@@ -4,22 +4,24 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v16"
+      "source_fingerprint": "universalist-boundary-decision-v17"
     },
     "triggers": [
       {
         "trigger_id": "UNI-BOUNDARY",
-        "description": "Implementation or resolution considers how values, effects, state, evidence, authority, or behavior cross an owned boundary.",
+        "description": "Current evidence makes an owned boundary a live semantic decision, reveals one law distributed across owners, or fires an invalidator of a prior boundary disposition.",
         "cue_literals": [
-          "code boundary",
-          "boundary disposition",
-          "law",
-          "falsifier"
+          "live boundary decision",
+          "semantic owner",
+          "trigger evidence",
+          "material decision delta"
         ],
         "cue_regexes": [],
         "exclusions": [
+          "mere boundary presence, crossing, preservation, validation, publication, merge, or mechanical transport",
+          "routine implementation, review bookkeeping, rebasing, Ship, or Land against an accepted architecture",
           "work wholly internal to one unchanged boundary with no distributed law",
-          "category theory exposition without a concrete seam"
+          "category theory exposition without a concrete seam unless explicitly invoked"
         ]
       },
       {
@@ -54,7 +56,7 @@
       },
       {
         "trigger_id": "UNI-RECLASSIFY",
-        "description": "New execution evidence may materially change a current boundary nomination before the next affected mutation.",
+        "description": "New execution evidence fires an invalidator or may materially change a current boundary nomination before the next affected mutation.",
         "cue_literals": [
           "prior disposition",
           "new evidence",
@@ -63,7 +65,7 @@
         ],
         "cue_regexes": [],
         "exclusions": [
-          "same owner, law, falsifier, route, and obligations under routine refinement"
+          "same owner, law, falsifier, route, obligations, and invalidators under routine refinement"
         ]
       },
       {
@@ -85,7 +87,7 @@
     "routes": [
       {
         "route_id": "UNI-PRESERVE",
-        "description": "Preserve an already exact boundary.",
+        "description": "Preserve an already exact boundary against live change pressure.",
         "aliases": [],
         "terminal": true
       },
@@ -122,23 +124,33 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
+          "trigger evidence",
           "boundary",
+          "incoming incumbent or ordinary candidate",
           "owner",
           "required observations",
           "law",
           "falsifier",
+          "material decision delta",
+          "mechanic",
           "invalidators"
         ],
         "success_signals": [
-          "the incumbent or ordinary candidate is explicit",
-          "preservation adds no abstraction"
+          "trigger evidence identifies a live choice, distributed law, fired invalidator, Actuating reconsideration handoff, or explicit invocation",
+          "the incoming incumbent or ordinary candidate is explicit",
+          "preservation defeats live change pressure without adding abstraction",
+          "Actuating owns its invocation point and receives one nomination"
         ],
         "failure_signals": [
+          "boundary presence or crossing is treated as sufficient activation",
+          "routine implementation, publication, landing, or mechanical rebase receives a disposition",
+          "preservation is emitted without live change pressure",
+          "duplicate root and Actuating passes",
           "boundary without owner",
           "symptom-only patch",
-          "missing falsifier"
+          "missing falsifier or material decision delta"
         ],
-        "rationale": "Broad activation is useful only when it yields one exact disposition."
+        "rationale": "Activation is useful only when semantic pressure exists and yields one exact disposition."
       },
       {
         "clause_id": "UNI-MINIMAL-001",
@@ -308,7 +320,7 @@
           "falsifier"
         ],
         "success_signals": [
-          "ordinary seams explicitly use no advanced mechanics",
+          "ordinary dominance explicitly rejects advanced mechanics",
           "selected mechanics change the artifact and proof"
         ],
         "failure_signals": [
@@ -391,14 +403,16 @@
           "retain, split, escalate, or obstruct outcome"
         ],
         "success_signals": [
+          "unchanged dispositions are reused silently",
           "Actuating receives changed evidence and decides whether architecture closure still holds",
           "Git outranks stale nomination"
         ],
         "failure_signals": [
+          "routine refinement creates a new Universalist pass",
           "mutation continues under a stale nomination",
           "Universalist independently reopens Actuating architecture"
         ],
-        "rationale": "Nominations are revisable proof leases over current evidence."
+        "rationale": "Nominations are revisable proof leases over current evidence, not recurring ceremony."
       },
       {
         "clause_id": "UNI-ROOT-001",
@@ -429,7 +443,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "Only independently durable standalone decisions need a plan-bound receipt; Actuating keeps nominations in context."
+      "rationale": "Only independently durable standalone decisions need a plan-bound receipt; ordinary activations carry trigger and material-delta evidence in the receiving context, while nonactivation remains silent."
     }
   }
 }
