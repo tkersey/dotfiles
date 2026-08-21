@@ -64,6 +64,16 @@ An unqualified request to review, inspect, audit, or classify selects `triage`.
 Mutation requires explicit implement, fix, resolve, address, or closeout intent.
 These are workflow routes, not architectural change classes.
 
+Review-bearing routes accept request-local scheduling modifiers:
+
+| Modifier | Selection | Effect |
+|---|---|---|
+| `parallel-reviews` | default when omitted | initial standard and four auxiliaries run concurrently |
+| `serial-reviews` | explicit opt-in | initial standard and each auxiliary run serially in contract order |
+
+These modifiers change review dispatch only. They do not select a route, alter
+mutation authority, remove a lens, weaken receipt quality, or change convergence.
+
 ## Build the live Actuating View
 
 At entry and after every material external change, observe:
@@ -366,14 +376,21 @@ observation digest.
 
 For the unchanged head:
 
-- launch standard plus four compact auxiliaries concurrently;
-- never cancel siblings;
-- require every terminal semantic verdict;
-- allow one request-local recovery for verdictless transport failure;
-- count the initial standard clean as clean one;
+- select `parallel-reviews` when no scheduling modifier is supplied;
+- in `parallel-reviews`, launch the initial standard plus four compact
+  auxiliaries concurrently and never cancel siblings;
+- in `serial-reviews`, launch the initial standard, footgun-finder,
+  invariant-ace, complexity-mitigator, and fresh-eyes one at a time, adjudicating
+  each terminal result before dispatching the next;
+- require every terminal semantic verdict and allow one request-local recovery
+  for verdictless transport failure;
+- count a clean initial standard as clean one;
 - run later standard confirmations serially;
 - require five consecutive distinct standard cleans;
-- reset all credit after a material head change.
+- after a material head change, reset all credit and restart the selected
+  schedule at its initial standard;
+- in `serial-reviews`, never dispatch the next review against a head that an
+  adjudicated finding will replace.
 
 Every finding passes through `$review-fold`. Credit only exact CAS receipts.
 Never reconstruct credit from prose, process exit, or claimed counts.
