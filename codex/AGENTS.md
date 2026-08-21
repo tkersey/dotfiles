@@ -39,13 +39,13 @@ You may see generic Codex guidance that says to stop immediately when unexpected
 - Run the canonical Metanoetic line exactly once per unchanged decision surface. `$metanoetic` generates candidates only. The receiving workflow owns materiality, admissibility, disposition, evidence, selection, mutation, and closure through its native fields and contracts; it may adopt, modify, reject, or retain the incumbent.
 - Skip terse acknowledgements, mechanical lookups, trivial edits, already-dispositive work, weakly grounded symptoms, and cases where divergence would violate accepted scope or authority.
 
-## Universalist boundary mandate
+## Universalist architecture-decision mandate
 
-- Invoke `$universalist` whenever implementation, refactoring, review, migration, or resolution considers a code boundary.
-- A boundary is considered when work creates, changes, preserves, validates, migrates, bypasses, removes, or resolves how values, effects, state, evidence, authority, or observable behavior cross modules/packages/APIs, public/internal contracts, DTOs/schemas/codecs, parsers/validators, storage/wire formats, syntax/interpreters/compilers, pure/effect handlers, state machines/protocols, plugins/tools/CLIs, processes, repositories, or deployment surfaces.
-- This mandate applies during ordinary feature implementation and PR/review resolution, including `$resolve`.
-- Activation is mandatory; escalation is proportional. If the existing boundary is already exact, record the preserved boundary, law, and falsifier, then continue the normal workflow without inventing a new abstraction.
-- Universalist team/subagent mode remains explicit-request only.
+- Detailed trigger semantics are owned by `$universalist` in its `SKILL.md` and machine-readable decision contract.
+- Invoke `$universalist` when current evidence makes an owned boundary a live semantic decision, reveals one law distributed across owners, or fires an invalidator of a prior boundary disposition.
+- Mere boundary presence, crossing, preservation, validation, publication, merge, or mechanical transport is insufficient. Skip routine implementation, review bookkeeping, rebasing, `$ship`, and `$land` against an accepted architecture unless that work exposes new semantic boundary evidence.
+- When `$actuating` is active, Actuating owns the Universalist invocation point during architecture reconsideration; do not run a duplicate root pass. Direct owner-local repair under an unchanged architecture does not activate Universalist.
+- Explicit `$universalist` invocation always runs. Universalist team/subagent mode remains explicit-request only.
 
 ## Tooling standards
 

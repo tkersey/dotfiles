@@ -8,7 +8,11 @@ adjudication there instead of allocating this plan.
 ## Composition context: standalone / Actuating-composed
 ## Decision owner:
 ## Decision carrier:
+## Trigger evidence:
+## Incoming incumbent or ordinary candidate:
 ## Boundary disposition:
+## Material decision delta: preservation / owner / admitted-domain / representation / composition / compatibility / migration / effects / failure-semantics / proof / obstruction
+## Mechanic: ordinary / card:<id>
 ## Disposition rationale and evidence:
 ## Owner:
 ## Source / target worlds:

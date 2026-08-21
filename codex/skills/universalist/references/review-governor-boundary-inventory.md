@@ -1,26 +1,40 @@
 # Review Governor Boundary Inventory
 
-`$universalist` is already active whenever review or resolution considers a code boundary. Boundary consideration itself is the activation signal. Activation is broad; escalation is proportional.
+Review or resolution does not activate `$universalist` merely because a code
+boundary is present. Activate only when current review evidence makes the
+boundary a live semantic decision, reveals one law distributed across owners,
+or fires an invalidator of a prior disposition. During Actuating review
+closeout, Actuating owns that invocation point.
 
-Expand the compact boundary receipt into this inventory when the same coarse owner keeps absorbing semantic branches.
+Expand an already activated compact disposition into this inventory only when
+the same coarse owner keeps absorbing semantic branches.
 
 Escalation signs:
 
-- same cluster recurs;
-- validation/replay/evidence branches accumulate;
-- compatibility/version semantics keep appearing;
-- receipt/journal/replay/authority semantics are spread across parallel predicates;
-- public/internal semantics are repeatedly reviewed.
+- the same semantic cluster recurs;
+- validation, replay, or evidence branches accumulate;
+- compatibility or version semantics keep appearing;
+- receipt, journal, replay, or authority semantics are spread across parallel
+  predicates;
+- public and internal semantics are repeatedly found inconsistent.
 
 Minimum boundary inventory:
 
 ```yaml
 boundary_inventory:
+  trigger_evidence:
+  prior_disposition:
+  material_decision_delta:
   semantic_surfaces: []
   duplicated_or_parallel_predicates: []
   implicit_table_or_algebra: yes | no | unknown
   missing_boundary_artifact: yes | no | unknown
-  decision: universalist | reduce | normal-form | distill | blocked
+  receiving_owner: actuating | standalone
+  disposition: preserve | ordinary | escalate | obstructed
 ```
 
-If no escalation sign is present, preserve the compact disposition and continue normal review resolution. If `missing_boundary_artifact` is `yes` or remains `unknown` after recurrence, ordinary owner mutation is blocked and any mutation permit must be denied.
+If no escalation sign or fired invalidator is present, reuse the accepted
+disposition silently and continue normal review resolution. If a live decision
+remains and `missing_boundary_artifact` is `yes` or remains `unknown` after
+recurrence, return the evidence-bound nomination or obstruction to Actuating;
+Universalist must not grant or deny mutation itself.

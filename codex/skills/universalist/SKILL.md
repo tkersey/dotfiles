@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use whenever implementation, refactoring, review, migration, or resolution considers an owned code boundary or reveals repeated implementations that may distribute one semantic law across owners. Identify the incumbent boundary, owner, required observations, ordinary candidate, law, and falsifier; then preserve it, nominate the smallest repository-native observation-preserving transition, or report obstruction. In Actuating, nominate only. Skip work wholly internal to one unchanged boundary without a reusable law. Team mode requires explicit request."
+description: "Use when current work must decide or reconsider an owned code boundary: introducing, removing, migrating, bypassing, or materially changing its semantic owner, admitted domain, representation, composition, compatibility, effects, failure semantics, or proof; or when repeated implementations distribute one law across owners. Skip routine implementation, validation, review closure, rebasing, Ship, and Land against an accepted architecture unless new evidence fires an invalidator. In Actuating, nominate only when architecture reconsideration is live. Explicit invocation always runs. Team mode requires explicit request."
 ---
 
 # Universalist
@@ -17,6 +17,7 @@ metadata.
 Default discipline:
 
 ```text
+one live semantic decision
 one owned boundary
 one current context
 one architectural axis
@@ -26,27 +27,47 @@ one smallest effective artifact
 one law and one falsifier
 ```
 
-Activation is broad. Disclosure and escalation are proportional.
+Activation is semantic-pressure-triggered. Disclosure and escalation are
+proportional.
 
-## Boundary trigger (`UNI-BOUNDARY`)
+## Boundary-decision trigger (`UNI-BOUNDARY`)
 
-Use this skill whenever implementation, refactoring, review, migration, or
-resolution considers a code boundary.
+Explicit `$universalist` invocation always activates this skill.
 
-A boundary is considered when work creates, changes, preserves, validates,
-migrates, bypasses, removes, or repairs how values, effects, state, evidence,
-authority, or observable behavior cross owners or representations. Examples
-include module/package APIs, public/internal contracts, DTOs, schemas, codecs,
-parsers, validators, storage and wire formats, syntax and interpreters, pure and
-effectful handlers, protocols, state machines, plugins, tools, CLIs, processes,
-repositories, and deployment surfaces.
+For implicit invocation, activate only when current repository evidence
+establishes at least one of these conditions:
 
-Repeated implementations that distribute one invariant, composition law,
-interpreter, observation vocabulary, or compatibility rule across owners are
-boundary evidence even when the missing owner has not yet been named.
+- current work must choose, introduce, remove, migrate, bypass, or materially
+  change boundary ownership, authority, admitted behavior, representation,
+  composition, compatibility, information retention, effects, failure
+  semantics, or proof;
+- repeated implementations distribute one invariant, composition law,
+  interpreter, observation vocabulary, transition rule, or compatibility rule
+  across owners;
+- at least two materially different boundary candidates remain live;
+- new evidence fires an invalidator of a prior boundary disposition;
+- Actuating has reopened architecture and requests a bounded nomination.
 
-Do not activate for work wholly internal to one unchanged boundary unless it
-reveals a distributed semantic obligation or a materially reusable law.
+Repeated obligations are boundary evidence even when the missing owner has not
+yet been named. Syntactic duplication, a shared noun, or a category-shaped name
+alone is insufficient.
+
+Do not activate merely because work crosses, preserves, validates, publishes,
+merges, or mechanically transports an already accepted boundary. Skip routine
+implementation, tests, formatting, documentation correction, review
+bookkeeping, mechanical rebasing, `$ship`, `$land`, and isolated owner-local
+repair under an unchanged architecture unless that work exposes new semantic
+boundary evidence.
+
+A rebase conflict activates only when it reveals incompatible semantic owners,
+representations, laws, or migrations. Ship or Land work that exposes such
+pressure returns it to Actuating for architecture reconsideration instead of
+running a duplicate publication- or landing-local Universalist pass.
+
+When the same owner, axis, law, falsifier, route, obligations, and invalidators
+remain current, reuse the existing disposition silently. Re-enter through
+`UNI-RECLASSIFY` only after material new evidence. Nonactivation has no route,
+record, or receipt; silence is the correct representation.
 
 Team/subagent mode remains explicit-request only.
 
@@ -54,33 +75,40 @@ Team/subagent mode remains explicit-request only.
 
 The common path must complete without loading any deeper reference.
 
-1. Inspect the incumbent seam: owner, admitted inputs, construction paths,
+1. Attribute the trigger evidence. If no implicit trigger condition is
+   evidenced, stop without a disposition.
+2. Inspect the incumbent seam: owner, admitted inputs, construction paths,
    operations, sanctioned observations, effects, resources, compatibility,
    bypasses, and failure behavior.
-2. State the ordinary repository-native candidate first: record, tagged union,
-   checked constructor, adapter, explicit parameter, state machine, operation
-   IR, handler, labelled graph, query, bounded loop, canonical merge, or one
-   typed compatibility witness.
-3. Record the compact disposition:
+3. State the incoming incumbent or ordinary repository-native candidate first:
+   record, tagged union, checked constructor, adapter, explicit parameter,
+   state machine, operation IR, handler, labelled graph, query, bounded loop,
+   canonical merge, or one typed compatibility witness.
+4. Record the compact disposition:
 
 ```text
+Trigger evidence:
 Boundary:
 Disposition: preserve / ordinary / escalate
+Incoming incumbent or ordinary candidate:
 Owner:
 Required observations:
-Incumbent or ordinary candidate:
 Law:
 Falsifier:
+Material decision delta: preservation / owner / admitted-domain / representation / composition / compatibility / migration / effects / failure-semantics / proof / obstruction
+Mechanic: ordinary / card:<id>
 Invalidates when:
 ```
 
-4. **preserve** when the incumbent already owns the law exactly. Continue the
-   receiving workflow without adding an abstraction.
-5. **ordinary** when one uncontested repository-native artifact closes the seam.
+5. **preserve** only when live change pressure exists and the incumbent already
+   owns the law exactly. Continue the receiving workflow without adding an
+   abstraction. Boundary presence without live pressure is nonactivation, not
+   preservation.
+6. **ordinary** when one uncontested repository-native artifact closes the seam.
    Name its owner, observation-preserving transition, every residual runtime
    check owner, and the first falsifying test or counterexample.
-6. **escalate** only when one of the evidence gates below fires.
-7. Stop after the first verified seam unless the user explicitly widens scope.
+7. **escalate** only when one of the evidence gates below fires.
+8. Stop after the first verified seam unless the user explicitly widens scope.
 
 A more abstract candidate does not dominate because it is more general.
 “Smallest” is relative to required observations, compatibility, effects,
@@ -94,7 +122,7 @@ the whole reference corpus to search for a reason to escalate.
 
 | Evidence established | Load exactly | Required return |
 |---|---|---|
-| Incumbent is exact | nothing | compact `preserve` disposition |
+| Live change pressure exists and the incumbent is exact | nothing | compact `preserve` disposition with a preservation delta |
 | One ordinary artifact clearly closes the seam | nothing | compact `ordinary` nomination and transition |
 | Repeated semantic obligations or an imminent constrained variant may share one law | `references/latent-structure-recognition.md` | encoding relation, false friend, discriminator, dividend, transition need |
 | At least two plausible routes materially differ | `references/consequential-boundary.md` | context-relative comparison and Boundary Artifact Contract candidate |
@@ -138,7 +166,7 @@ unstable, the stronger model cannot be tested, required compatibility forbids
 the transition, or the abstraction's onboarding and resource cost dominates
 its reduction in semantic risk.
 
-Diff size, retry count, test count, elapsed time, vocabulary, and theoretical
+Diff size, retry count, elapsed time, vocabulary, and theoretical
 interest do not establish consequentiality.
 
 ### Advanced-mechanics gate
@@ -157,7 +185,8 @@ After the ordinary candidate and consequential comparison:
 6. lower any retained card into one repository-native boundary artifact.
 
 Signals, registry order, `diagnostic_order`, evidence count, and theorem
-sophistication never prove prerequisites or select a route.
+sophistication never prove prerequisites or select a route. Ordinary dominance
+is a successful advanced-mechanics rejection, not a failed analysis.
 
 ### Durability gate (`UNI-DURABLE`)
 
@@ -175,12 +204,16 @@ Never load the durability module in Actuating composition.
 
 Assign routes only after lowering:
 
-- `UNI-PRESERVE` — preserve an already exact boundary.
+- `UNI-PRESERVE` — preserve an already exact boundary against live change
+  pressure.
 - `UNI-ORDINARY` — nominate the smallest ordinary repository-native artifact.
 - `UNI-CANONICAL` — nominate an advanced construction only when it materially
   strengthens the ordinary candidate and has a complete effective witness.
 - `UNI-OBSTRUCT` — stop only when no honest representable or effective artifact
   remains, or an explicitly primitive bypass is contained.
+
+Do not add a `UNI-SKIP` route. No live semantic decision means Universalist did
+not activate.
 
 If several candidates are incomparable minima, the result is
 **underdetermined**. Do not manufacture a winner.
@@ -192,7 +225,10 @@ together.
 
 ## Actuating composition
 
-Inside `$actuating`, Universalist is a nominator only.
+Inside `$actuating`, Universalist is a nominator only. Actuating owns the
+invocation point and calls Universalist only after architecture reconsideration
+is live. Do not run a duplicate root or worker pass merely because Actuating
+will cross a boundary while realizing an already selected architecture.
 
 Return exactly one of:
 
@@ -202,8 +238,10 @@ preserve-incumbent
 obstructed
 ```
 
-with the evidence, boundary owner, required observations, law, falsifier,
-residual obligations, invalidators, and transition needed by Actuating.
+with trigger evidence, the incoming incumbent or ordinary candidate, the
+material decision delta, mechanic, boundary owner, required observations, law,
+falsifier, residual obligations, invalidators, and transition needed by
+Actuating.
 
 When Actuating supplies a bug-driven counterexample theory and topology, also
 return this projection for every live candidate:
@@ -291,10 +329,12 @@ consequential and durability contracts.
 Treat every compact disposition, nomination, or durable decision as a proof
 lease over current evidence.
 
-Before the next affected mutation, reclassify when new evidence may materially
-change the owner, requirements, observations, compatibility, effects,
-resources, axis, typed hole, law, falsifier, enforcement, residuals, route, or
-seam decomposition.
+Reclassify before the next affected mutation only when new evidence may
+materially change the owner, requirements, observations, compatibility,
+effects, resources, axis, typed hole, law, falsifier, enforcement, residuals,
+route, or seam decomposition. Routine refinement under the same owner, axis,
+law, falsifier, route, obligations, and invalidators reuses the current proof
+lease silently.
 
 Record:
 
@@ -355,5 +395,6 @@ Add category names, encoding relations, mediators, canonicality claims, and
 expert proof detail only when the user requests expert explanation or the
 selected mechanic requires them.
 
-Do not emit routine no-op ceremony. Report the boundary decision and the
-architecture delta that matters to the receiving workflow.
+Do not emit routine no-op ceremony. Report the trigger evidence, boundary
+decision, and material architecture delta that matter to the receiving
+workflow.

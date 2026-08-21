@@ -1,11 +1,11 @@
-# Universalist 17.5.1
+# Universalist 17.6.0
 
-Universalist is an implicitly invoked boundary-architecture lens with
-**evidence-indexed progressive disclosure**.
+Universalist is an implicitly invocable **boundary-decision** lens with
+evidence-indexed progressive disclosure.
 
 ```text
-owned boundary
--> incumbent or ordinary candidate
+live semantic boundary pressure
+-> incoming incumbent or ordinary candidate
 -> owner
 -> required observations
 -> law
@@ -17,23 +17,49 @@ Category theory remains a hidden recognizer. Advanced constructions load only
 after repository evidence identifies a consequential typed hole that the
 ordinary candidate does not close.
 
+## Activation
+
+Implicit activation requires a live semantic decision, a law distributed across
+owners, a materially different competing route, a fired invalidator, or an
+Actuating architecture-reconsideration handoff.
+
+Routine implementation, validation, review bookkeeping, mechanical rebasing,
+Ship, and Land against an accepted architecture do not activate Universalist.
+A boundary being present or crossed is insufficient.
+
+Explicit `$universalist` invocation always runs.
+
+```text
+no live semantic pressure
+-> no activation, route, record, or receipt
+
+live pressure + exact incumbent
+-> UNI-PRESERVE
+```
+
+Preservation is therefore a decision against live change pressure, not ceremony
+for rediscovering an ambient boundary.
+
 ## Common path
 
 `SKILL.md` is complete for an exact incumbent and an uncontested ordinary
-repository-native boundary. Every considered boundary receives:
+repository-native boundary. Every actual activation receives:
 
 ```text
+Trigger evidence:
 Boundary:
 Disposition: preserve | ordinary | escalate
+Incoming incumbent or ordinary candidate:
 Owner:
 Required observations:
-Incumbent or ordinary candidate:
 Law:
 Falsifier:
+Material decision delta:
+Mechanic: ordinary | card:<id>
 Invalidates when:
 ```
 
-Activation is broad; escalation is narrow.
+Activation is narrow; disclosure and escalation remain proportional.
 
 ## Evidence-indexed disclosure
 
@@ -51,7 +77,8 @@ to escalate.
 
 ## Actuating composition
 
-Inside `$actuating`, Universalist nominates only:
+Inside `$actuating`, Actuating owns the Universalist invocation point and calls
+it only when architecture reconsideration is live. Universalist nominates only:
 
 ```text
 candidate
@@ -59,9 +86,11 @@ preserve-incumbent
 obstructed
 ```
 
-Actuating reconstructs the incumbent from the current Git tree, adjudicates the
-nomination, and retains the selected target only in its ephemeral Architecture
-Working Set. Git becomes the realized construction after implementation.
+Do not run a duplicate root or worker pass merely because realization crosses an
+already accepted boundary. Actuating reconstructs the incumbent from the
+current Git tree, adjudicates the nomination, and retains the selected target
+only in its ephemeral Architecture Working Set. Git becomes the realized
+construction after implementation.
 
 Universalist must not:
 
@@ -71,9 +100,9 @@ Universalist must not:
 - allocate a durable plan or receipt for Actuating;
 - treat a prior nomination as stronger than current repository evidence.
 
-Execution-time evidence may invalidate a nomination. Before the next affected
-mutation, Universalist may revise the nomination while Actuating decides whether
-architecture closure still holds.
+Execution-time evidence may invalidate a nomination. `UNI-RECLASSIFY` runs only
+when material new evidence fires a prior invalidator; unchanged decisions are
+reused silently.
 
 ## Independent durability
 
@@ -98,11 +127,21 @@ ordinary candidate
 ```
 
 Signals, registry order, evidence count, and categorical sophistication never
-prove prerequisites.
+prove prerequisites. Ordinary dominance is a successful rejection.
+
+Card expansion is frozen pending evidence that the full categorical path
+improves a concrete artifact or proof beyond the routine kernel. Use
+`references/efficacy-evaluation.md` and
+`references/routing-evaluation-cases.json` only while tuning or auditing the
+skill; neither belongs in ordinary runtime context.
 
 ## Package invariants
 
-- implicit boundary activation remains enabled;
+- implicit semantic-pressure activation remains enabled;
+- explicit invocation always runs;
+- nonactivation creates no route or receipt;
+- routine Ship, Land, review bookkeeping, and mechanical rebase work skip;
+- Actuating owns its Universalist invocation point;
 - team mode remains explicit-request only;
 - all five triggers and all four routes remain live;
 - all 56 cards and 12 axes remain available;

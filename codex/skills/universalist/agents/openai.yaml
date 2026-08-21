@@ -1,7 +1,7 @@
 interface:
   display_name: "Universalist"
-  short_description: "Recognize latent structure and nominate exact boundaries"
+  short_description: "Nominate live semantic boundary decisions"
   brand_color: "#6D5EF6"
-  default_prompt: "Use $universalist to identify the current boundary, semantic owner, required observations, ordinary candidate, law, and falsifier. Preserve an already exact boundary. Load latent-recognition, consequential-decision, advanced-mechanics, durability, or team references only when their evidence gates fire. In Actuating, nominate without selecting."
+  default_prompt: "Use $universalist only when current evidence makes an owned boundary a live semantic decision, reveals one law distributed across owners, fires a prior invalidator, or explicitly invokes the skill. Skip routine implementation, validation, review bookkeeping, mechanical rebasing, Ship, and Land against an accepted architecture. Start from trigger evidence, the incoming incumbent or ordinary candidate, owner, required observations, law, and falsifier. Preserve only against live change pressure. Load deeper references only when their evidence gates fire. In Actuating, let Actuating own the invocation point and nominate without selecting."
 policy:
   allow_implicit_invocation: true

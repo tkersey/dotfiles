@@ -1,0 +1,117 @@
+{
+  "schema": "universalist-routing-evaluation/v1",
+  "skill_fingerprint": "universalist-boundary-decision-v17",
+  "purpose": "Evaluate implicit activation separately from route selection. Skip means no Universalist invocation, disposition, route, record, or receipt.",
+  "expectations": {
+    "skip": "No live semantic boundary decision is evidenced.",
+    "activate": "UNI-BOUNDARY is live; the skill must derive an evidence-bound disposition.",
+    "reclassify": "New evidence fires a prior invalidator; UNI-RECLASSIFY is live."
+  },
+  "cases": [
+    {
+      "id": "explicit-invocation",
+      "scenario": "The user explicitly invokes $universalist to inspect a concrete repository seam.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Explicit invocation always runs even when implicit cues are weak."
+    },
+    {
+      "id": "routine-validation",
+      "scenario": "Run tests, lint, formatting, or an unchanged validation command against an accepted architecture.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Validation observes an accepted boundary but does not decide it."
+    },
+    {
+      "id": "documentation-correction",
+      "scenario": "Correct wording or examples without changing owner, admitted behavior, representation, compatibility, effects, or proof.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "A documentation edit with no semantic delta is not a boundary decision."
+    },
+    {
+      "id": "accepted-api-realization",
+      "scenario": "Implement an already selected API shape under the same owner, law, falsifier, obligations, and invalidators.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Realization reuses the accepted disposition silently."
+    },
+    {
+      "id": "ship-publication",
+      "scenario": "Publish a validated exact head through $ship without changing the selected architecture.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Publication is a public-effect decision, not an architecture decision."
+    },
+    {
+      "id": "land-merge-cleanup",
+      "scenario": "Reconcile evidenced review state, merge the exact approved head, read back MERGED, and clean branches or worktrees.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Landing preserves an accepted architecture unless review repair reopens it through Actuating."
+    },
+    {
+      "id": "mechanical-rebase",
+      "scenario": "Rebase an unchanged semantic design with only textual or ancestry conflict resolution.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Git transport alone does not create semantic boundary pressure."
+    },
+    {
+      "id": "owner-local-repair",
+      "scenario": "Repair an isolated implementation mistake while the incumbent owner and admission law already exclude the invalid family.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "A direct owner-local repair under a stable architecture does not reopen the boundary."
+    },
+    {
+      "id": "distributed-validator-law",
+      "scenario": "Several validators in different modules independently enforce one agreement rule with drift or bypass risk.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "One semantic obligation is distributed across owners and may require one owner-controlled artifact."
+    },
+    {
+      "id": "information-losing-schema-migration",
+      "scenario": "A schema migration changes retained information, compatibility, or the sanctioned projection observed by consumers.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "The migration changes representation and required observations."
+    },
+    {
+      "id": "new-semantic-owner",
+      "scenario": "A proposed service, registry, framework, or shared helper would become the authority for a law currently owned elsewhere.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Owner and authority placement are live decisions."
+    },
+    {
+      "id": "protocol-transition-change",
+      "scenario": "A state machine or protocol change alters legal transitions, invalid states, recovery, or failure behavior.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Legal composition and admitted behavior materially change."
+    },
+    {
+      "id": "semantic-rebase-conflict",
+      "scenario": "A rebase conflict exposes two incompatible semantic owners, representations, laws, or migration assumptions.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "The conflict is evidence of a live architecture decision rather than mechanical transport."
+    },
+    {
+      "id": "fired-invalidator",
+      "scenario": "A new counterexample, compatibility failure, or owner change satisfies a prior disposition's explicit invalidator.",
+      "expected": "reclassify",
+      "expected_route": null,
+      "reason": "The prior proof lease no longer covers current evidence."
+    },
+    {
+      "id": "preserve-against-live-abstraction",
+      "scenario": "A concrete proposal would introduce a new abstraction, but the incumbent already owns the law exactly and preserves every required observation.",
+      "expected": "activate",
+      "expected_route": "UNI-PRESERVE",
+      "reason": "Preservation is material because it defeats live change pressure without adding architecture."
+    }
+  ]
+}
