@@ -202,12 +202,12 @@ is `ambiguous`.
 ## Recommendation authority
 
 `adopt` requires complete environment-valid baseline and candidate arms for
-every required chart and repeat, no new hard-oracle failure of any kind, no
-protected regression, at least one targeted untouched holdout improvement,
+every required chart and repeat, no new candidate `hard_fail` status of any
+kind, no protected regression, at least one targeted untouched holdout improvement,
 order-stable residual preference when used, and evaluation of the exact
 candidate fingerprint.
 
-Recommendation precedence is total: any new candidate hard-oracle failure,
+Recommendation precedence is total: any new candidate `hard_fail` status,
 protected regression, or targeted regression yields `reject`; otherwise a
 missing or invalid required arm, tie, unsupported required chart, evaluator
 disagreement, closure/access proof gap, or insufficient untouched holdout
