@@ -268,7 +268,7 @@ exclusive support classifications and unsupported default
 actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
-root/chart split metadata equality
+root/chart ID, kind, and split metadata equality
 complete baseline and candidate harness manifests
 same-comparison fingerprints and one semantic factor
 hard-oracle precedence and protected dimensions
