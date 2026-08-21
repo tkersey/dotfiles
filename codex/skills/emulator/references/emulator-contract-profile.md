@@ -81,6 +81,11 @@ directory. harness_roots enumerates every behavior-bearing root under
 experiment. The root may contain one chart; the atlas abstraction does not
 require scale.
 
+For every chart entry, root `chart_id` equals chart `chart_id`, root `kind`
+equals chart `kind`, root `split_group` equals chart `split.group_id`, and root
+`partition` equals chart `split.partition`. Any mismatch is
+`invalid_environment`; neither copy wins by precedence.
+
 ## Chart contract
 
 ~~~yaml
@@ -263,6 +268,7 @@ exclusive support classifications and unsupported default
 actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
+root/chart ID, kind, and split metadata equality
 complete baseline and candidate harness manifests
 same-comparison fingerprints and one semantic factor
 hard-oracle precedence and protected dimensions

@@ -136,6 +136,7 @@ Each fresh run emits one append-only row within its comparison directory:
   "evaluator_fingerprint": "sha256:...",
   "support_result": "judgeable",
   "status": "pass",
+  "termination_reason": "decision_emitted",
   "hard_oracle_results_ref": "oracle-results/run-....json",
   "state_diff_ref": null,
   "trace_ref": "traces/run-....json",
@@ -209,9 +210,11 @@ A tie, unsupported required chart, evaluator disagreement, closure/access proof
 gap, or insufficient untouched holdout coverage yields
 `insufficient_evidence`. A targeted hard regression yields `reject`.
 
-The recommendation is `paired_replay_delta`, `observed_association`,
-`regression`, or `insufficient_evidence`; it is not a causal claim. It grants
-no mutation, merge, release, or publication authority.
+In prose summaries and limitations, use `paired_replay_delta`,
+`observed_association`, `regression`, or `insufficient_evidence` as bounded
+evidence language, not as a causal claim. These are non-normative prose labels,
+not an EER field or alternate recommendation enum. The recommendation grants no
+mutation, merge, release, or publication authority.
 
 ## Datasets
 
