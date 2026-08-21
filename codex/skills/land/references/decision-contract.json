@@ -4,7 +4,7 @@
     "skill": {
       "name": "land",
       "kind": "mixed",
-      "source_fingerprint": "land-v2-exact-head-postcondition-worktree-cleanup"
+      "source_fingerprint": "land-v3-review-reconciliation-successor-epochs"
     },
     "triggers": [
       {
@@ -25,8 +25,22 @@
         ]
       },
       {
+        "trigger_id": "LAND-REVIEW-CLOSURE",
+        "description": "The selected PR has unresolved review threads, active requested changes, or explicit current review blockers that Land must reconcile before merge.",
+        "cue_literals": [
+          "unresolved review thread",
+          "requested changes",
+          "review blocker",
+          "resolveReviewThread"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "bare thread IDs without concern context"
+        ]
+      },
+      {
         "trigger_id": "LAND-LIVE-STATE",
-        "description": "Live PR state must be classified before an irreversible merge or cleanup action.",
+        "description": "Live PR state must be classified before any review-resolution, merge, or cleanup mutation.",
         "cue_literals": [
           "headRefOid",
           "reviewDecision",
@@ -54,8 +68,25 @@
     ],
     "routes": [
       {
+        "route_id": "LAND-RECONCILE-REVIEWS",
+        "description": "Read, classify, repair or disposition, evidence, and resolve every unresolved review thread before fresh merge admission.",
+        "aliases": [
+          "reconcile-reviews",
+          "close-reviews-and-reflight"
+        ],
+        "terminal": false
+      },
+      {
+        "route_id": "LAND-REBIND-SUCCESSOR",
+        "description": "Supersede the immutable landing epoch after a repair or authorized update publishes a successor head, then rebuild all evidence.",
+        "aliases": [
+          "rebind-successor-head"
+        ],
+        "terminal": false
+      },
+      {
         "route_id": "LAND-MERGE-NOW",
-        "description": "Merge the exact approved head immediately with an exact-head guard, then verify live merged state.",
+        "description": "Merge the exact admitted head immediately with an exact-head guard, then prove live merged state.",
         "aliases": [
           "merge-now"
         ],
@@ -63,7 +94,7 @@
       },
       {
         "route_id": "LAND-QUEUE-WAIT",
-        "description": "Admit the exact approved head to the merge queue and wait for live merged state.",
+        "description": "Admit the exact head to the merge queue without inventing direct-merge freshness, then wait for live merged state.",
         "aliases": [
           "queue-and-wait"
         ],
@@ -71,7 +102,7 @@
       },
       {
         "route_id": "LAND-AUTO-WAIT",
-        "description": "Enable explicitly authorized auto-merge for the exact approved head and wait for live merged state.",
+        "description": "Enable explicitly selected auto-merge for the exact admitted head and wait for live merged state.",
         "aliases": [
           "auto-merge-and-wait"
         ],
@@ -79,7 +110,7 @@
       },
       {
         "route_id": "LAND-CLEANUP-ONLY",
-        "description": "Skip merge mutation because the exact PR is already merged and perform guarded cleanup only.",
+        "description": "Skip merge mutation because the exact PR/head is already merged and perform guarded cleanup only.",
         "aliases": [
           "cleanup-only"
         ],
@@ -87,17 +118,19 @@
       },
       {
         "route_id": "LAND-COMPLETE",
-        "description": "Emit LAND-v1 after live merged-state proof and independently verified cleanup outcomes.",
+        "description": "Emit LAND-v2 after review closure, live merged-state proof, and independently verified cleanup outcomes.",
         "aliases": [
+          "complete",
           "merged-and-cleaned",
           "merged-with-degraded-cleanup"
         ],
         "terminal": true
       },
       {
-        "route_id": "LAND-BLOCK",
-        "description": "Preserve state because identity, evidence, policy, authority, postcondition, or cleanup safety is incomplete.",
+        "route_id": "LAND-OBSTRUCT",
+        "description": "Preserve state only after proving no safe authorized review, admission, postcondition, or cleanup transition remains.",
         "aliases": [
+          "obstructed",
           "blocked"
         ],
         "terminal": true
@@ -111,11 +144,13 @@
           "LAND-LIVE-STATE"
         ],
         "expected_routes": [
+          "LAND-RECONCILE-REVIEWS",
+          "LAND-REBIND-SUCCESSOR",
           "LAND-MERGE-NOW",
           "LAND-QUEUE-WAIT",
           "LAND-AUTO-WAIT",
           "LAND-CLEANUP-ONLY",
-          "LAND-BLOCK"
+          "LAND-OBSTRUCT"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
@@ -127,17 +162,119 @@
           "expected head OID"
         ],
         "success_signals": [
-          "all live identity fields match one immutable target"
+          "all live identity fields match one immutable landing epoch"
         ],
         "failure_signals": [
           "branch-name-only targeting",
-          "changed head",
+          "changed head silently retargeted",
           "mismatched repository or PR"
         ],
-        "rationale": "Irreversible actions require an exact repository and commit target."
+        "rationale": "Irreversible actions require an exact repository and head epoch."
       },
       {
-        "clause_id": "LAND-FRESHNESS-001",
+        "clause_id": "LAND-REVIEW-PROGRESS-001",
+        "trigger_refs": [
+          "LAND-REVIEW-CLOSURE",
+          "LAND-LIVE-STATE"
+        ],
+        "expected_routes": [
+          "LAND-RECONCILE-REVIEWS",
+          "LAND-REBIND-SUCCESSOR",
+          "LAND-OBSTRUCT"
+        ],
+        "prohibited_routes": [
+          "LAND-MERGE-NOW",
+          "LAND-QUEUE-WAIT",
+          "LAND-AUTO-WAIT"
+        ],
+        "required_artifacts": [
+          "complete paginated review-thread inventory",
+          "unresolved thread IDs",
+          "full concern context",
+          "current-head applicability",
+          "law-authority classification when needed"
+        ],
+        "success_signals": [
+          "every safe unresolved concern enters repair or evidence-backed disposition",
+          "a repairable concern never produces terminal obstruction before attempted repair"
+        ],
+        "failure_signals": [
+          "unresolved thread reported as terminal merely because merge is not ready",
+          "repairable concern delegated back to the user"
+        ],
+        "rationale": "Merge admission failure is not workflow terminality while review closure can progress."
+      },
+      {
+        "clause_id": "LAND-THREAD-DISCHARGE-001",
+        "trigger_refs": [
+          "LAND-REVIEW-CLOSURE",
+          "LAND-LIVE-STATE"
+        ],
+        "expected_routes": [
+          "LAND-RECONCILE-REVIEWS",
+          "LAND-REBIND-SUCCESSOR",
+          "LAND-OBSTRUCT"
+        ],
+        "prohibited_routes": [
+          "LAND-MERGE-NOW",
+          "LAND-QUEUE-WAIT",
+          "LAND-AUTO-WAIT"
+        ],
+        "required_artifacts": [
+          "thread ID",
+          "concern reference",
+          "observed and resolved head OIDs",
+          "disposition",
+          "evidence references",
+          "live resolution readback"
+        ],
+        "success_signals": [
+          "every resolved thread has one individual evidence-bearing disposition",
+          "fixed current concern is evidenced at a successor head",
+          "final live unresolved thread set is empty before merge"
+        ],
+        "failure_signals": [
+          "bulk resolution from bare thread IDs",
+          "isOutdated treated as proof of obsolescence",
+          "current substantive concern resolved at an unchanged head",
+          "generic user continuation treated as withdrawal"
+        ],
+        "rationale": "GitHub resolution metadata records semantic discharge; it cannot manufacture it."
+      },
+      {
+        "clause_id": "LAND-SUCCESSOR-EPOCH-001",
+        "trigger_refs": [
+          "LAND-REVIEW-CLOSURE",
+          "LAND-LIVE-STATE"
+        ],
+        "expected_routes": [
+          "LAND-REBIND-SUCCESSOR",
+          "LAND-RECONCILE-REVIEWS",
+          "LAND-MERGE-NOW",
+          "LAND-QUEUE-WAIT",
+          "LAND-AUTO-WAIT",
+          "LAND-OBSTRUCT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "superseded head OID",
+          "successor head OID",
+          "fresh complete thread inventory",
+          "fresh structured review state",
+          "fresh required checks",
+          "fresh policy snapshot"
+        ],
+        "success_signals": [
+          "every material head mutation starts a new immutable landing epoch"
+        ],
+        "failure_signals": [
+          "admission evidence reused across a push",
+          "old epoch silently retargeted to a successor head"
+        ],
+        "rationale": "Review repair changes the object being admitted and invalidates all prior admission evidence."
+      },
+      {
+        "clause_id": "LAND-ADMISSION-001",
         "trigger_refs": [
           "LAND-LIVE-STATE"
         ],
@@ -145,24 +282,27 @@
           "LAND-MERGE-NOW",
           "LAND-QUEUE-WAIT",
           "LAND-AUTO-WAIT",
-          "LAND-BLOCK"
+          "LAND-OBSTRUCT"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "fresh complete thread inventory",
-          "structured reviews",
+          "zero live unresolved thread IDs",
+          "complete review reconciliation records",
+          "structured approvals",
           "terminal required-check buckets",
-          "merge policy snapshot"
+          "route-specific branch freshness",
+          "repository policy"
         ],
         "success_signals": [
-          "all evidence was rebuilt after the final material mutation"
+          "merge admission is derived from the current epoch",
+          "queue admission does not invent direct strict branch freshness"
         ],
         "failure_signals": [
-          "stale review sweep",
-          "partial pagination",
-          "canceled required check treated as green"
+          "canceled required check treated as green",
+          "behind queue candidate blocked solely by direct-merge freshness",
+          "administrator bypass selected"
         ],
-        "rationale": "A push or review mutation invalidates prior landing evidence."
+        "rationale": "Only current-head, route-correct admission evidence may authorize merge mutation."
       },
       {
         "clause_id": "LAND-MUTATION-001",
@@ -174,7 +314,7 @@
           "LAND-MERGE-NOW",
           "LAND-QUEUE-WAIT",
           "LAND-AUTO-WAIT",
-          "LAND-BLOCK"
+          "LAND-OBSTRUCT"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
@@ -185,14 +325,14 @@
         "success_signals": [
           "merge command binds expected head",
           "no bundled branch deletion",
-          "no unauthorized admin bypass"
+          "no administrator bypass"
         ],
         "failure_signals": [
           "missing match-head guard",
           "delete-branch bundled into merge",
-          "implicit admin override"
+          "admin retry"
         ],
-        "rationale": "The mutation must fail rather than land a different head or bypass policy silently."
+        "rationale": "The mutation must fail rather than land a different head or negate repository policy."
       },
       {
         "clause_id": "LAND-POSTCONDITION-001",
@@ -201,7 +341,7 @@
         ],
         "expected_routes": [
           "LAND-COMPLETE",
-          "LAND-BLOCK"
+          "LAND-OBSTRUCT"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
@@ -220,62 +360,39 @@
         "rationale": "Command success and queue admission are not terminal landing proof."
       },
       {
-        "clause_id": "LAND-WORKTREE-001",
-        "trigger_refs": [
-          "LAND-CLEANUP"
-        ],
-        "expected_routes": [
-          "LAND-COMPLETE",
-          "LAND-BLOCK"
-        ],
-        "prohibited_routes": [],
-        "required_artifacts": [
-          "NUL-safe worktree inventory",
-          "exact branch association",
-          "per-worktree head and cleanliness proof"
-        ],
-        "success_signals": [
-          "linked worktrees removed without force",
-          "primary worktree switched to base",
-          "no associated record remains"
-        ],
-        "failure_signals": [
-          "detached worktree deleted by OID",
-          "dirty or locked worktree forced away",
-          "directory removed with rm -rf"
-        ],
-        "rationale": "Worktrees can hold unique local state and must be cleaned before branch deletion without destructive inference."
-      },
-      {
         "clause_id": "LAND-CLEANUP-001",
         "trigger_refs": [
           "LAND-CLEANUP"
         ],
         "expected_routes": [
           "LAND-COMPLETE",
-          "LAND-BLOCK"
+          "LAND-OBSTRUCT"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
           "landed head OID",
+          "NUL-safe worktree inventory",
+          "per-worktree head and cleanliness proof",
           "remote ref readback",
-          "local ref readback",
-          "final worktree inventory"
+          "local ref readback"
         ],
         "success_signals": [
+          "linked worktrees removed without force",
+          "primary worktree switched to base",
           "each cleanup surface reports an independent verified result"
         ],
         "failure_signals": [
+          "detached worktree deleted by OID",
+          "dirty or locked worktree forced away",
           "branch ref drift ignored",
-          "cleanup failure rewrites merge outcome",
-          "implicit force deletion"
+          "cleanup failure rewrites merge outcome"
         ],
-        "rationale": "Cleanup is a post-merge transaction with separate remote, local, and worktree facts."
+        "rationale": "Cleanup is a preservation-first post-merge saga with independent facts."
       }
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "LAND-v1 is the required operational receipt; emit SDR-v1 only when route selection needs separate tuning evidence."
+      "rationale": "LAND-v2 is the required operational receipt; emit SDR-v1 only when route selection needs separate tuning evidence."
     }
   }
 }
