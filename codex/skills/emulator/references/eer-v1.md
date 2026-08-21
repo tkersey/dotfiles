@@ -110,6 +110,11 @@ input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots.
 
+`hard_delta` compares exact hard-failure witnesses across matched arms,
+including denied support decisions and failed oracle, state, or trace checks. A
+candidate-only witness is a new candidate hard failure even when both aggregate
+run statuses are `hard_fail`.
+
 ## runs.jsonl
 
 Each fresh run emits one append-only row within its comparison directory:
@@ -202,16 +207,17 @@ is `ambiguous`.
 ## Recommendation authority
 
 `adopt` requires complete environment-valid baseline and candidate arms for
-every required chart and repeat, no new candidate `hard_fail` status of any
-kind, no protected regression, at least one targeted untouched holdout improvement,
-order-stable residual preference when used, and evaluation of the exact
-candidate fingerprint.
+every required chart and repeat, no candidate-only hard-failure witness, no
+protected regression, no ambiguous required chart comparison, at least one
+targeted untouched holdout improvement, order-stable residual preference when
+used, and evaluation of the exact candidate fingerprint.
 
-Recommendation precedence is total: any new candidate `hard_fail` status,
+Recommendation precedence is total: any candidate-only hard-failure witness,
 protected regression, or targeted regression yields `reject`; otherwise a
-missing or invalid required arm, tie, unsupported required chart, evaluator
-disagreement, closure/access proof gap, or insufficient untouched holdout
-coverage yields `insufficient_evidence`; only then may `adopt` be considered.
+missing or invalid required arm, ambiguous required chart comparison, tie,
+unsupported required chart, evaluator disagreement, closure/access proof gap,
+or insufficient untouched holdout coverage yields `insufficient_evidence`;
+only then may `adopt` be considered.
 
 Reports may describe evidence as `paired_replay_delta`,
 `observed_association`, `regression`, or `insufficient_evidence`, but do not
