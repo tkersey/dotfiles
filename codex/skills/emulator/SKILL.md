@@ -123,9 +123,7 @@ observations, actions, effects, terminal state, cost, and trace.
 ### mutate
 
 Apply only chart-declared mutations. A mutation outside declared support creates
-a new designed chart; it never becomes a source-faithful transition. Each
-declared dimension binds its domain, preserved laws, shrink strategy, and any
-generator bytes through the chart closure.
+a new designed chart; it never becomes a source-faithful transition.
 
 ### compare
 
@@ -244,7 +242,7 @@ Findings:
 - Hard-oracle and state deltas:
 - Protected regressions:
 - Residual preference:
-- Recommendation: adopt | reject | insufficient_evidence (compare only; otherwise not_applicable)
+- Recommendation (compare only): adopt | reject | insufficient_evidence
 
 Artifacts:
 - Source bundles, actors, worlds, traces, reports, and eligible datasets:

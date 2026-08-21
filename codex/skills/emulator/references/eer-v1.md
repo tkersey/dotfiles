@@ -14,10 +14,6 @@ emulator_execution_report:
   contract:
     ref:
     fingerprint:
-    invocation_mode: design | implement | run | mutate | compare | export
-    evidence_mode: design | implement | run | mutate | compare
-    source_eer_ref:  # non-null only when invocation_mode is export
-    source_eer_fingerprint:
     atlas_chart_fingerprints: []
     closure_inventory_ref:
     closure_inventory_fingerprint:
@@ -28,12 +24,8 @@ emulator_execution_report:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
-    study_relation: paired_replay_delta | observed_association | not_established
-    outcome: improved | regressed | noninferior | ambiguous | invalid
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     authority_granted: false
-
-  run_group_id:  # non-null for standalone run/mutate; null otherwise
 
   run_summary:
     valid_runs:
@@ -47,8 +39,6 @@ emulator_execution_report:
 
   executions:
     - run_id:
-      run_group_id:
-      comparison_id:
       chart_id:
       chart_fingerprint:
       chart_kind:
@@ -57,21 +47,7 @@ emulator_execution_report:
       harness_id:
       harness_fingerprint:
       repeat_id:
-      factor:
-      allocation_phase: pre_assignment | pre_seed | ready
-      randomness_cohort_ref:
-      randomness_cohort_fingerprint:
-      mutation_assignment_ref:
-      mutation_assignment_fingerprint:
-      implementation_fingerprint:
       runtime_fingerprint:
-      actor_seed:
-      actor_seed_control: fixed | sampled | unavailable | none
-      environment_seed:
-      environment_seed_control: fixed | sampled | unavailable | none
-      failure_schedule_ref:
-      failure_schedule_fingerprint:
-      failure_schedule_control: fixed | sampled | unavailable | none
       world_fingerprint:
       actor_input_fingerprint:
       actor_readable_inventory_fingerprint:
@@ -80,9 +56,6 @@ emulator_execution_report:
       support_result:
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
-      terminal_condition_id:
-      terminal_evidence_ref:
-      terminal_evidence_fingerprint:
       status_reason:
       hard_oracle_results_ref:
       state_diff_ref:
@@ -138,56 +111,22 @@ Every comparison binds exact chart, root closure, harness, world/reset, actor
 input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots.
-For each paired chart/repeat, baseline and candidate rows bind the same
-`randomness_cohort_ref`/fingerprint. The ref resolves exact
-`randomness-cohort/v1` bytes containing chart fingerprint, repeat ID, actor and
-environment seed controls plus realized seeds, failure-schedule control and
-fingerprint, and every runner-declared outcome-affecting randomness source.
-The closed canonical payload is
-`{"actor":{"control":"fixed|sampled|unavailable|none","seed":null},"chart_fingerprint":"sha256:<hex>","environment":{"control":"fixed|sampled|unavailable|none","seed":null},"failure_schedule":{"control":"fixed|sampled|unavailable|none","fingerprint":null},"repeat_id":"<repeat-id>","schema":"randomness-cohort/v1","sources":[{"control":"fixed|sampled|unavailable|none","source_id":"<id>","value_fingerprint":null}]}`.
-Sources sort by unique `source_id` and equal the complete randomness-source
-inventory declared by the frozen runner manifest; nullability follows control.
-Controlled realized values are equal across arms. If any required source is
-`unavailable`, `paired_replay_delta` is forbidden; only adequately repeated
-`observed_association` may describe the study. A mismatch is
-`comparison_drift`.
-When uncontrolled evidence is underpowered even for association,
-`study_relation: not_established` and recommendation
-`insufficient_evidence` represent the result.
-Fixed realized seeds equal the chart values. Sampled seeds and schedules are
-deterministic projections of chart-bound sampling policies plus repeat ID;
-unavailable values are null.
 
-The EC-v1 root is reusable and does not contain an operation mode.
-`invocation_mode` is the selected request route. `evidence_mode` selects report
-and row ownership. They are equal except for deferred export: then
-`invocation_mode: export`, `evidence_mode` equals the referenced source EER's
-run/mutate/compare mode, and the source EER pair is non-null and resolves exact
-sealed bytes. The source pair is null otherwise.
-An export EER projects contract identity, chart fingerprints, closure inventory,
-comparison/run-group ownership, executions, chart comparisons, limitations,
-and evidence fields byte-identically from that source EER. Export invocation
-mode, source EER pair, and authorized dataset refs are the only projection
-exceptions. Current atlas state cannot replace source evidence.
-
-`run` mode omits `comparison` and emits executions plus applicable datasets and
-limitations. It does not invent a candidate fingerprint or recommendation.
+Single-harness `run` or `mutate` mode omits `comparison` and emits executions
+plus applicable datasets and limitations. It does not invent a candidate
+fingerprint or recommendation.
 Each `compare` EER binds exactly one baseline/candidate pair. When a request
 evaluates multiple candidates, emit one EER and one `comparison.json` per
 candidate so every delta and recommendation has a single arm owner.
 
 ## runs.jsonl
 
-Each fresh run emits one append-only row. Compare rows live under their
-comparison directory and bind non-null `comparison_id` and `factor`. Standalone
-`run`/`mutate` rows live under `runs/<run-group-id>/`, bind non-null
-`run_group_id`, and omit `comparison_id` and `factor`.
+Each fresh run emits one append-only row. The shown form is the compare variant:
 
 ```json
 {
   "schema": "emulator-run/v1",
   "run_id": "run-...",
-  "run_group_id": null,
   "comparison_id": "cmp-...",
   "chart_id": "chart-...",
   "chart_fingerprint": "sha256:...",
@@ -198,20 +137,7 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "harness_fingerprint": "sha256:...",
   "factor": "question_policy",
   "repeat_id": 1,
-  "allocation_phase": "ready",
-  "randomness_cohort_ref": "runs/cmp-.../randomness/<chart-fingerprint-hex>/repeat-1.json",
-  "randomness_cohort_fingerprint": "sha256:...",
-  "mutation_assignment_ref": null,
-  "mutation_assignment_fingerprint": null,
-  "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
-  "actor_seed": null,
-  "actor_seed_control": "none",
-  "environment_seed": null,
-  "environment_seed_control": "none",
-  "failure_schedule_ref": null,
-  "failure_schedule_fingerprint": null,
-  "failure_schedule_control": "none",
   "world_fingerprint": null,
   "actor_input_fingerprint": "sha256:...",
   "actor_readable_inventory_fingerprint": "sha256:...",
@@ -220,9 +146,6 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "support_result": "judgeable",
   "status": "pass",
   "termination_reason": "decision_emitted",
-  "terminal_condition_id": null,
-  "terminal_evidence_ref": null,
-  "terminal_evidence_fingerprint": null,
   "status_reason": null,
   "hard_oracle_results_ref": "oracle-results/run-....json",
   "state_diff_ref": null,
@@ -236,27 +159,9 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
 }
 ```
 
-These rows are not a new global event store.
-The displayed row is the compare variant. In standalone mode `run_group_id` is
-non-null and the comparison/factor keys are absent; in compare mode
-`run_group_id` is null and comparison/factor are non-null. Mixed ownership is
-invalid. `contract.evidence_mode` selects the variant and cannot be inferred
-from omitted fields.
-Randomness cohort fields are non-null only for compare rows and null for
-standalone run/mutate rows.
-The report-level standalone `run_group_id` equals every execution and runs.jsonl
-row it summarizes. Mutation assignment fields are non-null for every mutate row
-after assignment creation and resolve one `mutation-assignment/v1` artifact.
-A mutate attempt failing before assignment records both null only with
-`allocation_phase: pre_assignment` and status `invalid_environment` for invalid
-contract/generator evidence or `runtime_error` for runner/I/O failure; the
-status reason preserves the actual cause.
-They are null for non-mutate rows.
-Actor/environment seed keys are always serialized. `none` and `unavailable`
-use null. A sampled control may also have a null seed on any
-`invalid_environment` or `runtime_error` row whose `allocation_phase` proves
-execution stopped before seed allocation; all other sampled rows bind the
-realized seed.
+For a standalone `run` or `mutate`, store the row under `runs/<run-id>/` and
+omit `comparison_id` and `factor`; do not fabricate comparison metadata. These
+rows are not a new global event store.
 
 ## comparison.json
 
@@ -283,8 +188,6 @@ realized seed.
     "evidence_refs": []
   },
   "recommendation": "adopt | reject | insufficient_evidence",
-  "study_relation": "paired_replay_delta | observed_association | not_established",
-  "outcome": "improved | regressed | noninferior | ambiguous | invalid",
   "evidence_relation": "paired_replay_delta | observed_association | regression | insufficient_evidence",
   "reason": "",
   "authority_granted": false
@@ -311,11 +214,6 @@ Hard failures and protected regressions cannot be repaired by later stages. A
 residual judge is never sole authority, receives hard-oracle results, is blinded
 to harness identity, and is run in both presentation orders. Order disagreement
 is `ambiguous`.
-For `full_episode`, `status: pass` requires non-null terminal condition ID and
-evidence resolving the declared predicate result. Reaching only max steps or
-timeout without a true terminal condition is `hard_fail` when the healthy actor
-exhausted the bound, and `runtime_error` only when infrastructure failed to
-deliver the contracted budget.
 
 ## Recommendation authority
 
@@ -328,27 +226,7 @@ candidate fingerprint.
 A missing or invalid required arm, tie, unsupported required chart, evaluator
 disagreement, closure/access proof gap, or insufficient untouched holdout
 coverage yields `insufficient_evidence`. Any new candidate hard-oracle failure
-or protected regression yields `reject`.
-
-Recommendation precedence is total: witnessed new hard failure, protected
-regression, or ordinary targeted outcome regression yields `reject` first, even when coverage is also incomplete; absent
-such regression, incomplete or indeterminate required evidence yields
-`insufficient_evidence`; only then may `adopt` be considered. `reject` pairs
-with `evidence_relation: regression`; `insufficient_evidence` pairs with
-`insufficient_evidence`; `adopt` pairs with `paired_replay_delta` for matched
-cohorts or `observed_association` for adequately repeated uncontrolled
-stochastic evidence. All other pairs are invalid.
-`study_relation` independently preserves paired versus uncontrolled study
-design for every outcome, including regressions; `outcome` preserves direction.
-Both fields are identical in EER and comparison.json.
-Admissible four-field tuples are exactly:
-
-- `adopt + improved + paired_replay_delta + paired_replay_delta`;
-- `adopt + improved + observed_association + observed_association`;
-- `reject + regressed + <any study_relation> + regression`;
-- `insufficient_evidence + improved|noninferior|ambiguous|invalid + <any study_relation> + insufficient_evidence`.
-
-No other recommendation/outcome/study/evidence combination is valid.
+of any kind, protected regression, or targeted regression yields `reject`.
 
 `recommendation` remains the adoption disposition enum. `evidence_relation`
 records `paired_replay_delta`, `observed_association`, `regression`, or

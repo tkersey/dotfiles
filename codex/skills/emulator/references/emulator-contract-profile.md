@@ -128,26 +128,10 @@ environment_chart:
     allowed_context_refs: []
     forbidden_context_refs: []
     output_schema:
-    seed_control: fixed | sampled | unavailable | none
-    seed:
-    seed_policy_ref:
-    seed_policy_fingerprint:
 
   environment:
     world_fidelity: exact | approximate | transcript_only | absent
     transition_model: total | partial | none
-    implementation:
-      ref:
-      fingerprint:
-      environment_seed_control: fixed | sampled | unavailable | none
-      environment_seed:
-      environment_seed_policy_ref:
-      environment_seed_policy_fingerprint:
-      failure_schedule_control: fixed | sampled | unavailable | none
-      failure_schedule_ref:
-      failure_schedule_fingerprint:
-      failure_schedule_policy_ref:
-      failure_schedule_policy_fingerprint:
     reset:
       kind: none | git_worktree | fixture | custom
       recipe_ref:
@@ -155,8 +139,6 @@ environment_chart:
       expected_fingerprint:
     observations:
       schema:
-      schema_ref:
-      schema_fingerprint:
     actions:
       schema:
     tools: {}
@@ -164,83 +146,12 @@ environment_chart:
       network: deny | fixture_only | allow_recorded
       filesystem: read_only | isolated_write | declared_roots
       external_side_effects: deny | fixture_only | explicit
-      policy_ref:
-      policy_fingerprint:
-    termination:
-      terminal_conditions:
-        - condition_id:
-          input: post_transition_observation
-          observation_schema_ref:
-          observation_schema_fingerprint:
-          predicate:
-            kind: json_pointer_equals | asset
-            path:
-            value:
-            predicate_ref:
-            predicate_fingerprint:
-            interpreter_ref:
-            interpreter_fingerprint:
-          authority_refs: []
-      max_steps:
-      timeout_ms:
     support:
-      matcher:
-        kind: inline_predicates | asset
-        abi: emulator-support-classifier/v1
-        classifier_ref:
-        classifier_fingerprint:
-        interpreter_ref:
-        interpreter_fingerprint:
-      executable:
-        - support_id:
-          authority_refs: []
-          predicate:
-            kind: json_pointer_equals
-            path:
-            value:
-      judgeable:
-        - support_id:
-          authority_refs: []
-          predicate:
-            kind: json_pointer_equals
-            path:
-            value:
-      denied:
-        - support_id:
-          authority_refs: []
-          predicate:
-            kind: json_pointer_equals
-            path:
-            value:
-      observed_only:
-        - support_id:
-          authority_refs: []
-          predicate:
-            kind: json_pointer_equals
-            path:
-            value:
+      executable: []
+      judgeable: []
+      denied: []
+      observed_only: []
       unsupported_default: true
-
-  mutation:
-    dimensions:
-      - dimension_id:
-        domain_kind: enumerated | bounded_asset
-        domain_predicate_ref:
-        domain_predicate_fingerprint:
-        domain:
-          - case_id:
-            value:
-            kind: ordinary | boundary | negative
-            expected_preserved_law_refs: []
-            expected_violated_law_refs: []
-        preserved_law_refs: []
-        shrink_strategy:
-    generator_ref:
-    generator_fingerprint:
-    assignment_schema_ref:
-    assignment_schema_fingerprint:
-    assignment_classifier_ref:
-    assignment_classifier_fingerprint:
 
   evaluator:
     evaluator_ref:
@@ -263,7 +174,7 @@ environment_chart:
     assets:
       - ref:
         sha256:
-        role: source | actor | world | reset | fixture | tool | evaluator | mutation_generator
+        role: source | actor | world | reset | fixture | tool | evaluator
 
   claim:
     class: diagnostic | preference_training | harness_selection | promotion
@@ -275,80 +186,10 @@ environment_chart:
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
-`policy_ref` and `policy_fingerprint` are required for every chart, including an
-inert observational or normative chart. The inert policy explicitly binds empty
-readable/writable roots, fixtures, recordings, and operations. Other policies
-define exact readable/writable roots, fixtures, recordings,
-operations, and authority for `read_only`, `isolated_write`, `declared_roots`,
-both `fixture_only` uses, `allow_recorded`, and `explicit`. A `full_episode` requires at least one terminal
-condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
-smallest applicable limit.
-
-Every executable implementation has an exact identity. Actor and environment
-seed-control modes are independent. `fixed` requires a non-null chart seed and
-null policy; `sampled` requires a null chart seed plus non-null deterministic
-sampling-policy ref/fingerprint, with realized seeds owned by repeat rows;
-`unavailable` and `none` require both null; `none` means no such RNG exists and
-creates no pairing debt. Failure schedules use the same explicit
-`fixed | sampled | unavailable | none` ownership split, with policy identity for
-sampled control and realized schedule identity in execution evidence.
-
-Every support entry has a unique ID, at least one authority ref, and a deterministic predicate in the declared
-action schema. The inline predicate language is exact canonical-JSON equality
-at a JSON Pointer: `path` selects one action value and `value` is the required
-canonical value. Multiple conditions require separate, explicitly composed
-predicate assets rather than implicit prose. An asset matcher binds its
-classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
-classifier that is missing, nondeterministic, or cannot prove the five classes
-disjoint makes the environment invalid.
-Matcher variants are exclusive. `inline_predicates` requires null classifier
-and interpreter fields and uses the four explicit entry arrays.
-`asset` requires the ABI, classifier, and interpreter identities and all four
-inline arrays empty. Its canonical input is the exact action-schema JSON value;
-its exact output is `{support_class, support_id, authority_refs}` with
-`support_class` one of the five classes. The asset owns the complete disjoint
-mapping; inline and asset classifications never coexist.
-The asset interpreter ref/fingerprint resolves through the closure. For inline
-matching, an action may match at most one explicit entry total, including
-within one class; overlap is `invalid_environment`.
-Every terminal condition likewise has nonempty authority refs; timeout and step
-bounds do not invent permission to terminate successfully. A terminal predicate
-uses the same exact JSON-Pointer equality language as inline support over the
-post-transition observation named by `observation_schema_fingerprint`, or
-`kind: asset` with non-null predicate ref/fingerprint and null inline fields.
-The asset ABI receives exact `{observation, trace_position}` canonical JSON and
-returns exact `{"terminal":true|false}` through the bound interpreter.
-Mixed or prose predicates are invalid.
-The terminal observation schema pair equals `environment.observations` exactly,
-and an asset interpreter ref/fingerprint resolves through the chart closure.
-
-Mutation dimensions are optional unless the selected emulator invocation mode
-is `mutate`. That request mode is external to the reusable EC-v1 root. Mutation requires at
-least one domain, preserved-law references, and a
-deterministic shrink strategy. An external generator is fingerprinted and
-included in the chart closure. No mutation widens action support or source
-authority.
-`enumerated` requires nonempty inline cases and null domain-predicate fields.
-`bounded_asset` requires empty inline cases plus a deterministic domain
-predicate ref/fingerprint that validates generated values before assignment
-classification.
-The resulting EER binds `evidence_mode: mutate`; a mutate invocation with no
-qualifying chart mutation block is `invalid_environment` before execution.
-Every generated assignment emits a closed case classification naming its exact
-dimension cases, `ordinary | boundary | negative` kind, expected preserved
-laws, and expected violated laws. Combination-only violations are declared on
-the assignment classification rather than guessed from one dimension.
-`assignment_schema_ref` resolves the closed
-`mutation-assignment/v1` schema with exact fields `assignment_id`, chart and
-generator fingerprints, sorted case objects `{dimension_id, case_id, value}`,
-aggregate `kind`, sorted `expected_preserved_law_refs`, and sorted
-`expected_violated_law_refs`. Case identity is the qualified
-`(dimension_id, case_id)` pair. The chart-bound assignment classifier/table is
-fingerprinted and deterministically derives aggregate kind and laws before the
-run; it also requires every assignment value to equal the chart-domain value
-for its qualified `(dimension_id, case_id)` pair. Generator self-report is not authority. Every
-mutate run binds the resulting assignment ref/fingerprint in runs.jsonl and
-EER; omission is `invalid_environment`.
+`support(action)` classifies the action against the chart's current
+actor-visible observation. A chart may treat support as state-invariant only
+when that is part of its declared environment contract. The five classes remain
+exclusive; an overlap or unverifiable classification is `invalid_environment`.
 
 ## Chart classes
 
@@ -378,9 +219,8 @@ completion without an executable world.
 
 Requires a reset recipe, world fingerprint, actor-visible task, executable
 support, tool/effect contract, fresh trace, and deterministic hard oracle or
-state assertion. It also requires contracted terminal conditions, positive
-step/timeout bounds, and an implementation identity. A whole-harness comparison
-cuts at session start with no target prior influence.
+state assertion. A whole-harness comparison cuts at session start with no target
+prior influence.
 
 ### Observational
 
@@ -434,7 +274,6 @@ actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
 root/chart split metadata equality
-implementation/seed identity plus contracted effects, termination, support matcher, and mutation domains when used
 complete baseline and candidate harness manifests for compare mode
 same-comparison fingerprints and one semantic factor for compare mode
 hard-oracle precedence and protected dimensions

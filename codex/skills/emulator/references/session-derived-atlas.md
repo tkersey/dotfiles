@@ -45,8 +45,8 @@ ${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
   worlds/
   harnesses/baseline/
   harnesses/candidates/<candidate-id>/
-  runs/<run-group-id-or-comparison-id>/
-  reports/<run-group-id-or-comparison-id>/
+  runs/<comparison-id-or-standalone-run-id>/
+  reports/<comparison-id-or-standalone-run-id>/
   datasets/
 ~~~
 
@@ -509,9 +509,7 @@ valid trajectories are allowed.
 ### Status mapping
 
 ~~~text
-executable or judgeable + oracle pass + required terminal proof -> pass
-healthy actor exhausts max_steps/timeout without terminal proof -> hard_fail
-infrastructure fails to deliver contracted budget -> runtime_error
+executable or judgeable + oracle pass -> pass
 executable or judgeable + hard oracle failure -> hard_fail
 denied action -> hard_fail
 attempted observed_only or unsupported transition -> unsupported_counterfactual
@@ -552,8 +550,8 @@ comparison.
 ## 11. Export
 
 Emit chart-aware EER-v1 and runs.jsonl as specified in eer-v1.md. Emit
-comparison.json only for compare mode; standalone run/mutate use their
-run-group identity and never fabricate comparison metadata.
+comparison.json only for compare mode; a standalone run never fabricates
+comparison metadata. Standalone mutate evidence follows the same rule.
 
 Preference rows require:
 
