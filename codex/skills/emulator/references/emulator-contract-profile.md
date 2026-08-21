@@ -128,7 +128,7 @@ environment_chart:
     allowed_context_refs: []
     forbidden_context_refs: []
     output_schema:
-    seed_control: fixed | sampled | unavailable
+    seed_control: fixed | sampled | unavailable | none
     seed:
     seed_policy_ref:
     seed_policy_fingerprint:
@@ -139,7 +139,7 @@ environment_chart:
     implementation:
       ref:
       fingerprint:
-      environment_seed_control: fixed | sampled | unavailable
+      environment_seed_control: fixed | sampled | unavailable | none
       environment_seed:
       environment_seed_policy_ref:
       environment_seed_policy_fingerprint:
@@ -155,6 +155,8 @@ environment_chart:
       expected_fingerprint:
     observations:
       schema:
+      schema_ref:
+      schema_fingerprint:
     actions:
       schema:
     tools: {}
@@ -168,6 +170,7 @@ environment_chart:
       terminal_conditions:
         - condition_id:
           input: post_transition_observation
+          observation_schema_ref:
           observation_schema_fingerprint:
           predicate:
             kind: json_pointer_equals | asset
@@ -175,6 +178,7 @@ environment_chart:
             value:
             predicate_ref:
             predicate_fingerprint:
+            interpreter_ref:
             interpreter_fingerprint:
           authority_refs: []
       max_steps:
@@ -185,6 +189,7 @@ environment_chart:
         abi: emulator-support-classifier/v1
         classifier_ref:
         classifier_fingerprint:
+        interpreter_ref:
         interpreter_fingerprint:
       executable:
         - support_id:
@@ -219,6 +224,9 @@ environment_chart:
   mutation:
     dimensions:
       - dimension_id:
+        domain_kind: enumerated | bounded_asset
+        domain_predicate_ref:
+        domain_predicate_fingerprint:
         domain:
           - case_id:
             value:
@@ -280,7 +288,8 @@ Every executable implementation has an exact identity. Actor and environment
 seed-control modes are independent. `fixed` requires a non-null chart seed and
 null policy; `sampled` requires a null chart seed plus non-null deterministic
 sampling-policy ref/fingerprint, with realized seeds owned by repeat rows;
-`unavailable` requires both null. Failure schedules use the same explicit
+`unavailable` and `none` require both null; `none` means no such RNG exists and
+creates no pairing debt. Failure schedules use the same explicit
 `fixed | sampled | unavailable | none` ownership split, with policy identity for
 sampled control and realized schedule identity in execution evidence.
 
@@ -299,6 +308,9 @@ inline arrays empty. Its canonical input is the exact action-schema JSON value;
 its exact output is `{support_class, support_id, authority_refs}` with
 `support_class` one of the five classes. The asset owns the complete disjoint
 mapping; inline and asset classifications never coexist.
+The asset interpreter ref/fingerprint resolves through the closure. For inline
+matching, an action may match at most one explicit entry total, including
+within one class; overlap is `invalid_environment`.
 Every terminal condition likewise has nonempty authority refs; timeout and step
 bounds do not invent permission to terminate successfully. A terminal predicate
 uses the same exact JSON-Pointer equality language as inline support over the
@@ -307,13 +319,19 @@ post-transition observation named by `observation_schema_fingerprint`, or
 The asset ABI receives exact `{observation, trace_position}` canonical JSON and
 returns exact `{"terminal":true|false}` through the bound interpreter.
 Mixed or prose predicates are invalid.
+The terminal observation schema pair equals `environment.observations` exactly,
+and an asset interpreter ref/fingerprint resolves through the chart closure.
 
 Mutation dimensions are optional unless the selected emulator invocation mode
 is `mutate`. That request mode is external to the reusable EC-v1 root. Mutation requires at
-least one finite or otherwise bounded domain, preserved-law references, and a
+least one domain, preserved-law references, and a
 deterministic shrink strategy. An external generator is fingerprinted and
 included in the chart closure. No mutation widens action support or source
 authority.
+`enumerated` requires nonempty inline cases and null domain-predicate fields.
+`bounded_asset` requires empty inline cases plus a deterministic domain
+predicate ref/fingerprint that validates generated values before assignment
+classification.
 The resulting EER binds `evidence_mode: mutate`; a mutate invocation with no
 qualifying chart mutation block is `invalid_environment` before execution.
 Every generated assignment emits a closed case classification naming its exact

@@ -28,7 +28,7 @@ emulator_execution_report:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
-    study_relation: paired_replay_delta | observed_association
+    study_relation: paired_replay_delta | observed_association | not_established
     outcome: improved | regressed | noninferior | ambiguous | invalid
     evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     authority_granted: false
@@ -58,6 +58,7 @@ emulator_execution_report:
       harness_fingerprint:
       repeat_id:
       factor:
+      allocation_phase: pre_assignment | pre_seed | ready
       randomness_cohort_ref:
       randomness_cohort_fingerprint:
       mutation_assignment_ref:
@@ -65,9 +66,9 @@ emulator_execution_report:
       implementation_fingerprint:
       runtime_fingerprint:
       actor_seed:
-      actor_seed_control: fixed | sampled | unavailable
+      actor_seed_control: fixed | sampled | unavailable | none
       environment_seed:
-      environment_seed_control: fixed | sampled | unavailable
+      environment_seed_control: fixed | sampled | unavailable | none
       failure_schedule_ref:
       failure_schedule_fingerprint:
       failure_schedule_control: fixed | sampled | unavailable | none
@@ -142,10 +143,17 @@ For each paired chart/repeat, baseline and candidate rows bind the same
 `randomness-cohort/v1` bytes containing chart fingerprint, repeat ID, actor and
 environment seed controls plus realized seeds, failure-schedule control and
 fingerprint, and every runner-declared outcome-affecting randomness source.
+The closed canonical payload is
+`{"actor":{"control":"fixed|sampled|unavailable|none","seed":null},"chart_fingerprint":"sha256:<hex>","environment":{"control":"fixed|sampled|unavailable|none","seed":null},"failure_schedule":{"control":"fixed|sampled|unavailable|none","fingerprint":null},"repeat_id":"<repeat-id>","schema":"randomness-cohort/v1","sources":[{"control":"fixed|sampled|unavailable|none","source_id":"<id>","value_fingerprint":null}]}`.
+Sources sort by unique `source_id` and equal the complete randomness-source
+inventory declared by the frozen runner manifest; nullability follows control.
 Controlled realized values are equal across arms. If any required source is
 `unavailable`, `paired_replay_delta` is forbidden; only adequately repeated
 `observed_association` may describe the study. A mismatch is
 `comparison_drift`.
+When uncontrolled evidence is underpowered even for association,
+`study_relation: not_established` and recommendation
+`insufficient_evidence` represent the result.
 Fixed realized seeds equal the chart values. Sampled seeds and schedules are
 deterministic projections of chart-bound sampling policies plus repeat ID;
 unavailable values are null.
@@ -158,8 +166,9 @@ run/mutate/compare mode, and the source EER pair is non-null and resolves exact
 sealed bytes. The source pair is null otherwise.
 An export EER projects contract identity, chart fingerprints, closure inventory,
 comparison/run-group ownership, executions, chart comparisons, limitations,
-and evidence fields byte-identically from that source EER; only authorized
-dataset refs are new. Current atlas state cannot replace source evidence.
+and evidence fields byte-identically from that source EER. Export invocation
+mode, source EER pair, and authorized dataset refs are the only projection
+exceptions. Current atlas state cannot replace source evidence.
 
 `run` mode omits `comparison` and emits executions plus applicable datasets and
 limitations. It does not invent a candidate fingerprint or recommendation.
@@ -189,6 +198,7 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "harness_fingerprint": "sha256:...",
   "factor": "question_policy",
   "repeat_id": 1,
+  "allocation_phase": "ready",
   "randomness_cohort_ref": "runs/cmp-.../randomness/<chart-fingerprint-hex>/repeat-1.json",
   "randomness_cohort_fingerprint": "sha256:...",
   "mutation_assignment_ref": null,
@@ -196,9 +206,9 @@ comparison directory and bind non-null `comparison_id` and `factor`. Standalone
   "implementation_fingerprint": "sha256:...",
   "runtime_fingerprint": "sha256:...",
   "actor_seed": null,
-  "actor_seed_control": "unavailable",
-  "environment_seed": 7,
-  "environment_seed_control": "fixed",
+  "actor_seed_control": "none",
+  "environment_seed": null,
+  "environment_seed_control": "none",
   "failure_schedule_ref": null,
   "failure_schedule_fingerprint": null,
   "failure_schedule_control": "none",
@@ -232,16 +242,20 @@ non-null and the comparison/factor keys are absent; in compare mode
 `run_group_id` is null and comparison/factor are non-null. Mixed ownership is
 invalid. `contract.evidence_mode` selects the variant and cannot be inferred
 from omitted fields.
+Randomness cohort fields are non-null only for compare rows and null for
+standalone run/mutate rows.
 The report-level standalone `run_group_id` equals every execution and runs.jsonl
 row it summarizes. Mutation assignment fields are non-null for every mutate row
 after assignment creation and resolve one `mutation-assignment/v1` artifact.
 A mutate attempt failing before assignment records both null only with
-`status: invalid_environment` and `status_reason: mutation_assignment_unavailable`.
+`allocation_phase: pre_assignment` and status `invalid_environment` for invalid
+contract/generator evidence or `runtime_error` for runner/I/O failure; the
+status reason preserves the actual cause.
 They are null for non-mutate rows.
-Actor/environment seed keys are always serialized and are null exactly when
-their corresponding control is `unavailable`. A sampled control may also have a
-null seed only on a pre-allocation `invalid_environment` row with
-`status_reason: seed_allocation_unavailable`; all other sampled rows bind the
+Actor/environment seed keys are always serialized. `none` and `unavailable`
+use null. A sampled control may also have a null seed on any
+`invalid_environment` or `runtime_error` row whose `allocation_phase` proves
+execution stopped before seed allocation; all other sampled rows bind the
 realized seed.
 
 ## comparison.json
@@ -269,7 +283,7 @@ realized seed.
     "evidence_refs": []
   },
   "recommendation": "adopt | reject | insufficient_evidence",
-  "study_relation": "paired_replay_delta | observed_association",
+  "study_relation": "paired_replay_delta | observed_association | not_established",
   "outcome": "improved | regressed | noninferior | ambiguous | invalid",
   "evidence_relation": "paired_replay_delta | observed_association | regression | insufficient_evidence",
   "reason": "",
@@ -331,8 +345,8 @@ Admissible four-field tuples are exactly:
 
 - `adopt + improved + paired_replay_delta + paired_replay_delta`;
 - `adopt + improved + observed_association + observed_association`;
-- `reject + regressed + <either study_relation> + regression`;
-- `insufficient_evidence + noninferior|ambiguous|invalid + <either study_relation> + insufficient_evidence`.
+- `reject + regressed + <any study_relation> + regression`;
+- `insufficient_evidence + improved|noninferior|ambiguous|invalid + <any study_relation> + insufficient_evidence`.
 
 No other recommendation/outcome/study/evidence combination is valid.
 
