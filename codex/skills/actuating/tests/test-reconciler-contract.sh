@@ -62,6 +62,9 @@ grep -F '## Generative reach and sibling prediction' "$skill_root/SKILL.md" >/de
 grep -F 'Passing repaired examples alone never reissues elimination' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
+grep -F '`parallel-reviews`' "$skill_root/SKILL.md" >/dev/null
+grep -F '`serial-reviews`' "$skill_root/SKILL.md" >/dev/null
+grep -F 'restart the selected' "$skill_root/SKILL.md" >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
@@ -98,24 +101,40 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v2" and
-  .contract_id == "actuating-review-contract-v4" and
+  .schema == "actuating-review-contract/v3" and
+  .contract_id == "actuating-review-contract-v5" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
       "complexity-mitigator", "fresh-eyes"] | sort) and
-  .initial_wave.concurrent == true and
-  .initial_wave.non_cancelling == true and
+  .review_scheduling.default_mode == "parallel-reviews" and
+  .review_scheduling.request_local == true and
+  .review_scheduling.all_lenses_required == true and
+  .review_scheduling.initial_lens_order ==
+    ["standard", "footgun-finder", "invariant-ace",
+     "complexity-mitigator", "fresh-eyes"] and
+  .review_scheduling.modes["parallel-reviews"].dispatch == "concurrent" and
+  .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
+  .review_scheduling.modes["parallel-reviews"].terminal_barrier == true and
+  .review_scheduling.modes["serial-reviews"].dispatch == "serial" and
+  .review_scheduling.modes["serial-reviews"].adjudicate_before_next == true and
+  .review_scheduling.modes["serial-reviews"].stop_before_next_on_material_change == true and
   .standard_convergence.required_consecutive_clean_attempts == 5 and
+  .standard_convergence.initial_standard_counts == true and
+  .standard_convergence.later_attempts_serial == true and
   .material_change.identity == "git-head" and
+  .material_change.resets_all_review_credit == true and
+  .material_change.restarts_selected_schedule_from_initial_standard == true and
   .transport_recovery.maximum_fresh_recovery_attempts == 1
 ' "$skill_root/references/review-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-post-elimination-falsifier-v6" and
+    "actuating-review-scheduling-v7" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
+  ([.skill_decision_contract.triggers[].trigger_id] |
+    index("ACT-REVIEW-SCHEDULING")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-LAW-AUTHORITY-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
@@ -140,4 +159,4 @@ grep -F 'Actuating must revoke and adjudicate' \
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-post-elimination-scenarios.sh"
 
-echo "actuating post-elimination falsifier contract: pass"
+echo "actuating review scheduling and post-elimination contract: pass"

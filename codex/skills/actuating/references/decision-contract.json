@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-post-elimination-falsifier-v6"
+      "source_fingerprint": "actuating-review-scheduling-v7"
     },
     "triggers": [
       {
@@ -75,6 +75,18 @@
           "inspect",
           "audit",
           "classify"
+        ],
+        "cue_regexes": [],
+        "exclusions": []
+      },
+      {
+        "trigger_id": "ACT-REVIEW-SCHEDULING",
+        "description": "A request-local modifier selects parallel or serial review dispatch without selecting a route.",
+        "cue_literals": [
+          "parallel-reviews",
+          "serial-reviews",
+          "$actuating parallel-reviews",
+          "$actuating serial-reviews"
         ],
         "cue_regexes": [],
         "exclusions": []
@@ -313,7 +325,8 @@
         "trigger_refs": [
           "ACT-BARE",
           "ACT-ROUTE",
-          "ACT-REVIEW-DEFAULT"
+          "ACT-REVIEW-DEFAULT",
+          "ACT-REVIEW-SCHEDULING"
         ],
         "expected_routes": [
           "ACT-TRIAGE",
@@ -322,22 +335,26 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v2",
+          "static actuating-review-contract/v3",
           "exact CAS receipts for the current Git head",
           "current Review Fold after findings"
         ],
         "success_signals": [
-          "initial standard plus four compact auxiliaries launch concurrently",
-          "five consecutive standard cleans bind the exact unchanged head",
-          "material head change invalidates credit by identity",
-          "missing resumable evidence restarts a fresh wave"
+          "parallel-reviews is the request-local default and launches the initial standard plus four compact auxiliaries concurrently",
+          "serial-reviews runs the initial standard then every auxiliary serially in contract order",
+          "both modes require every lens and five consecutive standard cleans on one unchanged head",
+          "material head change invalidates all credit and restarts the selected schedule at its initial standard",
+          "missing resumable evidence restarts the selected schedule"
         ],
         "failure_signals": [
+          "review scheduling changes route or mutation authority",
+          "serial-reviews omits or reorders a required lens",
+          "parallel-reviews cancels a launched sibling",
           "review count is reconstructed from prose",
           "review evidence is copied into an Actuating store",
           "review findings bypass law-authority classification"
         ],
-        "rationale": "CAS receipts own attempt facts; Review Fold and Actuating interpret them."
+        "rationale": "Scheduling may control subscription concurrency without weakening exact-head convergence or creating another authority plane."
       },
       {
         "clause_id": "ACT-CLOSURE-005",

@@ -113,38 +113,69 @@ These are bounded read-only projections. They do not launch the standalone
 skill workflows, spawn authority lanes, persist artifacts, select repairs, or
 certify closeout.
 
-## Initial wave
+## Review scheduling
+
+Review-bearing routes accept one request-local scheduling modifier:
+
+| Mode | Selection | Initial lens dispatch |
+|---|---|---|
+| `parallel-reviews` | default when no modifier is supplied | standard plus all four auxiliaries concurrently |
+| `serial-reviews` | explicit opt-in | standard, footgun-finder, invariant-ace, complexity-mitigator, then fresh-eyes serially |
+
+The modifier changes dispatch topology only. Both modes require every lens,
+exactly the same receipt quality, the same finding adjudication, and five
+consecutive clean standard attempts on one unchanged head. The initial clean
+standard counts as clean attempt one, so the clean path contains nine review
+attempts in either mode.
+
+### Parallel reviews
 
 Launch all five owner-lived `cas review start --wait` processes before accepting
 an initial terminal result.
 
 - A finding, clean result, or transport failure never cancels a sibling.
 - Every launched request reaches terminal transport evidence.
-- The initial standard clean is clean attempt one.
 - Every finding passes through `$review-fold`.
-- Accepted pressure is resolved or rejected before serial confirmation.
+- Accepted pressure is resolved or rejected after the initial terminal barrier
+  and before serial standard confirmation.
+
+### Serial reviews
+
+Launch exactly one owner-lived `cas review start --wait` process at a time in the
+initial lens order. Obtain terminal transport evidence and adjudicate every
+finding before dispatching the next request.
+
+- A finding that does not authorize material mutation does not erase valid
+  exact-head receipts; continue when its disposition permits review to proceed.
+- A finding that reopens Goal authority or remains unresolved blocks rather than
+  allowing later reviews to assume a settled target.
+- When an adjudicated finding leads to material code mutation, stop before the
+  next request. Commit and validate the change, discard all prior review credit,
+  and restart `serial-reviews` at the initial standard on the new head.
 
 ## Request-local recovery
 
 A terminal request without a structured semantic verdict:
 
 - contributes no semantic attempt or clean credit;
-- preserves completed sibling evidence on the unchanged head;
-- may run one fresh exact-request recovery after the initial barrier;
+- preserves completed review evidence on the unchanged head;
+- may run one fresh exact-request recovery;
+- in `parallel-reviews`, runs recovery after the initial terminal barrier;
+- in `serial-reviews`, runs recovery before dispatching the next request;
 - blocks after a second verdictless terminal result.
 
 Recover a live known handle with CAS `wait`; do not create a duplicate attempt.
 
 ## Convergence
 
-After the initial wave is fully adjudicated, launch fresh standard attempts
-serially until the trailing exact-head clean suffix reaches five.
+After the selected initial schedule is fully adjudicated, launch fresh standard
+attempts serially until the trailing exact-head clean suffix reaches five.
 
 - A standard finding resets the suffix to zero.
 - An auxiliary finding does not change standard credit unless resolution changes
   the head.
-- Any material Git head change invalidates all prior credit by tuple mismatch
-  and requires a fresh 1+4 wave.
+- Any material Git head change invalidates all prior credit by tuple mismatch and
+  restarts the selected schedule at its initial standard.
 - No credit crosses a head change.
 
 ## Resumption
@@ -155,7 +186,7 @@ Credit only exact receipts currently available to Actuating.
   revalidated.
 - A prior summary, claimed count, or PR prose grants no credit.
 - If the complete current evidence set cannot be resolved after interruption,
-  start a fresh full wave.
+  restart the selected schedule from its initial standard.
 
 This fail-closed restart is deliberate. Actuating maintains no review database.
 

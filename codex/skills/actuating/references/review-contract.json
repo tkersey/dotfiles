@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v2",
-  "contract_id": "actuating-review-contract-v4",
+  "schema": "actuating-review-contract/v3",
+  "contract_id": "actuating-review-contract-v5",
   "required_lenses": [
     {
       "name": "standard",
@@ -28,20 +28,40 @@
       "instructions_ref": "codex/skills/actuating/references/lenses/fresh-eyes-review.md"
     }
   ],
-  "initial_wave": {
-    "concurrent": true,
+  "review_scheduling": {
+    "default_mode": "parallel-reviews",
+    "request_local": true,
     "all_lenses_required": true,
-    "non_cancelling": true
+    "initial_lens_order": [
+      "standard",
+      "footgun-finder",
+      "invariant-ace",
+      "complexity-mitigator",
+      "fresh-eyes"
+    ],
+    "modes": {
+      "parallel-reviews": {
+        "dispatch": "concurrent",
+        "non_cancelling": true,
+        "terminal_barrier": true
+      },
+      "serial-reviews": {
+        "dispatch": "serial",
+        "adjudicate_before_next": true,
+        "stop_before_next_on_material_change": true
+      }
+    }
   },
   "standard_convergence": {
     "required_consecutive_clean_attempts": 5,
-    "first_wave_standard_counts": true,
+    "initial_standard_counts": true,
     "later_attempts_serial": true,
     "findings_reset_streak": true
   },
   "material_change": {
     "identity": "git-head",
-    "resets_all_review_credit": true
+    "resets_all_review_credit": true,
+    "restarts_selected_schedule_from_initial_standard": true
   },
   "transport_recovery": {
     "request_local": true,
