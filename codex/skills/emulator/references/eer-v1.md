@@ -18,13 +18,12 @@ emulator_execution_report:
     closure_inventory_ref:
     closure_inventory_fingerprint:
 
-  comparison:  # present only for one baseline/candidate compare pair
+  comparison:
     comparison_id:
     factor:
     baseline_harness_fingerprint:
     candidate_harness_fingerprint:
     recommendation: adopt | reject | insufficient_evidence
-    evidence_relation: paired_replay_delta | observed_association | regression | insufficient_evidence
     authority_granted: false
 
   run_summary:
@@ -56,7 +55,6 @@ emulator_execution_report:
       support_result:
       status: pass | hard_fail | unsupported_counterfactual | invalid_environment | runtime_error | ambiguous | skipped
       termination_reason:
-      status_reason:
       hard_oracle_results_ref:
       state_diff_ref:
       trace_ref:
@@ -112,16 +110,9 @@ input, actor-readable inventory, evaluator, runtime, repeat, effect policy, and
 split fingerprints. Selecting and training claims require an access proof that
 the actor could not read evaluator-only roots.
 
-Single-harness `run` or `mutate` mode omits `comparison` and emits executions
-plus applicable datasets and limitations. It does not invent a candidate
-fingerprint or recommendation.
-Each `compare` EER binds exactly one baseline/candidate pair. When a request
-evaluates multiple candidates, emit one EER and one `comparison.json` per
-candidate so every delta and recommendation has a single arm owner.
-
 ## runs.jsonl
 
-Each fresh run emits one append-only row. The shown form is the compare variant:
+Each fresh run emits one append-only row within its comparison directory:
 
 ```json
 {
@@ -146,7 +137,6 @@ Each fresh run emits one append-only row. The shown form is the compare variant:
   "support_result": "judgeable",
   "status": "pass",
   "termination_reason": "decision_emitted",
-  "status_reason": null,
   "hard_oracle_results_ref": "oracle-results/run-....json",
   "state_diff_ref": null,
   "trace_ref": "traces/run-....json",
@@ -159,9 +149,7 @@ Each fresh run emits one append-only row. The shown form is the compare variant:
 }
 ```
 
-For a standalone `run` or `mutate`, store the row under `runs/<run-id>/` and
-omit `comparison_id` and `factor`; do not fabricate comparison metadata. These
-rows are not a new global event store.
+These rows are not a new global event store.
 
 ## comparison.json
 
@@ -188,14 +176,10 @@ rows are not a new global event store.
     "evidence_refs": []
   },
   "recommendation": "adopt | reject | insufficient_evidence",
-  "evidence_relation": "paired_replay_delta | observed_association | regression | insufficient_evidence",
   "reason": "",
   "authority_granted": false
 }
 ```
-
-`comparison.json.evidence_relation` equals the EER comparison field exactly;
-the standalone artifact is not a lossy projection.
 
 ## Evaluation order
 
@@ -223,15 +207,16 @@ protected regression, at least one targeted untouched holdout improvement,
 order-stable residual preference when used, and evaluation of the exact
 candidate fingerprint.
 
-A missing or invalid required arm, tie, unsupported required chart, evaluator
+Recommendation precedence is total: any new candidate hard-oracle failure,
+protected regression, or targeted regression yields `reject`; otherwise a
+missing or invalid required arm, tie, unsupported required chart, evaluator
 disagreement, closure/access proof gap, or insufficient untouched holdout
-coverage yields `insufficient_evidence`. Any new candidate hard-oracle failure
-of any kind, protected regression, or targeted regression yields `reject`.
+coverage yields `insufficient_evidence`; only then may `adopt` be considered.
 
-`recommendation` remains the adoption disposition enum. `evidence_relation`
-records `paired_replay_delta`, `observed_association`, `regression`, or
-`insufficient_evidence`; it is not a causal claim. Neither field grants
-mutation, merge, release, or publication authority.
+Reports may describe evidence as `paired_replay_delta`,
+`observed_association`, `regression`, or `insufficient_evidence`, but do not
+claim a causal mechanism from an uncontrolled comparison. The recommendation
+grants no mutation, merge, release, or publication authority.
 
 ## Datasets
 

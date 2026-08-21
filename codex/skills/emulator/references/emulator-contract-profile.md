@@ -186,11 +186,6 @@ environment_chart:
 Every field affects execution, visibility, evaluation, claim strength, or
 provenance. Do not add decorative metadata.
 
-`support(action)` classifies the action against the chart's current
-actor-visible observation. A chart may treat support as state-invariant only
-when that is part of its declared environment contract. The five classes remain
-exclusive; an overlap or unverifiable classification is `invalid_environment`.
-
 ## Chart classes
 
 ### Normative decision
@@ -274,16 +269,11 @@ actor/evaluator projection separation
 actor-readable inventory, fingerprint, and tool-access proof for selecting use
 group-safe frozen partitions and holdout blindness
 root/chart split metadata equality
-complete baseline and candidate harness manifests for compare mode
-same-comparison fingerprints and one semantic factor for compare mode
+complete baseline and candidate harness manifests
+same-comparison fingerprints and one semantic factor
 hard-oracle precedence and protected dimensions
 claim class no stronger than authority, attribution, world, and freshness
 ~~~
-
-Comparison-only validation and artifacts apply only to `compare`. `design`,
-`implement`, `mutate`, and single-harness `run` remain valid without inventing a
-candidate or recommendation; they still satisfy closure, environment, trace,
-and claim laws applicable to their mode.
 
 Missing authority is oracle_gap; conflicting authority is contract_ambiguity;
 closure, leakage, or boundary drift is invalid_environment. Do not fill any gap

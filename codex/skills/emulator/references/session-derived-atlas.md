@@ -45,8 +45,8 @@ ${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
   worlds/
   harnesses/baseline/
   harnesses/candidates/<candidate-id>/
-  runs/<comparison-id-or-standalone-run-id>/
-  reports/<comparison-id-or-standalone-run-id>/
+  runs/<comparison-id>/
+  reports/<comparison-id>/
   datasets/
 ~~~
 
@@ -539,7 +539,7 @@ claim matrix support a separately authorized adoption decision. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
 Apply EER-v1 precedence to mixed evidence: any witnessed new hard failure,
-protected regression, or ordinary targeted regression yields `reject` before
+protected regression, or targeted regression yields `reject` before
 incomplete-coverage handling; otherwise incomplete required evidence yields
 `insufficient_evidence`.
 
@@ -549,9 +549,8 @@ comparison.
 
 ## 11. Export
 
-Emit chart-aware EER-v1 and runs.jsonl as specified in eer-v1.md. Emit
-comparison.json only for compare mode; a standalone run never fabricates
-comparison metadata. Standalone mutate evidence follows the same rule.
+Emit chart-aware EER-v1, runs.jsonl, and comparison.json as specified in
+eer-v1.md.
 
 Preference rows require:
 

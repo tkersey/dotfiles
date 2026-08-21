@@ -232,7 +232,7 @@ Emulated:
 - Source, origin, and limitations:
 - Contract closure and fingerprints:
 - Charts, groups, partitions, and support:
-- Harness and fresh runs; baseline/candidate/factor only in compare mode:
+- Baseline, candidate, factor, and fresh runs:
 
 Run summary:
 - Valid / passed / hard-failed / ambiguous:
@@ -242,7 +242,7 @@ Findings:
 - Hard-oracle and state deltas:
 - Protected regressions:
 - Residual preference:
-- Recommendation (compare only): adopt | reject | insufficient_evidence
+- Recommendation: adopt | reject | insufficient_evidence
 
 Artifacts:
 - Source bundles, actors, worlds, traces, reports, and eligible datasets:
