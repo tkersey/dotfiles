@@ -1,0 +1,574 @@
+#!/bin/sh
+
+set -u
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+TARGETS_FILE=${DOTFILES_BACKUP_TARGETS_FILE:-"$SCRIPT_DIR/targets.conf"}
+FILTERS_FILE=${DOTFILES_BACKUP_FILTERS_FILE:-"$SCRIPT_DIR/filters.conf"}
+PROFILE_FILE=${DOTFILES_BACKUP_PROFILE_FILE:-"$SCRIPT_DIR/profile"}
+ICLOUD_ROOT=${DOTFILES_ICLOUD_ROOT:-"$HOME/Library/Mobile Documents/com~apple~CloudDocs"}
+STATE_ROOT=${DOTFILES_BACKUP_STATE_ROOT:-"$HOME/.local/state/dotfiles-icloud-backup"}
+LOG_ROOT=${DOTFILES_BACKUP_LOG_ROOT:-"$HOME/Library/Logs/dotfiles-icloud-backup"}
+RCLONE_BIN=${RCLONE_BIN:-rclone}
+LAUNCH_AGENT_LABEL=com.tkersey.icloud-backup
+LAUNCH_AGENT_TEMPLATE="$SCRIPT_DIR/$LAUNCH_AGENT_LABEL.plist.in"
+LAUNCH_AGENT_PATH=${DOTFILES_BACKUP_LAUNCH_AGENT_PATH:-"$HOME/Library/LaunchAgents/$LAUNCH_AGENT_LABEL.plist"}
+RCLONE_LOG="$LOG_ROOT/rclone.log"
+
+usage() {
+  cat <<'USAGE'
+Usage: backups/backup <command> [arguments]
+
+Commands:
+  run [target|all] [--dry-run]   Copy configured directories into iCloud.
+  restore <target|all> [--apply] Restore from iCloud; dry-run unless --apply.
+  prune <target|all> [--apply]   Reconcile deletions; dry-run unless --apply.
+  arm                            Authorize this machine to write backups.
+  disarm                         Prevent this machine from writing backups.
+  install                        Install and load the macOS LaunchAgent.
+  status                         Show configuration and service state.
+  help                           Show this help.
+USAGE
+}
+
+info() {
+  printf '%s\n' "backup: $*"
+}
+
+warn() {
+  printf '%s\n' "backup: warning: $*" >&2
+}
+
+fail() {
+  printf '%s\n' "backup: error: $*" >&2
+  return 1
+}
+
+trim() {
+  printf '%s' "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
+}
+
+read_profile() {
+  [ -f "$PROFILE_FILE" ] || {
+    fail "profile file not found: $PROFILE_FILE"
+    return 1
+  }
+
+  profile=$(sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
+    -e '/^#/d' -e '/^$/d' "$PROFILE_FILE" | sed -n '1p')
+
+  case "$profile" in
+    ''|*[!A-Za-z0-9._-]*)
+      fail "profile must contain one safe name ([A-Za-z0-9._-]+): $PROFILE_FILE"
+      return 1
+      ;;
+  esac
+
+  printf '%s\n' "$profile"
+}
+
+load_layout() {
+  PROFILE=$(read_profile) || return 1
+  BACKUP_ROOT="$ICLOUD_ROOT/backups/macos/$PROFILE"
+  CURRENT_ROOT="$BACKUP_ROOT/current"
+  HISTORY_ROOT="$BACKUP_ROOT/history"
+}
+
+require_configuration() {
+  [ -f "$TARGETS_FILE" ] || {
+    fail "targets file not found: $TARGETS_FILE"
+    return 1
+  }
+  [ -f "$FILTERS_FILE" ] || {
+    fail "filters file not found: $FILTERS_FILE"
+    return 1
+  }
+  load_layout
+}
+
+ensure_icloud_root() {
+  [ -d "$ICLOUD_ROOT" ] || {
+    fail "iCloud Drive root not found: $ICLOUD_ROOT"
+    return 1
+  }
+  [ -w "$ICLOUD_ROOT" ] || {
+    fail "iCloud Drive root is not writable: $ICLOUD_ROOT"
+    return 1
+  }
+}
+
+require_rclone() {
+  command -v "$RCLONE_BIN" >/dev/null 2>&1 || {
+    fail "rclone not found; run ./install --homebrew first"
+    return 1
+  }
+}
+
+expand_source() {
+  source_spec=$1
+  case "$source_spec" in
+    '$HOME')
+      printf '%s\n' "$HOME"
+      ;;
+    '$HOME/'*)
+      printf '%s\n' "$HOME/${source_spec#\$HOME/}"
+      ;;
+    /*)
+      printf '%s\n' "$source_spec"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+validate_source_path() {
+  source_path=$1
+
+  case "$source_path" in
+    /*) ;;
+    *)
+      fail "source path is not absolute: $source_path"
+      return 1
+      ;;
+  esac
+
+  case "$source_path" in
+    *'/../'*|*/..|*'/./'*|*/.)
+      fail "source path may not contain . or .. segments: $source_path"
+      return 1
+      ;;
+  esac
+
+  case "$source_path" in
+    "$ICLOUD_ROOT"|"$ICLOUD_ROOT"/*)
+      fail "source may not be inside iCloud Drive: $source_path"
+      return 1
+      ;;
+  esac
+
+  case "$ICLOUD_ROOT" in
+    "$source_path"|"$source_path"/*)
+      fail "source may not contain iCloud Drive: $source_path"
+      return 1
+      ;;
+  esac
+
+  if [ -d "$source_path" ]; then
+    resolved_source=$(CDPATH= cd -- "$source_path" 2>/dev/null && pwd -P) || {
+      fail "could not resolve source directory: $source_path"
+      return 1
+    }
+    resolved_icloud=$(CDPATH= cd -- "$ICLOUD_ROOT" 2>/dev/null && pwd -P) || {
+      fail "could not resolve iCloud Drive root: $ICLOUD_ROOT"
+      return 1
+    }
+    case "$resolved_source" in
+      "$resolved_icloud"|"$resolved_icloud"/*)
+        fail "source resolves inside iCloud Drive: $source_path"
+        return 1
+        ;;
+    esac
+    case "$resolved_icloud" in
+      "$resolved_source"|"$resolved_source"/*)
+        fail "source resolves to an ancestor of iCloud Drive: $source_path"
+        return 1
+        ;;
+    esac
+  fi
+}
+
+is_armed() {
+  [ -f "$STATE_ROOT/armed" ]
+}
+
+require_armed_for_write() {
+  if ! is_armed; then
+    info "backup is disarmed; run '$SCRIPT_DIR/backup arm' after restore and inspection"
+    return 1
+  fi
+}
+
+rclone_transfer() {
+  operation=$1
+  source_path=$2
+  destination_path=$3
+  version_path=$4
+  dry_run=$5
+
+  set -- "$operation" "$source_path" "$destination_path" \
+    --backup-dir "$version_path" \
+    --create-empty-src-dirs \
+    --links \
+    --metadata \
+    --filter-from "$FILTERS_FILE" \
+    --check-first \
+    --log-level INFO \
+    --log-file "$RCLONE_LOG" \
+    --log-file-max-size 10M \
+    --log-file-max-backups 5 \
+    --log-file-max-age 30d
+
+  if [ "$dry_run" = true ]; then
+    set -- "$@" --dry-run
+  fi
+
+  "$RCLONE_BIN" "$@"
+}
+
+process_target() {
+  action=$1
+  target_name=$2
+  source_path=$3
+  apply=$4
+  timestamp=$5
+
+  case "$action" in
+    run)
+      if [ ! -d "$source_path" ]; then
+        warn "skipping missing directory '$target_name': $source_path"
+        return 0
+      fi
+      info "backing up $target_name"
+      rclone_transfer copy "$source_path" "$CURRENT_ROOT/$target_name" \
+        "$HISTORY_ROOT/$timestamp/$target_name" "$apply"
+      ;;
+    restore)
+      if [ ! -d "$CURRENT_ROOT/$target_name" ]; then
+        warn "backup not found for '$target_name': $CURRENT_ROOT/$target_name"
+        return 1
+      fi
+      info "restoring $target_name to $source_path"
+      rclone_transfer copy "$CURRENT_ROOT/$target_name" "$source_path" \
+        "$STATE_ROOT/restore-history/$timestamp/$target_name" "$apply"
+      ;;
+    prune)
+      if [ ! -d "$source_path" ]; then
+        fail "refusing to prune from missing directory '$target_name': $source_path"
+        return 1
+      fi
+      info "reconciling $target_name"
+      rclone_transfer sync "$source_path" "$CURRENT_ROOT/$target_name" \
+        "$HISTORY_ROOT/$timestamp/$target_name" "$apply"
+      ;;
+    *)
+      fail "unknown target action: $action"
+      return 1
+      ;;
+  esac
+}
+
+process_targets() {
+  action=$1
+  requested=$2
+  dry_run=$3
+  timestamp=$(date -u '+%Y-%m-%dT%H-%M-%SZ')-$$
+  result=0
+  configured=0
+  matched=0
+  seen_names=''
+
+  while IFS= read -r raw_line || [ -n "$raw_line" ]; do
+    line=$(trim "$raw_line")
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+
+    case "$line" in
+      *:*) ;;
+      *)
+        warn "invalid target entry (expected name:path): $raw_line"
+        result=1
+        continue
+        ;;
+    esac
+
+    target_name=$(trim "${line%%:*}")
+    source_spec=$(trim "${line#*:}")
+
+    case "$target_name" in
+      ''|*[!A-Za-z0-9._-]*)
+        warn "invalid target name '$target_name' ([A-Za-z0-9._-]+ required)"
+        result=1
+        continue
+        ;;
+    esac
+
+    case "
+$seen_names" in
+      *"
+$target_name
+"*)
+        warn "duplicate target name: $target_name"
+        result=1
+        continue
+        ;;
+    esac
+    seen_names="$seen_names$target_name
+"
+    configured=$((configured + 1))
+
+    source_path=$(expand_source "$source_spec") || {
+      warn "target '$target_name' must use an absolute path or a leading \$HOME: $source_spec"
+      result=1
+      continue
+    }
+
+    validate_source_path "$source_path" || {
+      result=1
+      continue
+    }
+
+    if [ "$requested" != all ] && [ "$requested" != "$target_name" ]; then
+      continue
+    fi
+
+    matched=1
+    if ! process_target "$action" "$target_name" "$source_path" "$dry_run" "$timestamp"; then
+      result=1
+    fi
+  done < "$TARGETS_FILE"
+
+  if [ "$configured" -eq 0 ]; then
+    warn "no backup targets configured in $TARGETS_FILE"
+  fi
+
+  if [ "$requested" != all ] && [ "$matched" -eq 0 ]; then
+    warn "target is not configured: $requested"
+    result=1
+  fi
+
+  return "$result"
+}
+
+run_backup() {
+  requested=all
+  selector_set=false
+  dry_run=false
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --dry-run) dry_run=true ;;
+      all)
+        if [ "$selector_set" = true ]; then
+          fail "run accepts at most one target"
+          return 1
+        fi
+        requested=all
+        selector_set=true
+        ;;
+      -*)
+        fail "unknown run option: $1"
+        return 1
+        ;;
+      *)
+        if [ "$selector_set" = true ]; then
+          fail "run accepts at most one target"
+          return 1
+        fi
+        requested=$1
+        selector_set=true
+        ;;
+    esac
+    shift
+  done
+
+  require_configuration || return 1
+  ensure_icloud_root || return 1
+  require_rclone || return 1
+
+  if [ "$dry_run" = false ] && ! require_armed_for_write; then
+    return 0
+  fi
+
+  mkdir -p "$LOG_ROOT" || return 1
+  if [ "$dry_run" = false ]; then
+    mkdir -p "$CURRENT_ROOT" "$HISTORY_ROOT" || return 1
+  fi
+
+  process_targets run "$requested" "$dry_run"
+}
+
+run_restore_or_prune() {
+  action=$1
+  shift
+
+  [ $# -gt 0 ] || {
+    fail "$action requires a target name or 'all'"
+    return 1
+  }
+
+  requested=$1
+  shift
+  dry_run=true
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --apply) dry_run=false ;;
+      *)
+        fail "unknown $action option: $1"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  require_configuration || return 1
+  ensure_icloud_root || return 1
+  require_rclone || return 1
+
+  if [ "$action" = prune ] && [ "$dry_run" = false ] && ! require_armed_for_write; then
+    return 1
+  fi
+
+  mkdir -p "$LOG_ROOT" || return 1
+  if [ "$dry_run" = false ]; then
+    if [ "$action" = restore ]; then
+      mkdir -p "$STATE_ROOT/restore-history" || return 1
+    else
+      mkdir -p "$CURRENT_ROOT" "$HISTORY_ROOT" || return 1
+    fi
+  fi
+
+  process_targets "$action" "$requested" "$dry_run"
+}
+
+arm_backup() {
+  require_configuration || return 1
+  ensure_icloud_root || return 1
+  umask 077
+  mkdir -p "$STATE_ROOT" || return 1
+  : > "$STATE_ROOT/armed" || return 1
+  info "armed profile '$PROFILE'"
+}
+
+disarm_backup() {
+  rm -f "$STATE_ROOT/armed" || return 1
+  info "disarmed"
+}
+
+xml_escape() {
+  printf '%s' "$1" | sed \
+    -e 's/&/\&amp;/g' \
+    -e 's/</\&lt;/g' \
+    -e 's/>/\&gt;/g'
+}
+
+sed_replacement_escape() {
+  printf '%s' "$1" | sed -e 's/[&|\\]/\\&/g'
+}
+
+render_launch_agent() {
+  backup_script=$(sed_replacement_escape "$(xml_escape "$SCRIPT_DIR/backup")")
+  home_path=$(sed_replacement_escape "$(xml_escape "$HOME")")
+  stdout_log=$(sed_replacement_escape "$(xml_escape "$LOG_ROOT/launchd.stdout.log")")
+  stderr_log=$(sed_replacement_escape "$(xml_escape "$LOG_ROOT/launchd.stderr.log")")
+
+  sed \
+    -e "s|__BACKUP_SCRIPT__|$backup_script|g" \
+    -e "s|__HOME__|$home_path|g" \
+    -e "s|__STDOUT_LOG__|$stdout_log|g" \
+    -e "s|__STDERR_LOG__|$stderr_log|g" \
+    "$LAUNCH_AGENT_TEMPLATE"
+}
+
+install_launch_agent() {
+  os_name=${DOTFILES_BACKUP_OS_NAME:-$(uname -s)}
+  [ "$os_name" = Darwin ] || {
+    fail "LaunchAgent installation is supported only on macOS"
+    return 1
+  }
+
+  require_configuration || return 1
+  ensure_icloud_root || return 1
+  require_rclone || return 1
+  [ -f "$LAUNCH_AGENT_TEMPLATE" ] || {
+    fail "LaunchAgent template not found: $LAUNCH_AGENT_TEMPLATE"
+    return 1
+  }
+  command -v plutil >/dev/null 2>&1 || {
+    fail "plutil not found"
+    return 1
+  }
+  command -v launchctl >/dev/null 2>&1 || {
+    fail "launchctl not found"
+    return 1
+  }
+
+  mkdir -p "$(dirname "$LAUNCH_AGENT_PATH")" "$LOG_ROOT" || return 1
+  temporary_plist=$(mktemp "${LAUNCH_AGENT_PATH}.XXXXXX") || return 1
+  trap 'rm -f "$temporary_plist"' EXIT HUP INT TERM
+
+  render_launch_agent > "$temporary_plist" || return 1
+  plutil -lint "$temporary_plist" >/dev/null || {
+    fail "rendered LaunchAgent is invalid"
+    return 1
+  }
+  chmod 600 "$temporary_plist" || return 1
+  mv "$temporary_plist" "$LAUNCH_AGENT_PATH" || return 1
+  trap - EXIT HUP INT TERM
+
+  domain="gui/$(id -u)"
+  launchctl bootout "$domain/$LAUNCH_AGENT_LABEL" >/dev/null 2>&1 || true
+  launchctl enable "$domain/$LAUNCH_AGENT_LABEL" >/dev/null 2>&1 || true
+  launchctl bootstrap "$domain" "$LAUNCH_AGENT_PATH" || {
+    fail "could not load LaunchAgent: $LAUNCH_AGENT_PATH"
+    return 1
+  }
+  info "installed $LAUNCH_AGENT_PATH"
+
+  if is_armed; then
+    info "profile is armed; run '$SCRIPT_DIR/backup run --dry-run' before the first scheduled run"
+  else
+    info "profile remains disarmed until '$SCRIPT_DIR/backup arm' is run"
+  fi
+}
+
+status_backup() {
+  require_configuration || return 1
+
+  printf '%-14s %s\n' profile "$PROFILE"
+  printf '%-14s %s\n' targets "$TARGETS_FILE"
+  printf '%-14s %s\n' icloud-root "$ICLOUD_ROOT"
+  printf '%-14s %s\n' backup-root "$BACKUP_ROOT"
+
+  if is_armed; then
+    printf '%-14s %s\n' armed yes
+  else
+    printf '%-14s %s\n' armed no
+  fi
+
+  if [ -f "$LAUNCH_AGENT_PATH" ]; then
+    printf '%-14s %s\n' launch-agent "$LAUNCH_AGENT_PATH"
+  else
+    printf '%-14s %s\n' launch-agent not-installed
+  fi
+
+  if command -v launchctl >/dev/null 2>&1 && \
+     launchctl print "gui/$(id -u)/$LAUNCH_AGENT_LABEL" >/dev/null 2>&1; then
+    printf '%-14s %s\n' service loaded
+  else
+    printf '%-14s %s\n' service not-loaded
+  fi
+}
+
+command=${1:-help}
+if [ $# -gt 0 ]; then
+  shift
+fi
+
+case "$command" in
+  run) run_backup "$@" ;;
+  restore) run_restore_or_prune restore "$@" ;;
+  prune) run_restore_or_prune prune "$@" ;;
+  arm) arm_backup "$@" ;;
+  disarm) disarm_backup "$@" ;;
+  install) install_launch_agent "$@" ;;
+  status) status_backup "$@" ;;
+  help|-h|--help) usage ;;
+  *)
+    fail "unknown command: $command"
+    usage >&2
+    exit 1
+    ;;
+esac
