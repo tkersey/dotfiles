@@ -130,6 +130,8 @@ environment_chart:
     output_schema:
     seed_control: fixed | sampled | unavailable
     seed:
+    seed_policy_ref:
+    seed_policy_fingerprint:
 
   environment:
     world_fidelity: exact | approximate | transcript_only | absent
@@ -139,8 +141,13 @@ environment_chart:
       fingerprint:
       environment_seed_control: fixed | sampled | unavailable
       environment_seed:
+      environment_seed_policy_ref:
+      environment_seed_policy_fingerprint:
+      failure_schedule_control: fixed | sampled | unavailable | none
       failure_schedule_ref:
       failure_schedule_fingerprint:
+      failure_schedule_policy_ref:
+      failure_schedule_policy_fingerprint:
     reset:
       kind: none | git_worktree | fixture | custom
       recipe_ref:
@@ -172,8 +179,10 @@ environment_chart:
     support:
       matcher:
         kind: inline_predicates | asset
+        abi: emulator-support-classifier/v1
         classifier_ref:
         classifier_fingerprint:
+        interpreter_fingerprint:
       executable:
         - support_id:
           authority_refs: []
@@ -219,6 +228,8 @@ environment_chart:
     generator_fingerprint:
     assignment_schema_ref:
     assignment_schema_fingerprint:
+    assignment_classifier_ref:
+    assignment_classifier_fingerprint:
 
   evaluator:
     evaluator_ref:
@@ -263,10 +274,12 @@ condition plus positive `max_steps` and `timeout_ms`; other actor modes bind the
 smallest applicable limit.
 
 Every executable implementation has an exact identity. Actor and environment
-seed-control modes are independent; each seed is present only when its own
-control is fixed or sampled and is canonically null when unavailable. Any sampled failure schedule is explicit and
-fingerprinted; `unavailable` is recorded rather than replaced with an invented
-seed.
+seed-control modes are independent. `fixed` requires a non-null chart seed and
+null policy; `sampled` requires a null chart seed plus non-null deterministic
+sampling-policy ref/fingerprint, with realized seeds owned by repeat rows;
+`unavailable` requires both null. Failure schedules use the same explicit
+`fixed | sampled | unavailable | none` ownership split, with policy identity for
+sampled control and realized schedule identity in execution evidence.
 
 Every support entry has a unique ID, at least one authority ref, and a deterministic predicate in the declared
 action schema. The inline predicate language is exact canonical-JSON equality
@@ -276,25 +289,39 @@ predicate assets rather than implicit prose. An asset matcher binds its
 classifier bytes through `classifier_ref` and `classifier_fingerprint`. A
 classifier that is missing, nondeterministic, or cannot prove the five classes
 disjoint makes the environment invalid.
+Matcher variants are exclusive. `inline_predicates` requires null classifier
+and interpreter fields and uses the four explicit entry arrays.
+`asset` requires the ABI, classifier, and interpreter identities and all four
+inline arrays empty. Its canonical input is the exact action-schema JSON value;
+its exact output is `{support_class, support_id, authority_refs}` with
+`support_class` one of the five classes. The asset owns the complete disjoint
+mapping; inline and asset classifications never coexist.
 Every terminal condition likewise has nonempty authority refs; timeout and step
 bounds do not invent permission to terminate successfully. A terminal predicate
 uses the same exact JSON-Pointer equality language as inline support, or
 `kind: asset` with non-null predicate ref/fingerprint and null inline fields.
 Mixed or prose predicates are invalid.
 
-Mutation dimensions are optional outside `operation_mode: mutate`. Mutation requires at
+Mutation dimensions are optional unless the selected emulator invocation mode
+is `mutate`. That request mode is external to the reusable EC-v1 root. Mutation requires at
 least one finite or otherwise bounded domain, preserved-law references, and a
 deterministic shrink strategy. An external generator is fingerprinted and
 included in the chart closure. No mutation widens action support or source
 authority.
+The resulting EER binds `evidence_mode: mutate`; a mutate invocation with no
+qualifying chart mutation block is `invalid_environment` before execution.
 Every generated assignment emits a closed case classification naming its exact
 dimension cases, `ordinary | boundary | negative` kind, expected preserved
 laws, and expected violated laws. Combination-only violations are declared on
 the assignment classification rather than guessed from one dimension.
 `assignment_schema_ref` resolves the closed
-`mutation-assignment/v1` schema with exact fields `assignment_id`, sorted
-`case_ids`, canonical `values`, aggregate `kind`, sorted
-`expected_preserved_law_refs`, and sorted `expected_violated_law_refs`. Every
+`mutation-assignment/v1` schema with exact fields `assignment_id`, chart and
+generator fingerprints, sorted case objects `{dimension_id, case_id, value}`,
+aggregate `kind`, sorted `expected_preserved_law_refs`, and sorted
+`expected_violated_law_refs`. Case identity is the qualified
+`(dimension_id, case_id)` pair. The chart-bound assignment classifier/table is
+fingerprinted and deterministically derives aggregate kind and laws before the
+run; generator self-report is not authority. Every
 mutate run binds the resulting assignment ref/fingerprint in runs.jsonl and
 EER; omission is `invalid_environment`.
 

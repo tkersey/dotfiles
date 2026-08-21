@@ -45,8 +45,8 @@ ${CODEX_HOME:-$HOME/.codex}/emulators/<atlas-id>/
   worlds/
   harnesses/baseline/
   harnesses/candidates/<candidate-id>/
-  runs/<comparison-id>/
-  reports/<comparison-id>/
+  runs/<run-group-id-or-comparison-id>/
+  reports/<run-group-id-or-comparison-id>/
   datasets/
 ~~~
 
@@ -538,6 +538,10 @@ Promotion is only an evidence strength: it means these conditions and the chart
 claim matrix support a separately authorized adoption decision. It never mutates
 the live harness. Ties, unsupported required charts, evaluator disagreement,
 access-proof gaps, or inadequate holdout coverage yield insufficient_evidence.
+Apply EER-v1 precedence to mixed evidence: any witnessed new hard failure,
+protected regression, or ordinary targeted regression yields `reject` before
+incomplete-coverage handling; otherwise incomplete required evidence yields
+`insufficient_evidence`.
 
 Use paired_replay_delta, observed_association, regression, or
 insufficient_evidence. Do not claim a causal mechanism from an uncontrolled
@@ -545,8 +549,9 @@ comparison.
 
 ## 11. Export
 
-Emit chart-aware EER-v1, runs.jsonl, and comparison.json as specified in
-eer-v1.md.
+Emit chart-aware EER-v1 and runs.jsonl as specified in eer-v1.md. Emit
+comparison.json only for compare mode; standalone run/mutate use their
+run-group identity and never fabricate comparison metadata.
 
 Preference rows require:
 
