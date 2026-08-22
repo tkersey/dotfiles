@@ -82,6 +82,8 @@ fi
 grep -F 'instruction_digest' "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'requested_target_selector' "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'type, branch, sha, title' "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'git rev-parse --verify <selector>^{commit}' \
+  "$skill_root/references/review-contract.md" >/dev/null
 if grep -F 'expected base, head, and target fingerprint' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null; then
   echo "CAS proof boundary still requires a caller-predicted target fingerprint" >&2
@@ -131,8 +133,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v7" and
-  .contract_id == "actuating-review-contract-v9" and
+  .schema == "actuating-review-contract/v8" and
+  .contract_id == "actuating-review-contract-v10" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -159,6 +161,12 @@ grep -F 'Actuating must revoke and adjudicate' \
   .target_binding.requested_target_selector_scope == "per-request-caller-owned" and
   .target_binding.requested_target_selector_encoding ==
     "compact-json-fixed-order-type-branch-sha-title-explicit-nulls" and
+  .target_binding.requested_target_selector_value_canonicalization.baseBranch ==
+    "trim-branch-null-sha-title" and
+  .target_binding.requested_target_selector_value_canonicalization.commit ==
+    "resolve-full-commit-oid-trim-title-null-empty" and
+  .target_binding.requested_target_selector_value_canonicalization.uncommittedChanges ==
+    "null-branch-sha-title" and
   .target_binding.cas_target_fingerprint_scope == "per-request-receipt" and
   .target_binding.request_fingerprint_includes_target_selector == true and
   .target_binding.request_fingerprint_includes_instruction_digest == true and
@@ -172,7 +180,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-target-selector-v11" and
+    "actuating-review-target-selector-v12" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -195,6 +203,10 @@ grep -F 'Actuating must revoke and adjudicate' \
       select(.clause_id == "ACT-REVIEW-001") |
       .success_signals[]] |
     index("the caller-owned target selector has one exact compact JSON encoding with fixed fields and explicit nulls")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .success_signals[]] |
+    index("selector values are canonicalized to the exact public values CAS reports before request binding")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |

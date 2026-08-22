@@ -91,6 +91,18 @@ Include every field and represent absent optional values as `null`. Use ordinary
 JSON string escaping and no insignificant whitespace. This is the public selector
 shape, not CAS's derived target-fingerprint serialization.
 
+Canonicalize selector values before encoding:
+
+- `baseBranch`: trim surrounding ASCII whitespace from `branch`; keep `sha` and
+  `title` null;
+- `commit`: resolve `sha` with `git rev-parse --verify <selector>^{commit}` to the
+  full commit OID, trim `title`, and encode an empty title as null; keep `branch`
+  null;
+- `uncommittedChanges`: encode `branch`, `sha`, and `title` as null.
+
+The canonical selector retained for receipt comparison is therefore the exact
+public selector CAS will report, not necessarily the raw command-line spelling.
+
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
 binding. Actuating retains the common context and instruction digest during the
 active run. CAS echoes the binding and owns the exact review receipt and target

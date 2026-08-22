@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v7",
-  "contract_id": "actuating-review-contract-v9",
+  "schema": "actuating-review-contract/v8",
+  "contract_id": "actuating-review-contract-v10",
   "required_lenses": [
     {
       "name": "standard",
@@ -67,6 +67,11 @@
     "common_context_scope": "repository-base-head",
     "requested_target_selector_scope": "per-request-caller-owned",
     "requested_target_selector_encoding": "compact-json-fixed-order-type-branch-sha-title-explicit-nulls",
+    "requested_target_selector_value_canonicalization": {
+      "baseBranch": "trim-branch-null-sha-title",
+      "commit": "resolve-full-commit-oid-trim-title-null-empty",
+      "uncommittedChanges": "null-branch-sha-title"
+    },
     "cas_target_fingerprint_scope": "per-request-receipt",
     "request_fingerprint_includes_target_selector": true,
     "request_fingerprint_includes_instruction_digest": true,
