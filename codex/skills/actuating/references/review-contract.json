@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v11",
-  "contract_id": "actuating-review-contract-v13",
+  "schema": "actuating-review-contract/v12",
+  "contract_id": "actuating-review-contract-v14",
   "required_lenses": [
     {
       "name": "standard",
@@ -71,10 +71,11 @@
     ],
     "uncommitted_changes_credit": "forbidden",
     "clean_worktree_required": true,
+    "movable_base_refs_credit": "forbidden",
     "requested_target_selector_scope": "per-request-caller-owned",
     "requested_target_selector_encoding": "compact-json-fixed-order-type-branch-sha-title-explicit-nulls",
     "requested_target_selector_value_canonicalization": {
-      "baseBranch": "trim-branch-bytes-20-09-0d-0a-null-sha-title",
+      "baseBranch": "trim-bytes-20-09-0d-0a-require-full-oid-merge-base-equals-context-base-null-sha-title",
       "commit": "resolve-full-commit-oid-trim-title-bytes-20-09-0d-0a-null-empty"
     },
     "cas_target_fingerprint_scope": "per-request-receipt",
@@ -90,6 +91,21 @@
     "cas_store_root": "outside-review-worktree",
     "pre_attempt_head_and_clean_check": true,
     "post_attempt_head_and_clean_check": true,
+    "tracked_external_symlink_closure": {
+      "mode": "bind-resolved-regular-file-bytes",
+      "domain": "actuating-external-symlink-closure/v1",
+      "order": "repository-path-byte-order",
+      "record_fields": [
+        "repository_path",
+        "link_target_bytes",
+        "resolved_realpath",
+        "target_sha256"
+      ],
+      "non_regular_or_missing_target": "block",
+      "sanctioned_writers": 0,
+      "pre_attempt_digest_check": true,
+      "post_attempt_digest_check": true
+    },
     "mismatch_action": "reject-credit-and-restart-selected-schedule-in-fresh-worktree"
   },
   "transport_recovery": {
@@ -111,6 +127,8 @@
     "current_tuple_required": true,
     "committed_subject_required": true,
     "campaign_exclusive_worktree_required": true,
+    "external_symlink_closure_required": true,
+    "immutable_base_selector_required": true,
     "required_backend_class": "cas-start-wait",
     "required_capability": "cas_workflow_bound_owner_lived_review_v1",
     "structured_statuses": [

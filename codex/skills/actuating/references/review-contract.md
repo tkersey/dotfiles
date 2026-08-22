@@ -33,6 +33,7 @@ review_context:
   head_sha:
   review_worktree_realpath:
   review_worktree_custody: campaign-exclusive
+  external_symlink_closure_digest:
   goal:
     objective:
     non_goals: []
@@ -96,6 +97,28 @@ A mismatch earns no semantic credit, invalidates the current campaign evidence,
 and requires a fresh dedicated worktree and fresh selected schedule. Concurrent
 changes in other worktrees do not affect this review subject.
 
+Before campaign dispatch, enumerate every tracked Git entry with mode `120000`,
+sorted by repository-relative path. For each symlink that resolves outside the
+review worktree:
+
+1. retain its repository path and exact link-target bytes;
+2. resolve the target to an absolute real path;
+3. require the target to be one regular file;
+4. record the SHA-256 of its exact bytes.
+
+Canonicalize the ordered records as compact JSON and compute:
+
+```text
+external_symlink_closure_digest = sha256(
+  "actuating-external-symlink-closure/v1" || NUL || canonical_json
+)
+```
+
+Bind that digest in `review_context`, grant no sanctioned writer to those target
+files during the campaign, and recompute it immediately before and after every
+request. A missing, directory, special, newly added, changed, or retargeted
+external symlink invalidates the campaign and earns no credit.
+
 The common context identifies one Git subject and never contains an
 instruction-sensitive CAS target fingerprint. The pre-dispatch request binding
 contains the caller-owned canonical target selector and exact instruction digest.
@@ -116,7 +139,9 @@ shape, not CAS's derived target-fingerprint serialization.
 Canonicalize selector values before encoding:
 
 - `baseBranch`: trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
-  ends of `branch`; keep `sha` and `title` null;
+  ends of `branch`; require the result to be one full commit OID, require
+  `git merge-base head_sha branch == base_sha`, and keep `sha` and `title` null.
+  Movable symbolic refs are not creditable;
 - `commit`: resolve `sha` with `git rev-parse --verify <selector>^{commit}` to the
   full commit OID, trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
   ends of `title`, and encode an empty title as null; keep `branch` null;

@@ -380,7 +380,9 @@ instruction-sensitive CAS target fingerprint remains receipt-scoped.
 Run credited reviews from one campaign-exclusive detached worktree at the exact
 head, separate from the implementation worktree. Give no sanctioned writer that
 worktree during the campaign, keep CAS storage outside it, and reject credit if
-the worktree head or cleanliness differs before or after any attempt.
+the worktree head or cleanliness differs before or after any attempt. Bind and
+hold custody over the resolved byte closure of every tracked symlink that escapes
+the review worktree. Use only immutable full-OID base selectors.
 
 For the unchanged head:
 
