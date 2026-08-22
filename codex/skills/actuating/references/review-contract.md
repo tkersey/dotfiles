@@ -86,9 +86,11 @@ Actuating dispatches one fixed CAS target shape:
 
 The terminal receipt's `target` object MUST report `type == "baseBranch"` and
 `branch` exactly equal to the `base_sha` already bound by the campaign. An
-absent `sha` or `title` is equivalent to `null`, and CAS-owned additive fields
-are ignored. Other CAS target selectors remain available for standalone CAS use
-but do not earn Actuating credit.
+absent `sha` or `title` is equivalent to `null`. An additive field may be
+ignored only when a current compatible CAS public contract classifies it as
+non-control; unclassified or control-bearing fields fail closed. Other CAS
+target selectors remain available for standalone CAS use but do not earn
+Actuating credit.
 
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
 binding. Actuating retains the common context and instruction digest during the
@@ -104,8 +106,9 @@ checks. Each credited attempt must report:
 - strong principal evidence with no reduced protection;
 - backend class `cas-start-wait`;
 - exact current base, head, and target fingerprint;
-- the Actuating `baseBranch` selector with `branch == base_sha`, allowing only
-  absent-or-null `sha` and `title` plus CAS-owned additive fields;
+- the Actuating `baseBranch` selector with `branch == base_sha`, allowing
+  absent-or-null `sha` and `title` plus only CAS-publicly-classified non-control
+  additive fields;
 - one nonempty owner-issued target fingerprint shared by the terminal receipt
   and structured verdict for that exact request;
 - exact workflow-binding echo;

@@ -104,22 +104,30 @@ grep -F 'developer instruction bytes match' \
 ' "$codex_root/skills/cas/assets/start-wait-normalized-clean.example.json" >/dev/null
 
 "$jaq_bin" -n -e --arg base aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa '
-  def actuating_target_ok($target):
+  def actuating_target_ok($target; $classified_non_control):
+    (($target | keys_unsorted) -
+      (["type", "branch", "sha", "title"] + $classified_non_control) |
+      length) == 0 and
     $target.type == "baseBranch" and
     $target.branch == $base and
     $target.sha == null and
     $target.title == null;
-  actuating_target_ok({"type":"baseBranch","branch":$base}) and
+  actuating_target_ok({"type":"baseBranch","branch":$base}; []) and
   actuating_target_ok({
     "type":"baseBranch",
     "branch":$base,
     "sha":null,
     "title":null,
     "diagnostic":"CAS-owned additive field"
-  }) and
-  (actuating_target_ok({"type":"commit","branch":$base}) | not) and
-  (actuating_target_ok({"type":"baseBranch","branch":"wrong"}) | not) and
-  (actuating_target_ok({"type":"baseBranch","branch":$base,"sha":"wrong"}) | not)
+  }; ["diagnostic"]) and
+  (actuating_target_ok({
+    "type":"baseBranch",
+    "branch":$base,
+    "newSelector":"semantic"
+  }; []) | not) and
+  (actuating_target_ok({"type":"commit","branch":$base}; []) | not) and
+  (actuating_target_ok({"type":"baseBranch","branch":"wrong"}; []) | not) and
+  (actuating_target_ok({"type":"baseBranch","branch":$base,"sha":"wrong"}; []) | not)
 ' >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
@@ -157,8 +165,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v7" and
-  .contract_id == "actuating-review-contract-v9" and
+  .schema == "actuating-review-contract/v8" and
+  .contract_id == "actuating-review-contract-v10" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -188,7 +196,9 @@ grep -F 'Actuating must revoke and adjudicate' \
   .target_binding.receipt_target_match == {
     "required_fields":{"type":"baseBranch","branch_source":"base_sha"},
     "absent_or_null_fields":["sha","title"],
-    "additional_fields":"allowed"
+    "additional_fields":"cas_publicly_classified_non_control_only",
+    "unclassified_additional_fields":"reject",
+    "control_bearing_additional_fields":"reject"
   } and
   .target_binding.cas_target_fingerprint_scope == "per-request-receipt" and
   .target_binding.request_fingerprint_includes_instruction_digest == true and
@@ -201,7 +211,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-target-owner-v11" and
+    "actuating-review-target-owner-v12" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -219,7 +229,7 @@ grep -F 'Actuating must revoke and adjudicate' \
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .success_signals[]] |
-    index("Actuating requests one fixed baseBranch target bound to the campaign base SHA and verifies its selector fields while tolerating CAS-owned additive receipt fields")) != null and
+    index("Actuating requests one fixed baseBranch target bound to the campaign base SHA, verifies its selector fields, and accepts only CAS-publicly-classified non-control additions")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
