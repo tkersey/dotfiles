@@ -370,10 +370,11 @@ Conservative exclusion of optional safe behavior is not containment.
 
 Read [review-contract.md](references/review-contract.md).
 
-Bind review to repository, immutable base, exact head, each request's CAS target
-fingerprint, Goal/acceptance digest, Review Contract digest, and optional
-pre-review Ship observation digest. The shared review context binds the Git
-subject; the instruction-sensitive CAS target fingerprint is request-scoped.
+Bind review to repository, immutable base, exact head, each request's owner-issued
+CAS target fingerprint, Goal/acceptance digest, Review Contract digest, and
+optional pre-review Ship observation digest. The shared review context binds the
+Git subject; the instruction-sensitive CAS target fingerprint is receipt-scoped
+and never caller-recomputed before dispatch.
 
 For the unchanged head:
 
