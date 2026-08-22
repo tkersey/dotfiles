@@ -212,7 +212,7 @@ grep -F 'Actuating must revoke and adjudicate' \
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .success_signals[]] |
-    index("branch and title normalization use CAS's exact space-tab-CR-LF byte trim set")) != null and
+    index("branch and title normalization use the exact CAS space-tab-CR-LF byte trim set")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |

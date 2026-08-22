@@ -347,7 +347,7 @@
           "each request binds its caller-owned canonical target selector before dispatch and exact-matches the receipt target afterward",
           "the caller-owned target selector has one exact compact JSON encoding with fixed fields and explicit nulls",
           "selector values are canonicalized to the exact public values CAS reports before request binding",
-          "branch and title normalization use CAS's exact space-tab-CR-LF byte trim set",
+          "branch and title normalization use the exact CAS space-tab-CR-LF byte trim set",
           "material head change invalidates all credit and restarts the selected schedule at its initial standard",
           "missing resumable evidence restarts the selected schedule"
         ],
