@@ -91,6 +91,8 @@ grep -F 'owner-issued target fingerprint agrees' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
 grep -F 'requested selector' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
+grep -F 'target type, branch, sha, and title' \
+  "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
 grep -F 'developer instruction bytes match' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
 
