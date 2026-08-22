@@ -97,14 +97,20 @@ A mismatch earns no semantic credit, invalidates the current campaign evidence,
 and requires a fresh dedicated worktree and fresh selected schedule. Concurrent
 changes in other worktrees do not affect this review subject.
 
-Before campaign dispatch, enumerate every tracked Git entry with mode `120000`,
-sorted by repository-relative path. For each symlink that resolves outside the
+Before campaign dispatch, reject the subject when `git ls-files -s -z` contains
+any mode-`160000` gitlink. Actuating does not credit repositories with tracked
+submodules; standalone CAS remains free to inspect them.
+
+Then enumerate every tracked Git entry with mode `120000`, sorted by raw
+repository-relative path bytes. For each symlink that resolves outside the
 review worktree:
 
-1. retain its repository path and exact link-target bytes;
-2. resolve the target to an absolute real path;
+1. encode its repository path and exact link-target bytes as lowercase hex;
+2. resolve the target to an absolute real path and encode its raw path bytes as
+   lowercase hex;
 3. require the target to be one regular file;
-4. record the SHA-256 of its exact bytes.
+4. record its permission bits as four lowercase octal digits and the SHA-256 of
+   its exact bytes.
 
 Canonicalize the ordered records as compact JSON and compute:
 
@@ -114,10 +120,17 @@ external_symlink_closure_digest = sha256(
 )
 ```
 
+The compact JSON record fields, in order, are:
+
+```text
+repository_path_hex, link_target_hex, resolved_realpath_hex,
+target_mode_octal, target_sha256
+```
+
 Bind that digest in `review_context`, grant no sanctioned writer to those target
 files during the campaign, and recompute it immediately before and after every
-request. A missing, directory, special, newly added, changed, or retargeted
-external symlink invalidates the campaign and earns no credit.
+request. A missing, directory, special, newly added, changed, mode-changed, or
+retargeted external symlink invalidates the campaign and earns no credit.
 
 The common context identifies one Git subject and never contains an
 instruction-sensitive CAS target fingerprint. The pre-dispatch request binding

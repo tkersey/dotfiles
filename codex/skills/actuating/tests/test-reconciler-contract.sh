@@ -98,6 +98,10 @@ grep -F 'actuating-external-symlink-closure/v1' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'Movable symbolic refs are not creditable' \
   "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'mode-`160000` gitlink' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'repository_path_hex, link_target_hex, resolved_realpath_hex' \
+  "$skill_root/references/review-contract.md" >/dev/null
 if grep -F 'expected base, head, and target fingerprint' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null; then
   echo "CAS proof boundary still requires a caller-predicted target fingerprint" >&2
@@ -147,8 +151,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v12" and
-  .contract_id == "actuating-review-contract-v14" and
+  .schema == "actuating-review-contract/v13" and
+  .contract_id == "actuating-review-contract-v15" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -182,6 +186,7 @@ grep -F 'Actuating must revoke and adjudicate' \
   .subject_custody.cas_store_root == "outside-review-worktree" and
   .subject_custody.pre_attempt_head_and_clean_check == true and
   .subject_custody.post_attempt_head_and_clean_check == true and
+  .subject_custody.tracked_submodules == "forbidden" and
   .subject_custody.tracked_external_symlink_closure.mode ==
     "bind-resolved-regular-file-bytes" and
   .subject_custody.tracked_external_symlink_closure.domain ==
@@ -189,7 +194,11 @@ grep -F 'Actuating must revoke and adjudicate' \
   .subject_custody.tracked_external_symlink_closure.order ==
     "repository-path-byte-order" and
   .subject_custody.tracked_external_symlink_closure.record_fields ==
-    ["repository_path", "link_target_bytes", "resolved_realpath", "target_sha256"] and
+    ["repository_path_hex", "link_target_hex", "resolved_realpath_hex",
+     "target_mode_octal", "target_sha256"] and
+  .subject_custody.tracked_external_symlink_closure.byte_encoding == "lowercase-hex" and
+  .subject_custody.tracked_external_symlink_closure.target_mode_encoding ==
+    "four-lowercase-octal-permission-bits" and
   .subject_custody.tracked_external_symlink_closure.non_regular_or_missing_target == "block" and
   .subject_custody.tracked_external_symlink_closure.sanctioned_writers == 0 and
   .subject_custody.tracked_external_symlink_closure.pre_attempt_digest_check == true and
@@ -214,13 +223,14 @@ grep -F 'Actuating must revoke and adjudicate' \
   .attempt_quality.committed_subject_required == true and
   .attempt_quality.campaign_exclusive_worktree_required == true and
   .attempt_quality.external_symlink_closure_required == true and
+  .attempt_quality.tracked_submodules_forbidden == true and
   .attempt_quality.immutable_base_selector_required == true and
   .transport_recovery.maximum_fresh_recovery_attempts == 1
 ' "$skill_root/references/review-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-subject-closure-v16" and
+    "actuating-review-subject-closure-v17" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -269,6 +279,10 @@ grep -F 'Actuating must revoke and adjudicate' \
     index("baseBranch selectors use immutable full OIDs whose merge base equals the bound base")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
+      .success_signals[]] |
+    index("tracked submodules are ineligible and external symlink closure records use byte-safe fields plus permission mode")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
     index("one instruction-sensitive CAS target fingerprint is reused as shared five-lens review-context identity")) != null and
   ([.skill_decision_contract.clauses[] |
@@ -297,7 +311,15 @@ grep -F 'Actuating must revoke and adjudicate' \
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
-    index("a movable symbolic base ref changes after receipt identity capture")) != null
+    index("a movable symbolic base ref changes after receipt identity capture")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .failure_signals[]] |
+    index("submodule checkout state or external target mode changes outside the bound subject closure")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .failure_signals[]] |
+    index("non-UTF-8 symlink bytes lack one canonical record encoding")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '

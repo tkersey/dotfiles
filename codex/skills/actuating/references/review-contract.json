@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v12",
-  "contract_id": "actuating-review-contract-v14",
+  "schema": "actuating-review-contract/v13",
+  "contract_id": "actuating-review-contract-v15",
   "required_lenses": [
     {
       "name": "standard",
@@ -91,16 +91,20 @@
     "cas_store_root": "outside-review-worktree",
     "pre_attempt_head_and_clean_check": true,
     "post_attempt_head_and_clean_check": true,
+    "tracked_submodules": "forbidden",
     "tracked_external_symlink_closure": {
       "mode": "bind-resolved-regular-file-bytes",
       "domain": "actuating-external-symlink-closure/v1",
       "order": "repository-path-byte-order",
       "record_fields": [
-        "repository_path",
-        "link_target_bytes",
-        "resolved_realpath",
+        "repository_path_hex",
+        "link_target_hex",
+        "resolved_realpath_hex",
+        "target_mode_octal",
         "target_sha256"
       ],
+      "byte_encoding": "lowercase-hex",
+      "target_mode_encoding": "four-lowercase-octal-permission-bits",
       "non_regular_or_missing_target": "block",
       "sanctioned_writers": 0,
       "pre_attempt_digest_check": true,
@@ -128,6 +132,7 @@
     "committed_subject_required": true,
     "campaign_exclusive_worktree_required": true,
     "external_symlink_closure_required": true,
+    "tracked_submodules_forbidden": true,
     "immutable_base_selector_required": true,
     "required_backend_class": "cas-start-wait",
     "required_capability": "cas_workflow_bound_owner_lived_review_v1",
