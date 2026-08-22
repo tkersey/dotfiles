@@ -4,10 +4,12 @@
 
 DOTFILES_ROOT="$(pwd)"
 LINKS_CONF="$DOTFILES_ROOT/links.conf"
+BACKUP_SCRIPT="$DOTFILES_ROOT/backups/backup"
 
 # Default flags
 DO_SYMLINK=false
 DO_HOMEBREW=false
+DO_ICLOUD_BACKUP=false
 DO_ALL=true
 
 # Process command line arguments
@@ -21,12 +23,17 @@ while [ $# -gt 0 ]; do
       DO_HOMEBREW=true
       DO_ALL=false
       ;;
+    --icloud-backup)
+      DO_ICLOUD_BACKUP=true
+      DO_ALL=false
+      ;;
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
-      echo "  --symlink   Create symlinks from links.conf"
-      echo "  --homebrew  Run homebrew installation/update"
-      echo "  --help      Show this help message"
+      echo "  --symlink        Create symlinks from links.conf"
+      echo "  --homebrew       Run homebrew installation/update"
+      echo "  --icloud-backup  Install the rclone iCloud backup LaunchAgent"
+      echo "  --help           Show this help message"
       echo ""
       echo "If no options are specified, all tasks will be run."
       echo "If any options are specified, only those tasks will be run."
@@ -45,6 +52,7 @@ done
 if [ "$DO_ALL" = true ]; then
   DO_SYMLINK=true
   DO_HOMEBREW=true
+  DO_ICLOUD_BACKUP=true
 fi
 
 set -e
@@ -66,7 +74,7 @@ success () {
 fail () {
   printf "\r\033[2K  [\033[0;31mFAIL\033[0m] $1\n"
   echo ''
-  exit
+  exit 1
 }
 
 setup_files () {
@@ -202,6 +210,16 @@ then
     success "dependencies installed"
   else
     fail "error installing dependencies"
+  fi
+fi
+
+if [ "$DO_ICLOUD_BACKUP" = true ]; then
+  info "installing iCloud backup automation"
+  if "$BACKUP_SCRIPT" install
+  then
+    success "iCloud backup automation installed"
+  else
+    fail "error installing iCloud backup automation"
   fi
 fi
 
