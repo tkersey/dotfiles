@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "metanoetic"
   short_description: "Challenge an incumbent through a metanoetic reframe"
-  default_prompt: "Use $metanoetic once to challenge a concrete incumbent and search for a materially different frame, invariant, mechanism, artifact, or breakthrough candidate. Preserve the canonical one-line escalation verbatim."
+  default_prompt: "Use $metanoetic once to challenge a concrete incumbent and search for a materially different frame, invariant, mechanism, solution class, artifact, or breakthrough candidate—including a mechanism that makes an incumbent-generated burden disappear. Preserve the canonical one-line escalation verbatim."

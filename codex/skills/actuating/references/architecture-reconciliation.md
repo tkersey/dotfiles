@@ -50,9 +50,11 @@ diagnostic-exactness status
 predicted siblings or exhaustive-domain basis
 ```
 
-Run one bounded `$metanoetic` challenger when the ordinary theory is
-detection-shaped, enumerative, representation-bound, violation-erasing,
-contradicted, owner/topology-captive, or merely one plausible frame.
+Run one bounded `$metanoetic` challenger when the ordinary theory or
+candidate is detection-shaped, enumerative, representation-bound,
+violation-erasing, contradicted, owner/topology-captive,
+solution-class-captive, optimizing an incumbent-generated burden, or merely
+one plausible frame.
 
 Then **OPERATE ARCHITECTONICALLY**. Retain, replace, combine, split, or leave the
 theory unresolved.

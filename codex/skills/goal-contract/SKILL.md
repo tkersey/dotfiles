@@ -61,18 +61,23 @@ predecessor chain.
 1. Identify the exact accepted source or direct current user authority.
 2. Separate semantic authority from execution authority. Permission to work does
    not decide architecture or prove completion.
-3. Copy required outcomes and explicit non-goals without architectural
+3. Distinguish source-fixed artifact or architecture requirements from
+   preferences, examples, and proposed means. Only explicit required outcomes,
+   hard constraints, and compatibility obligations constrain architecture.
+   Never silently promote a suggested means into a Goal law or demote an
+   explicit deliverable into a suggestion.
+4. Copy required outcomes and explicit non-goals without architectural
    elaboration.
-4. Bound repository, immutable base, allowed paths, and prohibited paths.
-5. Preserve every required compatibility contract, permitted break, and
+5. Bound repository, immutable base, allowed paths, and prohibited paths.
+6. Preserve every required compatibility contract, permitted break, and
    migration obligation.
-6. Express each required predicate as one law with applicability and an
+7. Express each required predicate as one law with applicability and an
    observable result. An unobservable required law blocks.
-7. Record mutation, publication, review, and validation posture exactly as
+8. Record mutation, publication, review, and validation posture exactly as
    authorized by the source.
-8. Return the complete Goal Contract directly to Actuating.
-9. Before any affected mutation, refresh the contract when the accepted source,
-   authority, scope, compatibility, or required observations changed.
+9. Return the complete Goal Contract directly to Actuating.
+10. Before any affected mutation, refresh the contract when the accepted source,
+    authority, scope, compatibility, or required observations changed.
 
 ## Source revisions
 
@@ -92,6 +97,8 @@ mutation rather than manufacturing continuity.
 The Goal Contract may contain source-fixed architectural constraints. It must
 not introduce an architecture merely because the source is underdetermined.
 
+- A named mechanism constrains architecture only when current authority makes it
+  a required outcome, hard constraint, or compatibility obligation.
 - `$universalist` may nominate only source-permitted choices.
 - `$actuating` owns incumbent reconstruction, architecture closure, target
   selection, realization, and closure.
