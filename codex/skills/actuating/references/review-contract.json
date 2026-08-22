@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v5",
-  "contract_id": "actuating-review-contract-v7",
+  "schema": "actuating-review-contract/v6",
+  "contract_id": "actuating-review-contract-v8",
   "required_lenses": [
     {
       "name": "standard",
@@ -65,9 +65,12 @@
   },
   "target_binding": {
     "common_context_scope": "repository-base-head",
+    "requested_target_selector_scope": "per-request-caller-owned",
     "cas_target_fingerprint_scope": "per-request-receipt",
+    "request_fingerprint_includes_target_selector": true,
     "request_fingerprint_includes_instruction_digest": true,
-    "caller_recomputes_cas_target_fingerprint": false
+    "caller_recomputes_cas_target_fingerprint": false,
+    "receipt_target_matches_requested_selector": true
   },
   "transport_recovery": {
     "request_local": true,
@@ -81,6 +84,7 @@
     "owner_lived_transport_required": true,
     "context_match_required": true,
     "exact_instruction_digest_required": true,
+    "exact_requested_target_selector_required": true,
     "per_request_target_fingerprint_required": true,
     "owner_issued_target_fingerprint_required": true,
     "exact_workflow_binding_required": true,

@@ -69,14 +69,16 @@ request_fingerprint = sha256(
   request_id || NUL ||
   lens_name || NUL ||
   role || NUL ||
+  requested_target_selector || NUL ||
   instruction_digest
 )
 ```
 
 The common context identifies one Git subject and never contains an
 instruction-sensitive CAS target fingerprint. The pre-dispatch request binding
-ends at the exact instruction digest. Actuating does not reimplement CAS's
-private target serialization or predict its fingerprint.
+contains the caller-owned canonical target selector and exact instruction digest.
+Actuating does not reimplement CAS's private target serialization or predict its
+fingerprint.
 
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
 binding. Actuating retains the common context and instruction digest during the
@@ -92,6 +94,8 @@ checks. Each credited attempt must report:
 - strong principal evidence with no reduced protection;
 - backend class `cas-start-wait`;
 - exact current base, head, and target fingerprint;
+- the receipt's exact target object equals the canonical selector retained for
+  the request;
 - one nonempty owner-issued target fingerprint shared by the terminal receipt
   and structured verdict for that exact request;
 - exact workflow-binding echo;
