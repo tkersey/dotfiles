@@ -78,6 +78,16 @@ instruction-sensitive CAS target fingerprint. The pre-dispatch request binding
 ends at the exact instruction digest. Actuating does not reimplement CAS's
 private target serialization or predict its fingerprint.
 
+Actuating dispatches one fixed CAS target shape:
+
+```json
+{"type":"baseBranch","branch":"<base_sha>","sha":null,"title":null}
+```
+
+The terminal receipt's `target` object MUST equal that shape with `branch`
+exactly equal to the `base_sha` already bound by the campaign. Other CAS target
+shapes remain available for standalone CAS use but do not earn Actuating credit.
+
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
 binding. Actuating retains the common context and instruction digest during the
 active run. CAS echoes the binding and owns the exact review receipt and target
@@ -92,6 +102,7 @@ checks. Each credited attempt must report:
 - strong principal evidence with no reduced protection;
 - backend class `cas-start-wait`;
 - exact current base, head, and target fingerprint;
+- exact Actuating `baseBranch` target shape with `branch == base_sha`;
 - one nonempty owner-issued target fingerprint shared by the terminal receipt
   and structured verdict for that exact request;
 - exact workflow-binding echo;
