@@ -93,11 +93,11 @@ shape, not CAS's derived target-fingerprint serialization.
 
 Canonicalize selector values before encoding:
 
-- `baseBranch`: trim surrounding ASCII whitespace from `branch`; keep `sha` and
-  `title` null;
+- `baseBranch`: trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
+  ends of `branch`; keep `sha` and `title` null;
 - `commit`: resolve `sha` with `git rev-parse --verify <selector>^{commit}` to the
-  full commit OID, trim `title`, and encode an empty title as null; keep `branch`
-  null;
+  full commit OID, trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
+  ends of `title`, and encode an empty title as null; keep `branch` null;
 - `uncommittedChanges`: encode `branch`, `sha`, and `title` as null.
 
 The canonical selector retained for receipt comparison is therefore the exact

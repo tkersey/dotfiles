@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v8",
-  "contract_id": "actuating-review-contract-v10",
+  "schema": "actuating-review-contract/v9",
+  "contract_id": "actuating-review-contract-v11",
   "required_lenses": [
     {
       "name": "standard",
@@ -68,8 +68,8 @@
     "requested_target_selector_scope": "per-request-caller-owned",
     "requested_target_selector_encoding": "compact-json-fixed-order-type-branch-sha-title-explicit-nulls",
     "requested_target_selector_value_canonicalization": {
-      "baseBranch": "trim-branch-null-sha-title",
-      "commit": "resolve-full-commit-oid-trim-title-null-empty",
+      "baseBranch": "trim-branch-bytes-20-09-0d-0a-null-sha-title",
+      "commit": "resolve-full-commit-oid-trim-title-bytes-20-09-0d-0a-null-empty",
       "uncommittedChanges": "null-branch-sha-title"
     },
     "cas_target_fingerprint_scope": "per-request-receipt",
