@@ -31,7 +31,6 @@ review_context:
   repository:
   base_sha:
   head_sha:
-  target_fingerprint:
   goal:
     objective:
     non_goals: []
@@ -56,7 +55,6 @@ campaign_id = sha256(
   repository || NUL ||
   base_sha || NUL ||
   head_sha || NUL ||
-  target_fingerprint || NUL ||
   review_contract_digest || NUL ||
   review_context_digest
 )
@@ -71,13 +69,21 @@ request_fingerprint = sha256(
   request_id || NUL ||
   lens_name || NUL ||
   role || NUL ||
-  instruction_digest
+  instruction_digest || NUL ||
+  expected_cas_target_fingerprint
 )
 ```
 
+The common context identifies one Git subject and never contains an
+instruction-sensitive CAS target fingerprint. Before each request, Actuating
+derives that request's expected CAS target fingerprint from the exact target and
+instruction bytes, includes it in the request fingerprint, and retains it for
+receipt comparison.
+
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
-binding. Actuating retains the context and expected fingerprints during the
-active run. CAS echoes the binding and owns the exact review receipt.
+binding. Actuating retains the common context and per-request expected
+fingerprints during the active run. CAS echoes the binding and owns the exact
+review receipt.
 
 ## CAS boundary
 
@@ -88,6 +94,7 @@ checks. Each credited attempt must report:
 - strong principal evidence with no reduced protection;
 - backend class `cas-start-wait`;
 - exact current base, head, and target fingerprint;
+- the target fingerprint expected for that exact request and instruction bytes;
 - exact workflow-binding echo;
 - exact instruction bytes or their receipt-bound digest;
 - status `clean` or `findings`.

@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v3",
-  "contract_id": "actuating-review-contract-v5",
+  "schema": "actuating-review-contract/v4",
+  "contract_id": "actuating-review-contract-v6",
   "required_lenses": [
     {
       "name": "standard",
@@ -63,6 +63,12 @@
     "resets_all_review_credit": true,
     "restarts_selected_schedule_from_initial_standard": true
   },
+  "target_binding": {
+    "common_context_scope": "repository-base-head",
+    "cas_target_fingerprint_scope": "per-request",
+    "request_fingerprint_includes_instruction_digest": true,
+    "request_fingerprint_includes_cas_target_fingerprint": true
+  },
   "transport_recovery": {
     "request_local": true,
     "maximum_fresh_recovery_attempts": 1
@@ -75,6 +81,7 @@
     "owner_lived_transport_required": true,
     "context_match_required": true,
     "exact_instruction_digest_required": true,
+    "per_request_target_fingerprint_required": true,
     "exact_workflow_binding_required": true,
     "current_tuple_required": true,
     "required_backend_class": "cas-start-wait",

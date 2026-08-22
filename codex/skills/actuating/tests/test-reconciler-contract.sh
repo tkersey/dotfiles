@@ -65,6 +65,17 @@ grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 grep -F '`parallel-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F '`serial-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F 'restart the selected' "$skill_root/SKILL.md" >/dev/null
+grep -F "instruction-sensitive CAS target fingerprint is request-scoped" \
+  "$skill_root/SKILL.md" >/dev/null
+
+review_context_block=$(sed -n '/^review_context:/,/^```$/p' \
+  "$skill_root/references/review-contract.md")
+if printf '%s\n' "$review_context_block" | grep -F 'target_fingerprint:' >/dev/null; then
+  echo "shared review context still carries an instruction-sensitive target fingerprint" >&2
+  exit 1
+fi
+tr '\n' ' ' < "$skill_root/references/review-contract.md" |
+  grep -F 'instruction_digest || NUL ||   expected_cas_target_fingerprint' >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
@@ -101,8 +112,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v3" and
-  .contract_id == "actuating-review-contract-v5" and
+  .schema == "actuating-review-contract/v4" and
+  .contract_id == "actuating-review-contract-v6" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -125,12 +136,17 @@ grep -F 'Actuating must revoke and adjudicate' \
   .material_change.identity == "git-head" and
   .material_change.resets_all_review_credit == true and
   .material_change.restarts_selected_schedule_from_initial_standard == true and
+  .target_binding.common_context_scope == "repository-base-head" and
+  .target_binding.cas_target_fingerprint_scope == "per-request" and
+  .target_binding.request_fingerprint_includes_instruction_digest == true and
+  .target_binding.request_fingerprint_includes_cas_target_fingerprint == true and
+  .attempt_quality.per_request_target_fingerprint_required == true and
   .transport_recovery.maximum_fresh_recovery_attempts == 1
 ' "$skill_root/references/review-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-scheduling-v7" and
+    "actuating-review-target-scope-v8" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -140,7 +156,15 @@ grep -F 'Actuating must revoke and adjudicate' \
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-POST-ELIMINATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-CLOSURE-005")) != null
+    index("ACT-CLOSURE-005")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .success_signals[]] |
+    index("the shared review context binds repository, base, and head while each request binds its own instruction-sensitive CAS target fingerprint")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .failure_signals[]] |
+    index("one instruction-sensitive CAS target fingerprint is reused as shared five-lens review-context identity")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '
