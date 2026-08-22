@@ -77,7 +77,11 @@ CAS echoes it and does not infer Actuating policy.
 Actuating consumes the exact owner-issued CAS receipt directly. Require:
 
 - receipt and verdict target tuples agree;
-- expected base, head, and target fingerprint;
+- expected base and head;
+- one nonempty owner-issued target fingerprint agrees between the receipt and
+  structured verdict;
+- exact developer instruction bytes match the requested instruction file and
+  its caller-computed digest;
 - exact workflow-binding echo;
 - structured semantic status;
 - strong principal and no reduced protection;

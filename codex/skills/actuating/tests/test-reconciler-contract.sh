@@ -80,6 +80,15 @@ if grep -F 'expected_cas_target_fingerprint' \
   exit 1
 fi
 grep -F 'instruction_digest' "$skill_root/references/review-contract.md" >/dev/null
+if grep -F 'expected base, head, and target fingerprint' \
+  "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null; then
+  echo "CAS proof boundary still requires a caller-predicted target fingerprint" >&2
+  exit 1
+fi
+grep -F 'owner-issued target fingerprint agrees' \
+  "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
+grep -F 'developer instruction bytes match' \
+  "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
