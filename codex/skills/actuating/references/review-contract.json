@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v8",
-  "contract_id": "actuating-review-contract-v10",
+  "schema": "actuating-review-contract/v9",
+  "contract_id": "actuating-review-contract-v11",
   "required_lenses": [
     {
       "name": "standard",
@@ -81,9 +81,8 @@
         "sha",
         "title"
       ],
-      "additional_fields": "cas_publicly_classified_non_control_only",
-      "unclassified_additional_fields": "reject",
-      "control_bearing_additional_fields": "reject"
+      "additional_fields": "reject",
+      "future_compatibility_requires": "versioned_cas_public_target_field_classification"
     },
     "cas_target_fingerprint_scope": "per-request-receipt",
     "request_fingerprint_includes_instruction_digest": true,
