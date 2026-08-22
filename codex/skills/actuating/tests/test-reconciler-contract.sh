@@ -92,7 +92,7 @@ grep -F 'dedicated detached Git worktree' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'review_worktree_custody: campaign-exclusive' \
   "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'git status --porcelain == empty' \
+grep -F 'git status --porcelain=v1 --untracked-files=all --ignored=matching == empty' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'actuating-external-symlink-closure/v1' \
   "$skill_root/references/review-contract.md" >/dev/null
@@ -101,6 +101,8 @@ grep -F 'Movable symbolic refs are not creditable' \
 grep -F 'mode-`160000` gitlink' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'repository_path_hex, link_target_hex, resolved_realpath_hex' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'empty closure is exactly `[]`' \
   "$skill_root/references/review-contract.md" >/dev/null
 if grep -F 'expected base, head, and target fingerprint' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null; then
@@ -151,8 +153,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v13" and
-  .contract_id == "actuating-review-contract-v15" and
+  .schema == "actuating-review-contract/v14" and
+  .contract_id == "actuating-review-contract-v16" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -184,6 +186,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   .subject_custody.implementation_worktree_separate == true and
   .subject_custody.sanctioned_writers_during_campaign == 0 and
   .subject_custody.cas_store_root == "outside-review-worktree" and
+  .subject_custody.clean_check ==
+    "git-status-porcelain-v1-untracked-all-ignored-matching-empty" and
   .subject_custody.pre_attempt_head_and_clean_check == true and
   .subject_custody.post_attempt_head_and_clean_check == true and
   .subject_custody.tracked_submodules == "forbidden" and
@@ -193,6 +197,9 @@ grep -F 'Actuating must revoke and adjudicate' \
     "actuating-external-symlink-closure/v1" and
   .subject_custody.tracked_external_symlink_closure.order ==
     "repository-path-byte-order" and
+  .subject_custody.tracked_external_symlink_closure.json_container ==
+    "compact-array" and
+  .subject_custody.tracked_external_symlink_closure.empty_encoding == "[]" and
   .subject_custody.tracked_external_symlink_closure.record_fields ==
     ["repository_path_hex", "link_target_hex", "resolved_realpath_hex",
      "target_mode_octal", "target_sha256"] and
@@ -230,7 +237,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-subject-closure-v17" and
+    "actuating-review-subject-closure-v18" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -283,6 +290,10 @@ grep -F 'Actuating must revoke and adjudicate' \
     index("tracked submodules are ineligible and external symlink closure records use byte-safe fields plus permission mode")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
+      .success_signals[]] |
+    index("cleanliness explicitly includes untracked and ignored paths and the external closure uses one compact JSON array encoding")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
     index("one instruction-sensitive CAS target fingerprint is reused as shared five-lens review-context identity")) != null and
   ([.skill_decision_contract.clauses[] |
@@ -319,7 +330,15 @@ grep -F 'Actuating must revoke and adjudicate' \
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
-    index("non-UTF-8 symlink bytes lack one canonical record encoding")) != null
+    index("non-UTF-8 symlink bytes lack one canonical record encoding")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .failure_signals[]] |
+    index("repository status configuration hides untracked or ignored bytes from the review-subject check")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .failure_signals[]] |
+    index("the same external closure records admit multiple outer JSON encodings")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '

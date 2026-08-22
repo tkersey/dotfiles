@@ -90,7 +90,7 @@ outside the review worktree. Immediately before and after every request, require
 
 ```text
 git rev-parse HEAD == head_sha
-git status --porcelain == empty
+git status --porcelain=v1 --untracked-files=all --ignored=matching == empty
 ```
 
 A mismatch earns no semantic credit, invalidates the current campaign evidence,
@@ -112,7 +112,9 @@ review worktree:
 4. record its permission bits as four lowercase octal digits and the SHA-256 of
    its exact bytes.
 
-Canonicalize the ordered records as compact JSON and compute:
+Encode the ordered records as one compact JSON array with no insignificant
+whitespace. The empty closure is exactly `[]`; no wrapper object or alternate
+empty representation is permitted. Compute:
 
 ```text
 external_symlink_closure_digest = sha256(

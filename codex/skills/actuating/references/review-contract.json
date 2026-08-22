@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v13",
-  "contract_id": "actuating-review-contract-v15",
+  "schema": "actuating-review-contract/v14",
+  "contract_id": "actuating-review-contract-v16",
   "required_lenses": [
     {
       "name": "standard",
@@ -89,6 +89,7 @@
     "implementation_worktree_separate": true,
     "sanctioned_writers_during_campaign": 0,
     "cas_store_root": "outside-review-worktree",
+    "clean_check": "git-status-porcelain-v1-untracked-all-ignored-matching-empty",
     "pre_attempt_head_and_clean_check": true,
     "post_attempt_head_and_clean_check": true,
     "tracked_submodules": "forbidden",
@@ -96,6 +97,8 @@
       "mode": "bind-resolved-regular-file-bytes",
       "domain": "actuating-external-symlink-closure/v1",
       "order": "repository-path-byte-order",
+      "json_container": "compact-array",
+      "empty_encoding": "[]",
       "record_fields": [
         "repository_path_hex",
         "link_target_hex",

@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-subject-closure-v17"
+      "source_fingerprint": "actuating-review-subject-closure-v18"
     },
     "triggers": [
       {
@@ -335,7 +335,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v13",
+          "static actuating-review-contract/v14",
           "exact CAS receipts for the current Git head",
           "current Review Fold after findings"
         ],
@@ -353,6 +353,7 @@
           "external tracked symlink targets are byte-bound in the common context and held under campaign custody",
           "baseBranch selectors use immutable full OIDs whose merge base equals the bound base",
           "tracked submodules are ineligible and external symlink closure records use byte-safe fields plus permission mode",
+          "cleanliness explicitly includes untracked and ignored paths and the external closure uses one compact JSON array encoding",
           "material head change invalidates all credit and restarts the selected schedule at its initial standard",
           "missing resumable evidence restarts the selected schedule"
         ],
@@ -369,6 +370,8 @@
           "a movable symbolic base ref changes after receipt identity capture",
           "submodule checkout state or external target mode changes outside the bound subject closure",
           "non-UTF-8 symlink bytes lack one canonical record encoding",
+          "repository status configuration hides untracked or ignored bytes from the review-subject check",
+          "the same external closure records admit multiple outer JSON encodings",
           "review count is reconstructed from prose",
           "review evidence is copied into an Actuating store",
           "review findings bypass law-authority classification"
