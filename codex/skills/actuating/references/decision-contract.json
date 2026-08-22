@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-target-selector-v10"
+      "source_fingerprint": "actuating-review-target-selector-v11"
     },
     "triggers": [
       {
@@ -335,7 +335,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v6",
+          "static actuating-review-contract/v7",
           "exact CAS receipts for the current Git head",
           "current Review Fold after findings"
         ],
@@ -345,6 +345,7 @@
           "both modes require every lens and five consecutive standard cleans on one unchanged head",
           "the shared review context binds repository, base, and head while each request verifies its owner-issued instruction-sensitive CAS target fingerprint from the terminal receipt",
           "each request binds its caller-owned canonical target selector before dispatch and exact-matches the receipt target afterward",
+          "the caller-owned target selector has one exact compact JSON encoding with fixed fields and explicit nulls",
           "material head change invalidates all credit and restarts the selected schedule at its initial standard",
           "missing resumable evidence restarts the selected schedule"
         ],

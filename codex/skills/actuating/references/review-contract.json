@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v6",
-  "contract_id": "actuating-review-contract-v8",
+  "schema": "actuating-review-contract/v7",
+  "contract_id": "actuating-review-contract-v9",
   "required_lenses": [
     {
       "name": "standard",
@@ -66,6 +66,7 @@
   "target_binding": {
     "common_context_scope": "repository-base-head",
     "requested_target_selector_scope": "per-request-caller-owned",
+    "requested_target_selector_encoding": "compact-json-fixed-order-type-branch-sha-title-explicit-nulls",
     "cas_target_fingerprint_scope": "per-request-receipt",
     "request_fingerprint_includes_target_selector": true,
     "request_fingerprint_includes_instruction_digest": true,

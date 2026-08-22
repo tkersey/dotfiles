@@ -80,6 +80,17 @@ contains the caller-owned canonical target selector and exact instruction digest
 Actuating does not reimplement CAS's private target serialization or predict its
 fingerprint.
 
+Encode `requested_target_selector` as compact UTF-8 JSON with fields in this
+exact order:
+
+```text
+type, branch, sha, title
+```
+
+Include every field and represent absent optional values as `null`. Use ordinary
+JSON string escaping and no insignificant whitespace. This is the public selector
+shape, not CAS's derived target-fingerprint serialization.
+
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
 binding. Actuating retains the common context and instruction digest during the
 active run. CAS echoes the binding and owns the exact review receipt and target
