@@ -103,6 +103,21 @@ grep -F 'developer instruction bytes match' \
   .developerInstructions == "# Standard Review Lens\n"
 ' "$codex_root/skills/cas/assets/start-wait-normalized-clean.example.json" >/dev/null
 
+"$jaq_bin" -n -e \
+  --slurpfile wait "$codex_root/skills/cas/assets/wait-normalized-clean.example.json" \
+  --slurpfile record "$codex_root/skills/cas/assets/review-session-clean.example.json" '
+  $wait[0].sourcePath == "/tmp/thr_clean.json" and
+  $record[0].review_thread_id == $wait[0].reviewThreadId and
+  $record[0].review_turn_id == $wait[0].reviewTurnId and
+  $record[0].base_sha == $wait[0].baseSha and
+  $record[0].head_sha == $wait[0].headSha and
+  $record[0].target_fingerprint == $wait[0].targetFingerprint and
+  $record[0].workflowBinding == $wait[0].reviewVerdict.workflowBinding and
+  $record[0].target.type == "baseBranch" and
+  $record[0].target.branch == $wait[0].baseSha and
+  $record[0].developer_instructions == "# Standard Review Lens\n"
+' >/dev/null
+
 "$jaq_bin" -n -e --arg base aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa '
   def actuating_target_ok($target):
     (($target | keys_unsorted) - ["type", "branch", "sha", "title"] |
@@ -162,8 +177,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v9" and
-  .contract_id == "actuating-review-contract-v11" and
+  .schema == "actuating-review-contract/v10" and
+  .contract_id == "actuating-review-contract-v12" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -202,12 +217,17 @@ grep -F 'Actuating must revoke and adjudicate' \
   .attempt_quality.per_request_target_fingerprint_required == true and
   .attempt_quality.owner_issued_target_fingerprint_required == true and
   .attempt_quality.semantic_actuating_target_required == true and
-  .transport_recovery.maximum_fresh_recovery_attempts == 1
+  .transport_recovery.maximum_fresh_recovery_attempts == 1 and
+  .transport_recovery.normalized_wait_target_source ==
+    "cas_session_record_from_sourcePath" and
+  .transport_recovery.session_record_instruction_field ==
+    "developer_instructions" and
+  .transport_recovery.session_record_tuple_agreement_required == true
 ' "$skill_root/references/review-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-target-owner-v13" and
+    "actuating-review-target-owner-v14" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -226,6 +246,10 @@ grep -F 'Actuating must revoke and adjudicate' \
       select(.clause_id == "ACT-REVIEW-001") |
       .success_signals[]] |
     index("Actuating requests one fixed baseBranch target bound to the campaign base SHA, verifies its selector fields, and rejects additional fields until CAS publishes a versioned classification surface")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .success_signals[]] |
+    index("normalized CAS wait recovery resolves target and instruction bytes from its exact sourcePath session record and requires full tuple agreement")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |

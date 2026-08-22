@@ -120,6 +120,14 @@ Process exit, prose, or a thread handle is not a review verdict.
 Actuating checks owner-issued receipt fields directly. Do not pass CAS receipts
 through Ledger or copy them into an Actuating event log.
 
+Fresh owner-lived `start --wait --json` returns `target` and
+`developerInstructions` directly. Recovery through normalized `wait --json`
+MUST resolve the exact CAS-owned session record named by `sourcePath`, read
+`target` and `developer_instructions` there, and require the record's review
+thread, turn, base, head, target fingerprint, and workflow binding to agree with
+the normalized verdict. The session record remains CAS evidence; Actuating does
+not copy or index it.
+
 ## Compact lenses
 
 The required lenses are:

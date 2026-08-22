@@ -79,6 +79,9 @@ Actuating consumes the exact owner-issued CAS receipt directly. Require:
 - top-level `start --wait --json` output exposes the realized `target` object
   and exact `developerInstructions` bytes;
 
+- normalized `wait --json` recovery output resolves its exact `sourcePath`
+  CAS session record and reads `target` plus `developer_instructions` there;
+
 - receipt and verdict target tuples agree;
 - expected base and head;
 - one nonempty owner-issued target fingerprint agrees between the receipt and
@@ -103,6 +106,10 @@ transport loss, stale tuple, or mismatched binding earns no semantic credit.
 CAS owns durable attempt records, but Actuating maintains no review index.
 
 Reuse only an exact known handle or exact receipt that can be fully
-revalidated. If an interrupted Actuating run cannot resolve every receipt
+revalidated. `wait --json` is a normalized verdict surface and may omit target
+and instruction fields; its returned `sourcePath` is the authoritative CAS
+session record for those fields. Require its review-thread, turn, base, head,
+target fingerprint, and workflow binding to agree with the normalized verdict
+before credit. If an interrupted Actuating run cannot resolve every receipt
 required for its current wave and clean suffix, it starts a fresh full wave.
 A summary or claimed count never substitutes for owner evidence.

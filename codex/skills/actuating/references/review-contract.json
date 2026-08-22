@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v9",
-  "contract_id": "actuating-review-contract-v11",
+  "schema": "actuating-review-contract/v10",
+  "contract_id": "actuating-review-contract-v12",
   "required_lenses": [
     {
       "name": "standard",
@@ -90,7 +90,10 @@
   },
   "transport_recovery": {
     "request_local": true,
-    "maximum_fresh_recovery_attempts": 1
+    "maximum_fresh_recovery_attempts": 1,
+    "normalized_wait_target_source": "cas_session_record_from_sourcePath",
+    "session_record_instruction_field": "developer_instructions",
+    "session_record_tuple_agreement_required": true
   },
   "attempt_quality": {
     "tuple_verdict_required": true,
