@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v9",
-  "contract_id": "actuating-review-contract-v11",
+  "schema": "actuating-review-contract/v10",
+  "contract_id": "actuating-review-contract-v12",
   "required_lenses": [
     {
       "name": "standard",
@@ -65,12 +65,17 @@
   },
   "target_binding": {
     "common_context_scope": "repository-base-head",
+    "credited_target_types": [
+      "baseBranch",
+      "commit"
+    ],
+    "uncommitted_changes_credit": "forbidden",
+    "clean_worktree_required": true,
     "requested_target_selector_scope": "per-request-caller-owned",
     "requested_target_selector_encoding": "compact-json-fixed-order-type-branch-sha-title-explicit-nulls",
     "requested_target_selector_value_canonicalization": {
       "baseBranch": "trim-branch-bytes-20-09-0d-0a-null-sha-title",
-      "commit": "resolve-full-commit-oid-trim-title-bytes-20-09-0d-0a-null-empty",
-      "uncommittedChanges": "null-branch-sha-title"
+      "commit": "resolve-full-commit-oid-trim-title-bytes-20-09-0d-0a-null-empty"
     },
     "cas_target_fingerprint_scope": "per-request-receipt",
     "request_fingerprint_includes_target_selector": true,
@@ -95,6 +100,7 @@
     "owner_issued_target_fingerprint_required": true,
     "exact_workflow_binding_required": true,
     "current_tuple_required": true,
+    "committed_subject_required": true,
     "required_backend_class": "cas-start-wait",
     "required_capability": "cas_workflow_bound_owner_lived_review_v1",
     "structured_statuses": [

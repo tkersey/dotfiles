@@ -74,6 +74,12 @@ request_fingerprint = sha256(
 )
 ```
 
+Actuating credits only clean committed Git subjects selected through
+`baseBranch` or `commit`. A CAS `uncommittedChanges` review may be useful outside
+Actuating, but it cannot enter an Actuating campaign, clean suffix, publication
+adoption, or closure judgment. Commit and validate the coherent realization
+before dispatch.
+
 The common context identifies one Git subject and never contains an
 instruction-sensitive CAS target fingerprint. The pre-dispatch request binding
 contains the caller-owned canonical target selector and exact instruction digest.
@@ -98,7 +104,7 @@ Canonicalize selector values before encoding:
 - `commit`: resolve `sha` with `git rev-parse --verify <selector>^{commit}` to the
   full commit OID, trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
   ends of `title`, and encode an empty title as null; keep `branch` null;
-- `uncommittedChanges`: encode `branch`, `sha`, and `title` as null.
+- `uncommittedChanges`: prohibited for Actuating review credit.
 
 The canonical selector retained for receipt comparison is therefore the exact
 public selector CAS will report, not necessarily the raw command-line spelling.
