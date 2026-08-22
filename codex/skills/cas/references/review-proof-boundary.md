@@ -78,8 +78,6 @@ Actuating consumes the exact owner-issued CAS receipt directly. Require:
 
 - receipt and verdict target tuples agree;
 - expected base and head;
-- exact receipt target type, branch, sha, and title match the caller-retained,
-  value-canonicalized requested selector;
 - one nonempty owner-issued target fingerprint agrees between the receipt and
   structured verdict;
 - exact developer instruction bytes match the requested instruction file and

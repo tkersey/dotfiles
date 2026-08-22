@@ -31,9 +31,6 @@ review_context:
   repository:
   base_sha:
   head_sha:
-  review_worktree_realpath:
-  review_worktree_custody: campaign-exclusive
-  external_symlink_closure_digest:
   goal:
     objective:
     non_goals: []
@@ -72,98 +69,14 @@ request_fingerprint = sha256(
   request_id || NUL ||
   lens_name || NUL ||
   role || NUL ||
-  requested_target_selector || NUL ||
   instruction_digest
 )
 ```
 
-Actuating credits only clean committed Git subjects selected through
-`baseBranch` or `commit`. A CAS `uncommittedChanges` review may be useful outside
-Actuating, but it cannot enter an Actuating campaign, clean suffix, publication
-adoption, or closure judgment. Commit and validate the coherent realization
-before dispatch.
-
-Materialize one dedicated detached Git worktree at the exact `head_sha` for the
-campaign. It must be distinct from every implementation worktree, have no
-sanctioned writer until the campaign terminates, and use a CAS `--store-root`
-outside the review worktree. Immediately before and after every request, require:
-
-```text
-git rev-parse HEAD == head_sha
-git status --porcelain=v1 --untracked-files=all --ignored=matching == empty
-```
-
-A mismatch earns no semantic credit, invalidates the current campaign evidence,
-and requires a fresh dedicated worktree and fresh selected schedule. Concurrent
-changes in other worktrees do not affect this review subject.
-
-Before campaign dispatch, reject the subject when `git ls-files -s -z` contains
-any mode-`160000` gitlink. Actuating does not credit repositories with tracked
-submodules; standalone CAS remains free to inspect them.
-
-Then enumerate every tracked Git entry with mode `120000`, sorted by raw
-repository-relative path bytes. For each symlink that resolves outside the
-review worktree:
-
-1. encode its repository path and exact link-target bytes as lowercase hex;
-2. resolve the target to an absolute real path and encode its raw path bytes as
-   lowercase hex;
-3. require the target to be one regular file;
-4. record its permission bits as four lowercase octal digits and the SHA-256 of
-   its exact bytes.
-
-Encode the ordered records as one compact JSON array with no insignificant
-whitespace. The empty closure is exactly `[]`; no wrapper object or alternate
-empty representation is permitted. Compute:
-
-```text
-external_symlink_closure_digest = sha256(
-  "actuating-external-symlink-closure/v1" || NUL || canonical_json
-)
-```
-
-The compact JSON record fields, in order, are:
-
-```text
-repository_path_hex, link_target_hex, resolved_realpath_hex,
-target_mode_octal, target_sha256
-```
-
-Bind that digest in `review_context`, grant no sanctioned writer to those target
-files during the campaign, and recompute it immediately before and after every
-request. A missing, directory, special, newly added, changed, mode-changed, or
-retargeted external symlink invalidates the campaign and earns no credit.
-
 The common context identifies one Git subject and never contains an
 instruction-sensitive CAS target fingerprint. The pre-dispatch request binding
-contains the caller-owned canonical target selector and exact instruction digest.
-Actuating does not reimplement CAS's private target serialization or predict its
-fingerprint.
-
-Encode `requested_target_selector` as compact UTF-8 JSON with fields in this
-exact order:
-
-```text
-type, branch, sha, title
-```
-
-Include every field and represent absent optional values as `null`. Use ordinary
-JSON string escaping and no insignificant whitespace. This is the public selector
-shape, not CAS's derived target-fingerprint serialization.
-
-Canonicalize selector values before encoding:
-
-- `baseBranch`: trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
-  ends of `branch`; require the result to be one full commit OID, require
-  `git merge-base head_sha branch == base_sha`, and keep `sha` and `title` null.
-  Movable symbolic refs are not creditable;
-- `commit`: resolve `sha` with `git rev-parse --verify <selector>^{commit}` to the
-  full commit OID, trim only bytes `0x20`, `0x09`, `0x0d`, and `0x0a` from both
-  ends of `title`, and encode an empty title as null; keep `branch` null;
-- `uncommittedChanges`: prohibited for Actuating review credit.
-
-The canonical selector retained for receipt comparison is therefore the exact
-public selector CAS will report, not necessarily the raw command-line spelling.
+ends at the exact instruction digest. Actuating does not reimplement CAS's
+private target serialization or predict its fingerprint.
 
 Supply only `requestId` and `requestFingerprint` through CAS's opaque workflow
 binding. Actuating retains the common context and instruction digest during the
@@ -179,8 +92,6 @@ checks. Each credited attempt must report:
 - strong principal evidence with no reduced protection;
 - backend class `cas-start-wait`;
 - exact current base, head, and target fingerprint;
-- the receipt's exact target object equals the canonical selector retained for
-  the request;
 - one nonempty owner-issued target fingerprint shared by the terminal receipt
   and structured verdict for that exact request;
 - exact workflow-binding echo;

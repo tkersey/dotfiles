@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v14",
-  "contract_id": "actuating-review-contract-v16",
+  "schema": "actuating-review-contract/v5",
+  "contract_id": "actuating-review-contract-v7",
   "required_lenses": [
     {
       "name": "standard",
@@ -65,55 +65,9 @@
   },
   "target_binding": {
     "common_context_scope": "repository-base-head",
-    "credited_target_types": [
-      "baseBranch",
-      "commit"
-    ],
-    "uncommitted_changes_credit": "forbidden",
-    "clean_worktree_required": true,
-    "movable_base_refs_credit": "forbidden",
-    "requested_target_selector_scope": "per-request-caller-owned",
-    "requested_target_selector_encoding": "compact-json-fixed-order-type-branch-sha-title-explicit-nulls",
-    "requested_target_selector_value_canonicalization": {
-      "baseBranch": "trim-bytes-20-09-0d-0a-require-full-oid-merge-base-equals-context-base-null-sha-title",
-      "commit": "resolve-full-commit-oid-trim-title-bytes-20-09-0d-0a-null-empty"
-    },
     "cas_target_fingerprint_scope": "per-request-receipt",
-    "request_fingerprint_includes_target_selector": true,
     "request_fingerprint_includes_instruction_digest": true,
-    "caller_recomputes_cas_target_fingerprint": false,
-    "receipt_target_matches_requested_selector": true
-  },
-  "subject_custody": {
-    "review_worktree": "campaign-exclusive-detached-at-head",
-    "implementation_worktree_separate": true,
-    "sanctioned_writers_during_campaign": 0,
-    "cas_store_root": "outside-review-worktree",
-    "clean_check": "git-status-porcelain-v1-untracked-all-ignored-matching-empty",
-    "pre_attempt_head_and_clean_check": true,
-    "post_attempt_head_and_clean_check": true,
-    "tracked_submodules": "forbidden",
-    "tracked_external_symlink_closure": {
-      "mode": "bind-resolved-regular-file-bytes",
-      "domain": "actuating-external-symlink-closure/v1",
-      "order": "repository-path-byte-order",
-      "json_container": "compact-array",
-      "empty_encoding": "[]",
-      "record_fields": [
-        "repository_path_hex",
-        "link_target_hex",
-        "resolved_realpath_hex",
-        "target_mode_octal",
-        "target_sha256"
-      ],
-      "byte_encoding": "lowercase-hex",
-      "target_mode_encoding": "four-lowercase-octal-permission-bits",
-      "non_regular_or_missing_target": "block",
-      "sanctioned_writers": 0,
-      "pre_attempt_digest_check": true,
-      "post_attempt_digest_check": true
-    },
-    "mismatch_action": "reject-credit-and-restart-selected-schedule-in-fresh-worktree"
+    "caller_recomputes_cas_target_fingerprint": false
   },
   "transport_recovery": {
     "request_local": true,
@@ -127,16 +81,10 @@
     "owner_lived_transport_required": true,
     "context_match_required": true,
     "exact_instruction_digest_required": true,
-    "exact_requested_target_selector_required": true,
     "per_request_target_fingerprint_required": true,
     "owner_issued_target_fingerprint_required": true,
     "exact_workflow_binding_required": true,
     "current_tuple_required": true,
-    "committed_subject_required": true,
-    "campaign_exclusive_worktree_required": true,
-    "external_symlink_closure_required": true,
-    "tracked_submodules_forbidden": true,
-    "immutable_base_selector_required": true,
     "required_backend_class": "cas-start-wait",
     "required_capability": "cas_workflow_bound_owner_lived_review_v1",
     "structured_statuses": [

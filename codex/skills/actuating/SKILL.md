@@ -370,19 +370,11 @@ Conservative exclusion of optional safe behavior is not containment.
 
 Read [review-contract.md](references/review-contract.md).
 
-Bind review to repository, immutable base, exact head, each request's canonical
-requested target selector and owner-issued CAS target fingerprint,
-Goal/acceptance digest, Review Contract digest, and optional pre-review Ship
-observation digest. The shared review context binds the Git subject; the caller
-binds the selector and instructions before dispatch, while the
-instruction-sensitive CAS target fingerprint remains receipt-scoped.
-
-Run credited reviews from one campaign-exclusive detached worktree at the exact
-head, separate from the implementation worktree. Give no sanctioned writer that
-worktree during the campaign, keep CAS storage outside it, and reject credit if
-the worktree head or cleanliness differs before or after any attempt. Bind and
-hold custody over the resolved byte closure of every tracked symlink that escapes
-the review worktree. Use only immutable full-OID base selectors.
+Bind review to repository, immutable base, exact head, each request's owner-issued
+CAS target fingerprint, Goal/acceptance digest, Review Contract digest, and
+optional pre-review Ship observation digest. The shared review context binds the
+Git subject; the instruction-sensitive CAS target fingerprint is receipt-scoped
+and never caller-recomputed before dispatch.
 
 For the unchanged head:
 

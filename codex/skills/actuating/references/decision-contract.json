@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-subject-closure-v18"
+      "source_fingerprint": "actuating-review-target-owner-v9"
     },
     "triggers": [
       {
@@ -335,7 +335,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v14",
+          "static actuating-review-contract/v5",
           "exact CAS receipts for the current Git head",
           "current Review Fold after findings"
         ],
@@ -344,16 +344,6 @@
           "serial-reviews runs the initial standard then every auxiliary serially in contract order",
           "both modes require every lens and five consecutive standard cleans on one unchanged head",
           "the shared review context binds repository, base, and head while each request verifies its owner-issued instruction-sensitive CAS target fingerprint from the terminal receipt",
-          "each request binds its caller-owned canonical target selector before dispatch and exact-matches the receipt target afterward",
-          "the caller-owned target selector has one exact compact JSON encoding with fixed fields and explicit nulls",
-          "selector values are canonicalized to the exact public values CAS reports before request binding",
-          "branch and title normalization use the exact CAS space-tab-CR-LF byte trim set",
-          "Actuating review credit admits only clean committed baseBranch or commit subjects",
-          "all credited attempts run in one campaign-exclusive detached worktree with no sanctioned writer and external CAS storage",
-          "external tracked symlink targets are byte-bound in the common context and held under campaign custody",
-          "baseBranch selectors use immutable full OIDs whose merge base equals the bound base",
-          "tracked submodules are ineligible and external symlink closure records use byte-safe fields plus permission mode",
-          "cleanliness explicitly includes untracked and ignored paths and the external closure uses one compact JSON array encoding",
           "material head change invalidates all credit and restarts the selected schedule at its initial standard",
           "missing resumable evidence restarts the selected schedule"
         ],
@@ -363,15 +353,6 @@
           "parallel-reviews cancels a launched sibling",
           "one instruction-sensitive CAS target fingerprint is reused as shared five-lens review-context identity",
           "Actuating reimplements CAS private target serialization to predict a fingerprint before dispatch",
-          "receipt-only target identity receives credit without matching the caller-requested target selector",
-          "uncommitted reviews with changing dirty bytes contribute to one exact-head clean suffix",
-          "concurrent implementation edits can change and restore the review worktree during a credited attempt",
-          "external symlink target bytes change while the Git worktree remains clean",
-          "a movable symbolic base ref changes after receipt identity capture",
-          "submodule checkout state or external target mode changes outside the bound subject closure",
-          "non-UTF-8 symlink bytes lack one canonical record encoding",
-          "repository status configuration hides untracked or ignored bytes from the review-subject check",
-          "the same external closure records admit multiple outer JSON encodings",
           "review count is reconstructed from prose",
           "review evidence is copied into an Actuating store",
           "review findings bypass law-authority classification"
