@@ -31,6 +31,7 @@ $codex_root/skills/goal-contract/SKILL.md
 $codex_root/skills/review-fold/SKILL.md
 $codex_root/skills/ship/SKILL.md
 $codex_root/skills/cas/references/review-proof-boundary.md
+$codex_root/skills/cas/assets/start-wait-normalized-clean.example.json
 $codex_root/skills/evidence-fold/SKILL.md
 $codex_root/skills/reduce/SKILL.md
 $codex_root/skills/universalist/SKILL.md
@@ -91,6 +92,16 @@ grep -F 'owner-issued target fingerprint agrees' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
 grep -F 'developer instruction bytes match' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null
+
+"$jaq_bin" -e '
+  .target == {
+    "type":"baseBranch",
+    "branch":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "sha":null,
+    "title":null
+  } and
+  .developerInstructions == "# Standard Review Lens\n"
+' "$codex_root/skills/cas/assets/start-wait-normalized-clean.example.json" >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null

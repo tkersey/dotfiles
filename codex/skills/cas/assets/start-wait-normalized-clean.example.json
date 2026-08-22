@@ -1,12 +1,19 @@
 {
   "action": "start",
   "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "developerInstructions": "# Standard Review Lens\n",
   "headSha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "tupleVerdictExists": true,
   "reviewAttemptExists": true,
   "reviewAttemptPhase": "normalized_verdict",
   "reviewThreadId": "thr_clean",
   "reviewTurnId": "turn_clean",
+  "target": {
+    "type": "baseBranch",
+    "branch": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "sha": null,
+    "title": null
+  },
   "reviewVerdict": {
     "backendClass": "cas-start-wait",
     "baseSha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

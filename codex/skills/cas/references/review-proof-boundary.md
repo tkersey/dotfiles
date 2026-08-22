@@ -76,6 +76,9 @@ CAS echoes it and does not infer Actuating policy.
 
 Actuating consumes the exact owner-issued CAS receipt directly. Require:
 
+- top-level `start --wait --json` output exposes the realized `target` object
+  and exact `developerInstructions` bytes;
+
 - receipt and verdict target tuples agree;
 - expected base and head;
 - one nonempty owner-issued target fingerprint agrees between the receipt and
