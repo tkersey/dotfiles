@@ -31,6 +31,8 @@ review_context:
   repository:
   base_sha:
   head_sha:
+  review_worktree_realpath:
+  review_worktree_custody: campaign-exclusive
   goal:
     objective:
     non_goals: []
@@ -79,6 +81,20 @@ Actuating credits only clean committed Git subjects selected through
 Actuating, but it cannot enter an Actuating campaign, clean suffix, publication
 adoption, or closure judgment. Commit and validate the coherent realization
 before dispatch.
+
+Materialize one dedicated detached Git worktree at the exact `head_sha` for the
+campaign. It must be distinct from every implementation worktree, have no
+sanctioned writer until the campaign terminates, and use a CAS `--store-root`
+outside the review worktree. Immediately before and after every request, require:
+
+```text
+git rev-parse HEAD == head_sha
+git status --porcelain == empty
+```
+
+A mismatch earns no semantic credit, invalidates the current campaign evidence,
+and requires a fresh dedicated worktree and fresh selected schedule. Concurrent
+changes in other worktrees do not affect this review subject.
 
 The common context identifies one Git subject and never contains an
 instruction-sensitive CAS target fingerprint. The pre-dispatch request binding

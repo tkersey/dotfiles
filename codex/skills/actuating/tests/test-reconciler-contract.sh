@@ -88,6 +88,12 @@ grep -F 'only bytes `0x20`, `0x09`, `0x0d`, and `0x0a`' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F '`uncommittedChanges` review' \
   "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'dedicated detached Git worktree' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'review_worktree_custody: campaign-exclusive' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'git status --porcelain == empty' \
+  "$skill_root/references/review-contract.md" >/dev/null
 if grep -F 'expected base, head, and target fingerprint' \
   "$codex_root/skills/cas/references/review-proof-boundary.md" >/dev/null; then
   echo "CAS proof boundary still requires a caller-predicted target fingerprint" >&2
@@ -137,8 +143,8 @@ grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v10" and
-  .contract_id == "actuating-review-contract-v12" and
+  .schema == "actuating-review-contract/v11" and
+  .contract_id == "actuating-review-contract-v13" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -165,6 +171,14 @@ grep -F 'Actuating must revoke and adjudicate' \
   .target_binding.credited_target_types == ["baseBranch", "commit"] and
   .target_binding.uncommitted_changes_credit == "forbidden" and
   .target_binding.clean_worktree_required == true and
+  .subject_custody.review_worktree == "campaign-exclusive-detached-at-head" and
+  .subject_custody.implementation_worktree_separate == true and
+  .subject_custody.sanctioned_writers_during_campaign == 0 and
+  .subject_custody.cas_store_root == "outside-review-worktree" and
+  .subject_custody.pre_attempt_head_and_clean_check == true and
+  .subject_custody.post_attempt_head_and_clean_check == true and
+  .subject_custody.mismatch_action ==
+    "reject-credit-and-restart-selected-schedule-in-fresh-worktree" and
   .target_binding.requested_target_selector_scope == "per-request-caller-owned" and
   .target_binding.requested_target_selector_encoding ==
     "compact-json-fixed-order-type-branch-sha-title-explicit-nulls" and
@@ -181,12 +195,13 @@ grep -F 'Actuating must revoke and adjudicate' \
   .attempt_quality.per_request_target_fingerprint_required == true and
   .attempt_quality.owner_issued_target_fingerprint_required == true and
   .attempt_quality.committed_subject_required == true and
+  .attempt_quality.campaign_exclusive_worktree_required == true and
   .transport_recovery.maximum_fresh_recovery_attempts == 1
 ' "$skill_root/references/review-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-target-selector-v14" and
+    "actuating-review-subject-custody-v15" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -223,6 +238,10 @@ grep -F 'Actuating must revoke and adjudicate' \
     index("Actuating review credit admits only clean committed baseBranch or commit subjects")) != null and
   ([.skill_decision_contract.clauses[] |
       select(.clause_id == "ACT-REVIEW-001") |
+      .success_signals[]] |
+    index("all credited attempts run in one campaign-exclusive detached worktree with no sanctioned writer and external CAS storage")) != null and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
     index("one instruction-sensitive CAS target fingerprint is reused as shared five-lens review-context identity")) != null and
   ([.skill_decision_contract.clauses[] |
@@ -238,6 +257,11 @@ grep -F 'Actuating must revoke and adjudicate' \
       select(.clause_id == "ACT-REVIEW-001") |
       .failure_signals[]] |
     index("uncommitted reviews with changing dirty bytes contribute to one exact-head clean suffix")) != null
+  and
+  ([.skill_decision_contract.clauses[] |
+      select(.clause_id == "ACT-REVIEW-001") |
+      .failure_signals[]] |
+    index("concurrent implementation edits can change and restore the review worktree during a credited attempt")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null
 
 "$jaq_bin" -e '

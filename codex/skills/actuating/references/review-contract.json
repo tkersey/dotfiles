@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v10",
-  "contract_id": "actuating-review-contract-v12",
+  "schema": "actuating-review-contract/v11",
+  "contract_id": "actuating-review-contract-v13",
   "required_lenses": [
     {
       "name": "standard",
@@ -83,6 +83,15 @@
     "caller_recomputes_cas_target_fingerprint": false,
     "receipt_target_matches_requested_selector": true
   },
+  "subject_custody": {
+    "review_worktree": "campaign-exclusive-detached-at-head",
+    "implementation_worktree_separate": true,
+    "sanctioned_writers_during_campaign": 0,
+    "cas_store_root": "outside-review-worktree",
+    "pre_attempt_head_and_clean_check": true,
+    "post_attempt_head_and_clean_check": true,
+    "mismatch_action": "reject-credit-and-restart-selected-schedule-in-fresh-worktree"
+  },
   "transport_recovery": {
     "request_local": true,
     "maximum_fresh_recovery_attempts": 1
@@ -101,6 +110,7 @@
     "exact_workflow_binding_required": true,
     "current_tuple_required": true,
     "committed_subject_required": true,
+    "campaign_exclusive_worktree_required": true,
     "required_backend_class": "cas-start-wait",
     "required_capability": "cas_workflow_bound_owner_lived_review_v1",
     "structured_statuses": [
