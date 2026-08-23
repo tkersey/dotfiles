@@ -6,10 +6,12 @@ codex_root=$(CDPATH='' cd -- "$skill_root/../.." && pwd)
 jaq_bin=${JAQ_BIN:-jaq}
 
 for removed in \
-  "$skill_root/definitions" \
   "$skill_root/hotspots" \
   "$skill_root/state" \
   "$skill_root/semantic-hotspots.json" \
+  "$skill_root/definitions/ledger/evidence-protocol.json" \
+  "$skill_root/definitions/ledger/construction-contract.json" \
+  "$skill_root/definitions/ledger/construction-registration-receipt.json" \
   "$codex_root/skills/goal-contract/definitions" \
   "$codex_root/skills/review-fold/definitions" \
   "$codex_root/skills/review-fold/assets"
@@ -23,6 +25,7 @@ done
 active_files="
 $skill_root/SKILL.md
 $skill_root/references/architecture-reconciliation.md
+$skill_root/references/counterexample-guided-normalization.md
 $skill_root/references/semantic-hotspots.md
 $skill_root/references/post-elimination-falsification.md
 $skill_root/references/closure.md
@@ -56,21 +59,40 @@ done
 
 grep -F 'level-triggered architecture reconciler' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Review-finding authority' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Counterexample-guided normalization' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Knowledge is monotone. Realization is not.' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Direct-repair admission gate' "$skill_root/SKILL.md" >/dev/null
+grep -F 'actuating/direct-repair-admission' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Elimination is a revocable theory lease' "$skill_root/SKILL.md" >/dev/null
 grep -F 'revokes that elimination' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Generative reach and sibling prediction' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Passing repaired examples alone never reissues elimination' "$skill_root/SKILL.md" >/dev/null
-grep -F 'No Actuating Ledger command' "$skill_root/SKILL.md" >/dev/null
+grep -F 'No durable Actuating workflow store' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 grep -F '`parallel-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F '`serial-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F 'restart the selected' "$skill_root/SKILL.md" >/dev/null
+
+grep -F '# Counterexample-Guided Normalization' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Why one gate' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Semantic-novelty firewall' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Ledger execution' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Gate falsifier and retirement rule' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F 'No second same-generator member-specific repair' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
 grep -F '## Immediate revocation' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
 grep -F '## Failed-premise localization' \
+  "$skill_root/references/post-elimination-falsification.md" >/dev/null
+grep -F '## Direct-repair admission' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
 grep -F '## Sibling prediction' \
   "$skill_root/references/post-elimination-falsification.md" >/dev/null
@@ -99,6 +121,30 @@ grep -F 'reviewer consensus as Goal authority' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
 grep -F 'Actuating must revoke and adjudicate' \
   "$codex_root/skills/review-fold/SKILL.md" >/dev/null
+
+"$jaq_bin" -e '
+  .schema == "skill-definition-set/v1" and
+  .skill == "actuating" and
+  .seq == [] and
+  .ledger == [
+    {
+      "id": "actuating/direct-repair-admission",
+      "path": "ledger/direct-repair-admission.json"
+    }
+  ]
+' "$skill_root/definitions/manifest.json" >/dev/null
+
+"$jaq_bin" -e '
+  .schema == "ledger-artifact-definition/v1" and
+  .id == "actuating/direct-repair-admission" and
+  .owner == "actuating" and
+  .storage.kind == "pure" and
+  .operations == {} and
+  .projections == {} and
+  .identity.op == "content-address" and
+  (.requires.operators | index("reference-exists")) != null and
+  (.requires.operators | index("field-equal")) != null
+' "$skill_root/definitions/ledger/direct-repair-admission.json" >/dev/null
 
 "$jaq_bin" -e '
   .schema == "actuating-review-contract/v3" and
@@ -156,7 +202,8 @@ grep -F 'Actuating must revoke and adjudicate' \
     index("RF-POST-ELIMINATION-001")) != null
 ' "$codex_root/skills/review-fold/references/decision-contract.json" >/dev/null
 
+JAQ_BIN="$jaq_bin" "$skill_root/tests/test-direct-repair-admission.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-post-elimination-scenarios.sh"
 
-echo "actuating review scheduling and post-elimination contract: pass"
+echo "actuating direct-repair admission and reconciler contract: pass"

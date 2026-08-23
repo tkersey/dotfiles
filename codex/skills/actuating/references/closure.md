@@ -12,7 +12,7 @@ R  exact CAS review receipts bound to H and current review context
 P  current Ship/provider publication evidence
 F  current Review Fold
 A  current architecture-reconciliation judgment
-S  selected counterexample theory and proof posture
+S  selected counterexample theory, causal basis, and proof posture
 ```
 
 Then:
@@ -41,7 +41,7 @@ underdetermined current obligation.
 ## Elimination lease
 
 `eliminated` is a revocable claim over the current theory, architecture, proof,
-family, and explicit validity horizon.
+family, causal basis, family-level realization, and explicit validity horizon.
 
 A current `entailed` witness that falsifies the eliminated family inside its
 validity horizon:
@@ -65,10 +65,12 @@ An `eliminated` disposition requires:
 ```text
 sound interpretation
 Goal adequacy
+complete class-to-generator or proved-exception mapping
 family-level abstract exclusion
+family-level realization for every causal generator
 complete sanctioned-path/frontier/cut coverage
 current witness rejection
-required retirements realized
+required factor replacements and retirements realized
 exhaustive finite-domain proof or explicit sibling predictions
 sibling probes completed
 claim strength no stronger than the weakest evidence
@@ -86,6 +88,35 @@ new falsifier stated
 unpredicted same-claim siblings treated as theory evidence
 ```
 
+A successful direct-repair gate proves only that one proposed restoration is
+structurally admissible under its supplied inputs. It is not family-level proof
+or closure authority.
+
+## Normalization posture
+
+Closure distinguishes:
+
+```text
+safe
+  the invalid family is excluded at the claimed strength
+
+normal
+  the affected realization is organized by causal generators and current
+  obligations rather than the historical sequence of wounds
+```
+
+A safe but wound-shaped realization is not complete.
+
+For every accepted causal generator require:
+
+```text
+one family-level mechanism at the canonical owner or minimal cut
+no member-specific production factor without separation proof
+every affected correctness-bearing factor rooted in a current obligation
+every superseded factor replaced, retired, or independently justified
+proof recomposed at the strongest feasible generator level
+```
+
 ## Local implementation
 
 `$actuating implement` is locally complete only when:
@@ -94,7 +125,10 @@ unpredicted same-claim siblings treated as theory evidence
 - the current tree realizes the selected target and retirements;
 - exact-head validation passes;
 - all current findings have authority classifications;
+- every accepted class maps to a causal generator or proved exception;
 - every accepted witness is rejected through sanctioned paths;
+- every generator has a family-level realization mechanism;
+- no member-specific factor remains without non-example separation proof;
 - no elimination lease is revoked without a successor adjudication;
 - each eliminated family satisfies the first/successor elimination law;
 - every contained residual is authorized, owned, observable, and tested;
@@ -115,10 +149,11 @@ Final `complete` additionally requires:
 - no accepted applicable finding remains;
 - no review finding silently widened the Goal;
 - no hotspot is answered only by compensating detection;
+- no established generator is answered by wound-specific predicates or proof;
 - no post-elimination witness remains another unchanged-theory repair;
 - every successor elimination includes sibling prediction/proof;
-- no later evidence invalidates Goal, theory, architecture, realization,
-  validation, publication, or review.
+- no later evidence invalidates Goal, theory, causal basis, architecture,
+  realization, validation, publication, or review.
 
 A non-publicly complete implementation is `ready-to-ship`.
 
@@ -130,12 +165,16 @@ Return `blocked` for:
 - unknown finding authority;
 - unadjudicated new requirement;
 - underdetermined current requirement;
-- unresolved theory, interpretation, owner, admission cut, or proof;
+- unresolved theory, causal basis, interpretation, owner, admission cut, or
+  proof;
+- an accepted class without a generator or separation proof;
 - post-elimination witness without failed-premise localization;
 - direct mutation attempted under a revoked lease;
+- a proposed direct repair rejected by the Actuating Ledger gate;
+- same-generator member-specific repair without separation proof;
 - successor elimination based only on repaired examples;
 - absent sibling prediction/exhaustive proof for a family-level claim;
-- unsupported recurrence, dominance, or elimination claim;
+- unsupported recurrence, dominance, normalization, or elimination claim;
 - validation, realization, retirement, publication, or review failure;
 - unauthorized containment;
 - stale or unresolvable CAS evidence.
@@ -152,10 +191,13 @@ head changed
   -> rerun head-bound validation and review
 
 new finding
-  -> Review Fold and authority classification
+  -> Review Fold, authority classification, and causal-basis reconciliation
 
 post-elimination same-claim falsifier
   -> revoke lease and localize failed premise
+
+direct-repair inputs changed
+  -> prior pure gate materialization is inapplicable
 
 theory/proof falsifier established
   -> re-adjudicate
@@ -165,4 +207,4 @@ publication/review context changed
 ```
 
 Actuating reports the live verdict and current premises. It materializes no
-closure receipt.
+closure receipt or durable gate state.
