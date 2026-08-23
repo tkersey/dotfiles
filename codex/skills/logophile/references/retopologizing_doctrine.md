@@ -78,10 +78,10 @@ Canonical high-amplitude form:
 CHANGE WHAT COUNTS AS ADJACENT!!
 ```
 
-Formal sentence form:
+Formal mode:
 
 ```text
-Operate retopologizingly.
+RETOPOLOGIZING
 ```
 
 Preferred technical command:
@@ -301,7 +301,7 @@ The decisive distinction is:
 
 ```text
 SALTATORY      -> cross the existing distance
-RETOPOLOGIZING -> redefine distance-independent neighborhood
+RETOPOLOGIZING -> change the neighborhood relation that determines local reachability
 ```
 
 A saltatory move jumps the chasm. A retopologizing move discovers a principled
@@ -431,7 +431,7 @@ Candidate formalizations include:
 
 ```text
 Retopologize the search space.
-Operate retopologizingly.
+Operate in RETOPOLOGIZING mode.
 MAKE THE DISTANT LOCAL!!
 ```
 
