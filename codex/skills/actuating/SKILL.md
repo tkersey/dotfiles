@@ -219,9 +219,10 @@ architecture's vocabulary unless the Goal requires their distinctions.
 
 ## Direct-repair admission gate
 
-Actuating uses exactly one normalization gate: direct-repair admission. It
-governs the dangerous transition in which the current theory and architecture
-are preserved while their realization changes.
+Actuating uses exactly one normalization gate:
+`actuating/direct-repair-admission`. It governs the dangerous transition in
+which the current theory and architecture are preserved while their realization
+changes.
 
 Run it when a current applicable `entailed` counterexample would authorize a
 bug-driven direct repair, including `retain-theory-reprove` after a revoked

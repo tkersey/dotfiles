@@ -5,6 +5,7 @@
   "requires": {
     "abi": "ledger-artifact-abi/v1",
     "operators": [
+      "all",
       "bounded-array",
       "bounded-string",
       "canonical-json",
@@ -13,6 +14,7 @@
       "enum",
       "exact-object",
       "field-equal",
+      "keyed-unique",
       "one-of",
       "reference-exists",
       "regex",
@@ -213,17 +215,7 @@
                       }
                     }
                   }
-                },
-                "laws": [
-                  [
-                    "field-equal",
-                    {
-                      "input": "gate",
-                      "left": "/direct_repair_admission/theory/predecessor_semantic_model_digest",
-                      "right": "/direct_repair_admission/theory/successor_semantic_model_digest"
-                    }
-                  ]
-                ]
+                }
               },
               "class_mappings": {
                 "array": {
@@ -686,6 +678,14 @@
   "constraints": {
     "laws": [
       [
+        "field-equal",
+        {
+          "input": "gate",
+          "left": "/direct_repair_admission/theory/predecessor_semantic_model_digest",
+          "right": "/direct_repair_admission/theory/successor_semantic_model_digest"
+        }
+      ],
+      [
         "reference-exists",
         {
           "input": "gate",
@@ -693,8 +693,7 @@
           "reference": "/class_ref",
           "target": "/direct_repair_admission/theory/accepted_class_refs",
           "key": "",
-          "coverage": "all-targets",
-          "single": true
+          "coverage": "all-targets"
         }
       ],
       [
@@ -716,8 +715,7 @@
           "reference": "/factor_id",
           "target": "/direct_repair_admission/factor_dispositions",
           "key": "/factor_ref",
-          "coverage": "all-targets",
-          "single": true
+          "coverage": "all-targets"
         }
       ],
       [
@@ -727,8 +725,7 @@
           "path": "/direct_repair_admission/restoration/generator_refs",
           "reference": "",
           "target": "/direct_repair_admission/theory/causal_generators",
-          "key": "/generator_id",
-          "single": true
+          "key": "/generator_id"
         }
       ]
     ]
