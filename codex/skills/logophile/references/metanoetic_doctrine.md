@@ -21,6 +21,7 @@ METANOETIC = cognitive-regime change over:
   attention
   explanatory depth
   unresolved tensions
+  search topology
   candidate admissibility
   generative form
   reachable frontier
@@ -44,6 +45,7 @@ I think you can do much much much better than that!
 USE FRESH EYES!!
 BE EXCAVATORY!!!
 BE APORETIC!!
+RETOPOLOGIZE THE POSSIBILITY SPACE!!
 BE AUDACIOUS!
 OPERATE POIETICALLY!
 BE SALTATORY!!!
@@ -52,12 +54,13 @@ BE SALTATORY!!!
 Its operator roles are:
 
 ```text
-USE FRESH EYES       -> RESET / DEFAMILIARIZE
-BE EXCAVATORY        -> DEEPEN
-BE APORETIC          -> HOLD-OPEN
-BE AUDACIOUS         -> DIVERGE
-OPERATE POIETICALLY  -> CREATE
-BE SALTATORY         -> LEAP
+USE FRESH EYES                    -> RESET / DEFAMILIARIZE
+BE EXCAVATORY                     -> DEEPEN
+BE APORETIC                       -> HOLD-OPEN
+RETOPOLOGIZE THE POSSIBILITY SPACE -> RETOPOLOGIZE
+BE AUDACIOUS                      -> DIVERGE
+OPERATE POIETICALLY               -> CREATE
+BE SALTATORY                      -> LEAP
 ```
 
 The conceptual topology is:
@@ -67,6 +70,7 @@ inherited frame
   -> de-anchored attention
   -> governing explanatory layer
   -> explicit unresolved difficulty
+  -> reconstructed neighborhoods, boundaries, and reachability
   -> expanded admissible possibility space
   -> newly created form
   -> discontinuity candidate
@@ -81,6 +85,7 @@ The component words answer different questions:
 - `DEFAMILIARIZING` / `USE FRESH EYES`: what becomes visible after familiarity stops hiding it?
 - `EXCAVATORY`: what deeper mechanism, owner, invariant, or assumption changes the route?
 - `APORETIC`: what real contradiction or underdetermination must remain open?
+- `RETOPOLOGIZING` / `RETOPOLOGIZE THE POSSIBILITY SPACE`: which inherited neighborhood, connectivity, boundary, or reachability relation makes a material alternative appear remote or unavailable?
 - `AUDACIOUS`: what consequential candidate has caution excluded?
 - `POIETIC`: what new form, representation, or construction can be brought into being?
 - `SALTATORY`: what move creates a discontinuity beyond the incumbent frontier?
@@ -132,6 +137,7 @@ Change the governing cognitive posture:
 - loosen inherited assumptions without discarding verified facts;
 - descend to the layer that changes the model or route;
 - preserve genuine contradictions until their decision surface is explicit;
+- retopologize the possibility space while preserving the objective, verified facts, and hard constraints;
 - admit consequential possibilities suppressed by ordinary caution;
 - create a form unavailable inside the inherited option set;
 - seek a discontinuous advance beyond the incumbent frontier.
@@ -154,6 +160,7 @@ Metanoetic Delta:
 - assumptions loosened or rejected:
 - newly visible governing layer:
 - live aporia:
+- retopology delta (adjacency / connectivity / boundary / reachability):
 - newly admitted consequential candidate:
 - new form / representation created:
 - discontinuity candidate:
@@ -175,7 +182,7 @@ Use this complete shape when the work continues into action:
 
 ```text
 METANOETIC ESCALATION
-  [DEFAMILIARIZING -> EXCAVATORY -> APORETIC -> AUDACIOUS -> POIETIC -> SALTATORY]
+  [DEFAMILIARIZING -> EXCAVATORY -> APORETIC -> RETOPOLOGIZING -> AUDACIOUS -> POIETIC -> SALTATORY]
   -> ADJUDICATIVE / OPTIMAL SELECTION
   -> ACTUATING
   -> PROOF
@@ -197,7 +204,17 @@ Inspect the reasoning strategy itself: search order, assumptions, evidence use, 
 Replace the governing frame, ontology, questions, or standards by which the problem is understood.
 
 - Governs: frame replacement.
-- Distinction: paradigmatic change may be one metanoetic result, but it does not include the whole depth, aporia, creation, and leap topology.
+- Distinction: paradigmatic change may be one metanoetic result, but it does not include the whole depth, aporia, retopology, creation, and leap topology.
+
+### `retopologizing`
+
+Change the possibility-space topology—its neighborhoods, connectivity, boundaries, and reachability—while preserving the objective, verified facts, and hard constraints.
+
+- Governs: search-topology reconstruction.
+- Runtime command: `RETOPOLOGIZE THE POSSIBILITY SPACE!!`
+- Operational gloss: `Change what counts as adjacent.`
+- Distinction: retopologizing changes which candidates are near, connected, or reachable; it does not itself admit bold candidates, create a new form, or prove a leap.
+- Mechanisms may include changing representation, owner, authority boundary, unit of work, proof surface, composition, or reachable transition. A new vocabulary without a material topology delta does not qualify.
 
 ### `potentiating`
 
@@ -243,14 +260,15 @@ Concerned with thought, intellect, or cognition.
 ## Core distinctions
 
 ```text
-METACOGNITIVE  -> inspect the reasoning strategy
-PARADIGMATIC   -> replace the governing frame
-POTENTIATING   -> amplify latent capability
+METACOGNITIVE   -> inspect the reasoning strategy
+PARADIGMATIC    -> replace the governing frame
+RETOPOLOGIZING  -> change which possibilities are near, connected, or reachable
+POTENTIATING    -> amplify latent capability
 TRANSFIGURATIVE -> transform the manifested result
-PROMETHEAN     -> invoke boundary-defying creator posture
-INCANTATORY    -> shape the rhetorical invocation
-SALTATORY      -> demand a discontinuous advance
-METANOETIC     -> change the cognitive regime producing the answer
+PROMETHEAN      -> invoke boundary-defying creator posture
+INCANTATORY     -> shape the rhetorical invocation
+SALTATORY       -> demand a discontinuous advance
+METANOETIC      -> change the cognitive regime producing the answer
 ```
 
 The compact summary is:
@@ -267,14 +285,15 @@ Use `metanoetic` when:
 
 - the user asks for one doctrine word naming a multi-operator escalation;
 - the current answer appears trapped in an inherited cognitive basin;
-- the task needs coordinated de-anchoring, depth, productive non-closure, divergence, creation, and discontinuity pressure;
-- a better answer requires changing the problem representation or admissible possibility space;
+- the task needs coordinated de-anchoring, depth, productive non-closure, retopology, divergence, creation, and discontinuity pressure;
+- a better answer requires changing the problem representation, possibility-space topology, or admissible possibility space;
 - the user asks to change the mind solving the problem, not merely to increase effort inside the same frame.
 
 Use a narrower operator when:
 
 - only a shallow explanation must deepen: `excavatory`;
 - only a real contradiction must stay open: `aporetic`;
+- only the inherited neighborhood, connectivity, boundary, or reachability relation traps search: `retopologizing`;
 - only timid candidate generation is the issue: `audacious`;
 - only a new form must be created: `poietic`;
 - only a breakthrough outcome is sought: `saltatory`;
@@ -289,15 +308,16 @@ Do not invoke the full metanoetic posture for a bounded task whose state space, 
 Stop the metanoetic escalation when one of these holds:
 
 - the problem representation materially changes;
+- the possibility-space topology materially changes which admissible candidates are near, connected, or reachable;
 - the governing abstraction or owner boundary changes;
 - a previously excluded but credible candidate enters the option set;
 - a new form or construction changes the route;
 - a credible discontinuity candidate emerges and has a validation path;
-- a fresh pass produces no additional frame, possibility-space, or route delta;
+- a fresh pass produces no additional frame, possibility-space, topology, or route delta;
 - evidence, authority, or safety bounds block further transformation;
 - the incumbent survives and should be retained.
 
-Do not count more vocabulary, more prose, more confidence, or more options as a metanoetic result without a changed frame, possibility space, or route.
+Do not count more vocabulary, more prose, more confidence, or more options as a metanoetic result without a changed frame, possibility space, topology, or route.
 
 ## Failure modes
 
@@ -309,6 +329,8 @@ Reject:
 - philosophical or religious drift unrelated to the task;
 - defamiliarization that discards verified facts;
 - aporia that becomes indefinite indecision;
+- retopologizing theater: renaming, rescaling, or rearranging candidates while preserving the same mechanism, owner, representation, boundary, unit, proof surface, and reachability;
+- retopologizing that escapes the objective, verified facts, or hard constraints instead of restructuring relations among admissible possibilities;
 - audacity that becomes scope inflation;
 - poiesis that produces novelty without utility;
 - saltation declared from magnitude or confidence alone;

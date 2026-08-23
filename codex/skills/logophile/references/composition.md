@@ -142,13 +142,18 @@ Preserve:
 
 - incumbent cognitive regime and inherited frame;
 - verified facts and explicit constraints;
-- distinct roles of defamiliarization, excavation, aporia, audacity, poiesis,
-  and saltation;
+- distinct roles of defamiliarization, excavation, aporia, retopology, audacity,
+  poiesis, and saltation;
+- possibility-space adjacency, connectivity, boundaries, and reachability;
 - new governing layer, frame, or possibility space;
 - newly admitted candidate or created form;
 - route delta and discontinuity candidate;
 - adjudicative re-entry boundary;
 - evidence status and falsifier.
+
+Retopologizing preserves the objective, verified facts, and hard constraints
+while changing which admissible candidates are near, connected, or reachable.
+It is not permission for arbitrary scope expansion or factual escape.
 
 `METANOETIC` names the composite transformation; it is not another primitive
 stage after `SALTATORY`. Preserve an owning skill's exact invocation rather than

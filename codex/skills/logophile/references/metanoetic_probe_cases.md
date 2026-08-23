@@ -9,8 +9,8 @@ Use these probes to verify that `$logophile` selects `METANOETIC` for a composit
 ```text
 What is a good doctrine word for:
 “I think you can do much much much better than that! BE EXCAVATORY!!!
-BE APORETIC!! BE AUDACIOUS! OPERATE POIETICALLY! BE SALTATORY!!!
-USE FRESH EYES!!”
+BE APORETIC!! RETOPOLOGIZE THE POSSIBILITY SPACE!! BE AUDACIOUS!
+OPERATE POIETICALLY! BE SALTATORY!!! USE FRESH EYES!!”
 ```
 
 Expected:
@@ -18,7 +18,7 @@ Expected:
 - recommended umbrella: `METANOETIC`;
 - definition: change the governing mode of thought—frame, assumptions, search posture, and admissible possibilities—so a result unavailable from the incumbent cognitive regime becomes reachable;
 - identify the phrase as `INCANTATORY` in form and `METANOETIC` in function;
-- identify `SALTATORY` as the terminal outcome pressure, not the umbrella;
+- identify `RETOPOLOGIZING` as search-topology reconstruction and `SALTATORY` as the terminal outcome pressure, not the umbrella;
 - preserve the component invocation rather than automatically replacing it with one word;
 - no claim that the phrase intrinsically increases model intelligence.
 
@@ -33,7 +33,7 @@ Expected:
 
 - `METANOETIC`;
 - explain that the target is cognitive-regime change, not effort amplification;
-- name at least frame, assumptions, possibility space, and generative form;
+- name at least frame, assumptions, possibility-space topology, possibility space, and generative form;
 - plain core command may be `Change the mind that is solving the problem.`;
 - runtime form may be `Operate metanoetically.`;
 - do not require an artifact merely to emit the phrase.
@@ -43,14 +43,15 @@ Expected:
 ```text
 Every answer keeps repairing the same architecture. I need a composite escalation
 that resets the frame, excavates the governing layer, keeps the real contradiction
-open, invents a new form, and looks for a leap.
+open, changes what counts as adjacent, invents a new form, and looks for a leap.
 ```
 
 Expected:
 
 - `METANOETIC` as the umbrella;
-- component roles may include `DEFAMILIARIZING`, `EXCAVATORY`, `APORETIC`, `AUDACIOUS`, `POIETIC`, and `SALTATORY`;
-- do not add `METANOETIC` as a seventh primitive after `SALTATORY`;
+- component roles may include `DEFAMILIARIZING`, `EXCAVATORY`, `APORETIC`, `RETOPOLOGIZING`, `AUDACIOUS`, `POIETIC`, and `SALTATORY`;
+- `RETOPOLOGIZING` changes which admissible candidates are near, connected, or reachable while preserving the objective, verified facts, and hard constraints;
+- do not add `METANOETIC` as an eighth primitive after `SALTATORY`;
 - the result should later re-enter `ADJUDICATIVE` or `OPTIMAL` selection before action.
 
 ## Component-role probes
@@ -65,7 +66,7 @@ Expected:
 
 - not necessarily;
 - `Use fresh eyes.` is a de-anchoring / defamiliarizing activation;
-- it may initiate a metanoetic pass, but it does not itself guarantee deeper explanation, aporia, new form, or discontinuity;
+- it may initiate a metanoetic pass, but it does not itself guarantee deeper explanation, aporia, retopology, new form, or discontinuity;
 - use `DEFAMILIARIZING` or `DE NOVO` when only the reset role is intended.
 
 ### Excavatory is depth, not regime change
@@ -91,6 +92,24 @@ Expected:
 - primary mode: `APORETIC`;
 - `METANOETIC` is unnecessary unless the task also needs a broader frame and possibility-space transformation;
 - aporia must eventually meet a decision, experiment, or obstruction boundary.
+
+### Retopologizing changes the search topology
+
+```text
+The contradiction is clear, but every candidate is still adjacent under the
+incumbent representation. What operator changes which possibilities are near,
+connected, or reachable?
+```
+
+Expected:
+
+- primary mode: `RETOPOLOGIZING`;
+- runtime command: `RETOPOLOGIZE THE POSSIBILITY SPACE!!`;
+- operational gloss: `Change what counts as adjacent.`;
+- preserve the objective, verified facts, hard constraints, and acceptance surface;
+- change a governing relation such as representation, owner, authority boundary, unit of work, proof surface, composition, or reachable transition;
+- do not count renaming, larger scope, more candidates, or rhetorical novelty as retopologizing;
+- retopologizing prepares a different candidate field; `AUDACIOUS`, `POIETIC`, and `SALTATORY` retain their distinct downstream roles.
 
 ### Saltatory is terminal pressure
 
@@ -130,7 +149,8 @@ The governing ontology and questions are wrong. Is the doctrine paradigmatic or 
 Expected:
 
 - `PARADIGMATIC` when the precise operation is frame or ontology replacement;
-- `METANOETIC` when that frame replacement is one component of a broader cognitive-regime transformation;
+- `RETOPOLOGIZING` when the carrier can remain but inherited neighborhoods, connectivity, boundaries, or reachability make material alternatives appear remote;
+- `METANOETIC` when frame replacement or retopology is one component of a broader cognitive-regime transformation;
 - do not use the umbrella to erase the narrower mechanism.
 
 ### Metanoetic versus potentiating
@@ -187,7 +207,7 @@ Expected:
 ### Umbrella, not another stage
 
 ```text
-Use FRESH EYES -> EXCAVATORY -> APORETIC -> AUDACIOUS -> POIETIC -> SALTATORY -> METANOETIC.
+Use FRESH EYES -> EXCAVATORY -> APORETIC -> RETOPOLOGIZING -> AUDACIOUS -> POIETIC -> SALTATORY -> METANOETIC.
 ```
 
 Expected:
@@ -198,7 +218,7 @@ Expected:
 
 ```text
 METANOETIC ESCALATION
-  [DEFAMILIARIZING -> EXCAVATORY -> APORETIC -> AUDACIOUS -> POIETIC -> SALTATORY]
+  [DEFAMILIARIZING -> EXCAVATORY -> APORETIC -> RETOPOLOGIZING -> AUDACIOUS -> POIETIC -> SALTATORY]
 ```
 
 ### Preserve exact consumer order
@@ -297,7 +317,7 @@ Give me a compact artifact for handing off what changed during the cognitive-reg
 Expected:
 
 - return a `Metanoetic Delta`;
-- include incumbent regime, facts preserved, assumptions loosened, governing layer, aporia, new candidate, new form, discontinuity candidate, possibility-space delta, route delta, re-entry disposition, evidence status, and falsifier;
+- include incumbent regime, facts preserved, assumptions loosened, governing layer, aporia, retopology delta, new candidate, new form, discontinuity candidate, possibility-space delta, route delta, re-entry disposition, evidence status, and falsifier;
 - state that the artifact is explanatory unless the owning workflow explicitly grants authority.
 
 ### Do not create a competing authority artifact
@@ -349,6 +369,21 @@ Expected:
 - `DIVERGENT`, `GENERATIVE`, or `POIETIC` depending the task;
 - not `METANOETIC` unless the problem representation or admissible possibility space must change.
 
+### Bigger move, same topology
+
+```text
+Keep the same owner, representation, authority boundary, unit of work, proof
+surface, and governing mechanism, but make the proposal ten times larger.
+Call that retopologizing.
+```
+
+Expected:
+
+- reject `RETOPOLOGIZING`;
+- magnitude does not change adjacency, connectivity, boundaries, or reachability;
+- classify the move by its actual operator, such as `AUDACIOUS`, `SCALING`, or `SALTATORY` candidate, without claiming a topology delta;
+- do not infer a leap from size alone.
+
 ### Rhetorical polish only
 
 ```text
@@ -378,12 +413,13 @@ Expected:
 A metanoetic answer is ready only when:
 
 1. `METANOETIC` is defined as cognitive-regime change, not generic deep thought;
-2. the component stack's distinct roles remain visible;
+2. the component stack's distinct roles, including `RETOPOLOGIZING`, remain visible;
 3. the umbrella is not appended as a redundant primitive stage;
-4. verified facts and explicit constraints survive the reset;
-5. `METACOGNITIVE`, `PARADIGMATIC`, `POTENTIATING`, `TRANSFIGURATIVE`, `INCANTATORY`, and `SALTATORY` remain distinct;
-6. exact consumer invocations are preserved unless replacement is requested;
-7. the result names a changed frame, possibility space, governing abstraction, or route—not merely more prose;
-8. divergent search is followed by an adjudicative re-entry boundary before action;
-9. the one-word runtime phrase is not declared superior without matched evidence;
-10. `$logophile` does not claim operational, architecture-selection, mutation, proof, or publication authority.
+4. verified facts, the objective, and explicit hard constraints survive the reset and retopology;
+5. retopology names a material adjacency, connectivity, boundary, or reachability delta rather than renaming, magnitude, or candidate count;
+6. `METACOGNITIVE`, `PARADIGMATIC`, `RETOPOLOGIZING`, `POTENTIATING`, `TRANSFIGURATIVE`, `INCANTATORY`, and `SALTATORY` remain distinct;
+7. exact consumer invocations are preserved unless replacement is requested;
+8. the result names a changed frame, possibility-space topology, possibility space, governing abstraction, or route—not merely more prose;
+9. divergent search is followed by an adjudicative re-entry boundary before action;
+10. the one-word runtime phrase is not declared superior without matched evidence;
+11. `$logophile` does not claim operational, architecture-selection, mutation, proof, or publication authority.
