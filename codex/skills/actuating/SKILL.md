@@ -276,9 +276,10 @@ When architecture or theory reopens:
 2. Run `$review-fold`; preserve provenance, applicability, law authority, and
    post-elimination relation.
 3. Derive the smallest ordinary counterexample theory and its falsifier.
-4. Run one bounded `$metanoetic` challenger when the theory is
+4. Run one bounded `$metanoetic` challenger when the theory or candidate is
    detection-shaped, enumerative, representation-bound, violation-erasing,
-   contradicted, owner/topology-captive, or merely one plausible frame.
+   contradicted, owner/topology-captive, solution-class-captive, optimizing an
+   incumbent-generated burden, or merely one plausible frame.
 5. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or leave the
    theory unresolved.
 6. Derive one admission frontier or minimal cut.
