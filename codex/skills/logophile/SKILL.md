@@ -223,6 +223,14 @@ Read [doctrine_compiler.md](references/doctrine_compiler.md),
 [task_pressure_map.md](references/task_pressure_map.md) for general doctrine
 work. Read specialized references only when their trigger is live.
 
+For explicit requests about changing what counts as adjacent, topology,
+neighborhood structure, making distant concepts local, or automobile-not-faster-
+horses moves, read
+[retopologizing_doctrine.md](references/retopologizing_doctrine.md) and
+[retopologizing_probe_cases.md](references/retopologizing_probe_cases.md). Treat
+`CHANGE WHAT COUNTS AS ADJACENT!!` as the runtime incumbent unless Behavioral
+Upgrade adjudication supports replacement.
+
 ## Behavioral upgrades
 
 When proposed wording may replace an incumbent that already steers behavior,
@@ -291,3 +299,5 @@ authorize mutation, verify, or publish.
   [metanoetic_probe_cases.md](references/metanoetic_probe_cases.md).
 - [pusillanimity_doctrine.md](references/pusillanimity_doctrine.md) and
   [pusillanimity_probe_cases.md](references/pusillanimity_probe_cases.md).
+- [retopologizing_doctrine.md](references/retopologizing_doctrine.md) and
+  [retopologizing_probe_cases.md](references/retopologizing_probe_cases.md).

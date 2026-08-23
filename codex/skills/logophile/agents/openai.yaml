@@ -12,4 +12,7 @@ interface:
     disposition. Do not invoke for routine prose, summaries, status updates, implementation handoffs,
     final responses, or merely because text is human-facing. Read SKILL.md for the canonical routing
     gate, load only the reference family required by the current language decision, and treat `no change`
-    as a valid result.
+    as a valid result. For explicit doctrine about changing adjacency, topology, neighborhood structure,
+    or making distant concepts local, read references/retopologizing_doctrine.md and
+    references/retopologizing_probe_cases.md; preserve `CHANGE WHAT COUNTS AS ADJACENT!!` as the runtime
+    incumbent unless Behavioral Upgrade adjudication supports replacement.
