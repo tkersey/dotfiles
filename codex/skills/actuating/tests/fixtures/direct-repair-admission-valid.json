@@ -1,0 +1,108 @@
+{
+  "direct_repair_admission": {
+    "schema": "actuating-direct-repair-admission/v1",
+    "requested_transition": "direct-repair",
+    "repository": "example/repository",
+    "base_sha": "1111111111111111111111111111111111111111",
+    "head_sha": "2222222222222222222222222222222222222222",
+    "goal_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "mutation_basis": "ordinary-isolated-repair",
+    "active_elimination_lease": "none",
+    "failed_premise": "none",
+    "theory": {
+      "law_ref": "law.transition-admissibility",
+      "family_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "interpretation_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "admission_model_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "owner_model_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "predecessor_semantic_model_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "successor_semantic_model_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "accepted_class_refs": [
+        "class-invalid-edge",
+        "class-invalid-reset"
+      ],
+      "causal_generators": [
+        {
+          "generator_id": "generator-invalid-transition",
+          "law_ref": "law.transition-admissibility",
+          "family_mechanism_ref": "mechanism-checked-transition",
+          "mechanism_status": "existing",
+          "mechanism_owner": "machine.transition",
+          "admission_cut_ref": "cut.checked-constructor",
+          "evidence_refs": [
+            "src/machine.zig:40-90",
+            "test:transition-property"
+          ]
+        }
+      ]
+    },
+    "class_mappings": [
+      {
+        "class_ref": "class-invalid-edge",
+        "disposition": "governed",
+        "generator_ref": "generator-invalid-transition",
+        "separation_proof_refs": [],
+        "evidence_refs": [
+          "review:finding-edge"
+        ]
+      },
+      {
+        "class_ref": "class-invalid-reset",
+        "disposition": "governed",
+        "generator_ref": "generator-invalid-transition",
+        "separation_proof_refs": [],
+        "evidence_refs": [
+          "review:finding-reset"
+        ]
+      }
+    ],
+    "affected_predecessor_factors": [
+      {
+        "factor_id": "factor-checked-transition",
+        "obligation_refs": [
+          "law.transition-admissibility"
+        ],
+        "realization_paths": [
+          "src/machine.zig"
+        ],
+        "evidence_refs": [
+          "git:head:src/machine.zig"
+        ]
+      }
+    ],
+    "factor_dispositions": [
+      {
+        "factor_ref": "factor-checked-transition",
+        "disposition": "preserve",
+        "successor_factor_ref": null,
+        "obligation_refs": [
+          "law.transition-admissibility"
+        ],
+        "proof_refs": [
+          "test:transition-property"
+        ],
+        "evidence_refs": [
+          "diff:restore-existing-guard"
+        ]
+      }
+    ],
+    "restoration": {
+      "generator_refs": [
+        "generator-invalid-transition"
+      ],
+      "affected_paths": [
+        "src/machine.zig"
+      ],
+      "verifier_refs": [
+        "test:transition-property"
+      ],
+      "falsifier": "A governed invalid transition remains constructible."
+    },
+    "semantic_constructor_delta": [],
+    "member_specific_factor_refs": [],
+    "new_enforcement_site_refs": [],
+    "unowned_factor_refs": [],
+    "newly_redundant_factor_refs": []
+  }
+}

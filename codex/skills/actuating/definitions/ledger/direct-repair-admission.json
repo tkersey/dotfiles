@@ -1,0 +1,753 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/direct-repair-admission",
+  "owner": "actuating",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "digest",
+      "enum",
+      "exact-object",
+      "field-equal",
+      "one-of",
+      "reference-exists",
+      "regex",
+      "safe-identifier",
+      "safe-relative-path",
+      "sorted",
+      "tagged-union",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "gate": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [
+      {
+        "op": "canonical-json",
+        "input": "gate"
+      }
+    ]
+  },
+  "shape": {
+    "documents": {
+      "gate": {
+        "object": "exact",
+        "fields": {
+          "direct_repair_admission": {
+            "object": "exact",
+            "fields": {
+              "schema": {
+                "enum": [
+                  "actuating-direct-repair-admission/v1"
+                ]
+              },
+              "requested_transition": {
+                "enum": [
+                  "direct-repair"
+                ]
+              },
+              "repository": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 512
+                }
+              },
+              "base_sha": {
+                "string": {
+                  "min": 40,
+                  "max": 40
+                },
+                "regex": {
+                  "patterns": [
+                    "^[A-Fa-f0-9]{40}$"
+                  ],
+                  "max": 40
+                }
+              },
+              "head_sha": {
+                "string": {
+                  "min": 40,
+                  "max": 40
+                },
+                "regex": {
+                  "patterns": [
+                    "^[A-Fa-f0-9]{40}$"
+                  ],
+                  "max": 40
+                }
+              },
+              "goal_digest": {
+                "format": "digest"
+              },
+              "evidence_digest": {
+                "format": "digest"
+              },
+              "mutation_basis": {
+                "enum": [
+                  "ordinary-isolated-repair",
+                  "retain-theory-reprove"
+                ]
+              },
+              "active_elimination_lease": {
+                "enum": [
+                  "none",
+                  "revoked"
+                ]
+              },
+              "failed_premise": {
+                "enum": [
+                  "none",
+                  "realization",
+                  "proof"
+                ]
+              },
+              "theory": {
+                "object": "exact",
+                "fields": {
+                  "law_ref": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 1024
+                    }
+                  },
+                  "family_digest": {
+                    "format": "digest"
+                  },
+                  "interpretation_digest": {
+                    "format": "digest"
+                  },
+                  "admission_model_digest": {
+                    "format": "digest"
+                  },
+                  "owner_model_digest": {
+                    "format": "digest"
+                  },
+                  "predecessor_semantic_model_digest": {
+                    "format": "digest"
+                  },
+                  "successor_semantic_model_digest": {
+                    "format": "digest"
+                  },
+                  "accepted_class_refs": {
+                    "array": {
+                      "min": 1,
+                      "max": 4096
+                    },
+                    "items": {
+                      "identifier": {
+                        "max": 256
+                      }
+                    },
+                    "unique": true,
+                    "sorted": true
+                  },
+                  "causal_generators": {
+                    "array": {
+                      "min": 1,
+                      "max": 1024
+                    },
+                    "key": "/generator_id",
+                    "sorted": {
+                      "key": "/generator_id"
+                    },
+                    "items": {
+                      "object": "exact",
+                      "fields": {
+                        "generator_id": {
+                          "identifier": {
+                            "max": 256
+                          }
+                        },
+                        "law_ref": {
+                          "string": {
+                            "trimmed_min": 1,
+                            "max": 1024
+                          }
+                        },
+                        "family_mechanism_ref": {
+                          "identifier": {
+                            "max": 256
+                          }
+                        },
+                        "mechanism_status": {
+                          "enum": [
+                            "existing"
+                          ]
+                        },
+                        "mechanism_owner": {
+                          "string": {
+                            "trimmed_min": 1,
+                            "max": 1024
+                          }
+                        },
+                        "admission_cut_ref": {
+                          "string": {
+                            "trimmed_min": 1,
+                            "max": 1024
+                          }
+                        },
+                        "evidence_refs": {
+                          "array": {
+                            "min": 1,
+                            "max": 128
+                          },
+                          "items": {
+                            "string": {
+                              "trimmed_min": 1,
+                              "max": 4096
+                            }
+                          },
+                          "unique": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "laws": [
+                  [
+                    "field-equal",
+                    {
+                      "input": "gate",
+                      "left": "/direct_repair_admission/theory/predecessor_semantic_model_digest",
+                      "right": "/direct_repair_admission/theory/successor_semantic_model_digest"
+                    }
+                  ]
+                ]
+              },
+              "class_mappings": {
+                "array": {
+                  "min": 1,
+                  "max": 4096
+                },
+                "key": "/class_ref",
+                "sorted": {
+                  "key": "/class_ref"
+                },
+                "items": {
+                  "object": "exact",
+                  "fields": {
+                    "class_ref": {
+                      "identifier": {
+                        "max": 256
+                      }
+                    },
+                    "disposition": {
+                      "enum": [
+                        "governed",
+                        "instance-specific"
+                      ]
+                    },
+                    "generator_ref": {
+                      "identifier": {
+                        "max": 256
+                      }
+                    },
+                    "separation_proof_refs": {
+                      "array": {
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 4096
+                        }
+                      },
+                      "unique": true
+                    },
+                    "evidence_refs": {
+                      "array": {
+                        "min": 1,
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 4096
+                        }
+                      },
+                      "unique": true
+                    }
+                  },
+                  "tagged": {
+                    "tag": "/disposition",
+                    "variants": [
+                      {
+                        "value": "governed",
+                        "node": {
+                          "fields": {
+                            "separation_proof_refs": {
+                              "array": {
+                                "max": 0
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "value": "instance-specific",
+                        "node": {
+                          "fields": {
+                            "separation_proof_refs": {
+                              "array": {
+                                "min": 1,
+                                "max": 128
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "affected_predecessor_factors": {
+                "array": {
+                  "min": 1,
+                  "max": 4096
+                },
+                "key": "/factor_id",
+                "sorted": {
+                  "key": "/factor_id"
+                },
+                "items": {
+                  "object": "exact",
+                  "fields": {
+                    "factor_id": {
+                      "identifier": {
+                        "max": 256
+                      }
+                    },
+                    "obligation_refs": {
+                      "array": {
+                        "min": 1,
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 1024
+                        }
+                      },
+                      "unique": true
+                    },
+                    "realization_paths": {
+                      "array": {
+                        "min": 1,
+                        "max": 128
+                      },
+                      "items": {
+                        "relative_path": {
+                          "allow_root": false,
+                          "reserved_roots": [
+                            ".git",
+                            ".ledger"
+                          ],
+                          "case_insensitive_reserved": true
+                        }
+                      },
+                      "unique": true,
+                      "sorted": true
+                    },
+                    "evidence_refs": {
+                      "array": {
+                        "min": 1,
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 4096
+                        }
+                      },
+                      "unique": true
+                    }
+                  }
+                }
+              },
+              "factor_dispositions": {
+                "array": {
+                  "min": 1,
+                  "max": 4096
+                },
+                "key": "/factor_ref",
+                "sorted": {
+                  "key": "/factor_ref"
+                },
+                "items": {
+                  "object": "exact",
+                  "fields": {
+                    "factor_ref": {
+                      "identifier": {
+                        "max": 256
+                      }
+                    },
+                    "disposition": {
+                      "enum": [
+                        "preserve",
+                        "replace",
+                        "retire",
+                        "distinct-obligation"
+                      ]
+                    },
+                    "successor_factor_ref": {
+                      "one_of": [
+                        {
+                          "enum": [
+                            null
+                          ]
+                        },
+                        {
+                          "identifier": {
+                            "max": 256
+                          }
+                        }
+                      ]
+                    },
+                    "obligation_refs": {
+                      "array": {
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 1024
+                        }
+                      },
+                      "unique": true
+                    },
+                    "proof_refs": {
+                      "array": {
+                        "min": 1,
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 4096
+                        }
+                      },
+                      "unique": true
+                    },
+                    "evidence_refs": {
+                      "array": {
+                        "min": 1,
+                        "max": 128
+                      },
+                      "items": {
+                        "string": {
+                          "trimmed_min": 1,
+                          "max": 4096
+                        }
+                      },
+                      "unique": true
+                    }
+                  },
+                  "tagged": {
+                    "tag": "/disposition",
+                    "variants": [
+                      {
+                        "value": "preserve",
+                        "node": {
+                          "fields": {
+                            "successor_factor_ref": {
+                              "enum": [
+                                null
+                              ]
+                            },
+                            "obligation_refs": {
+                              "array": {
+                                "min": 1,
+                                "max": 128
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "value": "replace",
+                        "node": {
+                          "fields": {
+                            "successor_factor_ref": {
+                              "identifier": {
+                                "max": 256
+                              }
+                            },
+                            "obligation_refs": {
+                              "array": {
+                                "min": 1,
+                                "max": 128
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "value": "retire",
+                        "node": {
+                          "fields": {
+                            "successor_factor_ref": {
+                              "enum": [
+                                null
+                              ]
+                            },
+                            "obligation_refs": {
+                              "array": {
+                                "max": 0
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "value": "distinct-obligation",
+                        "node": {
+                          "fields": {
+                            "successor_factor_ref": {
+                              "enum": [
+                                null
+                              ]
+                            },
+                            "obligation_refs": {
+                              "array": {
+                                "min": 1,
+                                "max": 128
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "restoration": {
+                "object": "exact",
+                "fields": {
+                  "generator_refs": {
+                    "array": {
+                      "min": 1,
+                      "max": 1
+                    },
+                    "items": {
+                      "identifier": {
+                        "max": 256
+                      }
+                    },
+                    "unique": true,
+                    "sorted": true
+                  },
+                  "affected_paths": {
+                    "array": {
+                      "min": 1,
+                      "max": 128
+                    },
+                    "items": {
+                      "relative_path": {
+                        "allow_root": false,
+                        "reserved_roots": [
+                          ".git",
+                          ".ledger"
+                        ],
+                        "case_insensitive_reserved": true
+                      }
+                    },
+                    "unique": true,
+                    "sorted": true
+                  },
+                  "verifier_refs": {
+                    "array": {
+                      "min": 1,
+                      "max": 128
+                    },
+                    "items": {
+                      "string": {
+                        "trimmed_min": 1,
+                        "max": 4096
+                      }
+                    },
+                    "unique": true
+                  },
+                  "falsifier": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  }
+                }
+              },
+              "semantic_constructor_delta": {
+                "array": {
+                  "max": 0
+                },
+                "items": {
+                  "string": {
+                    "trimmed_min": 1,
+                    "max": 1024
+                  }
+                }
+              },
+              "member_specific_factor_refs": {
+                "array": {
+                  "max": 0
+                },
+                "items": {
+                  "identifier": {
+                    "max": 256
+                  }
+                }
+              },
+              "new_enforcement_site_refs": {
+                "array": {
+                  "max": 0
+                },
+                "items": {
+                  "identifier": {
+                    "max": 256
+                  }
+                }
+              },
+              "unowned_factor_refs": {
+                "array": {
+                  "max": 0
+                },
+                "items": {
+                  "identifier": {
+                    "max": 256
+                  }
+                }
+              },
+              "newly_redundant_factor_refs": {
+                "array": {
+                  "max": 0
+                },
+                "items": {
+                  "identifier": {
+                    "max": 256
+                  }
+                }
+              }
+            },
+            "tagged": {
+              "tag": "/mutation_basis",
+              "variants": [
+                {
+                  "value": "ordinary-isolated-repair",
+                  "node": {
+                    "fields": {
+                      "active_elimination_lease": {
+                        "enum": [
+                          "none"
+                        ]
+                      },
+                      "failed_premise": {
+                        "enum": [
+                          "none"
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "value": "retain-theory-reprove",
+                  "node": {
+                    "fields": {
+                      "active_elimination_lease": {
+                        "enum": [
+                          "revoked"
+                        ]
+                      },
+                      "failed_premise": {
+                        "enum": [
+                          "realization",
+                          "proof"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "constraints": {
+    "laws": [
+      [
+        "reference-exists",
+        {
+          "input": "gate",
+          "path": "/direct_repair_admission/class_mappings",
+          "reference": "/class_ref",
+          "target": "/direct_repair_admission/theory/accepted_class_refs",
+          "key": "",
+          "coverage": "all-targets",
+          "single": true
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "gate",
+          "path": "/direct_repair_admission/class_mappings",
+          "reference": "/generator_ref",
+          "target": "/direct_repair_admission/theory/causal_generators",
+          "key": "/generator_id",
+          "coverage": "all-targets"
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "gate",
+          "path": "/direct_repair_admission/affected_predecessor_factors",
+          "reference": "/factor_id",
+          "target": "/direct_repair_admission/factor_dispositions",
+          "key": "/factor_ref",
+          "coverage": "all-targets",
+          "single": true
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "gate",
+          "path": "/direct_repair_admission/restoration/generator_refs",
+          "reference": "",
+          "target": "/direct_repair_admission/theory/causal_generators",
+          "key": "/generator_id",
+          "single": true
+        }
+      ]
+    ]
+  },
+  "identity": {
+    "op": "content-address",
+    "input": "gate"
+  },
+  "storage": {
+    "kind": "pure"
+  },
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 4096,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 128,
+    "max_reducer_states": 1
+  }
+}

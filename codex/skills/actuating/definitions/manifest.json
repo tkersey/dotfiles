@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "actuating",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "actuating/direct-repair-admission",
+      "path": "ledger/direct-repair-admission.json"
+    }
+  ]
+}

@@ -9,7 +9,7 @@ claim that Actuating declared `eliminated` inside its validity horizon.
 > A current entailed witness that belongs to or satisfies the reconsideration
 > falsifier of the eliminated family inside its validity horizon revokes the
 > elimination claim immediately. It is evidence that at least one premise of
-> the theory, architecture, or proof was false or incomplete.
+> the theory, architecture, realization, or proof was false or incomplete.
 
 The witness is not another realization class under the unchanged elimination
 narrative.
@@ -46,6 +46,8 @@ Elimination lease
   issued head
   accepted Goal and law
   selected Theta = (Omega, Alpha, L, Phi, A, O, C, Vh, Q)
+  causal basis and class mappings
+  family-level mechanism for each generator
   validity horizon Vh
   realized architecture K
   proof and path coverage
@@ -82,11 +84,13 @@ Identify the earliest failed premise supported by evidence:
 | `Vh` | witness is outside the eliminated claim's validity horizon | preserve the scoped claim; reconcile the witness separately |
 | `Omega` / `Alpha` | witness's invalid distinction is erased or uninterpretable | revise interpretation/domain |
 | `Phi` / family partition | witness lies outside `Phi` but satisfies the claim's reconsideration falsifier, proving the partition incomplete | revise or split theory |
+| Causal basis | class cannot map to the claimed generator or proved exception | revise the basis or split theory |
 | `U` / `B` | comparison universe omitted relevant concrete behavior | revise theory/proof universe |
 | `A` / `C` | sanctioned path or cut was omitted | revise admission model/cut |
 | `O` | selected owner lacks authority or ownership is distributed | revise owner model |
-| `K` realization | witness is inside `Phi`, reflected, and covered, but implementation admits it | retain theory and repair realization |
-| Proof | architecture may be sound but prior proof did not cover the witness/path | retain theory and rebuild proof |
+| Family mechanism | same generator now needs another member-specific factor | normalize or revise architecture |
+| `K` realization | witness is inside `Phi`, reflected, and covered, but implementation admits it | retain theory and repair realization only through direct-repair admission |
+| Proof | architecture may be sound but prior proof did not cover the witness/path | retain theory and rebuild proof; gate any direct realization mutation |
 | `Q` | evidence did not justify the claimed strength | downgrade strength |
 | Unknown | failure cannot be localized | `unresolved` |
 
@@ -101,7 +105,7 @@ retain-theory-reprove
   only for a localized realization or proof failure
 
 revise-theory
-  law, domain, predicate, comparison universe, or family changed
+  law, domain, predicate, comparison universe, causal basis, or family changed
 
 split-theory
   one observational class contains materially different families
@@ -141,11 +145,37 @@ the witness satisfies the existing Phi
 Alpha reflects the invalid distinction
 the admission path was already inside A and C
 the selected owner remains correct
+the existing causal generator remains adequate
+the family-level mechanism remains the intended realization
 the failure is localized to K or the proof
 the prior elimination lease is explicitly revoked
 ```
 
 If any condition fails, revise/split/reopen or return unresolved.
+
+## Direct-repair admission
+
+Retaining the theory does not automatically admit a local patch.
+
+Before any realization mutation under `retain-theory-reprove`, read
+[counterexample-guided-normalization.md](counterexample-guided-normalization.md),
+build the repository-grounded `actuating-direct-repair-admission/v1` packet, and
+materialize Actuating's pure Ledger definition.
+
+Admission requires that the proposed mutation:
+
+```text
+restores an existing family-level mechanism
+preserves the complete semantic model
+adds no semantic constructor
+adds no member-specific production factor
+adds no independent enforcement site
+leaves no affected factor unowned or newly redundant
+```
+
+A failed materialization forbids direct repair. Recompile and realize the
+normal-form architecture, or return `unresolved` when evidence is insufficient.
+Do not rewrite the packet until the same wound-specific patch validates.
 
 ## Sibling prediction
 
@@ -180,13 +210,16 @@ A successor `eliminated` disposition is eligible only when:
 2. the finding is `entailed`;
 3. any reopened Goal authority has been accepted and the finding reclassified;
 4. the failed premise is identified;
-5. the successor theory/interpretation/admission/owner/proof is restated;
+5. the successor theory, causal basis, interpretation, admission, owner,
+   realization, and proof are restated;
 6. soundness and Goal adequacy are re-established;
-7. every required retirement and escape-path correction is realized;
-8. the current witness and predicted siblings are probed;
-9. either the relevant finite domain is exhausted or a family-level
-   property/model/schema/type proof succeeds;
-10. the claim strength matches the weakest evidence.
+7. every generator has a family-level realization mechanism;
+8. every required factor replacement, retirement, and escape-path correction is
+   realized;
+9. the current witness and predicted siblings are probed;
+10. either the relevant finite domain is exhausted or a family-level
+    property/model/schema/type proof succeeds;
+11. the claim strength matches the weakest evidence.
 
 These are insufficient:
 
@@ -195,6 +228,7 @@ the reported examples now pass
 another owner-bound clause was added
 another exact-head review wave was launched
 the same broad theory was restated
+a direct-repair packet materialized
 ```
 
 ## Review interaction
@@ -219,7 +253,6 @@ not entailed
   review attempted to expand the Goal
 ```
 
-
 ## Behavioral evaluation
 
 Static contract and scenario tests are regression guards, not proof of live
@@ -232,18 +265,21 @@ Observe:
 
 ```text
 post-falsifier repair waves
+member-specific factors added per generator
+dominated production and proof surface deleted
 standard-clean attainment
 cumulative edit churn
 whether sibling predictions precede the next review wave
 whether new same-claim findings were predicted or theory-revising
 ```
 
-
 ## Hard exclusions
 
-- No durable elimination registry or event log.
+- No durable elimination registry, gate store, or event log.
 - No wave-count threshold.
-- No direct patch after revocation without premise localization.
+- No direct patch after revocation without premise localization and successful
+  direct-repair admission.
 - No unchanged-theory re-elimination from repaired examples.
 - No retrospective relabeling of newly found siblings as predictions.
+- No second same-generator member-specific repair without separation proof.
 - No silent Goal expansion.
