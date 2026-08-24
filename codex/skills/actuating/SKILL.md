@@ -264,9 +264,12 @@ no unowned or newly redundant affected factor
 The definition rejects a packet containing more than one causal generator. A
 complete successor may contain several independent direct repairs; materialize
 one packet per generator against the exact current predecessor head immediately
-before that generator's complete repair. Never materialize per finding or named
-member, and never materialize more than once for one generator in the current
-evidence cut.
+before that generator's complete repair. The admitted generator repair may span
+several coherent realization commits; track its completion separately and keep
+the original gate bound to the generator's starting predecessor. After any
+intervening generator changes the head, the next generator's packet must bind
+that new exact predecessor. Never materialize per finding or named member, and
+never materialize more than once for one generator in the current evidence cut.
 
 Do not substitute conclusion booleans for repository-grounded sets, mappings,
 paths, identities, and evidence.

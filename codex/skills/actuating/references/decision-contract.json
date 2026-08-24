@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-scheduling-v9"
+      "source_fingerprint": "actuating-review-scheduling-v10"
     },
     "triggers": [
       {
@@ -339,6 +339,7 @@
           "complete current applicable class fold and causal basis",
           "complete affected-factor dispositions",
           "predicted-sibling or exhaustive disposition",
+          "per-causal-generator successor dispositions",
           "one arrival-order-invariant selected target",
           "one generator-complete direct-repair materialization per admitted generator when applicable",
           "complete realization and proof before successor reviewability"
@@ -349,7 +350,11 @@
           "parallel selection waits for every launched semantic outcome including recovery",
           "serial and confirmation dispatch stop before the next request",
           "factor dispositions complete before mutation",
+          "initial and successor candidates satisfy the same complete review-entry proof",
+          "mixed direct-repair and architecture dispositions are represented per generator",
           "direct-repair packets contain exactly one causal generator and are never finding-local",
+          "one generator gate may span coherent commits until that generator is complete",
+          "a later generator gate binds the current predecessor after earlier generator commits",
           "review remains closed across coherent realization commits",
           "same-generator recurrence cannot add another enumerative member without separation"
         ],
@@ -357,7 +362,9 @@
           "finding maps directly to a patch and immediate review restart",
           "review is dispatched on an invalidated or incompletely realized head",
           "factor disposition is omitted before successor selection",
+          "successor kind is global when causal generators require mixed dispositions",
           "one direct-repair packet contains several causal generators",
+          "a later generator uses admission bound to a stale predecessor",
           "one generator receives several finding-local materializations",
           "same-generator recurrence extends a named-member list without separation proof",
           "candidate status or reconciliation epoch becomes durable workflow state"

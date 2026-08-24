@@ -161,8 +161,8 @@ grep -F 'Actuating must revoke and adjudicate' \
 ' "$skill_root/definitions/ledger/direct-repair-admission.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v5" and
-  .contract_id == "actuating-review-contract-v7" and
+  .schema == "actuating-review-contract/v6" and
+  .contract_id == "actuating-review-contract-v8" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -182,6 +182,7 @@ grep -F 'Actuating must revoke and adjudicate' \
   .review_scheduling.modes["serial-reviews"].stop_before_next_on_material_finding == true and
   .candidate_lifecycle.derived_not_stored == true and
   .candidate_lifecycle.review_dispatch_requires == "reviewable" and
+  .candidate_lifecycle.initial_and_successor_entry_require_same_complete_proof == true and
   .candidate_lifecycle.material_finding_invalidates_candidate_immediately == true and
   .candidate_lifecycle.reconciliation_epoch_is_derived_interval == true and
   .review_entry.complete_selected_construction_required == true and
@@ -197,9 +198,14 @@ grep -F 'Actuating must revoke and adjudicate' \
   .material_finding_transition.complete_causal_basis_required == true and
   .material_finding_transition.complete_factor_disposition_required == true and
   .material_finding_transition.sibling_or_exhaustive_disposition_required == true and
+  .material_finding_transition.successor_disposition_scope == "per-causal-generator" and
+  .material_finding_transition.mixed_generator_dispositions_allowed == true and
   .material_finding_transition.review_closed_until_successor_reviewable == true and
   .material_finding_transition.direct_repair_materialization_scope == "one-complete-causal-generator" and
   .material_finding_transition.maximum_direct_repair_materializations_per_generator == 1 and
+  .material_finding_transition.generator_gate_binds_starting_predecessor == true and
+  .material_finding_transition.generator_gate_spans_coherent_commits_until_generator_complete == true and
+  .material_finding_transition.later_generator_gate_binds_current_predecessor == true and
   .material_finding_transition.finding_local_direct_repair_materialization_forbidden == true and
   .same_generator_recurrence.member_enumeration_forbidden_without_separation == true and
   .same_generator_recurrence.generative_or_exhaustive_evidence_required_to_retain_family == true and
@@ -216,7 +222,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-scheduling-v9" and
+    "actuating-review-scheduling-v10" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |

@@ -7,7 +7,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -26,19 +26,23 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "target-normal",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
-        { "type": "commit", "from_head": "H1", "to_head": "H2" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1", "completes_generator": false },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2" },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "restart-standard", "head": "H2" }
       ],
       "expected": {
@@ -57,7 +61,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -76,19 +80,23 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "target-normal",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
-        { "type": "commit", "from_head": "H1", "to_head": "H2" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1", "completes_generator": false },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2" },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "restart-standard", "head": "H2" }
       ],
       "expected": {
@@ -106,7 +114,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -117,18 +125,22 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "exhaustive",
           "target_id": "serial-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1" },
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "restart-standard", "head": "H1" }
       ],
       "expected": {
@@ -146,7 +158,7 @@
       "schedule": "confirmation",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "confirmation-4", "head": "H0" },
         { "type": "review-terminal", "request": "confirmation-4", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -157,18 +169,22 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "not-meaningful",
           "target_id": "confirmation-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1" },
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "restart-standard", "head": "H1" }
       ],
       "expected": {
@@ -186,7 +202,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -207,18 +223,22 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "recovery-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1" },
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "restart-standard", "head": "H1" }
       ],
       "expected": {
@@ -236,7 +256,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -247,13 +267,26 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "two-generator-target",
-          "target_kind": "direct-repair",
-          "direct_repair_generators": ["generator-a", "generator-b"],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "generator-a",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            },
+            {
+              "id": "generator-b",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
         { "type": "direct-gate", "generator": "generator-a", "head": "H0" },
         { "type": "commit", "generator": "generator-a", "from_head": "H0", "to_head": "H1" },
@@ -261,7 +294,7 @@
         { "type": "commit", "generator": "generator-b", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2" },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "restart-standard", "head": "H2" }
       ],
       "expected": {
@@ -279,7 +312,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -290,18 +323,22 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "separated-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": true,
-          "proposed_member_enumeration": true,
-          "separation_proof": true,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": true,
+              "proposed_member_enumeration": true,
+              "separation_proof": true,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1" }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
       ],
       "expected": {
         "valid": true,
@@ -318,7 +355,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -329,18 +366,22 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "generative-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": true,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": true,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": true,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": true,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1" }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
       ],
       "expected": {
         "valid": true,
@@ -357,7 +398,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -368,18 +409,22 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "exhaustive",
           "target_id": "exhaustive-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": true,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": true
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": true,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": true
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1" }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
       ],
       "expected": {
         "valid": true,
@@ -396,7 +441,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -407,13 +452,17 @@
           "factor_dispositions_complete": false,
           "sibling_disposition": "passed",
           "target_id": "invalid-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         }
       ],
       "expected": {
@@ -431,7 +480,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -442,15 +491,19 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "multi-commit-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "review-launched", "request": "premature-review", "head": "H1" }
       ],
       "expected": {
@@ -468,7 +521,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -496,7 +549,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -507,13 +560,17 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "direct-target",
-          "target_kind": "direct-repair",
-          "direct_repair_generators": ["generator-a"],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "generator-a",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
         { "type": "direct-gate", "generator": "generator-a", "head": "H0" },
         { "type": "direct-gate", "generator": "generator-a", "head": "H0" }
@@ -533,7 +590,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -544,13 +601,17 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "enumerative-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": true,
-          "proposed_member_enumeration": true,
-          "separation_proof": false,
-          "generative_family_evidence": true,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": true,
+              "proposed_member_enumeration": true,
+              "separation_proof": false,
+              "generative_family_evidence": true,
+              "exhaustive_family_evidence": false
+            }
+          ]
         }
       ],
       "expected": {
@@ -568,7 +629,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -579,13 +640,17 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "unsupported-family-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": true,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": true,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         }
       ],
       "expected": {
@@ -603,7 +668,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "review-launched", "request": "footgun", "head": "H0" }
@@ -623,7 +688,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -634,17 +699,21 @@
           "factor_dispositions_complete": true,
           "sibling_disposition": "passed",
           "target_id": "unproved-target",
-          "target_kind": "architecture",
-          "direct_repair_generators": [],
-          "same_generator_recurrence": false,
-          "proposed_member_enumeration": false,
-          "separation_proof": false,
-          "generative_family_evidence": false,
-          "exhaustive_family_evidence": false
+          "generators": [
+            {
+              "id": "architecture-generator",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
         },
-        { "type": "commit", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
-        { "type": "candidate-sealed", "head": "H1" }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
       ],
       "expected": {
         "valid": false,
@@ -654,6 +723,175 @@
         "restart_heads": [],
         "selected_targets": ["unproved-target"],
         "gate_generators": []
+      }
+    },
+    {
+      "id": "initial-candidate-requires-complete-entry-proof",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0" }
+      ],
+      "expected": {
+        "valid": false,
+        "error": "candidate-entry-incomplete",
+        "phase": "none",
+        "current_head": null,
+        "restart_heads": [],
+        "selected_targets": [],
+        "gate_generators": []
+      }
+    },
+    {
+      "id": "one-generator-gate-spans-coherent-commits",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "review-launched", "request": "standard", "head": "H0" },
+        { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
+        { "type": "evidence-cut-closed" },
+        {
+          "type": "reconciliation-selected",
+          "classes_folded": true,
+          "causal_basis_complete": true,
+          "factor_dispositions_complete": true,
+          "sibling_disposition": "passed",
+          "target_id": "multi-commit-direct-target",
+          "generators": [
+            {
+              "id": "generator-a",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
+        },
+        { "type": "direct-gate", "generator": "generator-a", "head": "H0" },
+        { "type": "commit", "generator": "generator-a", "from_head": "H0", "to_head": "H1", "completes_generator": false },
+        { "type": "commit", "generator": "generator-a", "from_head": "H1", "to_head": "H2", "completes_generator": false },
+        { "type": "generator-complete", "generator": "generator-a", "head": "H2" },
+        { "type": "realization-complete", "head": "H2" },
+        { "type": "validation", "head": "H2", "passed": true },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+      ],
+      "expected": {
+        "valid": true,
+        "error": null,
+        "phase": "reviewable",
+        "current_head": "H2",
+        "restart_heads": [],
+        "selected_targets": ["multi-commit-direct-target"],
+        "gate_generators": ["generator-a"]
+      }
+    },
+    {
+      "id": "pre-gating-later-generator-is-rejected",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "review-launched", "request": "standard", "head": "H0" },
+        { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
+        { "type": "evidence-cut-closed" },
+        {
+          "type": "reconciliation-selected",
+          "classes_folded": true,
+          "causal_basis_complete": true,
+          "factor_dispositions_complete": true,
+          "sibling_disposition": "passed",
+          "target_id": "stale-second-gate-target",
+          "generators": [
+            {
+              "id": "generator-a",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            },
+            {
+              "id": "generator-b",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
+        },
+        { "type": "direct-gate", "generator": "generator-a", "head": "H0" },
+        { "type": "direct-gate", "generator": "generator-b", "head": "H0" },
+        { "type": "commit", "generator": "generator-a", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "generator-b", "from_head": "H1", "to_head": "H2" }
+      ],
+      "expected": {
+        "valid": false,
+        "error": "direct-repair-gate-predecessor-mismatch",
+        "phase": "realizing",
+        "current_head": "H1",
+        "restart_heads": [],
+        "selected_targets": ["stale-second-gate-target"],
+        "gate_generators": ["generator-a", "generator-b"]
+      }
+    },
+    {
+      "id": "mixed-generator-successor-is-representable",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "review-launched", "request": "standard", "head": "H0" },
+        { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
+        { "type": "evidence-cut-closed" },
+        {
+          "type": "reconciliation-selected",
+          "classes_folded": true,
+          "causal_basis_complete": true,
+          "factor_dispositions_complete": true,
+          "sibling_disposition": "passed",
+          "target_id": "mixed-target",
+          "generators": [
+            {
+              "id": "generator-a",
+              "disposition": "direct-repair",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            },
+            {
+              "id": "generator-b",
+              "disposition": "architecture",
+              "same_generator_recurrence": false,
+              "proposed_member_enumeration": false,
+              "separation_proof": false,
+              "generative_family_evidence": false,
+              "exhaustive_family_evidence": false
+            }
+          ]
+        },
+        { "type": "direct-gate", "generator": "generator-a", "head": "H0" },
+        { "type": "commit", "generator": "generator-a", "from_head": "H0", "to_head": "H1" },
+        { "type": "commit", "generator": "generator-b", "from_head": "H1", "to_head": "H2" },
+        { "type": "realization-complete", "head": "H2" },
+        { "type": "validation", "head": "H2", "passed": true },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+      ],
+      "expected": {
+        "valid": true,
+        "error": null,
+        "phase": "reviewable",
+        "current_head": "H2",
+        "restart_heads": [],
+        "selected_targets": ["mixed-target"],
+        "gate_generators": ["generator-a"]
       }
     }
   ]

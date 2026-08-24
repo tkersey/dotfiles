@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v5",
-  "contract_id": "actuating-review-contract-v7",
+  "schema": "actuating-review-contract/v6",
+  "contract_id": "actuating-review-contract-v8",
   "required_lenses": [
     {
       "name": "standard",
@@ -61,6 +61,7 @@
       "invalidated"
     ],
     "review_dispatch_requires": "reviewable",
+    "initial_and_successor_entry_require_same_complete_proof": true,
     "reviewable_requires_complete_selected_construction": true,
     "reviewable_requires_complete_factor_disposition": true,
     "reviewable_requires_strongest_relevant_validation": true,
@@ -87,10 +88,15 @@
     "complete_causal_basis_required": true,
     "complete_factor_disposition_required": true,
     "sibling_or_exhaustive_disposition_required": true,
+    "successor_disposition_scope": "per-causal-generator",
+    "mixed_generator_dispositions_allowed": true,
     "arrival_order_invariant_within_closed_cut": true,
     "review_closed_until_successor_reviewable": true,
     "direct_repair_materialization_scope": "one-complete-causal-generator",
     "maximum_direct_repair_materializations_per_generator": 1,
+    "generator_gate_binds_starting_predecessor": true,
+    "generator_gate_spans_coherent_commits_until_generator_complete": true,
+    "later_generator_gate_binds_current_predecessor": true,
     "finding_local_direct_repair_materialization_forbidden": true
   },
   "same_generator_recurrence": {

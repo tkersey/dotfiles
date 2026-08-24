@@ -8,8 +8,20 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
 "$jaq_bin" -e '
   def contains_value($xs; $v): ($xs | index($v)) != null;
 
-  def all_direct_applied:
-    ((.required_direct_generators - .applied_direct_generators) | length) == 0;
+  def all_generators_complete:
+    (.generator_states | length) > 0 and
+    all(.generator_states[]; .complete == true);
+
+  def generator_index($id):
+    [.generator_states[].id] | index($id);
+
+  def candidate_proof_complete($e):
+    $e.construction_complete == true and
+    $e.causal_basis_complete == true and
+    $e.factor_dispositions_complete == true and
+    (["passed", "exhaustive", "not-meaningful"] |
+      index($e.sibling_disposition)) != null and
+    $e.validation_current == true;
 
   def semantic_barrier_complete:
     ((.launched_requests - .semantic_outcomes) | length) == 0;
@@ -35,12 +47,9 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
       recovery_requests: [],
       evidence_cut_closed: false,
       selected_target_id: null,
-      selected_target_kind: null,
       selected_targets: [],
-      required_direct_generators: [],
-      direct_gate_generators: [],
+      generator_states: [],
       gate_history: [],
-      applied_direct_generators: [],
       applied_history: [],
       realization_complete: false,
       validation_head: null,
@@ -51,7 +60,9 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
   def apply_event($e):
     if .valid != true then .
     elif $e.type == "candidate-sealed" then
-      if .phase == "none" then
+      if (candidate_proof_complete($e) | not) then
+        fail("candidate-entry-incomplete")
+      elif .phase == "none" then
         .phase = "reviewable" |
         .current_head = $e.head |
         .candidate_head = $e.head |
@@ -61,7 +72,7 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
            .realization_complete == true and
            .validation_head == .current_head and
            $e.head == .current_head and
-           all_direct_applied then
+           all_generators_complete then
         .phase = "reviewable" |
         .candidate_head = .current_head |
         .candidate_generation += 1 |
@@ -72,10 +83,7 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
         .recovery_requests = [] |
         .evidence_cut_closed = false |
         .selected_target_id = null |
-        .selected_target_kind = null |
-        .required_direct_generators = [] |
-        .direct_gate_generators = [] |
-        .applied_direct_generators = [] |
+        .generator_states = [] |
         .realization_complete = false |
         .validation_head = null
       else fail("candidate-not-sealable")
@@ -160,73 +168,92 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
         fail("sibling-disposition-incomplete")
       elif ($e.target_id | type) != "string" or ($e.target_id | length) == 0 then
         fail("target-not-stated")
-      elif $e.same_generator_recurrence == true and
-           $e.separation_proof != true and
-           $e.proposed_member_enumeration == true then
+      elif ($e.generators | type) != "array" or
+           ($e.generators | length) == 0 or
+           ([ $e.generators[].id ] | unique | length) !=
+             ($e.generators | length) then
+        fail("invalid-generator-set")
+      elif any($e.generators[];
+           .disposition as $disposition |
+           (["direct-repair", "architecture"] | index($disposition)) == null) then
+        fail("unknown-generator-disposition")
+      elif any($e.generators[];
+           .same_generator_recurrence == true and
+           .separation_proof != true and
+           .proposed_member_enumeration == true) then
         fail("same-generator-member-enumeration")
-      elif $e.same_generator_recurrence == true and
-           $e.separation_proof != true and
-           $e.generative_family_evidence != true and
-           $e.exhaustive_family_evidence != true then
+      elif any($e.generators[];
+           .same_generator_recurrence == true and
+           .separation_proof != true and
+           .generative_family_evidence != true and
+           .exhaustive_family_evidence != true) then
         fail("same-generator-family-evidence-missing")
-      elif $e.target_kind == "direct-repair" and
-           (($e.direct_repair_generators | length) == 0 or
-            (($e.direct_repair_generators | unique | length) !=
-             ($e.direct_repair_generators | length))) then
-        fail("invalid-direct-repair-generator-set")
-      elif $e.target_kind == "architecture" and
-           ($e.direct_repair_generators | length) != 0 then
-        fail("architecture-target-has-direct-gates")
-      elif (["direct-repair", "architecture"] | index($e.target_kind)) == null then
-        fail("unknown-target-kind")
       else
         .selected_target_id = $e.target_id |
-        .selected_target_kind = $e.target_kind |
         .selected_targets += [$e.target_id] |
-        .required_direct_generators = $e.direct_repair_generators |
+        .generator_states = ($e.generators | map(. + {
+          gate_head: null,
+          started: false,
+          complete: false
+        })) |
         .phase = "realizing"
       end
     elif $e.type == "direct-gate" then
-      if .phase != "realizing" or .selected_target_kind != "direct-repair" then
-        fail("direct-gate-outside-direct-repair")
-      elif $e.head != .current_head then fail("direct-gate-head-mismatch")
-      elif (contains_value(.required_direct_generators; $e.generator) | not) then
+      (generator_index($e.generator)) as $i |
+      if .phase != "realizing" then fail("direct-gate-outside-realization")
+      elif $i == null then
         fail("direct-gate-unknown-generator")
-      elif contains_value(.direct_gate_generators; $e.generator) then
+      elif .generator_states[$i].disposition != "direct-repair" then
+        fail("direct-gate-for-architecture-generator")
+      elif $e.head != .current_head then fail("direct-gate-head-mismatch")
+      elif .generator_states[$i].gate_head != null then
         fail("duplicate-direct-gate-generator")
       else
-        .direct_gate_generators += [$e.generator] |
+        .generator_states[$i].gate_head = $e.head |
         .gate_history += [{generator: $e.generator, head: $e.head}]
       end
     elif $e.type == "commit" then
+      (generator_index($e.generator)) as $i |
       if .phase != "realizing" or .selected_target_id == null then
         fail("commit-before-successor-selection")
+      elif $i == null then fail("commit-unknown-generator")
       elif $e.from_head != .current_head or $e.to_head == .current_head then
         fail("commit-head-mismatch")
-      elif .selected_target_kind == "direct-repair" and
-           ((contains_value(.required_direct_generators; $e.generator) | not) or
-            (contains_value(.direct_gate_generators; $e.generator) | not) or
-            contains_value(.applied_direct_generators; $e.generator)) then
-        fail("direct-repair-commit-without-generator-gate")
-      elif .selected_target_kind == "architecture" and
-           (($e.generator // null) != null) then
-        fail("architecture-commit-names-generator")
+      elif .generator_states[$i].complete == true then
+        fail("commit-after-generator-complete")
+      elif .generator_states[$i].disposition == "direct-repair" and
+           .generator_states[$i].started != true and
+           .generator_states[$i].gate_head != $e.from_head then
+        fail("direct-repair-gate-predecessor-mismatch")
       else
-        if .selected_target_kind == "direct-repair" then
-          .applied_direct_generators += [$e.generator] |
-          .applied_history += [{generator: $e.generator, head: $e.to_head}]
+        .generator_states[$i].started = true |
+        if (if ($e | has("completes_generator"))
+            then $e.completes_generator else true end) == true then
+          .generator_states[$i].complete = true
         else . end |
+        .applied_history += [{generator: $e.generator, head: $e.to_head}] |
         .current_head = $e.to_head |
         .commit_heads += [$e.to_head] |
         .realization_complete = false |
         .validation_head = null
+      end
+    elif $e.type == "generator-complete" then
+      (generator_index($e.generator)) as $i |
+      if .phase != "realizing" or $i == null then
+        fail("generator-complete-before-selection")
+      elif $e.head != .current_head then fail("generator-complete-head-mismatch")
+      elif .generator_states[$i].started != true then
+        fail("generator-complete-before-commit")
+      elif .generator_states[$i].complete == true then
+        fail("duplicate-generator-complete")
+      else .generator_states[$i].complete = true
       end
     elif $e.type == "realization-complete" then
       if .phase != "realizing" or .selected_target_id == null then
         fail("realization-complete-before-selection")
       elif $e.head != .current_head or .current_head == .candidate_head then
         fail("realization-complete-head-mismatch")
-      elif (all_direct_applied | not) then fail("direct-generators-unrealized")
+      elif (all_generators_complete | not) then fail("generators-unrealized")
       else .realization_complete = true
       end
     elif $e.type == "validation" then
@@ -278,6 +305,18 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
     .result.error == "duplicate-direct-gate-generator") and
   any(.scenarios[];
     .id == "same-generator-exhaustive-repair" and
+    .result.valid == true) and
+  any(.scenarios[];
+    .id == "initial-candidate-requires-complete-entry-proof" and
+    .result.error == "candidate-entry-incomplete") and
+  any(.scenarios[];
+    .id == "one-generator-gate-spans-coherent-commits" and
+    .result.valid == true) and
+  any(.scenarios[];
+    .id == "pre-gating-later-generator-is-rejected" and
+    .result.error == "direct-repair-gate-predecessor-mismatch") and
+  any(.scenarios[];
+    .id == "mixed-generator-successor-is-representable" and
     .result.valid == true)
 ' "$fixture" >/dev/null
 

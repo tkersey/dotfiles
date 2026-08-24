@@ -223,6 +223,8 @@ Before mutation:
 - dispose every affected predecessor factor as preserve, replace, retire, or
   distinct-obligation;
 - complete sibling or exhaustive disposition;
+- record each causal generator's successor disposition independently so one
+  target may combine direct repair and architecture change;
 - select one target invariant to evidence arrival order inside that closed cut,
   or retain explicit incomparable minima;
 - reject another same-generator named-member extension without non-example
@@ -242,6 +244,8 @@ architecture:
 - materialize the gate against the exact current predecessor head immediately
   before realizing that generator's complete repair;
 - materialize at most once for that generator in the current evidence cut;
+- allow that admitted repair to span coherent commits while tracking generator
+  completion separately from commit occurrence;
 - never materialize per finding or named member.
 
 The gate definition accepts exactly one causal generator. A successor containing
