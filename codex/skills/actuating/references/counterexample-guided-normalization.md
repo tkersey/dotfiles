@@ -1,381 +1,219 @@
 # Counterexample-Guided Normalization
 
-Normative only when an `entailed` bug, review finding, test failure, incident,
-migration failure, or compatibility failure may authorize mutation.
+Normative whenever an applicable `entailed` bug, review finding, test failure,
+incident, migration failure, or compatibility failure may authorize mutation.
 
 ## Governing law
 
 ```text
 review accumulates Counterexample knowledge, not code
 
-T(n+1) = quotient(T(n) + newly accepted applicable classes)
+T(n+1) = quotient(T(n) + retained applicable findings)
 
 R(n+1) != patch(R(n), latest finding)
 
-R(n+1) =
-  realize(normal_form(Goal, causal_basis(T(n+1)), obligations))
+R(n+1) = realize(normal_form(Goal, causal_basis(T(n+1)), obligations))
 ```
 
-Knowledge is monotone. Realization is not.
+Knowledge is monotone. Production and proof realization are not. A finding is
+never an edit instruction, and historical repair order grants no preservation
+authority.
 
-A finding is evidence about the current construction. It is never an edit
-instruction. Historical implementation momentum, file proximity, review order,
-and the current number of guards do not decide the successor.
+## Two-stage mutation admission
 
-## Why one gate
-
-Actuating uses exactly one normalization gate:
+Actuating keeps one transition gate—direct-repair admission—but moves it
+downstream of an executable whole-corpus comparison:
 
 ```text
-direct-repair admission
+cumulative evidence cut
+-> causal basis
+-> whole-corpus production/proof factor fold
+-> executable subtractive candidate Q
+-> Q passes: select Q; addition forbidden
+-> Q fails or is repository-proved not meaningful:
+     select smallest proved replacement or restoration
+-> unchanged-model restoration only:
+     direct-repair Ledger gate
 ```
 
-The gate governs the dangerous transition: preserving the current architecture
-while changing its realization. It does not gate architecture recompilation,
-ordinary validation, review dispatch, publication, or closure.
+`actuating/cumulative-ablation-basis` is a pure comparison-proof definition, not
+a workflow store or architecture authority. It checks that Actuating tested the
+requested successor against one complete negative and positive proof surface.
+`actuating/direct-repair-admission` remains the only transition gate.
 
-This narrow boundary is deliberate. A gate that cannot reject a harmful
-successor is ceremony. A gate that blocks the member-specific patch which would
-continue review accretion changes the produced software.
+## Cumulative evidence cut
 
-## Activation
-
-Run the gate before a bug-driven mutation when Actuating proposes to retain the
-current theory and architecture as a direct realization repair, including
-`retain-theory-reprove` after post-elimination falsification.
-
-Do not run it for:
+After review candidate invalidation and the required semantic barrier, close one
+cut containing:
 
 ```text
-mechanical edits with no correctness-bearing semantic delta
-non-mutating triage or remediation planning
-a selected architecture/abstraction successor
-a change that already admits it changes the semantic model
+all retained still-applicable findings across the accepted Goal lineage
+all authority and applicability classifications
+all executable finding witnesses
+all required-valid behavior and observation proofs
+all compatibility and migration proofs
+current Git factors and ancestry
+same-generator history and elimination falsifiers
+predicted-sibling probes or exhaustive-domain bases
 ```
 
-A local patch remains a direct repair regardless of its label. Calling a
-member-specific guard "normalization" does not bypass this gate.
+A changed head changes realization facts, not semantic history. Existing owners
+retain authority; Actuating derives this cut live and creates no corpus database.
 
 ## Causal basis
 
-Before gate execution, quotient all currently applicable accepted classes into:
+Map every retained finding to exactly one current causal generator or an
+evidenced instance-specific exception with non-example separation proof. Each
+generator states its law, canonical owner, admission frontier or minimal cut,
+family mechanism, proof family, and falsifier.
+
+Once a generator exists, another member-specific production or proof factor is
+forbidden without separation proof. Bug count and lexical similarity do not
+establish a generator.
+
+## Whole-corpus factor fold
+
+Map every affected correctness-bearing production and proof factor to the
+complete cut. Ask:
 
 ```text
-one current causal generator
-or
-one evidenced instance-specific exception separated from a generator
+Which accepted Goal obligation requires it?
+Which causal generator does it exclude?
+Does a later family mechanism subsume it?
+Did it produce later same-family findings?
+Does another owner independently encode the same law?
+Does removal reopen any retained witness?
+Does removal break required valid behavior or compatibility?
 ```
 
-Every generator states:
+Assign exactly one evidence-backed disposition:
 
 ```text
-governing law
-existing family-level mechanism
-canonical owner
-admission frontier or minimal cut
-repository evidence
-falsifier
+preserve             distinct live obligation; not dominated
+replace              obligation remains under a stronger owner/representation
+collapse             several factors become one family mechanism
+retire               no distinct obligation remains or stronger mechanism subsumes it
+privatize             internally required but no longer public/compatibility surface
+distinct-obligation  apparent duplication serves an independent accepted law
 ```
 
-Once a causal generator exists, another member-specific production factor for
-that generator is forbidden unless a non-example separation proof establishes
-that the class is independently governed.
+Unknown ownership or obligation is `unresolved`, never inertia-based
+preservation or speculative deletion. Findings remain provenance-preserved even
+when wound-specific tests, fixtures, helpers, or proof scripts collapse into a
+stronger family proof.
 
-One witness may establish a generator when it falsifies a universal
-construction, transition, composition, ownership, or representation law. Bug
-count is not the trigger.
+## Executable subtractive domination
 
-## Semantic-novelty firewall
-
-A direct repair may preserve the architecture only when:
+Before admitting a correctness-bearing addition, construct the smallest
+repository-plausible quotient candidate `Q`:
 
 ```text
-the governing law is unchanged
-the family and interpretation are unchanged
-the admission model and owner model are unchanged
-the complete semantic model is unchanged
-the required behavior already exists in the selected construction
-the mutation restores an existing family-level mechanism
+delete | revert | collapse | delegate | privatize | minimal combination
 ```
 
-The semantic model changes when the mutation introduces or changes any:
+Run exactly the same surfaces against `Q` and the additive/replacement candidate
+`R`:
 
 ```text
-state dimension or value
-event or transition
-transition guard or ordering law
-representation or constructor
-authority or custody relation
-generation, freshness, or correlation rule
-admission path or minimal cut
-timeout, cancellation, retry, or recovery mode
-completion or shutdown mode
-effect or observation path
-compatibility mode
-independent validator or semantic enforcement site
-proof family
+every retained executable finding witness
+every required-valid behavior and observation proof
+every compatibility and migration proof
+the strongest feasible family-level falsifier
 ```
 
-An absent constructor cannot be smuggled through a realization repair. Recompile
-the target architecture before mutation.
-
-## Factor rootedness
-
-For the affected semantic region, enumerate current correctness-bearing factors:
+Selection law:
 
 ```text
-branch, flag, state, transition, handler
-constructor, validator, schema, capability, composition rule
-compatibility, recovery, bypass, or derived guard
-helper abstraction or generated table
-test, model, property, fixture family, or proof script
+Q passes all negative and positive proof surfaces
+  -> Q dominates R
+  -> additive repair forbidden
+
+Q fails a retained witness, required-valid proof, or compatibility proof
+  -> retain exact failure evidence
+  -> select the smallest proved replacement or restoration
+
+No meaningful Q exists
+  -> state the repository-grounded obstruction
+  -> do not use absence of imagination as proof
 ```
 
-Each affected predecessor factor receives exactly one disposition:
+Raw line count is not the order. Compare independently maintained semantic
+truths, owners, enforcement sites, public capabilities, and proof families. A
+larger canonical constructor may dominate scattered guards; a one-line special
+case may be harmful accumulation.
 
-```text
-preserve
-  still realizes a current obligation
+## Ledger execution of the comparison proof
 
-replace
-  successor factor realizes the same current obligation
-
-retire
-  no current obligation remains
-
-distinct-obligation
-  independently necessary despite sharing nearby code or symptoms
-```
-
-No factor is preserved by inertia. Unknown ownership or obligation blocks
-direct repair rather than manufacturing either deletion or preservation.
-
-## Generative realization
-
-A generative theory requires a generative realization.
-
-```text
-causal generator
--> one family-level construction or admission mechanism
--> every sanctioned affected path
--> family-level proof and falsifier
-```
-
-Observed examples may remain as minimal boundary witnesses. They may not remain
-the production architecture's vocabulary unless their distinctions are required
-by the Goal or supported by non-example separation proof.
-
-A repair that adds one predicate, branch, validator, or owner for one observed
-member while preserving the same generator is not generative realization.
-
-## Review candidate invalidation
-
-The normative review lifecycle lives in
-[review-contract.md](review-contract.md). Its normalization consequence is:
-
-```text
-applicable entailed material finding
--> reviewed candidate invalidated
--> closed current semantic evidence cut
--> complete class, causal, factor, and sibling dispositions
--> one arrival-order-invariant successor target
--> complete realization and proof
--> successor becomes reviewable
-```
-
-The reconciliation epoch is only the derived interval between candidate
-invalidation and successor reviewability. Review never constructs the successor
-one finding at a time, and no intermediate realization head is reviewable.
-
-If the selected successor preserves theory and architecture for a causal
-generator, materialize one direct-repair packet for that complete generator
-against the exact current predecessor head immediately before its complete
-repair. Several independent direct-repair generators use one packet each, never
-one packet per finding or named member, and review remains closed between them.
-
-A same-generator witness after an earlier repair is evidence that the prior
-family-sufficiency or proof claim failed. Another named-member extension is not
-a family mechanism. Retain the incumbent only with generative or exhaustive
-evidence covering the successor witness and predicted siblings; otherwise
-recompile the affected theory or architecture.
-
-## Direct-repair admission packet
-
-Actuating constructs one ephemeral packet under:
-
-```text
-actuating-direct-repair-admission/v1
-```
-
-The packet binds:
-
-```text
-repository / immutable base / exact predecessor head
-Goal and evidence digests
-mutation basis and elimination-lease posture
-law, family, interpretation, admission, owner, and semantic-model identities
-exactly one causal generator
-all accepted classes mapped to that generator
-all affected predecessor factors for that generator and complete dispositions
-the existing family mechanism being restored
-semantic-constructor, member-specific-factor, and owner-site deltas
-verification evidence and a falsifier
-```
-
-The definition rejects a packet containing more than one causal generator. The
-complete successor may include several independent generator repairs, but each
-packet remains generator-complete and is materialized at most once for that
-generator in the current evidence cut.
-
-Do not submit conclusion booleans such as `normalization_complete: true`.
-Supply the underlying structured sets, mappings, paths, identities, and evidence
-from which the definition decides admission.
-
-## Ledger execution
-
-Before the first Ledger command in the workflow, load `$ledger` and complete
-`$ledger ensure` once.
-
-Then materialize the pure owner-defined gate:
+Before the first Ledger command, load `$ledger` and complete `$ledger ensure`
+once. Then materialize the pure owner definition:
 
 ```bash
-actuating_gate_definition="$(
-  realpath \
-    "${CODEX_HOME:-$HOME/.codex}/skills/actuating/definitions/ledger/direct-repair-admission.json"
-)"
+ablation_definition="$(realpath \
+  "${CODEX_HOME:-$HOME/.codex}/skills/actuating/definitions/ledger/cumulative-ablation-basis.json")"
 
 ledger materialize \
-  --definition "$actuating_gate_definition" \
-  --input gate=<direct-repair-admission.json> \
+  --definition "$ablation_definition" \
+  --input comparison=<cumulative-ablation-basis.json> \
   --format json
 ```
 
-Require:
+The packet binds the exact predecessor head, evidence cut, one causal generator,
+complete factor fold, candidate diff identity, tested proof surfaces, observed
+outcome, and Actuating-requested successor. It contains no self-attested
+`minimal: true` or `normal: true` boolean.
+
+A passing subtractive candidate is representable only with requested successor
+`subtractive`. A failed candidate requires exact failure references. A
+`not-meaningful` outcome requires inspectable obstruction references. Changed
+inputs require fresh materialization. No storage operation is permitted.
+
+## Direct repair downstream
+
+Only after the comparison materializes with a failed or `not-meaningful`
+subtractive outcome may an unchanged-model winner request direct-repair
+admission. The existing direct-repair packet remains generator-local and must
+also establish unchanged semantic model, existing family mechanism, complete
+factor disposition, no semantic constructor, no member-specific factor, no new
+enforcement site, and no unowned or newly redundant factor.
+
+A passing subtractive candidate has no valid direct-repair continuation.
+Architecture successors do not use the direct-repair gate.
+
+## Candidate lifecycle and review
+
+A material finding invalidates one completely realized review candidate. After
+the semantic barrier, Actuating performs the cumulative fold and comparison once
+for the closed cut, selects one arrival-order-invariant successor or explicit
+incomparable minima, realizes every generator and factor disposition, and keeps
+review closed until the final head is completely proved and `reviewable`.
+
+Exhaustive review falsifies the recompiled construction; it does not finish the
+architecture through finding-local patches.
+
+## Behavioral falsifier
+
+Delete or narrow this mechanism when watched use shows:
 
 ```text
-schema = ledger-materialization-result/v1
-valid = true
-storage_mutated = false
-artifact_id = sha256:...
+quotient candidates are routinely obvious nonsense
+subtractive and additive candidates converge to the same code shape
+packet wording changes without candidate or selection changes
+legitimate isolated repairs are repeatedly delayed without finding dominated code
+comparison cost exceeds avoided code and review churn
+an existing type, constructor, schema, compiler, or verifier performs the same proof
 ```
 
-The artifact ID binds the exact packet during the active mutation decision. It
-is not a receipt, capability, durable workflow fact, or closure authority.
-
-A changed Goal, predecessor head, evidence set, theory, semantic model, factor
-inventory, or proposed delta requires fresh materialization. When a complete
-successor contains another direct-repair generator after an intervening commit,
-that generator's packet binds the new exact predecessor head.
-
-Do not transact, project, doctor, bind, rebind, or create an Actuating store for
-this gate.
-
-## Transition law
-
-```text
-valid materialization
-  -> Actuating may perform the exact admitted direct repair
-
-invalid materialization
-  -> direct repair is forbidden
-  -> recompile and realize a normal-form architecture
-     or return blocked when the semantic evidence is insufficient
-```
-
-Ledger does not select the repair or grant mutation. Actuating selects the
-requested transition, constructs the evidence packet, interprets the
-definition-relative result, and owns the next action.
-
-## Post-elimination application
-
-`retain-theory-reprove` may request direct repair only when:
-
-```text
-the prior elimination lease is revoked
-the failed premise is localized to realization or proof
-the existing family, interpretation, admission model, and owner remain valid
-the mutation restores the existing family mechanism
-the mutation adds no member-specific factor or enforcement site
-```
-
-The theory hypothesis may survive. The prior elimination disposition does not.
-
-## Normal-form realization
-
-When direct repair is rejected, select the smallest correctness-non-dominated
-construction whose realization:
-
-```text
-covers every causal generator at a family-level mechanism
-preserves every Goal-required valid behavior and observation
-partitions all affected predecessor factors
-retires dominated wound-specific production and proof surface
-uses the strongest feasible generator-level proof
-leaves no unowned correctness-bearing residue
-```
-
-The semantic decision unit is this complete affected construction. Individual
-coherent edits are realization units only. Do not launch closure-grade review
-against a half-realized target.
-
-## Behavioral acceptance
-
-The gate earns permanence only if watched use shows an object-level delta.
-
-For a shared causal generator, the next mutation must either:
-
-```text
-restore one existing family-level mechanism without new member-specific factors
-
-or
-
-recompile the architecture and retire dominated member-specific surface
-```
-
-It must not add another wound-specific guard.
-
-Observe:
-
-```text
-member-specific correctness-bearing factors added per generator
-independent enforcement sites added
-dominated production and proof surface deleted
-same-family findings in later review waves
-material review-driven mutations before convergence
-false rejection of isolated implementation repairs
-gate preparation and execution cost
-```
-
-## Gate falsifier and retirement rule
-
-Delete or narrow the gate when evidence shows any:
-
-```text
-enabled and disabled runs select materially equivalent mutations
-the gate is satisfied by packet rewrites without code-shape changes
-normalization after rejection produces the same member-specific design
-legitimate isolated repairs are repeatedly rejected
-a direct type, constructor, test, schema, or verifier excludes the failure
-more locally and completely
-gate cost exceeds the accretion and review churn it prevents
-```
-
-The gate is capability only while it prevents bad successors.
+It earns permanence only while passing quotient candidates prevent additive
+mutations, dominated production/proof factors disappear, required behavior
+survives, and same-family recurrence decreases.
 
 ## Hard exclusions
 
-- No finding-to-patch mapping.
-- No latest-wave-only mutation decision.
-- No review redispatch before the successor is completely realized, proved, and
-  reviewable.
-- No succession of finding-local direct-repair packets for one evidence cut.
-- No more than one direct-repair materialization per causal generator in one
-  evidence cut.
-- No multi-generator direct-repair packet.
-- No second same-generator member-specific repair without separation proof.
-- No new semantic constructor hidden inside direct repair.
-- No self-attested conclusion booleans in place of repository-grounded inputs.
-- No durable gate store, event log, predecessor chain, gate history, or receipt
-  family.
-- No Ledger selection of architecture, mutation authority, review credit,
-  publication, or closure.
+- No finding-to-patch mapping or latest-wave-only evidence cut.
+- No direct-repair selection before whole-corpus folding and subtractive proof.
+- No additive repair when the quotient candidate passes the same proof surface.
+- No second same-generator member-specific factor without separation proof.
+- No semantic constructor hidden inside direct repair.
+- No self-attested minimality or normalization booleans.
+- No durable corpus, factor, candidate, comparison, gate, or closure store.
+- No Ledger selection of architecture, mutation, review credit, publication, or closure.
