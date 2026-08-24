@@ -168,33 +168,30 @@ by the Goal or supported by non-example separation proof.
 A repair that adds one predicate, branch, validator, or owner for one observed
 member while preserving the same generator is not generative realization.
 
-## Review-induced reconciliation epoch
+## Review candidate invalidation
 
-When review pressure authorizes material mutation, Actuating closes review
-dispatch and selects the successor from one complete current evidence cut.
-
-The cut contains:
+The normative review lifecycle lives in
+[review-contract.md](review-contract.md). Its normalization consequence is:
 
 ```text
-all terminal receipts already launched for the reviewed head
-all current applicable accepted classes from those receipts
-current validation and provider evidence
-current same-generator history and elimination falsifiers
-predicted-sibling probes or an exhaustive-domain basis
+applicable entailed material finding
+-> reviewed candidate invalidated
+-> closed current semantic evidence cut
+-> complete class, causal, factor, and sibling dispositions
+-> one arrival-order-invariant successor target
+-> complete realization and proof
+-> successor becomes reviewable
 ```
 
-In parallel mode, mutation waits for the complete initial terminal barrier. In
-serial mode, the material finding stops dispatch before the next request.
-During standard confirmation, the finding stops further confirmations.
+The reconciliation epoch is only the derived interval between candidate
+invalidation and successor reviewability. Review never constructs the successor
+one finding at a time, and no intermediate realization head is reviewable.
 
-The resulting reconciliation epoch must produce one arrival-order-invariant
-target. Review remains closed while its coherent realization commits are made.
-Only the completely realized and proved final head may restart the selected
-review schedule.
-
-If the selected target preserves theory and architecture, construct and
-materialize one direct-repair packet covering the epoch's complete class and
-factor sets. Do not materialize a succession of finding-local packets.
+If the selected successor preserves theory and architecture for a causal
+generator, materialize one direct-repair packet for that complete generator
+against the exact current predecessor head immediately before its complete
+repair. Several independent direct-repair generators use one packet each, never
+one packet per finding or named member, and review remains closed between them.
 
 A same-generator witness after an earlier repair is evidence that the prior
 family-sufficiency or proof claim failed. Another named-member extension is not
@@ -217,13 +214,18 @@ repository / immutable base / exact predecessor head
 Goal and evidence digests
 mutation basis and elimination-lease posture
 law, family, interpretation, admission, owner, and semantic-model identities
-all accepted class mappings
-all current causal generators
-affected predecessor factors and complete dispositions
+exactly one causal generator
+all accepted classes mapped to that generator
+all affected predecessor factors for that generator and complete dispositions
 the existing family mechanism being restored
 semantic-constructor, member-specific-factor, and owner-site deltas
 verification evidence and a falsifier
 ```
+
+The definition rejects a packet containing more than one causal generator. The
+complete successor may include several independent generator repairs, but each
+packet remains generator-complete and is materialized at most once for that
+generator in the current evidence cut.
 
 Do not submit conclusion booleans such as `normalization_complete: true`.
 Supply the underlying structured sets, mappings, paths, identities, and evidence
@@ -261,7 +263,9 @@ The artifact ID binds the exact packet during the active mutation decision. It
 is not a receipt, capability, durable workflow fact, or closure authority.
 
 A changed Goal, predecessor head, evidence set, theory, semantic model, factor
-inventory, or proposed delta requires fresh materialization.
+inventory, or proposed delta requires fresh materialization. When a complete
+successor contains another direct-repair generator after an intervening commit,
+that generator's packet binds the new exact predecessor head.
 
 Do not transact, project, doctor, bind, rebind, or create an Actuating store for
 this gate.
@@ -362,8 +366,12 @@ The gate is capability only while it prevents bad successors.
 
 - No finding-to-patch mapping.
 - No latest-wave-only mutation decision.
-- No review redispatch before the complete epoch target is realized and proved.
+- No review redispatch before the successor is completely realized, proved, and
+  reviewable.
 - No succession of finding-local direct-repair packets for one evidence cut.
+- No more than one direct-repair materialization per causal generator in one
+  evidence cut.
+- No multi-generator direct-repair packet.
 - No second same-generator member-specific repair without separation proof.
 - No new semantic constructor hidden inside direct repair.
 - No self-attested conclusion booleans in place of repository-grounded inputs.

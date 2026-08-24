@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-scheduling-v8"
+      "source_fingerprint": "actuating-review-scheduling-v9"
     },
     "triggers": [
       {
@@ -321,7 +321,7 @@
         "rationale": "Architecture selection minimizes admitted incorrectness without losing required valid behavior."
       },
       {
-        "clause_id": "ACT-REVIEW-EPOCH-001",
+        "clause_id": "ACT-REVIEW-CANDIDATE-001",
         "trigger_refs": [
           "ACT-COUNTEREXAMPLE",
           "ACT-POST-ELIMINATION",
@@ -334,28 +334,35 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "complete terminal barrier for every already-launched required request",
+          "live candidate status derived from the exact head, complete construction, and current proof",
+          "closed semantic evidence cut for every already-launched request including required recovery",
           "complete current applicable class fold and causal basis",
+          "complete affected-factor dispositions",
           "predicted-sibling or exhaustive disposition",
           "one arrival-order-invariant selected target",
-          "complete realization and proof before review redispatch"
+          "one generator-complete direct-repair materialization per admitted generator when applicable",
+          "complete realization and proof before successor reviewability"
         ],
         "success_signals": [
-          "material finding exits convergence into one ephemeral reconciliation epoch",
-          "parallel mutation waits for the complete initial terminal barrier",
+          "material finding invalidates the reviewed candidate rather than requesting a patch",
+          "reconciliation epoch is only the derived interval until a successor becomes reviewable",
+          "parallel selection waits for every launched semantic outcome including recovery",
           "serial and confirmation dispatch stop before the next request",
-          "one direct-repair materialization covers the complete epoch target when applicable",
+          "factor dispositions complete before mutation",
+          "direct-repair packets contain exactly one causal generator and are never finding-local",
           "review remains closed across coherent realization commits",
           "same-generator recurrence cannot add another enumerative member without separation"
         ],
         "failure_signals": [
           "finding maps directly to a patch and immediate review restart",
-          "review restarts between coherent commits of one selected target",
-          "multiple finding-local gate packets substitute for a complete evidence cut",
+          "review is dispatched on an invalidated or incompletely realized head",
+          "factor disposition is omitted before successor selection",
+          "one direct-repair packet contains several causal generators",
+          "one generator receives several finding-local materializations",
           "same-generator recurrence extends a named-member list without separation proof",
-          "a durable epoch store or receipt is created"
+          "candidate status or reconciliation epoch becomes durable workflow state"
         ],
-        "rationale": "Review accumulates counterexample knowledge; one active-thread reconciliation epoch owns successor selection and realization."
+        "rationale": "Review falsifies a sealed candidate; Actuating selects and realizes the successor from one closed current evidence cut."
       },
       {
         "clause_id": "ACT-REVIEW-001",
@@ -372,7 +379,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v4",
+          "static actuating-review-contract/v5",
           "exact CAS receipts for the current Git head",
           "current Review Fold after findings"
         ],
@@ -380,8 +387,9 @@
           "parallel-reviews is the request-local default and launches the initial standard plus four compact auxiliaries concurrently",
           "serial-reviews runs the initial standard then every auxiliary serially in contract order",
           "both modes require every lens and five consecutive standard cleans on one unchanged head",
-          "material findings exit convergence into one reconciliation epoch before mutation",
-          "review redispatch waits for the completely realized and proved target",
+          "only a completely realized and proved candidate is reviewable",
+          "material findings invalidate the candidate before mutation",
+          "review redispatch waits for the successor to become reviewable",
           "material head change invalidates all credit and restarts the selected schedule at its initial standard",
           "missing resumable evidence restarts the selected schedule"
         ],

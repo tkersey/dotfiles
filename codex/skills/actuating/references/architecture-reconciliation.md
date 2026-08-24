@@ -35,7 +35,8 @@ still support them.
    family-level mechanism at the correct owner and sanctioned paths.
 8. If Actuating proposes direct repair under the unchanged architecture, execute
    the pure Ledger gate defined in
-   [counterexample-guided-normalization.md](counterexample-guided-normalization.md).
+   [counterexample-guided-normalization.md](counterexample-guided-normalization.md)
+   once for each admitted causal generator.
 
 An isolated implementation deviation inside an already-correct family mechanism
 may remain a realization repair only when the direct-repair gate admits it.
@@ -117,24 +118,24 @@ happens to reject all currently observed examples is not a family mechanism.
 
 ## Direct-repair admission
 
-Direct repair is a claim that the semantic model and architecture remain
-unchanged.
+Direct repair is a claim that one causal generator's semantic model and
+architecture remain unchanged.
 
-Before that transition, Actuating constructs the complete
-`actuating-direct-repair-admission/v1` packet and executes:
+For each causal generator selected for direct repair, Actuating constructs one
+complete `actuating-direct-repair-admission/v1` packet and executes:
 
 ```text
 actuating/direct-repair-admission
 ```
 
-through Ledger materialization.
-
-The gate requires:
+through Ledger materialization immediately before that generator's complete
+repair. The gate requires:
 
 ```text
+exactly one causal generator
+all accepted classes mapped to that generator
 unchanged predecessor/successor semantic-model identity
-complete accepted-class and causal-generator coverage
-complete affected-factor disposition
+complete affected-factor disposition for that generator
 existing family-level mechanism
 no semantic-constructor delta
 no member-specific factor
@@ -142,8 +143,12 @@ no new enforcement site
 no unowned or newly redundant affected factor
 ```
 
-A failed gate does not select a repair. It makes direct repair inadmissible.
-Actuating must recompile the architecture or block.
+The definition rejects a multi-generator packet. A complete successor may
+contain several independent direct repairs, but each generator receives at most
+one packet in the current evidence cut and each later packet binds the exact
+current predecessor head. A failed gate does not select a repair. It makes that
+generator's direct repair inadmissible. Actuating must recompile the architecture
+or block.
 
 ## Post-elimination back-edge
 
@@ -228,14 +233,14 @@ affected factors: preserve / replace / retire / distinct-obligation
 active elimination lease, if any
 post-elimination witness and failed premise
 successor disposition
-direct-repair gate packet and materialization identity, if applicable
+direct-repair packet and materialization identity per admitted generator
 predicted siblings and probes
 proof and reconsideration falsifier
 ```
 
 The Working Set grants no authority and has no persistent identity, store, event
-log, or migration. Git is the realized construction. The pure gate artifact ID
-binds one active decision only and is invalidated by changed inputs.
+log, or migration. Git is the realized construction. Each pure gate artifact ID
+binds one active generator decision only and is invalidated by changed inputs.
 
 ## Architectural memory
 
