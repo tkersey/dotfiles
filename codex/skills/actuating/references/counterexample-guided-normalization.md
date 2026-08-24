@@ -168,6 +168,40 @@ by the Goal or supported by non-example separation proof.
 A repair that adds one predicate, branch, validator, or owner for one observed
 member while preserving the same generator is not generative realization.
 
+## Review-induced reconciliation epoch
+
+When review pressure authorizes material mutation, Actuating closes review
+dispatch and selects the successor from one complete current evidence cut.
+
+The cut contains:
+
+```text
+all terminal receipts already launched for the reviewed head
+all current applicable accepted classes from those receipts
+current validation and provider evidence
+current same-generator history and elimination falsifiers
+predicted-sibling probes or an exhaustive-domain basis
+```
+
+In parallel mode, mutation waits for the complete initial terminal barrier. In
+serial mode, the material finding stops dispatch before the next request.
+During standard confirmation, the finding stops further confirmations.
+
+The resulting reconciliation epoch must produce one arrival-order-invariant
+target. Review remains closed while its coherent realization commits are made.
+Only the completely realized and proved final head may restart the selected
+review schedule.
+
+If the selected target preserves theory and architecture, construct and
+materialize one direct-repair packet covering the epoch's complete class and
+factor sets. Do not materialize a succession of finding-local packets.
+
+A same-generator witness after an earlier repair is evidence that the prior
+family-sufficiency or proof claim failed. Another named-member extension is not
+a family mechanism. Retain the incumbent only with generative or exhaustive
+evidence covering the successor witness and predicted siblings; otherwise
+recompile the affected theory or architecture.
+
 ## Direct-repair admission packet
 
 Actuating constructs one ephemeral packet under:
@@ -328,6 +362,8 @@ The gate is capability only while it prevents bad successors.
 
 - No finding-to-patch mapping.
 - No latest-wave-only mutation decision.
+- No review redispatch before the complete epoch target is realized and proved.
+- No succession of finding-local direct-repair packets for one evidence cut.
 - No second same-generator member-specific repair without separation proof.
 - No new semantic constructor hidden inside direct repair.
 - No self-attested conclusion booleans in place of repository-grounded inputs.

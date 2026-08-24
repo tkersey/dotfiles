@@ -128,6 +128,23 @@ consecutive clean standard attempts on one unchanged head. The initial clean
 standard counts as clean attempt one, so the clean path contains nine review
 attempts in either mode.
 
+## Review entry
+
+Closure-grade review may start only when the selected construction is completely
+realized on the exact head:
+
+```text
+complete applicable class-to-generator coverage
+complete affected-factor dispositions
+family-level mechanism or honest residual for every generator
+predicted-sibling or exhaustive disposition
+all selected retirements and bypass closures realized
+strongest relevant validation current
+```
+
+Review is stochastic falsification of that construction, not a mechanism for
+finishing it.
+
 ### Parallel reviews
 
 Launch all five owner-lived `cas review start --wait` processes before accepting
@@ -136,8 +153,10 @@ an initial terminal result.
 - A finding, clean result, or transport failure never cancels a sibling.
 - Every launched request reaches terminal transport evidence.
 - Every finding passes through `$review-fold`.
-- Accepted pressure is resolved or rejected after the initial terminal barrier
-  and before serial standard confirmation.
+- An accepted material finding exits convergence only after the initial terminal
+  barrier and enters one reconciliation epoch before any mutation.
+- Non-material findings are resolved or rejected before serial standard
+  confirmation.
 
 ### Serial reviews
 
@@ -150,8 +169,26 @@ finding before dispatching the next request.
 - A finding that reopens Goal authority or remains unresolved blocks rather than
   allowing later reviews to assume a settled target.
 - When an adjudicated finding leads to material code mutation, stop before the
-  next request. Commit and validate the change, discard all prior review credit,
-  and restart `serial-reviews` at the initial standard on the new head.
+  next request and enter one reconciliation epoch. Do not restart until its
+  complete selected target is realized and proved on the final head.
+
+## Material finding transition
+
+One reconciliation epoch owns every review-induced material mutation for the
+current evidence cut.
+
+- Wait for every already-launched request required by the selected schedule.
+- Fold all currently applicable accepted classes before selecting mutation.
+- Complete causal-generator, sibling, factor, and target dispositions.
+- Materialize the direct-repair gate once for the complete target when direct
+  repair is selected.
+- Keep review dispatch closed across coherent realization commits.
+- Restart the selected initial schedule only on the completely realized and
+  proved final head.
+
+A same-generator recurrence after repair cannot authorize another enumerative
+member extension. It requires separation proof, generative or exhaustive family
+evidence, or theory/architecture reconsideration.
 
 ## Request-local recovery
 
@@ -172,10 +209,13 @@ After the selected initial schedule is fully adjudicated, launch fresh standard
 attempts serially until the trailing exact-head clean suffix reaches five.
 
 - A standard finding resets the suffix to zero.
+- A material standard finding stops further confirmations and enters one
+  reconciliation epoch.
 - An auxiliary finding does not change standard credit unless resolution changes
   the head.
 - Any material Git head change invalidates all prior credit by tuple mismatch and
-  restarts the selected schedule at its initial standard.
+  permits restart only after the reconciliation epoch's complete target is
+  realized and proved.
 - No credit crosses a head change.
 
 ## Resumption

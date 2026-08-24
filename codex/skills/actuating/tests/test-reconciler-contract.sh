@@ -72,6 +72,9 @@ grep -F 'Git is the realized construction' "$skill_root/SKILL.md" >/dev/null
 grep -F '`parallel-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F '`serial-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F 'restart the selected' "$skill_root/SKILL.md" >/dev/null
+grep -F '### Review-induced reconciliation epoch' "$skill_root/SKILL.md" >/dev/null
+grep -F 'review dispatch closed' "$skill_root/SKILL.md" >/dev/null
+grep -F 'complete epoch target' "$skill_root/SKILL.md" >/dev/null
 
 grep -F '# Counterexample-Guided Normalization' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
@@ -84,6 +87,10 @@ grep -F '## Ledger execution' \
 grep -F '## Gate falsifier and retirement rule' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F 'No second same-generator member-specific repair' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Review-induced reconciliation epoch' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F 'No succession of finding-local direct-repair packets' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
@@ -147,8 +154,8 @@ grep -F 'Actuating must revoke and adjudicate' \
 ' "$skill_root/definitions/ledger/direct-repair-admission.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v3" and
-  .contract_id == "actuating-review-contract-v5" and
+  .schema == "actuating-review-contract/v4" and
+  .contract_id == "actuating-review-contract-v6" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -165,6 +172,18 @@ grep -F 'Actuating must revoke and adjudicate' \
   .review_scheduling.modes["serial-reviews"].dispatch == "serial" and
   .review_scheduling.modes["serial-reviews"].adjudicate_before_next == true and
   .review_scheduling.modes["serial-reviews"].stop_before_next_on_material_change == true and
+  .review_entry.complete_selected_construction_required == true and
+  .review_entry.complete_causal_basis_required == true and
+  .review_entry.closure_review_as_construction_forbidden == true and
+  .material_finding_transition.exits_convergence == true and
+  .material_finding_transition.parallel_terminal_barrier_before_mutation == true and
+  .material_finding_transition.serial_stop_before_next_request == true and
+  .material_finding_transition.confirmation_stop_before_next_attempt == true and
+  .material_finding_transition.review_closed_during_realization == true and
+  .material_finding_transition.redispatch_requires_complete_realization_and_proof == true and
+  .material_finding_transition.direct_repair_materialization_scope == "complete-epoch-target" and
+  .same_generator_recurrence.member_enumeration_forbidden_without_separation == true and
+  .same_generator_recurrence.generative_or_exhaustive_evidence_required_to_retain_family == true and
   .standard_convergence.required_consecutive_clean_attempts == 5 and
   .standard_convergence.initial_standard_counts == true and
   .standard_convergence.later_attempts_serial == true and
@@ -176,7 +195,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-scheduling-v7" and
+    "actuating-review-scheduling-v8" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |
@@ -185,6 +204,8 @@ grep -F 'Actuating must revoke and adjudicate' \
     index("ACT-LAW-AUTHORITY-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-POST-ELIMINATION-001")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-REVIEW-EPOCH-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CLOSURE-005")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null
@@ -205,5 +226,6 @@ grep -F 'Actuating must revoke and adjudicate' \
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-direct-repair-admission.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-post-elimination-scenarios.sh"
+JAQ_BIN="$jaq_bin" "$skill_root/tests/test-review-mutation-epoch-scenarios.sh"
 
 echo "actuating direct-repair admission and reconciler contract: pass"

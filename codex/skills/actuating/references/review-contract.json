@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v3",
-  "contract_id": "actuating-review-contract-v5",
+  "schema": "actuating-review-contract/v4",
+  "contract_id": "actuating-review-contract-v6",
   "required_lenses": [
     {
       "name": "standard",
@@ -51,6 +51,30 @@
         "stop_before_next_on_material_change": true
       }
     }
+  },
+  "review_entry": {
+    "complete_selected_construction_required": true,
+    "complete_causal_basis_required": true,
+    "complete_factor_disposition_required": true,
+    "sibling_or_exhaustive_disposition_required": true,
+    "strongest_relevant_validation_required": true,
+    "closure_review_as_construction_forbidden": true
+  },
+  "material_finding_transition": {
+    "exits_convergence": true,
+    "parallel_terminal_barrier_before_mutation": true,
+    "serial_stop_before_next_request": true,
+    "confirmation_stop_before_next_attempt": true,
+    "complete_current_class_fold_required": true,
+    "arrival_order_invariant_target_required": true,
+    "review_closed_during_realization": true,
+    "redispatch_requires_complete_realization_and_proof": true,
+    "direct_repair_materialization_scope": "complete-epoch-target"
+  },
+  "same_generator_recurrence": {
+    "member_enumeration_forbidden_without_separation": true,
+    "generative_or_exhaustive_evidence_required_to_retain_family": true,
+    "otherwise_reconsider_theory_or_architecture": true
   },
   "standard_convergence": {
     "required_consecutive_clean_attempts": 5,

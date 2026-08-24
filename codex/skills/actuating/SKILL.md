@@ -58,7 +58,7 @@ the current tree.
 | Intent | Route | Mutation | Terminal result |
 |---|---|---:|---|
 | Bare `$actuating` or `/goal $actuating` | implement -> Ship -> review-closeout | Explicitly authorized | `complete` |
-| `$actuating implement` | reconcile and implement locally | Explicitly authorized | local `complete` |
+| `$actuating implement` or `$actuating implementation-only` | reconcile and implement locally | Explicitly authorized | local `complete` |
 | `$actuating triage` | acquire and classify review evidence | Forbidden | Review Fold and report |
 | `$actuating remediation-plan` | recompile a target architecture without editing | Forbidden | non-executable plan |
 | `$actuating review-closeout` | classify, normalize/reconsider, realize, Ship, and converge | Explicitly authorized | `complete` |
@@ -495,6 +495,49 @@ Conservative exclusion of optional safe behavior is not containment.
 
 Read [review-contract.md](references/review-contract.md).
 
+### Review-induced reconciliation epoch
+
+Closure review may falsify a complete construction; it may not construct the
+successor one finding at a time.
+
+An applicable `entailed` finding whose disposition requires material mutation
+immediately exits convergence into one **ephemeral reconciliation epoch**:
+
+```text
+current reviewed head
++ every already-launched terminal review receipt
++ current validation and provider evidence
+-> complete applicable class fold
+-> complete causal basis and sibling disposition
+-> one arrival-order-invariant target
+-> complete realization and proof with review dispatch closed
+-> fresh review schedule on the final head
+```
+
+The epoch exists only in the active Architecture Working Set. It creates no
+store, registry, score, receipt, or additional gate.
+
+Before mutation:
+
+- in `parallel-reviews`, wait for the complete initial terminal barrier;
+- in `serial-reviews`, stop before the next request after the material finding;
+- during standard confirmation, stop further confirmations immediately;
+- fold every currently applicable accepted class available at the evidence cut;
+- state the complete causal basis, predicted-sibling or exhaustive disposition,
+  factor dispositions, and one complete selected target;
+- if the target is direct repair, materialize the direct-repair gate once for
+  the complete epoch target, not once per finding.
+
+Review dispatch remains closed across every coherent realization commit. Reopen
+it only after the complete affected construction and strongest relevant proof
+are current on one final head.
+
+A same-generator successor witness after a prior repair revokes that repair's
+family-sufficiency claim. Another named-member extension is forbidden unless
+non-example separation establishes independent semantics. Retaining the family
+requires generative or exhaustive evidence for the existing mechanism;
+otherwise reconsider architecture, theory, admission, interpretation, or owner.
+
 Bind review to repository, immutable base, exact head, CAS target fingerprint,
 Goal/acceptance digest, Review Contract digest, and optional pre-review Ship
 observation digest.
@@ -513,7 +556,8 @@ For the unchanged head:
 - run later standard confirmations serially;
 - require five consecutive distinct standard cleans;
 - after a material head change, reset all credit and restart the selected
-  schedule at its initial standard;
+  schedule at its initial standard only after the reconciliation epoch has
+  completely realized and proved its selected target;
 - in `serial-reviews`, never dispatch the next review against a head that an
   adjudicated finding will replace.
 
@@ -545,9 +589,13 @@ A safe but wound-shaped realization is not complete.
   layer. The pure direct-repair definition is the only Actuating Ledger gate.
 - Do not map a finding directly to a patch.
 - Do not select mutation from the latest review wave alone.
+- Do not redispatch review between member repairs or coherent commits inside one
+  reconciliation epoch.
 - Do not let review author a new Goal silently.
 - Do not add a second same-generator member-specific factor without separation
   proof.
+- Do not answer same-generator recurrence with another enumerative member
+  extension unless separation proves an independent obligation.
 - Do not hide a new semantic constructor inside direct repair.
 - Do not preserve an `eliminated` disposition after a current entailed witness
   falsifies the exact family claim inside its validity horizon.

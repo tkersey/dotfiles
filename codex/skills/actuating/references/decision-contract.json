@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-scheduling-v7"
+      "source_fingerprint": "actuating-review-scheduling-v8"
     },
     "triggers": [
       {
@@ -321,6 +321,43 @@
         "rationale": "Architecture selection minimizes admitted incorrectness without losing required valid behavior."
       },
       {
+        "clause_id": "ACT-REVIEW-EPOCH-001",
+        "trigger_refs": [
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION",
+          "ACT-REVIEW-SCHEDULING"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "complete terminal barrier for every already-launched required request",
+          "complete current applicable class fold and causal basis",
+          "predicted-sibling or exhaustive disposition",
+          "one arrival-order-invariant selected target",
+          "complete realization and proof before review redispatch"
+        ],
+        "success_signals": [
+          "material finding exits convergence into one ephemeral reconciliation epoch",
+          "parallel mutation waits for the complete initial terminal barrier",
+          "serial and confirmation dispatch stop before the next request",
+          "one direct-repair materialization covers the complete epoch target when applicable",
+          "review remains closed across coherent realization commits",
+          "same-generator recurrence cannot add another enumerative member without separation"
+        ],
+        "failure_signals": [
+          "finding maps directly to a patch and immediate review restart",
+          "review restarts between coherent commits of one selected target",
+          "multiple finding-local gate packets substitute for a complete evidence cut",
+          "same-generator recurrence extends a named-member list without separation proof",
+          "a durable epoch store or receipt is created"
+        ],
+        "rationale": "Review accumulates counterexample knowledge; one active-thread reconciliation epoch owns successor selection and realization."
+      },
+      {
         "clause_id": "ACT-REVIEW-001",
         "trigger_refs": [
           "ACT-BARE",
@@ -335,7 +372,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v3",
+          "static actuating-review-contract/v4",
           "exact CAS receipts for the current Git head",
           "current Review Fold after findings"
         ],
@@ -343,6 +380,8 @@
           "parallel-reviews is the request-local default and launches the initial standard plus four compact auxiliaries concurrently",
           "serial-reviews runs the initial standard then every auxiliary serially in contract order",
           "both modes require every lens and five consecutive standard cleans on one unchanged head",
+          "material findings exit convergence into one reconciliation epoch before mutation",
+          "review redispatch waits for the completely realized and proved target",
           "material head change invalidates all credit and restarts the selected schedule at its initial standard",
           "missing resumable evidence restarts the selected schedule"
         ],
@@ -350,6 +389,7 @@
           "review scheduling changes route or mutation authority",
           "serial-reviews omits or reorders a required lens",
           "parallel-reviews cancels a launched sibling",
+          "review is redispatched between member repairs or coherent realization commits",
           "review count is reconstructed from prose",
           "review evidence is copied into an Actuating store",
           "review findings bypass law-authority classification"
