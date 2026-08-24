@@ -224,14 +224,14 @@ Actuating uses exactly one normalization gate:
 which the current theory and architecture are preserved while their realization
 changes.
 
-Run it when a current applicable `entailed` counterexample would authorize a
+Run it once for each causal generator whose selected successor disposition is a
 bug-driven direct repair, including `retain-theory-reprove` after a revoked
 elimination lease. Do not run it for mechanical edits without a
 correctness-bearing semantic delta, non-mutating work, or a selected architecture
 successor that already acknowledges a changed semantic model.
 
-Build the repository-grounded
-`actuating-direct-repair-admission/v1` packet and execute the passive definition:
+Build one repository-grounded `actuating-direct-repair-admission/v1` packet for
+exactly one complete causal generator and execute the passive definition:
 
 ```bash
 actuating_gate_definition="$(
@@ -251,15 +251,25 @@ Before the first Ledger command in the workflow, load `$ledger` and complete
 Admission requires, from structured current inputs:
 
 ```text
+exactly one causal generator and every accepted class mapped to it
 unchanged predecessor/successor semantic-model identity
-complete accepted-class and causal-generator coverage
-complete affected-factor disposition
+complete affected-factor disposition for that generator
 an existing family-level mechanism being restored
 no semantic-constructor delta
 no member-specific production factor
 no new independent enforcement site
 no unowned or newly redundant affected factor
 ```
+
+The definition rejects a packet containing more than one causal generator. A
+complete successor may contain several independent direct repairs; materialize
+one packet per generator against the exact current predecessor head immediately
+before that generator's complete repair. The admitted generator repair may span
+several coherent realization commits; track its completion separately and keep
+the original gate bound to the generator's starting predecessor. After any
+intervening generator changes the head, the next generator's packet must bind
+that new exact predecessor. Never materialize per finding or named member, and
+never materialize more than once for one generator in the current evidence cut.
 
 Do not substitute conclusion booleans for repository-grounded sets, mappings,
 paths, identities, and evidence.
@@ -275,8 +285,9 @@ invalid materialization
 ```
 
 The materialization is pure and creates no durable gate state. A changed Goal,
-head, evidence set, theory, semantic model, factor inventory, or proposed delta
-requires fresh execution. Ledger does not select the repair or grant mutation.
+predecessor head, evidence set, theory, semantic model, factor inventory, or
+proposed delta requires fresh execution. Ledger does not select the repair or
+grant mutation.
 
 ## Architecture closure
 
@@ -416,7 +427,7 @@ Omega / Alpha / Phi / A / O / C / Vh / Q
 Family-level mechanism for each generator
 Safety adequacy / Goal adequacy / normalization posture
 Selected target / preserve / replace / retire / distinct-obligation
-Direct-repair packet and materialization identity, if applicable
+Direct-repair packet and materialization identity per admitted generator
 Current elimination lease, if any:
   issued head / theory / family / validity horizon / reconsideration falsifier
   proof / claim strength
@@ -495,6 +506,46 @@ Conservative exclusion of optional safe behavior is not containment.
 
 Read [review-contract.md](references/review-contract.md).
 
+### Review candidate invalidation
+
+Closure review may falsify one completely realized and proved candidate; it may
+not construct its successor.
+
+Candidate status is derived live:
+
+```text
+realizing
+  selected construction or strongest relevant proof is incomplete
+
+reviewable
+  complete selected construction and proof are current on one exact head
+
+invalidated
+  an applicable entailed material finding falsified that candidate
+```
+
+Only `reviewable` may dispatch closure review. A material finding invalidates the
+candidate immediately. The reconciliation epoch is merely the interval from
+that invalidation until a completely selected, realized, and proved successor
+becomes reviewable; it creates no store, identity, receipt, score, or gate.
+
+Before mutation, close the current semantic evidence cut, including required
+request-local recovery, then complete the applicable class fold, causal basis,
+affected-factor dispositions, sibling or exhaustive disposition, and one target
+invariant to arrival order inside that cut. Review remains closed across every
+coherent realization commit and reopens only on the successor's final head.
+
+For direct repair, successor selection is global but admission is
+causal-generator-local. Materialize one complete packet per admitted generator
+against its exact current predecessor head, at most once for that generator in
+the evidence cut. Never materialize per finding or named member.
+
+A same-generator successor witness after a prior repair revokes that repair's
+family-sufficiency claim. Another named-member extension is forbidden unless
+non-example separation establishes independent semantics. Retaining the family
+requires generative or exhaustive evidence for the existing mechanism;
+otherwise reconsider architecture, theory, admission, interpretation, or owner.
+
 Bind review to repository, immutable base, exact head, CAS target fingerprint,
 Goal/acceptance digest, Review Contract digest, and optional pre-review Ship
 observation digest.
@@ -513,9 +564,9 @@ For the unchanged head:
 - run later standard confirmations serially;
 - require five consecutive distinct standard cleans;
 - after a material head change, reset all credit and restart the selected
-  schedule at its initial standard;
-- in `serial-reviews`, never dispatch the next review against a head that an
-  adjudicated finding will replace.
+  schedule at its initial standard only after the successor is reviewable;
+- in `serial-reviews`, never dispatch the next review after an adjudicated
+  material finding invalidates the candidate.
 
 Every finding passes through `$review-fold`. Credit only exact CAS receipts.
 Never reconstruct credit from prose, process exit, or claimed counts.
@@ -545,9 +596,18 @@ A safe but wound-shaped realization is not complete.
   layer. The pure direct-repair definition is the only Actuating Ledger gate.
 - Do not map a finding directly to a patch.
 - Do not select mutation from the latest review wave alone.
+- Do not dispatch review unless the current candidate is completely realized,
+  proved, and reviewable.
+- Do not redispatch review between member repairs or coherent commits after
+  candidate invalidation.
+- Do not materialize one direct-repair packet for multiple causal generators.
+- Do not materialize direct repair more than once per causal generator in one
+  evidence cut.
 - Do not let review author a new Goal silently.
 - Do not add a second same-generator member-specific factor without separation
   proof.
+- Do not answer same-generator recurrence with another enumerative member
+  extension unless separation proves an independent obligation.
 - Do not hide a new semantic constructor inside direct repair.
 - Do not preserve an `eliminated` disposition after a current entailed witness
   falsifies the exact family claim inside its validity horizon.

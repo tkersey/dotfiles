@@ -97,6 +97,13 @@ expect_invalid unknown-generator '
     "generator-unknown"
 '
 
+expect_invalid multiple-generators '
+  .direct_repair_admission.theory.causal_generators += [
+    (.direct_repair_admission.theory.causal_generators[0] |
+      .generator_id = "generator-second")
+  ]
+'
+
 expect_invalid revoked-without-localization '
   .direct_repair_admission.active_elimination_lease = "revoked"
 '

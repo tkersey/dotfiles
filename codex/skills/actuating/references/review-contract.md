@@ -128,6 +128,49 @@ consecutive clean standard attempts on one unchanged head. The initial clean
 standard counts as clean attempt one, so the clean path contains nine review
 attempts in either mode.
 
+## Candidate lifecycle
+
+Candidate status is a live judgment, never stored workflow state:
+
+```text
+realizing
+  selected construction is incomplete or its strongest relevant proof is not
+  current on one exact head
+
+reviewable
+  selected construction, affected-factor dispositions, retirements, bypass
+  closures, and strongest relevant proof are complete on one exact head
+
+invalidated
+  an applicable entailed material finding has falsified the reviewable candidate
+```
+
+Only a `reviewable` candidate may dispatch closure-grade review. A material
+finding invalidates that candidate immediately; it does not request a patch.
+The candidate cannot become reviewable again. A successor must be completely
+selected, realized, and proved on a final head before review can resume.
+
+The **reconciliation epoch** is only the derived interval from candidate
+invalidation to successor reviewability. It has no identity, store, receipt,
+score, or additional gate.
+
+## Review entry
+
+Closure-grade review may start only when the selected construction is completely
+realized on the exact head:
+
+```text
+complete applicable class-to-generator coverage
+complete affected-factor dispositions
+family-level mechanism or honest residual for every generator
+predicted-sibling or exhaustive disposition
+all selected retirements and bypass closures realized
+strongest relevant validation current
+```
+
+Review is stochastic falsification of that construction, not a mechanism for
+finishing it.
+
 ### Parallel reviews
 
 Launch all five owner-lived `cas review start --wait` processes before accepting
@@ -136,8 +179,13 @@ an initial terminal result.
 - A finding, clean result, or transport failure never cancels a sibling.
 - Every launched request reaches terminal transport evidence.
 - Every finding passes through `$review-fold`.
-- Accepted pressure is resolved or rejected after the initial terminal barrier
-  and before serial standard confirmation.
+- An accepted material finding invalidates the candidate immediately, closes new
+  review dispatch, and waits for every already-launched request to reach a
+  semantic outcome.
+- A verdictless request completes its one permitted request-local recovery before
+  the evidence cut closes.
+- Non-material findings are resolved or rejected before serial standard
+  confirmation.
 
 ### Serial reviews
 
@@ -149,9 +197,62 @@ finding before dispatching the next request.
   exact-head receipts; continue when its disposition permits review to proceed.
 - A finding that reopens Goal authority or remains unresolved blocks rather than
   allowing later reviews to assume a settled target.
-- When an adjudicated finding leads to material code mutation, stop before the
-  next request. Commit and validate the change, discard all prior review credit,
-  and restart `serial-reviews` at the initial standard on the new head.
+- An accepted material finding invalidates the candidate after that request's
+  terminal semantic outcome. Do not dispatch the next request.
+
+The same stop-before-next rule applies to a material standard finding during
+confirmation.
+
+## Candidate invalidation and successor selection
+
+After invalidation, close one current evidence cut:
+
+```text
+all semantic outcomes for already-launched requests
+including required request-local recovery
++ all currently applicable accepted classes
++ current validation and provider evidence
++ current same-generator history and elimination falsifiers
++ predicted-sibling probes or an exhaustive-domain basis
+```
+
+Before mutation:
+
+- fold every applicable accepted class in the closed cut;
+- complete the causal basis;
+- dispose every affected predecessor factor as preserve, replace, retire, or
+  distinct-obligation;
+- complete sibling or exhaustive disposition;
+- record each causal generator's successor disposition independently so one
+  target may combine direct repair and architecture change;
+- select one target invariant to evidence arrival order inside that closed cut,
+  or retain explicit incomparable minima;
+- reject another same-generator named-member extension without non-example
+  separation, generative family evidence, or exhaustive family evidence.
+
+Review dispatch remains closed while the selected target is realized. No
+intermediate head is a review candidate.
+
+## Direct repair inside one successor
+
+Successor selection is global; direct-repair admission remains generator-local.
+For each causal generator whose selected disposition preserves theory and
+architecture:
+
+- construct one packet containing every accepted class mapped to that generator
+  and every affected factor for that generator;
+- materialize the gate against the exact current predecessor head immediately
+  before realizing that generator's complete repair;
+- materialize at most once for that generator in the current evidence cut;
+- allow that admitted repair to span coherent commits while tracking generator
+  completion separately from commit occurrence;
+- never materialize per finding or named member.
+
+The gate definition accepts exactly one causal generator. A successor containing
+several independent direct repairs may therefore use one packet per generator,
+with review dispatch closed between them. A changed predecessor head requires
+the next generator's packet to bind that new exact head. Architecture successors
+do not use the direct-repair gate.
 
 ## Request-local recovery
 
@@ -160,11 +261,14 @@ A terminal request without a structured semantic verdict:
 - contributes no semantic attempt or clean credit;
 - preserves completed review evidence on the unchanged head;
 - may run one fresh exact-request recovery;
-- in `parallel-reviews`, runs recovery after the initial terminal barrier;
+- in `parallel-reviews`, runs recovery after the initial terminal transport
+  barrier and before the evidence cut closes;
 - in `serial-reviews`, runs recovery before dispatching the next request;
 - blocks after a second verdictless terminal result.
 
 Recover a live known handle with CAS `wait`; do not create a duplicate attempt.
+Required recovery is part of the semantic barrier even after candidate
+invalidation.
 
 ## Convergence
 
@@ -172,10 +276,13 @@ After the selected initial schedule is fully adjudicated, launch fresh standard
 attempts serially until the trailing exact-head clean suffix reaches five.
 
 - A standard finding resets the suffix to zero.
+- A material standard finding invalidates the candidate and stops further
+  confirmations.
 - An auxiliary finding does not change standard credit unless resolution changes
   the head.
-- Any material Git head change invalidates all prior credit by tuple mismatch and
-  restarts the selected schedule at its initial standard.
+- Any material Git head change invalidates all prior credit by tuple mismatch.
+- Restart the selected schedule only after the successor is reviewable on its
+  completely realized and proved final head.
 - No credit crosses a head change.
 
 ## Resumption
