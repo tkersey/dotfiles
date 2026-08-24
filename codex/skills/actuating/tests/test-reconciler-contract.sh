@@ -83,19 +83,19 @@ fi
 
 grep -F '# Counterexample-Guided Normalization' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Why one gate' \
+grep -F '## Two-stage mutation admission' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Semantic-novelty firewall' \
+grep -F '## Cumulative evidence cut' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Ledger execution' \
+grep -F '## Executable subtractive domination' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Gate falsifier and retirement rule' \
+grep -F '## Ledger execution of the comparison proof' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'No second same-generator member-specific repair' \
+grep -F '## Direct repair downstream' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Review candidate invalidation' \
+grep -F 'No second same-generator member-specific factor' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'No multi-generator direct-repair packet' \
+grep -F 'No additive repair when the quotient candidate passes' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 
 grep -F '# Post-Elimination Falsification' \
@@ -140,11 +140,31 @@ grep -F 'Actuating must revoke and adjudicate' \
   .seq == [] and
   .ledger == [
     {
+      "id": "actuating/cumulative-ablation-basis",
+      "path": "ledger/cumulative-ablation-basis.json"
+    },
+    {
       "id": "actuating/direct-repair-admission",
       "path": "ledger/direct-repair-admission.json"
     }
   ]
 ' "$skill_root/definitions/manifest.json" >/dev/null
+
+"$jaq_bin" -e '
+  .schema == "ledger-artifact-definition/v1" and
+  .id == "actuating/cumulative-ablation-basis" and
+  .owner == "actuating" and
+  .storage.kind == "pure" and
+  .operations == {} and
+  .projections == {} and
+  .identity.op == "content-address" and
+  .shape.documents.comparison.fields.cumulative_ablation_basis.fields.factor_dispositions.key == "/factor_ref" and
+  .shape.documents.comparison.fields.cumulative_ablation_basis.fields.subtractive_candidate.tagged.tag == "/outcome" and
+  .shape.documents.comparison.fields.cumulative_ablation_basis.tagged.tag == "/requested_successor" and
+  (.requires.operators | index("all")) != null and
+  (.requires.operators | index("keyed-unique")) != null and
+  (.requires.operators | index("reference-exists")) != null
+' "$skill_root/definitions/ledger/cumulative-ablation-basis.json" >/dev/null
 
 "$jaq_bin" -e '
   .schema == "ledger-artifact-definition/v1" and
@@ -253,6 +273,8 @@ grep -F 'Actuating must revoke and adjudicate' \
 ' "$codex_root/skills/review-fold/references/decision-contract.json" >/dev/null
 
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-direct-repair-admission.sh"
+JAQ_BIN="$jaq_bin" "$skill_root/tests/test-cumulative-ablation-basis.sh"
+JAQ_BIN="$jaq_bin" "$skill_root/tests/test-cumulative-ablation-scenarios.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-post-elimination-scenarios.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-review-candidate-traces.sh"
