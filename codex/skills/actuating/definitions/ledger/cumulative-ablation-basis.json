@@ -1,0 +1,323 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "actuating/cumulative-ablation-basis",
+  "owner": "actuating",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "bounded-array",
+      "bounded-string",
+      "canonical-json",
+      "content-address",
+      "digest",
+      "enum",
+      "exact-object",
+      "implies",
+      "reference-exists",
+      "regex",
+      "safe-identifier",
+      "safe-relative-path",
+      "sorted",
+      "tagged-union",
+      "unique"
+    ]
+  },
+  "parameters": {},
+  "inputs": {
+    "comparison": {
+      "codec": "json",
+      "required": true,
+      "max_bytes": 4194304
+    }
+  },
+  "canonicalization": {
+    "steps": [{"op": "canonical-json", "input": "comparison"}]
+  },
+  "shape": {
+    "documents": {
+      "comparison": {
+        "object": "exact",
+        "fields": {
+          "cumulative_ablation_basis": {
+            "object": "exact",
+            "fields": {
+              "schema": {"enum": ["actuating-cumulative-ablation-basis/v1"]},
+              "repository": {"string": {"trimmed_min": 1, "max": 512}},
+              "head_sha": {
+                "string": {"min": 40, "max": 40},
+                "regex": {"patterns": ["^[A-Fa-f0-9]{40}$"], "max": 40}
+              },
+              "goal_digest": {"format": "digest"},
+              "evidence_cut_digest": {"format": "digest"},
+              "generator_refs": {
+                "array": {"min": 1, "max": 1},
+                "items": {"identifier": {"max": 256}},
+                "unique": true,
+                "sorted": true
+              },
+              "retained_finding_refs": {
+                "array": {"min": 1, "max": 4096},
+                "items": {"identifier": {"max": 256}},
+                "unique": true,
+                "sorted": true
+              },
+              "required_valid_proof_refs": {
+                "array": {"min": 1, "max": 4096},
+                "items": {"identifier": {"max": 256}},
+                "unique": true,
+                "sorted": true
+              },
+              "compatibility_proof_refs": {
+                "array": {"max": 4096},
+                "items": {"identifier": {"max": 256}},
+                "unique": true,
+                "sorted": true
+              },
+              "affected_factor_refs": {
+                "array": {"min": 1, "max": 4096},
+                "items": {"identifier": {"max": 256}},
+                "unique": true,
+                "sorted": true
+              },
+              "factor_dispositions": {
+                "array": {"min": 1, "max": 4096},
+                "key": "/factor_ref",
+                "sorted": {"key": "/factor_ref"},
+                "items": {
+                  "object": "exact",
+                  "fields": {
+                    "factor_ref": {"identifier": {"max": 256}},
+                    "disposition": {
+                      "enum": [
+                        "preserve",
+                        "replace",
+                        "collapse",
+                        "retire",
+                        "privatize",
+                        "distinct-obligation"
+                      ]
+                    },
+                    "obligation_refs": {
+                      "array": {"max": 128},
+                      "items": {"identifier": {"max": 256}},
+                      "unique": true,
+                      "sorted": true
+                    },
+                    "generator_refs": {
+                      "array": {"min": 1, "max": 128},
+                      "items": {"identifier": {"max": 256}},
+                      "unique": true,
+                      "sorted": true
+                    },
+                    "evidence_refs": {
+                      "array": {"min": 1, "max": 128},
+                      "items": {"string": {"trimmed_min": 1, "max": 4096}},
+                      "unique": true
+                    }
+                  }
+                }
+              },
+              "subtractive_candidate": {
+                "object": "exact",
+                "fields": {
+                  "candidate_id": {"identifier": {"max": 256}},
+                  "kind": {
+                    "enum": ["delete", "revert", "collapse", "delegate", "privatize", "mixed"]
+                  },
+                  "diff_digest": {"format": "digest"},
+                  "tested_finding_refs": {
+                    "array": {"min": 1, "max": 4096},
+                    "items": {"identifier": {"max": 256}},
+                    "unique": true,
+                    "sorted": true
+                  },
+                  "tested_required_valid_proof_refs": {
+                    "array": {"min": 1, "max": 4096},
+                    "items": {"identifier": {"max": 256}},
+                    "unique": true,
+                    "sorted": true
+                  },
+                  "tested_compatibility_proof_refs": {
+                    "array": {"max": 4096},
+                    "items": {"identifier": {"max": 256}},
+                    "unique": true,
+                    "sorted": true
+                  },
+                  "outcome": {
+                    "enum": [
+                      "passed",
+                      "failed-retained-witness",
+                      "failed-required-valid",
+                      "failed-compatibility",
+                      "not-meaningful"
+                    ]
+                  },
+                  "failure_refs": {
+                    "array": {"max": 128},
+                    "items": {"string": {"trimmed_min": 1, "max": 4096}},
+                    "unique": true
+                  },
+                  "obstruction_refs": {
+                    "array": {"max": 128},
+                    "items": {"string": {"trimmed_min": 1, "max": 4096}},
+                    "unique": true
+                  }
+                },
+                "tagged": {
+                  "tag": "/outcome",
+                  "variants": [
+                    {
+                      "value": "passed",
+                      "node": {
+                        "fields": {
+                          "failure_refs": {"array": {"max": 0}},
+                          "obstruction_refs": {"array": {"max": 0}}
+                        }
+                      }
+                    },
+                    {
+                      "value": "failed-retained-witness",
+                      "node": {"fields": {"failure_refs": {"array": {"min": 1, "max": 128}}}}
+                    },
+                    {
+                      "value": "failed-required-valid",
+                      "node": {"fields": {"failure_refs": {"array": {"min": 1, "max": 128}}}}
+                    },
+                    {
+                      "value": "failed-compatibility",
+                      "node": {"fields": {"failure_refs": {"array": {"min": 1, "max": 128}}}}
+                    },
+                    {
+                      "value": "not-meaningful",
+                      "node": {
+                        "fields": {
+                          "failure_refs": {"array": {"max": 0}},
+                          "obstruction_refs": {"array": {"min": 1, "max": 128}}
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "requested_successor": {
+                "enum": ["subtractive", "direct-repair", "architecture"]
+              },
+              "unresolved_factor_refs": {
+                "array": {"max": 0},
+                "items": {"identifier": {"max": 256}}
+              }
+            },
+            "tagged": {
+              "tag": "/requested_successor",
+              "variants": [
+                {
+                  "value": "subtractive",
+                  "node": {
+                    "fields": {
+                      "subtractive_candidate": {
+                        "fields": {"outcome": {"enum": ["passed"]}}
+                      }
+                    }
+                  }
+                },
+                {
+                  "value": "direct-repair",
+                  "node": {
+                    "fields": {
+                      "subtractive_candidate": {
+                        "fields": {
+                          "outcome": {
+                            "enum": [
+                              "failed-retained-witness",
+                              "failed-required-valid",
+                              "failed-compatibility",
+                              "not-meaningful"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "value": "architecture",
+                  "node": {}
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "constraints": {
+    "laws": [
+      [
+        "reference-exists",
+        {
+          "input": "comparison",
+          "path": "/cumulative_ablation_basis/affected_factor_refs",
+          "reference": "",
+          "target": "/cumulative_ablation_basis/factor_dispositions",
+          "key": "/factor_ref",
+          "coverage": "all-targets"
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "comparison",
+          "path": "/cumulative_ablation_basis/factor_dispositions",
+          "reference": "/generator_refs",
+          "target": "/cumulative_ablation_basis/generator_refs",
+          "key": ""
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "comparison",
+          "path": "/cumulative_ablation_basis/subtractive_candidate/tested_finding_refs",
+          "reference": "",
+          "target": "/cumulative_ablation_basis/retained_finding_refs",
+          "key": "",
+          "coverage": "all-targets"
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "comparison",
+          "path": "/cumulative_ablation_basis/subtractive_candidate/tested_required_valid_proof_refs",
+          "reference": "",
+          "target": "/cumulative_ablation_basis/required_valid_proof_refs",
+          "key": "",
+          "coverage": "all-targets"
+        }
+      ],
+      [
+        "reference-exists",
+        {
+          "input": "comparison",
+          "path": "/cumulative_ablation_basis/subtractive_candidate/tested_compatibility_proof_refs",
+          "reference": "",
+          "target": "/cumulative_ablation_basis/compatibility_proof_refs",
+          "key": "",
+          "coverage": "all-targets"
+        }
+      ]
+    ]
+  },
+  "identity": {"op": "content-address", "input": "comparison"},
+  "storage": {"kind": "pure"},
+  "operations": {},
+  "projections": {},
+  "bounds": {
+    "max_input_bytes": 4194304,
+    "max_store_bytes": 4194304,
+    "max_records": 4096,
+    "max_output_bytes": 4194304,
+    "max_diagnostics": 128,
+    "max_reducer_states": 1
+  }
+}

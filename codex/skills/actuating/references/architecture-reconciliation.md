@@ -14,7 +14,7 @@ representations and state dimensions
 events, transitions, effects, ordering, and custody
 required observations and public contracts
 compatibility, migration, retry, cancellation, and recovery
-proof mechanisms
+production and proof factors
 primary enforcement, derived guards, bypasses, and residue
 ```
 
@@ -24,22 +24,23 @@ still support them.
 ## Ordinary bug path
 
 1. Preserve witness provenance.
-2. Classify current applicability.
-3. Classify law authority:
-   `entailed | strengthening | preference | new-requirement | underdetermined`.
+2. Classify current applicability and Goal-law authority.
+3. Close the cumulative evidence cut after the review semantic barrier.
 4. Build observational classes through `$review-fold`.
-5. Derive the complete current counterexample theory.
-6. Quotient every accepted class into one causal generator or an evidenced
-   instance-specific exception.
-7. Decide whether the incumbent already excludes each generator through a
-   family-level mechanism at the correct owner and sanctioned paths.
-8. If Actuating proposes direct repair under the unchanged architecture, execute
-   the pure Ledger gate defined in
-   [counterexample-guided-normalization.md](counterexample-guided-normalization.md)
-   once for each admitted causal generator.
+5. Quotient every retained applicable finding into one causal generator or an
+   evidenced instance-specific exception.
+6. Map every affected production and proof factor to Goal obligations and causal
+   generators.
+7. Assign each factor `preserve | replace | collapse | retire | privatize |
+   distinct-obligation`.
+8. Construct and execute the smallest plausible subtractive candidate against
+   all retained witnesses, required-valid proofs, and compatibility proofs.
+9. Only when subtraction fails or is proved not meaningful may an unchanged-model
+   restoration request direct-repair admission.
 
 An isolated implementation deviation inside an already-correct family mechanism
-may remain a realization repair only when the direct-repair gate admits it.
+may remain a realization repair only after the complete corpus fold and failed
+subtractive comparison are represented in the gate packet.
 
 ## Theory synthesis
 
@@ -59,13 +60,13 @@ predicted siblings or exhaustive-domain basis
 Run one bounded `$metanoetic` challenger when the ordinary theory or incumbent
 mechanism is detection-shaped, enumerative, representation-bound,
 violation-erasing, contradicted, owner/topology-captive,
-solution-class-captive, optimizing an incumbent-generated burden, or merely
-one plausible frame.
+solution-class-captive, optimizing an incumbent-generated burden, or merely one
+plausible frame.
 
 Then **OPERATE ARCHITECTONICALLY**. Retain, replace, combine, split, or leave the
 theory unresolved.
 
-## Causal basis and normal form
+## Causal basis and factor topology
 
 A causal generator names the shared law-bearing mechanism behind one or more
 accepted classes. It is not a bug count or lexical cluster.
@@ -73,7 +74,7 @@ accepted classes. It is not a bug count or lexical cluster.
 For every generator state:
 
 ```text
-accepted class refs
+retained finding and accepted class refs
 governing law
 missing, falsified, or existing semantic element
 canonical owner
@@ -83,19 +84,66 @@ strongest feasible proof family
 falsifier
 ```
 
-Once a generator exists, another member-specific branch, predicate, validator,
-state, owner, recovery path, or proof family is inadmissible without non-example
-separation proof.
+For every affected factor state:
+
+```text
+production or proof role
+current owner
+Goal obligation refs
+causal generator refs
+later mechanism that may subsume it
+history of same-family recurrence caused by it
+preserve / replace / collapse / retire / privatize / distinct-obligation
+executable disposition proof
+```
+
+No factor survives because it already exists. No finding requires its dedicated
+factor merely because it was historically introduced first.
 
 The target normal form is arrival-order invariant:
 
 ```text
-same Goal + same applicable evidence + same repository constraints
+same Goal + same retained evidence + same repository constraints
 -> equivalent selected construction
    or the same explicit incomparable minima
 ```
 
-Review order and historical repair order do not authorize code shape.
+## Executable candidate order
+
+Candidate comparison is ordered by semantic subtraction, not implementation
+convenience:
+
+```text
+Q  smallest plausible deletion / revert / collapse / delegation /
+   privatization candidate
+
+R  smallest additive repair or replacement candidate
+```
+
+Run identical negative and positive proof surfaces against both:
+
+```text
+every retained executable witness
+every required-valid behavior and observation proof
+every compatibility and migration proof
+strongest family-level falsifier
+```
+
+Selection law:
+
+```text
+Q passes
+  -> Q dominates R
+  -> additive repair forbidden
+
+Q fails
+  -> select the smallest safety-, Goal-, compatibility-, and normalization-
+     adequate replacement or restoration
+```
+
+Raw line count is not the comparison metric. Count independently maintained
+semantic truths, owners, enforcement sites, public capabilities, and proof
+families.
 
 ## Architecture closure
 
@@ -107,108 +155,98 @@ every admitted behavior maps outside Phi
 every required valid behavior remains admitted
 every required observation retains its meaning
 one frontier or minimal cut covers every sanctioned path
-the canonical owner and family-level enforcement mechanism already exist
-every accepted class maps to a generator or proved exception
+the canonical owner and family-level mechanism already exist
+every retained finding maps to a generator or proved exception
+every affected factor has an evidence-backed disposition
+no factor is dominated by an executable quotient candidate
+no same-generator member requires its own factor
 no new state, law, representation, recovery mode, or escape path is required
-no same-generator member requires its own production factor
 ```
 
-A convenient place for another validator is not closure. A set of guards that
-happens to reject all currently observed examples is not a family mechanism.
+A convenient place for another validator is not closure. A collection of guards
+that rejects observed examples is not a family mechanism.
 
 ## Direct-repair admission
 
-Direct repair is a claim that one causal generator's semantic model and
-architecture remain unchanged.
+Direct repair claims that one generator's semantic model and architecture remain
+unchanged. It is downstream of the complete factor fold and subtractive contest.
 
-For each causal generator selected for direct repair, Actuating constructs one
-complete `actuating-direct-repair-admission/v1` packet and executes:
+For each generator selected for direct repair, Actuating constructs one complete
+`actuating-direct-repair-admission/v1` packet and materializes:
 
 ```text
 actuating/direct-repair-admission
 ```
 
-through Ledger materialization immediately before that generator's complete
-repair. The gate requires:
+The packet must prove:
 
 ```text
+cumulative evidence-cut coverage
 exactly one causal generator
-all accepted classes mapped to that generator
+all retained findings and classes mapped
+all required-valid and compatibility proofs represented
+complete affected-factor disposition
+a subtractive candidate was executed and failed or was proved not meaningful
 unchanged predecessor/successor semantic-model identity
-complete affected-factor disposition for that generator
-existing family-level mechanism
+existing family mechanism restored
+finite-domain exhaustion or pre-implementation sibling probes
 no semantic-constructor delta
-no member-specific factor
-no new enforcement site
-no unowned or newly redundant affected factor
+no member-specific factor or new enforcement site
+no unowned, newly redundant, or known dominated factor
 ```
 
-The definition rejects a multi-generator packet. A complete successor may
-contain several independent direct repairs, but each generator receives at most
-one packet in the current evidence cut and each later packet binds the exact
-current predecessor head. A failed gate does not select a repair. It makes that
-generator's direct repair inadmissible. Actuating must recompile the architecture
-or block.
+The definition admits no passing quotient candidate. A failed gate does not
+select a repair; it makes direct repair inadmissible. Actuating must select the
+smallest proved architecture successor or block.
 
 ## Post-elimination back-edge
 
-When a current `entailed` witness falsifies the eliminated family inside its
-validity horizon, the normal realization path is disabled. Read
+When a current `entailed` witness falsifies an eliminated family inside its
+validity horizon, revoke the lease and read
 [post-elimination-falsification.md](post-elimination-falsification.md).
 
-Before mutation, Actuating must:
-
-```text
-revoke the prior elimination lease
-localize the failed premise
-select retain-theory-reprove, revision/split, Goal reopening,
-rejection, or unresolved
-state successor sibling predictions
-```
-
-A post-elimination witness may preserve the theory only when it is inside the
-existing family and admission model and the failure is localized to realization
-or proof. It never preserves the prior elimination disposition.
-`retain-theory-reprove` must also pass direct-repair admission before mutation.
+`retain-theory-reprove` may preserve the theory hypothesis only after failed-
+premise localization, whole-corpus factor folding, subtractive comparison, and
+direct-repair admission. It never preserves the prior eliminated disposition.
 
 ## Candidate compilation
 
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
-2. Finalize one current theory, causal basis, and falsifier.
-3. Ask `$universalist` for repository-native candidates and lower every retained
+2. Finalize the cumulative evidence cut, theory, causal basis, factor topology,
+   and falsifier.
+3. Run the bounded Metanoetic challenge before Universalist lowering.
+4. Ask `$universalist` for repository-native candidates and lower every retained
    Metanoetic mechanism challenger.
-4. Require each candidate to state:
+5. Require each candidate to state:
    - canonical owner and enforcement locus;
    - sound interpretation and Goal adequacy;
    - family and paths excluded;
    - family-level realization for every generator;
-   - affected-factor preservation, replacement, retirement, and distinct
-     obligations;
-   - predicted sibling counterexamples;
-   - proof probes;
+   - complete factor dispositions including collapse and privatization;
+   - retained-witness and required-valid proof surfaces;
+   - predicted siblings or exhaustive-domain proof;
    - residual invalidity and falsifier;
    - transition and retirements.
-5. Permit one bounded theory/architecture co-refinement before selection.
-6. Ask `$reduce` to challenge compensating guards, witness enumeration,
-   violation erasure, unnecessary precision, unearned factors, and wound-shaped
-   proof.
-7. Establish the correctness and normalization Pareto frontier.
-8. A candidate preserving member-specific enforcement for an established
-   generator is dominated by an admissible family-level realization.
-9. Among safety-, Goal-, and normalization-equivalent candidates, select the
-   least costly effective realization.
-10. Preserve material incomparability rather than manufacturing dominance.
+6. Permit one bounded theory/architecture co-refinement.
+7. Ask `$reduce` to challenge duplicate owners, compensating guards, witness
+   enumeration, violation erasure, wound-shaped proof, unnecessary precision,
+   and unearned factors.
+8. Execute the smallest plausible quotient candidate before additive candidates.
+9. Establish the correctness, compatibility, and normalization Pareto frontier.
+10. Select the quotient when it passes. Otherwise select the smallest proved
+    replacement or restoration.
+11. Preserve material incomparability rather than manufacturing dominance.
 
 ## Successor theory adequacy
 
-After a revoked lease, a successor theory must improve at least one falsified
-premise:
+After a revoked lease, a successor must improve at least one falsified premise:
 
 ```text
 law authority
 semantic domain or interpretation
 family predicate or partition
 comparison universe
+causal basis
 admission relation or cut
 owner model
 realization mechanism
@@ -216,38 +254,39 @@ proof coverage
 claim strength
 ```
 
-Restating the same theory with more clauses is not a successor unless evidence
-locates the failure in realization/proof, the direct-repair gate admits the
-restoration, and the new proof covers the failed case plus predicted siblings.
+Restating the same theory with more clauses is not a successor. A direct
+restoration additionally requires a failed quotient candidate and a current gate
+materialization.
 
 ## Architecture Working Set
 
 Retain only in active context:
 
 ```text
-bound Goal/head/incumbent
-current findings and authority classifications
-selected Theta / complete causal basis / owner / cut / target
+bound Goal / exact head / incumbent
+cumulative evidence-cut digest and retained finding refs
+selected Theta and complete causal basis
+complete affected production and proof factor topology
+factor dispositions: preserve / replace / collapse / retire / privatize /
+  distinct-obligation
+quotient candidate diff identity, proof surface, outcome, and failure
+additive/replacement candidate only when quotient failed
 family-level mechanism for each generator
-affected factors: preserve / replace / retire / distinct-obligation
-active elimination lease, if any
-post-elimination witness and failed premise
-successor disposition
+active elimination lease and failed premise, if any
 direct-repair packet and materialization identity per admitted generator
 predicted siblings and probes
 proof and reconsideration falsifier
 ```
 
-The Working Set grants no authority and has no persistent identity, store, event
-log, or migration. Git is the realized construction. Each pure gate artifact ID
-binds one active generator decision only and is invalidated by changed inputs.
+The Working Set has no persistent identity, store, event log, or migration. Git
+owns realized candidates; source owners retain evidence authority.
 
 ## Architectural memory
 
 Persist architecture where maintainers encounter it:
 
 - code and types;
-- executable tests;
+- executable tests and properties;
 - schemas and APIs;
 - an accepted specification;
 - a PR explanation;
