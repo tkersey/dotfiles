@@ -75,6 +75,15 @@ grep -F '`serial-reviews`' "$skill_root/SKILL.md" >/dev/null
 grep -F 'restart the selected' "$skill_root/SKILL.md" >/dev/null
 grep -F '### Review candidate invalidation' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Only `reviewable` may dispatch closure review' "$skill_root/SKILL.md" >/dev/null
+grep -F 'derive the complete set of' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Post-review closure may refresh already-established evidence' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'derive the complete Goal-required proof inventory' \
+  "$skill_root/agents/openai.yaml" >/dev/null
+grep -F 'do not substitute a summary conclusion' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'If closeout runs a known required proof for the' \
+  "$skill_root/references/closure.md" >/dev/null
 grep -F 'causal-generator-local' "$skill_root/SKILL.md" >/dev/null
 if grep -F '$actuating implementation-only' "$skill_root/SKILL.md" >/dev/null; then
   echo "uncontracted implementation-only route alias remains" >&2
@@ -180,9 +189,16 @@ grep -F 'Actuating must revoke and adjudicate' \
   (.requires.operators | index("field-equal")) != null
 ' "$skill_root/definitions/ledger/direct-repair-admission.json" >/dev/null
 
+if grep -F 'validation_current' \
+  "$skill_root/tests/test-review-candidate-traces.sh" \
+  "$skill_root/tests/fixtures/review-candidate-traces.json" >/dev/null; then
+  echo "conclusion-only review-entry validation remains" >&2
+  exit 1
+fi
+
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v6" and
-  .contract_id == "actuating-review-contract-v8" and
+  .schema == "actuating-review-contract/v7" and
+  .contract_id == "actuating-review-contract-v9" and
   (.required_lenses | length) == 5 and
   ([.required_lenses[].name] | sort) ==
     (["standard", "footgun-finder", "invariant-ace",
@@ -203,11 +219,18 @@ grep -F 'Actuating must revoke and adjudicate' \
   .candidate_lifecycle.derived_not_stored == true and
   .candidate_lifecycle.review_dispatch_requires == "reviewable" and
   .candidate_lifecycle.initial_and_successor_entry_require_same_complete_proof == true and
+  .candidate_lifecycle.reviewable_requires_complete_goal_proof_inventory == true and
+  .candidate_lifecycle.reviewable_requires_exact_head_proof_results == true and
   .candidate_lifecycle.material_finding_invalidates_candidate_immediately == true and
   .candidate_lifecycle.reconciliation_epoch_is_derived_interval == true and
   .review_entry.complete_selected_construction_required == true and
   .review_entry.complete_causal_basis_required == true and
   .review_entry.complete_factor_disposition_required == true and
+  .review_entry.complete_goal_required_proof_inventory_required == true and
+  .review_entry.allowed_proof_dispositions == ["passed", "not-applicable"] and
+  .review_entry.nonapplicability_requires_authority == true and
+  .review_entry.aggregate_credit_requires_declared_dependency_coverage == true and
+  .review_entry.first_run_required_proof_after_review_forbidden == true and
   .review_entry.closure_review_as_construction_forbidden == true and
   .material_finding_transition.candidate_invalidated_immediately == true and
   .material_finding_transition.parallel_evidence_cut_requires_all_launched_semantic_outcomes == true and
@@ -242,7 +265,7 @@ grep -F 'Actuating must revoke and adjudicate' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-review-scheduling-v10" and
+    "actuating-review-proof-inventory-v11" and
   ([.skill_decision_contract.triggers[].trigger_id] |
     index("ACT-POST-ELIMINATION")) != null and
   ([.skill_decision_contract.triggers[].trigger_id] |

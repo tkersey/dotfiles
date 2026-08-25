@@ -15,13 +15,34 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
   def generator_index($id):
     [.generator_states[].id] | index($id);
 
+  def proof_inventory_complete($e):
+    ($e.required_proof_refs | type) == "array" and
+    ($e.required_proof_refs | length) > 0 and
+    all($e.required_proof_refs[];
+      type == "string" and length > 0) and
+    ($e.required_proof_refs | unique | length) ==
+      ($e.required_proof_refs | length) and
+    ($e.proof_results | type) == "array" and
+    all($e.proof_results[];
+      (.proof_ref | type) == "string" and
+      (.proof_ref | length) > 0 and
+      .head == $e.head and
+      (.disposition == "passed" or
+       (.disposition == "not-applicable" and
+        (.authority_ref | type) == "string" and
+        (.authority_ref | length) > 0))) and
+    ([ $e.proof_results[].proof_ref ] | unique | length) ==
+      ($e.proof_results | length) and
+    ([ $e.proof_results[].proof_ref ] | sort) ==
+      ($e.required_proof_refs | sort);
+
   def candidate_proof_complete($e):
     $e.construction_complete == true and
     $e.causal_basis_complete == true and
     $e.factor_dispositions_complete == true and
     (["passed", "exhaustive", "not-meaningful"] |
       index($e.sibling_disposition)) != null and
-    $e.validation_current == true;
+    proof_inventory_complete($e);
 
   def semantic_barrier_complete:
     ((.launched_requests - .semantic_outcomes) | length) == 0;
@@ -271,7 +292,7 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
     .result = (reduce $s.events[] as $e (initial($s); apply_event($e)))
   ) |
   .schema == "actuating-review-candidate-traces/v1" and
-  (.scenarios | length) >= 12 and
+  (.scenarios | length) >= 16 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[];
     .result.valid == .expected.valid and
@@ -309,6 +330,21 @@ fixture="$skill_root/tests/fixtures/review-candidate-traces.json"
   any(.scenarios[];
     .id == "initial-candidate-requires-complete-entry-proof" and
     .result.error == "candidate-entry-incomplete") and
+  any(.scenarios[];
+    .id == "candidate-proof-result-must-match-head" and
+    .result.error == "candidate-entry-incomplete") and
+  any(.scenarios[];
+    .id == "candidate-proof-inventory-is-required" and
+    .result.error == "candidate-entry-incomplete") and
+  any(.scenarios[];
+    .id == "candidate-proof-references-must-be-unique" and
+    .result.error == "candidate-entry-incomplete") and
+  any(.scenarios[];
+    .id == "candidate-nonapplicability-requires-authority" and
+    .result.error == "candidate-entry-incomplete") and
+  any(.scenarios[];
+    .id == "candidate-authorized-nonapplicability-is-reviewable" and
+    .result.phase == "reviewable") and
   any(.scenarios[];
     .id == "one-generator-gate-spans-coherent-commits" and
     .result.valid == true) and

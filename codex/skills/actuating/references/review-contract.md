@@ -25,7 +25,7 @@ realizing
 
 reviewable
   complete selected construction, factor dispositions, retirements, bypass
-  closures, and strongest proof current on one exact head
+  closures, and complete Goal-required proof inventory current on one exact head
 
 invalidated
   applicable entailed material finding falsified the reviewable candidate
@@ -49,8 +49,21 @@ no known dominated factor
 predicted-sibling or exhaustive disposition
 all selected collapse, retirement, replacement, privatization, and bypass work
   realized
-strongest relevant validation current
+complete Goal-required proof inventory current on the exact head
 ```
+
+Derive the required set from the accepted Goal and current repository contracts;
+do not substitute a summary conclusion. Each entry must be unique and have either
+exact-head passing evidence or an authority-backed `not-applicable` disposition.
+A passing aggregate covers another required proof only when its declared
+dependency graph includes that proof.
+
+No known required proof may be deferred to a post-review final closure audit.
+After review convergence, closure may refresh existing evidence or perform
+publication/provider readback, but it may not execute a required repository-local
+proof for the first time. Such a discovery proves the reviewed candidate was
+never `reviewable`, invalidates all review credit, and returns the candidate to
+`realizing`.
 
 Review is stochastic falsification of a completed construction, not a mechanism
 for finishing it.

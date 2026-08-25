@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v6",
-  "contract_id": "actuating-review-contract-v8",
+  "schema": "actuating-review-contract/v7",
+  "contract_id": "actuating-review-contract-v9",
   "required_lenses": [
     {
       "name": "standard",
@@ -64,7 +64,8 @@
     "initial_and_successor_entry_require_same_complete_proof": true,
     "reviewable_requires_complete_selected_construction": true,
     "reviewable_requires_complete_factor_disposition": true,
-    "reviewable_requires_strongest_relevant_validation": true,
+    "reviewable_requires_complete_goal_proof_inventory": true,
+    "reviewable_requires_exact_head_proof_results": true,
     "material_finding_invalidates_candidate_immediately": true,
     "reconciliation_epoch_is_derived_interval": true,
     "reconciliation_epoch_starts": "candidate-invalidation",
@@ -75,7 +76,14 @@
     "complete_causal_basis_required": true,
     "complete_factor_disposition_required": true,
     "sibling_or_exhaustive_disposition_required": true,
-    "strongest_relevant_validation_required": true,
+    "complete_goal_required_proof_inventory_required": true,
+    "allowed_proof_dispositions": [
+      "passed",
+      "not-applicable"
+    ],
+    "nonapplicability_requires_authority": true,
+    "aggregate_credit_requires_declared_dependency_coverage": true,
+    "first_run_required_proof_after_review_forbidden": true,
     "closure_review_as_construction_forbidden": true
   },
   "material_finding_transition": {

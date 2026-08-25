@@ -145,6 +145,14 @@ Final `complete` additionally requires:
 - no later evidence invalidates Goal, corpus, theory, factor fold, architecture,
   realization, validation, publication, or review.
 
+Every Goal-required repository-local proof must already have exact-head passing
+evidence or an authority-backed non-applicability disposition before closure
+review begins. Post-review closeout may refresh that evidence and perform
+publication/provider readback. If closeout runs a known required proof for the
+first time, the candidate was never reviewable: discard its review credit, return
+to `realizing`, close the proof inventory on the successor head, and restart the
+selected review schedule only after resealing.
+
 A non-publicly complete implementation is `ready-to-ship`.
 
 ## Blockers

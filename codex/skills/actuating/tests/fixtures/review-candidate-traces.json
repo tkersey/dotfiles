@@ -7,7 +7,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -42,7 +42,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H2", "disposition": "passed" }] },
         { "type": "review-launched", "request": "restart-standard", "head": "H2" }
       ],
       "expected": {
@@ -61,7 +61,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -96,7 +96,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H2", "disposition": "passed" }] },
         { "type": "review-launched", "request": "restart-standard", "head": "H2" }
       ],
       "expected": {
@@ -114,7 +114,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -140,7 +140,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] },
         { "type": "review-launched", "request": "restart-standard", "head": "H1" }
       ],
       "expected": {
@@ -158,7 +158,7 @@
       "schedule": "confirmation",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "confirmation-4", "head": "H0" },
         { "type": "review-terminal", "request": "confirmation-4", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -184,7 +184,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] },
         { "type": "review-launched", "request": "restart-standard", "head": "H1" }
       ],
       "expected": {
@@ -202,7 +202,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -238,7 +238,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] },
         { "type": "review-launched", "request": "restart-standard", "head": "H1" }
       ],
       "expected": {
@@ -256,7 +256,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -294,7 +294,7 @@
         { "type": "commit", "generator": "generator-b", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H2", "disposition": "passed" }] },
         { "type": "review-launched", "request": "restart-standard", "head": "H2" }
       ],
       "expected": {
@@ -312,7 +312,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -338,7 +338,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] }
       ],
       "expected": {
         "valid": true,
@@ -355,7 +355,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -381,7 +381,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] }
       ],
       "expected": {
         "valid": true,
@@ -398,7 +398,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -424,7 +424,7 @@
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
         { "type": "validation", "head": "H1", "passed": true },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] }
       ],
       "expected": {
         "valid": true,
@@ -441,7 +441,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -480,7 +480,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -521,7 +521,7 @@
       "schedule": "parallel",
       "required_initial_requests": 5,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-launched", "request": "footgun", "head": "H0" },
         { "type": "review-launched", "request": "invariant", "head": "H0" },
@@ -549,7 +549,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -590,7 +590,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -629,7 +629,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -668,7 +668,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "review-launched", "request": "footgun", "head": "H0" }
@@ -688,7 +688,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -713,7 +713,7 @@
         },
         { "type": "commit", "generator": "architecture-generator", "from_head": "H0", "to_head": "H1" },
         { "type": "realization-complete", "head": "H1" },
-        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+        { "type": "candidate-sealed", "head": "H1", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H1", "disposition": "passed" }] }
       ],
       "expected": {
         "valid": false,
@@ -730,7 +730,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0" }
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [] }
       ],
       "expected": {
         "valid": false,
@@ -747,7 +747,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -776,7 +776,7 @@
         { "type": "generator-complete", "generator": "generator-a", "head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H2", "disposition": "passed" }] }
       ],
       "expected": {
         "valid": true,
@@ -793,7 +793,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -845,7 +845,7 @@
       "schedule": "serial",
       "required_initial_requests": 1,
       "events": [
-        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true },
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] },
         { "type": "review-launched", "request": "standard", "head": "H0" },
         { "type": "review-terminal", "request": "standard", "verdict": "material-finding" },
         { "type": "evidence-cut-closed" },
@@ -882,7 +882,7 @@
         { "type": "commit", "generator": "generator-b", "from_head": "H1", "to_head": "H2" },
         { "type": "realization-complete", "head": "H2" },
         { "type": "validation", "head": "H2", "passed": true },
-        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "validation_current": true }
+        { "type": "candidate-sealed", "head": "H2", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H2", "disposition": "passed" }] }
       ],
       "expected": {
         "valid": true,
@@ -892,6 +892,91 @@
         "restart_heads": [],
         "selected_targets": ["mixed-target"],
         "gate_generators": ["generator-a"]
+      }
+    },
+    {
+      "id": "candidate-proof-result-must-match-head",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H-stale", "disposition": "passed" }] }
+      ],
+      "expected": {
+        "valid": false,
+        "error": "candidate-entry-incomplete",
+        "phase": "none",
+        "current_head": null,
+        "restart_heads": [],
+        "selected_targets": [],
+        "gate_generators": []
+      }
+    },
+    {
+      "id": "candidate-proof-inventory-is-required",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed" }
+      ],
+      "expected": {
+        "valid": false,
+        "error": "candidate-entry-incomplete",
+        "phase": "none",
+        "current_head": null,
+        "restart_heads": [],
+        "selected_targets": [],
+        "gate_generators": []
+      }
+    },
+    {
+      "id": "candidate-proof-references-must-be-unique",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required", "proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "passed" }] }
+      ],
+      "expected": {
+        "valid": false,
+        "error": "candidate-entry-incomplete",
+        "phase": "none",
+        "current_head": null,
+        "restart_heads": [],
+        "selected_targets": [],
+        "gate_generators": []
+      }
+    },
+    {
+      "id": "candidate-nonapplicability-requires-authority",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "not-applicable" }] }
+      ],
+      "expected": {
+        "valid": false,
+        "error": "candidate-entry-incomplete",
+        "phase": "none",
+        "current_head": null,
+        "restart_heads": [],
+        "selected_targets": [],
+        "gate_generators": []
+      }
+    },
+    {
+      "id": "candidate-authorized-nonapplicability-is-reviewable",
+      "schedule": "serial",
+      "required_initial_requests": 1,
+      "events": [
+        { "type": "candidate-sealed", "head": "H0", "construction_complete": true, "causal_basis_complete": true, "factor_dispositions_complete": true, "sibling_disposition": "passed", "required_proof_refs": ["proof-required"], "proof_results": [{ "proof_ref": "proof-required", "head": "H0", "disposition": "not-applicable", "authority_ref": "goal:accepted-source" }] }
+      ],
+      "expected": {
+        "valid": true,
+        "error": null,
+        "phase": "reviewable",
+        "current_head": "H0",
+        "restart_heads": [],
+        "selected_targets": [],
+        "gate_generators": []
       }
     }
   ]
