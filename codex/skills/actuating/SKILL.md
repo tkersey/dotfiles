@@ -515,7 +515,7 @@ Candidate status is derived live:
 
 ```text
 realizing
-  selected construction or strongest relevant proof is incomplete
+  selected construction or Goal-required proof inventory is incomplete
 
 reviewable
   complete selected construction and proof are current on one exact head
@@ -523,6 +523,21 @@ reviewable
 invalidated
   an applicable entailed material finding falsified that candidate
 ```
+
+Before a candidate becomes `reviewable`, derive the complete set of
+Goal-required repository-local proofs, compatibility checks, and preserved proof
+classes from the accepted Goal and current repository contracts. Every required
+proof must have either an exact-head passing observation or an authority-backed
+`not-applicable` disposition. Aggregate proof receives credit only when its
+declared dependency graph covers the required proof. A summary boolean, narrower
+aggregate, or intention to run remaining proofs during final closure is not
+review-entry evidence.
+
+Post-review closure may refresh already-established evidence and perform
+publication or provider readback. It may not run a known required
+repository-local proof for the first time. If it does, the candidate was never
+reviewable; discard all review credit, return to `realizing`, close the proof
+inventory on the successor head, and only then restart review.
 
 Only `reviewable` may dispatch closure review. A material finding invalidates the
 candidate immediately. The reconciliation epoch is merely the interval from
@@ -598,6 +613,9 @@ A safe but wound-shaped realization is not complete.
 - Do not select mutation from the latest review wave alone.
 - Do not dispatch review unless the current candidate is completely realized,
   proved, and reviewable.
+- Do not dispatch or credit review while any Goal-required proof is unrun,
+  stale, covered only by an unproved aggregate dependency, or deferred to
+  post-review closure.
 - Do not redispatch review between member repairs or coherent commits after
   candidate invalidation.
 - Do not materialize one direct-repair packet for multiple causal generators.
