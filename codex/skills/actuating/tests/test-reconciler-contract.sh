@@ -102,6 +102,27 @@ done
     "actuating-construction-compiler-v1" and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CONSTRUCTION-COMPILER-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
+    .required_artifacts[6:19]) == [
+      "required-valid / invalid-family separation",
+      "invalid-family exclusion",
+      "strongest honest invariant locus",
+      "canonical identity or explicit equivalence",
+      "admission-path domination",
+      "semantic producer factorization",
+      "canonical ownership",
+      "bypass closure",
+      "required-valid and compatibility preservation",
+      "family-level or exhaustive proof",
+      "downstream compensator retirement",
+      "lifecycle and realization cost",
+      "raw source size"
+    ]) and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
+    .success_signals) |
+    index("candidate selection follows the canonical constructional-dominance order before lifecycle and realization cost or raw source size")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-ISOLATED-RESTORATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
