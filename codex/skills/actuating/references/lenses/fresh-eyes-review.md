@@ -1,22 +1,18 @@
 # Fresh-Eyes Review Lens
 
-Review the exact bound subject without assuming the incumbent design or patch
-story is correct. Search for the strongest overlooked correctness,
-completeness, compatibility, security, lifecycle, ownership, and proof failure.
+Independently challenge the exact bound construction from outside its incumbent
+vocabulary.
 
-For each material finding provide:
+Ask:
 
 ```text
-observed fact
-minimal witness
-affected behavior, law, or boundary
-why existing tests or reasoning missed it
-falsifier
+Is there an earlier enforceable cut?
+Is the admitted carrier the right representation?
+Did the family erase a required distinction or omit a sibling dimension?
+Does another repository-native mechanism make the burden disappear?
+Are producer migrations or bypass closures incomplete?
 ```
 
-Challenge local optima and omitted cases, but do not propose speculative
-redesign without a witnessed defect.
-
-Return one structured `clean` or `findings` verdict. Do not select a repair,
-launch another workflow, persist an artifact, grant mutation, or certify
-closeout.
+Return `clean` or `findings` only when a concrete witness or materially different
+admissible construction falsifies the incumbent claim. Do not reward novelty for
+its own sake or select the successor.
