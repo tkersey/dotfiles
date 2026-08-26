@@ -71,12 +71,9 @@ done
   (.required_lenses | length) == 5 and
   .review_scheduling.default_mode == "parallel-reviews" and
   .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
-  .review_scheduling.modes["serial-reviews"].
-    continue_remaining_initial_lenses_after_invalidation == true and
-  .review_scheduling.modes["serial-reviews"].
-    post_invalidation_lenses_are_evidence_only == true and
-  .evidence_acquisition.
-    initial_falsification_wave_complete_before_successor_selection == true and
+  .review_scheduling.modes["serial-reviews"].continue_remaining_initial_lenses_after_invalidation == true and
+  .review_scheduling.modes["serial-reviews"].post_invalidation_lenses_are_evidence_only == true and
+  .evidence_acquisition.initial_falsification_wave_complete_before_successor_selection == true and
   .review_entry.admitted_carrier_required == true and
   .review_entry.complete_producer_factorization_required == true and
   .review_entry.complete_bypass_disposition_required == true and
