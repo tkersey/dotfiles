@@ -60,6 +60,13 @@ family falsifier
 Observed examples seed `Phi`; they do not define it. A family expressed only as
 a list of findings remains `hypothesized` or `contained`.
 
+## Consistency preflight
+
+Before candidate selection, require `required-valid intersect Phi = empty`.
+An overlap witness reopens Goal or family authority; no implementation can
+satisfy both. Probe the simplest representatives and every declared
+valid/invalid boundary before architecture work.
+
 ## Admission topology
 
 Enumerate every path that can create, admit, recover, deserialize, migrate,
@@ -77,6 +84,10 @@ public and internal bypasses
 independent semantic owners
 ```
 
+Treat the topology as reachability. The selected cut must dominate every
+sanctioned producer-to-trusted-consumer path; a bypass is a concrete path that
+avoids it. Routing common calls through an owner is not path coverage.
+
 Select the earliest owner-controlled cut through which every sanctioned path can
 honestly be made to pass. "Fix at the owner" is insufficient unless the owner
 covers the complete admission graph.
@@ -87,6 +98,20 @@ The successor carrier may be an opaque type, checked constructor, admitted
 schema object, legal-transition state machine, resolved graph, capability,
 canonicalized value, or normalized IR.
 
+## Invariant locus and semantic identity
+
+Choose the strongest honest invariant locus:
+
+```text
+intrinsic-carrier       every trusted inhabitant satisfies the law
+admitted-refinement     only a checked or proved refinement is trusted
+encapsulated-transition transient invalidity cannot escape the canonical owner
+```
+
+State semantic identity as `unique-canonical`, or name one
+`explicit-equivalence` and prove every trusted operation and observation
+congruent under it.
+
 It must establish:
 
 ```text
@@ -96,11 +121,15 @@ carrier exclusion
 required-valid preservation
   accepted valid behavior remains representable and observable
 
+semantic identity
+  admitted aliases are impossible or governed by explicit congruence
+
 exclusive minting
   only the canonical constructor/transition can create admitted values
 
-producer factorization
-  every sanctioned producer delegates to that boundary
+semantic producer factorization
+  every sanctioned producer delegates to that boundary and preserves accepted
+  observations across migration
 
 bypass closure
   no alternate path can recreate or reinterpret admitted state independently
@@ -127,8 +156,12 @@ proved, block or report honest containment.
 Compare candidates in this order:
 
 ```text
+required-valid / invalid-family separation
 invalid-family exclusion
-producer factorization
+strongest honest invariant locus
+canonical identity or explicit equivalence
+admission-path domination
+semantic producer factorization
 canonical ownership
 bypass closure
 required-valid and compatibility preservation
@@ -155,6 +188,17 @@ contained        authorized residual; prevents an `eliminated` claim
 ```
 
 "No change" is not a disposition.
+
+For `migrate` and `derived-adapter`, prove on required-valid inputs:
+
+```text
+observe_new(migrate(x)) = observe_old(x)
+```
+
+When compatibility is reversible, prove round trips over required-valid old and
+admitted new values, modulo explicit equivalence. A call path through the
+canonical constructor is not factorization if it changes identity, ordering,
+custody, error, serialization, or composition semantics.
 
 ## Compensator retirement
 
@@ -198,8 +242,10 @@ The mechanism succeeds only when watched use shows:
 
 ```text
 same-family findings cause construction revision, not member guards
+required-valid behavior does not overlap Phi
 one canonical owner replaces distributed approximations
-every sanctioned producer migrates through it
+admitted aliases collapse or use one explicit congruent equivalence
+every sanctioned producer migrates through it without semantic drift
 bypasses close
 downstream primary compensators disappear or become derived
 required-valid behavior survives
