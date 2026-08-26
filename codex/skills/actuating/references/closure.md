@@ -3,7 +3,8 @@
 Closure is a current judgment over owner facts, not stored state.
 
 ```text
-Close(Goal, Git, validation, CAS, Ship, ReviewFold, construction, proof)
+Close(Goal, Git, validation, CAS, ReviewFoldCorpus, Ship, ReviewFold,
+      construction, proof)
 -> continue | ready-to-ship | complete | blocked
 ```
 
@@ -18,12 +19,36 @@ entailed | strengthening | preference | new-requirement | underdetermined
 Only unresolved accepted liability blocks correctness closure. Review does not
 silently widen the Goal.
 
+A stored `CEX-*` row is immutable evidence that its original witness was
+accepted under its recorded Goal and subject. It is not a current finding,
+family, or closure claim. Review Fold must reclassify projected rows against the
+current Goal, head, and validity horizon.
+
+## Counterexample evidence horizon
+
+Closure records whether the Review Fold counterexample basis was projected
+successfully and which historical source evidence remains unavailable.
+
+```text
+complete horizon
+  may support exact recurrence and historical-absence claims at its declared
+  repository and source scope
+
+incomplete horizon
+  absence proves nothing; recurrence, disjointness, and post-elimination
+  relation remain unknown at the affected strength
+```
+
+An absent local corpus is not proof that no historical counterexamples exist.
+Do not claim first occurrence or family elimination from missing history.
+
 ## Construction closure
 
 For every current causal generator require:
 
 ```text
 accepted law and invalid family
+current applicable CEX and owner-evidence basis
 finite exhaustion or pre-implementation sibling basis
 one admitted semantic carrier
 canonical owner and earliest enforceable cut
@@ -36,14 +61,15 @@ construction falsifier
 ```
 
 A safe but wound-shaped implementation is not complete. Passing repaired
-examples, scattered guards, or a structurally valid gate packet is insufficient.
+examples, scattered guards, a corpus row, or a structurally valid gate packet is
+insufficient.
 
 ## Isolated restoration
 
 A successful `actuating/direct-repair-admission` materialization proves only that
 one exact restoration is structurally compatible with an already-complete
-construction. It is not proof of family completeness, producer coverage, or
-closure.
+construction. It is not proof of family completeness, historical evidence
+completeness, producer coverage, or closure.
 
 ## Reviewability
 
@@ -51,7 +77,8 @@ Before closure-grade review, the exact head must have:
 
 ```text
 complete Goal-required proof inventory
-complete construction theorem
+projected counterexample basis or explicit incomplete-horizon disposition
+complete current construction theorem
 all producer migrations and bypass closures realized
 all selected compensator retirements realized
 no known same-family member-specific primary guard
@@ -68,6 +95,7 @@ Final `complete` additionally requires:
 required Ship/provider state matches the exact head
 all four auxiliary lenses have terminal semantic outcomes
 five consecutive distinct standard cleans on the unchanged head
+all historical claims match the available counterexample horizon
 no later evidence falsifies Goal, family, carrier, cut, factorization,
   bypass closure, realization, proof, publication, or review
 ```
@@ -76,7 +104,8 @@ A non-publicly complete implementation is `ready-to-ship`.
 
 ## Blockers
 
-Return `blocked` for unknown authority, incomplete evidence cut, unresolved
-family, owner, cut, carrier, producer path, bypass, required-valid proof,
-post-elimination premise, rejected isolated-restoration gate, failed validation,
-publication mismatch, or stale CAS evidence.
+Return `blocked` for unknown authority, incomplete current evidence cut,
+unresolved family, owner, cut, carrier, producer path, bypass, required-valid
+proof, post-elimination premise, rejected isolated-restoration gate, failed
+validation, publication mismatch, stale CAS evidence, or missing historical
+evidence required by the claimed recurrence or elimination strength.

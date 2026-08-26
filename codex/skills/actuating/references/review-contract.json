@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v8",
-  "contract_id": "actuating-review-contract-v10",
+  "schema": "actuating-review-contract/v9",
+  "contract_id": "actuating-review-contract-v11",
   "required_lenses": [
     {
       "name": "standard",
@@ -54,6 +54,20 @@
       }
     }
   },
+  "counterexample_corpus": {
+    "owner": "review-fold",
+    "definition": "review-fold/counterexample-corpus",
+    "project_before_current_fold": true,
+    "capture_after_current_fold": true,
+    "capture_requires_current_entailed_accepted_witness": true,
+    "stores_immutable_semantic_admission_only": true,
+    "current_applicability_recomputed": true,
+    "classes_and_families_recomputed": true,
+    "architecture_and_closure_recomputed": true,
+    "absence_never_proves_first_observed": true,
+    "missing_history_blocks_history_dependent_claims": true,
+    "actuating_copy_or_store_forbidden": true
+  },
   "candidate_lifecycle": {
     "derived_not_stored": true,
     "states": [
@@ -69,6 +83,7 @@
   "review_entry": {
     "complete_goal_proof_inventory_required": true,
     "exact_head_proof_results_required": true,
+    "counterexample_basis_projection_or_explicit_incomplete_horizon_required": true,
     "counterexample_basis_required": true,
     "invalid_family_required": true,
     "admission_graph_required": true,
@@ -93,7 +108,9 @@
     "serial_continues_remaining_initial_lenses_after_material_finding": true,
     "serial_post_invalidation_clean_credit_forbidden": true,
     "confirmation_material_finding_stops_confirmation": true,
-    "review_findings_do_not_select_repairs": true
+    "review_findings_do_not_select_repairs": true,
+    "projected_counterexamples_are_reclassified": true,
+    "newly_accepted_counterexamples_are_captured": true
   },
   "mutation_routes": {
     "allowed": [
@@ -106,7 +123,8 @@
   },
   "same_family_recurrence": {
     "member_specific_extension_forbidden_without_separation": true,
-    "reopens_construction_theorem": true
+    "reopens_construction_theorem": true,
+    "historical_absence_requires_complete_corpus_horizon": true
   },
   "standard_convergence": {
     "required_consecutive_clean_attempts": 5,

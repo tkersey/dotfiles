@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "review-fold",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "review-fold/counterexample-corpus",
+      "path": "ledger/counterexample-corpus.json"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 name: actuating
-description: "Compile accepted review counterexamples into repository-native constructions that make the discovered invalid family unrepresentable or unadmittable across every sanctioned path. Use exhaustive review to acquire and later falsify a sufficient counterexample basis; preserve direct repair only for a proved isolated realization defect through Actuating's pure Ledger gate. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store."
+description: "Compile accepted review counterexamples into repository-native constructions that make the discovered invalid family unrepresentable or unadmittable across every sanctioned path. Use exhaustive review and the Review Fold counterexample corpus to acquire and retain a sufficient basis; preserve direct repair only for a proved isolated realization defect through Actuating's pure Ledger gate. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store."
 ---
 
 # Actuating
@@ -43,16 +43,21 @@ every sanctioned producer factors through B'
 | What review ran? | CAS terminal review receipt |
 | What is published? | `$ship` and the provider |
 | What does a finding prove? | `$review-fold` |
-| What invalid family and construction survive? | `$actuating`, challenged by `$metanoetic` |
+| Which witnesses were durably admitted as counterexamples? | Review Fold's `review-fold/counterexample-corpus` |
+| What invalid family and construction survive now? | `$actuating`, challenged by `$metanoetic` |
 | What repository-native architecture realizes it? | `$actuating`, using `$universalist` |
 | Which realized factors are redundant? | `$reduce`, interpreted by `$actuating` |
 | Is isolated restoration structurally admissible? | Actuating's passive definition executed by Ledger |
 | Is the result complete? | live Actuating judgment over current owner facts |
 
 Supporting skills never select the target architecture or grant mutation.
-Ledger checks one owner-defined isolated-restoration transition; it does not
-discover the construction. Git is the realized construction. Working Sets,
-review summaries, gate packets, and prior threads are hypotheses.
+Ledger checks owner-defined storage or isolated-restoration laws; it does not
+discover the construction. Git is the realized construction. CAS remains the
+source owner for review observations. The Review Fold corpus preserves only the
+semantic admission of exact witnesses; current applicability, family, owner,
+cut, carrier, route, and closure are always recompiled.
+
+Working Sets, review summaries, gate packets, and prior threads are hypotheses.
 
 ## Public routes
 
@@ -90,7 +95,8 @@ Construction
 
 Evidence
   current validation, CAS receipts, provider threads, incidents,
-  migration failures, post-elimination falsifiers, Ship/provider state
+  migration failures, post-elimination falsifiers, Ship/provider state,
+  Review Fold counterexample basis and evidence-horizon status
 ```
 
 Unknown or mismatched evidence receives no credit. If the construction cannot be
@@ -111,6 +117,9 @@ underdetermined   block pending authority
 ```
 
 Review may falsify accepted semantics; it may not silently author new semantics.
+A stored `CEX-*` row proves only that its original witness was admitted under its
+recorded Goal and subject. Re-evaluate it against the current Goal, head,
+validity horizon, and source evidence before using it.
 
 ## Evidence acquisition before mutation
 
@@ -132,9 +141,20 @@ remaining initial lenses after invalidation, but do not mutate and grant no clea
 credit. A material confirmation finding stops further confirmations because the
 initial falsification wave is already complete.
 
-Only after that semantic barrier may Actuating close one cumulative evidence cut
-and select a successor. Review remains closed until the successor is completely
-realized, proved, and `reviewable`.
+Before folding the resulting cut, require `$review-fold` to project the
+repository basis from `review-fold/counterexample-corpus`. Include projected
+records as prior owner evidence and recompute current applicability, recurrence,
+class, and post-elimination relation. An absent or incomplete corpus never proves
+that a witness is first-observed, that families are disjoint, or that an
+eliminated family has no historical falsifier.
+
+After the fold, Review Fold captures each independent current `entailed`
+`accepted` witness. Actuating retains the resulting `CEX-*` references and
+horizon status in its ephemeral Working Set; it does not copy the corpus.
+
+Only after the semantic barrier and fold may Actuating select a successor.
+Review remains closed until the successor is completely realized, proved, and
+`reviewable`.
 
 ## Compile the counterexample basis
 
@@ -145,7 +165,7 @@ and [semantic-hotspots.md](references/semantic-hotspots.md).
 For every current causal generator state:
 
 ```text
-accepted findings and provenance
+accepted findings, CEX identities, and provenance
 observational class
 governing law
 invalid family Phi
@@ -211,7 +231,7 @@ If neither route is established, mutation is `blocked` or the result is honest
 When construction normalization is required:
 
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
-2. Fold the complete evidence cut with `$review-fold`.
+2. Fold the complete current and projected evidence cut with `$review-fold`.
 3. Derive the ordinary invalid family, admission topology, and carrier pressure.
 4. Run one bounded `$metanoetic` challenger when the family, carrier, owner, cut,
    representation, or solution class may be wrong or incumbent-captive.
@@ -239,7 +259,7 @@ When construction normalization is required:
 10. State the selected theorem and falsifier before mutation.
 
 Ablation is a consequence of the selected construction. Do not make deletion,
-raw line count, or a comparison packet the primary objective.
+raw line count, a corpus row, or a comparison packet the primary objective.
 
 ## Construction Working Set
 
@@ -247,7 +267,8 @@ Retain only in the active thread or accepted implementation specification:
 
 ```text
 Bound Goal / base / exact head
-Counterexample basis / invalid family / sibling dimensions
+Counterexample corpus basis IDs / horizon completeness / missing sources
+Current counterexample basis / invalid family / sibling dimensions
 Admitted domain / sanctioned producers / trusted consumers
 Canonical owner / earliest enforceable cut / admitted carrier
 Producer migrations / bypass dispositions
@@ -259,8 +280,9 @@ Elimination lease and failed premise, if any
 Construction falsifier / residual invalidity / claim strength
 ```
 
-The Working Set is ephemeral. Add no registry, score, predecessor chain, event
-log, receipt family, or durable candidate store.
+The Working Set is ephemeral. Add no Actuating registry, score, predecessor
+chain, event log, receipt family, or durable candidate store. The Review Fold
+counterexample corpus remains with its semantic owner.
 
 ## Realization and proof
 
@@ -311,9 +333,12 @@ authorship.
 - No member-specific repair for an established family without separation proof.
 - No construction claim without every sanctioned producer and bypass.
 - No closure from repaired examples alone.
-- No durable Actuating workflow, corpus, carrier, factor, gate, or closure store.
+- No durable **Actuating** workflow, corpus, carrier, factor, gate, or closure
+  store. Use the Review Fold corpus only as owner-issued counterexample evidence.
+- No copying CAS receipts, current Review Folds, families, carriers, routes, or
+  closure verdicts into the counterexample corpus.
 - No second Actuating Ledger definition; isolated-restoration admission is the
-  sole transition gate.
+  sole Actuating transition gate.
 - No factor-first or line-count-first architecture selection.
 - No review dispatch on an incomplete construction or proof inventory.
 - No silent Goal expansion.

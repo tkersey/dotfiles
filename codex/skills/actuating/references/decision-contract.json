@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v1"
+      "source_fingerprint": "actuating-construction-compiler-v2"
     },
     "triggers": [
       {
@@ -31,7 +31,7 @@
       },
       {
         "trigger_id": "ACT-COUNTEREXAMPLE",
-        "description": "A current witnessed falsifier may require counterexample-to-construction compilation.",
+        "description": "A current or projected witnessed falsifier may require counterexample-to-construction compilation.",
         "cue_literals": [
           "bug",
           "review finding",
@@ -39,7 +39,8 @@
           "regression",
           "incident",
           "counterexample",
-          "semantic hotspot"
+          "semantic hotspot",
+          "CEX-"
         ],
         "cue_regexes": [],
         "exclusions": [
@@ -137,19 +138,21 @@
         "required_artifacts": [
           "accepted Goal",
           "exact Git subject",
-          "owner-issued validation, review, and publication evidence when applicable"
+          "owner-issued validation, review, publication, and counterexample evidence when applicable"
         ],
         "success_signals": [
           "Git remains the realized construction",
-          "CAS owns review receipts",
+          "CAS owns review receipts and observations",
+          "Review Fold owns semantic admission to the counterexample corpus",
           "Ship owns public effects",
-          "Actuating keeps no durable workflow store"
+          "Actuating keeps no durable workflow or counterexample store"
         ],
         "failure_signals": [
           "stored Actuating verdict outranks owner facts",
-          "review or publication evidence is copied into an Actuating database"
+          "review or publication evidence is copied into an Actuating database",
+          "Actuating duplicates the Review Fold counterexample corpus"
         ],
-        "rationale": "Actuating derives decisions from current owner facts."
+        "rationale": "Actuating derives decisions from current owner facts and projected semantic evidence."
       },
       {
         "clause_id": "ACT-LAW-AUTHORITY-001",
@@ -171,14 +174,16 @@
           "Goal-law authority"
         ],
         "success_signals": [
-          "only entailed findings create automatic counterexample pressure",
+          "only entailed current findings create automatic counterexample pressure",
+          "stored counterexamples are reclassified against the current Goal and head",
           "new requirements reopen authority"
         ],
         "failure_signals": [
           "review silently expands the Goal",
-          "preference is implemented as correctness work"
+          "preference is implemented as correctness work",
+          "a CEX record is treated as permanently current"
         ],
-        "rationale": "Correct by construction is relative to accepted laws."
+        "rationale": "Correct by construction is relative to accepted laws and current applicability."
       },
       {
         "clause_id": "ACT-CONSTRUCTION-COMPILER-001",
@@ -196,7 +201,8 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "complete initial falsification wave",
-          "counterexample basis",
+          "projected counterexample basis and evidence-horizon disposition",
+          "current counterexample basis",
           "invalid family",
           "admission graph",
           "earliest enforceable cut",
@@ -220,17 +226,18 @@
         ],
         "success_signals": [
           "candidate selection follows the canonical constructional-dominance order before lifecycle and realization cost or raw source size",
-          "review findings compile into one legal state space",
+          "review findings and historical CEX witnesses compile into one current legal state space",
           "every sanctioned producer factors through the canonical boundary",
           "downstream primary compensators retire or become derived"
         ],
         "failure_signals": [
           "finding maps directly to a patch",
+          "historical counterexamples are ignored without an explicit incomplete horizon",
           "carrier or producer topology is omitted",
           "same-family recurrence adds another member guard",
           "factor count or raw line count selects architecture"
         ],
-        "rationale": "Actuating exists to turn counterexamples into constructions that exclude their family."
+        "rationale": "Actuating exists to turn a sufficient current and historical counterexample basis into a construction that excludes its family."
       },
       {
         "clause_id": "ACT-ISOLATED-RESTORATION-001",
@@ -253,7 +260,7 @@
         ],
         "failure_signals": [
           "new semantic constructor hides inside restoration",
-          "direct gate substitutes for family or producer proof"
+          "direct gate substitutes for family, historical, or producer proof"
         ],
         "rationale": "Direct repair is only honest restoration of an already-correct construction."
       },
@@ -271,22 +278,27 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "exact CAS receipts",
+          "review-fold/counterexample-corpus basis projection or explicit incomplete horizon",
           "complete initial five-lens semantic barrier",
-          "current Review Fold",
+          "current Review Fold with projected and captured CEX identities",
           "exact-head proof inventory"
         ],
         "success_signals": [
           "material finding invalidates candidate and closes mutation",
           "parallel waits for launched outcomes",
           "serial completes remaining initial lenses for evidence only",
+          "stored counterexamples are reclassified rather than trusted as current",
+          "new current entailed accepted witnesses are captured once by semantic identity",
           "review resumes only on a completely proved successor"
         ],
         "failure_signals": [
           "serial mode edits after first finding",
           "review stops before sufficient evidence basis",
-          "review authors successor one finding at a time"
+          "review authors successor one finding at a time",
+          "absence from an incomplete corpus is called first-observed or eliminated",
+          "current class, family, owner, cut, carrier, route, or closure is persisted in the corpus"
         ],
-        "rationale": "Independent review supplies the counterexample basis before construction selection."
+        "rationale": "Independent review plus durable admitted witnesses supplies the counterexample basis before construction selection."
       },
       {
         "clause_id": "ACT-CLOSURE-001",
@@ -302,6 +314,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "exact-head construction theorem",
+          "counterexample horizon sufficient for every historical claim",
           "complete Goal-required proof inventory",
           "Ship/provider evidence when required",
           "exact-head CAS convergence"
@@ -310,19 +323,22 @@
           "invalid family is unrepresentable or unadmittable",
           "all producers factor through the carrier",
           "bypasses close",
+          "historical absence is used only under a complete evidence horizon",
           "five standard cleans survive on one head"
         ],
         "failure_signals": [
           "repaired examples substitute for family proof",
           "safe but wound-shaped realization closes",
-          "same-family finding is answered by another guard"
+          "same-family finding is answered by another guard",
+          "missing historical evidence is treated as proof"
         ],
-        "rationale": "Closure is a current proof that the realized construction excludes the family."
+        "rationale": "Closure is a current proof that the realized construction excludes the family under the evidence actually available."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "Actuating reports a live judgment and creates no peer authority artifact."
+      "counterexample_source": "review-fold/counterexample-corpus",
+      "rationale": "Actuating reports a live judgment; Review Fold alone persists admitted witness evidence."
     }
   }
 }

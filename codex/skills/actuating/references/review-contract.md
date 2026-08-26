@@ -4,7 +4,7 @@ Actuating owns one checked-in policy:
 [review-contract.json](review-contract.json). It is source policy, not mutable
 workflow state.
 
-## Binding and CAS authority
+## Binding and owner authority
 
 Read the exact Review Contract bytes and every required lens instruction byte.
 Do not trim or normalize them.
@@ -22,6 +22,8 @@ review_context:
     non_goals: []
     required_observations: []
     compatibility: []
+  counterexample_basis_digest:
+  counterexample_horizon_complete_for_claims: true | false
   proof_inventory_digest:
   validation_summary:
   publication_observation_ref: null | sha256-digest
@@ -44,15 +46,47 @@ request_fingerprint = sha256(
 )
 ```
 
+CAS owns review execution, terminal receipts, exact target tuples, and finding
+provenance. Review Fold owns current finding classification and the append-only
+semantic admission of accepted witnesses through
+`review-fold/counterexample-corpus`. Actuating checks owner-issued evidence
+directly and owns review credit and architectural consequences.
+
 Supply only the request ID and fingerprint through CAS's workflow binding.
-Actuating retains the expected context during the active run. CAS owns execution
-and terminal receipts. Credit only a structured semantic verdict with strong
-principal evidence, exact current tuple, exact instruction and workflow binding,
-and backend capability required by the JSON contract. Process exit, prose, or a
-thread handle is not a verdict.
+Credit only a structured semantic verdict with strong principal evidence, exact
+current tuple, exact instruction and workflow binding, and the backend capability
+required by the JSON contract. Process exit, prose, or a thread handle is not a
+verdict.
 
 The five required lenses and five-consecutive-standard-clean theorem remain
 unchanged.
+
+## Counterexample history projection
+
+Before the first Review Fold for a review-bearing decision, project the
+repository basis from:
+
+```text
+review-fold/counterexample-corpus
+```
+
+Include those rows as prior owner evidence. Recompute current applicability,
+Goal-law authority, recurrence, observational classes, family hypotheses, and
+post-elimination relation. A `CEX-*` identity is durable evidence that the
+original witness was accepted under its recorded Goal and subject; it is not a
+current liability, family, or construction claim.
+
+An absent local store is an empty local corpus, not proof of complete history.
+An unavailable or invalid projection makes the evidence horizon incomplete.
+Actuating may still use exact current-wave evidence, but it must not infer
+`first-observed`, disjointness, or family elimination from historical absence.
+When recurrence or a post-elimination claim depends on unavailable history,
+return `unknown` or `blocked` rather than guessing.
+
+After every fold, capture each independent witness that is current, `entailed`,
+and `accepted`. Do not capture reviewer preferences, strengthenings, new
+requirements, underdetermined claims, rejected findings, non-current witnesses,
+classes, families, suggested repairs, or current architecture.
 
 ## Candidate lifecycle
 
@@ -76,6 +110,7 @@ Require on the exact head:
 
 ```text
 complete accepted Goal and proof inventory
+projected counterexample basis or explicit incomplete-horizon disposition
 complete current counterexample basis
 invalid family and sibling/exhaustive disposition
 admission graph
@@ -125,8 +160,8 @@ no clean credit
 no successor assumptions
 ```
 
-This completes the same counterexample basis as parallel mode without concurrent
-dispatch.
+This completes the same current-wave counterexample basis as parallel mode
+without concurrent dispatch.
 
 ### Standard confirmation
 
@@ -142,9 +177,22 @@ semantic barrier after invalidation. A second verdictless terminal blocks.
 
 ## Evidence cut and successor
 
-After the initial semantic barrier, close one cumulative cut containing all
-retained applicable findings, current classifications, witnesses, sibling probes,
-required-valid proofs, compatibility proofs, and current construction topology.
+After the initial semantic barrier, close one cumulative cut containing:
+
+```text
+projected CEX records and exact source references
+all current-wave semantic outcomes
+all current applicability and Goal-law classifications
+all executable witnesses and independence bases
+predicted sibling probes or exhaustive-domain evidence
+required-valid and compatibility proofs
+current construction topology and post-elimination falsifiers
+counterexample horizon completeness and missing sources
+```
+
+Review Fold captures newly accepted counterexamples after classification and
+returns their IDs. The cut uses corpus rows as durable source evidence but
+contains current reclassifications; Actuating does not store a second copy.
 
 Actuating then compiles one successor:
 
@@ -173,10 +221,10 @@ isolated-restoration
 
 Isolated restoration uses one generator-local
 `actuating/direct-repair-admission` materialization bound to the exact starting
-predecessor. One admitted generator may span coherent commits until complete;
-a later generator gates against the then-current predecessor. Materialize at
-most once per generator and never per finding. Architecture successors do not
-use that gate.
+predecessor. One admitted generator may span coherent commits until complete; a
+later generator gates against the then-current predecessor. Materialize at most
+once per generator and never per finding. Architecture successors do not use
+that gate.
 
 ## Lens obligations
 
@@ -205,9 +253,11 @@ After a successor becomes `reviewable`, restart the selected schedule on its
 final head. Require five consecutive distinct standard cleans. No credit crosses
 a material head change.
 
-Reuse only exact receipts whose complete bindings can be revalidated. If the
-current evidence set cannot be resolved after interruption, restart from the
-initial standard.
+Reuse only exact CAS receipts and `CEX-*` records whose source references and
+subjects can be revalidated. If the current review receipts cannot be resolved,
+restart from the initial standard. If historical counterexample evidence cannot
+be resolved, mark the horizon incomplete; never reconstruct it from prose or
+memory.
 
 A same-family finding reopens the construction theorem, not a member-specific
 patch.

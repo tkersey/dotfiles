@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-law-authority-v3"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1"
     },
     "triggers": [
       {
@@ -61,12 +61,27 @@
         ],
         "cue_regexes": [],
         "exclusions": []
+      },
+      {
+        "trigger_id": "RF-COUNTEREXAMPLE-CORPUS",
+        "description": "Admitted counterexamples need durable provenance or historical projection.",
+        "cue_literals": [
+          "counterexample corpus",
+          "counterexample history",
+          "prior counterexample",
+          "CEX-"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "persist current family or architecture",
+          "persist suggested repair"
+        ]
       }
     ],
     "routes": [
       {
         "route_id": "RF-FOLD",
-        "description": "Return the current analytical Review Fold.",
+        "description": "Return the current analytical Review Fold and capture admitted witnesses.",
         "aliases": [
           "accepted",
           "rejected",
@@ -76,7 +91,7 @@
       },
       {
         "route_id": "RF-BLOCK",
-        "description": "Block when evidence, authority, applicability, provenance, or class basis is unknown.",
+        "description": "Block when evidence, authority, applicability, provenance, class basis, or required corpus custody is unknown.",
         "aliases": [
           "blocked"
         ],
@@ -85,7 +100,7 @@
     ],
     "clauses": [
       {
-        "clause_id": "RF-CLASSIFY-003",
+        "clause_id": "RF-CLASSIFY-004",
         "trigger_refs": [
           "RF-SOURCE"
         ],
@@ -111,7 +126,7 @@
           "review prose selects work",
           "historical evidence is rebound to the current head",
           "unknown evidence is treated as current",
-          "durable Review Fold artifact is created"
+          "a durable Review Fold or applicability snapshot is created"
         ],
         "rationale": "Classification remains current analysis over owner evidence."
       },
@@ -133,7 +148,7 @@
           "entailment or non-entailment basis"
         ],
         "success_signals": [
-          "entailed finding may become accepted",
+          "entailed current finding may become accepted",
           "strengthening becomes non-blocking follow-up",
           "preference is rejected",
           "new requirement requests Goal reopening",
@@ -172,7 +187,7 @@
           "different detection surfaces may remain one class",
           "observed witnesses do not define the complete family",
           "predicted siblings are distinguished from observed examples",
-          "recurrence uses exact available prior evidence",
+          "recurrence uses exact projected and current evidence",
           "incomplete historical evidence yields unknown recurrence"
         ],
         "failure_signals": [
@@ -195,12 +210,13 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "active eliminated-claim excerpt with family, validity horizon, and reconsideration falsifier when available",
+          "active eliminated-claim excerpt when available",
           "current law authority and applicability",
+          "projected historical counterexamples relevant to the law",
           "same-claim, same-law-different-family, outside-horizon, different-law, or unknown relation with exact basis"
         ],
         "success_signals": [
-          "current entailed same-claim relation is reported only inside the declared validity horizon",
+          "current entailed same-claim relation is reported only inside the validity horizon",
           "same-law disjoint families do not falsify the scoped claim",
           "strengthening does not retroactively falsify the Goal",
           "new requirement requests Goal reopening",
@@ -211,14 +227,49 @@
           "post-elimination relation is inferred from memory",
           "different-law finding is merged into the old family",
           "same law alone revokes a family-scoped claim",
-          "out-of-horizon evidence is treated as falsifying the scoped elimination claim"
+          "out-of-horizon evidence is treated as falsifying the claim"
         ],
         "rationale": "Review Fold reports the falsifier relation; Actuating owns its architectural consequence."
+      },
+      {
+        "clause_id": "RF-COUNTEREXAMPLE-CORPUS-001",
+        "trigger_refs": [
+          "RF-SOURCE",
+          "RF-COUNTEREXAMPLE-CORPUS"
+        ],
+        "expected_routes": [
+          "RF-FOLD",
+          "RF-BLOCK"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "review-fold/counterexample-corpus basis projection when available",
+          "exact owner source references",
+          "original witness subject",
+          "accepted Goal digest and entailed law",
+          "current applicability and accepted disposition before capture"
+        ],
+        "success_signals": [
+          "each independent current entailed accepted witness receives one immutable CEX identity",
+          "duplicate reports do not become independent counterexamples",
+          "stored rows preserve source facts and semantic admission only",
+          "current applicability, class, family, recurrence, owner, cut, carrier, route, and closure are recomputed",
+          "missing history yields an incomplete evidence horizon rather than first-observed"
+        ],
+        "failure_signals": [
+          "CAS transcripts or suggested patches are copied into the corpus",
+          "a stored family, owner, cut, carrier, route, or closure verdict becomes authority",
+          "capture occurs for strengthening, preference, new requirement, underdetermined, rejected, or non-current evidence",
+          "one semantic witness is duplicated by reviewer or thread identity",
+          "corpus failure is silently ignored while complete historical claims are made"
+        ],
+        "rationale": "Persist the monotone counterexample source language while recompiling every current interpretation."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The fold is returned in context; durable facts remain with source owners."
+      "counterexample_corpus": "review-fold/counterexample-corpus",
+      "rationale": "The fold is current analysis; only admitted counterexample witnesses receive durable identities."
     }
   }
 }

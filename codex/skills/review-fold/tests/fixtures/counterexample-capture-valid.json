@@ -1,0 +1,32 @@
+{
+  "record": {
+    "repository_id": "example/repository",
+    "goal_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "law_ref": "law.transition-admissibility",
+    "law_provenance": "goal",
+    "authority_basis_refs": [
+      "goal:accepted-law:transition-admissibility"
+    ],
+    "source_refs": [
+      {
+        "kind": "cas",
+        "ref": "cas:receipt:review-001#finding-1",
+        "summary": "Exact structured review finding bound to the witnessed head."
+      }
+    ],
+    "witness_subject": {
+      "repository": "example/repository",
+      "artifact_state_id": "1111111111111111111111111111111111111111",
+      "artifact_state_label": "git:1111111111111111111111111111111111111111",
+      "schema_or_environment": "default-test-environment",
+      "input_state_or_trace": "transition from ready to completed without the required admission token"
+    },
+    "observed_fact": "The current constructor admitted a completed transition without the required token.",
+    "detection_boundary": "test:transition-property",
+    "evidence_refs": [
+      "cas:receipt:review-001",
+      "test:transition-property:case-17"
+    ],
+    "independence_basis": "The witness uses the constructor path rather than the separately tested recovery path."
+  }
+}
