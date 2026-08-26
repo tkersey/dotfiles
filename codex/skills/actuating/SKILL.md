@@ -221,14 +221,20 @@ When construction normalization is required:
    theorem into repository-native candidates.
 7. Ask `$reduce` to find duplicate owners, downstream primary compensators,
    wound-shaped proof, and factors made redundant by the selected carrier.
-8. Select by constructional dominance before lifecycle cost:
+8. Select by constructional dominance, then lifecycle cost and raw source size:
+   - required-valid / invalid-family separation;
    - invalid-family exclusion;
-   - producer factorization;
+   - strongest honest invariant locus;
+   - canonical identity or explicit equivalence;
+   - admission-path domination;
+   - semantic producer factorization;
    - canonical ownership;
    - bypass closure;
-   - required-valid preservation;
-   - family-level proof;
-   - compensator retirement.
+   - required-valid and compatibility preservation;
+   - family-level or exhaustive proof;
+   - downstream compensator retirement;
+   - lifecycle and realization cost;
+   - raw source size.
 9. Preserve material incomparability rather than manufacturing dominance.
 10. State the selected theorem and falsifier before mutation.
 
