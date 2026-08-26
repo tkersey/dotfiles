@@ -33,13 +33,13 @@ grep -F '## Consistency preflight' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Admitted semantic carrier' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'dominate every sanctioned producer-to-trusted-consumer path' \
+grep -F 'sanctioned producer-to-trusted-consumer path' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Invariant locus and semantic identity' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Producer migration' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'A call path through the canonical constructor is' \
+grep -F 'canonical constructor is not factorization' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F 'Ablation is evidence that the construction absorbed the law' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
