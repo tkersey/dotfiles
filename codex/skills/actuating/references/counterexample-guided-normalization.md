@@ -7,7 +7,8 @@ incident, migration failure, or compatibility failure may authorize mutation.
 
 ```text
 review findings
--> sufficient counterexample basis
++ projected admitted counterexamples
+-> sufficient current counterexample basis
 -> invalid family Phi
 -> admitted semantic carrier A
 -> every sanctioned producer factors through A
@@ -23,7 +24,33 @@ required-valid subset B'
 every sanctioned producer factors through B'
 ```
 
-Knowledge is monotone. Production and proof realization are not.
+Counterexample knowledge is monotone. Its current interpretation, production
+realization, and proof realization are not.
+
+## Durable source basis
+
+Before current family synthesis, have `$review-fold` project the repository basis
+from:
+
+```text
+review-fold/counterexample-corpus
+```
+
+The corpus contains immutable semantic admissions and source references, not
+current applicability, classes, families, architecture, or closure. Re-evaluate
+every row under the current Goal, exact head, validity horizon, and owner
+evidence. Combine current-wave findings and applicable projected rows into one
+basis. Retain `CEX-*` identities in the ephemeral Working Set so later code and
+proof retirement can cite the historical witnesses they subsume.
+
+An absent or unavailable corpus is an incomplete historical horizon, not proof
+that a witness is first-observed or that a family has never recurred. Current
+exact evidence may still support a bounded construction, but historical claims
+must remain `unknown`, `contained`, or `blocked` at the strength the missing
+history affects.
+
+After the current fold, Review Fold captures each independent current `entailed`
+`accepted` witness. Actuating never writes or copies the corpus.
 
 ## Sufficient counterexample basis
 
@@ -32,7 +59,7 @@ falsification wave against the frozen candidate, classify every result, and clos
 one cumulative evidence cut containing:
 
 ```text
-all retained still-applicable findings and provenance
+all retained still-applicable current and projected witnesses with provenance
 Goal-law authority and applicability
 executable witnesses
 predicted siblings or an exhaustive domain
@@ -40,10 +67,13 @@ required-valid behavior and observation proofs
 compatibility and migration proofs
 current admitted representations and sanctioned paths
 post-elimination falsifiers
+counterexample evidence-horizon completeness
 ```
 
 The basis is sufficient when it supports one falsifiable invalid-family theory
-and one explicit admission topology. It need not contain every possible bug.
+and one explicit admission topology at the intended claim strength. It need not
+contain every possible bug. A historically incomplete basis cannot support a
+stronger recurrence or elimination claim than its evidence horizon.
 
 ## Invalid family
 
@@ -215,8 +245,9 @@ distinct-obligation  genuinely independent accepted law
 ```
 
 Ablation is evidence that the construction absorbed the law; it is not the
-operator that selects the construction. Preserve finding provenance even when
-member-specific tests and helpers collapse into a family proof.
+operator that selects the construction. Preserve `CEX-*` identities and source
+provenance even when member-specific tests and helpers collapse into a family
+proof.
 
 ## Isolated-restoration Ledger execution
 
@@ -233,14 +264,16 @@ mechanism were already complete before the proposed edit.
 A valid materialization admits only the exact isolated restoration. An invalid
 materialization requires construction normalization or `blocked`.
 
-Do not add another comparison packet, ablation gate, carrier registry, event log,
-or closure receipt.
+Do not add another Actuating comparison packet, ablation gate, carrier registry,
+event log, or closure receipt. The Review Fold corpus is source evidence, not an
+Actuating workflow protocol.
 
 ## Behavioral falsifier
 
 The mechanism succeeds only when watched use shows:
 
 ```text
+later sessions recover prior independent witnesses without transcript archaeology
 same-family findings cause construction revision, not member guards
 required-valid behavior does not overlap Phi
 one canonical owner replaces distributed approximations
@@ -252,6 +285,7 @@ required-valid behavior survives
 later review stops finding members of the same family
 ```
 
-Narrow or delete any mechanism that changes packets without changing successor
-code shape, delays legitimate isolated restoration, or costs more than the
-accretion it prevents.
+Narrow or delete corpus integration if it only copies CAS prose, changes packets
+without changing successor code shape, or costs more than the recurrence and
+accretion it prevents. Narrow or delete any construction mechanism that delays
+legitimate isolated restoration without increasing proof strength.
