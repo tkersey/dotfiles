@@ -5,10 +5,12 @@
   "requires": {
     "abi": "ledger-artifact-abi/v1",
     "operators": [
+      "all",
       "bind-existing",
       "bounded-array",
       "bounded-string",
       "compare-and-append",
+      "composite-identity",
       "digest",
       "enum",
       "event-materialization",
@@ -524,7 +526,7 @@
                 "name": "fingerprint",
                 "op": "sha256",
                 "encoding": "hex",
-                "prefix_bytes": 32,
+                "prefix_bytes": 64,
                 "fragments": [
                   {
                     "literal": "review-fold-counterexample/v1\n"
@@ -563,7 +565,7 @@
                 "name": "identity_hash",
                 "op": "sha256",
                 "encoding": "hex",
-                "prefix_bytes": 12,
+                "prefix_bytes": 24,
                 "fragments": [
                   {
                     "literal": "review-fold-counterexample/v1\n"

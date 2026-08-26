@@ -7,6 +7,7 @@ jaq_bin=${JAQ_BIN:-jaq}
 definition="$skill_root/definitions/ledger/counterexample-corpus.json"
 valid="$skill_root/tests/fixtures/counterexample-capture-valid.json"
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/review-fold-counterexamples.XXXXXX")
+tmp=$(CDPATH='' cd -- "$tmp" && pwd -P)
 trap 'rm -rf "$tmp"' EXIT HUP INT TERM
 repo="$tmp/repo"
 mkdir -p "$repo"
@@ -60,7 +61,7 @@ counterexample_id=$(
 
 "$jaq_bin" -e \
   --arg id "$counterexample_id" \
-  '.id == $id and .observed_fact | length > 0' \
+  '(.id == $id) and ((.observed_fact | length) > 0)' \
   "$tmp/record.json" >/dev/null
 
 "$ledger_bin" project \
