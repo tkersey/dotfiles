@@ -4,12 +4,12 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-review-proof-inventory-v11"
+      "source_fingerprint": "actuating-construction-compiler-v1"
     },
     "triggers": [
       {
         "trigger_id": "ACT-BARE",
-        "description": "Bare Actuating reconciles implementation, publication, review, and closure.",
+        "description": "Bare Actuating compiles, realizes, publishes, reviews, and closes.",
         "cue_literals": [
           "$actuating",
           "/goal $actuating"
@@ -19,7 +19,7 @@
       },
       {
         "trigger_id": "ACT-ROUTE",
-        "description": "Explicit bounded routes select implement, triage, remediation-plan, or review-closeout.",
+        "description": "Explicit routes select implement, triage, remediation-plan, or review-closeout.",
         "cue_literals": [
           "$actuating implement",
           "$actuating triage",
@@ -31,62 +31,44 @@
       },
       {
         "trigger_id": "ACT-COUNTEREXAMPLE",
-        "description": "A current witnessed falsifier may expose a semantic hotspot or architecture defect.",
+        "description": "A current witnessed falsifier may require counterexample-to-construction compilation.",
         "cue_literals": [
           "bug",
           "review finding",
           "failing test",
           "regression",
           "incident",
-          "semantic hotspot",
-          "counterexample theory",
-          "admission cut"
+          "counterexample",
+          "semantic hotspot"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "isolated mechanical mistake inside an already-correct owner",
-          "environment failure with no semantic boundary implication"
+          "mechanical mistake with no correctness-bearing semantic pressure"
         ]
       },
       {
         "trigger_id": "ACT-POST-ELIMINATION",
-        "description": "A current witness may falsify an exact eliminated family claim inside its validity horizon.",
+        "description": "A current witness may revoke an exact eliminated construction claim.",
         "cue_literals": [
           "post-elimination witness",
-          "family was eliminated",
-          "same-law recurrence",
-          "elimination falsified",
-          "revoked elimination"
+          "same-family recurrence",
+          "elimination falsified"
         ],
         "cue_regexes": [],
         "exclusions": [
           "unadopted strengthening",
-          "reviewer preference",
-          "different-law finding",
-          "same-law disjoint family",
-          "witness outside the validity horizon"
+          "preference",
+          "outside validity horizon"
         ]
       },
       {
-        "trigger_id": "ACT-REVIEW-DEFAULT",
-        "description": "Unqualified review, inspect, audit, or classify intent is non-mutating triage.",
+        "trigger_id": "ACT-REVIEW",
+        "description": "Review scheduling and evidence acquisition falsify a completed candidate.",
         "cue_literals": [
           "review",
-          "inspect",
-          "audit",
-          "classify"
-        ],
-        "cue_regexes": [],
-        "exclusions": []
-      },
-      {
-        "trigger_id": "ACT-REVIEW-SCHEDULING",
-        "description": "A request-local modifier selects parallel or serial review dispatch without selecting a route.",
-        "cue_literals": [
           "parallel-reviews",
           "serial-reviews",
-          "$actuating parallel-reviews",
-          "$actuating serial-reviews"
+          "review-closeout"
         ],
         "cue_regexes": [],
         "exclusions": []
@@ -95,7 +77,7 @@
     "routes": [
       {
         "route_id": "ACT-IMPLEMENT",
-        "description": "Reconcile and realize locally.",
+        "description": "Compile and realize locally.",
         "aliases": [
           "implement"
         ],
@@ -111,7 +93,7 @@
       },
       {
         "route_id": "ACT-REMEDIATION",
-        "description": "Recompile a non-executable target architecture.",
+        "description": "Compile a non-executable construction.",
         "aliases": [
           "remediation-plan"
         ],
@@ -119,17 +101,9 @@
       },
       {
         "route_id": "ACT-REVIEW-CLOSEOUT",
-        "description": "Resolve review pressure, publish when required, and converge.",
+        "description": "Falsify, compile successor, realize, publish, and converge.",
         "aliases": [
           "review-closeout"
-        ],
-        "terminal": false
-      },
-      {
-        "route_id": "ACT-SHIP-HANDOFF",
-        "description": "Hand exact Git and validation facts to Ship.",
-        "aliases": [
-          "ship-handoff"
         ],
         "terminal": false
       },
@@ -157,27 +131,25 @@
           "ACT-TRIAGE",
           "ACT-REMEDIATION",
           "ACT-REVIEW-CLOSEOUT",
-          "ACT-SHIP-HANDOFF",
           "ACT-CLOSE"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
           "accepted Goal",
-          "exact Git base/head/tree",
+          "exact Git subject",
           "owner-issued validation, review, and publication evidence when applicable"
         ],
         "success_signals": [
-          "Git is the realized construction",
-          "CAS owns review attempts",
+          "Git remains the realized construction",
+          "CAS owns review receipts",
           "Ship owns public effects",
           "Actuating keeps no durable workflow store"
         ],
         "failure_signals": [
-          "Actuating copies owner facts into an event log",
-          "a stored Actuating verdict outranks current owner state",
-          "Ledger grants mutation, review credit, or closure"
+          "stored Actuating verdict outranks owner facts",
+          "review or publication evidence is copied into an Actuating database"
         ],
-        "rationale": "Durable facts stay with their owners and interpretations are recomputed."
+        "rationale": "Actuating derives decisions from current owner facts."
       },
       {
         "clause_id": "ACT-LAW-AUTHORITY-001",
@@ -194,196 +166,89 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "finding law and provenance",
-          "law-authority classification",
-          "entailment or non-entailment basis"
+          "finding provenance",
+          "current applicability",
+          "Goal-law authority"
         ],
         "success_signals": [
-          "entailed findings may become current counterexamples",
-          "strengthening remains non-blocking until adopted",
-          "preference is rejected as current liability",
-          "new requirement reopens Goal authority",
-          "underdetermined requirement blocks pending authority"
+          "only entailed findings create automatic counterexample pressure",
+          "new requirements reopen authority"
         ],
         "failure_signals": [
-          "review prose silently authors a Goal law",
-          "optional strengthening prevents closure",
-          "preference is implemented as correctness work",
-          "new requirement is patched without authority"
+          "review silently expands the Goal",
+          "preference is implemented as correctness work"
         ],
-        "rationale": "Review may falsify accepted semantics but may not continuously expand them."
+        "rationale": "Correct by construction is relative to accepted laws."
       },
       {
-        "clause_id": "ACT-HOTSPOT-005",
-        "trigger_refs": [
-          "ACT-COUNTEREXAMPLE"
-        ],
-        "expected_routes": [
-          "ACT-IMPLEMENT",
-          "ACT-TRIAGE",
-          "ACT-REMEDIATION",
-          "ACT-REVIEW-CLOSEOUT"
-        ],
-        "prohibited_routes": [],
-        "required_artifacts": [
-          "witness provenance and current applicability",
-          "entailed law when current pressure is claimed",
-          "ordinary counterexample theory",
-          "sound interpretation and Goal-adequacy evidence",
-          "family predicate, admission relation, owner model, cut, validity horizon, and claim strength",
-          "family-theory falsifier",
-          "exhaustive-domain basis or sibling predictions and probes"
-        ],
-        "success_signals": [
-          "a bug is a witness rather than a patch instruction or complete family",
-          "theory is challenged when detection-shaped or violation-erasing",
-          "family theory predicts unobserved siblings or proves an exhaustive domain",
-          "architecture is selected by concrete invalidity excluded and valid behavior preserved"
-        ],
-        "failure_signals": [
-          "observed examples are treated as the complete family",
-          "passing repaired examples is called family elimination",
-          "newly discovered siblings are relabeled as prior predictions",
-          "a hotspot registry or durable store is created"
-        ],
-        "rationale": "A generative theory must explain and predict the invalid class, not merely compress past findings."
-      },
-      {
-        "clause_id": "ACT-POST-ELIMINATION-001",
-        "trigger_refs": [
-          "ACT-POST-ELIMINATION"
-        ],
-        "expected_routes": [
-          "ACT-IMPLEMENT",
-          "ACT-TRIAGE",
-          "ACT-REMEDIATION",
-          "ACT-REVIEW-CLOSEOUT",
-          "ACT-CLOSE"
-        ],
-        "prohibited_routes": [],
-        "required_artifacts": [
-          "prior elimination lease excerpt",
-          "current entailed witness that falsifies the exact family claim inside its validity horizon",
-          "failed-premise localization",
-          "one successor disposition",
-          "successor sibling predictions or exhaustive-domain proof"
-        ],
-        "success_signals": [
-          "prior eliminated disposition is revoked immediately on a same-claim falsifier",
-          "same-law disjoint families and out-of-horizon witnesses do not revoke the scoped claim",
-          "mutation waits for failed-premise localization",
-          "theory is retained only for localized realization/proof failure",
-          "theory/admission/interpretation/owner is revised when its premise failed",
-          "unknown failure location returns unresolved",
-          "successor elimination uses accepted Goal authority, family-level proof, and sibling probes"
-        ],
-        "failure_signals": [
-          "post-elimination witness becomes another patch under the unchanged claim",
-          "elimination remains live after a current same-claim counterexample",
-          "failed premise is not named",
-          "successor elimination is issued from repaired examples alone",
-          "elimination is reissued while Goal authority remains reopened"
-        ],
-        "rationale": "A post-elimination counterexample is evidence that the prior correctness claim failed."
-      },
-      {
-        "clause_id": "ACT-ARCHITECTURE-005",
-        "trigger_refs": [
-          "ACT-BARE",
-          "ACT-ROUTE",
-          "ACT-COUNTEREXAMPLE",
-          "ACT-POST-ELIMINATION"
-        ],
-        "expected_routes": [
-          "ACT-IMPLEMENT",
-          "ACT-REMEDIATION",
-          "ACT-REVIEW-CLOSEOUT"
-        ],
-        "prohibited_routes": [],
-        "required_artifacts": [
-          "incumbent model reconstructed from the current tree",
-          "architecture-closure judgment",
-          "Architecture Working Set when selection reopens",
-          "correctness Pareto frontier before cost minimization"
-        ],
-        "success_signals": [
-          "isolated realization defect preserves an already-correct owner",
-          "theory or architecture reopens before mutation when a premise failed",
-          "Universalist nominates and Actuating selects",
-          "material incomparability remains explicit"
-        ],
-        "failure_signals": [
-          "new semantics hide inside a realization repair",
-          "candidate wins by moving detection",
-          "post-elimination same-theory accretion is presented as convergence",
-          "prior analysis substitutes for current repository evidence"
-        ],
-        "rationale": "Architecture selection minimizes admitted incorrectness without losing required valid behavior."
-      },
-      {
-        "clause_id": "ACT-REVIEW-CANDIDATE-001",
+        "clause_id": "ACT-CONSTRUCTION-COMPILER-001",
         "trigger_refs": [
           "ACT-COUNTEREXAMPLE",
           "ACT-POST-ELIMINATION",
-          "ACT-REVIEW-SCHEDULING"
+          "ACT-REVIEW"
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
+          "ACT-REMEDIATION",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "live candidate status derived from the exact head, complete construction, and current proof",
-          "complete Goal-required proof inventory with exact-head pass results or authority-backed nonapplicability",
-          "closed semantic evidence cut for every already-launched request including required recovery",
-          "complete current applicable class fold and causal basis",
-          "complete affected-factor dispositions",
-          "predicted-sibling or exhaustive disposition",
-          "per-causal-generator successor dispositions",
-          "one arrival-order-invariant selected target",
-          "one generator-complete direct-repair materialization per admitted generator when applicable",
-          "complete realization and proof before successor reviewability"
+          "complete initial falsification wave",
+          "counterexample basis",
+          "invalid family",
+          "admission graph",
+          "earliest enforceable cut",
+          "admitted carrier",
+          "producer migrations",
+          "bypass dispositions",
+          "required-valid proof",
+          "construction falsifier"
         ],
         "success_signals": [
-          "material finding invalidates the reviewed candidate rather than requesting a patch",
-          "reconciliation epoch is only the derived interval until a successor becomes reviewable",
-          "parallel selection waits for every launched semantic outcome including recovery",
-          "serial and confirmation dispatch stop before the next request",
-          "factor dispositions complete before mutation",
-          "initial and successor candidates satisfy the same complete review-entry proof",
-          "aggregate proof credit names dependency coverage for every required proof it subsumes",
-          "post-review closure never runs a known required repository-local proof for the first time",
-          "mixed direct-repair and architecture dispositions are represented per generator",
-          "direct-repair packets contain exactly one causal generator and are never finding-local",
-          "one generator gate may span coherent commits until that generator is complete",
-          "a later generator gate binds the current predecessor after earlier generator commits",
-          "review remains closed across coherent realization commits",
-          "same-generator recurrence cannot add another enumerative member without separation"
+          "review findings compile into one legal state space",
+          "every sanctioned producer factors through the canonical boundary",
+          "downstream primary compensators retire or become derived"
         ],
         "failure_signals": [
-          "finding maps directly to a patch and immediate review restart",
-          "review is dispatched on an invalidated or incompletely realized head",
-          "review is dispatched while a required proof is unrun, stale, or deferred to closure",
-          "a conclusion boolean substitutes for the required proof inventory",
-          "nonapplicability lacks accepted authority",
-          "factor disposition is omitted before successor selection",
-          "successor kind is global when causal generators require mixed dispositions",
-          "one direct-repair packet contains several causal generators",
-          "a later generator uses admission bound to a stale predecessor",
-          "one generator receives several finding-local materializations",
-          "same-generator recurrence extends a named-member list without separation proof",
-          "candidate status or reconciliation epoch becomes durable workflow state"
+          "finding maps directly to a patch",
+          "carrier or producer topology is omitted",
+          "same-family recurrence adds another member guard",
+          "factor count or raw line count selects architecture"
         ],
-        "rationale": "Review falsifies a sealed candidate; Actuating selects and realizes the successor from one closed current evidence cut."
+        "rationale": "Actuating exists to turn counterexamples into constructions that exclude their family."
       },
       {
-        "clause_id": "ACT-REVIEW-001",
+        "clause_id": "ACT-ISOLATED-RESTORATION-001",
         "trigger_refs": [
-          "ACT-BARE",
-          "ACT-ROUTE",
-          "ACT-REVIEW-DEFAULT",
-          "ACT-REVIEW-SCHEDULING"
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-REVIEW-CLOSEOUT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "preexisting complete construction theorem",
+          "localized realization or proof defect",
+          "actuating/direct-repair-admission materialization"
+        ],
+        "success_signals": [
+          "isolated restoration changes no carrier, cut, producer topology, or bypass set"
+        ],
+        "failure_signals": [
+          "new semantic constructor hides inside restoration",
+          "direct gate substitutes for family or producer proof"
+        ],
+        "rationale": "Direct repair is only honest restoration of an already-correct construction."
+      },
+      {
+        "clause_id": "ACT-REVIEW-EVIDENCE-001",
+        "trigger_refs": [
+          "ACT-REVIEW",
+          "ACT-COUNTEREXAMPLE"
         ],
         "expected_routes": [
           "ACT-TRIAGE",
@@ -392,35 +257,26 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "static actuating-review-contract/v7 with contract_id actuating-review-contract-v9",
-          "exact CAS receipts for the current Git head",
-          "current Review Fold after findings"
+          "exact CAS receipts",
+          "complete initial five-lens semantic barrier",
+          "current Review Fold",
+          "exact-head proof inventory"
         ],
         "success_signals": [
-          "parallel-reviews is the request-local default and launches the initial standard plus four compact auxiliaries concurrently",
-          "serial-reviews runs the initial standard then every auxiliary serially in contract order",
-          "both modes require every lens and five consecutive standard cleans on one unchanged head",
-          "only a completely realized and proved candidate is reviewable",
-          "reviewability requires a complete exact-head Goal-required proof inventory",
-          "material findings invalidate the candidate before mutation",
-          "review redispatch waits for the successor to become reviewable",
-          "material head change invalidates all credit and restarts the selected schedule at its initial standard",
-          "missing resumable evidence restarts the selected schedule"
+          "material finding invalidates candidate and closes mutation",
+          "parallel waits for launched outcomes",
+          "serial completes remaining initial lenses for evidence only",
+          "review resumes only on a completely proved successor"
         ],
         "failure_signals": [
-          "review scheduling changes route or mutation authority",
-          "serial-reviews omits or reorders a required lens",
-          "parallel-reviews cancels a launched sibling",
-          "review is redispatched between member repairs or coherent realization commits",
-          "review count is reconstructed from prose",
-          "review evidence is copied into an Actuating store",
-          "review findings bypass law-authority classification",
-          "post-review closure discovers a known required proof that was never run before review"
+          "serial mode edits after first finding",
+          "review stops before sufficient evidence basis",
+          "review authors successor one finding at a time"
         ],
-        "rationale": "Scheduling may control subscription concurrency without weakening exact-head convergence or creating another authority plane."
+        "rationale": "Independent review supplies the counterexample basis before construction selection."
       },
       {
-        "clause_id": "ACT-CLOSURE-005",
+        "clause_id": "ACT-CLOSURE-001",
         "trigger_refs": [
           "ACT-BARE",
           "ACT-ROUTE",
@@ -428,40 +284,32 @@
           "ACT-POST-ELIMINATION"
         ],
         "expected_routes": [
-          "ACT-SHIP-HANDOFF",
           "ACT-CLOSE"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "current Goal, Git head, validation, publication, and CAS evidence when required",
-          "complete exact-head Goal-required proof inventory established before review dispatch",
-          "finding authority classifications",
-          "current counterexample theory, validity horizon, and proof",
-          "post-elimination adjudication when applicable",
-          "explicit eliminated, contained, obstructed, or unresolved disposition"
+          "exact-head construction theorem",
+          "complete Goal-required proof inventory",
+          "Ship/provider evidence when required",
+          "exact-head CAS convergence"
         ],
         "success_signals": [
-          "closure is reevaluated from live owner facts",
-          "unadopted strengthening and preference do not expand the Goal",
-          "post-elimination lease is revoked and adjudicated",
-          "successor elimination includes family-level proof and sibling probes",
-          "post-review closure only refreshes established proof or performs publication readback",
-          "no closure receipt is required"
+          "invalid family is unrepresentable or unadmittable",
+          "all producers factor through the carrier",
+          "bypasses close",
+          "five standard cleans survive on one head"
         ],
         "failure_signals": [
-          "stored completion survives changed inputs",
-          "review authors new required semantics",
-          "repaired examples substitute for family exclusion",
-          "a revoked elimination claim reaches closure",
-          "publication or process exit substitutes for proof",
-          "post-review closure first-runs a known required repository-local proof"
+          "repaired examples substitute for family proof",
+          "safe but wound-shaped realization closes",
+          "same-family finding is answered by another guard"
         ],
-        "rationale": "Completion is a head-relative correctness predicate whose falsifiers are dispositionally binding."
+        "rationale": "Closure is a current proof that the realized construction excludes the family."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "Actuating reports a live judgment over owner facts and creates no peer authority artifact."
+      "rationale": "Actuating reports a live judgment and creates no peer authority artifact."
     }
   }
 }

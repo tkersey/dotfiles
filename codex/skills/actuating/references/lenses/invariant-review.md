@@ -1,23 +1,17 @@
 # Invariant Review Lens
 
-Independently inspect the exact bound subject for reachable illegal states,
-owner ambiguity, transition gaps, identity drift, policy bypass, witness
-mismatch, stale or duplicate effects, and generator/validator disagreement.
+Independently try to falsify the carrier and transition invariants of the exact
+bound candidate.
 
-Every material finding must include:
+Probe:
 
 ```text
-candidate predicate
-state owner and scope
-minimal counterexample trace
-transition or boundary that permits it
-current enforcement gap
-falsifying proof signal
+whether the invalid family can inhabit admitted state
+whether legal constructors preserve closure
+whether transitions and composition preserve the law
+whether identity, generation, custody, ordering, or recovery break closure
+whether finite cases or declared sibling dimensions are missing
 ```
 
-Reject decorative invariants, local assertions with no owner, and properties
-with no current counterexample or proof obligation.
-
-Return one structured `clean` or `findings` verdict. Do not launch the standalone
-`$invariant-ace` authority fanout, select enforcement, implement, persist an
-artifact, grant mutation, or certify closeout.
+Return `clean` or `findings` with a concrete witness and affected invariant. Do
+not propose member-specific guards or grant mutation.

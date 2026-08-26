@@ -1,0 +1,222 @@
+{
+  "schema": "actuating-construction-cycle-scenarios/v1",
+  "scenarios": [
+    {
+      "id": "serial-material-finding-completes-initial-wave",
+      "input": {
+        "phase": "initial-review",
+        "mode": "serial-reviews",
+        "material_finding": true,
+        "initial_lenses_remaining": 3,
+        "semantic_barrier_complete": false
+      },
+      "expected": "continue-evidence"
+    },
+    {
+      "id": "parallel-material-finding-waits-for-launched-outcomes",
+      "input": {
+        "phase": "initial-review",
+        "mode": "parallel-reviews",
+        "material_finding": true,
+        "initial_lenses_remaining": 0,
+        "semantic_barrier_complete": false
+      },
+      "expected": "continue-evidence"
+    },
+    {
+      "id": "confirmation-finding-stops-confirmation",
+      "input": {
+        "phase": "confirmation",
+        "mode": "serial-reviews",
+        "material_finding": true,
+        "initial_lenses_remaining": 0,
+        "semantic_barrier_complete": true
+      },
+      "expected": "close-cut"
+    },
+    {
+      "id": "construction-normalization-when-carrier-changes",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "carrier_already_complete": false,
+        "realization_defect_only": false,
+        "direct_gate_valid": false
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "isolated-restoration-when-theorem-preexists",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "carrier_already_complete": true,
+        "producer_factorization_complete": true,
+        "bypasses_closed": true,
+        "realization_defect_only": true,
+        "direct_gate_valid": true
+      },
+      "expected": "isolated-restoration"
+    },
+    {
+      "id": "rejected-isolated-restoration-blocks",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "carrier_already_complete": true,
+        "producer_factorization_complete": true,
+        "bypasses_closed": true,
+        "realization_defect_only": true,
+        "direct_gate_valid": false
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "missing-producer-factorization-normalizes",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "carrier_already_complete": true,
+        "producer_factorization_complete": false,
+        "bypasses_closed": true,
+        "realization_defect_only": true,
+        "direct_gate_valid": true
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "same-family-successor-reopens-construction",
+      "input": {
+        "phase": "post-review",
+        "same_family_finding": true,
+        "separation_proof": false
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "incomplete-proof-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "construction_complete": true,
+        "proof_inventory_current": false
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "completed-construction-is-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "construction_complete": true,
+        "proof_inventory_current": true
+      },
+      "expected": "reviewable"
+    },
+    {
+      "id": "parallel-recovery-remains-in-semantic-barrier",
+      "input": {
+        "phase": "initial-review",
+        "mode": "parallel-reviews",
+        "material_finding": true,
+        "initial_lenses_remaining": 0,
+        "semantic_barrier_complete": false,
+        "required_recovery_pending": true
+      },
+      "expected": "continue-evidence"
+    },
+    {
+      "id": "later-generator-gate-binds-current-predecessor",
+      "input": {
+        "phase": "gate",
+        "duplicate_gate": false,
+        "gate_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "expected": "admit-gate"
+    },
+    {
+      "id": "stale-generator-gate-is-rejected",
+      "input": {
+        "phase": "gate",
+        "duplicate_gate": false,
+        "gate_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "duplicate-generator-gate-is-rejected",
+      "input": {
+        "phase": "gate",
+        "duplicate_gate": true,
+        "gate_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "mixed-successor-routes-are-representable",
+      "input": {
+        "phase": "route-set",
+        "routes": [
+          "construction-normalization",
+          "isolated-restoration"
+        ]
+      },
+      "expected": "mixed-successor"
+    },
+    {
+      "id": "review-cannot-run-during-realization",
+      "input": {
+        "phase": "review-dispatch",
+        "construction_complete": false,
+        "proof_inventory_current": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "review-can-run-on-complete-successor",
+      "input": {
+        "phase": "review-dispatch",
+        "construction_complete": true,
+        "proof_inventory_current": true
+      },
+      "expected": "allow-review"
+    },
+    {
+      "id": "arrival-order-a",
+      "equivalence_group": "arrival-order",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "carrier_already_complete": false,
+        "finding_order": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "arrival-order-b",
+      "equivalence_group": "arrival-order",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "carrier_already_complete": false,
+        "finding_order": [
+          "c",
+          "a",
+          "b"
+        ]
+      },
+      "expected": "construction-normalization"
+    }
+  ]
+}

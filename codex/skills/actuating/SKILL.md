@@ -1,24 +1,37 @@
 ---
 name: actuating
-description: "Reconcile accepted intent with the exact current repository, validation, review, and publication state. Treat bugs as witnessed counterexamples to attributed Goal laws, quotient accepted classes into causal generators, normalize the affected construction so bug families become structurally impossible, and admit bug-driven direct repair only through Actuating's pure Ledger gate. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store."
+description: "Compile accepted review counterexamples into repository-native constructions that make the discovered invalid family unrepresentable or unadmittable across every sanctioned path. Use exhaustive review to acquire and later falsify a sufficient counterexample basis; preserve direct repair only for a proved isolated realization defect through Actuating's pure Ledger gate. Git is the realized construction; CAS owns review attempts; Ship owns public effects. Actuating keeps no durable workflow store."
 ---
 
 # Actuating
 
-Turn accepted intent and current owner-issued evidence into the smallest coherent
-current construction. Actuating is a **level-triggered architecture reconciler**:
+## Mission
+
+Turn review-generated counterexamples into a new legal state space.
 
 ```text
-accepted Goal
-+ exact current Git tree
-+ current validation
-+ current CAS review evidence
-+ current Ship/provider state
--> preserve, normalize, reconsider, realize, review, ship, close, or block
+frozen candidate
+-> sufficient counterexample basis
+-> invalid family
+-> admission topology
+-> earliest enforceable cut
+-> admitted semantic carrier
+-> producer migration
+-> bypass and compensator retirement
+-> construction proof
+-> adversarial review
 ```
 
-Actuating owns semantic synthesis and next-action judgment. It owns no parallel
-durable world.
+Actuating is a **counterexample-to-construction compiler**. A finding is evidence,
+not an edit instruction. The objective is not to make the reported example pass;
+it is to make the discovered invalid family impossible to construct, admit, or
+trust through every sanctioned path while preserving required-valid behavior.
+
+```text
+B' intersect Phi = empty
+required-valid subset B'
+every sanctioned producer factors through B'
+```
 
 ## Authority and fact ownership
 
@@ -26,619 +39,277 @@ durable world.
 |---|---|
 | What must be true? | accepted source or current user authority, compiled by `$goal-contract` |
 | What code exists now? | Git commit and tree |
-| What validation ran? | the exact test or verifier process |
+| What validation ran? | the exact verifier process |
 | What review ran? | CAS terminal review receipt |
 | What is published? | `$ship` and the provider |
-| What does a finding prove? | `$review-fold` classifies evidence and Goal authority |
-| What counterexample theory and causal basis survive? | `$actuating`, challenged by `$metanoetic` and architectonic adjudication |
-| What architecture should exist? | `$actuating`, using `$universalist` |
-| Is direct repair structurally admissible? | Actuating's passive definition, executed by Ledger over explicit current inputs |
+| What does a finding prove? | `$review-fold` |
+| What invalid family and construction survive? | `$actuating`, challenged by `$metanoetic` |
+| What repository-native architecture realizes it? | `$actuating`, using `$universalist` |
+| Which realized factors are redundant? | `$reduce`, interpreted by `$actuating` |
+| Is isolated restoration structurally admissible? | Actuating's passive definition executed by Ledger |
 | Is the result complete? | live Actuating judgment over current owner facts |
 
-`$first-principles` controls the admissible premise basis. `$review-fold`
-preserves witness provenance, classifies current applicability, and states
-whether a finding is entailed by the accepted Goal. `$metanoetic` may generate
-one bounded challenger on one unchanged theory decision surface. **OPERATE
-ARCHITECTONICALLY** to adjudicate the governing law, semantic domain, ownership,
-construction, composition, and proof. `$universalist` nominates repository-native
-architectures. `$reduce` challenges unearned factors, unnecessary precision,
-compensating guards, and wound-shaped proof.
-
 Supporting skills never select the target architecture or grant mutation.
-`$ship` alone performs public effects. CAS owns review execution and receipts.
-Ledger enforces Actuating's selected passive definition without selecting the
-repair or granting authority.
-
-Git is the realized construction. Working Sets, hotspot analyses, gate packets,
-PR descriptions, and prior threads are explanatory hypotheses; none outranks
-the current tree.
+Ledger checks one owner-defined isolated-restoration transition; it does not
+discover the construction. Git is the realized construction. Working Sets,
+review summaries, gate packets, and prior threads are hypotheses.
 
 ## Public routes
 
 | Intent | Route | Mutation | Terminal result |
 |---|---|---:|---|
 | Bare `$actuating` or `/goal $actuating` | implement -> Ship -> review-closeout | Explicitly authorized | `complete` |
-| `$actuating implement` | reconcile and implement locally | Explicitly authorized | local `complete` |
-| `$actuating triage` | acquire and classify review evidence | Forbidden | Review Fold and report |
-| `$actuating remediation-plan` | recompile a target architecture without editing | Forbidden | non-executable plan |
-| `$actuating review-closeout` | classify, normalize/reconsider, realize, Ship, and converge | Explicitly authorized | `complete` |
+| `$actuating implement` | compile and realize locally | Explicitly authorized | local `complete` |
+| `$actuating triage` | acquire and classify evidence | Forbidden | evidence and construction pressure |
+| `$actuating remediation-plan` | compile a non-executable construction | Forbidden | plan |
+| `$actuating review-closeout` | falsify, compile successor, realize, Ship, converge | Explicitly authorized | `complete` |
 
 An unqualified request to review, inspect, audit, or classify selects `triage`.
 Mutation requires explicit implement, fix, resolve, address, or closeout intent.
-These are workflow routes, not architectural change classes.
 
-Review-bearing routes accept request-local scheduling modifiers:
+Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.
+The modifier changes dispatch topology only; both modes acquire the complete
+initial five-lens falsification wave and require the same exact-head convergence.
 
-| Modifier | Selection | Effect |
-|---|---|---|
-| `parallel-reviews` | default when omitted | initial standard and four auxiliaries run concurrently |
-| `serial-reviews` | explicit opt-in | initial standard and each auxiliary run serially in contract order |
-
-These modifiers change review dispatch only. They do not select a route, alter
-mutation authority, remove a lens, weaken receipt quality, or change convergence.
-
-## Build the live Actuating View
+## Build the live view
 
 At entry and after every material external change, observe:
 
 ```text
 Goal
-  accepted laws, scope, compatibility, required valid behavior,
-  required observations, publication posture
+  accepted laws, scope, required-valid behavior, observations,
+  compatibility, publication posture
 
 Subject
-  repository, immutable base, current clean head, current tree
+  repository, immutable base, exact clean head, current tree
 
-Incumbent
-  boundaries, owner sets, representations, states, transitions, effects,
-  observations, recovery, enforcement roles, bypasses, factors, and residue
+Construction
+  admitted representations, constructors, transitions, owners,
+  sanctioned producers, trusted consumers, bypasses, derived guards,
+  compatibility and recovery paths
 
 Evidence
-  exact-head validation, CAS receipts, provider threads, incidents,
-  migration/compatibility failures, and Ship/provider state
+  current validation, CAS receipts, provider threads, incidents,
+  migration failures, post-elimination falsifiers, Ship/provider state
 ```
 
-Unknown, unavailable, or mismatched evidence receives no credit. If architecture
-cannot be recovered from code and ordinary documentation, treat that as a
-legibility defect—not a reason for an Actuating store.
+Unknown or mismatched evidence receives no credit. If the construction cannot be
+recovered from code and ordinary documentation, treat that as a legibility
+defect—not a reason for an Actuating database.
 
-Read [architecture-reconciliation.md](references/architecture-reconciliation.md)
-when mutation may change architecture or abstractions.
+## Finding authority
 
-## Review-finding authority
-
-Before a review finding becomes current counterexample pressure, require
-`$review-fold` to classify its relationship to accepted authority:
+Before a finding becomes counterexample pressure, require `$review-fold` to
+classify its relation to accepted authority:
 
 ```text
-entailed
-  demonstrable consequence of an accepted Goal law;
-  may falsify the current implementation or architecture
-
-strengthening
-  beneficial property not required by the current Goal;
-  non-blocking follow-up unless authority adopts it
-
-preference
-  reviewer-selected design preference with no current correctness obligation;
-  reject as current liability
-
-new-requirement
-  legitimate requirement not yet in the Goal;
-  reopen Goal authority before implementation
-
-underdetermined
-  current evidence cannot decide whether the property is required;
-  block that decision and seek authority
+entailed          may falsify the current construction
+strengthening     follow-up unless adopted
+preference        reject as current liability
+new-requirement   reopen Goal authority
+underdetermined   block pending authority
 ```
 
-Only `entailed` findings may automatically enter the current counterexample
-theory. Review evidence may falsify accepted semantics; it may not continuously
-author new semantics.
+Review may falsify accepted semantics; it may not silently author new semantics.
 
-## Bugs as counterexamples
-
-A bug is one witnessed counterexample to a named law. It is neither a patch
-instruction nor the complete invalid family.
-
-For boundary-relevant bugs, read
-[semantic-hotspots.md](references/semantic-hotspots.md). A selected theory is:
-
-```text
-Theta = (Omega, Alpha, L, Phi, A, O, C, Vh, Q)
-```
-
-where:
-
-```text
-Omega  semantic observation domain
-Alpha  witness/incumbent/candidate interpretations into Omega
-L      governing law
-Phi    abstract invalidity predicate or generator
-A      sanctioned admission semantics
-O      current and candidate owner model
-C      one admission frontier or a minimal admission cut
-Vh     validity horizon over version, schema, environment, and time
-Q      weakest supporting claim strength
-```
-
-For candidate `K`, comparison universe `U_K`, admitted behavior
-`B_K subset U_K`, and `alpha_K : U_K -> Omega`, concrete safety requires over
-the declared validity horizon `Vh`:
-
-```text
-Totality
-  alpha_K(u) is defined for every u in U_K
-
-Violation reflection
-  Bad_L(u) -> Phi(alpha_K(u))
-
-Abstract exclusion
-  b in B_K -> not Phi(alpha_K(b))
-
-Goal adequacy
-  every Goal-required valid behavior remains admitted and every
-  Goal-required observation retains its accepted meaning
-```
-
-Diagnostic exactness is separate. A sound conservative abstraction may reject
-optional safe behavior without leaving residual incorrectness.
-
-## Counterexample-guided normalization
-
-Read
-[counterexample-guided-normalization.md](references/counterexample-guided-normalization.md)
-before any bug-driven mutation.
-
-```text
-T(n+1) = quotient(T(n) + newly accepted applicable classes)
-
-R(n+1) != patch(R(n), latest finding)
-
-R(n+1) = realize(normal_form(Goal, causal_basis(T(n+1)), obligations))
-```
-
-**Knowledge is monotone. Realization is not.**
-
-Before selecting mutation:
-
-1. Fold every currently applicable accepted class, not only the latest wave.
-2. Map each class to one causal generator or an evidenced instance-specific
-   exception.
-3. Require every generator to name its law, canonical owner, admission cut,
-   family-level mechanism, proof family, evidence, and falsifier.
-4. Reject another member-specific production or proof factor for an established
-   generator unless non-example separation proof establishes independent
-   semantics.
-5. Select a target whose result is invariant to finding arrival order, or retain
-   explicit incomparable minima.
-
-A generative theory requires a generative realization. Observed examples may
-remain minimal boundary witnesses; they may not become the production
-architecture's vocabulary unless the Goal requires their distinctions.
-
-## Direct-repair admission gate
-
-Actuating uses exactly one normalization gate:
-`actuating/direct-repair-admission`. It governs the dangerous transition in
-which the current theory and architecture are preserved while their realization
-changes.
-
-Run it once for each causal generator whose selected successor disposition is a
-bug-driven direct repair, including `retain-theory-reprove` after a revoked
-elimination lease. Do not run it for mechanical edits without a
-correctness-bearing semantic delta, non-mutating work, or a selected architecture
-successor that already acknowledges a changed semantic model.
-
-Build one repository-grounded `actuating-direct-repair-admission/v1` packet for
-exactly one complete causal generator and execute the passive definition:
-
-```bash
-actuating_gate_definition="$(
-  realpath \
-    "${CODEX_HOME:-$HOME/.codex}/skills/actuating/definitions/ledger/direct-repair-admission.json"
-)"
-
-ledger materialize \
-  --definition "$actuating_gate_definition" \
-  --input gate=<direct-repair-admission.json> \
-  --format json
-```
-
-Before the first Ledger command in the workflow, load `$ledger` and complete
-`$ledger ensure` once.
-
-Admission requires, from structured current inputs:
-
-```text
-exactly one causal generator and every accepted class mapped to it
-unchanged predecessor/successor semantic-model identity
-complete affected-factor disposition for that generator
-an existing family-level mechanism being restored
-no semantic-constructor delta
-no member-specific production factor
-no new independent enforcement site
-no unowned or newly redundant affected factor
-```
-
-The definition rejects a packet containing more than one causal generator. A
-complete successor may contain several independent direct repairs; materialize
-one packet per generator against the exact current predecessor head immediately
-before that generator's complete repair. The admitted generator repair may span
-several coherent realization commits; track its completion separately and keep
-the original gate bound to the generator's starting predecessor. After any
-intervening generator changes the head, the next generator's packet must bind
-that new exact predecessor. Never materialize per finding or named member, and
-never materialize more than once for one generator in the current evidence cut.
-
-Do not substitute conclusion booleans for repository-grounded sets, mappings,
-paths, identities, and evidence.
-
-```text
-valid materialization
-  -> Actuating may perform the exact admitted direct repair
-
-invalid materialization
-  -> direct repair is forbidden
-  -> recompile and realize a normal-form architecture
-     or return blocked when evidence is insufficient
-```
-
-The materialization is pure and creates no durable gate state. A changed Goal,
-predecessor head, evidence set, theory, semantic model, factor inventory, or
-proposed delta requires fresh execution. Ledger does not select the repair or
-grant mutation.
-
-## Architecture closure
-
-Preserve the incumbent only when its existing authority and frontier/cut can
-exclude every current causal generator from every sanctioned path at the stated
-strength, through a total violation-reflecting interpretation, while preserving
-every required valid behavior and observation.
-
-The incumbent must already contain a family-level mechanism for each generator.
-A convenient place for another check, or a set of guards that happens to reject
-all observed examples, is not closure. Reopen architecture when the law,
-semantic domain, interpretation, owner, representation, state space, admission
-coverage, recovery semantics, sanctioned escape surface, or family-level
-mechanism must change.
-
-## Elimination is a revocable theory lease
-
-`eliminated` is a head- and evidence-relative claim, not stored truth.
-
-A currently applicable `entailed` witness that belongs to or satisfies the
-reconsideration falsifier of the eliminated family, within its declared validity
-horizon, **revokes that elimination immediately**. A same-law witness from an
-established disjoint family or outside that horizon does not falsify the scoped
-claim. Unknown family or horizon relation is `unresolved`, not revocation or
-retention by assumption.
-
-Before any further mutation, read
-[post-elimination-falsification.md](references/post-elimination-falsification.md)
-and identify the failed premise:
-
-```text
-Goal/law authority
-current applicability
-validity horizon Vh
-Omega / Alpha
-Phi or family partition
-comparison universe U / admitted behavior B
-sanctioned admission A / frontier or cut C
-owner model O
-realization K
-proof or path coverage
-claim strength Q
-```
-
-Then choose exactly one:
-
-```text
-retain-theory-reprove
-revise-theory
-split-theory
-revise-admission
-revise-interpretation
-revise-owner
-reopen-goal
-follow-up
-reject-finding
-unresolved
-```
-
-`retain-theory-reprove` may request direct repair only after localizing the
-failure to realization or proof and passing direct-repair admission. Otherwise
-recompile before mutation. Unknown failure location is `unresolved`.
-
-## Generative reach and sibling prediction
-
-A family theory earns elimination by predicting more than the examples already
-seen.
-
-Before the first or any successor `eliminated` disposition, state either:
-
-```text
-an exhaustive finite-domain proof
-```
-
-or:
-
-```text
-predicted sibling counterexamples
-the law and generator that imply them
-sanctioned paths that could admit them
-the owner mechanism intended to exclude them
-the probes used to search for them
-```
-
-Passing repaired examples alone never reissues elimination. Failed sibling probes
-reopen the theory or proof. When no meaningful sibling prediction or exhaustive
-argument is available, retain `hypothesized`, `bounded`, `contained`, or
-`unresolved` rather than claiming family-level closure.
-
-## Architecture reconsideration
-
-When architecture or theory reopens:
-
-1. Compile the current Goal and freeze an incumbent-independent premise basis.
-2. Run `$review-fold`; preserve provenance, applicability, law authority, and
-   post-elimination relation.
-3. Derive the complete ordinary counterexample theory, causal basis, and
-   falsifier.
-4. Run one bounded `$metanoetic` challenger when the theory or incumbent
-   mechanism is detection-shaped, enumerative, representation-bound,
-   violation-erasing, contradicted, owner/topology-captive,
-   solution-class-captive, optimizing an incumbent-generated burden, or merely
-   one plausible frame.
-5. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or leave the
-   theory unresolved.
-6. Derive one admission frontier or minimal cut.
-7. Ask `$universalist` for repository-native candidates and explicit family-level
-   falsifiers. Lower every retained Metanoetic mechanism challenger.
-8. Permit one bounded theory/architecture co-refinement before selection.
-9. Ask `$reduce` to reject compensating detection, witness enumeration,
-   violation erasure, wound-shaped proof, unnecessary precision, and unearned
-   factors.
-10. Establish the correctness and normalization Pareto frontier before
-    minimizing realization cost.
-11. Treat a candidate that preserves member-specific enforcement for an
-    established generator as dominated by an admissible family-level
-    realization.
-12. State the selected theory, causal basis, architecture delta, factor
-    dispositions, proof, predicted siblings, and reconsideration falsifier
-    before mutation.
-
-Accepted findings never map directly to patches. File proximity, bug count,
-review order, implementation momentum, and incumbent vocabulary do not select
-the theory or architecture.
-
-## Architecture Working Set
-
-For a material implementation epoch retain in the active thread or accepted
-implementation specification:
-
-```text
-Bound head / Goal / incumbent / falsified laws
-Witness provenance / applicability / law authority / detection surface
-Observational classes and complete causal basis
-Theta_0 / Metanoetic challenger / architectonic disposition
-Omega / Alpha / Phi / A / O / C / Vh / Q
-Family-level mechanism for each generator
-Safety adequacy / Goal adequacy / normalization posture
-Selected target / preserve / replace / retire / distinct-obligation
-Direct-repair packet and materialization identity per admitted generator
-Current elimination lease, if any:
-  issued head / theory / family / validity horizon / reconsideration falsifier
-  proof / claim strength
-  predicted siblings / probes
-Post-elimination falsifier, if any:
-  witness / failed premise / lease disposition
-Successor sibling predictions / probe results
-Disposition: eliminated | contained | obstructed | unresolved
-Residual invalidity and owner / proof / reconsider when
-```
-
-The Working Set is ephemeral. Refresh it whenever the head, Goal, theory,
-causal basis, interpretation, authority classification, failed premise, owner
-set, cut, factor inventory, or target changes. Do not add a registry,
-predecessor chain, score, receipt family, event log, or durable gate store.
-
-## Realization
-
-The complete affected construction is the semantic decision unit. One coherent
-edit is only a realization unit.
-
-For each coherent edit:
-
-```text
-clean current head
--> exact intended delta
--> provisional diff
--> inspect complete diff and changed paths
--> run the strongest relevant verification
--> commit one coherent result
--> refresh the live view
-```
-
-Git owns parent/successor identity, paths, ancestry, and recovery.
-
-Before closure-grade review, the selected target must be completely realized:
-
-```text
-every generator has one family-level mechanism
-every affected predecessor factor is preserved, replaced, retired,
-  or retained for a distinct current obligation
-every correctness-bearing production factor has a current owner and obligation
-proof is recomposed at the strongest feasible generator level
-all required retirements and bypass closures are complete
-```
-
-For bug-driven work prove:
-
-```text
-current-witness rejection
-totality and violation reflection
-abstract exclusion
-required-valid and required-observation preservation
-frontier/cut and escape-path coverage
-complete class-to-generator or proved-exception mapping
-family-level realization for every generator
-family-level or exhaustive proof
-predicted-sibling probes
-honest residual ownership
-claim strength matching the weakest evidence
-```
-
-Use:
-
-```text
-eliminated  concrete law violations excluded at the stated strength
-contained   concrete invalidity, path/reflection coverage, or an external
-            residual remains admitted
-obstructed  required exclusion is unavailable under accepted constraints
-unresolved  theory, authority, safety/Goal adequacy, ownership, or proof unknown
-```
-
-Conservative exclusion of optional safe behavior is not containment.
-
-## Review evidence and convergence
+## Evidence acquisition before mutation
 
 Read [review-contract.md](references/review-contract.md).
 
-### Review candidate invalidation
-
-Closure review may falsify one completely realized and proved candidate; it may
-not construct its successor.
-
-Candidate status is derived live:
+A material `entailed` finding:
 
 ```text
-realizing
-  selected construction or Goal-required proof inventory is incomplete
-
-reviewable
-  complete selected construction and proof are current on one exact head
-
-invalidated
-  an applicable entailed material finding falsified that candidate
+invalidates the reviewed candidate immediately
+sets review credit to zero
+closes mutation
+does not request a patch
 ```
 
-Before a candidate becomes `reviewable`, derive the complete set of
-Goal-required repository-local proofs, compatibility checks, and preserved proof
-classes from the accepted Goal and current repository contracts. Every required
-proof must have either an exact-head passing observation or an authority-backed
-`not-applicable` disposition. Aggregate proof receives credit only when its
-declared dependency graph covers the required proof. A summary boolean, narrower
-aggregate, or intention to run remaining proofs during final closure is not
-review-entry evidence.
+Complete the remaining **initial** independent lenses against the frozen
+candidate solely to acquire counterexamples. In parallel mode, wait for every
+launched semantic outcome and required recovery. In serial mode, continue the
+remaining initial lenses after invalidation, but do not mutate and grant no clean
+credit. A material confirmation finding stops further confirmations because the
+initial falsification wave is already complete.
 
-Post-review closure may refresh already-established evidence and perform
-publication or provider readback. It may not run a known required
-repository-local proof for the first time. If it does, the candidate was never
-reviewable; discard all review credit, return to `realizing`, close the proof
-inventory on the successor head, and only then restart review.
+Only after that semantic barrier may Actuating close one cumulative evidence cut
+and select a successor. Review remains closed until the successor is completely
+realized, proved, and `reviewable`.
 
-Only `reviewable` may dispatch closure review. A material finding invalidates the
-candidate immediately. The reconciliation epoch is merely the interval from
-that invalidation until a completely selected, realized, and proved successor
-becomes reviewable; it creates no store, identity, receipt, score, or gate.
+## Compile the counterexample basis
 
-Before mutation, close the current semantic evidence cut, including required
-request-local recovery, then complete the applicable class fold, causal basis,
-affected-factor dispositions, sibling or exhaustive disposition, and one target
-invariant to arrival order inside that cut. Review remains closed across every
-coherent realization commit and reopens only on the successor's final head.
+Read
+[counterexample-guided-normalization.md](references/counterexample-guided-normalization.md)
+and [semantic-hotspots.md](references/semantic-hotspots.md).
 
-For direct repair, successor selection is global but admission is
-causal-generator-local. Materialize one complete packet per admitted generator
-against its exact current predecessor head, at most once for that generator in
-the evidence cut. Never materialize per finding or named member.
+For every current causal generator state:
 
-A same-generator successor witness after a prior repair revokes that repair's
-family-sufficiency claim. Another named-member extension is forbidden unless
-non-example separation establishes independent semantics. Retaining the family
-requires generative or exhaustive evidence for the existing mechanism;
-otherwise reconsider architecture, theory, admission, interpretation, or owner.
+```text
+accepted findings and provenance
+observational class
+governing law
+invalid family Phi
+predicted siblings or exhaustive domain
+current admitted domain
+all sanctioned producers and paths
+trusted consumers
+current semantic owners and bypasses
+earliest enforceable cut
+successor admitted semantic carrier
+producer migrations
+bypasses retired or contained
+downstream compensators retired or demoted
+required-valid preservation
+construction falsifier
+```
 
-Bind review to repository, immutable base, exact head, CAS target fingerprint,
-Goal/acceptance digest, Review Contract digest, and optional pre-review Ship
-observation digest.
+A generative theory requires a generative construction. Observed examples may
+remain minimal witnesses; they may not become the production vocabulary unless
+the Goal requires their distinction.
 
-For the unchanged head:
+## Exactly two bug-driven mutation routes
 
-- select `parallel-reviews` when no scheduling modifier is supplied;
-- in `parallel-reviews`, launch the initial standard plus four compact
-  auxiliaries concurrently and never cancel siblings;
-- in `serial-reviews`, launch the initial standard, footgun-finder,
-  invariant-ace, complexity-mitigator, and fresh-eyes one at a time, adjudicating
-  each terminal result before dispatching the next;
-- require every terminal semantic verdict and allow one request-local recovery
-  for verdictless transport failure;
-- count a clean initial standard as clean one;
-- run later standard confirmations serially;
-- require five consecutive distinct standard cleans;
-- after a material head change, reset all credit and restart the selected
-  schedule at its initial standard only after the successor is reviewable;
-- in `serial-reviews`, never dispatch the next review after an adjudicated
-  material finding invalidates the candidate.
+### Construction normalization
 
-Every finding passes through `$review-fold`. Credit only exact CAS receipts.
-Never reconstruct credit from prose, process exit, or claimed counts.
+Use when the admitted carrier, constructor, representation, transition relation,
+canonical owner, enforceable cut, producer topology, public capability surface,
+or bypass set must change.
 
-Repeated review is stochastic falsification of a complete selected
-construction. Do not use closure-grade review to finish a half-realized
-architecture one finding at a time.
+The selected successor must:
 
-## Publication and live closure
+```text
+exclude Phi at one canonical construction/admission mechanism
+migrate every sanctioned producer through that mechanism
+preserve required-valid behavior and observations
+close or explicitly contain every bypass
+retire or demote downstream primary compensators
+supply family-level or exhaustive proof
+```
 
-Bare invocation and publication-bearing closeout hand exact Git and validation
-facts to `$ship`.
+### Isolated restoration
 
-Read [closure.md](references/closure.md). Completion is recomputed from current
-owner facts. It requires current Goal satisfaction, exact-head validation,
-realized architecture and retirements, authoritative finding classification,
-complete causal coverage, family-level realization, sound family exclusion, no
-unadjudicated post-elimination falsifier, required publication, and exact-head
-review convergence.
+Use only when the construction theorem was already true before the edit:
 
-A safe but wound-shaped realization is not complete.
+```text
+the existing carrier already excludes the complete family
+the canonical owner and earliest cut are already correct
+every sanctioned producer already factors through them
+no bypass can mint or reinterpret trusted state independently
+the defect is localized to realization or proof
+the edit restores the existing family mechanism
+```
+
+Then execute the existing pure Ledger definition
+`actuating/direct-repair-admission`. This compatibility ID remains unchanged;
+semantically it admits only isolated restoration.
+
+If neither route is established, mutation is `blocked` or the result is honest
+`contained` residual—not a convenient local improvement.
+
+## Architecture compilation
+
+When construction normalization is required:
+
+1. Freeze the incumbent-independent premise basis with `$first-principles`.
+2. Fold the complete evidence cut with `$review-fold`.
+3. Derive the ordinary invalid family, admission topology, and carrier pressure.
+4. Run one bounded `$metanoetic` challenger when the family, carrier, owner, cut,
+   representation, or solution class may be wrong or incumbent-captive.
+5. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or return
+   `unresolved`.
+6. Ask `$universalist` to lower the surviving carrier and producer-factorization
+   theorem into repository-native candidates.
+7. Ask `$reduce` to find duplicate owners, downstream primary compensators,
+   wound-shaped proof, and factors made redundant by the selected carrier.
+8. Select by constructional dominance before lifecycle cost:
+   - invalid-family exclusion;
+   - producer factorization;
+   - canonical ownership;
+   - bypass closure;
+   - required-valid preservation;
+   - family-level proof;
+   - compensator retirement.
+9. Preserve material incomparability rather than manufacturing dominance.
+10. State the selected theorem and falsifier before mutation.
+
+Ablation is a consequence of the selected construction. Do not make deletion,
+raw line count, or a comparison packet the primary objective.
+
+## Construction Working Set
+
+Retain only in the active thread or accepted implementation specification:
+
+```text
+Bound Goal / base / exact head
+Counterexample basis / invalid family / sibling dimensions
+Admitted domain / sanctioned producers / trusted consumers
+Canonical owner / earliest enforceable cut / admitted carrier
+Producer migrations / bypass dispositions
+Required-valid and compatibility proofs
+Compensators: preserve-derived / replace / collapse / retire / privatize
+Construction-normalization or isolated-restoration route
+Direct-repair materialization identity, only for isolated restoration
+Elimination lease and failed premise, if any
+Construction falsifier / residual invalidity / claim strength
+```
+
+The Working Set is ephemeral. Add no registry, score, predecessor chain, event
+log, receipt family, or durable candidate store.
+
+## Realization and proof
+
+The complete construction is the semantic decision unit. A coherent commit is
+only a realization unit.
+
+Before closure-grade review, prove on one exact final head:
+
+```text
+counterexample-family proof
+carrier-exclusion proof
+required-valid and required-observation proof
+producer-factorization proof
+bypass-closure proof
+compensator-retirement proof
+complete Goal-required proof inventory
+```
+
+For finite domains, exhaust the relevant state space. For open domains, state
+sibling dimensions before implementation and probe every sanctioned admission
+path.
+
+## Review and closure
+
+The five review lenses falsify one completed construction:
+
+```text
+standard              admitted Phi member or lost required behavior
+footgun-finder        bypass, illicit mint, or unsafe producer path
+invariant-ace         carrier or transition invariant failure
+complexity-mitigator  duplicate semantic owner or primary compensator
+fresh-eyes            earlier enforceable cut or materially better carrier
+```
+
+A same-family successor finding means the family, carrier, cut, factorization,
+bypass closure, realization, or proof was incomplete. Reopen the construction
+decision; never append another named-member guard under the same claim.
+
+Read [closure.md](references/closure.md). Final completion still requires exact
+Git, validation, Ship/provider, CAS, and five-consecutive-standard-clean
+evidence. Review is adversarial falsification, not incremental architecture
+authorship.
 
 ## Hard rules
 
-- No durable Actuating workflow store, event log, replacement database, bug
-  Ledger, hotspot registry, score, threshold, receipt family, or migration
-  layer. The pure direct-repair definition is the only Actuating Ledger gate.
-- Do not map a finding directly to a patch.
-- Do not select mutation from the latest review wave alone.
-- Do not dispatch review unless the current candidate is completely realized,
-  proved, and reviewable.
-- Do not dispatch or credit review while any Goal-required proof is unrun,
-  stale, covered only by an unproved aggregate dependency, or deferred to
-  post-review closure.
-- Do not redispatch review between member repairs or coherent commits after
-  candidate invalidation.
-- Do not materialize one direct-repair packet for multiple causal generators.
-- Do not materialize direct repair more than once per causal generator in one
-  evidence cut.
-- Do not let review author a new Goal silently.
-- Do not add a second same-generator member-specific factor without separation
-  proof.
-- Do not answer same-generator recurrence with another enumerative member
-  extension unless separation proves an independent obligation.
-- Do not hide a new semantic constructor inside direct repair.
-- Do not preserve an `eliminated` disposition after a current entailed witness
-  falsifies the exact family claim inside its validity horizon.
-- Do not mutate under a revoked lease before failed-premise localization and,
-  when direct repair is proposed, successful gate materialization.
-- Do not reissue elimination from repaired examples alone.
-- Do not call sibling discovery after the fact a prior prediction.
-- Do not claim recurrence, theory adequacy, normalization, family exclusion, or
-  convergence beyond available evidence.
-- Preserve direct owner-local repair for an isolated mistake only when the
-  incumbent already excludes the family and the direct-repair gate admits the
-  exact proposed restoration.
-- Delete or narrow the gate if watched use shows that it changes packets but not
-  successor code shape, repeatedly blocks legitimate isolated repairs, or costs
-  more than the accretion it prevents.
+- No finding-to-patch mapping.
+- No mutation before the complete initial falsification wave and evidence cut.
+- No member-specific repair for an established family without separation proof.
+- No construction claim without every sanctioned producer and bypass.
+- No closure from repaired examples alone.
+- No durable Actuating workflow, corpus, carrier, factor, gate, or closure store.
+- No second Actuating Ledger definition; isolated-restoration admission is the
+  sole transition gate.
+- No factor-first or line-count-first architecture selection.
+- No review dispatch on an incomplete construction or proof inventory.
+- No silent Goal expansion.
+- Keep `$metanoetic` before `$universalist`; do not add a second pass.
 - Complete object-level work before optional learnings or memory capture.

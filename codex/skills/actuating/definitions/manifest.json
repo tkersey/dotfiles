@@ -4,10 +4,6 @@
   "seq": [],
   "ledger": [
     {
-      "id": "actuating/cumulative-ablation-basis",
-      "path": "ledger/cumulative-ablation-basis.json"
-    },
-    {
       "id": "actuating/direct-repair-admission",
       "path": "ledger/direct-repair-admission.json"
     }

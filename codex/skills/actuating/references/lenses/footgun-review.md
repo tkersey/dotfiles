@@ -1,24 +1,18 @@
 # Footgun Review Lens
 
-Independently inspect the exact bound subject for an easy or obvious use that a
-reasonable caller, maintainer, or operator could mistake for safe success.
+Independently search the exact bound candidate for an easy path that appears safe
+but bypasses the admitted construction.
 
-For each material finding name:
+Prioritize:
 
 ```text
-actor
-easy path
-reasonable belief
-hidden fact
-plausible consequence
-affected law or boundary
-smallest mitigation class
+alternate constructors or public mints
+compatibility, recovery, retry, migration, or serialization bypasses
+adapters that reinterpret raw state independently
+partial-success or lifecycle paths that skip admission
+unsafe examples that teach callers to bypass the canonical owner
 ```
 
-Prioritize unsafe defaults, silent degradation, ambiguous authority, partial
-success, lifecycle traps, idempotency or concurrency traps, compatibility traps,
-and copyable unsafe examples.
-
-Return one structured `clean` or `findings` verdict. Do not implement, choose the
-architecture, launch `$footgun-finder`, invoke companion skills, persist an
-artifact, or grant mutation or closeout.
+For each finding name the actor, easy path, reasonable belief, hidden bypass,
+consequence, and affected law. Return `clean` or `findings`. Do not select or
+implement a repair.

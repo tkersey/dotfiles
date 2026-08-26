@@ -1,165 +1,213 @@
 # Static Review Contract
 
-Actuating owns one checked-in review policy:
+Actuating owns one checked-in policy:
 [review-contract.json](review-contract.json). It is source policy, not mutable
-per-goal state and not a Ledger definition.
+workflow state.
 
-## Contract identity and CAS boundary
+## Binding and CAS authority
 
-Bind every request to the exact repository, base, head, target fingerprint, Goal
-and acceptance context, Review Contract bytes, lens instruction bytes, and
-optional pre-review Ship observation. CAS owns execution and terminal receipts.
-Actuating checks owner-issued fields directly and never copies receipts into a
-workflow store.
+Read the exact Review Contract bytes and every required lens instruction byte.
+Do not trim or normalize them.
 
-The required lenses, parallel/serial scheduling, request-local recovery, and
-five-consecutive-standard-clean theorem remain unchanged.
+Build one canonical ephemeral context:
+
+```yaml
+review_context:
+  repository:
+  base_sha:
+  head_sha:
+  target_fingerprint:
+  goal:
+    objective:
+    non_goals: []
+    required_observations: []
+    compatibility: []
+  proof_inventory_digest:
+  validation_summary:
+  publication_observation_ref: null | sha256-digest
+```
+
+Compute:
+
+```text
+campaign_id = sha256(
+  "actuating-review-campaign/v3" || NUL ||
+  repository || NUL || base_sha || NUL || head_sha || NUL ||
+  target_fingerprint || NUL || review_contract_digest || NUL ||
+  review_context_digest
+)
+
+request_fingerprint = sha256(
+  "actuating-review-request/v3" || NUL ||
+  campaign_id || NUL || request_id || NUL || lens_name || NUL ||
+  role || NUL || instruction_digest
+)
+```
+
+Supply only the request ID and fingerprint through CAS's workflow binding.
+Actuating retains the expected context during the active run. CAS owns execution
+and terminal receipts. Credit only a structured semantic verdict with strong
+principal evidence, exact current tuple, exact instruction and workflow binding,
+and backend capability required by the JSON contract. Process exit, prose, or a
+thread handle is not a verdict.
+
+The five required lenses and five-consecutive-standard-clean theorem remain
+unchanged.
 
 ## Candidate lifecycle
 
-Candidate status is a live judgment:
-
 ```text
 realizing
-  selected construction or strongest proof incomplete
+  construction theorem or exact-head proof inventory incomplete
 
 reviewable
-  complete selected construction, factor dispositions, retirements, bypass
-  closures, and complete Goal-required proof inventory current on one exact head
+  counterexample basis, carrier, producer migrations, bypass closure,
+  compensator dispositions, and required proof inventory complete on one head
 
 invalidated
-  applicable entailed material finding falsified the reviewable candidate
+  applicable entailed material finding falsified the candidate
 ```
 
-Only `reviewable` may dispatch closure review. A material finding invalidates the
-candidate immediately; it does not request a patch. The reconciliation epoch is
-the derived interval until a completely selected, realized, and proved successor
-becomes reviewable. It has no identity, store, receipt, or additional gate.
+Only `reviewable` may dispatch closure review.
 
 ## Review entry
 
-Closure review requires:
+Require on the exact head:
 
 ```text
-complete retained applicable finding corpus
-complete finding-to-class-to-generator coverage
-complete affected production and proof factor fold
-one family mechanism or honest residual per generator
-no known dominated factor
-predicted-sibling or exhaustive disposition
-all selected collapse, retirement, replacement, privatization, and bypass work
-  realized
-complete Goal-required proof inventory current on the exact head
+complete accepted Goal and proof inventory
+complete current counterexample basis
+invalid family and sibling/exhaustive disposition
+admission graph
+earliest enforceable cut and admitted carrier
+every sanctioned producer disposition
+every bypass disposition
+required-valid and compatibility proof
+downstream primary compensator disposition
+all selected migration and retirement work realized
 ```
 
-Derive the required set from the accepted Goal and current repository contracts;
-do not substitute a summary conclusion. Each entry must be unique and have either
-exact-head passing evidence or an authority-backed `not-applicable` disposition.
-A passing aggregate covers another required proof only when its declared
-dependency graph includes that proof.
+Each proof-inventory entry must be unique and have exact-head passing evidence or
+authority-backed `not-applicable`. Aggregate proof credit is valid only when the
+declared dependency graph covers the required proof.
 
-No known required proof may be deferred to a post-review final closure audit.
-After review convergence, closure may refresh existing evidence or perform
-publication/provider readback, but it may not execute a required repository-local
-proof for the first time. Such a discovery proves the reviewed candidate was
-never `reviewable`, invalidates all review credit, and returns the candidate to
-`realizing`.
+A known required proof may not first run after review convergence. Such a
+discovery proves the candidate was never reviewable and invalidates all credit.
 
-Review is stochastic falsification of a completed construction, not a mechanism
-for finishing it.
+## Invalidation versus evidence acquisition
 
-## Scheduling
-
-### Parallel
-
-Launch the initial standard and four auxiliaries concurrently and never cancel a
-sibling. A material finding invalidates the candidate immediately, closes new
-dispatch, and waits for every already-launched request—including required
-recovery—to reach a semantic outcome before the evidence cut closes.
-
-### Serial and confirmation
-
-Dispatch one request at a time. An accepted material finding invalidates the
-candidate after that request's semantic outcome; do not dispatch the next
-request or confirmation.
-
-## Cumulative evidence cut
-
-After invalidation, close one cut containing:
+A material finding immediately:
 
 ```text
-all semantic outcomes for already-launched requests
-all retained still-applicable findings across the accepted Goal lineage
-all law-authority and applicability classifications
-all executable finding witnesses
-all required-valid behavior and observation proofs
-all compatibility and migration proofs
-current Git factor topology and ancestry
-same-generator history and elimination falsifiers
-predicted-sibling probes or exhaustive-domain bases
+invalidates the candidate
+sets all review credit to zero
+closes mutation and new confirmation dispatch
+does not request a patch
 ```
 
-The cut is cumulative, not latest-wave-only. A new subject changes freshness and
-factor topology, not semantic history.
+The initial independent falsification wave must still complete against the
+frozen candidate.
 
-## Whole-corpus successor selection
+### Parallel mode
 
-Before mutation:
+Launch all five initial owner-live requests and never cancel siblings. Wait for
+every launched request, including required request-local recovery, to reach a
+semantic outcome before closing the evidence cut.
 
-1. quotient the retained corpus into causal generators or proved exceptions;
-2. map every affected production and proof factor;
-3. assign `preserve | replace | collapse | retire | privatize |
-   distinct-obligation`;
-4. construct the smallest plausible subtractive candidate;
-5. run all retained witnesses, required-valid proofs, compatibility proofs, and
-   the strongest family falsifier against it;
-6. select subtraction when it passes;
-7. only after subtraction fails or is proved not meaningful consider the
-   smallest replacement or direct restoration;
-8. record each generator's successor disposition independently;
-9. select one target invariant to evidence arrival order inside the cut, or
-   retain explicit incomparable minima.
+### Serial mode
 
-A same-generator named-member extension is forbidden without non-example
-separation. A passing quotient candidate dominates additive repair.
+After the first material finding, continue the remaining initial lenses in the
+static order against the same frozen head **for evidence only**:
 
-Review remains closed while the target is realized. No intermediate head is
+```text
+no mutation
+no clean credit
+no successor assumptions
+```
+
+This completes the same counterexample basis as parallel mode without concurrent
+dispatch.
+
+### Standard confirmation
+
+The initial five-lens wave is already complete. A material confirmation finding
+invalidates the candidate and stops further confirmation; no additional lens
+wave is implied.
+
+### Request-local recovery
+
+A verdictless terminal contributes no semantic outcome or clean credit. It may
+receive one fresh exact-request recovery. Required recovery remains part of the
+semantic barrier after invalidation. A second verdictless terminal blocks.
+
+## Evidence cut and successor
+
+After the initial semantic barrier, close one cumulative cut containing all
+retained applicable findings, current classifications, witnesses, sibling probes,
+required-valid proofs, compatibility proofs, and current construction topology.
+
+Actuating then compiles one successor:
+
+```text
+invalid family
+-> admission graph
+-> earliest cut
+-> admitted carrier
+-> producer migration
+-> bypass closure
+-> compensator retirement
+-> exact-head proof
+```
+
+Review stays closed across realization commits. No intermediate head is
 reviewable.
 
-## Direct repair inside one successor
+## Two routes
 
-Successor selection is global; direct-repair admission is generator-local and
-downstream of the subtractive contest.
+Per causal generator:
 
-For each unchanged-model generator:
+```text
+construction-normalization
+isolated-restoration
+```
 
-- build one packet containing the cumulative cut, every finding and class mapped
-  to that generator, every affected factor, the failed quotient candidate, and
-  family-completeness proof;
-- materialize against the exact current predecessor immediately before the
-  generator's complete repair;
-- materialize at most once for that generator in the cut;
-- allow coherent commits until explicit generator completion;
-- never materialize per finding or named member.
+Isolated restoration uses one generator-local
+`actuating/direct-repair-admission` materialization bound to the exact starting
+predecessor. One admitted generator may span coherent commits until complete;
+a later generator gates against the then-current predecessor. Materialize at
+most once per generator and never per finding. Architecture successors do not
+use that gate.
 
-A passing subtractive candidate has no valid direct-repair packet. Architecture
-successors do not use the gate.
+## Lens obligations
 
-## Request-local recovery and convergence
+```text
+standard
+  find an admitted family member or lost required-valid behavior
 
-A verdictless terminal request contributes no semantic attempt, may receive one
-fresh exact-request recovery, and blocks after a second verdictless result.
-Required recovery remains part of the semantic barrier after invalidation.
+footgun-finder
+  find a bypass, illicit mint, unsafe adapter, or alternate producer
 
-After a successor becomes reviewable, restart the selected schedule on its final
-head. Five consecutive distinct standard cleans remain required. No credit
-crosses a material head change.
+invariant-ace
+  falsify carrier closure, legal transitions, or composition
 
-## Resumption and findings
+complexity-mitigator
+  find duplicate semantic owners or downstream primary compensators
 
-Credit only exact receipts whose complete binding can be revalidated. If the
-complete current evidence set cannot be resolved, restart from the initial
-standard.
+fresh-eyes
+  find an earlier enforceable cut, better carrier, or erased distinction
+```
 
-Every finding passes through `$review-fold`. Suggested patches remain reviewer
-prose. Neither CAS nor Review Fold selects architecture or grants mutation.
+Reviewers report evidence and affected law; they never select a repair.
+
+## Convergence and resumption
+
+After a successor becomes `reviewable`, restart the selected schedule on its
+final head. Require five consecutive distinct standard cleans. No credit crosses
+a material head change.
+
+Reuse only exact receipts whose complete bindings can be revalidated. If the
+current evidence set cannot be resolved after interruption, restart from the
+initial standard.
+
+A same-family finding reopens the construction theorem, not a member-specific
+patch.
