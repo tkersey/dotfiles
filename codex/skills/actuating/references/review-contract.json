@@ -1,1 +1,143 @@
-{"schema":"actuating-review-contract/v8","contract_id":"actuating-review-contract-v10","required_lenses":[{"name":"standard","role":"standard","instructions_ref":"codex/skills/actuating/references/standard-review.md"},{"name":"footgun-finder","role":"auxiliary","instructions_ref":"codex/skills/actuating/references/lenses/footgun-review.md"},{"name":"invariant-ace","role":"auxiliary","instructions_ref":"codex/skills/actuating/references/lenses/invariant-review.md"},{"name":"complexity-mitigator","role":"auxiliary","instructions_ref":"codex/skills/actuating/references/lenses/complexity-review.md"},{"name":"fresh-eyes","role":"auxiliary","instructions_ref":"codex/skills/actuating/references/lenses/fresh-eyes-review.md"}],"review_scheduling":{"default_mode":"parallel-reviews","request_local":true,"all_lenses_required":true,"initial_lens_order":["standard","footgun-finder","invariant-ace","complexity-mitigator","fresh-eyes"],"modes":{"parallel-reviews":{"dispatch":"concurrent","non_cancelling":true,"all_launched_semantic_outcomes_before_cut":true},"serial-reviews":{"dispatch":"serial","adjudicate_before_next":true,"continue_remaining_initial_lenses_after_invalidation":true,"post_invalidation_lenses_are_evidence_only":true,"mutation_forbidden_until_cut":true}}},"candidate_lifecycle":{"derived_not_stored":true,"states":["realizing","reviewable","invalidated"],"review_dispatch_requires":"reviewable","material_finding_invalidates_immediately":true,"material_finding_resets_all_credit":true,"mutation_closed_until_initial_evidence_cut":true},"review_entry":{"complete_goal_proof_inventory_required":true,"exact_head_proof_results_required":true,"counterexample_basis_required":true,"invalid_family_required":true,"admission_graph_required":true,"earliest_enforceable_cut_required":true,"admitted_carrier_required":true,"complete_producer_factorization_required":true,"complete_bypass_disposition_required":true,"complete_compensator_disposition_required":true,"required_valid_preservation_required":true,"first_run_required_proof_after_review_forbidden":true,"allowed_proof_dispositions":["passed","not-applicable"],"nonapplicability_requires_authority":true,"aggregate_credit_requires_declared_dependency_coverage":true},"evidence_acquisition":{"initial_falsification_wave_complete_before_successor_selection":true,"parallel_waits_for_all_launched_semantic_outcomes":true,"required_recovery_part_of_semantic_barrier":true,"serial_continues_remaining_initial_lenses_after_material_finding":true,"serial_post_invalidation_clean_credit_forbidden":true,"confirmation_material_finding_stops_confirmation":true,"review_findings_do_not_select_repairs":true},"mutation_routes":{"allowed":["construction-normalization","isolated-restoration"],"isolated_restoration_requires_existing_construction_theorem":true,"isolated_restoration_definition":"actuating/direct-repair-admission","architecture_successor_uses_direct_gate":false},"same_family_recurrence":{"member_specific_extension_forbidden_without_separation":true,"reopens_construction_theorem":true},"standard_convergence":{"required_consecutive_clean_attempts":5,"initial_standard_counts":true,"later_attempts_serial":true,"findings_reset_streak":true},"material_change":{"identity":"git-head","resets_all_review_credit":true,"restart_requires_reviewable_successor":true},"transport_recovery":{"maximum_fresh_recovery_attempts":1,"required_recovery_is_part_of_semantic_barrier":true},"attempt_quality":{"tuple_verdict_required":true,"strong_principal_required":true,"reduced_principal_forbidden":true,"fallback_forbidden":true,"owner_lived_transport_required":true,"context_match_required":true,"exact_instruction_digest_required":true,"exact_workflow_binding_required":true,"current_tuple_required":true,"required_backend_class":"cas-start-wait","required_capability":"cas_workflow_bound_owner_lived_review_v1","structured_statuses":["clean","findings"]}}
+{
+  "schema": "actuating-review-contract/v8",
+  "contract_id": "actuating-review-contract-v10",
+  "required_lenses": [
+    {
+      "name": "standard",
+      "role": "standard",
+      "instructions_ref": "codex/skills/actuating/references/standard-review.md"
+    },
+    {
+      "name": "footgun-finder",
+      "role": "auxiliary",
+      "instructions_ref": "codex/skills/actuating/references/lenses/footgun-review.md"
+    },
+    {
+      "name": "invariant-ace",
+      "role": "auxiliary",
+      "instructions_ref": "codex/skills/actuating/references/lenses/invariant-review.md"
+    },
+    {
+      "name": "complexity-mitigator",
+      "role": "auxiliary",
+      "instructions_ref": "codex/skills/actuating/references/lenses/complexity-review.md"
+    },
+    {
+      "name": "fresh-eyes",
+      "role": "auxiliary",
+      "instructions_ref": "codex/skills/actuating/references/lenses/fresh-eyes-review.md"
+    }
+  ],
+  "review_scheduling": {
+    "default_mode": "parallel-reviews",
+    "request_local": true,
+    "all_lenses_required": true,
+    "initial_lens_order": [
+      "standard",
+      "footgun-finder",
+      "invariant-ace",
+      "complexity-mitigator",
+      "fresh-eyes"
+    ],
+    "modes": {
+      "parallel-reviews": {
+        "dispatch": "concurrent",
+        "non_cancelling": true,
+        "all_launched_semantic_outcomes_before_cut": true
+      },
+      "serial-reviews": {
+        "dispatch": "serial",
+        "adjudicate_before_next": true,
+        "continue_remaining_initial_lenses_after_invalidation": true,
+        "post_invalidation_lenses_are_evidence_only": true,
+        "mutation_forbidden_until_cut": true
+      }
+    }
+  },
+  "candidate_lifecycle": {
+    "derived_not_stored": true,
+    "states": [
+      "realizing",
+      "reviewable",
+      "invalidated"
+    ],
+    "review_dispatch_requires": "reviewable",
+    "material_finding_invalidates_immediately": true,
+    "material_finding_resets_all_credit": true,
+    "mutation_closed_until_initial_evidence_cut": true
+  },
+  "review_entry": {
+    "complete_goal_proof_inventory_required": true,
+    "exact_head_proof_results_required": true,
+    "counterexample_basis_required": true,
+    "invalid_family_required": true,
+    "admission_graph_required": true,
+    "earliest_enforceable_cut_required": true,
+    "admitted_carrier_required": true,
+    "complete_producer_factorization_required": true,
+    "complete_bypass_disposition_required": true,
+    "complete_compensator_disposition_required": true,
+    "required_valid_preservation_required": true,
+    "first_run_required_proof_after_review_forbidden": true,
+    "allowed_proof_dispositions": [
+      "passed",
+      "not-applicable"
+    ],
+    "nonapplicability_requires_authority": true,
+    "aggregate_credit_requires_declared_dependency_coverage": true
+  },
+  "evidence_acquisition": {
+    "initial_falsification_wave_complete_before_successor_selection": true,
+    "parallel_waits_for_all_launched_semantic_outcomes": true,
+    "required_recovery_part_of_semantic_barrier": true,
+    "serial_continues_remaining_initial_lenses_after_material_finding": true,
+    "serial_post_invalidation_clean_credit_forbidden": true,
+    "confirmation_material_finding_stops_confirmation": true,
+    "review_findings_do_not_select_repairs": true
+  },
+  "mutation_routes": {
+    "allowed": [
+      "construction-normalization",
+      "isolated-restoration"
+    ],
+    "isolated_restoration_requires_existing_construction_theorem": true,
+    "isolated_restoration_definition": "actuating/direct-repair-admission",
+    "architecture_successor_uses_direct_gate": false
+  },
+  "same_family_recurrence": {
+    "member_specific_extension_forbidden_without_separation": true,
+    "reopens_construction_theorem": true
+  },
+  "standard_convergence": {
+    "required_consecutive_clean_attempts": 5,
+    "initial_standard_counts": true,
+    "later_attempts_serial": true,
+    "findings_reset_streak": true
+  },
+  "material_change": {
+    "identity": "git-head",
+    "resets_all_review_credit": true,
+    "restart_requires_reviewable_successor": true
+  },
+  "transport_recovery": {
+    "maximum_fresh_recovery_attempts": 1,
+    "required_recovery_is_part_of_semantic_barrier": true
+  },
+  "attempt_quality": {
+    "tuple_verdict_required": true,
+    "strong_principal_required": true,
+    "reduced_principal_forbidden": true,
+    "fallback_forbidden": true,
+    "owner_lived_transport_required": true,
+    "context_match_required": true,
+    "exact_instruction_digest_required": true,
+    "exact_workflow_binding_required": true,
+    "current_tuple_required": true,
+    "required_backend_class": "cas-start-wait",
+    "required_capability": "cas_workflow_bound_owner_lived_review_v1",
+    "structured_statuses": [
+      "clean",
+      "findings"
+    ]
+  }
+}
