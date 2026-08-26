@@ -1,0 +1,711 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "review-fold/counterexample-corpus",
+  "owner": "review-fold",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "bind-existing",
+      "bounded-array",
+      "bounded-string",
+      "compare-and-append",
+      "digest",
+      "enum",
+      "event-materialization",
+      "exact-object",
+      "export",
+      "field-equal",
+      "filter",
+      "id-lookup",
+      "idempotency-key",
+      "rebind-existing",
+      "regex",
+      "sha256",
+      "timestamp",
+      "unique"
+    ]
+  },
+  "parameters": {
+    "id": {
+      "type": "string",
+      "required": false
+    },
+    "repository": {
+      "type": "string",
+      "required": false
+    },
+    "law": {
+      "type": "string",
+      "required": false
+    }
+  },
+  "inputs": {
+    "event": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 1048576
+    },
+    "submission": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 1048576
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "documents": {
+      "submission": {
+        "object": "exact",
+        "fields": {
+          "record": {
+            "object": "exact",
+            "fields": {
+              "repository_id": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 4096
+                }
+              },
+              "goal_digest": {
+                "format": "digest"
+              },
+              "law_ref": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 4096
+                }
+              },
+              "law_provenance": {
+                "enum": [
+                  "goal",
+                  "public-contract",
+                  "type-invariant",
+                  "protocol",
+                  "test-law",
+                  "derived"
+                ]
+              },
+              "authority_basis_refs": {
+                "array": {
+                  "min": 1,
+                  "max": 64
+                },
+                "items": {
+                  "string": {
+                    "trimmed_min": 1,
+                    "max": 4096
+                  }
+                },
+                "unique": true
+              },
+              "source_refs": {
+                "array": {
+                  "min": 1,
+                  "max": 64
+                },
+                "items": {
+                  "object": "exact",
+                  "fields": {
+                    "kind": {
+                      "enum": [
+                        "cas",
+                        "test",
+                        "verifier",
+                        "incident",
+                        "migration",
+                        "provider",
+                        "other"
+                      ]
+                    },
+                    "ref": {
+                      "string": {
+                        "trimmed_min": 1,
+                        "max": 8192
+                      }
+                    },
+                    "summary": {
+                      "string": {
+                        "trimmed_min": 1,
+                        "max": 8192
+                      }
+                    }
+                  }
+                },
+                "unique": true
+              },
+              "witness_subject": {
+                "object": "exact",
+                "fields": {
+                  "repository": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  },
+                  "artifact_state_id": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  },
+                  "artifact_state_label": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  },
+                  "schema_or_environment": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 8192
+                    }
+                  },
+                  "input_state_or_trace": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 32768
+                    }
+                  }
+                }
+              },
+              "observed_fact": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 32768
+                }
+              },
+              "detection_boundary": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 8192
+                }
+              },
+              "evidence_refs": {
+                "array": {
+                  "min": 1,
+                  "max": 128
+                },
+                "items": {
+                  "string": {
+                    "trimmed_min": 1,
+                    "max": 8192
+                  }
+                },
+                "unique": true
+              },
+              "independence_basis": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 8192
+                }
+              }
+            }
+          }
+        }
+      },
+      "event": {
+        "object": "exact",
+        "fields": {
+          "v": {
+            "enum": [
+              1
+            ]
+          },
+          "source": {
+            "enum": [
+              "review-fold"
+            ]
+          },
+          "event": {
+            "enum": [
+              "counterexample.capture"
+            ]
+          },
+          "counterexample_id": {
+            "string": {
+              "min": 28,
+              "max": 28
+            },
+            "regex": {
+              "patterns": [
+                "^CEX-[a-f0-9]{24}$"
+              ],
+              "max": 28
+            }
+          },
+          "record": {
+            "object": "exact",
+            "fields": {
+              "id": {
+                "string": {
+                  "min": 28,
+                  "max": 28
+                },
+                "regex": {
+                  "patterns": [
+                    "^CEX-[a-f0-9]{24}$"
+                  ],
+                  "max": 28
+                }
+              },
+              "captured_at": {
+                "format": "timestamp"
+              },
+              "fingerprint": {
+                "string": {
+                  "min": 64,
+                  "max": 64
+                },
+                "regex": {
+                  "patterns": [
+                    "^[a-f0-9]{64}$"
+                  ],
+                  "max": 64
+                }
+              },
+              "repository_id": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 4096
+                }
+              },
+              "goal_digest": {
+                "format": "digest"
+              },
+              "law_ref": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 4096
+                }
+              },
+              "law_provenance": {
+                "enum": [
+                  "goal",
+                  "public-contract",
+                  "type-invariant",
+                  "protocol",
+                  "test-law",
+                  "derived"
+                ]
+              },
+              "authority_basis_refs": {
+                "array": {
+                  "min": 1,
+                  "max": 64
+                },
+                "items": {
+                  "string": {
+                    "trimmed_min": 1,
+                    "max": 4096
+                  }
+                },
+                "unique": true
+              },
+              "source_refs": {
+                "array": {
+                  "min": 1,
+                  "max": 64
+                },
+                "items": {
+                  "object": "exact",
+                  "fields": {
+                    "kind": {
+                      "enum": [
+                        "cas",
+                        "test",
+                        "verifier",
+                        "incident",
+                        "migration",
+                        "provider",
+                        "other"
+                      ]
+                    },
+                    "ref": {
+                      "string": {
+                        "trimmed_min": 1,
+                        "max": 8192
+                      }
+                    },
+                    "summary": {
+                      "string": {
+                        "trimmed_min": 1,
+                        "max": 8192
+                      }
+                    }
+                  }
+                },
+                "unique": true
+              },
+              "witness_subject": {
+                "object": "exact",
+                "fields": {
+                  "repository": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  },
+                  "artifact_state_id": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  },
+                  "artifact_state_label": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 4096
+                    }
+                  },
+                  "schema_or_environment": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 8192
+                    }
+                  },
+                  "input_state_or_trace": {
+                    "string": {
+                      "trimmed_min": 1,
+                      "max": 32768
+                    }
+                  }
+                }
+              },
+              "observed_fact": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 32768
+                }
+              },
+              "detection_boundary": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 8192
+                }
+              },
+              "evidence_refs": {
+                "array": {
+                  "min": 1,
+                  "max": 128
+                },
+                "items": {
+                  "string": {
+                    "trimmed_min": 1,
+                    "max": 8192
+                  }
+                },
+                "unique": true
+              },
+              "independence_basis": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 8192
+                }
+              }
+            }
+          }
+        },
+        "laws": [
+          [
+            "field-equal",
+            {
+              "input": "event",
+              "left": "/counterexample_id",
+              "right": "/record/id"
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "constraints": {
+    "laws": []
+  },
+  "identity": {},
+  "storage": {
+    "kind": "event-log",
+    "slots": {
+      "events": {
+        "path": "review-fold/counterexamples/events.jsonl",
+        "kind": "event-log",
+        "codec": "jsonl",
+        "max_bytes": 67108864
+      }
+    }
+  },
+  "operations": {
+    "bind-existing": {
+      "effects": [
+        {
+          "op": "bind-existing",
+          "slot": "events",
+          "input": "event"
+        }
+      ]
+    },
+    "capture": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "submission",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "v",
+              "source",
+              "event",
+              "counterexample_id",
+              "record"
+            ],
+            "body_order": [
+              "id",
+              "captured_at",
+              "fingerprint",
+              "repository_id",
+              "goal_digest",
+              "law_ref",
+              "law_provenance",
+              "authority_basis_refs",
+              "source_refs",
+              "witness_subject",
+              "observed_fact",
+              "detection_boundary",
+              "evidence_refs",
+              "independence_basis"
+            ],
+            "object_orders": [
+              {
+                "path": "/source_refs",
+                "fields": [
+                  "kind",
+                  "ref",
+                  "summary"
+                ]
+              },
+              {
+                "path": "/witness_subject",
+                "fields": [
+                  "repository",
+                  "artifact_state_id",
+                  "artifact_state_label",
+                  "schema_or_environment",
+                  "input_state_or_trace"
+                ]
+              }
+            ],
+            "escape_non_ascii": true,
+            "fields": [
+              {
+                "field": "v",
+                "literal": 1
+              },
+              {
+                "field": "source",
+                "literal": "review-fold"
+              },
+              {
+                "field": "event",
+                "literal": "counterexample.capture"
+              },
+              {
+                "field": "counterexample_id",
+                "derived": "counterexample_id"
+              }
+            ],
+            "derive": [
+              {
+                "name": "captured_at",
+                "op": "utc-timestamp",
+                "format": "rfc3339-seconds"
+              },
+              {
+                "name": "fingerprint",
+                "op": "sha256",
+                "encoding": "hex",
+                "prefix_bytes": 32,
+                "fragments": [
+                  {
+                    "literal": "review-fold-counterexample/v1\n"
+                  },
+                  {
+                    "input_text": "/record/repository_id"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/record/goal_digest"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/record/law_ref"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_json": "/record/witness_subject"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/record/observed_fact"
+                  }
+                ],
+                "max_bytes": 1048576
+              },
+              {
+                "name": "identity_hash",
+                "op": "sha256",
+                "encoding": "hex",
+                "prefix_bytes": 12,
+                "fragments": [
+                  {
+                    "literal": "review-fold-counterexample/v1\n"
+                  },
+                  {
+                    "input_text": "/record/repository_id"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/record/goal_digest"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/record/law_ref"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_json": "/record/witness_subject"
+                  },
+                  {
+                    "literal": "\n"
+                  },
+                  {
+                    "input_text": "/record/observed_fact"
+                  }
+                ],
+                "max_bytes": 1048576
+              },
+              {
+                "name": "counterexample_id",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "CEX-"
+                  },
+                  {
+                    "derived": "identity_hash"
+                  }
+                ],
+                "max_bytes": 28
+              }
+            ],
+            "idempotency": {
+              "derived": "fingerprint"
+            },
+            "body_fields": [
+              {
+                "field": "id",
+                "derived": "counterexample_id"
+              },
+              {
+                "field": "captured_at",
+                "derived": "captured_at"
+              },
+              {
+                "field": "fingerprint",
+                "derived": "fingerprint"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "rebind-existing": {
+      "effects": [
+        {
+          "op": "rebind-existing",
+          "slot": "events",
+          "input": "event"
+        }
+      ]
+    }
+  },
+  "projections": {
+    "basis": {
+      "slot": "events",
+      "required_parameters": [
+        "repository"
+      ],
+      "pipeline": [
+        {
+          "op": "filter",
+          "path": "/record/repository_id",
+          "param": "repository"
+        },
+        {
+          "op": "export",
+          "path": "/record"
+        }
+      ]
+    },
+    "law-history": {
+      "slot": "events",
+      "required_parameters": [
+        "repository",
+        "law"
+      ],
+      "pipeline": [
+        {
+          "op": "filter",
+          "path": "/record/repository_id",
+          "param": "repository"
+        },
+        {
+          "op": "filter",
+          "path": "/record/law_ref",
+          "param": "law"
+        },
+        {
+          "op": "export",
+          "path": "/record"
+        }
+      ]
+    },
+    "record": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "id-lookup",
+          "path": "/record/id",
+          "param": "id",
+          "required": true
+        },
+        {
+          "op": "export",
+          "path": "/record"
+        }
+      ]
+    }
+  },
+  "bounds": {
+    "max_input_bytes": 1048576,
+    "max_store_bytes": 67108864,
+    "max_records": 100000,
+    "max_output_bytes": 67108864,
+    "max_diagnostics": 64,
+    "max_reducer_states": 1
+  }
+}
