@@ -29,12 +29,27 @@ grep -F 'No second Actuating Ledger definition' "$skill_root/SKILL.md" >/dev/nul
 
 grep -F '# Counterexample-to-Construction Compilation' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Consistency preflight' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Admitted semantic carrier' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F 'sanctioned producer-to-trusted-consumer path' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Invariant locus and semantic identity' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Producer migration' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F 'canonical constructor is not factorization' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F 'Ablation is evidence that the construction absorbed the law' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+
+grep -F 'transient invalidity can escape' \
+  "$skill_root/references/lenses/invariant-review.md" >/dev/null
+grep -F 'proofs or tests that mechanically mirror producer computation' \
+  "$skill_root/references/lenses/complexity-review.md" >/dev/null
+grep -F 'Co-Blub workaround' \
+  "$skill_root/references/lenses/fresh-eyes-review.md" >/dev/null
 
 grep -F 'continue the remaining initial lenses' \
   "$skill_root/references/review-contract.md" >/dev/null
