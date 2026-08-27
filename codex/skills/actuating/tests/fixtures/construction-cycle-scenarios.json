@@ -98,6 +98,90 @@
       "expected": "construction-normalization"
     },
     {
+      "id": "first-same-claim-successor-reopens-construction",
+      "input": {
+        "phase": "post-review",
+        "same_claim_finding": true,
+        "prior_same_claim_successor_invalidations": 0,
+        "theorem_materially_changed": false
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "second-same-claim-successor-revokes-unchanged-theorem",
+      "input": {
+        "phase": "post-review",
+        "same_claim_finding": true,
+        "prior_same_claim_successor_invalidations": 1,
+        "theorem_materially_changed": false
+      },
+      "expected": "theorem-rederive-required"
+    },
+    {
+      "id": "direct-theorem-falsifier-revokes-immediately",
+      "input": {
+        "phase": "post-review",
+        "same_claim_finding": true,
+        "prior_same_claim_successor_invalidations": 0,
+        "direct_theorem_falsifier": true
+      },
+      "expected": "theorem-rederive-required"
+    },
+    {
+      "id": "same-law-different-family-does-not-increment-recurrence",
+      "input": {
+        "phase": "post-review",
+        "same_claim_finding": false,
+        "same_law_finding": true,
+        "prior_same_claim_successor_invalidations": 1,
+        "theorem_materially_changed": false
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "revoked-theorem-blocks-third-candidate",
+      "input": {
+        "phase": "review-entry",
+        "theorem_revoked": true,
+        "construction_complete": true,
+        "proof_inventory_current": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "material-theorem-delta-and-factorization-allow-reentry",
+      "input": {
+        "phase": "theorem-reentry",
+        "theorem_revoked": true,
+        "theorem_materially_changed": true,
+        "source_topology_complete": true,
+        "factorization_witness_current": true
+      },
+      "expected": "allow-reentry"
+    },
+    {
+      "id": "theorem-delta-without-source-topology-blocks-reentry",
+      "input": {
+        "phase": "theorem-reentry",
+        "theorem_revoked": true,
+        "theorem_materially_changed": true,
+        "source_topology_complete": false,
+        "factorization_witness_current": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "theorem-delta-without-factorization-witness-blocks-reentry",
+      "input": {
+        "phase": "theorem-reentry",
+        "theorem_revoked": true,
+        "theorem_materially_changed": true,
+        "source_topology_complete": true,
+        "factorization_witness_current": false
+      },
+      "expected": "blocked"
+    },
+    {
       "id": "incomplete-proof-is-not-reviewable",
       "input": {
         "phase": "review-entry",

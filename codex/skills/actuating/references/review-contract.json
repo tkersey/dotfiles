@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v9",
-  "contract_id": "actuating-review-contract-v11",
+  "schema": "actuating-review-contract/v10",
+  "contract_id": "actuating-review-contract-v12",
   "required_lenses": [
     {
       "name": "standard",
@@ -78,7 +78,10 @@
     "review_dispatch_requires": "reviewable",
     "material_finding_invalidates_immediately": true,
     "material_finding_resets_all_credit": true,
-    "mutation_closed_until_initial_evidence_cut": true
+    "mutation_closed_until_initial_evidence_cut": true,
+    "construction_theorem_is_revocable_proof_lease": true,
+    "revoked_theorem_closes_mutation_ship_and_review": true,
+    "reviewable_reentry_after_revocation_requires_material_theorem_delta": true
   },
   "review_entry": {
     "complete_goal_proof_inventory_required": true,
@@ -124,7 +127,18 @@
   "same_family_recurrence": {
     "member_specific_extension_forbidden_without_separation": true,
     "reopens_construction_theorem": true,
-    "historical_absence_requires_complete_corpus_horizon": true
+    "historical_absence_requires_complete_corpus_horizon": true,
+    "same_claim_evidence_required": true,
+    "same_law_or_owner_alone_insufficient": true,
+    "direct_theorem_premise_falsifier_revokes_immediately": true,
+    "first_same_claim_successor_invalidation_may_retain_only_if_realization_or_proof_local": true,
+    "second_same_claim_successor_invalidation_under_unchanged_theorem_revokes_theorem": true,
+    "third_reviewable_candidate_under_unchanged_theorem_forbidden": true,
+    "material_theorem_delta_required_for_reentry": true,
+    "source_anchored_admission_topology_required_for_reentry": true,
+    "executable_or_exhaustive_factorization_witness_required_for_reentry": true,
+    "same_law_different_family_does_not_increment": true,
+    "repeated_recurrence_changes_decision_surface": true
   },
   "standard_convergence": {
     "required_consecutive_clean_attempts": 5,

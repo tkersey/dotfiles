@@ -321,6 +321,21 @@ A same-family successor finding means the family, carrier, cut, factorization,
 bypass closure, realization, or proof was incomplete. Reopen the construction
 decision; never append another named-member guard under the same claim.
 
+Construction completeness is a revocable proof lease. A direct falsifier of the
+declared family, carrier, cut, producer factorization, or bypass theorem revokes
+that theorem immediately. Otherwise, the first exact `same-claim` successor
+invalidation may retain the theorem only with exact evidence that the failed
+premise is confined to realization or proof. A second exact `same-claim`
+successor invalidation under a materially unchanged theorem revokes the theorem
+and its `reviewable` claim.
+
+After revocation, mutation, Ship, and review remain closed. Re-entry requires a
+source-derived admission topology, a material theorem delta, and an executable or
+exhaustive factorization witness capable of failing when a sanctioned producer or
+bypass is omitted. Same law or owner alone is insufficient; Review Fold must
+establish the exact same claim. No third reviewable candidate may be issued under
+a materially unchanged construction theorem.
+
 Read [closure.md](references/closure.md). Final completion still requires exact
 Git, validation, Ship/provider, CAS, and five-consecutive-standard-clean
 evidence. Review is adversarial falsification, not incremental architecture
@@ -332,6 +347,8 @@ authorship.
 - No mutation before the complete initial falsification wave and evidence cut.
 - No member-specific repair for an established family without separation proof.
 - No construction claim without every sanctioned producer and bypass.
+- No third reviewable candidate under a materially unchanged theorem after two
+  exact same-claim successor invalidations.
 - No closure from repaired examples alone.
 - No durable **Actuating** workflow, corpus, carrier, factor, gate, or closure
   store. Use the Review Fold corpus only as owner-issued counterexample evidence.
@@ -342,5 +359,7 @@ authorship.
 - No factor-first or line-count-first architecture selection.
 - No review dispatch on an incomplete construction or proof inventory.
 - No silent Goal expansion.
-- Keep `$metanoetic` before `$universalist`; do not add a second pass.
+- Keep `$metanoetic` before `$universalist`; do not add a second pass on an
+  unchanged decision surface. A revoked theorem is material new evidence and a
+  changed decision surface.
 - Complete object-level work before optional learnings or memory capture.

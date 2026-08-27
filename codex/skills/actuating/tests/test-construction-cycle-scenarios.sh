@@ -6,6 +6,9 @@ jaq_bin=${JAQ_BIN:-jaq}
 fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
 
 "$jaq_bin" -e '
+  def same_claim($i):
+    ($i.same_claim_finding // $i.same_family_finding // false);
+
   def decide($i):
     if $i.phase == "initial-review" and
        $i.material_finding == true and
@@ -14,9 +17,25 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     elif $i.phase == "confirmation" and $i.material_finding == true
     then "close-cut"
     elif $i.phase == "post-review" and
-         $i.same_family_finding == true and
-         $i.separation_proof != true
+         $i.direct_theorem_falsifier == true
+    then "theorem-rederive-required"
+    elif $i.phase == "post-review" and
+         same_claim($i) == true and
+         $i.theorem_materially_changed != true and
+         (($i.prior_same_claim_successor_invalidations // 0) >= 1)
+    then "theorem-rederive-required"
+    elif $i.phase == "post-review" and same_claim($i) == true
     then "construction-normalization"
+    elif $i.phase == "post-review" and $i.same_law_finding == true
+    then "construction-normalization"
+    elif $i.phase == "theorem-reentry"
+    then if $i.theorem_revoked == true and
+            $i.theorem_materially_changed == true and
+            $i.source_topology_complete == true and
+            $i.factorization_witness_current == true
+         then "allow-reentry" else "blocked" end
+    elif $i.phase == "review-entry" and $i.theorem_revoked == true
+    then "blocked"
     elif $i.phase == "review-entry"
     then if $i.construction_complete == true and
             $i.proof_inventory_current == true
@@ -55,7 +74,7 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     end;
 
   .schema == "actuating-construction-cycle-scenarios/v1" and
-  (.scenarios | length) >= 18 and
+  (.scenarios | length) >= 24 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[]; decide(.input) == .expected) and
   ([.scenarios[] |
@@ -77,8 +96,23 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     .id == "mixed-successor-routes-are-representable" and
     .expected == "mixed-successor") and
   any(.scenarios[];
-    .id == "same-family-successor-reopens-construction" and
-    .expected == "construction-normalization")
+    .id == "first-same-claim-successor-reopens-construction" and
+    .expected == "construction-normalization") and
+  any(.scenarios[];
+    .id == "second-same-claim-successor-revokes-unchanged-theorem" and
+    .expected == "theorem-rederive-required") and
+  any(.scenarios[];
+    .id == "direct-theorem-falsifier-revokes-immediately" and
+    .expected == "theorem-rederive-required") and
+  any(.scenarios[];
+    .id == "same-law-different-family-does-not-increment-recurrence" and
+    .expected == "construction-normalization") and
+  any(.scenarios[];
+    .id == "revoked-theorem-blocks-third-candidate" and
+    .expected == "blocked") and
+  any(.scenarios[];
+    .id == "material-theorem-delta-and-factorization-allow-reentry" and
+    .expected == "allow-reentry")
 ' "$fixture" >/dev/null
 
 echo "actuating construction cycle scenarios: pass"

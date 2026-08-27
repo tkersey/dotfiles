@@ -104,6 +104,60 @@ invalidated
 
 Only `reviewable` may dispatch closure review.
 
+### Construction-theorem proof lease
+
+A construction theorem is the current conjunction of:
+
+```text
+accepted Goal and law
+invalid-family predicate and comparison domain
+canonical owner and earliest enforceable cut
+admitted carrier and semantic identity
+sanctioned producer and trusted-consumer topology
+producer factorization and bypass dispositions
+required-valid interpretation
+proof universe, falsifier, validity horizon, and claim strength
+```
+
+Its completeness claim is a revocable proof lease, not a reusable assertion.
+A direct falsifier of any declared theorem premise revokes the theorem
+immediately.
+
+Otherwise, recurrence is adjudicated only from exact Review Fold evidence:
+
+```text
+first exact same-claim successor invalidation
+  -> invalidate the candidate
+  -> localize the earliest failed premise
+  -> retain the theorem only when exact evidence confines the defect
+     to realization or proof
+
+second exact same-claim successor invalidation under a materially unchanged theorem
+  -> revoke the theorem and its reviewable claim
+  -> close mutation, Ship, and review
+  -> prohibit a third reviewable candidate under that theorem
+```
+
+`same-law-different-family`, `outside-horizon`, `different-law`, and `unknown`
+do not increment this recurrence. Same owner or broad law alone is insufficient.
+
+A theorem is materially changed only when the successor revises at least one
+falsified semantic premise or its proof universe—not merely code, prose, tests,
+or the reviewed head. Re-entry after revocation requires:
+
+```text
+source-derived disposition for every producer, parser, serializer, adapter,
+  compatibility path, recovery path, trusted consumer, and bypass
+material theorem delta tied to the failed premise
+executable or exhaustive factorization witness capable of failing when one
+  sanctioned producer or bypass is omitted
+fresh exact-head construction proof
+```
+
+Repeated recurrence is material new evidence. It may re-open Metanoetic and
+Universalist reclassification on the changed decision surface; it does not add a
+second pass on an unchanged surface.
+
 ## Review entry
 
 Require on the exact head:
@@ -259,5 +313,7 @@ restart from the initial standard. If historical counterexample evidence cannot
 be resolved, mark the horizon incomplete; never reconstruct it from prose or
 memory.
 
-A same-family finding reopens the construction theorem, not a member-specific
-patch.
+A first exact same-claim successor finding reopens and localizes the construction
+theorem. A second under a materially unchanged theorem revokes it. No third
+reviewable candidate may issue until the theorem materially changes and its
+source topology and factorization are proved.
