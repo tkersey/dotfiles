@@ -40,6 +40,14 @@ grep -F '`made irrelevant by mechanism change`' \
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'Metanoetic comparison surface / boundary dispositions / resource account' \
   "$skill_root/SKILL.md" >/dev/null
+grep -F 'Treat each Universalist return as a **boundary contract**' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'one independently governed axis and one' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'omission-sensitive producer / consumer / edge / bypass factorization proof' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'No claim stronger than the Universalist nomination' \
+  "$skill_root/SKILL.md" >/dev/null
 
 grep -F '# Counterexample-to-Construction Compilation' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
@@ -131,8 +139,8 @@ done
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v10" and
-  .contract_id == "actuating-review-contract-v12" and
+  .schema == "actuating-review-contract/v11" and
+  .contract_id == "actuating-review-contract-v13" and
   (.required_lenses | length) == 5 and
   .review_scheduling.default_mode == "parallel-reviews" and
   .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
@@ -152,6 +160,21 @@ done
   .review_entry.admitted_carrier_required == true and
   .review_entry.complete_producer_factorization_required == true and
   .review_entry.complete_bypass_disposition_required == true and
+  .review_entry.universalist_boundary_contract_realized_required == true and
+  .review_entry.universalist_claim_strength_preserved_required == true and
+  .review_entry.omission_sensitive_boundary_witness_required == true and
+  .review_entry.split_seams_proved_before_recomposition_required == true and
+  .universalist_compilation.owner == "actuating" and
+  .universalist_compilation.one_axis_and_typed_hole_per_invocation == true and
+  .universalist_compilation.allowed_nomination_results ==
+    ["candidate", "preserve-incumbent", "obstructed"] and
+  .universalist_compilation.independently_governed_axes_require_split == true and
+  .universalist_compilation.boundary_contract_compiled_before_selection == true and
+  .universalist_compilation.complete_actuating_projection_required == true and
+  .universalist_compilation.claim_strength_may_not_increase == true and
+  .universalist_compilation.omission_sensitive_witness_required_before_mutation == true and
+  .universalist_compilation.prose_only_nomination_forbidden == true and
+  .universalist_compilation.ephemeral_working_set_only == true and
   .mutation_routes.allowed ==
     ["construction-normalization", "isolated-restoration"] and
   .same_family_recurrence.same_claim_evidence_required == true and
@@ -168,7 +191,7 @@ done
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v3" and
+    "actuating-construction-compiler-v4" and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CONSTRUCTION-COMPILER-001")) != null and
   ((.skill_decision_contract.clauses[] |
@@ -217,6 +240,33 @@ done
     select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
     .failure_signals) |
     index("new authority is silently assumed")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-UNIVERSALIST-COMPILATION-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
+    .required_artifacts) == [
+      "one architectural axis and typed hole per Universalist invocation",
+      "candidate | preserve-incumbent | obstructed nomination",
+      "linked split invocations for independently governed axes",
+      "complete Universalist Actuating projection",
+      "compiled boundary contract",
+      "claim-strength ceiling",
+      "source-anchored producer, consumer, composition-edge, transition, residual, invalidator, and bypass obligations",
+      "omission-sensitive executable or exhaustive witness",
+      "exact-head boundary-contract realization proof"
+    ]) and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
+    .success_signals) |
+    index("Universalist nomination is treated as proof-carrying compiler input rather than architectural advice")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
+    .failure_signals) |
+    index("passing tests substitute for complete boundary-contract realization")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-CLOSURE-001") |
+    .required_artifacts) |
+    index("exact-head Universalist boundary-contract realization proof")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-ISOLATED-RESTORATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
