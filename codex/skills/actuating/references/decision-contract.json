@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v3"
+      "source_fingerprint": "actuating-construction-compiler-v4"
     },
     "triggers": [
       {
@@ -279,6 +279,48 @@
         "rationale": "Actuating constrains challenger admissibility, not Metanoetic's imagination."
       },
       {
+        "clause_id": "ACT-UNIVERSALIST-COMPILATION-001",
+        "trigger_refs": [
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION",
+          "ACT-REVIEW"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-REMEDIATION",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "one architectural axis and typed hole per Universalist invocation",
+          "candidate | preserve-incumbent | obstructed nomination",
+          "linked split invocations for independently governed axes",
+          "complete Universalist Actuating projection",
+          "compiled boundary contract",
+          "claim-strength ceiling",
+          "source-anchored producer, consumer, composition-edge, transition, residual, invalidator, and bypass obligations",
+          "omission-sensitive executable or exhaustive witness",
+          "exact-head boundary-contract realization proof"
+        ],
+        "success_signals": [
+          "Universalist nomination is treated as proof-carrying compiler input rather than architectural advice",
+          "every nominated boundary element becomes an Actuating realization obligation before mutation",
+          "independent seams are split, proved separately, and recomposed explicitly",
+          "the witness can fail when a sanctioned producer, consumer, edge, transition, residual, invalidator, or bypass is omitted",
+          "Actuating preserves the nomination's explicit claim strength"
+        ],
+        "failure_signals": [
+          "a prose-only Universalist nomination is selected",
+          "one compound nomination hides independently governed axes",
+          "passing tests substitute for complete boundary-contract realization",
+          "Actuating silently strengthens a bounded or contained nomination into elimination",
+          "an omitted producer, consumer, composition edge, transition, residual, invalidator, or bypass cannot falsify the proof",
+          "Universalist is given mutation, selection, or reviewable authority"
+        ],
+        "rationale": "Universalist nominates one boundary; Actuating compiles and proves its complete contract before selection, mutation, or reviewability."
+      },
+      {
         "clause_id": "ACT-ISOLATED-RESTORATION-001",
         "trigger_refs": [
           "ACT-COUNTEREXAMPLE",
@@ -353,6 +395,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "exact-head construction theorem",
+          "exact-head Universalist boundary-contract realization proof",
           "counterexample horizon sufficient for every historical claim",
           "complete Goal-required proof inventory",
           "Ship/provider evidence when required",

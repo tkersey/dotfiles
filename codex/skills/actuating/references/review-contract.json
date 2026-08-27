@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v10",
-  "contract_id": "actuating-review-contract-v12",
+  "schema": "actuating-review-contract/v11",
+  "contract_id": "actuating-review-contract-v13",
   "required_lenses": [
     {
       "name": "standard",
@@ -102,7 +102,11 @@
       "not-applicable"
     ],
     "nonapplicability_requires_authority": true,
-    "aggregate_credit_requires_declared_dependency_coverage": true
+    "aggregate_credit_requires_declared_dependency_coverage": true,
+    "universalist_boundary_contract_realized_required": true,
+    "universalist_claim_strength_preserved_required": true,
+    "omission_sensitive_boundary_witness_required": true,
+    "split_seams_proved_before_recomposition_required": true
   },
   "evidence_acquisition": {
     "initial_falsification_wave_complete_before_successor_selection": true,
@@ -171,5 +175,35 @@
       "clean",
       "findings"
     ]
+  },
+  "universalist_compilation": {
+    "owner": "actuating",
+    "one_axis_and_typed_hole_per_invocation": true,
+    "allowed_nomination_results": [
+      "candidate",
+      "preserve-incumbent",
+      "obstructed"
+    ],
+    "independently_governed_axes_require_split": true,
+    "boundary_contract_compiled_before_selection": true,
+    "complete_actuating_projection_required": true,
+    "required_obligation_classes": [
+      "owner",
+      "required observations",
+      "law",
+      "falsifier",
+      "transition",
+      "residual obligations",
+      "invalidators",
+      "claim strength",
+      "sanctioned producers",
+      "trusted consumers",
+      "composition edges",
+      "bypasses"
+    ],
+    "claim_strength_may_not_increase": true,
+    "omission_sensitive_witness_required_before_mutation": true,
+    "prose_only_nomination_forbidden": true,
+    "ephemeral_working_set_only": true
   }
 }

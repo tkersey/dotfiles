@@ -256,31 +256,52 @@ When construction normalization is required:
      current construction silently.
 6. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or return
    `unresolved`.
-7. Ask `$universalist` to lower the surviving carrier and producer-factorization
-   theorem into repository-native candidates.
-8. Ask `$reduce` to find duplicate owners, downstream primary compensators,
-   wound-shaped proof, and factors made redundant by the selected carrier.
-9. Select by constructional dominance, then lifecycle cost and raw source size:
-   - required-valid / invalid-family separation;
-   - invalid-family exclusion;
-   - strongest honest invariant locus;
-   - canonical identity or explicit equivalence;
-   - admission-path domination;
-   - semantic producer factorization;
-   - canonical ownership;
-   - bypass closure;
-   - required-valid and compatibility preservation;
-   - family-level or exhaustive proof;
-   - downstream compensator retirement;
-   - lifecycle and realization cost;
-   - raw source size.
-10. Preserve material incomparability rather than manufacturing dominance.
-11. State the selected theorem and falsifier before mutation.
+7. Decompose the live architecture into one independently governed axis and one
+   typed hole per `$universalist` invocation. Require exactly `candidate`,
+   `preserve-incumbent`, or `obstructed` plus Universalist's complete Actuating
+   projection. If new evidence exposes independent owners or axes, require
+   `UNI-RECLASSIFY: split` and linked successor invocations; reject a compound
+   nomination that hides a residual seam.
+8. Treat each Universalist return as a **boundary contract**, not architectural
+   advice. Without wrapping or copying it into another artifact, compile every
+   nominated owner, observation, law, falsifier, transition, residual obligation,
+   invalidator, claim-strength bound, sanctioned producer, trusted consumer,
+   composition edge, and bypass into the ephemeral Working Set as a realization
+   obligation.
+9. Before selection, define one executable or exhaustive witness for each
+   boundary contract that is capable of failing when any nominated producer,
+   consumer, composition edge, transition, residual, invalidator, or bypass is
+   omitted or mis-realized. A prose-only nomination is not selectable. Actuating
+   may not strengthen `contained`, bounded, sampled, or hypothesized support into
+   an elimination or complete-factorization claim.
+10. Ask `$reduce` to find duplicate owners, downstream primary compensators,
+    wound-shaped proof, and factors made redundant by the selected carrier.
+11. Select by constructional dominance, then lifecycle cost and raw source size:
+    - required-valid / invalid-family separation;
+    - invalid-family exclusion;
+    - strongest honest invariant locus;
+    - canonical identity or explicit equivalence;
+    - admission-path domination;
+    - semantic producer factorization;
+    - canonical ownership;
+    - bypass closure;
+    - required-valid and compatibility preservation;
+    - family-level or exhaustive proof;
+    - downstream compensator retirement;
+    - lifecycle and realization cost;
+    - raw source size.
+12. Preserve material incomparability rather than manufacturing dominance.
+13. State the selected theorem and falsifier before mutation.
 
 The operational resource account is minimal: for every material host capability
 or authority-backed ceiling, state the required capability, bounded demand or
 scaling relation, lifecycle owner, and the condition that makes the candidate
 infeasible.
+
+Universalist remains a nominator. Actuating owns compilation of its boundary
+contract, candidate comparison, realization completeness, mutation, and
+`reviewable`. Passing tests prove only what they exercise; they cannot substitute
+for exact-head evidence that every compiled boundary obligation was realized.
 
 Ablation is a consequence of the selected construction. Do not make deletion,
 raw line count, a corpus row, or a comparison packet the primary objective.
@@ -298,6 +319,9 @@ Canonical owner / earliest enforceable cut / admitted carrier
 Producer migrations / bypass dispositions
 Required-valid and compatibility proofs
 Metanoetic comparison surface / boundary dispositions / resource account
+Universalist axis + typed hole / nomination result / boundary contract
+Compiled producer / consumer / edge / transition / residual / invalidator obligations
+Universalist claim-strength ceiling / split seam links / omission-sensitive witness
 Compensators: preserve-derived / replace / collapse / retire / privatize
 Construction-normalization or isolated-restoration route
 Direct-repair materialization identity, only for isolated restoration
@@ -320,6 +344,8 @@ Before closure-grade review, prove on one exact final head:
 counterexample-family proof
 carrier-exclusion proof
 required-valid and required-observation proof
+Universalist boundary-contract realization proof
+omission-sensitive producer / consumer / edge / bypass factorization proof
 producer-factorization proof
 bypass-closure proof
 compensator-retirement proof
@@ -384,6 +410,13 @@ authorship.
 - No factor-first or line-count-first architecture selection.
 - No review dispatch on an incomplete construction or proof inventory.
 - No silent Goal expansion.
+- No Universalist invocation spanning independently governed axes or typed holes;
+  split and prove each seam before recomposition.
+- No selection or mutation from a prose-only Universalist nomination. Compile its
+  complete boundary contract into omission-sensitive realization obligations.
+- No claim stronger than the Universalist nomination and its executable witness.
+- No `reviewable` status from passing tests that do not prove the complete selected
+  boundary contract on the exact head.
 - Constrain Metanoetic candidate admissibility, not its imagination.
   Incumbent-generated burdens are evidence; ignored hard boundaries are
   inadmissible; new authority must reopen the Goal before selection.
