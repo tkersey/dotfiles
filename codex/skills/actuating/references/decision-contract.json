@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v2"
+      "source_fingerprint": "actuating-construction-compiler-v3"
     },
     "triggers": [
       {
@@ -238,6 +238,45 @@
           "factor count or raw line count selects architecture"
         ],
         "rationale": "Actuating exists to turn a sufficient current and historical counterexample basis into a construction that excludes its family."
+      },
+      {
+        "clause_id": "ACT-METANOETIC-ADMISSIBILITY-001",
+        "trigger_refs": [
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION",
+          "ACT-REVIEW"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-REMEDIATION",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "concrete incumbent",
+          "bound comparison surface",
+          "boundary dispositions: preserved | made irrelevant by mechanism change | requires new authority",
+          "changed mechanism",
+          "operational resource account",
+          "smallest witness",
+          "falsifier"
+        ],
+        "success_signals": [
+          "Goal-owned laws, required observations, explicit compatibility, non-goals, and authorized effects govern candidate admissibility",
+          "host capabilities and authority-backed resource ceilings receive an honest feasibility account",
+          "incumbent-relative burdens remain evidence and may be eliminated by a mechanism change",
+          "a candidate that makes an incumbent-generated boundary irrelevant remains eligible when required observations are preserved",
+          "a candidate requiring new authority is surfaced without silent adoption"
+        ],
+        "failure_signals": [
+          "Metanoetic is constrained to the incumbent implementation envelope",
+          "a candidate ignores a hard boundary",
+          "an incumbent-generated burden is treated as immutable without authority",
+          "new authority is silently assumed",
+          "a candidate lacks an operational resource account, smallest witness, or falsifier"
+        ],
+        "rationale": "Actuating constrains challenger admissibility, not Metanoetic's imagination."
       },
       {
         "clause_id": "ACT-ISOLATED-RESTORATION-001",

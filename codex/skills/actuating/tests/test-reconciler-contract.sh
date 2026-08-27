@@ -34,6 +34,12 @@ grep -F 'Construction completeness is a revocable proof lease' \
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'No third reviewable candidate under a materially unchanged theorem' \
   "$skill_root/SKILL.md" >/dev/null
+grep -F 'The packet constrains admissibility, not imagination.' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F '`made irrelevant by mechanism change`' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'Metanoetic comparison surface / boundary dispositions / resource account' \
+  "$skill_root/SKILL.md" >/dev/null
 
 grep -F '# Counterexample-to-Construction Compilation' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
@@ -162,7 +168,7 @@ done
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v2" and
+    "actuating-construction-compiler-v3" and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CONSTRUCTION-COMPILER-001")) != null and
   ((.skill_decision_contract.clauses[] |
@@ -186,6 +192,31 @@ done
     select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
     .required_artifacts) |
     index("review-fold/counterexample-corpus basis projection or explicit incomplete horizon")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-METANOETIC-ADMISSIBILITY-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
+    .required_artifacts) == [
+      "concrete incumbent",
+      "bound comparison surface",
+      "boundary dispositions: preserved | made irrelevant by mechanism change | requires new authority",
+      "changed mechanism",
+      "operational resource account",
+      "smallest witness",
+      "falsifier"
+    ]) and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
+    .success_signals) |
+    index("a candidate that makes an incumbent-generated boundary irrelevant remains eligible when required observations are preserved")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
+    .failure_signals) |
+    index("Metanoetic is constrained to the incumbent implementation envelope")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
+    .failure_signals) |
+    index("new authority is silently assumed")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-ISOLATED-RESTORATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
