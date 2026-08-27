@@ -83,7 +83,8 @@ At entry and after every material external change, observe:
 ```text
 Goal
   accepted laws, scope, required-valid behavior, observations,
-  compatibility, publication posture
+  compatibility, non-goals, authorized effects, host capabilities,
+  authority-backed resource ceilings, publication posture
 
 Subject
   repository, immutable base, exact clean head, current tree
@@ -233,15 +234,33 @@ When construction normalization is required:
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
 2. Fold the complete current and projected evidence cut with `$review-fold`.
 3. Derive the ordinary invalid family, admission topology, and carrier pressure.
-4. Run one bounded `$metanoetic` challenger when the family, carrier, owner, cut,
+4. Bind the concrete incumbent and one comparison surface for `$metanoetic`:
+   - objective, required-valid behavior, and required observations;
+   - Goal-owned laws, hard compatibility obligations, non-goals, and authorized
+     effects;
+   - host capabilities and authority-backed resource ceilings;
+   - incumbent-relative cost, latency, storage shape, representation, and
+     lifecycle burden, marked as evidence rather than hard constraints.
+   Then run one bounded challenger when the family, carrier, owner, cut,
    representation, or solution class may be wrong or incumbent-captive.
-5. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or return
+   The packet constrains admissibility, not imagination. Require every challenger
+   to classify each supplied boundary as `preserved`, `made irrelevant by
+   mechanism change`, or `requires new authority`; name the changed mechanism;
+   and provide an operational resource account, smallest witness, and falsifier.
+5. Adjudicate the challenger before architectural selection:
+   - ignoring a hard boundary makes the candidate inadmissible;
+   - `made irrelevant by mechanism change` remains eligible only when the
+     changed mechanism preserves required observations and honestly accounts for
+     compatibility and resources;
+   - `requires new authority` may reopen Goal authority but cannot enter the
+     current construction silently.
+6. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or return
    `unresolved`.
-6. Ask `$universalist` to lower the surviving carrier and producer-factorization
+7. Ask `$universalist` to lower the surviving carrier and producer-factorization
    theorem into repository-native candidates.
-7. Ask `$reduce` to find duplicate owners, downstream primary compensators,
+8. Ask `$reduce` to find duplicate owners, downstream primary compensators,
    wound-shaped proof, and factors made redundant by the selected carrier.
-8. Select by constructional dominance, then lifecycle cost and raw source size:
+9. Select by constructional dominance, then lifecycle cost and raw source size:
    - required-valid / invalid-family separation;
    - invalid-family exclusion;
    - strongest honest invariant locus;
@@ -255,8 +274,13 @@ When construction normalization is required:
    - downstream compensator retirement;
    - lifecycle and realization cost;
    - raw source size.
-9. Preserve material incomparability rather than manufacturing dominance.
-10. State the selected theorem and falsifier before mutation.
+10. Preserve material incomparability rather than manufacturing dominance.
+11. State the selected theorem and falsifier before mutation.
+
+The operational resource account is minimal: for every material host capability
+or authority-backed ceiling, state the required capability, bounded demand or
+scaling relation, lifecycle owner, and the condition that makes the candidate
+infeasible.
 
 Ablation is a consequence of the selected construction. Do not make deletion,
 raw line count, a corpus row, or a comparison packet the primary objective.
@@ -273,6 +297,7 @@ Admitted domain / sanctioned producers / trusted consumers
 Canonical owner / earliest enforceable cut / admitted carrier
 Producer migrations / bypass dispositions
 Required-valid and compatibility proofs
+Metanoetic comparison surface / boundary dispositions / resource account
 Compensators: preserve-derived / replace / collapse / retire / privatize
 Construction-normalization or isolated-restoration route
 Direct-repair materialization identity, only for isolated restoration
@@ -359,7 +384,10 @@ authorship.
 - No factor-first or line-count-first architecture selection.
 - No review dispatch on an incomplete construction or proof inventory.
 - No silent Goal expansion.
-- Keep `$metanoetic` before `$universalist`; do not add a second pass on an
-  unchanged decision surface. A revoked theorem is material new evidence and a
-  changed decision surface.
+- Constrain Metanoetic candidate admissibility, not its imagination.
+  Incumbent-generated burdens are evidence; ignored hard boundaries are
+  inadmissible; new authority must reopen the Goal before selection.
+- Keep `$metanoetic` before `$universalist`; bind the comparison surface before
+  invocation, and do not add a second pass on an unchanged decision surface. A
+  revoked theorem is material new evidence and a changed decision surface.
 - Complete object-level work before optional learnings or memory capture.
