@@ -30,6 +30,10 @@ grep -F '## Evidence acquisition before mutation' "$skill_root/SKILL.md" >/dev/n
 grep -F '## Exactly two bug-driven mutation routes' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Construction Working Set' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No second Actuating Ledger definition' "$skill_root/SKILL.md" >/dev/null
+grep -F 'Construction completeness is a revocable proof lease' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'No third reviewable candidate under a materially unchanged theorem' \
+  "$skill_root/SKILL.md" >/dev/null
 
 grep -F '# Counterexample-to-Construction Compilation' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
@@ -66,6 +70,12 @@ grep -F 'for evidence only' \
 grep -F 'A material confirmation finding' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F '## Counterexample history projection' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F '### Construction-theorem proof lease' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'second exact same-claim successor invalidation' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'executable or exhaustive factorization witness' \
   "$skill_root/references/review-contract.md" >/dev/null
 
 for lens in \
@@ -115,8 +125,8 @@ done
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v9" and
-  .contract_id == "actuating-review-contract-v11" and
+  .schema == "actuating-review-contract/v10" and
+  .contract_id == "actuating-review-contract-v12" and
   (.required_lenses | length) == 5 and
   .review_scheduling.default_mode == "parallel-reviews" and
   .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
@@ -128,6 +138,9 @@ done
   .counterexample_corpus.capture_after_current_fold == true and
   .counterexample_corpus.current_applicability_recomputed == true and
   .counterexample_corpus.actuating_copy_or_store_forbidden == true and
+  .candidate_lifecycle.construction_theorem_is_revocable_proof_lease == true and
+  .candidate_lifecycle.revoked_theorem_closes_mutation_ship_and_review == true and
+  .candidate_lifecycle.reviewable_reentry_after_revocation_requires_material_theorem_delta == true and
   .evidence_acquisition.initial_falsification_wave_complete_before_successor_selection == true and
   .evidence_acquisition.projected_counterexamples_are_reclassified == true and
   .review_entry.admitted_carrier_required == true and
@@ -135,6 +148,15 @@ done
   .review_entry.complete_bypass_disposition_required == true and
   .mutation_routes.allowed ==
     ["construction-normalization", "isolated-restoration"] and
+  .same_family_recurrence.same_claim_evidence_required == true and
+  .same_family_recurrence.same_law_or_owner_alone_insufficient == true and
+  .same_family_recurrence.direct_theorem_premise_falsifier_revokes_immediately == true and
+  .same_family_recurrence.second_same_claim_successor_invalidation_under_unchanged_theorem_revokes_theorem == true and
+  .same_family_recurrence.third_reviewable_candidate_under_unchanged_theorem_forbidden == true and
+  .same_family_recurrence.material_theorem_delta_required_for_reentry == true and
+  .same_family_recurrence.source_anchored_admission_topology_required_for_reentry == true and
+  .same_family_recurrence.executable_or_exhaustive_factorization_witness_required_for_reentry == true and
+  .same_family_recurrence.same_law_different_family_does_not_increment == true and
   .standard_convergence.required_consecutive_clean_attempts == 5
 ' "$skill_root/references/review-contract.json" >/dev/null
 
