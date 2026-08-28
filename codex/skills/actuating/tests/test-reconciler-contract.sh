@@ -50,6 +50,16 @@ grep -F 'No self-authored omission list may serve as the sole evidence' \
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'A sanctioned path absent from the topology basis revokes' \
   "$skill_root/SKILL.md" >/dev/null
+grep -F '| `$actuating analyze` |' "$skill_root/SKILL.md" >/dev/null
+grep -F '`analyze` runs the complete counterexample-to-construction compiler' \
+  "$skill_root/SKILL.md" >/dev/null
+
+if grep -F '$actuating triage' "$skill_root/SKILL.md" >/dev/null ||
+   grep -F '$actuating remediation-plan' "$skill_root/SKILL.md" >/dev/null
+then
+  echo "retired Actuating public route remains in SKILL.md" >&2
+  exit 1
+fi
 
 grep -F '# Counterexample-to-Construction Compilation' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
@@ -222,9 +232,32 @@ done
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v5" and
+    "actuating-construction-compiler-v6" and
+  ((.skill_decision_contract.triggers[] |
+    select(.trigger_id == "ACT-ROUTE") |
+    .cue_literals) == [
+      "$actuating implement",
+      "$actuating analyze",
+      "$actuating review-closeout"
+    ]) and
+  ([.skill_decision_contract.routes[].route_id] | sort) ==
+    (["ACT-IMPLEMENT", "ACT-ANALYZE", "ACT-REVIEW-CLOSEOUT", "ACT-CLOSE"] | sort) and
+  ((.skill_decision_contract.routes[] |
+    select(.route_id == "ACT-ANALYZE") |
+    .aliases) == ["analyze"]) and
+  ((.skill_decision_contract.routes[] |
+    select(.route_id == "ACT-ANALYZE") |
+    .terminal) == true) and
+  ([.skill_decision_contract.routes[].route_id] | index("ACT-TRIAGE")) == null and
+  ([.skill_decision_contract.routes[].route_id] | index("ACT-REMEDIATION")) == null and
+  all(.skill_decision_contract.clauses[];
+    (.expected_routes | index("ACT-TRIAGE")) == null and
+    (.expected_routes | index("ACT-REMEDIATION")) == null) and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CONSTRUCTION-COMPILER-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
+    .expected_routes) | index("ACT-ANALYZE")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
     .required_artifacts) |
