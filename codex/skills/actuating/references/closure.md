@@ -50,26 +50,36 @@ For every current causal generator require:
 accepted law and invalid family
 current applicable CEX and owner-evidence basis
 finite exhaustion or pre-implementation sibling basis
+source-derived predecessor topology T0 with authority, identity, strength,
+  and falsifier
 one admitted semantic carrier
-canonical owner and earliest enforceable cut
-every sanctioned producer migrated, retired, privatized, derived, or contained
-every bypass closed or explicitly contained
+canonical owner and earliest enforceable cut K
+Universalist topology transformation tau and total disposition law F
+exact-head independently re-derived successor topology T1
+T1 = tau(T0) and domain(F) = T1
+every factorized producer-to-consumer route crosses K
+every residual and bypass is explicitly owned
 required-valid behavior and observations preserved
 downstream primary compensators retired or demoted
-exact-head family-level proof
+exact-head family-level and factorization-closure proof
 construction falsifier
 ```
 
+A complete claim requires either a finite source-derived topology or a
+source-derived generator and preservation proof. Without one, the strongest
+honest result is `bounded` or `contained`.
+
 A safe but wound-shaped implementation is not complete. Passing repaired
-examples, scattered guards, a corpus row, or a structurally valid gate packet is
-insufficient.
+examples, scattered guards, a corpus row, a model-authored omission list, or a
+structurally valid gate packet is insufficient.
 
 ## Isolated restoration
 
 A successful `actuating/direct-repair-admission` materialization proves only that
 one exact restoration is structurally compatible with an already-complete
 construction. It is not proof of family completeness, historical evidence
-completeness, producer coverage, or closure.
+completeness, source-derived topology completeness, producer coverage, or
+closure.
 
 ## Reviewability
 
@@ -78,8 +88,12 @@ Before closure-grade review, the exact head must have:
 ```text
 complete Goal-required proof inventory
 projected counterexample basis or explicit incomplete-horizon disposition
-complete current construction theorem
-all producer migrations and bypass closures realized
+complete current construction theorem at its declared claim strength
+source-derived topology authority and predecessor-domain identity
+complete Universalist transformation and disposition law
+independently re-derived exact-head successor topology
+total factorization-domain and cut-domination closure
+all producer migrations, residuals, and bypass closures realized
 all selected compensator retirements realized
 no known same-family member-specific primary guard
 ```
@@ -96,16 +110,24 @@ required Ship/provider state matches the exact head
 all four auxiliary lenses have terminal semantic outcomes
 five consecutive distinct standard cleans on the unchanged head
 all historical claims match the available counterexample horizon
-no later evidence falsifies Goal, family, carrier, cut, factorization,
-  bypass closure, realization, proof, publication, or review
+no later evidence falsifies Goal, family, topology derivation, carrier, cut,
+  topology transformation, factorization domain, bypass closure, realization,
+  proof, publication, or review
 ```
+
+A review finding that exposes a sanctioned producer, consumer, composition edge,
+adapter, or bypass absent from the topology basis revokes topology and
+factorization closure immediately. It cannot be closed as realization-local
+repair.
 
 A non-publicly complete implementation is `ready-to-ship`.
 
 ## Blockers
 
 Return `blocked` for unknown authority, incomplete current evidence cut,
-unresolved family, owner, cut, carrier, producer path, bypass, required-valid
-proof, post-elimination premise, rejected isolated-restoration gate, failed
-validation, publication mismatch, stale CAS evidence, or missing historical
-evidence required by the claimed recurrence or elimination strength.
+unresolved family, topology authority, topology domain, owner, cut, carrier,
+topology transformation, factorization domain, producer path, bypass, residual
+owner, required-valid proof, post-elimination premise, rejected
+isolated-restoration gate, failed validation, publication mismatch, stale CAS
+evidence, or missing historical evidence required by the claimed recurrence or
+elimination strength.

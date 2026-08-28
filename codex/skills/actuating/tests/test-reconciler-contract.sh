@@ -42,11 +42,13 @@ grep -F 'Metanoetic comparison surface / boundary dispositions / resource accoun
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'Treat each Universalist return as a **boundary contract**' \
   "$skill_root/SKILL.md" >/dev/null
-grep -F 'one independently governed axis and one' \
+grep -F 'source-derived predecessor topology T0' \
   "$skill_root/SKILL.md" >/dev/null
-grep -F 'omission-sensitive producer / consumer / edge / bypass factorization proof' \
+grep -F 'T1 = tau(T0)' "$skill_root/SKILL.md" >/dev/null
+grep -F 'domain(F) = T1' "$skill_root/SKILL.md" >/dev/null
+grep -F 'No self-authored omission list may serve as the sole evidence' \
   "$skill_root/SKILL.md" >/dev/null
-grep -F 'No claim stronger than the Universalist nomination' \
+grep -F 'A sanctioned path absent from the topology basis revokes' \
   "$skill_root/SKILL.md" >/dev/null
 
 grep -F '# Counterexample-to-Construction Compilation' \
@@ -55,15 +57,17 @@ grep -F '## Durable source basis' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Consistency preflight' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Admitted semantic carrier' \
+grep -F '## Source-derived admission topology' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'sanctioned producer-to-trusted-consumer path' \
+grep -F '## Admitted semantic carrier' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F '## Invariant locus and semantic identity' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Producer migration' \
+grep -F '## Source-derived factorization closure' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'canonical constructor is not factorization' \
+grep -F 'Adding a producer, edge, consumer, adapter, or bypass without a' \
+  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
+grep -F '## Producer migration' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
 grep -F 'Ablation is evidence that the construction absorbed the law' \
   "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
@@ -87,10 +91,19 @@ grep -F '## Counterexample history projection' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F '### Construction-theorem proof lease' \
   "$skill_root/references/review-contract.md" >/dev/null
+grep -F '## Source-derived factorization closure' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'A model-authored path list' \
+  "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'second exact same-claim successor invalidation' \
   "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'executable or exhaustive factorization witness' \
-  "$skill_root/references/review-contract.md" >/dev/null
+
+grep -F 'source-derived predecessor topology T0' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'T1 = tau(T0) and domain(F) = T1' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'revokes topology and factorization closure immediately' \
+  "$skill_root/references/closure.md" >/dev/null
 
 for lens in \
   "$skill_root/references/standard-review.md" \
@@ -139,8 +152,8 @@ done
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v11" and
-  .contract_id == "actuating-review-contract-v13" and
+  .schema == "actuating-review-contract/v12" and
+  .contract_id == "actuating-review-contract-v14" and
   (.required_lenses | length) == 5 and
   .review_scheduling.default_mode == "parallel-reviews" and
   .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
@@ -153,6 +166,7 @@ done
   .counterexample_corpus.current_applicability_recomputed == true and
   .counterexample_corpus.actuating_copy_or_store_forbidden == true and
   .candidate_lifecycle.construction_theorem_is_revocable_proof_lease == true and
+  .candidate_lifecycle.topology_theorem_is_revocable_proof_lease == true and
   .candidate_lifecycle.revoked_theorem_closes_mutation_ship_and_review == true and
   .candidate_lifecycle.reviewable_reentry_after_revocation_requires_material_theorem_delta == true and
   .evidence_acquisition.initial_falsification_wave_complete_before_successor_selection == true and
@@ -162,17 +176,32 @@ done
   .review_entry.complete_bypass_disposition_required == true and
   .review_entry.universalist_boundary_contract_realized_required == true and
   .review_entry.universalist_claim_strength_preserved_required == true and
-  .review_entry.omission_sensitive_boundary_witness_required == true and
   .review_entry.split_seams_proved_before_recomposition_required == true and
+  .review_entry.source_derived_topology_required_for_complete_claim == true and
+  .review_entry.topology_authority_identity_strength_and_falsifier_required == true and
+  .review_entry.universalist_total_transformation_required == true and
+  .review_entry.exact_head_successor_topology_rederived_required == true and
+  .review_entry.topology_transformation_equality_required == true and
+  .review_entry.factorization_domain_equality_required == true and
+  .review_entry.cut_domination_or_owned_residual_required == true and
+  .review_entry.self_authored_omission_list_sufficient == false and
+  .review_entry.unproved_complete_factorization_lowers_to_bounded_or_contained == true and
   .universalist_compilation.owner == "actuating" and
-  .universalist_compilation.one_axis_and_typed_hole_per_invocation == true and
-  .universalist_compilation.allowed_nomination_results ==
-    ["candidate", "preserve-incumbent", "obstructed"] and
-  .universalist_compilation.independently_governed_axes_require_split == true and
-  .universalist_compilation.boundary_contract_compiled_before_selection == true and
-  .universalist_compilation.complete_actuating_projection_required == true and
-  .universalist_compilation.claim_strength_may_not_increase == true and
-  .universalist_compilation.omission_sensitive_witness_required_before_mutation == true and
+  .universalist_compilation.topology_domain_owner == "actuating" and
+  .universalist_compilation.strongest_repository_native_authority_required == true and
+  .universalist_compilation.model_authored_path_list_exhaustive_forbidden == true and
+  .universalist_compilation.predecessor_topology_passed_to_universalist == true and
+  .universalist_compilation.total_topology_transformation_required == true and
+  .universalist_compilation.total_disposition_law_required == true and
+  .universalist_compilation.allowed_element_dispositions ==
+    ["factor-through", "retire", "privatize", "derived-adapter", "residual"] and
+  .universalist_compilation.aggregate_outcomes_not_element_dispositions ==
+    ["contained", "obstructed"] and
+  .universalist_compilation.exact_head_topology_rederivation_required_before_reviewable == true and
+  .universalist_compilation.topology_transformation_equality_required == true and
+  .universalist_compilation.factorization_domain_equality_required == true and
+  .universalist_compilation.factorized_routes_cross_cut_or_owned_residual_required == true and
+  .universalist_compilation.self_authored_omission_list_sufficient == false and
   .universalist_compilation.prose_only_nomination_forbidden == true and
   .universalist_compilation.ephemeral_working_set_only == true and
   .mutation_routes.allowed ==
@@ -180,6 +209,8 @@ done
   .same_family_recurrence.same_claim_evidence_required == true and
   .same_family_recurrence.same_law_or_owner_alone_insufficient == true and
   .same_family_recurrence.direct_theorem_premise_falsifier_revokes_immediately == true and
+  .same_family_recurrence.unmodeled_sanctioned_topology_element_revokes_immediately == true and
+  .same_family_recurrence.topology_falsifier_never_realization_local == true and
   .same_family_recurrence.second_same_claim_successor_invalidation_under_unchanged_theorem_revokes_theorem == true and
   .same_family_recurrence.third_reviewable_candidate_under_unchanged_theorem_forbidden == true and
   .same_family_recurrence.material_theorem_delta_required_for_reentry == true and
@@ -191,86 +222,63 @@ done
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v4" and
+    "actuating-construction-compiler-v5" and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CONSTRUCTION-COMPILER-001")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
-    .required_artifacts[7:20]) == [
-      "required-valid / invalid-family separation",
-      "invalid-family exclusion",
-      "strongest honest invariant locus",
-      "canonical identity or explicit equivalence",
-      "admission-path domination",
-      "semantic producer factorization",
-      "canonical ownership",
-      "bypass closure",
-      "required-valid and compatibility preservation",
-      "family-level or exhaustive proof",
-      "downstream compensator retirement",
-      "lifecycle and realization cost",
-      "raw source size"
-    ]) and
+    .required_artifacts) |
+    index("source-derived predecessor topology T0")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
+    .required_artifacts) |
+    index("domain(F) = T1")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
     .required_artifacts) |
     index("review-fold/counterexample-corpus basis projection or explicit incomplete horizon")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-METANOETIC-ADMISSIBILITY-001")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
-    .required_artifacts) == [
-      "concrete incumbent",
-      "bound comparison surface",
-      "boundary dispositions: preserved | made irrelevant by mechanism change | requires new authority",
-      "changed mechanism",
-      "operational resource account",
-      "smallest witness",
-      "falsifier"
-    ]) and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
-    .success_signals) |
-    index("a candidate that makes an incumbent-generated boundary irrelevant remains eligible when required observations are preserved")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
-    .failure_signals) |
-    index("Metanoetic is constrained to the incumbent implementation envelope")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-METANOETIC-ADMISSIBILITY-001") |
-    .failure_signals) |
-    index("new authority is silently assumed")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-UNIVERSALIST-COMPILATION-001")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
     .required_artifacts) == [
       "one architectural axis and typed hole per Universalist invocation",
+      "source-derived predecessor topology T0 with authority, identity, evidence strength, and falsifier",
       "candidate | preserve-incumbent | obstructed nomination",
       "linked split invocations for independently governed axes",
       "complete Universalist Actuating projection",
+      "canonical admission cut K",
+      "total topology transformation tau over T0",
+      "total disposition law F with explicit residuals",
       "compiled boundary contract",
       "claim-strength ceiling",
-      "source-anchored producer, consumer, composition-edge, transition, residual, invalidator, and bypass obligations",
-      "omission-sensitive executable or exhaustive witness",
+      "factorization-closure verifier selected before mutation",
+      "exact-head independently re-derived successor topology T1",
+      "T1 = tau(T0)",
+      "domain(F) = T1",
+      "cut-domination or owned-residual proof",
       "exact-head boundary-contract realization proof"
     ]) and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
     .success_signals) |
-    index("Universalist nomination is treated as proof-carrying compiler input rather than architectural advice")) != null and
+    index("Universalist receives the repository-derived topology rather than rediscovering it from Actuating prose")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
     .failure_signals) |
-    index("passing tests substitute for complete boundary-contract realization")) != null and
+    index("a model-authored omission list is the sole completeness proof")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CLOSURE-001") |
     .required_artifacts) |
-    index("exact-head Universalist boundary-contract realization proof")) != null and
+    index("exact-head source-derived topology re-derivation proof")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-CLOSURE-001") |
+    .required_artifacts) |
+    index("exact-head total factorization-domain and cut-domination proof")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-ISOLATED-RESTORATION-001")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-REVIEW-EVIDENCE-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-CLOSURE-001")) != null
 ' "$skill_root/references/decision-contract.json" >/dev/null

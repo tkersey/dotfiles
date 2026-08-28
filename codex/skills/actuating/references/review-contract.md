@@ -92,11 +92,14 @@ classes, families, suggested repairs, or current architecture.
 
 ```text
 realizing
-  construction theorem or exact-head proof inventory incomplete
+  construction theorem, source-derived factorization closure, or exact-head proof
+  inventory incomplete
 
 reviewable
-  counterexample basis, carrier, producer migrations, bypass closure,
-  compensator dispositions, and required proof inventory complete on one head
+  counterexample basis, carrier, source-derived topology, total Universalist
+  transformation, exact-head topology re-derivation, cut domination, residual
+  ownership, compensator dispositions, and required proof inventory complete on
+  one head at the declared claim strength
 
 invalidated
   applicable entailed material finding falsified the candidate
@@ -111,17 +114,22 @@ A construction theorem is the current conjunction of:
 ```text
 accepted Goal and law
 invalid-family predicate and comparison domain
-canonical owner and earliest enforceable cut
+source-derived predecessor topology T0, authority, identity, and evidence strength
+canonical owner and earliest enforceable cut K
 admitted carrier and semantic identity
-sanctioned producer and trusted-consumer topology
-producer factorization and bypass dispositions
+Universalist topology transformation tau and total disposition law F
+exact-head successor topology T1
+T1 = tau(T0) and domain(F) = T1
+producer factorization, cut domination, and residual/bypass dispositions
 required-valid interpretation
 proof universe, falsifier, validity horizon, and claim strength
 ```
 
 Its completeness claim is a revocable proof lease, not a reusable assertion.
 A direct falsifier of any declared theorem premise revokes the theorem
-immediately.
+immediately. A review finding that exposes a sanctioned producer, consumer,
+composition edge, adapter, or bypass absent from the topology basis is a direct
+topology-premise falsifier; it is never a realization-local repair.
 
 Otherwise, recurrence is adjudicated only from exact Review Fold evidence:
 
@@ -146,17 +154,81 @@ falsified semantic premise or its proof universe—not merely code, prose, tests
 or the reviewed head. Re-entry after revocation requires:
 
 ```text
-source-derived disposition for every producer, parser, serializer, adapter,
-  compatibility path, recovery path, trusted consumer, and bypass
+repaired source-derived topology authority or generator
 material theorem delta tied to the failed premise
-executable or exhaustive factorization witness capable of failing when one
-  sanctioned producer or bypass is omitted
+exact-head re-derivation of the successor topology
+total factorization and cut-domination proof
 fresh exact-head construction proof
 ```
 
 Repeated recurrence is material new evidence. It may re-open Metanoetic and
 Universalist reclassification on the changed decision surface; it does not add a
 second pass on an unchanged surface.
+
+## Source-derived factorization closure
+
+Before Universalist invocation, Actuating derives predecessor topology `T0`
+from the strongest repository-native authority for the seam. Examples include
+type reflection, compiler IR or schema traversal, export inventories, route or
+build registries, actual graph reachability, and generated producer inventories.
+
+Record:
+
+```text
+derivation or generator
+exact predecessor head
+domain identity
+evidence strength
+falsifier
+```
+
+A model-authored path list, review-finding inventory, or handwritten omission
+matrix cannot be the exhaustive topology basis.
+
+Universalist receives `T0` and nominates:
+
+```text
+K    canonical admission cut
+tau  total topology transformation
+F    total disposition/factorization law
+```
+
+For each topology element, `F` yields exactly one operational disposition:
+
+```text
+factor-through(K)
+retire
+privatize
+derived-adapter(K)
+residual(owner, failure behavior, invalidator, claim-strength consequence)
+```
+
+`contained` and `obstructed` remain aggregate construction outcomes.
+
+Before `reviewable`, an exact-head repository-native verifier independently
+re-derives successor topology `T1` and proves:
+
+```text
+T1 = tau(T0)
+domain(F) = T1
+every element has exactly one disposition
+every factorized producer-to-consumer route crosses K
+no contract element is absent from the repository
+no derived repository element is absent from the contract
+every residual is explicitly owned
+```
+
+The verifier must derive its domain independently of the candidate's declared
+list. Adding a producer, edge, consumer, adapter, or bypass without a
+disposition must fail automatically.
+
+For open domains, a source-derived generator and preservation proof replaces
+finite equality. When neither exhaustive derivation nor an honest generator is
+available, Actuating may review only an explicit `bounded` or `contained` claim;
+it cannot claim complete factorization or elimination.
+
+Hand-authored omission tests may remain regression witnesses, but cannot prove
+their own completeness.
 
 ## Review entry
 
@@ -167,10 +239,13 @@ complete accepted Goal and proof inventory
 projected counterexample basis or explicit incomplete-horizon disposition
 complete current counterexample basis
 invalid family and sibling/exhaustive disposition
-admission graph
-earliest enforceable cut and admitted carrier
-every sanctioned producer disposition
-every bypass disposition
+source-derived T0 authority, identity, evidence strength, and falsifier
+earliest enforceable cut K and admitted carrier
+Universalist total transformation tau and disposition law F
+exact-head independently re-derived T1
+T1 = tau(T0) and domain(F) = T1
+every factorized route dominated by K or explicitly residual
+every bypass and residual disposition
 required-valid and compatibility proof
 downstream primary compensator disposition
 all selected migration and retirement work realized
@@ -240,7 +315,8 @@ all current applicability and Goal-law classifications
 all executable witnesses and independence bases
 predicted sibling probes or exhaustive-domain evidence
 required-valid and compatibility proofs
-current construction topology and post-elimination falsifiers
+source-derived predecessor topology and derivation identity
+post-elimination falsifiers
 counterexample horizon completeness and missing sources
 ```
 
@@ -252,11 +328,12 @@ Actuating then compiles one successor:
 
 ```text
 invalid family
--> admission graph
--> earliest cut
--> admitted carrier
--> producer migration
--> bypass closure
+-> source-derived topology T0
+-> earliest cut K and admitted carrier
+-> Universalist transformation tau and total factorization F
+-> producer migration and bypass closure
+-> exact-head successor topology T1
+-> factorization closure
 -> compensator retirement
 -> exact-head proof
 ```
@@ -287,7 +364,8 @@ standard
   find an admitted family member or lost required-valid behavior
 
 footgun-finder
-  find a bypass, illicit mint, unsafe adapter, or alternate producer
+  find a bypass, illicit mint, unsafe adapter, alternate producer, or topology
+  element absent from the factorization domain
 
 invariant-ace
   falsify carrier closure, legal transitions, or composition
@@ -314,6 +392,7 @@ be resolved, mark the horizon incomplete; never reconstruct it from prose or
 memory.
 
 A first exact same-claim successor finding reopens and localizes the construction
-theorem. A second under a materially unchanged theorem revokes it. No third
-reviewable candidate may issue until the theorem materially changes and its
-source topology and factorization are proved.
+theorem. A second under a materially unchanged theorem revokes it. Any sanctioned
+path absent from the source-derived topology revokes the topology theorem
+immediately. No third reviewable candidate may issue until the theorem
+materially changes and exact-head source-derived factorization closure is proved.

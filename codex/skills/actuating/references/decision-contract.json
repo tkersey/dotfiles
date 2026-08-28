@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v4"
+      "source_fingerprint": "actuating-construction-compiler-v5"
     },
     "triggers": [
       {
@@ -204,40 +204,48 @@
           "projected counterexample basis and evidence-horizon disposition",
           "current counterexample basis",
           "invalid family",
-          "admission graph",
-          "earliest enforceable cut",
+          "source-derived topology authority, identity, evidence strength, and falsifier",
+          "source-derived predecessor topology T0",
+          "earliest enforceable cut K",
           "admitted carrier",
           "required-valid / invalid-family separation",
           "invalid-family exclusion",
           "strongest honest invariant locus",
           "canonical identity or explicit equivalence",
-          "admission-path domination",
-          "semantic producer factorization",
+          "source-derived admission-path domination",
+          "total semantic producer factorization",
           "canonical ownership",
-          "bypass closure",
+          "bypass and residual closure",
           "required-valid and compatibility preservation",
           "family-level or exhaustive proof",
           "downstream compensator retirement",
           "lifecycle and realization cost",
           "raw source size",
           "producer migrations",
-          "bypass dispositions",
+          "topology transformation tau",
+          "total disposition law F",
+          "exact-head successor topology T1",
+          "T1 = tau(T0)",
+          "domain(F) = T1",
           "construction falsifier"
         ],
         "success_signals": [
           "candidate selection follows the canonical constructional-dominance order before lifecycle and realization cost or raw source size",
           "review findings and historical CEX witnesses compile into one current legal state space",
-          "every sanctioned producer factors through the canonical boundary",
+          "the factorization domain is derived from repository authority rather than model-authored path lists",
+          "every factorized producer-to-consumer route crosses the canonical boundary",
+          "new sanctioned topology elements invalidate closure automatically",
           "downstream primary compensators retire or become derived"
         ],
         "failure_signals": [
           "finding maps directly to a patch",
           "historical counterexamples are ignored without an explicit incomplete horizon",
-          "carrier or producer topology is omitted",
+          "a model-authored path list is treated as exhaustive topology",
+          "source-derived topology or total factorization is omitted",
           "same-family recurrence adds another member guard",
           "factor count or raw line count selects architecture"
         ],
-        "rationale": "Actuating exists to turn a sufficient current and historical counterexample basis into a construction that excludes its family."
+        "rationale": "Actuating exists to turn a sufficient current and historical counterexample basis into a source-derived, totally factorized construction that excludes its family."
       },
       {
         "clause_id": "ACT-METANOETIC-ADMISSIBILITY-001",
@@ -294,31 +302,40 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "one architectural axis and typed hole per Universalist invocation",
+          "source-derived predecessor topology T0 with authority, identity, evidence strength, and falsifier",
           "candidate | preserve-incumbent | obstructed nomination",
           "linked split invocations for independently governed axes",
           "complete Universalist Actuating projection",
+          "canonical admission cut K",
+          "total topology transformation tau over T0",
+          "total disposition law F with explicit residuals",
           "compiled boundary contract",
           "claim-strength ceiling",
-          "source-anchored producer, consumer, composition-edge, transition, residual, invalidator, and bypass obligations",
-          "omission-sensitive executable or exhaustive witness",
+          "factorization-closure verifier selected before mutation",
+          "exact-head independently re-derived successor topology T1",
+          "T1 = tau(T0)",
+          "domain(F) = T1",
+          "cut-domination or owned-residual proof",
           "exact-head boundary-contract realization proof"
         ],
         "success_signals": [
+          "Universalist receives the repository-derived topology rather than rediscovering it from Actuating prose",
           "Universalist nomination is treated as proof-carrying compiler input rather than architectural advice",
-          "every nominated boundary element becomes an Actuating realization obligation before mutation",
+          "every topology element receives one operational disposition",
           "independent seams are split, proved separately, and recomposed explicitly",
-          "the witness can fail when a sanctioned producer, consumer, edge, transition, residual, invalidator, or bypass is omitted",
+          "the exact-head verifier fails when a sanctioned producer, consumer, edge, adapter, or bypass lacks a disposition",
           "Actuating preserves the nomination's explicit claim strength"
         ],
         "failure_signals": [
           "a prose-only Universalist nomination is selected",
           "one compound nomination hides independently governed axes",
-          "passing tests substitute for complete boundary-contract realization",
+          "a model-authored omission list is the sole completeness proof",
+          "passing tests substitute for source-derived factorization closure",
           "Actuating silently strengthens a bounded or contained nomination into elimination",
-          "an omitted producer, consumer, composition edge, transition, residual, invalidator, or bypass cannot falsify the proof",
+          "an unmodeled sanctioned path does not revoke the topology theorem",
           "Universalist is given mutation, selection, or reviewable authority"
         ],
-        "rationale": "Universalist nominates one boundary; Actuating compiles and proves its complete contract before selection, mutation, or reviewability."
+        "rationale": "Actuating derives the topology domain, Universalist nominates one total transformation over it, and exact-head source re-derivation proves closure before selection, mutation, or reviewability."
       },
       {
         "clause_id": "ACT-ISOLATED-RESTORATION-001",
@@ -341,7 +358,7 @@
         ],
         "failure_signals": [
           "new semantic constructor hides inside restoration",
-          "direct gate substitutes for family, historical, or producer proof"
+          "direct gate substitutes for family, historical, source-topology, or producer proof"
         ],
         "rationale": "Direct repair is only honest restoration of an already-correct construction."
       },
@@ -396,6 +413,8 @@
         "required_artifacts": [
           "exact-head construction theorem",
           "exact-head Universalist boundary-contract realization proof",
+          "exact-head source-derived topology re-derivation proof",
+          "exact-head total factorization-domain and cut-domination proof",
           "counterexample horizon sufficient for every historical claim",
           "complete Goal-required proof inventory",
           "Ship/provider evidence when required",
@@ -403,7 +422,9 @@
         ],
         "success_signals": [
           "invalid family is unrepresentable or unadmittable",
-          "all producers factor through the carrier",
+          "the exact-head successor topology equals the nominated transformation of the repository-derived predecessor topology",
+          "the disposition law is total over the exact-head topology",
+          "all factorized routes cross the carrier and every residual is owned",
           "bypasses close",
           "historical absence is used only under a complete evidence horizon",
           "five standard cleans survive on one head"
@@ -411,10 +432,11 @@
         "failure_signals": [
           "repaired examples substitute for family proof",
           "safe but wound-shaped realization closes",
+          "a self-authored omission list substitutes for topology closure",
           "same-family finding is answered by another guard",
           "missing historical evidence is treated as proof"
         ],
-        "rationale": "Closure is a current proof that the realized construction excludes the family under the evidence actually available."
+        "rationale": "Closure is a current proof that the exact-head source topology is totally factorized through the selected construction at the evidence strength actually available."
       }
     ],
     "instrumentation": {

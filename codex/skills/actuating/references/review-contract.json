@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v11",
-  "contract_id": "actuating-review-contract-v13",
+  "schema": "actuating-review-contract/v12",
+  "contract_id": "actuating-review-contract-v14",
   "required_lenses": [
     {
       "name": "standard",
@@ -80,6 +80,7 @@
     "material_finding_resets_all_credit": true,
     "mutation_closed_until_initial_evidence_cut": true,
     "construction_theorem_is_revocable_proof_lease": true,
+    "topology_theorem_is_revocable_proof_lease": true,
     "revoked_theorem_closes_mutation_ship_and_review": true,
     "reviewable_reentry_after_revocation_requires_material_theorem_delta": true
   },
@@ -105,8 +106,18 @@
     "aggregate_credit_requires_declared_dependency_coverage": true,
     "universalist_boundary_contract_realized_required": true,
     "universalist_claim_strength_preserved_required": true,
-    "omission_sensitive_boundary_witness_required": true,
-    "split_seams_proved_before_recomposition_required": true
+    "split_seams_proved_before_recomposition_required": true,
+    "source_derived_topology_required_for_complete_claim": true,
+    "topology_authority_identity_strength_and_falsifier_required": true,
+    "universalist_total_transformation_required": true,
+    "factorization_closure_verifier_selected_before_mutation": true,
+    "exact_head_successor_topology_rederived_required": true,
+    "topology_transformation_equality_required": true,
+    "factorization_domain_equality_required": true,
+    "cut_domination_or_owned_residual_required": true,
+    "open_domain_generator_and_preservation_required_for_complete_claim": true,
+    "self_authored_omission_list_sufficient": false,
+    "unproved_complete_factorization_lowers_to_bounded_or_contained": true
   },
   "evidence_acquisition": {
     "initial_falsification_wave_complete_before_successor_selection": true,
@@ -135,6 +146,8 @@
     "same_claim_evidence_required": true,
     "same_law_or_owner_alone_insufficient": true,
     "direct_theorem_premise_falsifier_revokes_immediately": true,
+    "unmodeled_sanctioned_topology_element_revokes_immediately": true,
+    "topology_falsifier_never_realization_local": true,
     "first_same_claim_successor_invalidation_may_retain_only_if_realization_or_proof_local": true,
     "second_same_claim_successor_invalidation_under_unchanged_theorem_revokes_theorem": true,
     "third_reviewable_candidate_under_unchanged_theorem_forbidden": true,
@@ -179,6 +192,11 @@
   "universalist_compilation": {
     "owner": "actuating",
     "one_axis_and_typed_hole_per_invocation": true,
+    "topology_domain_owner": "actuating",
+    "strongest_repository_native_authority_required": true,
+    "predecessor_topology_identity_required": true,
+    "model_authored_path_list_exhaustive_forbidden": true,
+    "predecessor_topology_passed_to_universalist": true,
     "allowed_nomination_results": [
       "candidate",
       "preserve-incumbent",
@@ -187,6 +205,19 @@
     "independently_governed_axes_require_split": true,
     "boundary_contract_compiled_before_selection": true,
     "complete_actuating_projection_required": true,
+    "total_topology_transformation_required": true,
+    "total_disposition_law_required": true,
+    "allowed_element_dispositions": [
+      "factor-through",
+      "retire",
+      "privatize",
+      "derived-adapter",
+      "residual"
+    ],
+    "aggregate_outcomes_not_element_dispositions": [
+      "contained",
+      "obstructed"
+    ],
     "required_obligation_classes": [
       "owner",
       "required observations",
@@ -196,13 +227,22 @@
       "residual obligations",
       "invalidators",
       "claim strength",
-      "sanctioned producers",
+      "source-derived predecessor topology",
+      "canonical admission cut",
+      "topology transformation",
+      "total disposition law",
       "trusted consumers",
       "composition edges",
       "bypasses"
     ],
     "claim_strength_may_not_increase": true,
-    "omission_sensitive_witness_required_before_mutation": true,
+    "factorization_closure_verifier_selected_before_mutation": true,
+    "exact_head_topology_rederivation_required_before_reviewable": true,
+    "topology_transformation_equality_required": true,
+    "factorization_domain_equality_required": true,
+    "factorized_routes_cross_cut_or_owned_residual_required": true,
+    "open_domain_generator_and_preservation_required_for_complete_claim": true,
+    "self_authored_omission_list_sufficient": false,
     "prose_only_nomination_forbidden": true,
     "ephemeral_working_set_only": true
   }
