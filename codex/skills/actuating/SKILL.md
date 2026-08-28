@@ -65,11 +65,14 @@ Working Sets, review summaries, gate packets, and prior threads are hypotheses.
 |---|---|---:|---|
 | Bare `$actuating` or `/goal $actuating` | implement -> Ship -> review-closeout | Explicitly authorized | `complete` |
 | `$actuating implement` | compile and realize locally | Explicitly authorized | local `complete` |
-| `$actuating triage` | acquire and classify evidence | Forbidden | evidence and construction pressure |
-| `$actuating remediation-plan` | compile a non-executable construction | Forbidden | plan |
+| `$actuating analyze` | compile the deepest honest read-only construction judgment | Forbidden | construction, incomparability, containment, or obstruction |
 | `$actuating review-closeout` | falsify, compile successor, realize, Ship, converge | Explicitly authorized | `complete` |
 
-An unqualified request to review, inspect, audit, or classify selects `triage`.
+`analyze` runs the complete counterexample-to-construction compiler as far as
+current evidence permits, but it may not mutate, publish, grant review credit, or
+claim closure. An unqualified request to review, inspect, audit, classify, or
+analyze selects `analyze`.
+
 Mutation requires explicit implement, fix, resolve, address, or closeout intent.
 
 Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.

@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v5"
+      "source_fingerprint": "actuating-construction-compiler-v6"
     },
     "triggers": [
       {
@@ -19,11 +19,10 @@
       },
       {
         "trigger_id": "ACT-ROUTE",
-        "description": "Explicit routes select implement, triage, remediation-plan, or review-closeout.",
+        "description": "Explicit routes select implement, analyze, or review-closeout.",
         "cue_literals": [
           "$actuating implement",
-          "$actuating triage",
-          "$actuating remediation-plan",
+          "$actuating analyze",
           "$actuating review-closeout"
         ],
         "cue_regexes": [],
@@ -85,18 +84,10 @@
         "terminal": false
       },
       {
-        "route_id": "ACT-TRIAGE",
-        "description": "Acquire and classify evidence without mutation.",
+        "route_id": "ACT-ANALYZE",
+        "description": "Compile the deepest honest read-only construction judgment from current evidence.",
         "aliases": [
-          "triage"
-        ],
-        "terminal": true
-      },
-      {
-        "route_id": "ACT-REMEDIATION",
-        "description": "Compile a non-executable construction.",
-        "aliases": [
-          "remediation-plan"
+          "analyze"
         ],
         "terminal": true
       },
@@ -129,8 +120,7 @@
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
-          "ACT-TRIAGE",
-          "ACT-REMEDIATION",
+          "ACT-ANALYZE",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
@@ -162,8 +152,7 @@
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
-          "ACT-TRIAGE",
-          "ACT-REMEDIATION",
+          "ACT-ANALYZE",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
@@ -194,7 +183,7 @@
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
-          "ACT-REMEDIATION",
+          "ACT-ANALYZE",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
@@ -256,7 +245,7 @@
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
-          "ACT-REMEDIATION",
+          "ACT-ANALYZE",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
@@ -295,7 +284,7 @@
         ],
         "expected_routes": [
           "ACT-IMPLEMENT",
-          "ACT-REMEDIATION",
+          "ACT-ANALYZE",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
@@ -369,7 +358,7 @@
           "ACT-COUNTEREXAMPLE"
         ],
         "expected_routes": [
-          "ACT-TRIAGE",
+          "ACT-ANALYZE",
           "ACT-REVIEW-CLOSEOUT",
           "ACT-CLOSE"
         ],
