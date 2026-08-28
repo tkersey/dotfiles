@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-construction-cycle-scenarios/v1",
+  "schema": "actuating-construction-cycle-scenarios/v2",
   "scenarios": [
     {
       "id": "serial-material-finding-completes-initial-wave",
@@ -89,6 +89,37 @@
       "expected": "construction-normalization"
     },
     {
+      "id": "source-derived-topology-allows-universalist",
+      "input": {
+        "phase": "universalist-entry",
+        "topology_authority_bound": true,
+        "source_topology_derived": true,
+        "model_authored_only": false
+      },
+      "expected": "allow-universalist"
+    },
+    {
+      "id": "model-authored-path-list-blocks-universalist",
+      "input": {
+        "phase": "universalist-entry",
+        "topology_authority_bound": false,
+        "source_topology_derived": false,
+        "model_authored_only": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "open-domain-generator-allows-universalist",
+      "input": {
+        "phase": "universalist-entry",
+        "topology_authority_bound": true,
+        "source_topology_derived": false,
+        "open_domain_generator": true,
+        "model_authored_only": false
+      },
+      "expected": "allow-universalist"
+    },
+    {
       "id": "same-family-successor-reopens-construction",
       "input": {
         "phase": "post-review",
@@ -128,6 +159,16 @@
       "expected": "theorem-rederive-required"
     },
     {
+      "id": "unmodeled-sanctioned-path-revokes-topology-immediately",
+      "input": {
+        "phase": "post-review",
+        "same_claim_finding": false,
+        "unmodeled_sanctioned_topology_element": true,
+        "prior_same_claim_successor_invalidations": 0
+      },
+      "expected": "theorem-rederive-required"
+    },
+    {
       "id": "same-law-different-family-does-not-increment-recurrence",
       "input": {
         "phase": "post-review",
@@ -155,6 +196,8 @@
         "theorem_revoked": true,
         "theorem_materially_changed": true,
         "source_topology_complete": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
         "factorization_witness_current": true
       },
       "expected": "allow-reentry"
@@ -166,6 +209,8 @@
         "theorem_revoked": true,
         "theorem_materially_changed": true,
         "source_topology_complete": false,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
         "factorization_witness_current": true
       },
       "expected": "blocked"
@@ -177,9 +222,93 @@
         "theorem_revoked": true,
         "theorem_materially_changed": true,
         "source_topology_complete": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
         "factorization_witness_current": false
       },
       "expected": "blocked"
+    },
+    {
+      "id": "self-authored-omission-list-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "model_authored_only": true,
+        "source_topology_derived": false,
+        "topology_authority_bound": false,
+        "exact_head_topology_rederived": false,
+        "topology_transformation_proved": false,
+        "factorization_domain_total": false,
+        "cut_domination_complete": false,
+        "residuals_owned": false
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "source-derived-total-factorization-is-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "reviewable"
+    },
+    {
+      "id": "bounded-claim-with-explicit-residuals-is-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "bounded",
+        "claim_strength_explicit": true,
+        "bounded_domain_explicit": true,
+        "residuals_owned": true,
+        "construction_complete": true,
+        "proof_inventory_current": true
+      },
+      "expected": "reviewable"
+    },
+    {
+      "id": "successor-topology-mismatch-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": false,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "undispositioned-source-element-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": false,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
     },
     {
       "id": "incomplete-proof-is-not-reviewable",
@@ -189,15 +318,6 @@
         "proof_inventory_current": false
       },
       "expected": "realizing"
-    },
-    {
-      "id": "completed-construction-is-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "construction_complete": true,
-        "proof_inventory_current": true
-      },
-      "expected": "reviewable"
     },
     {
       "id": "parallel-recovery-remains-in-semantic-barrier",
@@ -262,11 +382,19 @@
       "expected": "blocked"
     },
     {
-      "id": "review-can-run-on-complete-successor",
+      "id": "review-can-run-on-source-closed-successor",
       "input": {
         "phase": "review-dispatch",
+        "claim_strength": "complete",
         "construction_complete": true,
-        "proof_inventory_current": true
+        "proof_inventory_current": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
       },
       "expected": "allow-review"
     },

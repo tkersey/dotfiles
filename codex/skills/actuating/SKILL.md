@@ -13,7 +13,7 @@ Turn review-generated counterexamples into a new legal state space.
 frozen candidate
 -> sufficient counterexample basis
 -> invalid family
--> admission topology
+-> source-derived admission topology
 -> earliest enforceable cut
 -> admitted semantic carrier
 -> producer migration
@@ -172,9 +172,9 @@ governing law
 invalid family Phi
 predicted siblings or exhaustive domain
 current admitted domain
-all sanctioned producers and paths
-trusted consumers
-current semantic owners and bypasses
+source-derived topology authority, identity, strength, and falsifier
+all sanctioned producers, transformations, edges, consumers, and bypasses
+current semantic owners
 earliest enforceable cut
 successor admitted semantic carrier
 producer migrations
@@ -233,7 +233,7 @@ When construction normalization is required:
 
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
 2. Fold the complete current and projected evidence cut with `$review-fold`.
-3. Derive the ordinary invalid family, admission topology, and carrier pressure.
+3. Derive the ordinary invalid family, admission pressure, and carrier pressure.
 4. Bind the concrete incumbent and one comparison surface for `$metanoetic`:
    - objective, required-valid behavior, and required observations;
    - Goal-owned laws, hard compatibility obligations, non-goals, and authorized
@@ -256,27 +256,51 @@ When construction normalization is required:
      current construction silently.
 6. **OPERATE ARCHITECTONICALLY.** Retain, replace, combine, split, or return
    `unresolved`.
-7. Decompose the live architecture into one independently governed axis and one
-   typed hole per `$universalist` invocation. Require exactly `candidate`,
-   `preserve-incumbent`, or `obstructed` plus Universalist's complete Actuating
-   projection. If new evidence exposes independent owners or axes, require
-   `UNI-RECLASSIFY: split` and linked successor invocations; reject a compound
-   nomination that hides a residual seam.
-8. Treat each Universalist return as a **boundary contract**, not architectural
-   advice. Without wrapping or copying it into another artifact, compile every
-   nominated owner, observation, law, falsifier, transition, residual obligation,
-   invalidator, claim-strength bound, sanctioned producer, trusted consumer,
-   composition edge, and bypass into the ephemeral Working Set as a realization
-   obligation.
-9. Before selection, define one executable or exhaustive witness for each
-   boundary contract that is capable of failing when any nominated producer,
-   consumer, composition edge, transition, residual, invalidator, or bypass is
-   omitted or mis-realized. A prose-only nomination is not selectable. Actuating
-   may not strengthen `contained`, bounded, sampled, or hypothesized support into
-   an elimination or complete-factorization claim.
-10. Ask `$reduce` to find duplicate owners, downstream primary compensators,
+7. Derive predecessor topology `T0` independently from the strongest
+   repository-native authority for the seam: type or enum reflection, compiler
+   IR or schema traversal, public export inventory, build or route registries,
+   reachability over the actual component/control graph, or generated producer
+   inventories. Record the derivation, domain identity, exact-head evidence
+   strength, and falsifier. A model-authored path list or review-finding
+   inventory is not an exhaustive topology basis.
+8. Decompose the live architecture into one independently governed axis and one
+   typed hole per `$universalist` invocation, and supply `T0`. Require exactly
+   `candidate`, `preserve-incumbent`, or `obstructed` plus Universalist's
+   complete Actuating projection. If new evidence exposes independent owners or
+   axes, require `UNI-RECLASSIFY: split` and linked successor invocations; reject
+   a compound nomination that hides a residual seam.
+9. Treat each Universalist return as a **boundary contract** and a total
+   transformation over `T0`. Require a nominated cut `K`, topology
+   transformation `tau`, total disposition law `F`, and explicit residuals.
+   Element dispositions are `factor-through(K)`, `retire`, `privatize`,
+   `derived-adapter(K)`, or an owned `residual`; `contained` and `obstructed`
+   remain aggregate construction outcomes.
+10. Without wrapping or copying the nomination into another artifact, compile
+    every nominated owner, observation, law, falsifier, transition, residual
+    obligation, invalidator, claim-strength bound, topology transformation, and
+    disposition law into the ephemeral Working Set as realization obligations.
+11. Before selection, identify a repository-native verifier that can
+    independently re-derive successor topology `T1` from the exact realized
+    head and prove:
+
+    ```text
+    T1 = tau(T0)
+    domain(F) = T1
+    every element of T1 has exactly one disposition
+    every factorized producer-to-consumer route crosses K
+    every residual has an owner, failure behavior, invalidator,
+      and explicit claim-strength consequence
+    no contract element is absent from the repository
+    no derived repository element is absent from the contract
+    ```
+
+    For an open domain, require a source-derived generator and preservation
+    proof. If neither exhaustive derivation nor an honest generator exists,
+    lower the claim to `bounded` or `contained`. A self-authored omission list
+    may remain a regression witness; it cannot prove its own completeness.
+12. Ask `$reduce` to find duplicate owners, downstream primary compensators,
     wound-shaped proof, and factors made redundant by the selected carrier.
-11. Select by constructional dominance, then lifecycle cost and raw source size:
+13. Select by constructional dominance, then lifecycle cost and raw source size:
     - required-valid / invalid-family separation;
     - invalid-family exclusion;
     - strongest honest invariant locus;
@@ -290,18 +314,19 @@ When construction normalization is required:
     - downstream compensator retirement;
     - lifecycle and realization cost;
     - raw source size.
-12. Preserve material incomparability rather than manufacturing dominance.
-13. State the selected theorem and falsifier before mutation.
+14. Preserve material incomparability rather than manufacturing dominance.
+15. State the selected theorem and falsifier before mutation.
 
 The operational resource account is minimal: for every material host capability
 or authority-backed ceiling, state the required capability, bounded demand or
 scaling relation, lifecycle owner, and the condition that makes the candidate
 infeasible.
 
-Universalist remains a nominator. Actuating owns compilation of its boundary
-contract, candidate comparison, realization completeness, mutation, and
-`reviewable`. Passing tests prove only what they exercise; they cannot substitute
-for exact-head evidence that every compiled boundary obligation was realized.
+Universalist remains a nominator. Actuating owns the repository-derived topology
+domain, compilation of Universalist's total boundary transformation, candidate
+comparison, realization completeness, mutation, and `reviewable`. Passing tests
+prove only what they exercise; they cannot substitute for exact-head
+re-derivation and total factorization closure.
 
 Ablation is a consequence of the selected construction. Do not make deletion,
 raw line count, a corpus row, or a comparison packet the primary objective.
@@ -314,15 +339,16 @@ Retain only in the active thread or accepted implementation specification:
 Bound Goal / base / exact head
 Counterexample corpus basis IDs / horizon completeness / missing sources
 Current counterexample basis / invalid family / sibling dimensions
-Admitted domain / sanctioned producers / trusted consumers
-Canonical owner / earliest enforceable cut / admitted carrier
-Producer migrations / bypass dispositions
-Required-valid and compatibility proofs
-Metanoetic comparison surface / boundary dispositions / resource account
+Admitted domain / required-valid behavior / trusted observations
+source-derived predecessor topology T0 / authority / identity / evidence strength / falsifier
+Canonical owner / earliest enforceable cut K / admitted carrier
 Universalist axis + typed hole / nomination result / boundary contract
-Compiled producer / consumer / edge / transition / residual / invalidator obligations
-Universalist claim-strength ceiling / split seam links / omission-sensitive witness
-Compensators: preserve-derived / replace / collapse / retire / privatize
+Topology transformation tau / total disposition law F / explicit residuals
+Producer migrations / bypass dispositions / compensator dispositions
+Metanoetic comparison surface / boundary dispositions / resource account
+Exact-head T1 / transformation equality / factorization-domain equality
+Cut domination / residual ownership / open-domain generator proof
+Universalist claim-strength ceiling / split seam links
 Construction-normalization or isolated-restoration route
 Direct-repair materialization identity, only for isolated restoration
 Elimination lease and failed premise, if any
@@ -345,16 +371,17 @@ counterexample-family proof
 carrier-exclusion proof
 required-valid and required-observation proof
 Universalist boundary-contract realization proof
-omission-sensitive producer / consumer / edge / bypass factorization proof
-producer-factorization proof
-bypass-closure proof
+source-derived topology re-derivation and transformation proof
+total factorization-domain and cut-domination closure proof
+owned-residual and bypass-closure proof
 compensator-retirement proof
 complete Goal-required proof inventory
 ```
 
-For finite domains, exhaust the relevant state space. For open domains, state
-sibling dimensions before implementation and probe every sanctioned admission
-path.
+For finite domains, exhaust the relevant state space. For open domains, provide
+a source-derived generator and preservation proof. A complete-factorization
+claim without either is inadmissible; use an explicit `bounded` or `contained`
+claim instead.
 
 ## Review and closure
 
@@ -373,19 +400,22 @@ bypass closure, realization, or proof was incomplete. Reopen the construction
 decision; never append another named-member guard under the same claim.
 
 Construction completeness is a revocable proof lease. A direct falsifier of the
-declared family, carrier, cut, producer factorization, or bypass theorem revokes
-that theorem immediately. Otherwise, the first exact `same-claim` successor
-invalidation may retain the theorem only with exact evidence that the failed
-premise is confined to realization or proof. A second exact `same-claim`
-successor invalidation under a materially unchanged theorem revokes the theorem
-and its `reviewable` claim.
+declared family, carrier, cut, producer factorization, bypass theorem, or
+source-derived topology revokes that theorem immediately. A review finding that
+exposes a sanctioned producer, consumer, edge, or bypass absent from the
+topology basis is a topology-premise falsifier, never a realization-local repair.
+Otherwise, the first exact `same-claim` successor invalidation may retain the
+theorem only with exact evidence that the failed premise is confined to
+realization or proof. A second exact `same-claim` successor invalidation under a
+materially unchanged theorem revokes the theorem and its `reviewable` claim.
 
 After revocation, mutation, Ship, and review remain closed. Re-entry requires a
-source-derived admission topology, a material theorem delta, and an executable or
-exhaustive factorization witness capable of failing when a sanctioned producer or
-bypass is omitted. Same law or owner alone is insufficient; Review Fold must
-establish the exact same claim. No third reviewable candidate may be issued under
-a materially unchanged construction theorem.
+repaired source-derived admission topology, a material theorem delta, and an
+exact-head factorization-closure verifier capable of failing when a sanctioned
+producer, edge, consumer, or bypass is omitted. Same law or owner alone is
+insufficient; Review Fold must establish the exact same claim. No third
+reviewable candidate may be issued under a materially unchanged construction
+theorem.
 
 Read [closure.md](references/closure.md). Final completion still requires exact
 Git, validation, Ship/provider, CAS, and five-consecutive-standard-clean
@@ -398,6 +428,15 @@ authorship.
 - No mutation before the complete initial falsification wave and evidence cut.
 - No member-specific repair for an established family without separation proof.
 - No construction claim without every sanctioned producer and bypass.
+- No self-authored omission list may serve as the sole evidence for its own
+  completeness.
+- No complete-factorization claim without a source-derived finite topology or an
+  honest source-derived generator and preservation proof.
+- No `reviewable` status until the exact-head verifier independently re-derives
+  the successor topology and proves total factorization through the nominated
+  cut.
+- A sanctioned path absent from the topology basis revokes the topology and
+  factorization theorem immediately.
 - No third reviewable candidate under a materially unchanged theorem after two
   exact same-claim successor invalidations.
 - No closure from repaired examples alone.
@@ -413,10 +452,10 @@ authorship.
 - No Universalist invocation spanning independently governed axes or typed holes;
   split and prove each seam before recomposition.
 - No selection or mutation from a prose-only Universalist nomination. Compile its
-  complete boundary contract into omission-sensitive realization obligations.
-- No claim stronger than the Universalist nomination and its executable witness.
-- No `reviewable` status from passing tests that do not prove the complete selected
-  boundary contract on the exact head.
+  complete boundary contract and total topology transformation into
+  source-checkable realization obligations.
+- No claim stronger than the Universalist nomination and the independently
+  derived topology closure support.
 - Constrain Metanoetic candidate admissibility, not its imagination.
   Incumbent-generated burdens are evidence; ignored hard boundaries are
   inadmissible; new authority must reopen the Goal before selection.

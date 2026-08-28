@@ -10,8 +10,10 @@ review findings
 + projected admitted counterexamples
 -> sufficient current counterexample basis
 -> invalid family Phi
--> admitted semantic carrier A
--> every sanctioned producer factors through A
+-> source-derived topology T0
+-> admitted semantic carrier A and cut K
+-> total topology transformation tau and factorization F
+-> exact-head successor topology T1
 -> Phi becomes unrepresentable or unadmittable
 -> downstream compensation becomes redundant
 ```
@@ -65,15 +67,15 @@ executable witnesses
 predicted siblings or an exhaustive domain
 required-valid behavior and observation proofs
 compatibility and migration proofs
-current admitted representations and sanctioned paths
+current admitted representations and sanctioned-path pressure
 post-elimination falsifiers
 counterexample evidence-horizon completeness
 ```
 
 The basis is sufficient when it supports one falsifiable invalid-family theory
-and one explicit admission topology at the intended claim strength. It need not
-contain every possible bug. A historically incomplete basis cannot support a
-stronger recurrence or elimination claim than its evidence horizon.
+and one explicit topology derivation target at the intended claim strength. It
+need not contain every possible bug. A historically incomplete basis cannot
+support a stronger recurrence or elimination claim than its evidence horizon.
 
 ## Invalid family
 
@@ -97,30 +99,46 @@ An overlap witness reopens Goal or family authority; no implementation can
 satisfy both. Probe the simplest representatives and every declared
 valid/invalid boundary before architecture work.
 
-## Admission topology
+## Source-derived admission topology
 
-Enumerate every path that can create, admit, recover, deserialize, migrate,
-adapt, or reinterpret trusted semantics:
+Actuating must derive the relevant predecessor topology `T0` independently from
+the strongest repository-native authority available for the seam:
 
 ```text
-sanctioned producers
-transformations
-constructors and parsers
-compatibility adapters
-retry, recovery, and rehydration paths
-serializers and interpreters
-trusted consumers
-public and internal bypasses
-independent semantic owners
+type or enum reflection for closed carrier domains
+compiler IR or schema traversal for generated paths
+public symbol or export inventory for construction surfaces
+build or route registries for entrypoints
+reachability over the actual component or control graph
+generated inventories for codecs, adapters, and compatibility paths
 ```
 
-Treat the topology as reachability. The selected cut must dominate every
-sanctioned producer-to-trusted-consumer path; a bypass is a concrete path that
-avoids it. Routing common calls through an owner is not path coverage.
+There is no universal analyzer. Select the authority that already owns the
+semantic surface. Record:
 
-Select the earliest owner-controlled cut through which every sanctioned path can
-honestly be made to pass. "Fix at the owner" is insufficient unless the owner
-covers the complete admission graph.
+```text
+derivation or generator
+exact predecessor head
+domain identity
+evidence strength
+falsifier
+```
+
+`T0` contains the sanctioned producers, transformations, composition edges,
+trusted consumers, compatibility/recovery routes, and bypasses relevant to the
+boundary decision. A model-authored path list, review-finding inventory, or
+handwritten omission matrix is not an exhaustive topology basis.
+
+Treat the topology as a graph or generated relation. Prefer reachability and
+dominator proof over literal enumeration of every path. The selected cut must
+dominate every sanctioned producer-to-trusted-consumer route after the selected
+topology transformation. The predecessor domain is an accounting basis, not an
+incumbent-preservation constraint: a candidate may retire, privatize, collapse,
+or redirect elements when its transformation states and proves that fate.
+
+Give `T0` to Universalist. Universalist should nominate the boundary and a total
+transformation over the repository-derived domain; it should not rediscover the
+domain from Actuating prose.
 
 ## Admitted semantic carrier
 
@@ -165,6 +183,66 @@ bypass closure
   no alternate path can recreate or reinterpret admitted state independently
 ```
 
+## Source-derived factorization closure
+
+For one Universalist boundary contract, let:
+
+```text
+T0   repository-derived predecessor topology
+K    nominated canonical admission cut
+tau  nominated topology transformation
+F    total element disposition/factorization law
+T1   topology independently re-derived from the exact successor head
+```
+
+Universalist nominates `K`, `tau`, and `F`. Actuating compiles them into
+realization obligations. Per-element operational dispositions are:
+
+```text
+factor-through(K)
+retire
+privatize
+derived-adapter(K)
+residual {
+  owner
+  failure behavior
+  invalidator
+  claim-strength consequence
+}
+```
+
+`contained` and `obstructed` are whole-construction outcomes, not convenient
+per-element labels.
+
+Before selection and again on the exact realized head, require a
+repository-native verifier that independently derives `T1` and proves:
+
+```text
+T1 = tau(T0)
+domain(F) = T1
+every member of T1 has exactly one disposition
+every factor-through route crosses K
+every retired or privatized element is absent from the corresponding trusted
+  or public topology
+every derived adapter delegates to K instead of independently owning the law
+every residual is explicitly owned
+no boundary-contract element is absent from the repository
+no derived repository element is absent from the boundary contract
+```
+
+The verifier must not take the candidate's declared path list as the source of
+its domain. Adding a producer, edge, consumer, adapter, or bypass without a
+disposition must make the proof fail automatically.
+
+For an open topology, replace finite equality with a source-derived generator and
+preservation proof. If neither exhaustive derivation nor an honest generator is
+available, the strongest admissible claim is `bounded` or `contained`; complete
+factorization and `eliminated` are unavailable.
+
+Handwritten omission tests remain useful concrete regressions. They do not prove
+completeness and should be deleted or demoted when the source-derived closure
+proof subsumes them.
+
 ## Exactly two routes
 
 ### Construction normalization
@@ -190,8 +268,8 @@ required-valid / invalid-family separation
 invalid-family exclusion
 strongest honest invariant locus
 canonical identity or explicit equivalence
-admission-path domination
-semantic producer factorization
+source-derived admission-path domination
+total semantic producer factorization
 canonical ownership
 bypass closure
 required-valid and compatibility preservation
@@ -207,19 +285,20 @@ moves the law into one canonical admitted carrier.
 
 ## Producer migration
 
-Every sanctioned producer receives one disposition:
+Every member of the source-derived topology receives one operational
+disposition:
 
 ```text
-migrate          now factors through the canonical boundary
-retire           path no longer required
+factor-through   now crosses the canonical boundary
+retire           path no longer exists
 privatize        retained internally, no longer an independent public route
 derived-adapter  compatibility surface delegates to the canonical constructor
-contained        authorized residual; prevents an `eliminated` claim
+residual         explicitly owned remainder that weakens the aggregate claim
 ```
 
 "No change" is not a disposition.
 
-For `migrate` and `derived-adapter`, prove on required-valid inputs:
+For `factor-through` and `derived-adapter`, prove on required-valid inputs:
 
 ```text
 observe_new(migrate(x)) = observe_old(x)
@@ -240,7 +319,7 @@ preserve-derived     distinct defense-in-depth or observation role
 replace              successor carrier owns the obligation
 collapse             duplicate factors become one mechanism
 retire               no distinct obligation remains
-privatize             internal support only
+privatize            internal support only
 distinct-obligation  genuinely independent accepted law
 ```
 
@@ -258,8 +337,8 @@ actuating/direct-repair-admission
 ```
 
 It is the only Actuating transition gate. It may run only after Actuating proves
-that the carrier, earliest cut, producer factorization, bypass closure, and family
-mechanism were already complete before the proposed edit.
+that the carrier, earliest cut, source-derived producer factorization, bypass
+closure, and family mechanism were already complete before the proposed edit.
 
 A valid materialization admits only the exact isolated restoration. An invalid
 materialization requires construction normalization or `blocked`.
@@ -278,14 +357,22 @@ same-family findings cause construction revision, not member guards
 required-valid behavior does not overlap Phi
 one canonical owner replaces distributed approximations
 admitted aliases collapse or use one explicit congruent equivalence
-every sanctioned producer migrates through it without semantic drift
+the topology domain is derived from repository authority rather than model memory
+every newly introduced sanctioned path changes the derived domain automatically
+every topology element receives one operational disposition
+every factorized route crosses the nominated cut
 bypasses close
 downstream primary compensators disappear or become derived
 required-valid behavior survives
-later review stops finding members of the same family
+later review stops finding unmodeled members of the same family
 ```
+
+A review finding that exposes a sanctioned path absent from the topology basis
+revokes the topology and factorization theorem immediately. It is not a
+realization-local repair.
 
 Narrow or delete corpus integration if it only copies CAS prose, changes packets
 without changing successor code shape, or costs more than the recurrence and
-accretion it prevents. Narrow or delete any construction mechanism that delays
-legitimate isolated restoration without increasing proof strength.
+accretion it prevents. Narrow or delete source-derived closure if it degenerates
+into a handwritten inventory, routinely cannot change when repository topology
+changes, or adds more ceremony than the unmodeled-path churn it prevents.
