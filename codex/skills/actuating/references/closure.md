@@ -116,9 +116,9 @@ no later evidence falsifies Goal, family, topology derivation, carrier, cut,
 ```
 
 A review finding that exposes a sanctioned producer, consumer, composition edge,
-adapter, or bypass absent from the topology basis revokes topology and
-factorization closure immediately. It cannot be closed as realization-local
-repair.
+adapter, or bypass absent from the topology basis
+revokes topology and factorization closure immediately. It cannot be closed as
+realization-local repair.
 
 A non-publicly complete implementation is `ready-to-ship`.
 

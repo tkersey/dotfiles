@@ -340,7 +340,7 @@ Bound Goal / base / exact head
 Counterexample corpus basis IDs / horizon completeness / missing sources
 Current counterexample basis / invalid family / sibling dimensions
 Admitted domain / required-valid behavior / trusted observations
-Source-derived T0 / authority / identity / evidence strength / falsifier
+source-derived predecessor topology T0 / authority / identity / evidence strength / falsifier
 Canonical owner / earliest enforceable cut K / admitted carrier
 Universalist axis + typed hole / nomination result / boundary contract
 Topology transformation tau / total disposition law F / explicit residuals
