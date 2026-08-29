@@ -1,7 +1,8 @@
 # Soundness-Skeptic Review Lens
 
-Independently challenge whether the exact bound candidate makes a positive
-semantic judgment that its realized semantics and evidence do not justify.
+Independently challenge whether the exact bound candidate makes a
+positive semantic judgment that its realized semantics and evidence do not
+justify.
 
 A positive judgment may include:
 
