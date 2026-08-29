@@ -71,6 +71,29 @@ verdict.
 The six required lenses and five-consecutive-standard-clean theorem remain
 unchanged.
 
+## Review epoch
+
+A review epoch is ephemeral and derived from CAS owner facts; it is never stored.
+It opens when the first review request binds to one exact `reviewable` candidate
+head. While open:
+
+```text
+the bound candidate is immutable
+successor mutation is forbidden
+all review requests and credit remain bound to that exact head
+```
+
+Initial implementation occurs outside a review epoch and requires no CAS request,
+review receipt, or initial falsification wave. Existing closed owner evidence may
+inform implementation without opening review.
+
+A clean epoch remains open through the required standard confirmations and closes
+when convergence is complete. An invalidated initial-wave epoch closes only after
+all required initial semantic outcomes and request-local recovery are terminal
+and Review Fold closes the evidence cut. An invalidated confirmation epoch closes
+after the finding and every already-live required owner observation are folded;
+it never launches another initial auxiliary wave.
+
 ## Live owner-source frontier
 
 Before closing an evidence cut, reconcile every currently live relevant owner
@@ -289,14 +312,14 @@ declared dependency graph covers the required proof.
 A known required proof may not first run after review convergence. Such a
 discovery proves the candidate was never reviewable and invalidates all credit.
 
-## Invalidation versus evidence acquisition
+## Invalidation inside an open review epoch
 
 A material finding immediately:
 
 ```text
 invalidates the candidate
 sets all review credit to zero
-closes mutation and new confirmation dispatch
+keeps successor mutation and new confirmation dispatch closed
 does not request a patch
 ```
 
@@ -327,7 +350,8 @@ without concurrent dispatch.
 
 The initial six-lens wave is already complete. A material confirmation finding
 invalidates the candidate and stops further confirmation; no additional lens
-wave is implied.
+wave is implied. Close the epoch after the finding and every already-live
+required owner observation are folded.
 
 ### Request-local recovery
 
@@ -337,7 +361,8 @@ semantic barrier after invalidation. A second verdictless terminal blocks.
 
 ## Evidence cut and successor
 
-After the initial semantic barrier, close one cumulative cut containing:
+After the applicable invalidated review epoch has gathered its required
+outcomes, close one cumulative cut containing:
 
 ```text
 projected CEX records and exact source references
@@ -354,6 +379,8 @@ counterexample horizon completeness and missing sources
 Review Fold captures newly accepted counterexamples after classification and
 returns their IDs. The cut uses corpus rows as durable source evidence but
 contains current reclassifications; Actuating does not store a second copy.
+Closing this cut closes the invalidated review epoch and permits only the
+successor mutation derived from its evidence.
 
 Actuating first derives one theorem-directed response:
 
@@ -443,7 +470,8 @@ Reviewers report evidence and affected law; they never select a repair.
 After a successor becomes `reviewable`, restart the selected schedule on its
 final head. Require five consecutive distinct standard cleans. The initial
 native/default standard clean counts as clean one; four later standard
-confirmations complete the streak. No credit crosses a material head change.
+confirmations complete the streak. The clean review epoch closes only when that
+convergence theorem is satisfied. No credit crosses a material head change.
 
 Reuse only exact CAS receipts and `CEX-*` records whose source references and
 subjects can be revalidated. If the current review receipts cannot be resolved,

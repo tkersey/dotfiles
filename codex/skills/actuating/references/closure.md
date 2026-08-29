@@ -8,6 +8,11 @@ Close(Goal, Git, validation, CAS, ReviewFoldCorpus, Ship, ReviewFold,
 -> continue | ready-to-ship | complete | blocked
 ```
 
+Initial implementation is not a review epoch and requires no CAS evidence. A
+review epoch may open only after implementation has produced one exact
+`reviewable` candidate. While an epoch is open, its bound candidate is immutable
+and successor mutation and closure are forbidden.
+
 ## Finding authority
 
 Every current finding must be classified as:
@@ -124,6 +129,7 @@ Final `complete` additionally requires:
 ```text
 required Ship/provider state matches the exact head
 every completion-relevant live owner source is folded or non-current
+no review epoch remains open
 every accepted current counterexample has a theorem-derived response
 no unauthorized claim narrowing, containment, residual risk, or deferral
 all five auxiliary lenses have terminal semantic outcomes

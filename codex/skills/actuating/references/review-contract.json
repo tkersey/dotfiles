@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v14",
-  "contract_id": "actuating-review-contract-v16",
+  "schema": "actuating-review-contract/v15",
+  "contract_id": "actuating-review-contract-v17",
   "required_lenses": [
     {
       "name": "standard",
@@ -92,11 +92,26 @@
     "review_dispatch_requires": "reviewable",
     "material_finding_invalidates_immediately": true,
     "material_finding_resets_all_credit": true,
-    "mutation_closed_until_initial_evidence_cut": true,
     "construction_theorem_is_revocable_proof_lease": true,
     "topology_theorem_is_revocable_proof_lease": true,
     "revoked_theorem_closes_mutation_ship_and_review": true,
-    "reviewable_reentry_after_revocation_requires_material_theorem_delta": true
+    "reviewable_reentry_after_revocation_requires_material_theorem_delta": true,
+    "mutation_closed_while_review_epoch_open": true,
+    "initial_implementation_requires_review_dispatch": false
+  },
+  "review_epoch": {
+    "derived_not_stored": true,
+    "opens_on_first_review_dispatch": true,
+    "binds_exact_reviewable_candidate_head": true,
+    "candidate_frozen_while_open": true,
+    "successor_mutation_forbidden_while_open": true,
+    "initial_implementation_occurs_outside_epoch": true,
+    "initial_implementation_requires_review_dispatch": false,
+    "existing_closed_evidence_may_inform_implementation": true,
+    "initial_invalidation_closes_after_required_outcomes_recovery_and_fold": true,
+    "confirmation_invalidation_requires_new_initial_wave": false,
+    "confirmation_invalidation_closes_after_finding_and_live_owner_fold": true,
+    "clean_epoch_closes_after_standard_convergence": true
   },
   "review_entry": {
     "complete_goal_proof_inventory_required": true,
@@ -154,7 +169,11 @@
     "review_findings_do_not_select_repairs": true,
     "projected_counterexamples_are_reclassified": true,
     "newly_accepted_counterexamples_are_captured": true,
-    "every_live_owner_source_reconciled_before_response_selection": true
+    "every_live_owner_source_reconciled_before_response_selection": true,
+    "applies_after_review_dispatch": true,
+    "initial_implementation_requires_review_dispatch": false,
+    "initial_implementation_requires_initial_falsification_wave": false,
+    "confirmation_invalidation_requires_new_initial_wave": false
   },
   "mutation_routes": {
     "allowed": [
@@ -167,7 +186,9 @@
     "normalization_is_default": false,
     "normalization_requires_semantic_premise_falsifier": true,
     "restoration_requires_same_theorem_reproof": true,
-    "failed_restoration_gate_falls_through_to_normalization": false
+    "failed_restoration_gate_falls_through_to_normalization": false,
+    "initial_implementation_review_prerequisite": false,
+    "counterexample_driven_mutation_requires_theorem_directed_response": true
   },
   "same_family_recurrence": {
     "member_specific_extension_forbidden_without_separation": true,
@@ -296,8 +317,8 @@
     ],
     "every_live_source_disposition_required_before_cut": true,
     "unavailable_marks_horizon_incomplete": true,
-    "missing_live_source_closes_mutation_clean_credit_reviewability_and_closure": true,
-    "durable_actuating_source_registry_forbidden": true
+    "durable_actuating_source_registry_forbidden": true,
+    "missing_live_source_closes_counterexample_driven_mutation_clean_credit_reviewability_and_closure": true
   },
   "theorem_directed_response": {
     "owner": "actuating",
@@ -329,6 +350,7 @@
     "severity_selects_route": false,
     "authority_required_for_narrowing_containment_risk_or_deferral": true,
     "closure_consequence_required_for_narrowing_containment_or_deferral": true,
-    "minimum_sufficient_semantic_delta_required": true
+    "minimum_sufficient_semantic_delta_required": true,
+    "applies_only_to_counterexample_driven_mutation": true
   }
 }

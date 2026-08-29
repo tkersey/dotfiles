@@ -27,7 +27,7 @@ grep -F 'counterexample-to-construction compiler' "$skill_root/SKILL.md" >/dev/n
 grep -F 'review-fold/counterexample-corpus' "$skill_root/SKILL.md" >/dev/null
 grep -F 'Counterexample corpus basis IDs' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No durable **Actuating** workflow' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Evidence acquisition before mutation' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Review-epoch immutability and evidence acquisition' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Exactly two bug-driven mutation routes' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Construction Working Set' "$skill_root/SKILL.md" >/dev/null
 grep -F 'No second Actuating Ledger definition' "$skill_root/SKILL.md" >/dev/null
@@ -61,6 +61,21 @@ grep -F 'standard              Codex native/default best-judgment review' \
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'soundness-skeptic' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Theorem-directed response selection' "$skill_root/SKILL.md" >/dev/null
+grep -F '`implement` begins from the accepted Goal and exact Git state.' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'A review epoch opens when the first CAS review request binds' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'Before any mutation undertaken' "$skill_root/SKILL.md" >/dev/null
+grep -F 'No successor mutation while a review epoch is open' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'No review dispatch is required before initial implementation' \
+  "$skill_root/SKILL.md" >/dev/null
+if grep -F 'No mutation before the complete initial falsification wave' \
+  "$skill_root/SKILL.md" >/dev/null
+then
+  echo "global review-before-mutation rule remains" >&2
+  exit 1
+fi
 grep -F 'No normalization fallback' "$skill_root/SKILL.md" >/dev/null
 grep -F '## Live owner-source frontier' "$skill_root/references/review-contract.md" >/dev/null
 test -s "$skill_root/references/theorem-directed-response.md"
@@ -135,6 +150,14 @@ grep -F 'Launch all six initial owner-live requests' \
 grep -F 'The initial six-lens wave is already complete' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'soundness-skeptic' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F '## Review epoch' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'Initial implementation occurs outside a review epoch' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F '## Invalidation inside an open review epoch' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'confirmation epoch closes' \
   "$skill_root/references/review-contract.md" >/dev/null
 
 grep -F 'source-derived predecessor topology T0' \
@@ -212,8 +235,8 @@ grep -F 'claim-strength' \
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v14" and
-  .contract_id == "actuating-review-contract-v16" and
+  .schema == "actuating-review-contract/v15" and
+  .contract_id == "actuating-review-contract-v17" and
   (.required_lenses | length) == 6 and
   [.required_lenses[].name] == [
     "standard",
@@ -233,7 +256,7 @@ grep -F 'claim-strength' \
   .required_lenses[1].instructions_ref ==
     "codex/skills/actuating/references/lenses/soundness-review.md" and
   .owner_source_frontier.every_live_source_disposition_required_before_cut == true and
-  .owner_source_frontier.missing_live_source_closes_mutation_clean_credit_reviewability_and_closure == true and
+  .owner_source_frontier.missing_live_source_closes_counterexample_driven_mutation_clean_credit_reviewability_and_closure == true and
   .theorem_directed_response.accepted_counterexample_selects_mutation_route == false and
   .theorem_directed_response.same_theorem_reproof_required_before_normalization == true and
   .theorem_directed_response.failed_direct_gate_authorizes_normalization == false and
@@ -328,7 +351,7 @@ grep -F 'claim-strength' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v8" and
+    "actuating-construction-compiler-v9" and
   ((.skill_decision_contract.triggers[] |
     select(.trigger_id == "ACT-ROUTE") |
     .cue_literals) == [
@@ -442,6 +465,46 @@ grep -F 'claim-strength' \
   .skill_decision_contract.instrumentation.counterexample_corpus ==
     "review-fold/counterexample-corpus"
 ' "$review_fold_root/references/decision-contract.json" >/dev/null
+
+ "$jaq_bin" -e '
+  .schema == "actuating-review-contract/v15" and
+  .contract_id == "actuating-review-contract-v17" and
+  .candidate_lifecycle.mutation_closed_while_review_epoch_open == true and
+  .candidate_lifecycle.initial_implementation_requires_review_dispatch == false and
+  .review_epoch.derived_not_stored == true and
+  .review_epoch.opens_on_first_review_dispatch == true and
+  .review_epoch.binds_exact_reviewable_candidate_head == true and
+  .review_epoch.candidate_frozen_while_open == true and
+  .review_epoch.successor_mutation_forbidden_while_open == true and
+  .review_epoch.initial_implementation_occurs_outside_epoch == true and
+  .review_epoch.initial_implementation_requires_review_dispatch == false and
+  .review_epoch.initial_invalidation_closes_after_required_outcomes_recovery_and_fold == true and
+  .review_epoch.confirmation_invalidation_requires_new_initial_wave == false and
+  .review_epoch.confirmation_invalidation_closes_after_finding_and_live_owner_fold == true and
+  .evidence_acquisition.applies_after_review_dispatch == true and
+  .evidence_acquisition.initial_implementation_requires_review_dispatch == false and
+  .evidence_acquisition.initial_implementation_requires_initial_falsification_wave == false and
+  .mutation_routes.initial_implementation_review_prerequisite == false and
+  .mutation_routes.counterexample_driven_mutation_requires_theorem_directed_response == true and
+  .theorem_directed_response.applies_only_to_counterexample_driven_mutation == true
+' "$skill_root/references/review-contract.json" >/dev/null
+
+"$jaq_bin" -e '
+  .skill_decision_contract.skill.source_fingerprint ==
+    "actuating-construction-compiler-v9" and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-IMPLEMENT-ENTRY-001")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-REVIEW-EPOCH-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-IMPLEMENT-ENTRY-001") |
+    .success_signals) |
+    index("initial implementation may mutate without review dispatch")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-REVIEW-EPOCH-001") |
+    .success_signals) |
+    index("the exact candidate remains immutable while its review epoch is open")) != null
+' "$skill_root/references/decision-contract.json" >/dev/null
 
 JAQ_BIN="$jaq_bin" "$review_fold_root/tests/test-counterexample-corpus.sh"
 JAQ_BIN="$jaq_bin" "$skill_root/tests/test-direct-repair-admission.sh"
