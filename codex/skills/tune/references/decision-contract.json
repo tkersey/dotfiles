@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v2"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v3"
     },
     "triggers": [
       {
@@ -134,12 +134,12 @@
         ],
         "expected_routes": [
           "TUNE-EDIT",
+          "TUNE-PROPOSE",
           "TUNE-NO-ACTION",
           "TUNE-BLOCKED"
         ],
         "prohibited_routes": [
-          "TUNE-CREATE",
-          "TUNE-PROPOSE"
+          "TUNE-CREATE"
         ],
         "required_artifacts": [
           "expected delta",
