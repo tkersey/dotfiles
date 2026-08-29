@@ -34,6 +34,12 @@ ledger transact \
 
 ledger transact \
   --definition "$negative_ledger_definition" \
+  --operation rebind-existing \
+  --repo "<repo-root>" \
+  --format json
+
+ledger transact \
+  --definition "$negative_ledger_definition" \
   --operation capture \
   --repo "<repo-root>" \
   --input capture=capture.json \

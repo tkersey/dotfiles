@@ -2,7 +2,7 @@
 name: negative-ledger
 description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Project the route gate before repeating a route; transact only inspectable decision-shaping negative evidence through the passive Negative Evidence definition; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
-  version: "8.1.0"
+  version: "8.1.1"
 ---
 
 # Negative Ledger
@@ -93,7 +93,7 @@ Use only:
 
 ```text
 ledger definition check --definition DEFINITION
-ledger transact --definition DEFINITION --operation capture|promote|transition|bind-existing --repo REPO
+ledger transact --definition DEFINITION --operation capture|promote|transition|bind-existing|rebind-existing --repo REPO
 ledger project --definition DEFINITION --projection current-records|route-gate|memory-note --repo REPO
 ledger doctor --definition DEFINITION --repo REPO
 ```
@@ -112,6 +112,23 @@ ledger transact \
   --repo "<repo-root>" \
   --format json
 ```
+
+When an authoritative external transport replaces an already-bound store and
+`ledger doctor` reports a stale binding, use the separate one-shot custody
+operation. It validates the complete current event log and replaces only the
+binding metadata:
+
+```bash
+ledger transact \
+  --definition "$negative_ledger_definition" \
+  --operation rebind-existing \
+  --repo "<repo-root>" \
+  --format json
+```
+
+Do not use rebind to choose between divergent ledgers or to bless an unknown
+store. Establish the authoritative transport and preserve the losing lineage as
+an explicit reconciliation input before rebinding.
 
 ## Valid Statuses
 
