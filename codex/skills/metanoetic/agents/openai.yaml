@@ -2,5 +2,9 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "metanoetic"
-  short_description: "Challenge an incumbent through a metanoetic reframe"
-  default_prompt: "Use $metanoetic once to challenge a concrete incumbent and search for a materially different frame, possibility-space topology, invariant, mechanism, solution class, artifact, or breakthrough candidate—including a mechanism that makes an incumbent-generated burden disappear. Preserve the canonical one-line escalation verbatim."
+  short_description: "Run the composite cognitive-regime escalation"
+  default_prompt: >
+    Use $metanoetic once against a concrete incumbent when explicitly invoked or when $noetic-effects
+    selects a composite escalation because one targeted effect is insufficient. Preserve the canonical
+    one-line escalation verbatim. Generate challengers only; the receiving workflow retains
+    admissibility, selection, mutation, proof, publication, and closure authority.

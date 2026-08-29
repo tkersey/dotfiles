@@ -1,0 +1,11 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "Noetic Effects"
+  short_description: "Select or compile typed cognitive operators"
+  default_prompt: >
+    Use $noetic-effects in dispatch mode to select skip, one smallest sufficient cognitive operator,
+    or one bounded $metanoetic composite for a concrete evidenced decision pressure. Use compile mode
+    when $tune needs to turn a cognitive intention into a target skill's native trigger, operation,
+    governor, stopping condition, expected route delta, and probes. Do not style final prose, own the
+    receiving workflow's decision, announce implicit use, or create a receipt merely to prove invocation.
