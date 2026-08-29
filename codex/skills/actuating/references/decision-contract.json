@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v6"
+      "source_fingerprint": "actuating-construction-compiler-v7"
     },
     "triggers": [
       {
@@ -365,12 +365,16 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "exact CAS receipts",
+          "Codex native/default standard review with no custom instructions",
+          "soundness-skeptic auxiliary instruction and exact binding",
           "review-fold/counterexample-corpus basis projection or explicit incomplete horizon",
-          "complete initial five-lens semantic barrier",
+          "complete initial six-lens semantic barrier",
           "current Review Fold with projected and captured CEX identities",
           "exact-head proof inventory"
         ],
         "success_signals": [
+          "standard review remains Codex native/default and unconstrained by the auxiliary taxonomy",
+          "soundness-skeptic independently challenges positive semantic judgments, indispensable premises, artifact bindings, declared domains, and claim strength",
           "material finding invalidates candidate and closes mutation",
           "parallel waits for launched outcomes",
           "serial completes remaining initial lenses for evidence only",
@@ -379,6 +383,8 @@
           "review resumes only on a completely proved successor"
         ],
         "failure_signals": [
+          "Actuating replaces Codex native/default standard review with a custom standard prompt",
+          "soundness-skeptic repeats generic best-judgment review instead of challenging positive semantic claims",
           "serial mode edits after first finding",
           "review stops before sufficient evidence basis",
           "review authors successor one finding at a time",

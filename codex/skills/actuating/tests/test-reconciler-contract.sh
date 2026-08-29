@@ -14,7 +14,8 @@ for removed in \
   "$skill_root/tests/fixtures/cumulative-ablation-basis-valid.json" \
   "$skill_root/tests/fixtures/cumulative-ablation-scenarios.json" \
   "$skill_root/tests/test-review-candidate-traces.sh" \
-  "$skill_root/tests/fixtures/review-candidate-traces.json"
+  "$skill_root/tests/fixtures/review-candidate-traces.json" \
+  "$skill_root/references/standard-review.md"
 do
   if [ -e "$removed" ]; then
     echo "retired process surface remains: $removed" >&2
@@ -53,11 +54,27 @@ grep -F 'A sanctioned path absent from the topology basis revokes' \
 grep -F '| `$actuating analyze` |' "$skill_root/SKILL.md" >/dev/null
 grep -F '`analyze` runs the complete counterexample-to-construction compiler' \
   "$skill_root/SKILL.md" >/dev/null
+grep -F 'initial six-lens falsification wave' "$skill_root/SKILL.md" >/dev/null
+grep -F 'The six review lenses falsify one completed construction' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'standard              Codex native/default best-judgment review' \
+  "$skill_root/SKILL.md" >/dev/null
+grep -F 'soundness-skeptic' "$skill_root/SKILL.md" >/dev/null
 
 if grep -F '$actuating triage' "$skill_root/SKILL.md" >/dev/null ||
    grep -F '$actuating remediation-plan' "$skill_root/SKILL.md" >/dev/null
 then
   echo "retired Actuating public route remains in SKILL.md" >&2
+  exit 1
+fi
+
+if grep -F 'initial five-lens' "$skill_root/SKILL.md" >/dev/null ||
+   grep -F 'The five review lenses' "$skill_root/SKILL.md" >/dev/null ||
+   grep -F 'initial five-lens' "$skill_root/references/review-contract.md" >/dev/null ||
+   grep -F 'complete initial five-lens semantic barrier' \
+     "$skill_root/references/decision-contract.json" >/dev/null
+then
+  echo "retired five-lens wording remains" >&2
   exit 1
 fi
 
@@ -107,6 +124,14 @@ grep -F 'A model-authored path list' \
   "$skill_root/references/review-contract.md" >/dev/null
 grep -F 'second exact same-claim successor invalidation' \
   "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'codex-default-review/v1' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'Launch all six initial owner-live requests' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'The initial six-lens wave is already complete' \
+  "$skill_root/references/review-contract.md" >/dev/null
+grep -F 'soundness-skeptic' \
+  "$skill_root/references/review-contract.md" >/dev/null
 
 grep -F 'source-derived predecessor topology T0' \
   "$skill_root/references/closure.md" >/dev/null
@@ -114,9 +139,13 @@ grep -F 'T1 = tau(T0) and domain(F) = T1' \
   "$skill_root/references/closure.md" >/dev/null
 grep -F 'revokes topology and factorization closure immediately' \
   "$skill_root/references/closure.md" >/dev/null
+grep -F 'all five auxiliary lenses have terminal semantic outcomes' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'five consecutive distinct native/default standard cleans' \
+  "$skill_root/references/closure.md" >/dev/null
 
 for lens in \
-  "$skill_root/references/standard-review.md" \
+  "$skill_root/references/lenses/soundness-review.md" \
   "$skill_root/references/lenses/footgun-review.md" \
   "$skill_root/references/lenses/invariant-review.md" \
   "$skill_root/references/lenses/complexity-review.md" \
@@ -124,6 +153,13 @@ for lens in \
 do
   test -s "$lens"
 done
+
+grep -F '# Soundness-Skeptic Review Lens' \
+  "$skill_root/references/lenses/soundness-review.md" >/dev/null
+grep -F 'positive semantic judgment' \
+  "$skill_root/references/lenses/soundness-review.md" >/dev/null
+grep -F 'claim-strength' \
+  "$skill_root/references/lenses/soundness-review.md" >/dev/null
 
 "$jaq_bin" -e '
   .schema == "skill-definition-set/v1" and
@@ -162,10 +198,40 @@ done
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v12" and
-  .contract_id == "actuating-review-contract-v14" and
-  (.required_lenses | length) == 5 and
+  .schema == "actuating-review-contract/v13" and
+  .contract_id == "actuating-review-contract-v15" and
+  (.required_lenses | length) == 6 and
+  [.required_lenses[].name] == [
+    "standard",
+    "soundness-skeptic",
+    "footgun-finder",
+    "invariant-ace",
+    "complexity-mitigator",
+    "fresh-eyes"
+  ] and
+  .required_lenses[0] == {
+    "name": "standard",
+    "role": "standard",
+    "instruction_source": "codex-default",
+    "custom_instructions": false
+  } and
+  .required_lenses[1].role == "auxiliary" and
+  .required_lenses[1].instructions_ref ==
+    "codex/skills/actuating/references/lenses/soundness-review.md" and
   .review_scheduling.default_mode == "parallel-reviews" and
+  .review_scheduling.initial_lens_order == [
+    "standard",
+    "soundness-skeptic",
+    "footgun-finder",
+    "invariant-ace",
+    "complexity-mitigator",
+    "fresh-eyes"
+  ] and
+  .review_scheduling.standard_review.owner == "codex" and
+  .review_scheduling.standard_review.source == "native-default" and
+  .review_scheduling.standard_review.custom_instructions_argument_forbidden == true and
+  .review_scheduling.standard_review.skill_authored_instruction_file_forbidden == true and
+  .review_scheduling.standard_review.best_judgment_unconstrained_by_auxiliary_taxonomy == true and
   .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
   .review_scheduling.modes["serial-reviews"].continue_remaining_initial_lenses_after_invalidation == true and
   .review_scheduling.modes["serial-reviews"].post_invalidation_lenses_are_evidence_only == true and
@@ -227,12 +293,15 @@ done
   .same_family_recurrence.source_anchored_admission_topology_required_for_reentry == true and
   .same_family_recurrence.executable_or_exhaustive_factorization_witness_required_for_reentry == true and
   .same_family_recurrence.same_law_different_family_does_not_increment == true and
-  .standard_convergence.required_consecutive_clean_attempts == 5
+  .standard_convergence.required_consecutive_clean_attempts == 5 and
+  .standard_convergence.initial_standard_counts == true and
+  .standard_convergence.native_default_review_required == true and
+  .standard_convergence.custom_instructions_forbidden == true
 ' "$skill_root/references/review-contract.json" >/dev/null
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v6" and
+    "actuating-construction-compiler-v7" and
   ((.skill_decision_contract.triggers[] |
     select(.trigger_id == "ACT-ROUTE") |
     .cue_literals) == [
@@ -266,6 +335,18 @@ done
     select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
     .required_artifacts) |
     index("domain(F) = T1")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
+    .required_artifacts) |
+    index("Codex native/default standard review with no custom instructions")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
+    .required_artifacts) |
+    index("soundness-skeptic auxiliary instruction and exact binding")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
+    .required_artifacts) |
+    index("complete initial six-lens semantic barrier")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
     .required_artifacts) |

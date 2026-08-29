@@ -107,8 +107,8 @@ Final `complete` additionally requires:
 
 ```text
 required Ship/provider state matches the exact head
-all four auxiliary lenses have terminal semantic outcomes
-five consecutive distinct standard cleans on the unchanged head
+all five auxiliary lenses have terminal semantic outcomes
+five consecutive distinct native/default standard cleans on the unchanged head
 all historical claims match the available counterexample horizon
 no later evidence falsifies Goal, family, topology derivation, carrier, cut,
   topology transformation, factorization domain, bypass closure, realization,

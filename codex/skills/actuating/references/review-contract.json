@@ -1,11 +1,17 @@
 {
-  "schema": "actuating-review-contract/v12",
-  "contract_id": "actuating-review-contract-v14",
+  "schema": "actuating-review-contract/v13",
+  "contract_id": "actuating-review-contract-v15",
   "required_lenses": [
     {
       "name": "standard",
       "role": "standard",
-      "instructions_ref": "codex/skills/actuating/references/standard-review.md"
+      "instruction_source": "codex-default",
+      "custom_instructions": false
+    },
+    {
+      "name": "soundness-skeptic",
+      "role": "auxiliary",
+      "instructions_ref": "codex/skills/actuating/references/lenses/soundness-review.md"
     },
     {
       "name": "footgun-finder",
@@ -34,11 +40,19 @@
     "all_lenses_required": true,
     "initial_lens_order": [
       "standard",
+      "soundness-skeptic",
       "footgun-finder",
       "invariant-ace",
       "complexity-mitigator",
       "fresh-eyes"
     ],
+    "standard_review": {
+      "owner": "codex",
+      "source": "native-default",
+      "custom_instructions_argument_forbidden": true,
+      "skill_authored_instruction_file_forbidden": true,
+      "best_judgment_unconstrained_by_auxiliary_taxonomy": true
+    },
     "modes": {
       "parallel-reviews": {
         "dispatch": "concurrent",
@@ -161,7 +175,9 @@
     "required_consecutive_clean_attempts": 5,
     "initial_standard_counts": true,
     "later_attempts_serial": true,
-    "findings_reset_streak": true
+    "findings_reset_streak": true,
+    "native_default_review_required": true,
+    "custom_instructions_forbidden": true
   },
   "material_change": {
     "identity": "git-head",
