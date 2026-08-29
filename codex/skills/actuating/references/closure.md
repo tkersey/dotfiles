@@ -24,6 +24,13 @@ accepted under its recorded Goal and subject. It is not a current finding,
 family, or closure claim. Review Fold must reclassify projected rows against the
 current Goal, head, and validity horizon.
 
+## Live owner-source frontier
+
+Closure requires every currently live relevant owner source to be folded, proven
+non-current for the exact subject, or declared unavailable. Missing CAS, provider,
+test, incident, migration, verifier, or corpus evidence keeps the horizon
+incomplete and forbids mutation, clean credit, reviewability, and completion.
+
 ## Counterexample evidence horizon
 
 Closure records whether the Review Fold counterexample basis was projected
@@ -48,6 +55,9 @@ For every current causal generator require:
 
 ```text
 accepted law and invalid family
+positive claim falsified and earliest failed premise
+source-bound predecessor theorem and same-theorem reproof result
+derived response disposition and authority / closure consequence
 current applicable CEX and owner-evidence basis
 finite exhaustion or pre-implementation sibling basis
 source-derived predecessor topology T0 with authority, identity, strength,
@@ -76,10 +86,12 @@ structurally valid gate packet is insufficient.
 ## Isolated restoration
 
 A successful `actuating/direct-repair-admission` materialization proves only that
-one exact restoration is structurally compatible with an already-complete
-construction. It is not proof of family completeness, historical evidence
-completeness, source-derived topology completeness, producer coverage, or
-closure.
+one exact restoration preserves the source-bound predecessor theorem and is
+structurally compatible with an already-complete construction. It is not proof of
+family completeness, historical evidence completeness, source-derived topology
+completeness, producer coverage, or closure. A rejected materialization remains
+blocked unless independent evidence proves a semantic theorem premise false; it
+does not authorize normalization.
 
 ## Reviewability
 
@@ -107,6 +119,9 @@ Final `complete` additionally requires:
 
 ```text
 required Ship/provider state matches the exact head
+every live owner source is folded, non-current, or explicitly unavailable
+every accepted current counterexample has a theorem-derived response
+no unauthorized claim narrowing, containment, residual risk, or deferral
 all five auxiliary lenses have terminal semantic outcomes
 five consecutive distinct native/default standard cleans on the unchanged head
 all historical claims match the available counterexample horizon
@@ -120,7 +135,9 @@ adapter, or bypass absent from the topology basis
 revokes topology and factorization closure immediately. It cannot be closed as
 realization-local repair.
 
-A non-publicly complete implementation is `ready-to-ship`.
+An explicitly deferred or contained liability is not unqualified `complete`; the
+result must retain the authorized bounded claim and its closure consequence. A
+non-publicly complete implementation is `ready-to-ship`.
 
 ## Blockers
 

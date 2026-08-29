@@ -71,6 +71,27 @@ verdict.
 The six required lenses and five-consecutive-standard-clean theorem remain
 unchanged.
 
+## Live owner-source frontier
+
+Before closing an evidence cut, reconcile every currently live relevant owner
+source:
+
+```text
+CAS
+provider / PR review
+repository tests and property tests
+incidents and runtime failures
+migrations and compatibility failures
+repository-native verifiers
+Review Fold counterexample corpus
+```
+
+Each source must be folded, proven non-current for the exact subject, or declared
+unavailable. Unavailable evidence makes the horizon incomplete. A live provider
+finding absent from Review Fold keeps mutation, clean credit, reviewability, and
+closure closed. Do not satisfy this law with an Actuating source registry; derive
+the frontier from current owner facts.
+
 ## Counterexample history projection
 
 Before the first Review Fold for a review-bearing decision, project the
@@ -334,7 +355,27 @@ Review Fold captures newly accepted counterexamples after classification and
 returns their IDs. The cut uses corpus rows as durable source evidence but
 contains current reclassifications; Actuating does not store a second copy.
 
-Actuating then compiles one successor:
+Actuating first derives one theorem-directed response:
+
+```text
+accepted counterexample
+-> positive claim falsified
+-> earliest failed premise
+-> source-bound predecessor theorem
+-> same-theorem reproof attempt
+-> theorem identity or revocation
+-> derived response disposition
+```
+
+An accepted counterexample never selects normalization by itself. If the exact
+predecessor theorem re-proves after changing only realization, proof realization,
+generated output, or artifact binding, isolated restoration is mandatory and the
+existing direct-repair materialization must pass. If it fails, remain blocked;
+do not fall through to architecture work.
+
+Only exact evidence that a semantic premise is false revokes the predecessor
+theorem and authorizes construction normalization. Then Actuating compiles one
+successor:
 
 ```text
 invalid family
@@ -348,8 +389,11 @@ invalid family
 -> exact-head proof
 ```
 
-Review stays closed across realization commits. No intermediate head is
-reviewable.
+No current liability, missing authority, claim narrowing or containment,
+explicit deferral, and blocked are derived non-normalization outcomes. Narrowing,
+containment, residual risk, or deferral require authority and an explicit effect
+on reviewability and closure. Review stays closed across realization commits. No
+intermediate head is reviewable.
 
 ## Two routes
 

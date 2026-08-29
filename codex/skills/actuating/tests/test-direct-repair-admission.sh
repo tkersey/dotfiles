@@ -68,6 +68,17 @@ retain="$tmp/retain-theory-reprove.json"
 ' "$valid" >"$retain"
 expect_valid "$retain" "$tmp/retain.out.json"
 
+for premise in generated-output artifact-binding
+do
+  local_case="$tmp/retain-$premise.json"
+  "$jaq_bin" --arg premise "$premise" '
+    .direct_repair_admission.mutation_basis = "retain-theory-reprove" |
+    .direct_repair_admission.active_elimination_lease = "revoked" |
+    .direct_repair_admission.failed_premise = $premise
+  ' "$valid" >"$local_case"
+  expect_valid "$local_case" "$tmp/retain-$premise.out.json"
+done
+
 expect_invalid semantic-model-change '
   .direct_repair_admission.theory.successor_semantic_model_digest =
     "sha256:1111111111111111111111111111111111111111111111111111111111111111"
@@ -106,6 +117,12 @@ expect_invalid multiple-generators '
 
 expect_invalid revoked-without-localization '
   .direct_repair_admission.active_elimination_lease = "revoked"
+'
+
+expect_invalid semantic-premise-is-not-restoration '
+  .direct_repair_admission.mutation_basis = "retain-theory-reprove" |
+  .direct_repair_admission.active_elimination_lease = "revoked" |
+  .direct_repair_admission.failed_premise = "source-topology"
 '
 
 expect_invalid restoration-generator-unknown '

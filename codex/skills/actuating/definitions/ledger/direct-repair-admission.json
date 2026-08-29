@@ -111,7 +111,9 @@
                 "enum": [
                   "none",
                   "realization",
-                  "proof"
+                  "proof",
+                  "generated-output",
+                  "artifact-binding"
                 ]
               },
               "theory": {
@@ -662,7 +664,9 @@
                       "failed_premise": {
                         "enum": [
                           "realization",
-                          "proof"
+                          "proof",
+                          "generated-output",
+                          "artifact-binding"
                         ]
                       }
                     }

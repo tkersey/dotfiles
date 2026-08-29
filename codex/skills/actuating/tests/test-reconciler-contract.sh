@@ -60,6 +60,10 @@ grep -F 'The six review lenses falsify one completed construction' \
 grep -F 'standard              Codex native/default best-judgment review' \
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'soundness-skeptic' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Theorem-directed response selection' "$skill_root/SKILL.md" >/dev/null
+grep -F 'No normalization fallback' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Live owner-source frontier' "$skill_root/references/review-contract.md" >/dev/null
+test -s "$skill_root/references/theorem-directed-response.md"
 
 if grep -F '$actuating triage' "$skill_root/SKILL.md" >/dev/null ||
    grep -F '$actuating remediation-plan' "$skill_root/SKILL.md" >/dev/null
@@ -198,8 +202,8 @@ grep -F 'claim-strength' \
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v13" and
-  .contract_id == "actuating-review-contract-v15" and
+  .schema == "actuating-review-contract/v14" and
+  .contract_id == "actuating-review-contract-v16" and
   (.required_lenses | length) == 6 and
   [.required_lenses[].name] == [
     "standard",
@@ -218,6 +222,16 @@ grep -F 'claim-strength' \
   .required_lenses[1].role == "auxiliary" and
   .required_lenses[1].instructions_ref ==
     "codex/skills/actuating/references/lenses/soundness-review.md" and
+  .owner_source_frontier.every_live_source_disposition_required_before_cut == true and
+  .owner_source_frontier.missing_live_source_closes_mutation_clean_credit_reviewability_and_closure == true and
+  .theorem_directed_response.accepted_counterexample_selects_mutation_route == false and
+  .theorem_directed_response.same_theorem_reproof_required_before_normalization == true and
+  .theorem_directed_response.failed_direct_gate_authorizes_normalization == false and
+  .theorem_directed_response.normalization_is_default_or_fallback == false and
+  .theorem_directed_response.normalization_requires_named_false_semantic_premise == true and
+  .theorem_directed_response.severity_selects_route == false and
+  .mutation_routes.normalization_is_default == false and
+  .mutation_routes.failed_restoration_gate_falls_through_to_normalization == false and
   .review_scheduling.default_mode == "parallel-reviews" and
   .review_scheduling.initial_lens_order == [
     "standard",
@@ -301,7 +315,7 @@ grep -F 'claim-strength' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v7" and
+    "actuating-construction-compiler-v8" and
   ((.skill_decision_contract.triggers[] |
     select(.trigger_id == "ACT-ROUTE") |
     .cue_literals) == [
@@ -351,6 +365,12 @@ grep -F 'claim-strength' \
     select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
     .required_artifacts) |
     index("review-fold/counterexample-corpus basis projection or explicit incomplete horizon")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-THEOREM-DIRECTED-RESPONSE-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-THEOREM-DIRECTED-RESPONSE-001") |
+    .failure_signals) |
+    index("construction normalization is the fallback response")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-METANOETIC-ADMISSIBILITY-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
