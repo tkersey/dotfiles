@@ -1,13 +1,24 @@
 # Source Binding
 
-A plan is synthesized against a specific intent and artifact state.
+A plan is synthesized against a specific objective, governed source model, and
+artifact state.
 
-Required when spec-governed:
+Required for `spec-to-plan`:
 
 ```text
-spec ID
-SGR/governance ref
+governed specification identity or stable source refs
+candidate and authoritative source digests
+locked decision refs
+scope and non-goals
+proof and compatibility authority
+```
+
+Required for `direct`:
+
+```text
+direct accepted objective
 source refs and digest
+explicit direct-mode authority
 locked decision refs
 ```
 
@@ -22,29 +33,32 @@ dirty fingerprint
 created-at timestamp
 ```
 
-The recorded binding is provenance, not a claim that the state remains current.
-At consumption time, an observed invalidator makes that binding stale. Plan may
-declare invalidators; the consumer establishes whether they have fired.
+The recorded binding is provenance, not a claim that state remains current. At
+consumption time, an observed invalidator makes it stale. Plan may declare
+invalidators; the consumer establishes whether they fired.
 
 Common invalidators:
 
 ```text
-spec/source digest changes
-accepted decision superseded
-repository head/tree changes materially
-required API/protocol disappears
-proof command/build topology changes
+source or governed-specification digest changes
+accepted decision is superseded
+repository head or tree changes materially
+required API or protocol disappears
+proof command or build topology changes
 critical fact loses freshness
 ```
 
 Stale handling is explicit:
 
 ```text
-return_to_spec
-return_to_grill
+restart specification in a Plan revision
+return to user judgment
 replan
-refresh_authority
+refresh authority
 block
 ```
+
+`return_to_spec` in EPG-v1 means a future Plan revision must restart the internal
+specification phase. It is not a handoff to a separate skill.
 
 Never mutate a sealed source binding in place. Emit a new policy revision.

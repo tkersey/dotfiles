@@ -1,19 +1,19 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Plan"
-  short_description: "Synthesize proportional architectonic plans"
+  short_description: "Govern candidate specs and synthesize implementation plans"
   default_prompt: >-
-    Use $plan to synthesize accepted intent into one canonical, source-bound,
-    architecture-aware EPG-v1 plan. Refine source-owned architecture, only the
-    architectonic change delegated to Plan, and execution policy until material
-    improvements are exhausted; run fresh eyes and one private radical candidate.
-    Emit no Plan-owned runtime state, decision, transition, readiness, or execution
-    handoff artifact. Do not invent an architectonic seam for work inside an
-    unchanged exact boundary. Validate the exact emitted EPG through
-    <plan-skill-root>/definitions/ledger/execution-policy-graph.json, resolved
-    from the installed Plan skill root, or persist it through the importing
-    plan-policy-document definition, and report only that it
-    is structurally valid under the returned definition digest.
-    Never grant mutation authority, select an execution owner, require $actuating,
-    $universalist, or $reduce, or silently infer an existing plan.
+    Use $plan. Bare invocation and implicit planning requests mean spec-to-plan:
+    treat any supplied specification as a candidate, inspect authoritative source
+    and repository evidence, adopt/repair/reconstruct it, run the strongest
+    invariant challenge and specification fresh-eyes pass, then synthesize one
+    source-bound architecture-aware EPG-v1. Use direct mode only for explicit
+    `$plan direct`; use revise for an existing plan_id. Specification completion
+    continues into planning unless the user explicitly requests specification-only
+    output. Reopen the affected specification phase internally when policy
+    synthesis exposes a source-fixed contradiction; never emit an SGR, PSC,
+    next-owner, tail-call, readiness, or execution-handoff artifact. Refine
+    architecture and policy to a fixed point, run one private radical candidate,
+    validate the exact EPG through Plan's passive Ledger definition, and never
+    mutate implementation state, grant execution authority, or select a consumer.
