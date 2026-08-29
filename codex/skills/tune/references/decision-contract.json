@@ -3,146 +3,224 @@
     "contract_version": "SKDC-v1",
     "skill": {
       "name": "tune",
-      "kind": "decision",
-      "source_fingerprint": "generated-with-tune-passive-definitions-v1"
+      "kind": "mixed",
+      "source_fingerprint": "unified-create-edit-evidence-tune-v1"
     },
     "triggers": [
       {
-        "trigger_id": "TUNE-EVIDENCE-GAP",
-        "description": "Evidence shows intended and observed skill behavior diverge.",
+        "trigger_id": "TUNE-CREATE-REQUEST",
+        "description": "The user requests a new Codex skill and no existing skill is yet known to own the intent.",
         "cue_literals": [
-          "intended-vs-observed",
-          "skill gap",
-          "missed activation",
-          "false activation",
-          "no visible delta"
+          "create a skill",
+          "new skill",
+          "$tune create"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "style preference only"
+          "update an existing skill",
+          "analyze existing skill behavior"
         ]
       },
       {
-        "trigger_id": "TUNE-APPLY-REQUEST",
-        "description": "The user explicitly requests skill-file changes or skill-refinement publication now; commit and push require separate publish intent.",
+        "trigger_id": "TUNE-DIRECT-EDIT",
+        "description": "The user identifies an existing skill and a concrete package change or known defect.",
         "cue_literals": [
-          "apply",
-          "edit",
-          "patch",
+          "edit the skill",
           "update the skill",
-          "commit",
-          "push",
-          "publish",
-          "ship",
-          "save to git",
-          "save-to-git",
-          "save changes to git"
+          "fix the skill",
+          "$tune edit"
         ],
         "cue_regexes": [],
         "exclusions": [
           "what should change",
-          "commit message suggestion only"
+          "do not edit"
+        ]
+      },
+      {
+        "trigger_id": "TUNE-EVIDENCE-QUESTION",
+        "description": "The user asks whether, why, or how an existing skill should change from observed use, outcomes, or a regression.",
+        "cue_literals": [
+          "intended-vs-observed",
+          "missed activation",
+          "false activation",
+          "skill regression",
+          "$tune tune"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "specified wording replacement only"
         ]
       }
     ],
     "routes": [
       {
-        "route_id": "TUNE-NO-ACTION",
-        "description": "Evidence is too weak or no decision delta exists.",
+        "route_id": "TUNE-CREATE",
+        "description": "Create one lean skill package after confirming no existing owner covers the intent.",
         "aliases": [
-          "no-action",
+          "create"
+        ],
+        "terminal": false
+      },
+      {
+        "route_id": "TUNE-EDIT",
+        "description": "Apply one coherent authorized intervention to an existing skill package.",
+        "aliases": [
+          "edit",
+          "apply"
+        ],
+        "terminal": false
+      },
+      {
+        "route_id": "TUNE-PROPOSE",
+        "description": "Return one bounded expected delta and intervention without mutation.",
+        "aliases": [
+          "proposal",
+          "inspect"
+        ],
+        "terminal": true
+      },
+      {
+        "route_id": "TUNE-NO-ACTION",
+        "description": "Stop because an existing owner already covers creation intent, the package already satisfies the request, or no consequential delta is supported.",
+        "aliases": [
+          "no-change",
           "retire"
         ],
         "terminal": true
       },
       {
-        "route_id": "TUNE-PROPOSE",
-        "description": "Emit one bounded skill delta or final brief.",
+        "route_id": "TUNE-BLOCKED",
+        "description": "Stop because required target, authority, evidence, expected delta, or package boundary is missing.",
         "aliases": [
-          "proposal-only",
-          "final-brief"
-        ],
-        "terminal": true
-      },
-      {
-        "route_id": "TUNE-REFINE",
-        "description": "Hand a complete bounded edit brief to refine, or report the publication state for an already-applied skill refinement.",
-        "aliases": [
-          "handoff-refine",
-          "apply-with-refine"
-        ],
-        "terminal": false
-      },
-      {
-        "route_id": "TUNE-SEQ-DEFINITION-GAP",
-        "description": "Transfer an evidence-surface gap to the owning passive definition or a genuinely generic Seq operator.",
-        "aliases": [
-          "handoff-seq-definition-gap",
-          "transferred-to-definition"
+          "blocked"
         ],
         "terminal": true
       }
     ],
     "clauses": [
       {
-        "clause_id": "TUNE-DECISION-001",
+        "clause_id": "TUNE-CREATE-001",
         "trigger_refs": [
-          "TUNE-EVIDENCE-GAP"
+          "TUNE-CREATE-REQUEST"
         ],
         "expected_routes": [
+          "TUNE-CREATE",
           "TUNE-NO-ACTION",
-          "TUNE-PROPOSE",
-          "TUNE-SEQ-DEFINITION-GAP"
+          "TUNE-BLOCKED"
         ],
         "prohibited_routes": [
-          "TUNE-REFINE"
+          "TUNE-EDIT",
+          "TUNE-PROPOSE"
         ],
         "required_artifacts": [
-          "evidence source",
-          "denominator",
-          "expected decision delta"
+          "existing-skill check",
+          "trigger and non-trigger boundary",
+          "progressive-disclosure map"
         ],
         "success_signals": [
-          "one dominant delta",
-          "evidence limitations preserved"
+          "one lean package or an identified existing owner",
+          "aligned SKILL.md and agents/openai.yaml"
         ],
         "failure_signals": [
-          "raw mention treated as success",
-          "broad edit from weak evidence"
+          "synonym skill created without search",
+          "instrumentation added without a decision need"
         ],
-        "rationale": "Diagnosis must precede mutation."
+        "rationale": "Creation begins from an uncovered capability, not a preferred new package name."
       },
       {
-        "clause_id": "TUNE-APPLY-001",
+        "clause_id": "TUNE-EDIT-001",
         "trigger_refs": [
-          "TUNE-APPLY-REQUEST"
+          "TUNE-DIRECT-EDIT"
         ],
         "expected_routes": [
-          "TUNE-REFINE",
-          "TUNE-NO-ACTION"
+          "TUNE-EDIT",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
         ],
-        "prohibited_routes": [],
+        "prohibited_routes": [
+          "TUNE-CREATE",
+          "TUNE-PROPOSE"
+        ],
         "required_artifacts": [
-          "complete refine brief",
-          "outcome observation query",
-          "scoped file boundary",
-          "publish authorization, when commit or push is requested"
+          "expected delta",
+          "protected behavior",
+          "mutation authority"
         ],
         "success_signals": [
-          "minimal authorized edit or publication-only state",
-          "commit/push state reported as authorized, completed, or blocked"
+          "one coherent authorized intervention",
+          "stable contract IDs preserved"
         ],
         "failure_signals": [
-          "edit without explicit request",
-          "commit or push without explicit publish request",
-          "push before commit succeeds"
+          "historical dossier manufactured for a known direct edit",
+          "unrelated package rewrite"
         ],
-        "rationale": "Apply only after the evidence and edit boundaries are complete; publish only after explicit publish intent."
+        "rationale": "A known skill change should proceed directly without inter-skill handoff ceremony."
+      },
+      {
+        "clause_id": "TUNE-EVIDENCE-001",
+        "trigger_refs": [
+          "TUNE-EVIDENCE-QUESTION"
+        ],
+        "expected_routes": [
+          "TUNE-EDIT",
+          "TUNE-PROPOSE",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
+        ],
+        "prohibited_routes": [
+          "TUNE-CREATE"
+        ],
+        "required_artifacts": [
+          "evidence source and limits",
+          "expected decision or execution delta",
+          "outcome observation"
+        ],
+        "success_signals": [
+          "activation, decision influence, and outcome causality remain distinct",
+          "one dominant delta or no-change"
+        ],
+        "failure_signals": [
+          "raw mention treated as activation",
+          "successful outcome treated as causal proof",
+          "broad edit from weak evidence"
+        ],
+        "rationale": "Evidence-backed tuning must diagnose a consequential gap before mutation."
+      },
+      {
+        "clause_id": "TUNE-SELECTION-001",
+        "trigger_refs": [
+          "TUNE-DIRECT-EDIT",
+          "TUNE-EVIDENCE-QUESTION"
+        ],
+        "expected_routes": [
+          "TUNE-EDIT",
+          "TUNE-PROPOSE",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
+        ],
+        "prohibited_routes": [
+          "TUNE-CREATE"
+        ],
+        "required_artifacts": [
+          "validity gate",
+          "semantic-weakness basis or single-candidate justification",
+          "physical realization basis"
+        ],
+        "success_signals": [
+          "weakest valid intervention supportable by current evidence",
+          "physical size considered only after semantic selection"
+        ],
+        "failure_signals": [
+          "description length used as a generalization proxy",
+          "unnecessary global rule",
+          "incomparability silently collapsed"
+        ],
+        "rationale": "Tune changes no more future behavior than the requested or evidenced delta requires."
       }
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "Emit for material route decisions or repeated proposal terminal states."
+      "rationale": "Use SDR-v1 only for consequential route decisions that bounded traces cannot recover proportionately."
     }
   }
 }
