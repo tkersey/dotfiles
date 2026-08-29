@@ -274,16 +274,19 @@ grep -F 'claim-strength' \
   .review_entry.admitted_carrier_required == true and
   .review_entry.complete_producer_factorization_required == true and
   .review_entry.complete_bypass_disposition_required == true and
-  .review_entry.universalist_boundary_contract_realized_required == true and
-  .review_entry.universalist_claim_strength_preserved_required == true and
-  .review_entry.split_seams_proved_before_recomposition_required == true and
-  .review_entry.source_derived_topology_required_for_complete_claim == true and
-  .review_entry.topology_authority_identity_strength_and_falsifier_required == true and
-  .review_entry.universalist_total_transformation_required == true and
-  .review_entry.exact_head_successor_topology_rederived_required == true and
-  .review_entry.topology_transformation_equality_required == true and
-  .review_entry.factorization_domain_equality_required == true and
-  .review_entry.cut_domination_or_owned_residual_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_boundary_contract_realized_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_claim_strength_preserved_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].split_seams_proved_before_recomposition_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].source_derived_topology_required_for_complete_claim == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].topology_authority_identity_strength_and_falsifier_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_total_transformation_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].exact_head_successor_topology_rederived_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].topology_transformation_equality_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].factorization_domain_equality_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].cut_domination_or_owned_residual_required == true and
+  .review_entry.route_specific_construction_proof["isolated-restoration"].source_bound_predecessor_topology_unchanged_required == true and
+  .review_entry.route_specific_construction_proof["isolated-restoration"].direct_repair_admission_materialization_required == true and
+  .review_entry.route_specific_construction_proof["isolated-restoration"].universalist_invocation_forbidden == true and
   .review_entry.self_authored_omission_list_sufficient == false and
   .review_entry.unproved_complete_factorization_lowers_to_bounded_or_contained == true and
   .universalist_compilation.owner == "actuating" and
@@ -416,11 +419,15 @@ grep -F 'claim-strength' \
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CLOSURE-001") |
     .required_artifacts) |
-    index("exact-head source-derived topology re-derivation proof")) != null and
+    index("construction-normalization: Universalist boundary-contract realization, source-derived successor-topology re-derivation, and total factorization-domain and cut-domination proof")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CLOSURE-001") |
     .required_artifacts) |
-    index("exact-head total factorization-domain and cut-domination proof")) != null and
+    index("isolated-restoration: unchanged source-bound predecessor topology identity and direct-repair admission materialization")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-ISOLATED-RESTORATION-001") |
+    .required_artifacts) |
+    index("localized realization, proof, generated-output, or artifact-binding defect")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-ISOLATED-RESTORATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |

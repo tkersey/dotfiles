@@ -381,7 +381,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "preexisting complete construction theorem",
-          "localized realization or proof defect",
+          "localized realization, proof, generated-output, or artifact-binding defect",
           "actuating/direct-repair-admission materialization"
         ],
         "success_signals": [
@@ -453,9 +453,9 @@
         "required_artifacts": [
           "theorem-derived response for every accepted current counterexample",
           "exact-head construction theorem",
-          "exact-head Universalist boundary-contract realization proof",
-          "exact-head source-derived topology re-derivation proof",
-          "exact-head total factorization-domain and cut-domination proof",
+          "route-specific exact-head construction proof",
+          "construction-normalization: Universalist boundary-contract realization, source-derived successor-topology re-derivation, and total factorization-domain and cut-domination proof",
+          "isolated-restoration: unchanged source-bound predecessor topology identity and direct-repair admission materialization",
           "counterexample horizon sufficient for every historical claim",
           "complete Goal-required proof inventory",
           "Ship/provider evidence when required",
@@ -463,8 +463,9 @@
         ],
         "success_signals": [
           "invalid family is unrepresentable or unadmittable",
-          "the exact-head successor topology equals the nominated transformation of the repository-derived predecessor topology",
-          "the disposition law is total over the exact-head topology",
+          "construction normalization proves the exact-head successor topology equals the nominated transformation of the repository-derived predecessor topology",
+          "construction normalization proves a total disposition law over the exact-head topology",
+          "isolated restoration preserves predecessor topology without Universalist transformation",
           "all factorized routes cross the carrier and every residual is owned",
           "bypasses close",
           "historical absence is used only under a complete evidence horizon",
@@ -478,7 +479,7 @@
           "missing historical evidence is treated as proof",
           "unresolved or unauthorized narrowing, containment, risk acceptance, or deferral is called complete"
         ],
-        "rationale": "Closure is a current proof that the exact-head source topology is totally factorized through the selected construction at the evidence strength actually available."
+        "rationale": "Closure is a route-specific current proof: normalization proves transformed topology and total factorization, while restoration proves the complete predecessor topology is unchanged and the direct gate admits only realization-local change."
       }
     ],
     "instrumentation": {

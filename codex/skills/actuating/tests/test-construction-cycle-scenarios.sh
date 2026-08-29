@@ -29,6 +29,8 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
   def review_ready($i):
     $i.construction_complete == true and
     $i.proof_inventory_current == true and
+    $i.live_owner_sources_complete == true and
+    $i.theorem_directed_response_complete == true and
     (source_closed($i) or bounded_closed($i));
 
   def local_premise($i):
@@ -53,12 +55,17 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
   def decide_selection($i):
     if $i.semantic_barrier_complete != true or
        $i.basis_complete != true or
-       ($i.live_owner_sources_complete? == false)
+       $i.live_owner_sources_complete != true
     then "blocked"
-    elif ($i.law_authority // "entailed") == "new-requirement" or
-         ($i.law_authority // "entailed") == "underdetermined"
+    elif $i.law_authority == null or
+         $i.law_authority == "new-requirement" or
+         $i.law_authority == "underdetermined"
     then "authority-required"
-    elif ($i.counterexample_accepted // true) != true or
+    elif $i.law_authority != "entailed"
+    then "no-current-liability"
+    elif $i.counterexample_accepted == null
+    then "blocked"
+    elif $i.counterexample_accepted != true or
          (["already-excluded", "not-comparable"] |
            index($i.applicability_status // "still-present")) != null
     then "no-current-liability"

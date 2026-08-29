@@ -49,7 +49,8 @@
         "semantic_premise_falsified": true,
         "exact_predecessor_theorem_reprovable": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -69,7 +70,8 @@
         "earliest_failed_premise": "realization",
         "exact_predecessor_theorem_reprovable": true,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "isolated-restoration"
     },
@@ -89,7 +91,8 @@
         "earliest_failed_premise": "realization",
         "exact_predecessor_theorem_reprovable": true,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -110,7 +113,8 @@
         "semantic_premise_falsified": true,
         "exact_predecessor_theorem_reprovable": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -285,7 +289,9 @@
         "topology_transformation_proved": true,
         "factorization_domain_total": true,
         "cut_domination_complete": true,
-        "residuals_owned": true
+        "residuals_owned": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true
       },
       "expected": "reviewable"
     },
@@ -298,7 +304,9 @@
         "bounded_domain_explicit": true,
         "residuals_owned": true,
         "construction_complete": true,
-        "proof_inventory_current": true
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true
       },
       "expected": "reviewable"
     },
@@ -420,7 +428,9 @@
         "topology_transformation_proved": true,
         "factorization_domain_total": true,
         "cut_domination_complete": true,
-        "residuals_owned": true
+        "residuals_owned": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true
       },
       "expected": "allow-review"
     },
@@ -443,7 +453,8 @@
         "semantic_premise_falsified": true,
         "exact_predecessor_theorem_reprovable": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -466,7 +477,8 @@
         "semantic_premise_falsified": true,
         "exact_predecessor_theorem_reprovable": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -482,7 +494,8 @@
         "exact_predecessor_theorem_reprovable": true,
         "direct_gate_valid": true,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -499,7 +512,8 @@
         "exact_predecessor_theorem_reprovable": true,
         "direct_gate_valid": true,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "isolated-restoration"
     },
@@ -516,7 +530,8 @@
         "semantic_premise_falsified": true,
         "exact_predecessor_theorem_reprovable": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -529,7 +544,8 @@
         "live_owner_sources_complete": true,
         "counterexample_accepted": false,
         "applicability_status": "already-excluded",
-        "earliest_failed_premise": "applicability"
+        "earliest_failed_premise": "applicability",
+        "law_authority": "entailed"
       },
       "expected": "no-current-liability"
     },
@@ -560,7 +576,8 @@
         "positive_claim_falsified": true,
         "source_bound_predecessor_theorem_projected": true,
         "exact_predecessor_theorem_reprovable": false,
-        "closure_consequence_explicit": true
+        "closure_consequence_explicit": true,
+        "law_authority": "entailed"
       },
       "expected": "claim-narrowing-or-containment"
     },
@@ -577,7 +594,8 @@
         "claim_narrowing_authorized": false,
         "positive_claim_falsified": true,
         "source_bound_predecessor_theorem_projected": true,
-        "exact_predecessor_theorem_reprovable": false
+        "exact_predecessor_theorem_reprovable": false,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -593,7 +611,8 @@
         "exact_predecessor_theorem_reprovable": true,
         "direct_gate_valid": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -609,7 +628,8 @@
         "exact_predecessor_theorem_reprovable": false,
         "semantic_premise_falsified": false,
         "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -627,7 +647,8 @@
         "positive_claim_falsified": true,
         "source_bound_predecessor_theorem_projected": true,
         "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": false
+        "exact_predecessor_theorem_reprovable": false,
+        "law_authority": "entailed"
       },
       "expected": "explicitly-deferred"
     },
@@ -644,7 +665,8 @@
         "earliest_failed_premise": "canonical-owner",
         "exact_predecessor_theorem_reprovable": true,
         "semantic_premise_falsified": true,
-        "direct_gate_valid": false
+        "direct_gate_valid": false,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -661,7 +683,8 @@
         "earliest_failed_premise": "claim-strength",
         "exact_predecessor_theorem_reprovable": false,
         "weaker_claim_explicit": true,
-        "claim_narrowing_authorized": true
+        "claim_narrowing_authorized": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -675,9 +698,96 @@
         "counterexample_accepted": true,
         "explicit_deferral_requested": true,
         "deferral_authorized": true,
-        "closure_consequence_explicit": true
+        "closure_consequence_explicit": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
+    },
+    {
+      "id": "missing-owner-source-completeness-blocks-selection",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "law_authority": "entailed",
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "missing-law-authority-requires-authority",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true
+      },
+      "expected": "authority-required"
+    },
+    {
+      "id": "missing-counterexample-acceptance-blocks",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "law_authority": "entailed",
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "missing-owner-source-frontier-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": false,
+        "theorem_directed_response_complete": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "missing-theorem-response-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": false,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
     }
   ]
 }
