@@ -27,7 +27,7 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 - Evidence-backed repository or product opportunity mining, ranked improvement discovery, or choosing what to plan next: use `$ideate`.
 - Turning a selected direction into a detailed implementation plan, specification, or execution decomposition: use `$plan` or `$spec-pipeline`.
 - Architecture or codebase understanding without a request for divergent paths: use direct analysis or `$codebase-archaeology`.
-- Analysis, explanation, review, tuning, testing, or editing of this skill itself: use direct analysis, `$tune`, or `$refine` as appropriate.
+- Analysis, explanation, review, tuning, testing, or editing of this skill itself: use direct analysis or `$tune` as appropriate.
 - The user already chose a tier or path and asks to execute it: hand off to the execution owner; do not regenerate the portfolio.
 
 ### Skill-name rule
@@ -40,7 +40,7 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 - Explicit imperative portfolio invocation wins unless safety, a domain-specific owner, a meta-task owner, or a contradictory execution request requires another route.
 - `$ideate` wins when repository evidence mining and ranked opportunities are central.
 - `$plan` wins when the direction is selected and the requested output is an execution policy or detailed plan.
-- `$tune` / `$refine` win when the object of work is the skill package itself.
+- `$tune` wins when the object of work is the skill package itself.
 - Activate when the requested outcome is a choice set; do not activate when the outcome is one answer, one plan, or one implementation.
 
 ## Method
@@ -158,7 +158,7 @@ Add an assumption or evidence label only when it changes how the option should b
 - "`$creative-problem-solver`" -> direct clarification; no portfolio object is authorized.
 - "Use `$creative-problem-solver`." -> direct clarification until a portfolio object is supplied.
 - "Do a deep analysis of my `$creative-problem-solver` skill." -> direct analysis / `$tune`
-- "Patch `$creative-problem-solver` so it stops over-triggering." -> `$tune` / `$refine`
+- "Patch `$creative-problem-solver` so it stops over-triggering." -> `$tune`
 - "I am blocked by this compiler error. What else can I try?" -> debugging owner
 - "Brainstorm twenty names for this command." -> direct creative generation
 - "Give me options, choose the best, and implement it now." -> execution owner; portfolio may be internal

@@ -59,7 +59,7 @@ Skill quality criteria:
 - Workflow shape: inputs, mode selection, steps, outputs, stop conditions, and handoff artifacts are explicit.
 - Progressive disclosure: SKILL.md is compact; long examples, doctrine, templates, and matrices live in references/.
 - Evidence discipline: changes are tied to concrete evidence, validation output, probe results, or observed session failure.
-- Companion boundaries: $cas owns durable goal control, $shadow owns single-session monitoring/lens reports, $tune owns skill-use diagnosis/refinement briefs, and $refine/$ms may own direct skill surgery depending on the parent workflow.
+- Companion boundaries: $cas owns durable goal control, $shadow owns single-session monitoring/lens reports, and $tune owns skill creation, direct editing, and evidence-backed tuning.
 - Invocation ergonomics: common use cases are one prompt away and default prompts match actual usage.
 - Validation: changed behavior has a reproducible check, probe, script, or clearly stated validation gap.
 
