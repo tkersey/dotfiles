@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Tune"
   short_description: "Create, edit, or evidence-tune Codex skills"
-  default_prompt: "Use $tune in create, edit, or tune mode. Own the complete skill package, preserve diagnosis-before-mutation, select the semantically weakest valid intervention before minimizing the diff, and mutate or publish only with corresponding authority."
+  default_prompt: "Use $tune in create, edit, or tune mode. Own the complete skill package, preserve diagnosis-before-mutation in tune mode, select the semantically weakest valid intervention before minimizing the diff, and mutate or publish only with corresponding authority."

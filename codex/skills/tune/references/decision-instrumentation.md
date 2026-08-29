@@ -38,6 +38,10 @@ required artifacts
 Validate it through Tune's passive Ledger definition:
 
 ```bash
+ledger_skill_root="$(realpath \
+  "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
+"$ledger_skill_root/scripts/ensure-ledger"
+
 tune_definition_root="$(realpath \
   "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions")"
 

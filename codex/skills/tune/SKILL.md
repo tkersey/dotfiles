@@ -75,7 +75,7 @@ Local mutation does not authorize Git effects.
 
 ```text
 commit  -> explicit commit, save-to-git, publish, ship, or PR intent
-push    -> explicit remote publication intent
+push    -> explicit remote publication intent after the intended commit succeeds
 PR      -> explicit PR intent
 ```
 
