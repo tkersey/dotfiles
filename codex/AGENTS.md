@@ -10,9 +10,16 @@
 ## Outcome primacy — find the automobile
 
 - Treat a named mechanism, artifact, workflow, abstraction, architecture, or implementation shape as a proposed means unless current user authority makes that shape part of the required outcome or a hard compatibility constraint. Preserve required outcomes, laws, observations, and constraints—not the incumbent solution class.
-- At a consequential commitment point, ask whether the burden being optimized is endogenous to the incumbent: created by its representation, owner, boundary, substrate, interface, or process. When a materially different mechanism could make that burden disappear, run one bounded `$metanoetic` challenger before selection.
+- At a consequential commitment point, ask whether the burden being optimized is endogenous to the incumbent: created by its representation, owner, boundary, substrate, interface, or process. When a materially different mechanism could make that burden disappear, invoke `$noetic-effects dispatch` before selection. Use one targeted effect when sufficient; escalate to `$metanoetic` only when the cognitive regime requires a composite transformation.
 - An automobile changes the governing causal mechanism or makes the old optimization target unnecessary. More speed, scale, automation, parallelism, validation, orchestration, or polish inside the same mechanism is still a faster horse.
 - Continual vigilance is not continual redesign. Keep the check silent and bounded; skip trivial, already-dispositive, or explicitly mechanism-bound work; never redefine user-owned outcomes or delay direct capability for speculative novelty. Surface a challenger only when it is concrete, admissible, comparable against the same evidence, and materially changes the decision.
+
+## Noetic effect dispatch
+
+- At a material, non-dispositive decision point, invoke `$noetic-effects dispatch` when current evidence indicates stale framing, shallow causality, a live contradiction, incumbent-captive adjacency, timid candidate generation, a missing construction form, a wrong abstraction or owner, implementation detached from its contract, unearned surface, ceremonial indirection, or analysis without movement.
+- `$noetic-effects` selects `skip`, one smallest sufficient primitive effect, or one bounded `$metanoetic` composite. Bind the dispatch to the current objective, witnessed pressure, expected route delta, stopping condition, and workflow that owns the decision. If no effect could materially change the route, skip it.
+- Compile the selected effect into the active workflow's native decision surface. When that workflow already owns an equivalent handler, use it and do not run a duplicate root pass. The receiving workflow retains ownership of admissibility, selection, mutation, proof, publication, and closure.
+- Keep dispatch silent. Do not announce doctrine use, rewrite the final response in a doctrine style, create a receipt merely to prove invocation, or introduce a workflow solely to host the effect.
 
 ## Explicit skill resolution
 
@@ -29,10 +36,10 @@
 - Place the Echo line immediately before a question block that precedes Insights/Next Steps; otherwise place it at the top. Follow it with exactly one blank line. This applies even when using skills or templates.
 - Subagents, collaborator threads, and machine-to-machine handoffs must answer directly without `Echo:` or instruction-ack preambles. Never place `Echo:` inside generated or copy-verbatim artifacts, code blocks, machine-consumed formats, email bodies, PR bodies, or commit messages.
 
-## Metanoetic intelligence-escalation mandate
+## Metanoetic composite effect
 
-- `$metanoetic` is a selective one-pass generative interrupt over a concrete incumbent, not a default pass. Invoke it before adjudication only when a skill-owned escalation pressure is evidenced: contradiction; repeated same-surface repair or review accretion; a high-regret or difficult-to-reverse commitment; a plausible owner, model, representation, or solution-class error; an incumbent-generated burden another mechanism could eliminate; or a coherent but merely adequate local optimum with a materially different candidate still plausible. Mere substantiveness or consequentiality is insufficient.
-- Before invocation, bind the incumbent and any challenger to the original objective, target observation, acceptance criterion, or discriminator and current evidence; structured workflows reuse their native fields, including a falsifier when their own contract requires one. For explicit invocation, infer the bindings from context and return `blocked` only when no concrete antecedent or comparison surface exists. For implicit invocation, skip an unbounded pass.
+- Run `$metanoetic` when the user explicitly invokes it or `$noetic-effects` selects a composite escalation over a concrete incumbent. Do not use the full composite when one targeted noetic effect is sufficient.
+- Before invocation, bind the incumbent and any challenger to the original objective, target observation, acceptance criterion, or discriminator and current evidence; structured workflows reuse their native fields, including a falsifier when their own contract requires one. Return `blocked` only when an explicit invocation lacks a concrete antecedent or comparison surface; implicit dispatch skips an unbounded pass.
 - Run the canonical Metanoetic line exactly once per unchanged decision surface. It generates candidates only; the receiving workflow owns materiality, admissibility, disposition, evidence, selection, mutation, and closure, and may adopt, modify, reject, or retain the incumbent. Skip terse acknowledgements, mechanical lookups, trivial or already-dispositive work, weakly grounded symptoms, and divergence outside accepted scope or authority.
 
 ## Universalist architecture-decision mandate
