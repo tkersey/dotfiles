@@ -1,9 +1,14 @@
 # Codex app-server capability contract
 
-Treat the installed `codex` executable as the runtime schema source. CAS 0.5.0
-compares its compact `codex-app-server-capabilities-v1` contract with both
+Treat the installed `codex` executable as the runtime schema source. CAS 0.6.0
+compares its compact `codex-app-server-capabilities-v2` contract with both
 generated bundles and the selected live behavioral probes. The contract names
 required capabilities, not a Codex release.
+
+Released Codex 0.151.0 is the qualification baseline for this contract, not a
+runtime pin or maximum. Later released runtimes remain admissible when their
+generated schemas and selected live probes pass. Prerelease builds do not
+replace released qualification evidence unless the caller requests that test.
 
 ## Schema and preflight
 
@@ -39,7 +44,7 @@ unsupported-item result.
   bounded overload behavior.
 - `review`: core plus structured review.
 - `session-inquiry`: core plus paginated and ephemeral fork/anchor behavior.
-- `full`: all declared features, including pinning, executor skills and
+- `full`: all declared features, including thread sections, executor skills and
   resources, external import history, review, and inquiry.
 
 An explicit external endpoint must earn its own runtime and behavioral proof;
@@ -59,11 +64,19 @@ Public selection is `auto|stdio|managed-ws|ws|unix`. Explicit selection fails
 instead of changing transports. `auto` alone may use CAS's documented bounded
 preference and fallback order.
 
-`--code-mode-host ws://...|wss://...` is an outbound host passed to the Codex
-app-server process. It is orthogonal to the inbound transport endpoint.
-Loopback may use `ws://`; non-loopback requires `wss://`. CAS redacts userinfo
-and query values, preserves only redacted identity plus a digest when needed,
-and never silently falls back to the in-process host.
+`--code-mode-host http://LOOPBACK/|https://HOST/` is an outbound gRPC host
+passed to the Codex app-server process. It is orthogonal to the inbound
+transport endpoint. Plain HTTP is loopback-only; remote hosts require HTTPS.
+Userinfo, query, fragment, and non-root paths are rejected. CAS preserves only
+the origin plus a digest when needed and never silently falls back to the
+in-process host.
+
+`cas app-server session` delegates the raw stateful app-server surface,
+including stdio, Unix/loopback WebSocket listeners, authenticated non-loopback
+WebSocket listener flags, notifications, and server requests. `cas app-server
+daemon` delegates daemon lifecycle commands. These surfaces preserve the
+selected Codex executable's bytes and exit status so additive released methods
+are not projected away by CAS.
 
 All processes, readiness waits, frames, messages, retry loops, and captured
 output are bounded. App-server overload `-32001` alone uses bounded exponential
