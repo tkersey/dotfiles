@@ -77,7 +77,7 @@ Mutation requires explicit implement, fix, resolve, address, or closeout intent.
 
 Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.
 The modifier changes dispatch topology only; both modes acquire the complete
-initial five-lens falsification wave and require the same exact-head convergence.
+initial six-lens falsification wave and require the same exact-head convergence.
 
 ## Build the live view
 
@@ -388,10 +388,11 @@ claim instead.
 
 ## Review and closure
 
-The five review lenses falsify one completed construction:
+The six review lenses falsify one completed construction:
 
 ```text
-standard              admitted Phi member or lost required behavior
+standard              Codex native/default best-judgment review
+soundness-skeptic     unjustified positive judgment or failed semantic premise
 footgun-finder        bypass, illicit mint, or unsafe producer path
 invariant-ace         carrier or transition invariant failure
 complexity-mitigator  duplicate semantic owner or primary compensator

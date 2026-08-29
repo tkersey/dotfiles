@@ -6,8 +6,14 @@ workflow state.
 
 ## Binding and owner authority
 
-Read the exact Review Contract bytes and every required lens instruction byte.
+Read the exact Review Contract bytes and every auxiliary lens instruction byte.
 Do not trim or normalize them.
+
+The standard request is different: invoke Codex's native/default review with no
+custom instructions argument and no skill-authored instruction file. Bind its
+instruction identity to the literal `codex-default-review/v1`. That marker names
+the deliberate absence of customization; it does not copy, describe, or constrain
+Codex's internal default review prompt.
 
 Build one canonical ephemeral context:
 
@@ -39,6 +45,10 @@ campaign_id = sha256(
   review_context_digest
 )
 
+instruction_digest =
+  standard  ? sha256("codex-default-review/v1")
+            : sha256(exact auxiliary instruction bytes)
+
 request_fingerprint = sha256(
   "actuating-review-request/v3" || NUL ||
   campaign_id || NUL || request_id || NUL || lens_name || NUL ||
@@ -58,7 +68,7 @@ current tuple, exact instruction and workflow binding, and the backend capabilit
 required by the JSON contract. Process exit, prose, or a thread handle is not a
 verdict.
 
-The five required lenses and five-consecutive-standard-clean theorem remain
+The six required lenses and five-consecutive-standard-clean theorem remain
 unchanged.
 
 ## Counterexample history projection
@@ -274,7 +284,7 @@ frozen candidate.
 
 ### Parallel mode
 
-Launch all five initial owner-live requests and never cancel siblings. Wait for
+Launch all six initial owner-live requests and never cancel siblings. Wait for
 every launched request, including required request-local recovery, to reach a
 semantic outcome before closing the evidence cut.
 
@@ -294,7 +304,7 @@ without concurrent dispatch.
 
 ### Standard confirmation
 
-The initial five-lens wave is already complete. A material confirmation finding
+The initial six-lens wave is already complete. A material confirmation finding
 invalidates the candidate and stops further confirmation; no additional lens
 wave is implied.
 
@@ -361,7 +371,12 @@ that gate.
 
 ```text
 standard
-  find an admitted family member or lost required-valid behavior
+  invoke Codex's native/default review with no custom instructions; use its
+  unconstrained best judgment rather than an Actuating-authored taxonomy
+
+soundness-skeptic
+  challenge positive semantic judgments, indispensable premises, artifact
+  bindings, declared domains, and claim-strength upgrades
 
 footgun-finder
   find a bypass, illicit mint, unsafe adapter, alternate producer, or topology
@@ -382,8 +397,9 @@ Reviewers report evidence and affected law; they never select a repair.
 ## Convergence and resumption
 
 After a successor becomes `reviewable`, restart the selected schedule on its
-final head. Require five consecutive distinct standard cleans. No credit crosses
-a material head change.
+final head. Require five consecutive distinct standard cleans. The initial
+native/default standard clean counts as clean one; four later standard
+confirmations complete the streak. No credit crosses a material head change.
 
 Reuse only exact CAS receipts and `CEX-*` records whose source references and
 subjects can be revalidated. If the current review receipts cannot be resolved,
