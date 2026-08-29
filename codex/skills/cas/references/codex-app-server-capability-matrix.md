@@ -3,10 +3,14 @@
 | Surface | CAS behavior | Required proof |
 |---|---|---|
 | Complete methods | Stable client, server-request, and notification sets are baseline contract data | structural contract |
-| Thread pinning | Preserve `Thread.isPinned`; pin/unpin and list filters | `full` probe |
+| Thread sections | Create/update/delete sections; move, list, and clear thread membership | `full` probe |
+| Thread history | Preserve `historyMode`, turn/item cursors, revert, turns, and items | structural contract and `full` probe |
 | Paginated forks | Exact completed boundary with `lastTurnId`; experimental `beforeTurnId` and `excludeTurns` | `session-inquiry` or `full` probe |
 | Ephemeral forks | `ephemeral == true`, `path == null`, absent from ordinary list | `session-inquiry` or `full` probe |
-| Remote Code Mode host | Exact outbound argument, security policy, redacted identity, no fallback | selected-host probe |
+| Code Mode host | Exact outbound HTTP(S) root endpoint, loopback/TLS policy, identity digest, no fallback | selected-host probe |
+| Raw session | Delegate the stateful app-server byte stream without projecting additive methods or payloads | dispatcher tests and released help surface |
+| Daemon | Delegate daemon bootstrap/start/restart/remote-control/stop/version commands and exit status | dispatcher tests and released help surface |
+| Authenticated listener | Preserve released WebSocket listener authentication flags on delegated sessions | released help surface |
 | Transports | Distinct stdio, WebSocket, and Unix-socket identities | selected transport probe |
 | Initialization | Typed capability profiles plus bounded raw additions for instance runner | core lifecycle probe |
 | Server requests | Named conservative policy for every baseline method; typed auth/attestation provider failures | core coverage probe |

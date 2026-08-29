@@ -16,14 +16,14 @@ CAS owns route execution and facts it directly observes. It does not decide
 Goal semantics, review credit, finding truth, repairs, mutation, publication,
 closure, what an automation ought to do, or whether its result is correct.
 
-Require installed CAS `0.5.0` or newer. There is no standalone automation
+Require installed CAS `0.6.0` or newer. There is no standalone automation
 product, compatibility skill, or legacy command route.
 
 ## Native surface
 
 ```text
 cas capabilities
-cas app-server <preflight|schema>
+cas app-server <preflight|schema|session|daemon>
 cas account status
 cas automation <doctor|list|show|create|update|enable|disable|run-now|delete|run-due|scheduler>
 cas goal <resolve|get|set|clear|status|wait>
@@ -61,14 +61,20 @@ Use these profiles:
 | release conformance and the complete feature surface | `full` |
 
 Require `status == "compatible"`, the intended resolved Codex path, contract
-ID `codex-app-server-capabilities-v1`, no missing required methods or handlers,
+ID `codex-app-server-capabilities-v2`, no missing required methods or handlers,
 and all required selected-profile probes passed. Codex version and release
 channel are diagnostic only. `degraded` is not compatible proof for a required
 route behavior.
 
+CAS 0.6.0 is qualified against released Codex 0.151.0. That version is an
+evidence baseline, not a runtime pin or upper bound: admit later released
+runtimes when the selected capability profile and probes pass. Do not use an
+unreleased or prerelease build as qualification evidence unless the caller
+explicitly requests prerelease testing.
+
 For review and session inquiry, also require the preflight receipt's
 `transport.selected == "managed-ws"`; a compatible stdio receipt is not
-equivalent proof. CAS 0.5.0 review runs this gate internally before starting
+equivalent proof. CAS 0.6.0 review runs this gate internally before starting
 and reports the realized connection as `selectedTransport == "websocket"`.
 Session inquiry additionally receives `--transport managed-ws` on execution.
 
@@ -86,12 +92,18 @@ See [codex_app_server_contract.md](references/codex_app_server_contract.md) and
 
 Use `cas app-server schema --json` for a non-mutating schema/cache report and
 `cas app-server preflight --json` for the structural and behavioral verdict.
+Use `cas app-server session` for a raw stateful app-server stream and
+`cas app-server daemon` for released daemon lifecycle commands. Both delegate
+to the selected Codex executable, preserve its raw bytes and exit status, and
+accept `--codex-path`; they do not impose a version gate.
 Use `cas smoke_check` for bounded handshake and reachability observations.
 Use `cas instance_runner` for bounded raw requests or fanout. Preserve additive
 response, notification, and item data rather than projecting it away.
 
 Explicit transport or remote Code Mode host selection is fail-closed. The
-outbound Code Mode host is distinct from the inbound app-server endpoint.
+outbound Code Mode host is distinct from the inbound app-server endpoint and
+uses the released HTTP(S) root-endpoint form. Authenticated WebSocket listener
+flags belong to the delegated app-server session surface.
 
 ### Automation
 
