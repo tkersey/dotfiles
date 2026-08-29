@@ -97,8 +97,50 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     else "blocked"
     end;
 
+  def decide_implementation_entry($i):
+    if $i.route != "implement" or
+       $i.goal_bound != true or
+       $i.exact_subject_bound != true or
+       $i.review_epoch_open == true
+    then "blocked"
+    elif $i.counterexample_driven == true and
+         $i.theorem_directed_response_complete != true
+    then "blocked"
+    else "allow-mutation"
+    end;
+
+  def decide_review_epoch($i):
+    if $i.review_dispatched != true
+    then "no-review-epoch"
+    elif $i.review_epoch_open != true
+    then "blocked"
+    elif $i.candidate_invalidated != true
+    then "freeze-candidate"
+    elif $i.wave == "initial" and
+         $i.all_required_initial_outcomes_terminal == true and
+         $i.required_recovery_terminal == true and
+         $i.review_fold_complete == true
+    then "allow-successor-mutation"
+    elif $i.wave == "confirmation" and
+         $i.confirmation_finding_folded == true and
+         $i.already_live_owner_observations_folded == true and
+         $i.new_initial_wave_required != true
+    then "allow-successor-mutation"
+    else "freeze-candidate"
+    end;
+
   def decide($i):
-    if $i.phase == "initial-review" and
+    if $i.phase == "implementation-entry"
+    then decide_implementation_entry($i)
+    elif $i.phase == "review-epoch"
+    then decide_review_epoch($i)
+    elif $i.phase == "route-order"
+    then if $i.route == "bare" and
+            ($i.first_mutation_index | type) == "number" and
+            ($i.first_review_dispatch_index | type) == "number" and
+            $i.first_mutation_index < $i.first_review_dispatch_index
+         then "implement-before-review" else "blocked" end
+    elif $i.phase == "initial-review" and
        $i.material_finding == true and
        $i.semantic_barrier_complete != true
     then "continue-evidence"
@@ -154,8 +196,8 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     else "blocked"
     end;
 
-  .schema == "actuating-construction-cycle-scenarios/v3" and
-  (.scenarios | length) >= 42 and
+  .schema == "actuating-construction-cycle-scenarios/v4" and
+  (.scenarios | length) >= 49 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[]; decide(.input) == .expected) and
   ([.scenarios[] |
@@ -208,7 +250,25 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     .expected == "reviewable") and
   any(.scenarios[];
     .id == "material-theorem-delta-and-factorization-allow-reentry" and
-    .expected == "allow-reentry")
+    .expected == "allow-reentry") and
+  any(.scenarios[];
+    .id == "implementation-without-review-allows-first-mutation" and
+    .expected == "allow-mutation") and
+  any(.scenarios[];
+    .id == "implementation-with-closed-counterexample-evidence-needs-no-fresh-review" and
+    .expected == "allow-mutation") and
+  any(.scenarios[];
+    .id == "open-review-epoch-freezes-candidate" and
+    .expected == "freeze-candidate") and
+  any(.scenarios[];
+    .id == "invalidated-initial-review-closes-after-complete-cut" and
+    .expected == "allow-successor-mutation") and
+  any(.scenarios[];
+    .id == "confirmation-finding-closes-without-new-auxiliary-wave" and
+    .expected == "allow-successor-mutation") and
+  any(.scenarios[];
+    .id == "bare-route-implements-before-review-dispatch" and
+    .expected == "implement-before-review")
 ' "$fixture" >/dev/null
 
-echo "actuating theorem-directed construction cycle scenarios: pass"
+echo "actuating theorem-directed construction and review-epoch scenarios: pass"

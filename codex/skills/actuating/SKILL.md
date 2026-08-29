@@ -75,6 +75,12 @@ analyze selects `analyze`.
 
 Mutation requires explicit implement, fix, resolve, address, or closeout intent.
 
+`implement` begins from the accepted Goal and exact Git state. It may consume
+already-existing owner evidence, but it dispatches no review and requires no
+review receipt or initial falsification wave before the first mutation. It
+constructs and locally proves the candidate that `review-closeout` may later
+falsify.
+
 Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.
 The modifier changes dispatch topology only; both modes acquire the complete
 initial six-lens falsification wave and require the same exact-head convergence.
@@ -125,16 +131,22 @@ A stored `CEX-*` row proves only that its original witness was admitted under it
 recorded Goal and subject. Re-evaluate it against the current Goal, head,
 validity horizon, and source evidence before using it.
 
-## Evidence acquisition before mutation
+## Review-epoch immutability and evidence acquisition
 
 Read [review-contract.md](references/review-contract.md).
+
+A review epoch opens when the first CAS review request binds to one exact
+`reviewable` candidate head. While the epoch is open, that head is frozen:
+successor mutation is forbidden and every review observation remains bound to
+the same subject. This section applies only after review dispatch. It does not
+gate initial implementation or require `$actuating implement` to launch review.
 
 A material `entailed` finding:
 
 ```text
 invalidates the reviewed candidate immediately
 sets review credit to zero
-closes mutation
+keeps successor mutation closed
 does not request a patch
 ```
 
@@ -142,8 +154,13 @@ Complete the remaining **initial** independent lenses against the frozen
 candidate solely to acquire counterexamples. In parallel mode, wait for every
 launched semantic outcome and required recovery. In serial mode, continue the
 remaining initial lenses after invalidation, but do not mutate and grant no clean
-credit. A material confirmation finding stops further confirmations because the
-initial falsification wave is already complete.
+credit. The initial-wave epoch closes only after every required initial outcome
+and request-local recovery is terminal and Review Fold closes the evidence cut.
+
+A material confirmation finding stops further confirmations because the initial
+falsification wave is already complete. Its epoch closes after the finding and
+every already-live required owner observation are folded; do not launch another
+auxiliary wave.
 
 Before folding the resulting cut, require `$review-fold` to project the
 repository basis from `review-fold/counterexample-corpus`. Include projected
@@ -156,10 +173,11 @@ After the fold, Review Fold captures each independent current `entailed`
 `accepted` witness. Actuating retains the resulting `CEX-*` references and
 horizon status in its ephemeral Working Set; it does not copy the corpus.
 
-Only after the semantic barrier and fold may Actuating derive a counterexample
-response. Acceptance blocks the positive claim the witness falsifies; it does
-not select a mutation route. Review remains closed until the derived response is
-realized, proved, and `reviewable` when review still applies.
+Only after the applicable invalidated review epoch closes may Actuating derive a
+counterexample response and resume successor mutation. Acceptance blocks the
+positive claim the witness falsifies; it does not select a mutation route.
+Review remains closed until the derived response is realized, proved, and
+`reviewable` when review still applies.
 
 ## Compile the counterexample basis
 
@@ -202,7 +220,8 @@ Read
 [theorem-directed-response.md](references/theorem-directed-response.md).
 
 An accepted current counterexample blocks the positive claim it falsifies but
-does not authorize construction normalization. Before any mutation:
+does not authorize construction normalization. Before any mutation undertaken
+in response to an accepted counterexample:
 
 ```text
 reconcile every live owner source
@@ -473,7 +492,9 @@ claim instead.
 
 ## Review and closure
 
-The six review lenses falsify one completed construction:
+Implementation constructs and locally proves the candidate before review
+dispatch opens a review epoch. The six review lenses falsify one completed
+construction:
 
 ```text
 standard              Codex native/default best-judgment review
@@ -518,9 +539,12 @@ authorship.
   earliest-premise localization and predecessor-theorem identity.
 - No normalization fallback. A rejected restoration gate or unknown theorem
   relation remains blocked until a semantic premise is proved false.
-- No mutation or clean credit while a live relevant owner source is omitted from
-  the evidence cut.
-- No mutation before the complete initial falsification wave and evidence cut.
+- No successor mutation inside an invalidated review epoch, and no
+  counterexample-driven mutation, while a live relevant owner source is omitted
+  from the applicable evidence cut.
+- No successor mutation while a review epoch is open on the exact candidate.
+- No review dispatch is required before initial implementation; `implement`
+  constructs and locally proves the first candidate.
 - No member-specific repair for an established family without separation proof.
 - No construction claim without every sanctioned producer and bypass.
 - No self-authored omission list may serve as the sole evidence for its own

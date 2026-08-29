@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v8"
+      "source_fingerprint": "actuating-construction-compiler-v9"
     },
     "triggers": [
       {
@@ -145,6 +145,61 @@
         "rationale": "Actuating derives decisions from current owner facts and projected semantic evidence."
       },
       {
+        "clause_id": "ACT-IMPLEMENT-ENTRY-001",
+        "trigger_refs": [
+          "ACT-BARE",
+          "ACT-ROUTE"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "accepted Goal",
+          "exact Git subject",
+          "local construction and validation obligations"
+        ],
+        "success_signals": [
+          "initial implementation may mutate without review dispatch",
+          "existing closed owner evidence may inform implementation without opening review",
+          "the first review dispatch occurs only after the candidate is locally proved and reviewable"
+        ],
+        "failure_signals": [
+          "implementation requires a CAS review receipt before first mutation",
+          "an initial falsification wave is treated as an implementation prerequisite",
+          "review dispatches against an incomplete candidate"
+        ],
+        "rationale": "Implementation constructs and locally proves the candidate that review later falsifies."
+      },
+      {
+        "clause_id": "ACT-REVIEW-EPOCH-001",
+        "trigger_refs": [
+          "ACT-REVIEW"
+        ],
+        "expected_routes": [
+          "ACT-ANALYZE",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "exact reviewable candidate head",
+          "first CAS request opening the review epoch",
+          "applicable terminal review outcomes and Review Fold evidence cut"
+        ],
+        "success_signals": [
+          "the exact candidate remains immutable while its review epoch is open",
+          "initial-wave invalidation waits for every required initial outcome and recovery before successor mutation",
+          "confirmation invalidation closes without launching another auxiliary wave"
+        ],
+        "failure_signals": [
+          "the candidate changes while a review request remains live",
+          "successor mutation begins before the applicable review evidence cut closes",
+          "the review-local mutation freeze is applied before any review is dispatched"
+        ],
+        "rationale": "Review immutability protects one exact evidentiary subject; it is not a global implementation prerequisite."
+      },
+      {
         "clause_id": "ACT-LAW-AUTHORITY-001",
         "trigger_refs": [
           "ACT-COUNTEREXAMPLE",
@@ -189,7 +244,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "complete initial falsification wave",
+          "complete applicable evidence basis; a review wave only when a review epoch has opened",
           "projected counterexample basis and evidence-horizon disposition",
           "current counterexample basis",
           "invalid family",
@@ -424,7 +479,9 @@
           "stored counterexamples are reclassified rather than trusted as current",
           "new current entailed accepted witnesses are captured once by semantic identity",
           "review resumes only on a completely proved successor",
-          "provider, test, incident, migration, verifier, CAS, and corpus evidence enter one adjudicator"
+          "provider, test, incident, migration, verifier, CAS, and corpus evidence enter one adjudicator",
+          "review dispatch opens one exact-head epoch and freezes only its bound candidate",
+          "initial implementation remains outside review and needs no review receipt"
         ],
         "failure_signals": [
           "Actuating replaces Codex native/default standard review with a custom standard prompt",
@@ -434,7 +491,8 @@
           "review authors successor one finding at a time",
           "absence from an incomplete corpus is called first-observed or eliminated",
           "current class, family, owner, cut, carrier, route, or closure is persisted in the corpus",
-          "a live owner source is omitted while mutation or clean credit proceeds"
+          "a live owner source is omitted while mutation or clean credit proceeds",
+          "initial implementation is forced to acquire review evidence before first mutation"
         ],
         "rationale": "Independent review plus durable admitted witnesses supplies the counterexample basis before construction selection."
       },

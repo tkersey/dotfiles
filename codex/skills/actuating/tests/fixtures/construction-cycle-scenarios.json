@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-construction-cycle-scenarios/v3",
+  "schema": "actuating-construction-cycle-scenarios/v4",
   "scenarios": [
     {
       "id": "serial-material-finding-completes-initial-wave",
@@ -847,6 +847,93 @@
         "residuals_owned": true
       },
       "expected": "reviewable"
+    },
+    {
+      "id": "implementation-without-review-allows-first-mutation",
+      "input": {
+        "phase": "implementation-entry",
+        "route": "implement",
+        "goal_bound": true,
+        "exact_subject_bound": true,
+        "review_epoch_open": false,
+        "counterexample_driven": false
+      },
+      "expected": "allow-mutation"
+    },
+    {
+      "id": "implementation-with-closed-counterexample-evidence-needs-no-fresh-review",
+      "input": {
+        "phase": "implementation-entry",
+        "route": "implement",
+        "goal_bound": true,
+        "exact_subject_bound": true,
+        "review_epoch_open": false,
+        "counterexample_driven": true,
+        "theorem_directed_response_complete": true
+      },
+      "expected": "allow-mutation"
+    },
+    {
+      "id": "open-review-epoch-freezes-candidate",
+      "input": {
+        "phase": "review-epoch",
+        "review_dispatched": true,
+        "review_epoch_open": true,
+        "candidate_invalidated": false
+      },
+      "expected": "freeze-candidate"
+    },
+    {
+      "id": "invalidated-initial-review-with-incomplete-cut-stays-frozen",
+      "input": {
+        "phase": "review-epoch",
+        "review_dispatched": true,
+        "review_epoch_open": true,
+        "candidate_invalidated": true,
+        "wave": "initial",
+        "all_required_initial_outcomes_terminal": false,
+        "required_recovery_terminal": false,
+        "review_fold_complete": false
+      },
+      "expected": "freeze-candidate"
+    },
+    {
+      "id": "invalidated-initial-review-closes-after-complete-cut",
+      "input": {
+        "phase": "review-epoch",
+        "review_dispatched": true,
+        "review_epoch_open": true,
+        "candidate_invalidated": true,
+        "wave": "initial",
+        "all_required_initial_outcomes_terminal": true,
+        "required_recovery_terminal": true,
+        "review_fold_complete": true
+      },
+      "expected": "allow-successor-mutation"
+    },
+    {
+      "id": "confirmation-finding-closes-without-new-auxiliary-wave",
+      "input": {
+        "phase": "review-epoch",
+        "review_dispatched": true,
+        "review_epoch_open": true,
+        "candidate_invalidated": true,
+        "wave": "confirmation",
+        "confirmation_finding_folded": true,
+        "already_live_owner_observations_folded": true,
+        "new_initial_wave_required": false
+      },
+      "expected": "allow-successor-mutation"
+    },
+    {
+      "id": "bare-route-implements-before-review-dispatch",
+      "input": {
+        "phase": "route-order",
+        "route": "bare",
+        "first_mutation_index": 0,
+        "first_review_dispatch_index": 1
+      },
+      "expected": "implement-before-review"
     }
   ]
 }
