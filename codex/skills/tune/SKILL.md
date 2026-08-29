@@ -1,13 +1,188 @@
 ---
 name: tune
-description: "Tune an existing Codex skill by comparing its intended decision contract with observed decision episodes and outcomes. Use Tune's passive Seq observation and Ledger artifact definitions for `$tune`, intended-vs-observed behavior, missed/false/ceremonial activations, ignored clauses, wrong routes, outcome regressions, repeated workarounds, STE-v1 packets, skill-delta candidates, explicit `$refine` handoff, or commit/push authorization for skill-refinement changes. Stop at audit/proposal unless apply or skill-refinement publication is explicit. Commit/push only with explicit publish intent."
+description: "Create, directly edit, or evidence-tune Codex skill packages. Use for new skills, explicit skill surgery, regressions, or intended-vs-observed skill behavior. Infer create, edit, or tune mode; preserve progressive disclosure and stable contracts; select the semantically weakest valid intervention before minimizing the diff; and mutate or publish only with corresponding authority."
 ---
 
 # Tune
 
 ## Mission
 
-Improve a skill by finding the smallest evidence-backed change that alters future decisions for the better.
+Own the complete lifecycle of a Codex skill package:
+
+```text
+create a skill
+edit a known skill surface
+tune behavior from evidence
+```
+
+One skill owns diagnosis, selection, and authorized mutation. Keep those phases
+distinct, but do not hand the package to another skill merely to continue the
+same change.
+
+## Public modes
+
+Choose exactly one intent mode:
+
+```text
+create
+edit
+tune
+```
+
+Infer the mode unless the user names one explicitly:
+
+```text
+no suitable target skill exists
+  -> create
+
+existing target + requested change or known defect
+  -> edit
+
+existing target + question about use, behavior, effectiveness, or regression
+  -> tune
+```
+
+An explicit `$tune create`, `$tune edit`, or `$tune tune` overrides inference.
+
+`inspect`, `apply`, `regression`, evidence source, publication state, and terminal
+result are not modes.
+
+## Authority gates
+
+### Mutation
+
+Classify mutation authority separately:
+
+```text
+inspect
+apply
+```
+
+`inspect` forbids file changes. Select it for analyze, audit, review, inspect,
+"what should change?", proposal-only, or an explicit no-edit request.
+
+`apply` authorizes local skill-package mutation. Select it for create, edit, fix,
+update, apply, patch, or improve when the requested target and delta are clear.
+An explicit prohibition on edits always wins.
+
+In tune mode, diagnose and freeze the expected delta before mutation. Direct edit
+mode does not require a historical tuning dossier when the requested delta is
+already known.
+
+### Publication
+
+Local mutation does not authorize Git effects.
+
+```text
+commit  -> explicit commit, save-to-git, publish, ship, or PR intent
+push    -> explicit remote publication intent after the intended commit succeeds
+PR      -> explicit PR intent
+```
+
+Report a concrete blocker when requested publication cannot complete.
+
+## Common kernel
+
+1. Resolve the skill root, target, and mode.
+2. Search for an existing skill before creating another one.
+3. Read the relevant package:
+   ```text
+   SKILL.md
+   agents/openai.yaml
+   references/decision-contract.json
+   linked references/
+   linked scripts/
+   linked assets/
+   definitions/
+   ```
+4. Reconstruct only the operative contract:
+   ```text
+   trigger and non-trigger boundary
+   consequential decisions and routes
+   required authority and stopping conditions
+   protected behavior
+   observable success and failure
+   ```
+5. Acquire only the evidence the selected mode needs.
+6. Before mutation, freeze:
+   ```text
+   expected delta: from -> to
+   protected behavior
+   evidence and its limits
+   selected intervention
+   mutation authority
+   ```
+7. Select one dominant valid intervention, or no change.
+8. Apply only when authorized; root owns every package edit.
+9. Validate package integrity and the strongest currently observable behavioral
+   claim.
+10. Run the fresh-eyes pass, then publish only when separately authorized.
+
+If materially new evidence invalidates the frozen delta or selected intervention,
+return to step 4. Do not silently broaden the diagnosis during editing.
+
+## Progressive disclosure
+
+The package must place knowledge at the cheapest sufficient layer:
+
+```text
+frontmatter description  activation cues
+SKILL.md                  always-required authority, routing, safety, and stops
+references/               conditional knowledge loaded at a named decision
+scripts/                  substantive deterministic operations
+assets/                   output resources, not hidden policy
+```
+
+Before completion, prove:
+
+- metadata carries every activation cue without claiming neighboring skills;
+- `SKILL.md` contains every always-required rule;
+- each deeper resource is linked beside the condition that requires it;
+- a common-path probe needs only the kernel and common resources;
+- a conditional-path probe loads only resources whose condition holds;
+- a near-miss prompt does not activate.
+
+Keep `SKILL.md` under 500 lines. Move detail only when doing so improves
+progressive disclosure rather than hiding governing policy.
+
+## Create mode
+
+1. Search for a skill already covering the intent.
+2. Collect two or three realistic trigger prompts and at least one near miss.
+3. State the problem, success criterion, and non-trigger boundary.
+4. Classify the skill as `decision`, `execution`, `evidence`, `orchestration`, or
+   `mixed` only when the classification affects design or observability.
+5. Map activation metadata, the always-required kernel, common resources, and
+   each conditional resource.
+6. Scaffold when useful:
+   ```bash
+   uv run --with pyyaml -- python3 \
+     codex/skills/.system/skill-creator/scripts/init_skill.py \
+     <skill-name> --path codex/skills
+   ```
+7. Author the smallest operative package.
+8. Evaluate decision instrumentation; do not add it by default.
+9. Align `agents/openai.yaml`.
+10. Remove redundant doctrine, examples, and generated ceremony.
+
+If an existing skill already owns the intent, prefer extending it or report
+`no-change`; do not create a synonym package.
+
+## Edit mode
+
+Use for direct user-authorized surgery when the desired change is already known.
+
+- Preserve unrelated behavior and files.
+- Preserve stable decision-contract IDs.
+- Update only affected clauses and linked surfaces.
+- Keep frontmatter, package paths, links, and `agents/openai.yaml` aligned.
+- Do not manufacture historical evidence, tuning packets, or receipts.
+- Escalate to tune mode only when deciding *whether* or *how* the skill should
+  change requires behavioral evidence.
+
+## Tune mode
+
+Tune compares intended behavior with observed decision episodes and outcomes.
 
 ```text
 activation evidence asks: was the skill present?
@@ -15,175 +190,23 @@ decision evidence asks: what changed because of it?
 outcome evidence asks: was that change useful?
 ```
 
-Ownership:
+These implications are invalid:
 
 ```text
-$seq    reconstructs bounded session evidence under Tune's definition
-Ledger validates Tune's authored SKDC/SDR/STE/SDC structures
-$tune   diagnoses the gap and decides the refinement route
-$refine owns in-place skill-package edits after the apply gate passes
+mention -> activation
+activation -> decision influence
+decision influence -> outcome causality
+successful outcome -> skill effectiveness
 ```
 
-## Canonical evidence
+Read [tuning-evidence.md](references/tuning-evidence.md) when historical,
+provided, mixed, or attribution-sensitive evidence is needed. Use the passive Seq
+definition there for bounded historical reconstruction.
 
-For historical or multi-session tuning, prefer:
-
-```bash
-seq observe \
-  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
-  --projection evidence \
-  --root <sessions-root> \
-  --last 30d \
-  --repo <repo> \
-  --param exclude_session_id=<current-session-id> \
-  --param needle=<skill> \
-  --format json
-
-seq observe \
-  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
-  --projection tools \
-  --root <sessions-root> \
-  --last 30d \
-  --repo <repo> \
-  --param exclude_session_id=<current-session-id> \
-  --param needle=<skill> \
-  --format json
-```
-
-For one watched session, prefer:
-
-```bash
-seq observe \
-  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
-  --projection evidence \
-  --root <sessions-root> \
-  --session-id <session> \
-  --param needle=<skill> \
-  --format json
-
-seq observe \
-  --definition <tune-skill-root>/definitions/seq/skill-decision-audit.json \
-  --projection tools \
-  --root <sessions-root> \
-  --session-id <session> \
-  --param needle=<skill> \
-  --format json
-```
-
-The Seq result is evidence, provenance, corpus scope, statistics, and
-limitations. It is not an STE packet and grants no authority. Tune classifies
-the evidence, compares it with the target contract, authors
-`skill_tuning_evidence / STE-v1`, and validates that packet through:
-
-Free-form `evidence` rows are candidate mentions, never activation identity.
-For historical root scans, bind `exclude_session_id` to the current
-`CODEX_THREAD_ID`; Seq pushes this exclusion into file preselection so the
-audit cannot count its own prompt or tool invocation.
-For an executable or tool pattern, invoke the same definition with projection
-`tools` and the exact pattern as `needle`; treat a tool row as activation only
-after Tune verifies the owning command or skill boundary.
-
-The default `tools` projection emits only tool identity, lifecycle, and
-provenance metadata. Use `tools-raw` only when the user explicitly requests raw
-tool payloads and the selected evidence scope is safe to disclose.
-
-Before the first native Ledger command in this workflow, load `$ledger` and
-complete `$ledger ensure` once.
-
-```bash
-ledger validate \
-  --definition <tune-skill-root>/definitions/ledger/skill-tuning-evidence.json \
-  --input evidence=<ste.json> \
-  --format json
-```
-
-For watched-session deltas, compare stable `source_event_id` and line positions
-with the prior cursor. If the definition lacks a needed observation, request a
-passive observation-definition change or a genuinely domain-independent Seq
-operator. Do not request a new skill-specific native command.
-
-## Modes
-
-Choose exactly one:
-
-```text
-audit-only
-proposal-only
-apply-with-refine
-```
-
-`audit-only`: explain what evidence supports and does not support; no edits.
-
-`proposal-only`: default for "improve," "optimize," or "what should change?"; produce one bounded decision delta, terminal repeat state, or no-action decision; no edits.
-
-`apply-with-refine`: use only when the user explicitly asks to edit, apply, patch, update, or publish an already-applied skill refinement now. Produce the diagnosis first, then hand a bounded brief to `$refine` or report the publication-only state. Apply means local file changes; it does not authorize commit or push.
-
-## Target skill type
-
-Classify the target before judging it:
-
-```text
-decision       route selection/rejection/narrowing/blocking/escalation
-execution      handoff fidelity, surface budget, observed behavior, rework
-evidence       coverage, precision, provenance, false positives/negatives
-orchestration  phase correctness, handoff completeness, terminal states, loops
-mixed          name the relevant dimensions; do not force route-change metrics
-```
-
-## Intended-use contract
-
-Read the target package before judging usage:
-
-```text
-SKILL.md
-agents/openai.yaml
-references/decision-contract.json
-scripts/
-references/
-assets/
-```
-
-Prefer `skill_decision_contract / SKDC-v1`. If absent, reconstruct only the minimum provisional contract needed for diagnosis and label it `contract_authority: inferred`. Do not pretend inferred clauses are stable historical identifiers.
-
-Validate an authored contract through Tune's canonical passive definition:
-
-```bash
-tune_definition_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/tune/definitions")"
-ledger validate \
-  --definition "$tune_definition_root/ledger/skill-decision-contract.json" \
-  --input contract=<skill-root>/references/decision-contract.json \
-  --format json
-```
-
-A passing result means only that the contract is structurally valid under the
-reported definition digest. Tune retains interpretation and decision authority.
-
-## Evidence hierarchy
-
-Use the strongest available evidence and preserve weaker classes separately:
-
-```text
-1. SDR-v1 structured decision receipt
-2. explicit assistant statement tying skill to a decision
-3. explicit skill use plus contract-aligned route/action
-4. skill use plus downstream outcome with no route attribution
-5. co-occurrence or raw mention
-```
-
-Only levels 1-2 establish a strong skill-caused decision delta. Levels 3-4 support alignment or association, not causal proof. Level 5 is weak evidence.
-
-Decision-effect classes:
-
-```text
-explicit_route_change | prevented_action | narrowed_scope
-added_or_changed_proof | escalated_or_blocked | reinforced_existing_choice
-no_visible_delta | contrary_to_contract | trigger_missed
-false_activation | ceremonial_activation | unknown
-```
-
-Ceremonial activation means the skill was loaded or declared but no clause was exercised, no route/scope/proof/lifecycle state changed, and the work is indistinguishable from a no-skill path. Ceremony is not automatically harmful; it becomes a tuning gap when recurrent or costly.
-
-## Gap classes
+For every material episode preserve the trigger, activation evidence, decision
+question, selected route, rejected routes actually observed, exercised clauses,
+decision effect, evidence strength, downstream signal, and counterevidence.
+Do not invent unobserved alternatives.
 
 Classify the smallest useful gap:
 
@@ -193,183 +216,151 @@ metadata | boundary | source-scope | decision-contract | observability
 outcome | ceremony | overconstraint
 ```
 
-Examples: trigger present with no activation -> `activation`; clause loaded but wrong route selected -> `interpretation`; repeated manual workaround -> `tooling` or `workflow`; no stable clause IDs -> `decision-contract`; useful-looking skill with unrecoverable decision effect -> `observability`; compliant route repeatedly reopens -> `outcome`; repeated no-delta use -> `ceremony`.
+Produce at most one dominant expected delta per cycle. Preserve denominators,
+counterevidence, scope, and limitations. If no consequential decision,
+execution, proof, lifecycle, or outcome relation should change, stop with
+`no-change`.
 
-## Decision episode analysis
+Regression is an evidence shape, not a mode. Bind the prior failure, involved
+trigger/clause/route, expected future behavior, and a reproduction query. Repair
+the witnessed failure class without installing an unsupported global ban.
 
-For each material episode, preserve:
+## Intervention selection
 
-```yaml
-decision_episode:
-  decision_id:
-  session_id:
-  artifact_state:
-  trigger:
-  activation_evidence:
-  question:
-  alternatives_considered: []
-  selected_route:
-  rejected_routes: []
-  clause_refs: []
-  decision_effect:
-  evidence_strength:
-  downstream:
-  counterevidence: []
-```
+Select by semantic weakness, then realize by physical minimality.
 
-Do not infer alternatives that were never observed. Do not count a later successful session as proof that a skill caused the success.
+Read [weakness-selection.md](references/weakness-selection.md) when candidates
+differ in semantic scope, a short edit would introduce a broad rule, or a
+regression guard risks overfitting.
 
-Before proposing a change, ask whether the observed action plausibly would have happened without the skill, whether the skill changed the route or merely described it, whether compliance improved the outcome, whether missed activation caused failure, and whether a companion skill owns the effect.
+A candidate is valid only when it:
 
-For high-impact or ambiguous tuning, use `skill_decision_provenance_auditor` and/or `skill_outcome_skeptic`.
+- produces the expected delta;
+- preserves protected contracts and valid near misses;
+- stays inside the authorized package surface;
+- introduces no contradiction, prohibited route, or unowned authority;
+- leaves its claimed effect observable.
 
-## Canonical tune packet
+Among valid candidates, reject a semantically stronger candidate when a provably
+weaker valid candidate permits every behavior the stronger candidate permits
+while avoiding at least one unnecessary restriction. Preserve genuine
+incomparability; never invent a numeric weakness score.
 
-Consume or emit `skill_tuning_evidence / STE-v1`. It must preserve target kind, contract authority, window, denominator, trigger quality, decision influence, clause compliance, outcomes, workarounds, exemplars, recurrent gaps, and limitations.
-
-## Skill delta
-
-Produce at most one dominant `skill_delta_candidate / SDC-v2` per cycle.
-
-Required fields:
+Select one dominant intervention route:
 
 ```text
-target and type
-source packet
-gap signature/type
-episode and clause refs
-evidence class/recurrence/confidence
-expected decision delta
-smallest change
-protected contracts
-outcome-observation query
-proposed action
-publish authorization and commit/push state, when apply-mode is requested
+no-change
+trigger-or-boundary
+decision-or-routing
+workflow-or-tooling
+artifact-or-resource
+metadata-or-observability
+consolidate-or-delete
+blocked
 ```
 
-If there is no expected decision delta, do not produce a long redesign.
+One intervention may touch several files when they jointly realize one rule,
+such as `SKILL.md` plus the matching decision-contract clause and agent prompt.
 
-Validate an authored candidate through Tune's canonical definition:
-
-```bash
-ledger validate \
-  --definition <tune-skill-root>/definitions/ledger/skill-delta-candidate.json \
-  --input candidate=<sdc.json> \
-  --format json
-```
-
-A pass establishes only structural validity under the reported definition
-digest. Tune retains change-selection authority.
-
-## Repeat proposal ledger
-
-Track proposal signature, first/last seen, repeat count, evidence delta, state, and next action. If the same proposal appears three times without new decision/outcome evidence, emit one terminal state:
+After semantic selection, minimize physical realization:
 
 ```text
-apply-blocked
-final-brief
-transferred-to-definition
-retired
+1. no edit
+2. delete or consolidate
+3. clarify an existing trigger, rule, route, or stop
+4. repair an existing artifact or operation
+5. add one conditional reference
+6. add a substantive operation
+7. add a consequential contract clause or receipt
 ```
 
-## Apply / publish gates
+## Decision instrumentation
 
-Apply-with-refine may edit files only when all hold:
+Read
+[decision-instrumentation.md](references/decision-instrumentation.md)
+before adding or materially changing a decision contract or receipt.
 
-- explicit user request to edit, apply, patch, update, or publish a skill refinement now;
-- target, evidence source, and intended contract are identified;
-- protected-skill restrictions are satisfied;
-- decision/outcome gap is sufficiently evidenced and smallest change is known;
-- stable clause IDs are preserved unless intentionally replaced;
-- an outcome-observation query exists when the claimed effect requires later evidence.
+Create `references/decision-contract.json` only when stable consequential
+decision rules need future clause-level evidence. Add an SDR-v1 receipt only when
+the decision cannot otherwise be recovered proportionately.
 
-Publishing is separate:
+When a contract exists:
 
-- commit only after explicit commit, publish, ship, or save-to-git intent exists;
-- push only after commit succeeds and explicit push or remote-publish intent exists;
-- otherwise report commit/push as `blocked:not-requested`.
-- when publishing was requested but pre-commit or worktree checks fail,
-  report the specific blocked state instead of collapsing it to `blocked:not-requested`.
+- preserve stable trigger, route, and clause IDs;
+- never renumber for formatting;
+- synchronize changed routes with `SKILL.md`;
+- preserve superseded IDs when historical evidence depends on them;
+- update the source fingerprint after the final package state is known.
 
-If any required gate fails, stop at audit/proposal or report blocked publication.
-
-## Handoffs
-
-`$refine` handoff: use `REFINE-SKILL-v3`. The brief must bind source packet, target kind, gap/clause refs, expected delta, optimization boundary, intervention budget, forbidden changes, smallest-change hint, outcome-observation query, and publish authorization when relevant. Do not hand `$refine` raw transcripts when STE-v1 is available.
-
-Missing observation handoff: identify the physical evidence, the owning passive
-definition, the missing generic operator if any, bounds, and acceptance
-examples. Never ask Seq to acquire Tune vocabulary or decision authority.
-
-## Subagent policy
-
-Default root-only for small, explicit gaps.
-
-Use `skill_contract_modeler` when the target is decision-oriented and lacks SKDC-v1.
-
-Use `skill_decision_provenance_auditor` when episodes are numerous or attribution is ambiguous.
-
-Use `skill_outcome_skeptic` when compliance/outcome correlation could be mistaken for causation.
-
-`$refine` owns authorized package optimization after `$tune` produces a bounded packet or brief. Do not delegate this to a system-managed optimizer.
+Structural validation proves shape, not correctness, usefulness, or authority.
 
 ## Outcome observation
 
-Rerun the exact `seq observe` invocation named by the tuning packet when current
-evidence can exist. Otherwise retain it as a future observation. A text edit
-does not prove that behavior improved.
+Run a current behavioral observation when the evidence can exist now. Otherwise
+retain the exact future query and state what remains unproved.
+
+A text edit proves only that the package changed. It does not prove improved
+activation, decision quality, execution fidelity, or outcomes.
+
+## Package rules
+
+- Make the smallest sufficient package, not merely the fewest changed lines.
+- Default frontmatter to `name` and `description`.
+- Use a hyphen-case name of at most 64 characters matching the folder.
+- Keep the description under 1024 characters.
+- Do not add README, INSTALL, or CHANGELOG files inside a skill package.
+- Do not add scripts that merely grade prose.
+- Do not add network dependencies, secrets, hidden global state, or
+  nondeterminism.
+- Preserve concurrent and unrelated work.
+- Do not delegate edits to a system-managed optimizer.
+- Root owns all skill-package mutation.
+
+## Fresh-eyes pass
+
+Before completing a non-trivial creation or edit, reread the result as both user
+and router:
+
+- Did the description become too broad, narrow, or duplicative?
+- Does body workflow conflict with frontmatter or another skill's ownership?
+- Did evidence, authority, privacy, publication, or stopping rules weaken?
+- Did paths, names, links, contract IDs, or `agents/openai.yaml` drift?
+- Would the result cause false, missed, ceremonial, or partial activation?
+- Did the change add protocol where direct capability would suffice?
+
+Fix a material finding before completion. Otherwise retain
+`fresh_eyes_delta: none` internally.
 
 ## Report
 
 ```text
 Tuned:
 - Target:
-- Target kind:
-- Mode:
-
-Evidence:
-- Source:
-- Packet:
-- Contract authority:
-- Decision episodes:
-- Limitations:
-
-Diagnosis:
-- Intended:
-- Observed:
-- Gap:
-- Decision effect:
-- Outcome signal:
-
-Skill delta:
-- From:
-- To:
-- Smallest change:
-- Repeat state:
-
-Handoff / action:
-- <no action | refine brief | Seq definition gap | applied edit>
-- Publication: <authorization | commit | push>
-
-Outcome observation:
-- Current evidence:
-- Future query:
-
-Remaining uncertainty:
+- Mode: create | edit | tune
+- Mutation: inspect | apply
+- Expected delta:
+- Evidence and limits:
+- Selected intervention:
+- Files changed:
+- Validation:
+- Outcome observation:
+- Publication:
+- Remaining uncertainty:
 ```
+
+Omit empty or inapplicable fields.
 
 ## Hard rules
 
-- Raw mentions are not activation.
-- Activation is not decision influence.
-- Decision influence is not outcome causality.
-- A successful outcome is not proof of skill effectiveness by itself.
-- A clause never observed may be unnecessary, untriggered, or merely unobservable; do not assume which.
-- Preserve denominators.
-- Preserve counterevidence.
-- Prefer no edit over a weakly supported edit.
-- No decision delta, no full cycle.
-- No repeated proposal without terminal state.
-- Apply/edit authority is not commit/push authority.
-- No commit or push without explicit publish intent.
-- No `$seq` CLI edit without a separate spec.
+- `$tune` is the sole owner of skill creation, direct editing, and
+  evidence-backed tuning.
+- Mode expresses intent; authority, evidence shape, rigor, and result do not.
+- Diagnosis precedes mutation in tune mode.
+- Direct edit does not require ceremonial diagnosis.
+- No expected delta, no tune-mode mutation.
+- One dominant intervention per cycle.
+- Semantic weakness precedes physical minimality.
+- Behavioral claims require behavioral evidence.
+- Preserve stable contract IDs and unrelated work.
+- No package creation before checking for an existing owner.
+- No commit, push, or PR without explicit publication intent.

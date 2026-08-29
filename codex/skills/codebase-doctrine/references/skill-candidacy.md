@@ -78,10 +78,10 @@ when it should be narrowed, split, or deleted
 Do not promote, expand, or retain a skill from mention counts or co-occurrence.
 Use actual decision episodes.
 
-## Handoff to `$ms`
+## Handoff to `$tune create`
 
-After explicit user authorization, provide only the context required to create
-the package:
+After explicit user authorization, provide `$tune create` only the context
+required to create the package:
 
 - mission and jurisdiction;
 - governing doctrine;
@@ -95,5 +95,5 @@ the package:
 - currently applicable prohibited routes;
 - allowed package boundary.
 
-The creating workflow must verify current user authorization independently. A
-handoff written by the model cannot certify its own authority.
+Tune must verify current user authorization independently. A handoff written by
+the model cannot certify its own authority.

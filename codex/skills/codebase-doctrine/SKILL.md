@@ -503,7 +503,8 @@ Do not silently create repository files.
 
 Codebase Doctrine recommends; it does not create.
 
-After explicit user authorization, hand `$ms` the smallest sufficient context:
+After explicit user authorization, hand `$tune create` the smallest sufficient
+context:
 
 - the candidate mission;
 - the governing doctrine and jurisdiction;
@@ -523,8 +524,7 @@ After a generated repository skill has real decision episodes:
 
 ```text
 $seq observe with Tune's skill-decision-audit definition
--> $tune
--> $refine
+-> $tune tune
 ```
 
 Evaluate decision quality, trigger quality, missed and ceremonial activation,

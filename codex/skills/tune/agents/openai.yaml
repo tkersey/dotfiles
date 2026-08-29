@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "Tune"
-  short_description: "Tune skills from decision provenance"
-  default_prompt: "Use $tune with its passive Seq evidence definition and Ledger artifact definitions to compare a target skill's decision contract with observed episodes and outcomes, then produce one bounded skill delta or terminal state. Treat commit and push as publishing steps that require explicit user intent."
+  short_description: "Create, edit, or evidence-tune Codex skills"
+  default_prompt: "Use $tune in create, edit, or tune mode. Own the complete skill package, preserve diagnosis-before-mutation in tune mode, select the semantically weakest valid intervention before minimizing the diff, and mutate or publish only with corresponding authority."
