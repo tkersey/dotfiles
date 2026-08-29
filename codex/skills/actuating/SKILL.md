@@ -493,8 +493,7 @@ claim instead.
 ## Review and closure
 
 Implementation constructs and locally proves the candidate before review
-dispatch opens a review epoch. The six review lenses falsify one completed
-construction:
+dispatch opens a review epoch. The six review lenses falsify one completed construction:
 
 ```text
 standard              Codex native/default best-judgment review
