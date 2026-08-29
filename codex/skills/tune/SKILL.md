@@ -118,6 +118,12 @@ Report a concrete blocker when requested publication cannot complete.
    claim.
 10. Run the fresh-eyes pass, then publish only when separately authorized.
 
+When the intended or failed behavior is cognitive rather than only routing,
+authority, tooling, data transport, or output shape, invoke
+`$noetic-effects compile` after reconstructing the operative contract and before
+selecting the intervention. Use its result as a candidate semantic compilation;
+Tune still decides whether and how the package changes.
+
 If materially new evidence invalidates the frozen delta or selected intervention,
 return to step 4. Do not silently broaden the diagnosis during editing.
 
@@ -144,6 +150,49 @@ Before completion, prove:
 
 Keep `SKILL.md` under 500 lines. Move detail only when doing so improves
 progressive disclosure rather than hiding governing policy.
+
+## Noetic compilation
+
+Use `$noetic-effects compile` when the target skill needs to change how an agent
+frames, searches, constructs, selects, reduces, or actuates—not merely what it
+calls a route or how it formats an answer.
+
+Common pressures include:
+
+- inherited framing suppresses current evidence;
+- reasoning stops at symptoms;
+- a genuine contradiction is being flattened;
+- candidate generation is captive to incumbent adjacency;
+- the option set is timid or contains no adequate form;
+- the abstraction, owner, or composition law is suspect;
+- implementation is detached from the accepted contract;
+- accumulated surface owns no live obligation;
+- process machinery displaces object-level capability;
+- analysis does not become state movement.
+
+Require Noetic Effects to return the smallest sufficient effect or justified
+composition, then compile it into the target skill's own:
+
+```text
+witnessed trigger
+native operation
+governor or shadow-risk guard
+stopping condition
+expected route delta
+positive probe
+near-miss probe
+shadow-failure probe
+```
+
+Do not insert doctrine vocabulary as decoration. The target instruction must
+change a consequential route, candidate, construction, deletion decision,
+action, or proof obligation. If the target already owns an equivalent native
+handler, prefer `no-change` or sharpen that handler rather than duplicating it.
+
+`$noetic-effects` is read-only and does not choose Tune's intervention, edit the
+package, widen authority, or publish. Tune preserves the target skill's
+activation boundary, owner model, mutation policy, evidence contract, and
+closure semantics.
 
 ## Create mode
 
@@ -327,6 +376,8 @@ and router:
 - Did paths, names, links, contract IDs, or `agents/openai.yaml` drift?
 - Would the result cause false, missed, ceremonial, or partial activation?
 - Did the change add protocol where direct capability would suffice?
+- Did doctrine compilation change an actual decision procedure or only its
+  register?
 
 Fix a material finding before completion. Otherwise retain
 `fresh_eyes_delta: none` internally.
@@ -354,6 +405,8 @@ Omit empty or inapplicable fields.
 
 - `$tune` is the sole owner of skill creation, direct editing, and
   evidence-backed tuning.
+- `$noetic-effects` may compile cognitive semantics but never owns package
+  intervention selection, mutation, validation, or publication.
 - Mode expresses intent; authority, evidence shape, rigor, and result do not.
 - Diagnosis precedes mutation in tune mode.
 - Direct edit does not require ceremonial diagnosis.
@@ -361,6 +414,8 @@ Omit empty or inapplicable fields.
 - One dominant intervention per cycle.
 - Semantic weakness precedes physical minimality.
 - Behavioral claims require behavioral evidence.
+- Doctrine vocabulary without an observable behavioral delta does not justify an
+  edit.
 - Preserve stable contract IDs and unrelated work.
 - No package creation before checking for an existing owner.
 - No commit, push, or PR without explicit publication intent.
