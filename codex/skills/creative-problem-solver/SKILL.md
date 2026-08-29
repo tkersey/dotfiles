@@ -25,7 +25,7 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 - Mixed requests where options are subordinate to "choose and implement now": the execution owner may use this reasoning internally, but this skill must not seize the turn and discard the requested execution.
 - A factual answer, ordinary creative generation such as names or copy, or comparison of a small known set where a portfolio adds ceremony: answer directly.
 - Evidence-backed repository or product opportunity mining, ranked improvement discovery, or choosing what to plan next: use `$ideate`.
-- Turning a selected direction into a detailed implementation plan, specification, or execution decomposition: use `$plan` or `$spec-pipeline`.
+- Turning a selected direction into a detailed implementation plan, specification, or execution decomposition: use `$plan`.
 - Architecture or codebase understanding without a request for divergent paths: use direct analysis or `$codebase-archaeology`.
 - Analysis, explanation, review, tuning, testing, or editing of this skill itself: use direct analysis or `$tune` as appropriate.
 - The user already chose a tier or path and asks to execute it: hand off to the execution owner; do not regenerate the portfolio.
