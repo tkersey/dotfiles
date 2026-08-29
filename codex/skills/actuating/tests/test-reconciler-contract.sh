@@ -60,6 +60,10 @@ grep -F 'The six review lenses falsify one completed construction' \
 grep -F 'standard              Codex native/default best-judgment review' \
   "$skill_root/SKILL.md" >/dev/null
 grep -F 'soundness-skeptic' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Theorem-directed response selection' "$skill_root/SKILL.md" >/dev/null
+grep -F 'No normalization fallback' "$skill_root/SKILL.md" >/dev/null
+grep -F '## Live owner-source frontier' "$skill_root/references/review-contract.md" >/dev/null
+test -s "$skill_root/references/theorem-directed-response.md"
 
 if grep -F '$actuating triage' "$skill_root/SKILL.md" >/dev/null ||
    grep -F '$actuating remediation-plan' "$skill_root/SKILL.md" >/dev/null
@@ -143,6 +147,16 @@ grep -F 'all five auxiliary lenses have terminal semantic outcomes' \
   "$skill_root/references/closure.md" >/dev/null
 grep -F 'five consecutive distinct native/default standard cleans' \
   "$skill_root/references/closure.md" >/dev/null
+grep -F 'every completion-relevant live owner source is folded or non-current' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'source-bound predecessor topology identity remains' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'topology transformation is required' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'def theorem_localized($i):' \
+  "$skill_root/tests/test-construction-cycle-scenarios.sh" >/dev/null
+grep -F '$i.exact_predecessor_theorem_reprovable == false and' \
+  "$skill_root/tests/test-construction-cycle-scenarios.sh" >/dev/null
 
 for lens in \
   "$skill_root/references/lenses/soundness-review.md" \
@@ -198,8 +212,8 @@ grep -F 'claim-strength' \
 ' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
 
 "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v13" and
-  .contract_id == "actuating-review-contract-v15" and
+  .schema == "actuating-review-contract/v14" and
+  .contract_id == "actuating-review-contract-v16" and
   (.required_lenses | length) == 6 and
   [.required_lenses[].name] == [
     "standard",
@@ -218,6 +232,16 @@ grep -F 'claim-strength' \
   .required_lenses[1].role == "auxiliary" and
   .required_lenses[1].instructions_ref ==
     "codex/skills/actuating/references/lenses/soundness-review.md" and
+  .owner_source_frontier.every_live_source_disposition_required_before_cut == true and
+  .owner_source_frontier.missing_live_source_closes_mutation_clean_credit_reviewability_and_closure == true and
+  .theorem_directed_response.accepted_counterexample_selects_mutation_route == false and
+  .theorem_directed_response.same_theorem_reproof_required_before_normalization == true and
+  .theorem_directed_response.failed_direct_gate_authorizes_normalization == false and
+  .theorem_directed_response.normalization_is_default_or_fallback == false and
+  .theorem_directed_response.normalization_requires_named_false_semantic_premise == true and
+  .theorem_directed_response.severity_selects_route == false and
+  .mutation_routes.normalization_is_default == false and
+  .mutation_routes.failed_restoration_gate_falls_through_to_normalization == false and
   .review_scheduling.default_mode == "parallel-reviews" and
   .review_scheduling.initial_lens_order == [
     "standard",
@@ -250,16 +274,19 @@ grep -F 'claim-strength' \
   .review_entry.admitted_carrier_required == true and
   .review_entry.complete_producer_factorization_required == true and
   .review_entry.complete_bypass_disposition_required == true and
-  .review_entry.universalist_boundary_contract_realized_required == true and
-  .review_entry.universalist_claim_strength_preserved_required == true and
-  .review_entry.split_seams_proved_before_recomposition_required == true and
-  .review_entry.source_derived_topology_required_for_complete_claim == true and
-  .review_entry.topology_authority_identity_strength_and_falsifier_required == true and
-  .review_entry.universalist_total_transformation_required == true and
-  .review_entry.exact_head_successor_topology_rederived_required == true and
-  .review_entry.topology_transformation_equality_required == true and
-  .review_entry.factorization_domain_equality_required == true and
-  .review_entry.cut_domination_or_owned_residual_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_boundary_contract_realized_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_claim_strength_preserved_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].split_seams_proved_before_recomposition_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].source_derived_topology_required_for_complete_claim == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].topology_authority_identity_strength_and_falsifier_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_total_transformation_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].exact_head_successor_topology_rederived_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].topology_transformation_equality_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].factorization_domain_equality_required == true and
+  .review_entry.route_specific_construction_proof["construction-normalization"].cut_domination_or_owned_residual_required == true and
+  .review_entry.route_specific_construction_proof["isolated-restoration"].source_bound_predecessor_topology_unchanged_required == true and
+  .review_entry.route_specific_construction_proof["isolated-restoration"].direct_repair_admission_materialization_required == true and
+  .review_entry.route_specific_construction_proof["isolated-restoration"].universalist_invocation_forbidden == true and
   .review_entry.self_authored_omission_list_sufficient == false and
   .review_entry.unproved_complete_factorization_lowers_to_bounded_or_contained == true and
   .universalist_compilation.owner == "actuating" and
@@ -301,7 +328,7 @@ grep -F 'claim-strength' \
 
 "$jaq_bin" -e '
   .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v7" and
+    "actuating-construction-compiler-v8" and
   ((.skill_decision_contract.triggers[] |
     select(.trigger_id == "ACT-ROUTE") |
     .cue_literals) == [
@@ -352,6 +379,12 @@ grep -F 'claim-strength' \
     .required_artifacts) |
     index("review-fold/counterexample-corpus basis projection or explicit incomplete horizon")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
+    index("ACT-THEOREM-DIRECTED-RESPONSE-001")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-THEOREM-DIRECTED-RESPONSE-001") |
+    .failure_signals) |
+    index("construction normalization is the fallback response")) != null and
+  ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-METANOETIC-ADMISSIBILITY-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-UNIVERSALIST-COMPILATION-001")) != null and
@@ -386,11 +419,15 @@ grep -F 'claim-strength' \
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CLOSURE-001") |
     .required_artifacts) |
-    index("exact-head source-derived topology re-derivation proof")) != null and
+    index("construction-normalization: Universalist boundary-contract realization, source-derived successor-topology re-derivation, and total factorization-domain and cut-domination proof")) != null and
   ((.skill_decision_contract.clauses[] |
     select(.clause_id == "ACT-CLOSURE-001") |
     .required_artifacts) |
-    index("exact-head total factorization-domain and cut-domination proof")) != null and
+    index("isolated-restoration: unchanged source-bound predecessor topology identity and direct-repair admission materialization")) != null and
+  ((.skill_decision_contract.clauses[] |
+    select(.clause_id == "ACT-ISOLATED-RESTORATION-001") |
+    .required_artifacts) |
+    index("localized realization, proof, generated-output, or artifact-binding defect")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |
     index("ACT-ISOLATED-RESTORATION-001")) != null and
   ([.skill_decision_contract.clauses[].clause_id] |

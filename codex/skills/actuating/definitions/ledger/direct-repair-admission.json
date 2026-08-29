@@ -14,6 +14,7 @@
       "enum",
       "exact-object",
       "field-equal",
+      "implies",
       "keyed-unique",
       "one-of",
       "reference-exists",
@@ -111,8 +112,164 @@
                 "enum": [
                   "none",
                   "realization",
-                  "proof"
+                  "proof",
+                  "generated-output",
+                  "artifact-binding"
                 ]
+              },
+              "premise_evidence": {
+                "tagged": {
+                  "tag": "/kind",
+                  "variants": [
+                    {
+                      "value": "none",
+                      "node": {
+                        "object": "exact",
+                        "fields": {
+                          "kind": {
+                            "enum": [
+                              "none"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "value": "realization",
+                      "node": {
+                        "object": "exact",
+                        "fields": {
+                          "kind": {
+                            "enum": [
+                              "realization"
+                            ]
+                          },
+                          "evidence_refs": {
+                            "array": {
+                              "min": 1,
+                              "max": 4096
+                            },
+                            "items": {
+                              "string": {
+                                "trimmed_min": 1,
+                                "max": 1024
+                              }
+                            },
+                            "unique": true,
+                            "sorted": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "value": "proof",
+                      "node": {
+                        "object": "exact",
+                        "fields": {
+                          "kind": {
+                            "enum": [
+                              "proof"
+                            ]
+                          },
+                          "evidence_refs": {
+                            "array": {
+                              "min": 1,
+                              "max": 4096
+                            },
+                            "items": {
+                              "string": {
+                                "trimmed_min": 1,
+                                "max": 1024
+                              }
+                            },
+                            "unique": true,
+                            "sorted": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "value": "generated-output",
+                      "node": {
+                        "object": "exact",
+                        "fields": {
+                          "kind": {
+                            "enum": [
+                              "generated-output"
+                            ]
+                          },
+                          "generator_ref": {
+                            "identifier": {
+                              "max": 256
+                            }
+                          },
+                          "predecessor_source_digest": {
+                            "format": "digest"
+                          },
+                          "successor_source_digest": {
+                            "format": "digest"
+                          },
+                          "generated_output_digest": {
+                            "format": "digest"
+                          },
+                          "evidence_refs": {
+                            "array": {
+                              "min": 1,
+                              "max": 4096
+                            },
+                            "items": {
+                              "string": {
+                                "trimmed_min": 1,
+                                "max": 1024
+                              }
+                            },
+                            "unique": true,
+                            "sorted": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "value": "artifact-binding",
+                      "node": {
+                        "object": "exact",
+                        "fields": {
+                          "kind": {
+                            "enum": [
+                              "artifact-binding"
+                            ]
+                          },
+                          "artifact_ref": {
+                            "string": {
+                              "trimmed_min": 1,
+                              "max": 1024
+                            }
+                          },
+                          "expected_artifact_digest": {
+                            "format": "digest"
+                          },
+                          "actual_artifact_digest": {
+                            "format": "digest"
+                          },
+                          "evidence_refs": {
+                            "array": {
+                              "min": 1,
+                              "max": 4096
+                            },
+                            "items": {
+                              "string": {
+                                "trimmed_min": 1,
+                                "max": 1024
+                              }
+                            },
+                            "unique": true,
+                            "sorted": true
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
               },
               "theory": {
                 "object": "exact",
@@ -662,7 +819,9 @@
                       "failed_premise": {
                         "enum": [
                           "realization",
-                          "proof"
+                          "proof",
+                          "generated-output",
+                          "artifact-binding"
                         ]
                       }
                     }
@@ -677,6 +836,14 @@
   },
   "constraints": {
     "laws": [
+      [
+        "field-equal",
+        {
+          "input": "gate",
+          "left": "/direct_repair_admission/failed_premise",
+          "right": "/direct_repair_admission/premise_evidence/kind"
+        }
+      ],
       [
         "field-equal",
         {
@@ -726,6 +893,61 @@
           "reference": "",
           "target": "/direct_repair_admission/theory/causal_generators",
           "key": "/generator_id"
+        }
+      ],
+      [
+        "implies",
+        {
+          "input": "gate",
+          "if": "/direct_repair_admission/premise_evidence/kind",
+          "equals": "generated-output",
+          "rules": [
+            [
+              "field-equal",
+              {
+                "input": "gate",
+                "left": "/direct_repair_admission/premise_evidence/predecessor_source_digest",
+                "right": "/direct_repair_admission/premise_evidence/successor_source_digest"
+              }
+            ],
+            [
+              "reference-exists",
+              {
+                "input": "gate",
+                "sources": [
+                  {
+                    "path": "/direct_repair_admission/premise_evidence",
+                    "reference": "/generator_ref",
+                    "singleton": true
+                  }
+                ],
+                "targets": [
+                  {
+                    "path": "/direct_repair_admission/theory/causal_generators",
+                    "key": "/generator_id"
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      ],
+      [
+        "implies",
+        {
+          "input": "gate",
+          "if": "/direct_repair_admission/premise_evidence/kind",
+          "equals": "artifact-binding",
+          "rules": [
+            [
+              "field-equal",
+              {
+                "input": "gate",
+                "left": "/direct_repair_admission/premise_evidence/expected_artifact_digest",
+                "right": "/direct_repair_admission/premise_evidence/actual_artifact_digest"
+              }
+            ]
+          ]
         }
       ]
     ]

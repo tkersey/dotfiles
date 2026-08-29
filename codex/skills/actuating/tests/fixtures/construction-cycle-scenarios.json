@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-construction-cycle-scenarios/v2",
+  "schema": "actuating-construction-cycle-scenarios/v3",
   "scenarios": [
     {
       "id": "serial-material-finding-completes-initial-wave",
@@ -42,7 +42,15 @@
         "basis_complete": true,
         "carrier_already_complete": false,
         "realization_defect_only": false,
-        "direct_gate_valid": false
+        "direct_gate_valid": false,
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": true,
+        "earliest_failed_premise": "carrier-or-invariant",
+        "semantic_premise_falsified": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -56,7 +64,14 @@
         "producer_factorization_complete": true,
         "bypasses_closed": true,
         "realization_defect_only": true,
-        "direct_gate_valid": true
+        "direct_gate_valid": true,
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "isolated-restoration"
     },
@@ -70,7 +85,14 @@
         "producer_factorization_complete": true,
         "bypasses_closed": true,
         "realization_defect_only": true,
-        "direct_gate_valid": false
+        "direct_gate_valid": false,
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "blocked"
     },
@@ -84,7 +106,15 @@
         "producer_factorization_complete": false,
         "bypasses_closed": true,
         "realization_defect_only": true,
-        "direct_gate_valid": true
+        "direct_gate_valid": true,
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": true,
+        "earliest_failed_premise": "producer-factorization",
+        "semantic_premise_falsified": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -126,7 +156,7 @@
         "same_family_finding": true,
         "separation_proof": false
       },
-      "expected": "construction-normalization"
+      "expected": "theorem-response-required"
     },
     {
       "id": "first-same-claim-successor-reopens-construction",
@@ -136,7 +166,7 @@
         "prior_same_claim_successor_invalidations": 0,
         "theorem_materially_changed": false
       },
-      "expected": "construction-normalization"
+      "expected": "theorem-response-required"
     },
     {
       "id": "second-same-claim-successor-revokes-unchanged-theorem",
@@ -177,7 +207,7 @@
         "prior_same_claim_successor_invalidations": 1,
         "theorem_materially_changed": false
       },
-      "expected": "construction-normalization"
+      "expected": "theorem-response-required"
     },
     {
       "id": "revoked-theorem-blocks-third-candidate",
@@ -259,7 +289,10 @@
         "topology_transformation_proved": true,
         "factorization_domain_total": true,
         "cut_domination_complete": true,
-        "residuals_owned": true
+        "residuals_owned": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "construction-normalization"
       },
       "expected": "reviewable"
     },
@@ -272,7 +305,11 @@
         "bounded_domain_explicit": true,
         "residuals_owned": true,
         "construction_complete": true,
-        "proof_inventory_current": true
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "claim-narrowing-or-containment",
+        "closure_consequence_explicit": true
       },
       "expected": "reviewable"
     },
@@ -394,7 +431,10 @@
         "topology_transformation_proved": true,
         "factorization_domain_total": true,
         "cut_domination_complete": true,
-        "residuals_owned": true
+        "residuals_owned": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "construction-normalization"
       },
       "expected": "allow-review"
     },
@@ -410,7 +450,15 @@
           "a",
           "b",
           "c"
-        ]
+        ],
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": true,
+        "earliest_failed_premise": "canonical-owner",
+        "semantic_premise_falsified": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
     },
@@ -426,9 +474,379 @@
           "c",
           "a",
           "b"
-        ]
+        ],
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": true,
+        "earliest_failed_premise": "canonical-owner",
+        "semantic_premise_falsified": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
       },
       "expected": "construction-normalization"
+    },
+    {
+      "id": "live-provider-source-missing-blocks-selection",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "counterexample_accepted": true,
+        "live_owner_sources_complete": false,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "high-severity-realization-defect-restores",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "severity": "critical",
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
+      },
+      "expected": "isolated-restoration"
+    },
+    {
+      "id": "low-severity-owner-defect-normalizes",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "severity": "low",
+        "earliest_failed_premise": "canonical-owner",
+        "semantic_premise_falsified": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "unreachable-witness-has-no-current-liability",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": false,
+        "applicability_status": "already-excluded",
+        "earliest_failed_premise": "applicability",
+        "law_authority": "entailed"
+      },
+      "expected": "no-current-liability"
+    },
+    {
+      "id": "new-requirement-needs-authority",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": false,
+        "law_authority": "new-requirement",
+        "earliest_failed_premise": "law-authority"
+      },
+      "expected": "authority-required"
+    },
+    {
+      "id": "authorized-claim-overstatement-narrows",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "earliest_failed_premise": "claim-strength",
+        "weaker_claim_explicit": true,
+        "claim_narrowing_authorized": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "closure_consequence_explicit": true,
+        "law_authority": "entailed"
+      },
+      "expected": "claim-narrowing-or-containment"
+    },
+    {
+      "id": "unauthorized-claim-narrowing-blocks",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "earliest_failed_premise": "claim-strength",
+        "weaker_claim_explicit": true,
+        "claim_narrowing_authorized": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "exact_predecessor_theorem_reprovable": false,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "failed-restoration-gate-does-not-normalize",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "earliest_failed_premise": "artifact-binding",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "unknown-theorem-relation-does-not-normalize",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "earliest_failed_premise": "unknown",
+        "exact_predecessor_theorem_reprovable": false,
+        "semantic_premise_falsified": false,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "authorized-liability-deferral-is-explicit",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "explicit_deferral_requested": true,
+        "deferral_authorized": true,
+        "closure_consequence_explicit": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": false,
+        "law_authority": "entailed"
+      },
+      "expected": "explicitly-deferred"
+    },
+    {
+      "id": "same-theorem-reproof-contradicts-normalization",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "canonical-owner",
+        "exact_predecessor_theorem_reprovable": true,
+        "semantic_premise_falsified": true,
+        "direct_gate_valid": false,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "authorized-claim-narrowing-without-closure-consequence-blocks",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "claim-strength",
+        "exact_predecessor_theorem_reprovable": false,
+        "weaker_claim_explicit": true,
+        "claim_narrowing_authorized": true,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "authorized-deferral-without-theorem-localization-blocks",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "explicit_deferral_requested": true,
+        "deferral_authorized": true,
+        "closure_consequence_explicit": true,
+        "law_authority": "entailed"
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "missing-owner-source-completeness-blocks-selection",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "law_authority": "entailed",
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "missing-law-authority-requires-authority",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true
+      },
+      "expected": "authority-required"
+    },
+    {
+      "id": "missing-counterexample-acceptance-blocks",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "law_authority": "entailed",
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "realization",
+        "exact_predecessor_theorem_reprovable": true,
+        "direct_gate_valid": true
+      },
+      "expected": "blocked"
+    },
+    {
+      "id": "missing-owner-source-frontier-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": false,
+        "theorem_directed_response_complete": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "missing-theorem-response-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": false,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "false-admission-cut-normalizes",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "law_authority": "entailed",
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "admission-cut",
+        "exact_predecessor_theorem_reprovable": false,
+        "semantic_premise_falsified": true
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "complete-claim-with-deferral-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "explicitly-deferred",
+        "closure_consequence_explicit": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "bounded-claim-with-authorized-deferral-is-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "bounded",
+        "claim_strength_explicit": true,
+        "bounded_domain_explicit": true,
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "explicitly-deferred",
+        "closure_consequence_explicit": true,
+        "residuals_owned": true
+      },
+      "expected": "reviewable"
     }
   ]
 }

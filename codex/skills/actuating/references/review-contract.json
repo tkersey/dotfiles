@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v13",
-  "contract_id": "actuating-review-contract-v15",
+  "schema": "actuating-review-contract/v14",
+  "contract_id": "actuating-review-contract-v16",
   "required_lenses": [
     {
       "name": "standard",
@@ -118,20 +118,31 @@
     ],
     "nonapplicability_requires_authority": true,
     "aggregate_credit_requires_declared_dependency_coverage": true,
-    "universalist_boundary_contract_realized_required": true,
-    "universalist_claim_strength_preserved_required": true,
-    "split_seams_proved_before_recomposition_required": true,
-    "source_derived_topology_required_for_complete_claim": true,
-    "topology_authority_identity_strength_and_falsifier_required": true,
-    "universalist_total_transformation_required": true,
-    "factorization_closure_verifier_selected_before_mutation": true,
-    "exact_head_successor_topology_rederived_required": true,
-    "topology_transformation_equality_required": true,
-    "factorization_domain_equality_required": true,
-    "cut_domination_or_owned_residual_required": true,
-    "open_domain_generator_and_preservation_required_for_complete_claim": true,
+    "route_specific_construction_proof": {
+      "construction-normalization": {
+        "universalist_boundary_contract_realized_required": true,
+        "universalist_claim_strength_preserved_required": true,
+        "split_seams_proved_before_recomposition_required": true,
+        "source_derived_topology_required_for_complete_claim": true,
+        "topology_authority_identity_strength_and_falsifier_required": true,
+        "universalist_total_transformation_required": true,
+        "factorization_closure_verifier_selected_before_mutation": true,
+        "exact_head_successor_topology_rederived_required": true,
+        "topology_transformation_equality_required": true,
+        "factorization_domain_equality_required": true,
+        "cut_domination_or_owned_residual_required": true,
+        "open_domain_generator_and_preservation_required_for_complete_claim": true
+      },
+      "isolated-restoration": {
+        "source_bound_predecessor_topology_unchanged_required": true,
+        "direct_repair_admission_materialization_required": true,
+        "universalist_invocation_forbidden": true
+      }
+    },
     "self_authored_omission_list_sufficient": false,
-    "unproved_complete_factorization_lowers_to_bounded_or_contained": true
+    "unproved_complete_factorization_lowers_to_bounded_or_contained": true,
+    "theorem_directed_response_complete_required": true,
+    "live_owner_source_frontier_complete_or_explicitly_incomplete_required": true
   },
   "evidence_acquisition": {
     "initial_falsification_wave_complete_before_successor_selection": true,
@@ -142,7 +153,8 @@
     "confirmation_material_finding_stops_confirmation": true,
     "review_findings_do_not_select_repairs": true,
     "projected_counterexamples_are_reclassified": true,
-    "newly_accepted_counterexamples_are_captured": true
+    "newly_accepted_counterexamples_are_captured": true,
+    "every_live_owner_source_reconciled_before_response_selection": true
   },
   "mutation_routes": {
     "allowed": [
@@ -151,7 +163,11 @@
     ],
     "isolated_restoration_requires_existing_construction_theorem": true,
     "isolated_restoration_definition": "actuating/direct-repair-admission",
-    "architecture_successor_uses_direct_gate": false
+    "architecture_successor_uses_direct_gate": false,
+    "normalization_is_default": false,
+    "normalization_requires_semantic_premise_falsifier": true,
+    "restoration_requires_same_theorem_reproof": true,
+    "failed_restoration_gate_falls_through_to_normalization": false
   },
   "same_family_recurrence": {
     "member_specific_extension_forbidden_without_separation": true,
@@ -261,5 +277,58 @@
     "self_authored_omission_list_sufficient": false,
     "prose_only_nomination_forbidden": true,
     "ephemeral_working_set_only": true
+  },
+  "owner_source_frontier": {
+    "derived_from_current_owner_facts": true,
+    "live_relevant_sources": [
+      "cas",
+      "provider-review",
+      "test",
+      "incident",
+      "migration-or-compatibility",
+      "repository-native-verifier",
+      "review-fold-counterexample-corpus"
+    ],
+    "allowed_source_dispositions": [
+      "folded",
+      "non-current",
+      "unavailable"
+    ],
+    "every_live_source_disposition_required_before_cut": true,
+    "unavailable_marks_horizon_incomplete": true,
+    "missing_live_source_closes_mutation_clean_credit_reviewability_and_closure": true,
+    "durable_actuating_source_registry_forbidden": true
+  },
+  "theorem_directed_response": {
+    "owner": "actuating",
+    "accepted_counterexample_selects_mutation_route": false,
+    "positive_claim_and_earliest_failed_premise_required": true,
+    "source_bound_predecessor_theorem_required": true,
+    "prose_theorem_fingerprint_sufficient": false,
+    "same_theorem_reproof_required_before_normalization": true,
+    "same_theorem_allowed_change_classes": [
+      "realization",
+      "proof",
+      "generated-output",
+      "artifact-binding"
+    ],
+    "derived_dispositions": [
+      "no-current-liability",
+      "authority-required",
+      "isolated-restoration",
+      "construction-normalization",
+      "claim-narrowing-or-containment",
+      "explicitly-deferred",
+      "blocked"
+    ],
+    "isolated_restoration_requires_reproof_and_direct_gate": true,
+    "failed_direct_gate_authorizes_normalization": false,
+    "normalization_requires_named_false_semantic_premise": true,
+    "normalization_is_default_or_fallback": false,
+    "metanoetic_and_universalist_only_after_theorem_revocation": true,
+    "severity_selects_route": false,
+    "authority_required_for_narrowing_containment_risk_or_deferral": true,
+    "closure_consequence_required_for_narrowing_containment_or_deferral": true,
+    "minimum_sufficient_semantic_delta_required": true
   }
 }

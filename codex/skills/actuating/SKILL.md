@@ -156,9 +156,10 @@ After the fold, Review Fold captures each independent current `entailed`
 `accepted` witness. Actuating retains the resulting `CEX-*` references and
 horizon status in its ephemeral Working Set; it does not copy the corpus.
 
-Only after the semantic barrier and fold may Actuating select a successor.
-Review remains closed until the successor is completely realized, proved, and
-`reviewable`.
+Only after the semantic barrier and fold may Actuating derive a counterexample
+response. Acceptance blocks the positive claim the witness falsifies; it does
+not select a mutation route. Review remains closed until the derived response is
+realized, proved, and `reviewable` when review still applies.
 
 ## Compile the counterexample basis
 
@@ -171,7 +172,11 @@ For every current causal generator state:
 ```text
 accepted findings, CEX identities, and provenance
 observational class
-governing law
+governing law and positive claim falsified
+earliest supported failed theorem premise
+source-bound predecessor theorem projection
+same-theorem reproof result
+derived response disposition
 invalid family Phi
 predicted siblings or exhaustive domain
 current admitted domain
@@ -191,13 +196,84 @@ A generative theory requires a generative construction. Observed examples may
 remain minimal witnesses; they may not become the production vocabulary unless
 the Goal requires their distinction.
 
+## Theorem-directed response selection
+
+Read
+[theorem-directed-response.md](references/theorem-directed-response.md).
+
+An accepted current counterexample blocks the positive claim it falsifies but
+does not authorize construction normalization. Before any mutation:
+
+```text
+reconcile every live owner source
+-> localize the earliest failed theorem premise
+-> project the exact predecessor construction theorem
+-> attempt same-theorem reproof
+-> derive theorem identity or revocation
+-> select the minimum sufficient semantic delta
+```
+
+The predecessor theorem projection is source-bound and ephemeral. It includes
+the accepted law, applicability and comparison domain, invalid-family predicate,
+semantic interpretation and equivalence, source-derived topology, owner and cut,
+carrier, legal constructors and transitions, factorization and bypass closure,
+required-valid interpretation, compatibility and resource boundaries, proof
+universe, and claim strength. A prose fingerprint is not theorem identity.
+
+Derive—do not intuitively choose—one disposition:
+
+```text
+no-current-liability
+  witness inapplicable, already excluded, duplicate, or unentailed
+
+authority-required
+  proposed law or risk decision lacks accepted authority
+
+isolated-restoration
+  exact predecessor theorem re-proves after changing only realization,
+  proof realization, generated output, or exact-artifact binding
+
+construction-normalization
+  a named semantic theorem premise is false or incomplete, so the predecessor
+  theorem is revoked before architecture compilation
+
+claim-narrowing-or-containment
+  only a weaker bounded theorem is supportable and its authority and closure
+  consequence are explicit
+
+explicitly-deferred
+  an authorized owner accepts the unresolved liability and the resulting loss
+  of the stronger correctness or completion claim
+
+blocked
+  evidence cannot prove theorem identity, revocation, authority, or a successor
+```
+
+Severity determines urgency and consequence; it never selects the semantic
+route. When same-theorem reproof succeeds, any owner, carrier, topology,
+factorization, or claim-strength change is dominated. Materialize
+`actuating/direct-repair-admission` before mutation. A rejected materialization
+remains `blocked`; it does not fall through to normalization.
+
+Construction normalization is authorized only by exact evidence that a semantic
+premise is false. Only then may Actuating run Metanoetic, Universalist, and the
+architecture compiler. If law authority, applicability, theorem identity, or
+successor proof remains unknown, do not convert uncertainty into architecture.
+
+Before closing the evidence cut, every currently live relevant owner source—CAS,
+provider review, tests, incidents, migrations, repository-native verifiers, and
+projected counterexamples—must be folded, proven non-current, or declared
+unavailable. An omitted live source keeps mutation and clean credit closed.
+
 ## Exactly two bug-driven mutation routes
 
 ### Construction normalization
 
-Use when the admitted carrier, constructor, representation, transition relation,
-canonical owner, enforceable cut, producer topology, public capability surface,
-or bypass set must change.
+Use only after same-theorem reproof is impossible because exact evidence falsifies
+a semantic premise: admitted carrier, constructor, representation, transition
+relation, interpretation, canonical owner, enforceable cut, producer topology,
+public capability surface, required-valid interpretation, or bypass closure.
+Revoke the predecessor theorem before invoking architecture compilation.
 
 The selected successor must:
 
@@ -219,20 +295,23 @@ the existing carrier already excludes the complete family
 the canonical owner and earliest cut are already correct
 every sanctioned producer already factors through them
 no bypass can mint or reinterpret trusted state independently
-the defect is localized to realization or proof
-the edit restores the existing family mechanism
+the defect is localized to realization, proof realization, generated output,
+or exact-artifact binding
+the edit restores the existing family mechanism without semantic theorem delta
 ```
 
 Then execute the existing pure Ledger definition
 `actuating/direct-repair-admission`. This compatibility ID remains unchanged;
-semantically it admits only isolated restoration.
+semantically it admits only isolated restoration. A rejected gate remains
+`blocked`; it is not evidence for normalization.
 
-If neither route is established, mutation is `blocked` or the result is honest
+If neither route is derived, mutation is `blocked` or the result is honest
 `contained` residual—not a convenient local improvement.
 
 ## Architecture compilation
 
-When construction normalization is required:
+Only after theorem-directed response selection revokes the predecessor theorem
+and derives `construction-normalization`:
 
 1. Freeze the incumbent-independent premise basis with `$first-principles`.
 2. Fold the complete current and projected evidence cut with `$review-fold`.
@@ -303,7 +382,8 @@ When construction normalization is required:
     may remain a regression witness; it cannot prove its own completeness.
 12. Ask `$reduce` to find duplicate owners, downstream primary compensators,
     wound-shaped proof, and factors made redundant by the selected carrier.
-13. Select by constructional dominance, then lifecycle cost and raw source size:
+13. Select by constructional dominance, then minimum sufficient semantic delta,
+    lifecycle cost, and raw source size:
     - required-valid / invalid-family separation;
     - invalid-family exclusion;
     - strongest honest invariant locus;
@@ -315,6 +395,8 @@ When construction normalization is required:
     - required-valid and compatibility preservation;
     - family-level or exhaustive proof;
     - downstream compensator retirement;
+    - minimum semantic change from the predecessor consistent with every law,
+      required observation, compatibility boundary, resource boundary, and proof;
     - lifecycle and realization cost;
     - raw source size.
 14. Preserve material incomparability rather than manufacturing dominance.
@@ -342,6 +424,9 @@ Retain only in the active thread or accepted implementation specification:
 Bound Goal / base / exact head
 Counterexample corpus basis IDs / horizon completeness / missing sources
 Current counterexample basis / invalid family / sibling dimensions
+Positive claim falsified / earliest failed premise / premise evidence
+Predecessor theorem projection / same-theorem reproof / theorem identity
+Derived response disposition / authority / closure consequence
 Admitted domain / required-valid behavior / trusted observations
 source-derived predecessor topology T0 / authority / identity / evidence strength / falsifier
 Canonical owner / earliest enforceable cut K / admitted carrier
@@ -429,6 +514,12 @@ authorship.
 ## Hard rules
 
 - No finding-to-patch mapping.
+- No accepted-counterexample-to-normalization mapping. Derive the route from
+  earliest-premise localization and predecessor-theorem identity.
+- No normalization fallback. A rejected restoration gate or unknown theorem
+  relation remains blocked until a semantic premise is proved false.
+- No mutation or clean credit while a live relevant owner source is omitted from
+  the evidence cut.
 - No mutation before the complete initial falsification wave and evidence cut.
 - No member-specific repair for an established family without separation proof.
 - No construction claim without every sanctioned producer and bypass.

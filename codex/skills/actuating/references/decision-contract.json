@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v7"
+      "source_fingerprint": "actuating-construction-compiler-v8"
     },
     "triggers": [
       {
@@ -327,6 +327,48 @@
         "rationale": "Actuating derives the topology domain, Universalist nominates one total transformation over it, and exact-head source re-derivation proves closure before selection, mutation, or reviewability."
       },
       {
+        "clause_id": "ACT-THEOREM-DIRECTED-RESPONSE-001",
+        "trigger_refs": [
+          "ACT-COUNTEREXAMPLE",
+          "ACT-POST-ELIMINATION",
+          "ACT-REVIEW"
+        ],
+        "expected_routes": [
+          "ACT-IMPLEMENT",
+          "ACT-ANALYZE",
+          "ACT-REVIEW-CLOSEOUT",
+          "ACT-CLOSE"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "live owner-source frontier disposition",
+          "positive correctness claim falsified",
+          "earliest supported failed theorem premise",
+          "source-bound predecessor construction theorem",
+          "same-theorem reproof result",
+          "derived response disposition",
+          "authority and closure consequence when non-normalizing",
+          "minimum sufficient semantic delta"
+        ],
+        "success_signals": [
+          "accepted counterexample blocks its claim without selecting normalization",
+          "same-theorem reproof plus direct-repair admission selects isolated restoration",
+          "a named false semantic premise revokes the predecessor theorem before architecture compilation",
+          "missing provider or other live owner evidence keeps the cut open",
+          "severity changes urgency but not the semantic route",
+          "a same-theorem candidate dominates an unnecessary theorem change"
+        ],
+        "failure_signals": [
+          "construction normalization is the fallback response",
+          "a rejected direct-repair materialization falls through to normalization",
+          "theorem identity is a model-authored prose fingerprint",
+          "Metanoetic or Universalist runs before predecessor-theorem revocation",
+          "claim narrowing, containment, residual risk, or deferral lacks authority or closure consequence",
+          "a live provider finding is absent from Review Fold while mutation or clean credit proceeds"
+        ],
+        "rationale": "Counterexample response is compiled from earliest-premise blame and theorem identity, not selected from severity or architectural intuition."
+      },
+      {
         "clause_id": "ACT-ISOLATED-RESTORATION-001",
         "trigger_refs": [
           "ACT-COUNTEREXAMPLE",
@@ -339,7 +381,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "preexisting complete construction theorem",
-          "localized realization or proof defect",
+          "localized realization, proof, generated-output, or artifact-binding defect",
           "actuating/direct-repair-admission materialization"
         ],
         "success_signals": [
@@ -364,6 +406,7 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
+          "complete live owner-source frontier or explicit unavailable-source horizon",
           "exact CAS receipts",
           "Codex native/default standard review with no custom instructions",
           "soundness-skeptic auxiliary instruction and exact binding",
@@ -380,7 +423,8 @@
           "serial completes remaining initial lenses for evidence only",
           "stored counterexamples are reclassified rather than trusted as current",
           "new current entailed accepted witnesses are captured once by semantic identity",
-          "review resumes only on a completely proved successor"
+          "review resumes only on a completely proved successor",
+          "provider, test, incident, migration, verifier, CAS, and corpus evidence enter one adjudicator"
         ],
         "failure_signals": [
           "Actuating replaces Codex native/default standard review with a custom standard prompt",
@@ -389,7 +433,8 @@
           "review stops before sufficient evidence basis",
           "review authors successor one finding at a time",
           "absence from an incomplete corpus is called first-observed or eliminated",
-          "current class, family, owner, cut, carrier, route, or closure is persisted in the corpus"
+          "current class, family, owner, cut, carrier, route, or closure is persisted in the corpus",
+          "a live owner source is omitted while mutation or clean credit proceeds"
         ],
         "rationale": "Independent review plus durable admitted witnesses supplies the counterexample basis before construction selection."
       },
@@ -406,10 +451,11 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
+          "theorem-derived response for every accepted current counterexample",
           "exact-head construction theorem",
-          "exact-head Universalist boundary-contract realization proof",
-          "exact-head source-derived topology re-derivation proof",
-          "exact-head total factorization-domain and cut-domination proof",
+          "route-specific exact-head construction proof",
+          "construction-normalization: Universalist boundary-contract realization, source-derived successor-topology re-derivation, and total factorization-domain and cut-domination proof",
+          "isolated-restoration: unchanged source-bound predecessor topology identity and direct-repair admission materialization",
           "counterexample horizon sufficient for every historical claim",
           "complete Goal-required proof inventory",
           "Ship/provider evidence when required",
@@ -417,8 +463,9 @@
         ],
         "success_signals": [
           "invalid family is unrepresentable or unadmittable",
-          "the exact-head successor topology equals the nominated transformation of the repository-derived predecessor topology",
-          "the disposition law is total over the exact-head topology",
+          "construction normalization proves the exact-head successor topology equals the nominated transformation of the repository-derived predecessor topology",
+          "construction normalization proves a total disposition law over the exact-head topology",
+          "isolated restoration preserves predecessor topology without Universalist transformation",
           "all factorized routes cross the carrier and every residual is owned",
           "bypasses close",
           "historical absence is used only under a complete evidence horizon",
@@ -429,9 +476,10 @@
           "safe but wound-shaped realization closes",
           "a self-authored omission list substitutes for topology closure",
           "same-family finding is answered by another guard",
-          "missing historical evidence is treated as proof"
+          "missing historical evidence is treated as proof",
+          "unresolved or unauthorized narrowing, containment, risk acceptance, or deferral is called complete"
         ],
-        "rationale": "Closure is a current proof that the exact-head source topology is totally factorized through the selected construction at the evidence strength actually available."
+        "rationale": "Closure is a route-specific current proof: normalization proves transformed topology and total factorization, while restoration proves the complete predecessor topology is unchanged and the direct gate admits only realization-local change."
       }
     ],
     "instrumentation": {
