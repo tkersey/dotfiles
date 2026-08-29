@@ -147,6 +147,16 @@ grep -F 'all five auxiliary lenses have terminal semantic outcomes' \
   "$skill_root/references/closure.md" >/dev/null
 grep -F 'five consecutive distinct native/default standard cleans' \
   "$skill_root/references/closure.md" >/dev/null
+grep -F 'every completion-relevant live owner source is folded or non-current' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'source-bound predecessor topology identity remains' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'topology transformation is required' \
+  "$skill_root/references/closure.md" >/dev/null
+grep -F 'def theorem_localized($i):' \
+  "$skill_root/tests/test-construction-cycle-scenarios.sh" >/dev/null
+grep -F '$i.exact_predecessor_theorem_reprovable == false and' \
+  "$skill_root/tests/test-construction-cycle-scenarios.sh" >/dev/null
 
 for lens in \
   "$skill_root/references/lenses/soundness-review.md" \

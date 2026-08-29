@@ -101,10 +101,14 @@ Before closure-grade review, the exact head must have:
 complete Goal-required proof inventory
 projected counterexample basis or explicit incomplete-horizon disposition
 complete current construction theorem at its declared claim strength
-source-derived topology authority and predecessor-domain identity
-complete Universalist transformation and disposition law
-independently re-derived exact-head successor topology
-total factorization-domain and cut-domination closure
+route-specific construction proof:
+  construction-normalization -> source-derived topology authority and
+    predecessor-domain identity, complete Universalist transformation and
+    disposition law, independently re-derived exact-head successor topology,
+    and total factorization-domain and cut-domination closure
+  isolated-restoration -> source-bound predecessor topology identity remains
+    unchanged, the direct-repair admission materializes, and no Universalist
+    topology transformation is required
 all producer migrations, residuals, and bypass closures realized
 all selected compensator retirements realized
 no known same-family member-specific primary guard
@@ -119,7 +123,7 @@ Final `complete` additionally requires:
 
 ```text
 required Ship/provider state matches the exact head
-every live owner source is folded, non-current, or explicitly unavailable
+every completion-relevant live owner source is folded or non-current
 every accepted current counterexample has a theorem-derived response
 no unauthorized claim narrowing, containment, residual risk, or deferral
 all five auxiliary lenses have terminal semantic outcomes
@@ -129,6 +133,11 @@ no later evidence falsifies Goal, family, topology derivation, carrier, cut,
   topology transformation, factorization domain, bypass closure, realization,
   proof, publication, or review
 ```
+
+An unavailable completion-relevant owner source keeps the evidence horizon
+incomplete and forbids unqualified `complete`. With explicit authority, the
+result may retain a bounded or otherwise non-complete claim and its closure
+consequence.
 
 A review finding that exposes a sanctioned producer, consumer, composition edge,
 adapter, or bypass absent from the topology basis

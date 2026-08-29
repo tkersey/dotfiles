@@ -44,6 +44,12 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
       "required-valid-preservation"] |
       index($i.earliest_failed_premise // "")) != null;
 
+  def theorem_localized($i):
+    $i.positive_claim_falsified == true and
+    (($i.earliest_failed_premise // "") != "") and
+    $i.source_bound_predecessor_theorem_projected == true and
+    (($i.exact_predecessor_theorem_reprovable | type) == "boolean");
+
   def decide_selection($i):
     if $i.semantic_barrier_complete != true or
        $i.basis_complete != true or
@@ -56,18 +62,22 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
          (["already-excluded", "not-comparable"] |
            index($i.applicability_status // "still-present")) != null
     then "no-current-liability"
+    elif theorem_localized($i) != true
+    then "blocked"
     elif $i.explicit_deferral_requested == true
     then if $i.deferral_authorized == true and
             $i.closure_consequence_explicit == true
          then "explicitly-deferred" else "blocked" end
     elif ($i.earliest_failed_premise // "") == "claim-strength"
     then if $i.weaker_claim_explicit == true and
-            $i.claim_narrowing_authorized == true
+            $i.claim_narrowing_authorized == true and
+            $i.closure_consequence_explicit == true
          then "claim-narrowing-or-containment" else "blocked" end
     elif $i.exact_predecessor_theorem_reprovable == true and local_premise($i)
     then if $i.direct_gate_valid == true
          then "isolated-restoration" else "blocked" end
-    elif $i.semantic_premise_falsified == true and semantic_premise($i)
+    elif $i.exact_predecessor_theorem_reprovable == false and
+         $i.semantic_premise_falsified == true and semantic_premise($i)
     then "construction-normalization"
     else "blocked"
     end;
