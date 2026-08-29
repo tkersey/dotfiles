@@ -1,8 +1,8 @@
 ---
 name: memory-source-notes
-description: "Safely append, inspect, validate, deploy, reconcile, and materialize derived digests for typed source-evidence notes in controlled Codex memory extensions. Use after a handoff from learnings, negative-ledger, or synesthesia; for an explicit custom source capture; or to diagnose canonical-record, immutable-note, digest, and Phase 2 visibility gaps. Never edits compiled memory or decides source eligibility."
+description: "Transport source-approved Learnings, Negative Ledger, and Synesthesia admissions through validated adapters to the `memory-note` CLI; inspect, reconcile, and diagnose immutable-note, digest, and Phase 2 visibility gaps. Never decides source eligibility or edits compiled memory."
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
 ---
 
 # Memory Source Notes
@@ -41,8 +41,8 @@ source skill or canonical domain store
 - `$learnings` owns the passive Learnings protocol, `.ledger/learnings/events.jsonl`, and learning admission semantics.
 - `$negative-ledger` owns the passive Negative Evidence protocol, `.ledger/negative-ledger/events.jsonl`, and route-state admission semantics.
 - `$synesthesia` owns the passive `synesthesia/protocol` definition, `.ledger/synesthesia/events.jsonl`, sensory mapping semantics, and the admission decision.
-- `memory-note` owns safe immutable transport.
-- this skill owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, proof-line interpretation, and read-only reconciliation across canonical sources, immutable admissions, and Phase 2 visibility;
+- The `memory-note` CLI owns the final immutable note write.
+- `$memory-source-notes` owns command syntax, extension-specific adapters, derived digest generation, copy-based instruction deployment, diagnostics, proof-line interpretation, and read-only reconciliation across canonical sources, immutable admissions, and Phase 2 visibility.
 - Phase 2 owns promotion, deduplication, supersession, and compiled-memory updates.
 
 Reconciliation diagnoses transport and visibility state. It does not infer source
