@@ -291,7 +291,8 @@
         "cut_domination_complete": true,
         "residuals_owned": true,
         "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "construction-normalization"
       },
       "expected": "reviewable"
     },
@@ -306,7 +307,9 @@
         "construction_complete": true,
         "proof_inventory_current": true,
         "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "claim-narrowing-or-containment",
+        "closure_consequence_explicit": true
       },
       "expected": "reviewable"
     },
@@ -430,7 +433,8 @@
         "cut_domination_complete": true,
         "residuals_owned": true,
         "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "construction-normalization"
       },
       "expected": "allow-review"
     },
@@ -788,6 +792,61 @@
         "residuals_owned": true
       },
       "expected": "realizing"
+    },
+    {
+      "id": "false-admission-cut-normalizes",
+      "input": {
+        "phase": "selection",
+        "semantic_barrier_complete": true,
+        "basis_complete": true,
+        "live_owner_sources_complete": true,
+        "law_authority": "entailed",
+        "counterexample_accepted": true,
+        "positive_claim_falsified": true,
+        "source_bound_predecessor_theorem_projected": true,
+        "earliest_failed_premise": "admission-cut",
+        "exact_predecessor_theorem_reprovable": false,
+        "semantic_premise_falsified": true
+      },
+      "expected": "construction-normalization"
+    },
+    {
+      "id": "complete-claim-with-deferral-is-not-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "complete",
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "explicitly-deferred",
+        "closure_consequence_explicit": true,
+        "source_topology_derived": true,
+        "topology_authority_bound": true,
+        "exact_head_topology_rederived": true,
+        "topology_transformation_proved": true,
+        "factorization_domain_total": true,
+        "cut_domination_complete": true,
+        "residuals_owned": true
+      },
+      "expected": "realizing"
+    },
+    {
+      "id": "bounded-claim-with-authorized-deferral-is-reviewable",
+      "input": {
+        "phase": "review-entry",
+        "claim_strength": "bounded",
+        "claim_strength_explicit": true,
+        "bounded_domain_explicit": true,
+        "construction_complete": true,
+        "proof_inventory_current": true,
+        "live_owner_sources_complete": true,
+        "theorem_directed_response_complete": true,
+        "derived_response_disposition": "explicitly-deferred",
+        "closure_consequence_explicit": true,
+        "residuals_owned": true
+      },
+      "expected": "reviewable"
     }
   ]
 }

@@ -31,6 +31,13 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
     $i.proof_inventory_current == true and
     $i.live_owner_sources_complete == true and
     $i.theorem_directed_response_complete == true and
+    (if ($i.derived_response_disposition == "explicitly-deferred" or
+         $i.derived_response_disposition == "claim-narrowing-or-containment")
+     then bounded_closed($i) and $i.closure_consequence_explicit == true
+     else (["no-current-liability", "isolated-restoration",
+            "construction-normalization"] |
+           index($i.derived_response_disposition // "")) != null
+     end) and
     (source_closed($i) or bounded_closed($i));
 
   def local_premise($i):
@@ -40,6 +47,7 @@ fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
   def semantic_premise($i):
     (["comparison-domain", "invalid-family", "semantic-interpretation",
       "semantic-equivalence", "source-topology", "canonical-owner",
+      "admission-cut",
       "carrier-or-invariant", "constructor-or-representation",
       "legal-transition", "producer-factorization",
       "admission-path-domination", "bypass-closure",

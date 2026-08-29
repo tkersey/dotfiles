@@ -10,6 +10,9 @@
     "mutation_basis": "ordinary-isolated-repair",
     "active_elimination_lease": "none",
     "failed_premise": "none",
+    "premise_evidence": {
+      "kind": "none"
+    },
     "theory": {
       "law_ref": "law.transition-admissibility",
       "family_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
