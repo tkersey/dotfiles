@@ -1,378 +1,226 @@
 # Counterexample-to-Construction Compilation
 
-Normative whenever an applicable `entailed` bug, review finding, test failure,
-incident, migration failure, or compatibility failure may authorize mutation.
-
-## Governing transformation
-
-```text
-review findings
-+ projected admitted counterexamples
--> sufficient current counterexample basis
--> invalid family Phi
--> source-derived topology T0
--> admitted semantic carrier A and cut K
--> total topology transformation tau and factorization F
--> exact-head successor topology T1
--> Phi becomes unrepresentable or unadmittable
--> downstream compensation becomes redundant
-```
-
-The objective is a new legal state space:
-
-```text
-B' intersect Phi = empty
-required-valid subset B'
-every sanctioned producer factors through B'
-```
-
-Counterexample knowledge is monotone. Its current interpretation, production
-realization, and proof realization are not.
+Apply to current accepted counterexamples from reviews, tests, incidents,
+migrations, compatibility failures, and projected history. Review is one source,
+not a prerequisite for an authorized implementation using existing evidence.
 
 ## Durable source basis
 
-Before current family synthesis, have `$review-fold` project the repository basis
-from:
+Have `$review-fold` project `review-fold/counterexample-corpus`. Preserve original
+subjects and provenance; recompute current applicability, authority, recurrence,
+and family hypotheses. Combine applicable history with the current evidence cut.
+Only Review Fold captures newly accepted independent witnesses. Actuating stores
+no copy of the corpus and no current family or architecture in its rows.
 
-```text
-review-fold/counterexample-corpus
-```
+During an open review epoch, finish the required outcomes and fold before
+successor mutation. Outside review, use already-available evidence; do not launch
+a wave to justify implementation. An absent or unavailable corpus makes affected
+historical claims unknown, not first-observed. Missing provider or verifier
+results are unavailable evidence, not clean outcomes.
 
-The corpus contains immutable semantic admissions and source references, not
-current applicability, classes, families, architecture, or closure. Re-evaluate
-every row under the current Goal, exact head, validity horizon, and owner
-evidence. Combine current-wave findings and applicable projected rows into one
-basis. Retain `CEX-*` identities in the ephemeral Working Set so later code and
-proof retirement can cite the historical witnesses they subsume.
+Knowledge may accumulate while the implementation and its proof shrink. An old
+witness remains evidence even when its dedicated guard or test is superseded.
 
-An absent or unavailable corpus is an incomplete historical horizon, not proof
-that a witness is first-observed or that a family has never recurred. Current
-exact evidence may still support a bounded construction, but historical claims
-must remain `unknown`, `contained`, or `blocked` at the strength the missing
-history affects.
+## Causal explanation and discriminator
 
-After the current fold, Review Fold captures each independent current `entailed`
-`accepted` witness. Actuating never writes or copies the corpus.
+For each affected accepted law, identify the source-supported mechanism permitting
+the invalid behavior. Ask what the construction allows to vary independently
+that the law requires to agree, which transition permits invalidity, or which
+path can acquire trusted status without the canonical admission.
 
-## Sufficient counterexample basis
+Typical mechanisms include duplicate semantic owners, caller-authored evidence,
+mutable authenticated inputs, a partial grammar used as a complete domain,
+independently supplied correlated fields, and invalid transition composition.
+These are search examples, not a mandatory taxonomy or a generic architecture.
 
-Do not mutate on the first material finding. Complete the initial independent
-falsification wave against the frozen candidate, classify every result, and close
-one cumulative evidence cut containing:
+Use the complete applicable basis, not one repair per observation. Same file,
+reviewer, or broad law does not establish a causal family. Independent obligations
+retain separate authority and proof even when realized in one successor.
 
-```text
-all retained still-applicable current and projected witnesses with provenance
-Goal-law authority and applicability
-executable witnesses
-predicted siblings or an exhaustive domain
-required-valid behavior and observation proofs
-compatibility and migration proofs
-current admitted representations and sanctioned-path pressure
-post-elimination falsifiers
-counterexample evidence-horizon completeness
-```
+Before implementing, choose a discriminating sibling partition or source-derived
+domain and state why the cause predicts it. For example, a missing empty-enum
+case raises the typed owner's zero-cardinality algebra; an omitted module edge
+raises grammar coverage; forged receipt fields raise the independence of claim
+and evidence. The family is not the list of examples already seen.
 
-The basis is sufficient when it supports one falsifiable invalid-family theory
-and one explicit topology derivation target at the intended claim strength. It
-need not contain every possible bug. A historically incomplete basis cannot
-support a stronger recurrence or elimination claim than its evidence horizon.
-
-## Invalid family
-
-For each causal generator state:
-
-```text
-governing law L
-invalid family Phi
-observational distinctions that matter
-finite-domain exhaustion or pre-implementation sibling dimensions
-family falsifier
-```
-
-Observed examples seed `Phi`; they do not define it. A family expressed only as
-a list of findings remains `hypothesized` or `contained`.
+Use the smallest useful discriminator. A wrong argument shape before any semantic
+input is consumed may need only the existing call contract, a reproduction, and
+its valid counterpart. Do not invent siblings or force a new abstraction for a
+mechanical correction. When prediction is unsupported, retain that limitation
+and investigate rather than manufacturing an exhaustive family.
 
 ## Consistency preflight
 
-Before candidate selection, require `required-valid intersect Phi = empty`.
-An overlap witness reopens Goal or family authority; no implementation can
-satisfy both. Probe the simplest representatives and every declared
-valid/invalid boundary before architecture work.
+Check `required-valid intersect Phi = empty`. If a proposed invalid family includes
+required-valid behavior, revise the hypothesis or seek authority. Reject-all is
+not a constructional improvement. Preserve accepted observations, compatibility,
+error and ordering behavior, custody, and resource constraints.
+
+A current accepted counterexample blocks the claim it falsifies, not every action
+in the repository. No current liability means no correctness mutation. Missing
+law authority requires escalation. Authorized claim correction, containment, or
+deferral must state its scope and closure consequence; never silently weaken an
+accepted requirement. Reviewer agreement and a clean-review target are not authority.
+
+## Candidate selection
+
+Choose a construction that removes the enabling cause across the supported family.
+There is no preliminary restoration-versus-normalization certificate and no
+mandatory local-repair-first attempt. Do not require proof that every conceivable
+local correction is impossible before exploring a better mechanism.
+
+Compare plausible candidates against the same law, witnesses, required-valid
+observations, supported domain, compatibility, resources, and proof standard.
+Prefer stronger family exclusion, an adequate invariant locus, complete path
+coverage, and fewer independently maintained truths. Only then compare lifecycle
+cost and source size. Retaining the incumbent is not a dominance criterion.
+
+When cumulative evidence identifies duplicate ownership or branch-new compensation,
+test a plausible deletion, collapse, delegation, or narrower facade at the
+smallest useful seam. A passing sample alone cannot establish that the alternative
+is adequate. Do not build two complete versions or manufacture a useless deletion
+for every finding. Distinct required obligations justify retained factors.
+
+A local correction is appropriate when an existing adequate construction already
+owns the full law and the actual edit restores its implementation. A representation
+change is appropriate when it removes a cause that local checks preserve. Both
+face the common candidate-proof obligations below.
 
 ## Source-derived admission topology
 
-Actuating must derive the relevant predecessor topology `T0` independently from
-the strongest repository-native authority available for the seam:
+Select the strongest repository-native authority for the affected seam:
 
 ```text
-type or enum reflection for closed carrier domains
-compiler IR or schema traversal for generated paths
-public symbol or export inventory for construction surfaces
-build or route registries for entrypoints
-reachability over the actual component or control graph
-generated inventories for codecs, adapters, and compatibility paths
+closed type or enum reflection
+compiler IR or schema traversal
+public export inventory
+build or route registry
+actual component/control-graph reachability
+generated producer, codec, adapter, or compatibility inventory
 ```
 
-There is no universal analyzer. Select the authority that already owns the
-semantic surface. Record:
+Derive predecessor topology `T0` with exact subject, derivation, evidence strength,
+assumptions, and falsifier. There is no universal analyzer. A handwritten path
+list or review inventory cannot establish its own completeness. Unknown dynamic
+paths require an explicit bound or residual, not silent omission.
 
-```text
-derivation or generator
-exact predecessor head
-domain identity
-evidence strength
-falsifier
-```
-
-`T0` contains the sanctioned producers, transformations, composition edges,
-trusted consumers, compatibility/recovery routes, and bypasses relevant to the
-boundary decision. A model-authored path list, review-finding inventory, or
-handwritten omission matrix is not an exhaustive topology basis.
-
-Treat the topology as a graph or generated relation. Prefer reachability and
-dominator proof over literal enumeration of every path. The selected cut must
-dominate every sanctioned producer-to-trusted-consumer route after the selected
-topology transformation. The predecessor domain is an accounting basis, not an
-incumbent-preservation constraint: a candidate may retire, privatize, collapse,
-or redirect elements when its transformation states and proves that fate.
-
-Give `T0` to Universalist. Universalist should nominate the boundary and a total
-transformation over the repository-derived domain; it should not rediscover the
-domain from Actuating prose.
+Use a graph or generated relation rather than enumerating all execution traces.
+The predecessor domain is an accounting basis, not a requirement to preserve every
+incumbent path. Existing adequate derivations may be reused and rerun on the exact
+candidate; a local fix does not require inventing another topology artifact.
 
 ## Admitted semantic carrier
 
-The successor carrier may be an opaque type, checked constructor, admitted
-schema object, legal-transition state machine, resolved graph, capability,
-canonicalized value, or normalized IR.
-
-## Invariant locus and semantic identity
-
-Choose the strongest honest invariant locus:
+Use the strongest honest locus available in the repository:
 
 ```text
-intrinsic-carrier       every trusted inhabitant satisfies the law
-admitted-refinement     only a checked or proved refinement is trusted
-encapsulated-transition transient invalidity cannot escape the canonical owner
+intrinsic carrier: every trusted inhabitant satisfies the law
+admitted refinement: only checked or proved values acquire trusted status
+encapsulated transition: transient invalidity cannot escape the owning boundary
 ```
 
-State semantic identity as `unique-canonical`, or name one
-`explicit-equivalence` and prove every trusted operation and observation
-congruent under it.
+The carrier may be an opaque value, checked constructor, resolved graph, schema,
+normalized IR, capability, or state machine. Establish constructor admission,
+transition preservation, ownership/lifetime, and bypass closure. Declare either
+unique canonical identity or an explicit equivalence respected by trusted
+operations and observations. A name or copied validation predicate proves none
+of this.
 
-It must establish:
-
-```text
-carrier exclusion
-  Phi cannot inhabit the carrier or acquire admitted status
-
-required-valid preservation
-  accepted valid behavior remains representable and observable
-
-semantic identity
-  admitted aliases are impossible or governed by explicit congruence
-
-exclusive minting
-  only the canonical constructor/transition can create admitted values
-
-semantic producer factorization
-  every sanctioned producer delegates to that boundary and preserves accepted
-  observations across migration
-
-bypass closure
-  no alternate path can recreate or reinterpret admitted state independently
-```
+A common causal correction is to derive correlated facts from their owner rather
+than accept them independently. Derive release claims from exact executed evidence;
+derive physical requirements from the storage owner; consume owned admitted bytes
+rather than repeatedly trusting mutable pathnames. Preserve the actual trust
+boundary: the constructor, executor, and derivation still require verification.
 
 ## Source-derived factorization closure
 
-For one Universalist boundary contract, let:
+When a boundary is a live semantic decision, pass `$universalist` one axis, one
+typed hole, and `T0`. Compile its complete nomination into the existing Working Set:
 
 ```text
-T0   repository-derived predecessor topology
-K    nominated canonical admission cut
-tau  nominated topology transformation
-F    total element disposition/factorization law
-T1   topology independently re-derived from the exact successor head
+K    canonical cut
+tau  topology transformation accounting for every relevant predecessor element
+F    disposition law over the actual successor topology
+T1   independently re-derived topology of the exact realized successor
 ```
 
-Universalist nominates `K`, `tau`, and `F`. Actuating compiles them into
-realization obligations. Per-element operational dispositions are:
-
-```text
-factor-through(K)
-retire
-privatize
-derived-adapter(K)
-residual {
-  owner
-  failure behavior
-  invalidator
-  claim-strength consequence
-}
-```
-
-`contained` and `obstructed` are whole-construction outcomes, not convenient
-per-element labels.
-
-Before selection and again on the exact realized head, require a
-repository-native verifier that independently derives `T1` and proves:
+Select the verifier before implementation; run it after the candidate exists.
+For the declared domain, prove:
 
 ```text
 T1 = tau(T0)
 domain(F) = T1
-every member of T1 has exactly one disposition
-every factor-through route crosses K
-every retired or privatized element is absent from the corresponding trusted
-  or public topology
-every derived adapter delegates to K instead of independently owning the law
-every residual is explicitly owned
-no boundary-contract element is absent from the repository
-no derived repository element is absent from the boundary contract
+every relevant successor element has exactly one disposition
+every factorized producer-to-trusted-consumer route crosses K
+retirements and privatizations in tau hold in the actual public/trusted surface
+derived adapters delegate to K rather than reimplement its law
+residuals have owners, failure behavior, invalidators, and claim consequences
+no actual successor element is omitted and no surviving contract element is invented
 ```
 
-The verifier must not take the candidate's declared path list as the source of
-its domain. Adding a producer, edge, consumer, adapter, or bypass without a
-disposition must make the proof fail automatically.
+Retired predecessor paths are accounted for by `tau`, not required to exist in
+`T1`. An owned residual does not prove family elimination on that residual route.
+A complete exclusion claim permits no residual that still admits its family.
 
-For an open topology, replace finite equality with a source-derived generator and
-preservation proof. If neither exhaustive derivation nor an honest generator is
-available, the strongest admissible claim is `bounded` or `contained`; complete
-factorization and `eliminated` are unavailable.
+The verifier must derive its domain independently of the candidate's asserted
+list. Adding a sanctioned producer, edge, consumer, or bypass without a disposition
+must invalidate coverage. If the derivation itself misses a sanctioned path, its
+coverage claim is revoked immediately; adding the latest omission to a handwritten
+list does not re-establish it.
 
-Handwritten omission tests remain useful concrete regressions. They do not prove
-completeness and should be deleted or demoted when the source-derived closure
-proof subsumes them.
+Finite domains may be established by exhaustive enumeration or an adequate proof.
+An open domain needs a justified generator and preservation argument for a complete
+claim. Otherwise use the explicit bounded domain and owned residuals. Passing
+sibling probes or a generated sample does not become a universal proof.
 
-## Exactly two routes
+## Producer migration and compensator retirement
 
-### Construction normalization
+Each affected predecessor element is migrated through the cut, retired, privatized,
+turned into a derived adapter, or explicitly residual. Prove required-valid
+observational preservation, including identity, ordering, custody, errors,
+serialization, and composition. Where compatibility is reversible, prove its
+round trips modulo the declared equivalence.
 
-Use when the carrier, constructor, representation, transition relation, owner,
-cut, producer topology, public capability surface, or bypass set changes.
+After realization, inspect current correctness-bearing factors and retire those
+subsumed by the selected construction. A retained factor must carry a distinct
+accepted obligation or a justified derived defense-in-depth/observation role.
+A source digest, guard count, or smaller diff is not evidence of adequacy.
+Preserve witness provenance when redundant tests collapse into a stronger proof;
+do not delete an independent oracle merely because it checks the same law.
 
-### Isolated restoration
+## Common candidate proof
 
-Use only when the complete carrier/factorization theorem already holds and the
-defect is localized to realization or proof. Then materialize
-`actuating/direct-repair-admission` against the exact proposed restoration.
+On the actual exact head, check the witness, applicable historical witnesses,
+preselected discriminator, required-valid behavior, and the construction argument
+across sanctioned paths. Inspect every semantic diff against accepted authority.
+Changed proof authority or claim scope must not hide inside an implementation-local
+label. A false code-to-claim binding invalidates evidence regardless of test status.
 
-There is no bug-driven "small local improvement" route. If neither route is
-proved, block or report honest containment.
+If discovery exposes an owner, carrier, interpretation, proof-domain, or topology
+change not considered during selection, reopen that affected architecture decision
+and satisfy its full nomination and proof obligations before review or Ship.
+Do not merely relabel a finished patch. The simplest adequate existing construction
+may still win; novelty is not required.
 
-## Constructional dominance
-
-Compare candidates in this order:
-
-```text
-required-valid / invalid-family separation
-invalid-family exclusion
-strongest honest invariant locus
-canonical identity or explicit equivalence
-source-derived admission-path domination
-total semantic producer factorization
-canonical ownership
-bypass closure
-required-valid and compatibility preservation
-family-level or exhaustive proof
-downstream compensator retirement
-lifecycle and realization cost
-raw source size
-```
-
-A candidate with fewer lines does not dominate a stronger carrier. A candidate
-that preserves distributed primary guards does not dominate a construction that
-moves the law into one canonical admitted carrier.
-
-## Producer migration
-
-Every member of the source-derived topology receives one operational
-disposition:
-
-```text
-factor-through   now crosses the canonical boundary
-retire           path no longer exists
-privatize        retained internally, no longer an independent public route
-derived-adapter  compatibility surface delegates to the canonical constructor
-residual         explicitly owned remainder that weakens the aggregate claim
-```
-
-"No change" is not a disposition.
-
-For `factor-through` and `derived-adapter`, prove on required-valid inputs:
-
-```text
-observe_new(migrate(x)) = observe_old(x)
-```
-
-When compatibility is reversible, prove round trips over required-valid old and
-admitted new values, modulo explicit equivalence. A call path through the
-canonical constructor is not factorization if it changes identity, ordering,
-custody, error, serialization, or composition semantics.
-
-## Compensator retirement
-
-After carrier selection and producer migration, classify downstream
-correctness-bearing factors:
-
-```text
-preserve-derived     distinct defense-in-depth or observation role
-replace              successor carrier owns the obligation
-collapse             duplicate factors become one mechanism
-retire               no distinct obligation remains
-privatize            internal support only
-distinct-obligation  genuinely independent accepted law
-```
-
-Ablation is evidence that the construction absorbed the law; it is not the
-operator that selects the construction. Preserve `CEX-*` identities and source
-provenance even when member-specific tests and helpers collapse into a family
-proof.
-
-## Isolated-restoration Ledger execution
-
-The existing definition ID remains:
-
-```text
-actuating/direct-repair-admission
-```
-
-It is the only Actuating transition gate. It may run only after Actuating proves
-that the carrier, earliest cut, source-derived producer factorization, bypass
-closure, and family mechanism were already complete before the proposed edit.
-
-A valid materialization admits only the exact isolated restoration. An invalid
-materialization requires construction normalization or `blocked`.
-
-Do not add another Actuating comparison packet, ablation gate, carrier registry,
-event log, or closure receipt. The Review Fold corpus is source evidence, not an
-Actuating workflow protocol.
+`isolated-restoration` and `construction-normalization` are optional descriptions
+of this realized result, not permission tokens or distinct proof shortcuts. Mixed
+changes retain each obligation's authority; one local fix cannot admit unrelated
+claim narrowing or rejected strengthenings.
 
 ## Behavioral falsifier
 
-The mechanism succeeds only when watched use shows:
+Success is transfer beyond the observed example: an independently chosen sibling
+is excluded by the same construction without a new production special case, valid
+behavior survives, and displaced independent owners or compensation can disappear.
+The stronger claim still needs source-domain and construction evidence.
 
-```text
-later sessions recover prior independent witnesses without transcript archaeology
-same-family findings cause construction revision, not member guards
-required-valid behavior does not overlap Phi
-one canonical owner replaces distributed approximations
-admitted aliases collapse or use one explicit congruent equivalence
-the topology domain is derived from repository authority rather than model memory
-every newly introduced sanctioned path changes the derived domain automatically
-every topology element receives one operational disposition
-every factorized route crosses the nominated cut
-bypasses close
-downstream primary compensators disappear or become derived
-required-valid behavior survives
-later review stops finding unmodeled members of the same family
-```
+Distinguish a causal hypothesis being falsified from the code becoming better.
+Raw counterexample counts across changed heads are not a progress metric. Use
+existing session audits or matched-snapshot offline replays; keep later witnesses
+hidden from the implementing run when measuring held-out generalization. Compare
+proof strength, retained obligations, recurrence, semantic owners, and cost.
+Do not call policy unit tests a controlled model-efficacy experiment.
 
-A review finding that exposes a sanctioned path absent from the topology basis
-revokes the topology and factorization theorem immediately. It is not a
-realization-local repair.
-
-Narrow or delete corpus integration if it only copies CAS prose, changes packets
-without changing successor code shape, or costs more than the recurrence and
-accretion it prevents. Narrow or delete source-derived closure if it degenerates
-into a handwritten inventory, routinely cannot change when repository topology
-changes, or adds more ceremony than the unmodeled-path churn it prevents.
+Narrow or delete these instructions if they add narration without changing the
+selected construction or its out-of-example behavior. Add no replacement gate,
+packet, score, registry, or durable workflow store.

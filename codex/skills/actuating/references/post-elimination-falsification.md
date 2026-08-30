@@ -1,113 +1,53 @@
 # Post-Elimination Falsification
 
-Normative when a current applicable `entailed` witness falsifies an exact family
-claim previously declared `eliminated` inside its validity horizon.
+Apply when Review Fold establishes a current entailed witness against the exact
+family and validity horizon previously claimed `eliminated`.
 
-## Governing law
+## Revocation
 
-The witness revokes the prior claim immediately. It proves that at least one
-construction premise was false or incomplete. It is not another repair class
-under the unchanged narrative.
+Revoke that exclusion claim immediately. The candidate loses review credit and
+cannot close under the falsified claim. During an open review epoch, finish the
+applicable evidence cut before successor mutation. Revocation does not prohibit
+authorized construction work after the cut; it prohibits crediting the old claim.
 
-```text
-prior disposition -> revoked
-mutation           -> closed
-closure            -> impossible
-```
+Same broad law or owner is insufficient. Preserve Review Fold's distinctions:
+`same-claim`, `same-law-different-family`, `outside-horizon`, `different-law`, and
+`unknown`. Missing historical evidence remains unknown. New requirements reopen
+Goal authority rather than retroactively falsifying the previous Goal.
 
-## Localize the failed premise
+## Reopen the explanation
 
-Identify the earliest premise supported by evidence:
+Localize the supported failure: authority/applicability, family interpretation,
+source domain, owner/cut, carrier, transitions, factorization, bypass, preservation,
+realization, proof, artifact binding, or claim scope. Re-evaluate applicable prior
+witnesses and choose a discriminator that tests the proposed explanation rather
+than merely replaying the newest example.
 
-```text
-Goal/law authority or applicability
-validity horizon
-invalid-family predicate or partition
-required comparison domain
-admission graph
-canonical owner
-earliest enforceable cut
-admitted carrier
-producer factorization
-bypass closure
-required-valid preservation
-realization
-proof coverage
-claim strength
-```
+A design may survive an implementation error. That is a hypothesis about an
+existing adequate mechanism, not retention of the old elimination claim and not
+proof of a nonexistent successor. Restore it directly when source evidence supports
+that candidate; replace it when the cause requires a different construction.
+Do not require a local attempt first or manufacture pre-mutation theorem equality.
 
-Unknown location is `unresolved`.
+A sanctioned path absent from the topology basis falsifies that basis immediately.
+A missing assertion can be local only when the independent domain and mechanism
+already account for the relevant behavior. If the domain, proof authority, or
+carrier changes, satisfy the changed construction's full proof obligations.
 
-## Allowed dispositions
+## Reissuing a claim
 
-```text
-retain-theory-reprove
-  only when family, carrier, cut, producer factorization, and bypass closure
-  remain valid and failure is localized to realization or proof
+On the actual successor establish accepted authority, a justified family/domain,
+required-valid preservation, the law-bearing mechanism, sanctioned-path coverage,
+bypass/residual dispositions, and exact-head proof. Execute the preselected sibling
+or domain discriminator. Preserve the original witness provenance when obsolete
+member-specific guards or tests are subsumed.
 
-revise-theory
-split-theory
-revise-admission
-revise-interpretation
-revise-owner
-reopen-goal
-follow-up
-reject-finding
-unresolved
-```
+Passing repaired examples or fresh reviews alone does not establish elimination.
+A finite exhaustive argument or justified construction/preservation proof can
+support the full declared domain; sampled siblings support only their demonstrated
+scope. Any weaker public claim retains its authority and closure consequence.
 
-Retaining the theory does not preserve the old `eliminated` disposition.
-
-## Isolated restoration
-
-`retain-theory-reprove` may request isolated restoration only when the complete
-construction theorem was already true before the edit:
-
-```text
-the witness is inside the existing family
-the carrier excludes that family by design
-the same earliest cut and owner remain correct
-every sanctioned producer already factors through them
-no bypass was omitted
-the failure is localized to realization or proof
-```
-
-Then materialize `actuating/direct-repair-admission`. A failed materialization
-requires construction normalization or `unresolved`.
-
-## Reissuing elimination
-
-A successor `eliminated` claim requires:
-
-```text
-accepted Goal authority
-restated family and validity horizon
-restated admitted carrier and cut
-complete producer migration
-complete bypass closure
-required-valid preservation
-retirement or demotion of downstream primary compensators
-finite-domain exhaustion or pre-implementation sibling probes
-exact-head construction proof
-claim strength no stronger than the weakest evidence
-```
-
-Repaired examples, another guard, another review wave, or a gate materialization
-alone are insufficient.
-
-## Review interaction
-
-A same-family successor finding means one of these remains incomplete:
-
-```text
-family
-carrier
-cut
-producer factorization
-bypass closure
-realization
-proof
-```
-
-Reopen that premise. Never append another named-member guard under the same
-family claim.
+The names `isolated-restoration` and `construction-normalization` may describe
+the actual delta. Neither grants a different correctness bar, overrides source
+falsifiers, or admits unrelated work. The same causal claim cannot be reset by
+renaming a family or committing another head.

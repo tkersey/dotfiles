@@ -1,165 +1,102 @@
 # Live Closure
 
-Closure is a current judgment over owner facts, not stored state.
+Closure is a current judgment over owner facts, not stored workflow state:
 
 ```text
-Close(Goal, Git, validation, CAS, ReviewFoldCorpus, Ship, ReviewFold,
-      construction, proof)
+Close(Goal, Git, validation, CAS, ReviewFoldCorpus, Ship, current evidence)
 -> continue | ready-to-ship | complete | blocked
 ```
 
-Initial implementation is not a review epoch and requires no CAS evidence. A
-review epoch may open only after implementation has produced one exact
-`reviewable` candidate. While an epoch is open, its bound candidate is immutable
-and successor mutation and closure are forbidden.
+`implement` requires local realization and proof, not CAS or publication. Bare
+Actuating and `review-closeout` additionally require publication and convergence.
+`analyze` never mutates or claims closure. No review epoch may remain open at
+closure; an epoch freezes its exact candidate, not initial implementation.
 
-## Finding authority
+## Authority and source horizon
 
-Every current finding must be classified as:
+Review Fold classifies every current proposed law as entailed, strengthening,
+preference, new-requirement, or underdetermined. Only accepted current liabilities
+create automatic correctness work. Historical CEX records retain their original
+subjects; current meaning is re-evaluated rather than copied from the corpus.
 
-```text
-entailed | strengthening | preference | new-requirement | underdetermined
-```
+Reconcile relevant CAS, provider, tests, incidents, migrations, verifiers, and
+corpus sources. An omitted live finding keeps the evidence cut open. Unavailable
+sources make the affected horizon incomplete; quota exhaustion is not a clean
+review. Do not claim historical absence, first occurrence, or complete closure
+from unavailable evidence required by that claim. This is not a blanket provider
+or historical-corpus dependency for initial implementation.
 
-Only unresolved accepted liability blocks correctness closure. Review does not
-silently widen the Goal.
+Every correctness-bearing actual Git delta must follow an accepted counterexample,
+an existing Goal obligation, or explicit new authority. Rejected strengthenings
+cannot enter the candidate for review appeasement. Claim correction, containment,
+risk acceptance, and deferral retain their authority and closure consequences.
+Correcting unsupported prose does not waive a required behavior.
 
-A stored `CEX-*` row is immutable evidence that its original witness was
-accepted under its recorded Goal and subject. It is not a current finding,
-family, or closure claim. Review Fold must reclassify projected rows against the
-current Goal, head, and validity horizon.
+## Construction adequacy
 
-## Live owner-source frontier
-
-Closure requires every currently live relevant owner source to be folded, proven
-non-current for the exact subject, or declared unavailable. Missing CAS, provider,
-test, incident, migration, verifier, or corpus evidence keeps the horizon
-incomplete and forbids mutation, clean credit, reviewability, and completion.
-
-## Counterexample evidence horizon
-
-Closure records whether the Review Fold counterexample basis was projected
-successfully and which historical source evidence remains unavailable.
+Use the same proof obligations for local corrections and redesigned constructions:
 
 ```text
-complete horizon
-  may support exact recurrence and historical-absence claims at its declared
-  repository and source scope
-
-incomplete horizon
-  absence proves nothing; recurrence, disjointness, and post-elimination
-  relation remain unknown at the affected strength
+applicable current and retained witnesses addressed
+source-supported causal explanation and declared invalid-family domain
+required-valid behavior, observations, and compatibility preserved
+preselected sibling/domain discriminator executed with its real evidence strength
+actual law-preserving constructor, representation, or transition
+all relevant sanctioned paths and bypasses accounted for
+proof authority and public claims bound to exact inputs and execution
+redundant primary compensation retired or justified by distinct obligations
+complete Goal-required proof inventory on the exact candidate
 ```
 
-An absent local corpus is not proof that no historical counterexamples exist.
-Do not claim first occurrence or family elimination from missing history.
+A restoration label, theorem digest, plan, green sample, or review streak cannot
+substitute for those observations. Do not classify several independent obligations
+as local merely because they share a commit or a broad causal theme.
 
-## Construction closure
+For a changed boundary, additionally verify the complete Universalist nomination.
+Independently derive successor topology `T1`; prove `T1 = tau(T0)`, `domain(F) = T1`,
+cut domination, predecessor retirements, adapter delegation, and owned residuals.
+Reuse existing adequate derivations when no new boundary decision is needed.
+A claimed source domain must not come solely from the candidate's asserted list.
+A residual that still admits the family precludes its complete elimination claim.
 
-For every current causal generator require:
+A complete domain requires an adequate construction/preservation proof or finite
+exhaustion. Generated samples and sibling probes alone remain bounded evidence.
+If proof is weaker, state the scope and residuals honestly; do not silently narrow
+accepted requirements. No independent oracle may be deleted merely for checking
+the same law as a constructor.
 
-```text
-accepted law and invalid family
-positive claim falsified and earliest failed premise
-source-bound predecessor theorem and same-theorem reproof result
-derived response disposition and authority / closure consequence
-current applicable CEX and owner-evidence basis
-finite exhaustion or pre-implementation sibling basis
-source-derived predecessor topology T0 with authority, identity, strength,
-  and falsifier
-one admitted semantic carrier
-canonical owner and earliest enforceable cut K
-Universalist topology transformation tau and total disposition law F
-exact-head independently re-derived successor topology T1
-T1 = tau(T0) and domain(F) = T1
-every factorized producer-to-consumer route crosses K
-every residual and bypass is explicitly owned
-required-valid behavior and observations preserved
-downstream primary compensators retired or demoted
-exact-head family-level and factorization-closure proof
-construction falsifier
-```
+## Reviewability and completion
 
-A complete claim requires either a finite source-derived topology or a
-source-derived generator and preservation proof. Without one, the strongest
-honest result is `bounded` or `contained`.
+A candidate remains `realizing` until the selected construction, authority-complete
+diff, migrations, retirements, and all required proof are complete. Only then may
+it become `reviewable`. A newly discovered required proof after convergence
+invalidates the prior credit; the missing proof must run before fresh review.
 
-A safe but wound-shaped implementation is not complete. Passing repaired
-examples, scattered guards, a corpus row, a model-authored omission list, or a
-structurally valid gate packet is insufficient.
-
-## Isolated restoration
-
-A successful `actuating/direct-repair-admission` materialization proves only that
-one exact restoration preserves the source-bound predecessor theorem and is
-structurally compatible with an already-complete construction. It is not proof of
-family completeness, historical evidence completeness, source-derived topology
-completeness, producer coverage, or closure. A rejected materialization remains
-blocked unless independent evidence proves a semantic theorem premise false; it
-does not authorize normalization.
-
-## Reviewability
-
-Before closure-grade review, the exact head must have:
-
-```text
-complete Goal-required proof inventory
-projected counterexample basis or explicit incomplete-horizon disposition
-complete current construction theorem at its declared claim strength
-route-specific construction proof:
-  construction-normalization -> source-derived topology authority and
-    predecessor-domain identity, complete Universalist transformation and
-    disposition law, independently re-derived exact-head successor topology,
-    and total factorization-domain and cut-domination closure
-  isolated-restoration -> source-bound predecessor topology identity remains
-    unchanged, the direct-repair admission materializes, and no Universalist
-    topology transformation is required
-all producer migrations, residuals, and bypass closures realized
-all selected compensator retirements realized
-no known same-family member-specific primary guard
-```
-
-A required repository-local proof first discovered after review invalidates all
-review credit.
-
-## Final complete
-
-Final `complete` additionally requires:
+For full `complete`, require:
 
 ```text
 required Ship/provider state matches the exact head
-every completion-relevant live owner source is folded or non-current
 no review epoch remains open
-every accepted current counterexample has a theorem-derived response
-no unauthorized claim narrowing, containment, residual risk, or deferral
-all five auxiliary lenses have terminal semantic outcomes
+all five auxiliary lenses have terminal semantic outcomes and are adjudicated
 five consecutive distinct native/default standard cleans on the unchanged head
-all historical claims match the available counterexample horizon
-no later evidence falsifies Goal, family, topology derivation, carrier, cut,
-  topology transformation, factorization domain, bypass closure, realization,
-  proof, publication, or review
+no unresolved current accepted liability
+no unauthorized semantic change, containment, narrowing, risk, or deferral
+all completeness and historical claims match their actual evidence horizon
+no later falsifier of the Goal, family, mechanism, proof, publication, or review
 ```
 
-An unavailable completion-relevant owner source keeps the evidence horizon
-incomplete and forbids unqualified `complete`. With explicit authority, the
-result may retain a bounded or otherwise non-complete claim and its closure
-consequence.
+The first standard clean counts as one; the next four run serially. Material
+findings or head changes reset all credit. Clean reviews are adversarial attempts,
+not a universal soundness proof. A completion-relevant unavailable source cannot
+be silently credited; retain the authorized bounded or non-complete outcome.
 
-A review finding that exposes a sanctioned producer, consumer, composition edge,
-adapter, or bypass absent from the topology basis
-revokes topology and factorization closure immediately. It cannot be closed as
-realization-local repair.
+An exact same-claim witness revokes family exclusion immediately. A sanctioned
+path absent from source topology revokes that coverage claim. Reopen the causal
+explanation; neither a local label nor equal opaque digests can preserve the claim.
 
-An explicitly deferred or contained liability is not unqualified `complete`; the
-result must retain the authorized bounded claim and its closure consequence. A
-non-publicly complete implementation is `ready-to-ship`.
-
-## Blockers
-
-Return `blocked` for unknown authority, incomplete current evidence cut,
-unresolved family, topology authority, topology domain, owner, cut, carrier,
-topology transformation, factorization domain, producer path, bypass, residual
-owner, required-valid proof, post-elimination premise, rejected
-isolated-restoration gate, failed validation, publication mismatch, stale CAS
-evidence, or missing historical evidence required by the claimed recurrence or
-elimination strength.
+A locally complete implementation awaiting required publication is `ready-to-ship`.
+An accepted unresolved or deferred liability is not unqualified `complete`.
+Return `blocked` for missing authority, unresolved causal/domain evidence needed
+for the requested claim, incomplete cuts, missing required proof, unowned residuals,
+stale reviews, or publication mismatch. Block the affected claim, not unrelated
+already-authorized implementation.

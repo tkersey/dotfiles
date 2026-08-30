@@ -1,21 +1,18 @@
 # Static Review Contract
 
-Actuating owns one checked-in policy:
-[review-contract.json](review-contract.json). It is source policy, not mutable
-workflow state.
+[review-contract.json](review-contract.json) is checked-in policy, not mutable
+workflow state. CAS owns review execution and receipts; Actuating derives credit
+and construction consequences from exact owner facts.
 
 ## Binding and owner authority
 
-Read the exact Review Contract bytes and every auxiliary lens instruction byte.
-Do not trim or normalize them.
+Read the exact contract bytes and each auxiliary instruction file without trimming
+or normalization. Standard invokes Codex's native/default review with no custom
+instructions argument or skill-authored prompt. Bind its instruction identity to
+`codex-default-review/v1`, which records deliberate absence of customization; it
+does not reproduce or constrain Codex's internal prompt.
 
-The standard request is different: invoke Codex's native/default review with no
-custom instructions argument and no skill-authored instruction file. Bind its
-instruction identity to the literal `codex-default-review/v1`. That marker names
-the deliberate absence of customization; it does not copy, describe, or constrain
-Codex's internal default review prompt.
-
-Build one canonical ephemeral context:
+Use the existing canonical ephemeral context:
 
 ```yaml
 review_context:
@@ -35,8 +32,6 @@ review_context:
   publication_observation_ref: null | sha256-digest
 ```
 
-Compute:
-
 ```text
 campaign_id = sha256(
   "actuating-review-campaign/v3" || NUL ||
@@ -46,8 +41,8 @@ campaign_id = sha256(
 )
 
 instruction_digest =
-  standard  ? sha256("codex-default-review/v1")
-            : sha256(exact auxiliary instruction bytes)
+  standard ? sha256("codex-default-review/v1")
+           : sha256(exact auxiliary instruction bytes)
 
 request_fingerprint = sha256(
   "actuating-review-request/v3" || NUL ||
@@ -56,431 +51,195 @@ request_fingerprint = sha256(
 )
 ```
 
-CAS owns review execution, terminal receipts, exact target tuples, and finding
-provenance. Review Fold owns current finding classification and the append-only
-semantic admission of accepted witnesses through
-`review-fold/counterexample-corpus`. Actuating checks owner-issued evidence
-directly and owns review credit and architectural consequences.
-
-Supply only the request ID and fingerprint through CAS's workflow binding.
-Credit only a structured semantic verdict with strong principal evidence, exact
-current tuple, exact instruction and workflow binding, and the backend capability
-required by the JSON contract. Process exit, prose, or a thread handle is not a
-verdict.
-
-The six required lenses and five-consecutive-standard-clean theorem remain
-unchanged.
+Supply only request ID and fingerprint through CAS's workflow binding. Credit only
+structured `clean` or `findings` outcomes with the exact current tuple, instruction
+and workflow bindings, strong principal, owner-lived transport, and the required
+backend capability. Process exit, prose, and thread handles are not verdicts.
+Hashes bind concrete evidence bytes; they do not prove semantic equivalence.
 
 ## Review epoch
 
-A review epoch is ephemeral and derived from CAS owner facts; it is never stored.
-It opens when the first review request binds to one exact `reviewable` candidate
-head. While open:
+The epoch is ephemeral and derived from owner facts. First dispatch against an
+exact locally proved `reviewable` candidate opens it. Freeze that candidate while
+review is open. All requests and credit remain bound to that same head.
+
+Initial implementation occurs outside review and requires no CAS receipt or wave.
+Existing closed owner evidence may inform it without dispatching a fresh review.
+An incomplete candidate may be implemented but may not enter closure review.
+
+A material current entailed finding invalidates the candidate and resets all
+credit, but does not authorize editing. The initial epoch closes only after every
+required initial outcome, required recovery, and the cumulative Review Fold are
+complete. A clean epoch remains open through the standard convergence sequence.
+A material confirmation finding closes its epoch after that finding and already-live
+required owner evidence are folded; no new auxiliary wave runs on the invalid head.
+
+## Scheduling
+
+The required initial order is:
 
 ```text
-the bound candidate is immutable
-successor mutation is forbidden
-all review requests and credit remain bound to that exact head
+standard
+soundness-skeptic
+footgun-finder
+invariant-ace
+complexity-mitigator
+fresh-eyes
 ```
 
-Initial implementation occurs outside a review epoch and requires no CAS request,
-review receipt, or initial falsification wave. Existing closed owner evidence may
-inform implementation without opening review.
+`parallel-reviews` launches all six owner-live requests concurrently and never
+cancels siblings. Await all launched semantic outcomes and required recovery.
 
-A clean epoch remains open through the required standard confirmations and closes
-when convergence is complete. An invalidated initial-wave epoch closes only after
-all required initial semantic outcomes and request-local recovery are terminal
-and Review Fold closes the evidence cut. An invalidated confirmation epoch closes
-after the finding and every already-live required owner observation are folded;
-it never launches another initial auxiliary wave.
+`serial-reviews` adjudicates each request before the next. After invalidation,
+continue the remaining initial lenses against the same frozen head for evidence
+only: no mutation, no clean credit, no successor assumptions.
+
+A verdictless terminal has no semantic outcome. Permit one fresh exact-request
+recovery; it remains part of the barrier after invalidation. A second verdictless
+terminal blocks. Do not interpret an observation timeout as terminal failure.
+
+The initial standard clean counts as one. Four later standard confirmations run
+serially, producing five consecutive distinct native/default standard cleans on
+one unchanged head. A material finding stops confirmation. A material head change
+resets all review credit; the proved successor starts a new initial wave under
+the selected scheduling mode.
 
 ## Live owner-source frontier
 
-Before closing an evidence cut, reconcile every currently live relevant owner
-source:
+Before a counterexample-driven selection or a completion claim, reconcile relevant
+CAS, provider/PR, tests, incidents, migrations, compatibility, repository verifiers,
+and historical corpus evidence. Each source is folded, proven non-current, or
+explicitly unavailable. An omitted live finding keeps the cut open. Quota exhaustion
+or a missing tool result is unavailable, never a clean semantic verdict.
 
-```text
-CAS
-provider / PR review
-repository tests and property tests
-incidents and runtime failures
-migrations and compatibility failures
-repository-native verifiers
-Review Fold counterexample corpus
-```
-
-Each source must be folded, proven non-current for the exact subject, or declared
-unavailable. Unavailable evidence makes the horizon incomplete. A live provider
-finding absent from Review Fold keeps mutation, clean credit, reviewability, and
-closure closed. Do not satisfy this law with an Actuating source registry; derive
-the frontier from current owner facts.
+Unavailable evidence limits the claims that depend on it. It does not force a
+new review campaign or block unrelated authorized initial implementation. A required
+completion source cannot be silently waived. Derive this view from owners; do not
+create an Actuating source registry.
 
 ## Counterexample history projection
 
-Before the first Review Fold for a review-bearing decision, project the
-repository basis from:
+Before current family synthesis, have `$review-fold` project
+`review-fold/counterexample-corpus`. Recompute applicability, Goal-law authority,
+recurrence, and family hypotheses against the current head. A CEX row proves its
+original admission, not that it is a current liability or a complete family.
+
+Absent local history is not evidence of absence. Unknown history cannot support
+first-observed, disjointness, or post-elimination claims. Current evidence may
+still support a properly bounded construction. Review Fold captures each new
+independent current entailed accepted witness; it does not persist classes,
+families, repair choices, rejected preferences, or current architecture.
+
+## Candidate lifecycle and causal response
 
 ```text
-review-fold/counterexample-corpus
+realizing    construction or required exact-head proof remains incomplete
+reviewable   actual candidate satisfies all applicable construction obligations
+invalidated  a current material counterexample falsifies the candidate
 ```
 
-Include those rows as prior owner evidence. Recompute current applicability,
-Goal-law authority, recurrence, observational classes, family hypotheses, and
-post-elimination relation. A `CEX-*` identity is durable evidence that the
-original witness was accepted under its recorded Goal and subject; it is not a
-current liability, family, or construction claim.
+Only `reviewable` may dispatch closure review. Closing an invalidated evidence cut
+ends its freeze; it does not certify a proposed successor or authorize unentailed
+changes.
 
-An absent local store is an empty local corpus, not proof of complete history.
-An unavailable or invalid projection makes the evidence horizon incomplete.
-Actuating may still use exact current-wave evidence, but it must not infer
-`first-observed`, disjointness, or family elimination from historical absence.
-When recurrence or a post-elimination claim depends on unavailable history,
-return `unknown` or `blocked` rather than guessing.
+Use [counterexample-guided-normalization.md](counterexample-guided-normalization.md)
+to infer the enabling cause from the cumulative basis, select a sibling/domain
+discriminator before implementation, compare adequate constructions, and realize
+one successor. Do not choose a patch from each finding, require a local attempt
+first, or demand a pre-mutation theorem-equality certificate.
 
-After every fold, capture each independent witness that is current, `entailed`,
-and `accepted`. Do not capture reviewer preferences, strengthenings, new
-requirements, underdetermined claims, rejected findings, non-current witnesses,
-classes, families, suggested repairs, or current architecture.
-
-## Candidate lifecycle
-
-```text
-realizing
-  construction theorem, source-derived factorization closure, or exact-head proof
-  inventory incomplete
-
-reviewable
-  counterexample basis, carrier, source-derived topology, total Universalist
-  transformation, exact-head topology re-derivation, cut domination, residual
-  ownership, compensator dispositions, and required proof inventory complete on
-  one head at the declared claim strength
-
-invalidated
-  applicable entailed material finding falsified the candidate
-```
-
-Only `reviewable` may dispatch closure review.
-
-### Construction-theorem proof lease
-
-A construction theorem is the current conjunction of:
-
-```text
-accepted Goal and law
-invalid-family predicate and comparison domain
-source-derived predecessor topology T0, authority, identity, and evidence strength
-canonical owner and earliest enforceable cut K
-admitted carrier and semantic identity
-Universalist topology transformation tau and total disposition law F
-exact-head successor topology T1
-T1 = tau(T0) and domain(F) = T1
-producer factorization, cut domination, and residual/bypass dispositions
-required-valid interpretation
-proof universe, falsifier, validity horizon, and claim strength
-```
-
-Its completeness claim is a revocable proof lease, not a reusable assertion.
-A direct falsifier of any declared theorem premise revokes the theorem
-immediately. A review finding that exposes a sanctioned producer, consumer,
-composition edge, adapter, or bypass absent from the topology basis is a direct
-topology-premise falsifier; it is never a realization-local repair.
-
-Otherwise, recurrence is adjudicated only from exact Review Fold evidence:
-
-```text
-first exact same-claim successor invalidation
-  -> invalidate the candidate
-  -> localize the earliest failed premise
-  -> retain the theorem only when exact evidence confines the defect
-     to realization or proof
-
-second exact same-claim successor invalidation under a materially unchanged theorem
-  -> revoke the theorem and its reviewable claim
-  -> close mutation, Ship, and review
-  -> prohibit a third reviewable candidate under that theorem
-```
-
-`same-law-different-family`, `outside-horizon`, `different-law`, and `unknown`
-do not increment this recurrence. Same owner or broad law alone is insufficient.
-
-A theorem is materially changed only when the successor revises at least one
-falsified semantic premise or its proof universe—not merely code, prose, tests,
-or the reviewed head. Re-entry after revocation requires:
-
-```text
-repaired source-derived topology authority or generator
-material theorem delta tied to the failed premise
-exact-head re-derivation of the successor topology
-total factorization and cut-domination proof
-fresh exact-head construction proof
-```
-
-Repeated recurrence is material new evidence. It may re-open Metanoetic and
-Universalist reclassification on the changed decision surface; it does not add a
-second pass on an unchanged surface.
+A local correction and a redesigned mechanism face the same family, required-valid,
+authority, and path-coverage obligations. Their labels describe the realized delta;
+they cannot switch off proof. Where an owned boundary changes, invoke Universalist
+at the existing architecture decision and prove its complete contract. Metanoetic
+may challenge a plausible mechanism error before selection without a fictional
+proof that every local alternative is impossible.
 
 ## Source-derived factorization closure
 
-Before Universalist invocation, Actuating derives predecessor topology `T0`
-from the strongest repository-native authority for the seam. Examples include
-type reflection, compiler IR or schema traversal, export inventories, route or
-build registries, actual graph reachability, and generated producer inventories.
+For an affected boundary, derive `T0` from repository-native type/schema/IR,
+exports, route/build registries, graph reachability, or generated inventories.
+Bind the exact source, domain, assumptions, strength, and falsifier. A model-authored
+path list cannot establish exhaustive topology.
 
-Record:
-
-```text
-derivation or generator
-exact predecessor head
-domain identity
-evidence strength
-falsifier
-```
-
-A model-authored path list, review-finding inventory, or handwritten omission
-matrix cannot be the exhaustive topology basis.
-
-Universalist receives `T0` and nominates:
-
-```text
-K    canonical admission cut
-tau  total topology transformation
-F    total disposition/factorization law
-```
-
-For each topology element, `F` yields exactly one operational disposition:
-
-```text
-factor-through(K)
-retire
-privatize
-derived-adapter(K)
-residual(owner, failure behavior, invalidator, claim-strength consequence)
-```
-
-`contained` and `obstructed` remain aggregate construction outcomes.
-
-Before `reviewable`, an exact-head repository-native verifier independently
-re-derives successor topology `T1` and proves:
+Universalist receives one axis, one typed hole, and `T0`; its complete projection
+nominates `K`, `tau`, `F`, residuals, observations, laws, transitions, invalidators,
+and claim ceiling. Select the verifier before implementation; execute it on the
+actual successor. Prove:
 
 ```text
 T1 = tau(T0)
 domain(F) = T1
-every element has exactly one disposition
-every factorized producer-to-consumer route crosses K
-no contract element is absent from the repository
-no derived repository element is absent from the contract
-every residual is explicitly owned
+every relevant successor element has one disposition
+every factorized trusted route crosses K
+predecessor retirement/privatization is realized as declared by tau
+adapters delegate rather than duplicate the law
+residuals are owned with failure behavior, invalidators, and claim consequences
 ```
 
-The verifier must derive its domain independently of the candidate's declared
-list. Adding a producer, edge, consumer, adapter, or bypass without a
-disposition must fail automatically.
+Derive `T1` independently of the candidate's asserted list. New undispositioned
+source elements must invalidate coverage. A residual admitting the family prevents
+complete exclusion of that family. Reuse adequate existing derivations rather than
+require fresh architecture paperwork for an unchanged boundary.
 
-For open domains, a source-derived generator and preservation proof replaces
-finite equality. When neither exhaustive derivation nor an honest generator is
-available, Actuating may review only an explicit `bounded` or `contained` claim;
-it cannot claim complete factorization or elimination.
+Complete claims need a source-derived finite domain with adequate proof or a
+justified generator and preservation argument. Sibling probes and generated samples
+are not universal proof. Without enough evidence, retain the explicit authorized
+bound instead of an elimination claim.
 
-Hand-authored omission tests may remain regression witnesses, but cannot prove
-their own completeness.
+## Review entry and authority-complete diff
 
-## Review entry
-
-Require on the exact head:
+Before dispatch on the exact head require:
 
 ```text
-complete accepted Goal and proof inventory
-projected counterexample basis or explicit incomplete-horizon disposition
-complete current counterexample basis
-invalid family and sibling/exhaustive disposition
-source-derived T0 authority, identity, evidence strength, and falsifier
-earliest enforceable cut K and admitted carrier
-Universalist total transformation tau and disposition law F
-exact-head independently re-derived T1
-T1 = tau(T0) and domain(F) = T1
-every factorized route dominated by K or explicitly residual
-every bypass and residual disposition
-required-valid and compatibility proof
-downstream primary compensator disposition
-all selected migration and retirement work realized
+accepted Goal and complete proof inventory
+current cumulative evidence and honest source horizon
+source-supported causal explanation for counterexample-driven changes
+preselected sibling/domain discriminator and actual results or explicit limitation
+required-valid behavior and compatibility preserved
+law-bearing mechanism and supported sanctioned-path/bypass coverage
+complete boundary nomination and source-derived closure when that boundary changed
+all selected migrations, residuals, and compensator retirements realized
+all correctness-bearing Git changes supported by accepted authority
 ```
 
-Each proof-inventory entry must be unique and have exact-head passing evidence or
-authority-backed `not-applicable`. Aggregate proof credit is valid only when the
-declared dependency graph covers the required proof.
+Every proof-inventory entry is unique and has exact-head passing evidence or
+authority-backed nonapplicability. Aggregate proof credit requires actual dependency
+coverage. A known proof may not first run after convergence; discovering a required
+missing proof invalidates the prior reviewability claim.
 
-A known required proof may not first run after review convergence. Such a
-discovery proves the candidate was never reviewable and invalidates all credit.
+Do not implement rejected strengthenings to protect the clean suffix. Remove them
+or reopen their authority. Public claim corrections retain their own authority;
+containment and deferral are not full elimination. Mixed changes must preserve each
+obligation's authority rather than laundering them through one restoration label.
 
-## Invalidation inside an open review epoch
+## Falsification and resumption
 
-A material finding immediately:
+A current entailed witness against an exact declared exclusion revokes that claim.
+A sanctioned topology element absent from the claimed basis revokes coverage
+immediately. Reopen the causal explanation and its cumulative siblings; no packet,
+route label, new family name, or new Git head can erase the contrary evidence.
 
-```text
-invalidates the candidate
-sets all review credit to zero
-keeps successor mutation and new confirmation dispatch closed
-does not request a patch
-```
+Same broad law alone does not prove same-family recurrence. A new requirement
+reopens Goal authority. An implementation-local failure may still have a small
+adequate correction, but it must satisfy the same actual-candidate proof bar.
+Never append a named-member guard as evidence of complete family elimination.
 
-The initial independent falsification wave must still complete against the
-frozen candidate.
+Reuse only exact resolvable CAS receipts. Missing review receipts require fresh
+review from the initial wave, not reconstruction from prose. Missing historical
+witness evidence makes the affected horizon incomplete. Review stays closed during
+successor realization; intermediate commits receive no closure credit.
 
-### Parallel mode
+## Lens ownership and evaluation
 
-Launch all six initial owner-live requests and never cancel siblings. Wait for
-every launched request, including required request-local recovery, to reach a
-semantic outcome before closing the evidence cut.
+Standard remains Codex's default best-judgment review. Auxiliaries keep their
+existing checked-in search perspectives: soundness claims, unsafe admission paths,
+invariant closure, duplicate semantic owners, and a fresh construction perspective.
+Reviewers supply counterexamples, not repair authority.
 
-### Serial mode
-
-After the first material finding, continue the remaining initial lenses in the
-static order against the same frozen head **for evidence only**:
-
-```text
-no mutation
-no clean credit
-no successor assumptions
-```
-
-This completes the same current-wave counterexample basis as parallel mode
-without concurrent dispatch.
-
-### Standard confirmation
-
-The initial six-lens wave is already complete. A material confirmation finding
-invalidates the candidate and stops further confirmation; no additional lens
-wave is implied. Close the epoch after the finding and every already-live
-required owner observation are folded.
-
-### Request-local recovery
-
-A verdictless terminal contributes no semantic outcome or clean credit. It may
-receive one fresh exact-request recovery. Required recovery remains part of the
-semantic barrier after invalidation. A second verdictless terminal blocks.
-
-## Evidence cut and successor
-
-After the applicable invalidated review epoch has gathered its required
-outcomes, close one cumulative cut containing:
-
-```text
-projected CEX records and exact source references
-all current-wave semantic outcomes
-all current applicability and Goal-law classifications
-all executable witnesses and independence bases
-predicted sibling probes or exhaustive-domain evidence
-required-valid and compatibility proofs
-source-derived predecessor topology and derivation identity
-post-elimination falsifiers
-counterexample horizon completeness and missing sources
-```
-
-Review Fold captures newly accepted counterexamples after classification and
-returns their IDs. The cut uses corpus rows as durable source evidence but
-contains current reclassifications; Actuating does not store a second copy.
-Closing this cut closes the invalidated review epoch and permits only the
-successor mutation derived from its evidence.
-
-Actuating first derives one theorem-directed response:
-
-```text
-accepted counterexample
--> positive claim falsified
--> earliest failed premise
--> source-bound predecessor theorem
--> same-theorem reproof attempt
--> theorem identity or revocation
--> derived response disposition
-```
-
-An accepted counterexample never selects normalization by itself. If the exact
-predecessor theorem re-proves after changing only realization, proof realization,
-generated output, or artifact binding, isolated restoration is mandatory and the
-existing direct-repair materialization must pass. If it fails, remain blocked;
-do not fall through to architecture work.
-
-Only exact evidence that a semantic premise is false revokes the predecessor
-theorem and authorizes construction normalization. Then Actuating compiles one
-successor:
-
-```text
-invalid family
--> source-derived topology T0
--> earliest cut K and admitted carrier
--> Universalist transformation tau and total factorization F
--> producer migration and bypass closure
--> exact-head successor topology T1
--> factorization closure
--> compensator retirement
--> exact-head proof
-```
-
-No current liability, missing authority, claim narrowing or containment,
-explicit deferral, and blocked are derived non-normalization outcomes. Narrowing,
-containment, residual risk, or deferral require authority and an explicit effect
-on reviewability and closure. Review stays closed across realization commits. No
-intermediate head is reviewable.
-
-## Two routes
-
-Per causal generator:
-
-```text
-construction-normalization
-isolated-restoration
-```
-
-Isolated restoration uses one generator-local
-`actuating/direct-repair-admission` materialization bound to the exact starting
-predecessor. One admitted generator may span coherent commits until complete; a
-later generator gates against the then-current predecessor. Materialize at most
-once per generator and never per finding. Architecture successors do not use
-that gate.
-
-## Lens obligations
-
-```text
-standard
-  invoke Codex's native/default review with no custom instructions; use its
-  unconstrained best judgment rather than an Actuating-authored taxonomy
-
-soundness-skeptic
-  challenge positive semantic judgments, indispensable premises, artifact
-  bindings, declared domains, and claim-strength upgrades
-
-footgun-finder
-  find a bypass, illicit mint, unsafe adapter, alternate producer, or topology
-  element absent from the factorization domain
-
-invariant-ace
-  falsify carrier closure, legal transitions, or composition
-
-complexity-mitigator
-  find duplicate semantic owners or downstream primary compensators
-
-fresh-eyes
-  find an earlier enforceable cut, better carrier, or erased distinction
-```
-
-Reviewers report evidence and affected law; they never select a repair.
-
-## Convergence and resumption
-
-After a successor becomes `reviewable`, restart the selected schedule on its
-final head. Require five consecutive distinct standard cleans. The initial
-native/default standard clean counts as clean one; four later standard
-confirmations complete the streak. The clean review epoch closes only when that
-convergence theorem is satisfied. No credit crosses a material head change.
-
-Reuse only exact CAS receipts and `CEX-*` records whose source references and
-subjects can be revalidated. If the current review receipts cannot be resolved,
-restart from the initial standard. If historical counterexample evidence cannot
-be resolved, mark the horizon incomplete; never reconstruct it from prose or
-memory.
-
-A first exact same-claim successor finding reopens and localizes the construction
-theorem. A second under a materially unchanged theorem revokes it. Any sanctioned
-path absent from the source-derived topology revokes the topology theorem
-immediately. No third reviewable candidate may issue until the theorem
-materially changes and exact-head source-derived factorization closure is proved.
+Convergence is adversarial evidence, not proof by repeated absence of findings.
+Evaluate improvements through realized family exclusion, independent sibling
+coverage, preserved valid behavior, path closure, and retirement of redundant
+correctness-bearing factors. Policy unit fixtures and matching labels do not
+establish model efficacy. Use existing offline audits for matched-case comparisons;
+add no review lane, runtime classifier, theorem packet, or Actuating store.
