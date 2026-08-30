@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Emulator"
   short_description: "Build total or partial agent environments from design or session evidence"

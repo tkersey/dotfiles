@@ -3,4 +3,4 @@ interface:
   short_description: "Lean 4 proof repair, theorem development, verified programming, formal models, Lake/toolchain diagnosis, and proof-trust audits"
   default_prompt: "Use $lean as a Lean 4 proof engineer: inspect the pinned project context, classify the verification boundary, produce checked Lean code/proofs, audit placeholders/axioms/trust-expanding features, and report exact commands plus what Lean did and did not prove."
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

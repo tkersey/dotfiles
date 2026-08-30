@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Footgun Finder"
   short_description: "Read-only review lens for latent misuse hazards and dangerous affordances."

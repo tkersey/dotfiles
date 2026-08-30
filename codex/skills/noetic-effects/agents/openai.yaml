@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "Noetic Effects"
   short_description: "Select or compile typed cognitive operators"

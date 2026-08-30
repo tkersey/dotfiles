@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "glaze"
   short_description: "Glaze the solver into audacious ambition"

@@ -1,5 +1,5 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "cas"
   short_description: "Native Codex control-plane routes and observed facts"
