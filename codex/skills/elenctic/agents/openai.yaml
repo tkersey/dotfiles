@@ -1,0 +1,6 @@
+policy:
+  allow_implicit_invocation: false
+interface:
+  display_name: "elenctic"
+  short_description: "Review one file and its codebase-wide consequences"
+  default_prompt: "Use $elenctic to review the selected file's changes and their consequences throughout the codebase in one read-only review."
