@@ -134,16 +134,45 @@ why a suspected compensator is not legitimate defense in depth. Identify the
 failed obligation or upstream cause without selecting a successor architecture
 or turning the review into a repair plan.
 
+## Adjudicate before reporting
+
+Within the same investigation, weigh current evidence, counterevidence,
+reachability, delta causality, accepted authority, and existing mitigations.
+Reject refuted, unrelated, and preference-only claims rather than relabeling
+them as concerns. Assign each retained finding exactly one disposition:
+
+| Disposition | Evidence and merge consequence |
+|---|---|
+| **Concern** | A grounded nonblocking issue or open question worth clarifying or improving, without an established material failure path or unmet merge condition. Name the observation and useful clarification or follow-up; do not assert an unproved defect. |
+| **Risk** | A credible conditional failure or exposure with a concrete trigger, mechanism, and impact, but no established violation of a mandatory merge condition. State the uncertainty, existing mitigation, and validation or risk-acceptance decision still needed; do not imply permission to merge. |
+| **Merge blocker** | Current evidence establishes a material violation of an accepted requirement, invariant, or compatibility contract, or an unmet mandatory merge condition, including missing required verification. Cite the authority, witness or missing required evidence, and obligation that must be satisfied before merge. |
+
+Disposition is not severity or confidence. Use the strongest disposition the
+evidence supports: a high-impact suspicion is not automatically a blocker, and
+an unmet mandatory condition is not softened merely because no runtime failure
+was reproduced. Missing optional tests, speculative redesign, and new
+requirements do not create merge gates. Apply the same standard to local and
+propagated findings.
+
+Explain why the disposition holds and what evidence would change it. Only an
+explicit, applicable exception from an authorized owner may alter a mandatory
+merge obligation where the governing contract permits it; never invent a
+waiver. State the minimum clarification, validation, or obligation needed,
+without choosing a repair, invoking another reviewer, or opening a new workflow.
+
 ## Return one report
 
-Lead with material findings, ordered by severity using repository conventions.
-Deduplicate a shared causal defect across lenses while retaining distinct
-counterexamples and affected paths. Each finding should compactly establish:
+Group findings as **Merge blockers**, **Risks**, then **Concerns**, ordered by
+severity within each group using repository conventions. Deduplicate a shared
+causal defect across lenses and dispositions while retaining distinct witnesses
+and affected paths. Each finding should compactly establish:
 
-- **Where and why:** target change location, affected code locations, violated
-  law or positive claim, and the earliest failed premise or causal mechanism.
+- **Disposition:** concern, risk, or merge blocker; adjudication rationale;
+  severity and confidence separately; what would resolve or reclassify it.
+- **Where and why:** target change location, affected code locations, affected
+  contract or claim, and the earliest failed premise or causal mechanism.
 - **Witness and impact:** triggering input, actor, or execution path; expected
-  versus actual behavior; downstream consequence and supporting evidence.
+  versus observed or conditional behavior; consequence and supporting evidence.
 - **Scope and certainty:** local, propagated, or both; introduced or newly
   exposed by this delta; material assumptions and verification limits.
 
@@ -155,7 +184,10 @@ claim-strength consequence. Do not duplicate it under other lens headings.
 
 Close with a brief scope/coverage note: reviewed base and candidate view,
 important causal paths inspected, checks actually run, and unresolved evidence
-gaps. Report **no material findings in the reviewed scope** only when the review
-was completed; this is not proof of soundness or approval of the whole PR.
-Return supported findings even when other paths remain **incomplete**, but never
-present partial coverage, missing lens instructions, or stale evidence as clean.
+gaps. State explicitly when **no merge blockers were identified in the reviewed
+scope**; do not use that as a synonym for no risks, no concerns, or complete
+coverage. Report **no findings in the reviewed scope** only when all three
+categories are empty and the review was completed; neither statement proves
+soundness or approves the whole PR. Return supported findings even when other
+paths remain **incomplete**, but never present partial coverage, missing lens
+instructions, or stale evidence as clean.
