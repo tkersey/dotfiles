@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v15",
-  "contract_id": "actuating-review-contract-v17",
+  "schema": "actuating-review-contract/v16",
+  "contract_id": "actuating-review-contract-v18",
   "required_lenses": [
     {
       "name": "standard",
@@ -92,10 +92,6 @@
     "review_dispatch_requires": "reviewable",
     "material_finding_invalidates_immediately": true,
     "material_finding_resets_all_credit": true,
-    "construction_theorem_is_revocable_proof_lease": true,
-    "topology_theorem_is_revocable_proof_lease": true,
-    "revoked_theorem_closes_mutation_ship_and_review": true,
-    "reviewable_reentry_after_revocation_requires_material_theorem_delta": true,
     "mutation_closed_while_review_epoch_open": true,
     "initial_implementation_requires_review_dispatch": false
   },
@@ -106,26 +102,22 @@
     "candidate_frozen_while_open": true,
     "successor_mutation_forbidden_while_open": true,
     "initial_implementation_occurs_outside_epoch": true,
-    "initial_implementation_requires_review_dispatch": false,
     "existing_closed_evidence_may_inform_implementation": true,
     "initial_invalidation_closes_after_required_outcomes_recovery_and_fold": true,
-    "confirmation_invalidation_requires_new_initial_wave": false,
     "confirmation_invalidation_closes_after_finding_and_live_owner_fold": true,
-    "clean_epoch_closes_after_standard_convergence": true
+    "clean_epoch_closes_after_standard_convergence": true,
+    "initial_implementation_requires_review_dispatch": false,
+    "confirmation_invalidation_requires_new_initial_wave": false
   },
   "review_entry": {
     "complete_goal_proof_inventory_required": true,
     "exact_head_proof_results_required": true,
     "counterexample_basis_projection_or_explicit_incomplete_horizon_required": true,
-    "counterexample_basis_required": true,
-    "invalid_family_required": true,
-    "admission_graph_required": true,
-    "earliest_enforceable_cut_required": true,
-    "admitted_carrier_required": true,
+    "counterexample_basis_required_when_counterexample_driven": true,
+    "required_valid_preservation_required": true,
     "complete_producer_factorization_required": true,
     "complete_bypass_disposition_required": true,
     "complete_compensator_disposition_required": true,
-    "required_valid_preservation_required": true,
     "first_run_required_proof_after_review_forbidden": true,
     "allowed_proof_dispositions": [
       "passed",
@@ -133,30 +125,11 @@
     ],
     "nonapplicability_requires_authority": true,
     "aggregate_credit_requires_declared_dependency_coverage": true,
-    "route_specific_construction_proof": {
-      "construction-normalization": {
-        "universalist_boundary_contract_realized_required": true,
-        "universalist_claim_strength_preserved_required": true,
-        "split_seams_proved_before_recomposition_required": true,
-        "source_derived_topology_required_for_complete_claim": true,
-        "topology_authority_identity_strength_and_falsifier_required": true,
-        "universalist_total_transformation_required": true,
-        "factorization_closure_verifier_selected_before_mutation": true,
-        "exact_head_successor_topology_rederived_required": true,
-        "topology_transformation_equality_required": true,
-        "factorization_domain_equality_required": true,
-        "cut_domination_or_owned_residual_required": true,
-        "open_domain_generator_and_preservation_required_for_complete_claim": true
-      },
-      "isolated-restoration": {
-        "source_bound_predecessor_topology_unchanged_required": true,
-        "direct_repair_admission_materialization_required": true,
-        "universalist_invocation_forbidden": true
-      }
-    },
+    "common_candidate_proof_regardless_of_label": true,
+    "changed_boundary_requires_full_universalist_contract": true,
+    "actual_semantic_diff_authority_required": true,
     "self_authored_omission_list_sufficient": false,
     "unproved_complete_factorization_lowers_to_bounded_or_contained": true,
-    "theorem_directed_response_complete_required": true,
     "live_owner_source_frontier_complete_or_explicitly_incomplete_required": true
   },
   "evidence_acquisition": {
@@ -175,38 +148,55 @@
     "initial_implementation_requires_initial_falsification_wave": false,
     "confirmation_invalidation_requires_new_initial_wave": false
   },
-  "mutation_routes": {
-    "allowed": [
-      "construction-normalization",
-      "isolated-restoration"
+  "construction_selection": {
+    "objective": "family-exclusion-with-required-valid-preservation",
+    "cumulative_causal_basis_before_candidate_selection": true,
+    "discriminator_selected_before_implementation": true,
+    "mechanical_defect_requires_no_invented_sibling_quota": true,
+    "local_repair_first_required": false,
+    "incumbent_preservation_is_dominance": false,
+    "pre_mutation_theorem_equality_required": false,
+    "metanoetic_before_universalist_when_triggered": true,
+    "live_boundary_not_route_label_triggers_universalist": true,
+    "plausible_subtractive_comparison_when_redundancy_evidenced": true,
+    "two_complete_implementations_required": false,
+    "source_size_only_after_constructional_adequacy": true
+  },
+  "candidate_acceptance": {
+    "actual_exact_head_required": true,
+    "common_obligations": [
+      "accepted authority",
+      "current and applicable historical witnesses",
+      "required-valid behavior and observations",
+      "causal family at declared strength",
+      "preselected discriminator result or explicit limitation",
+      "supported source-domain and sanctioned-path coverage",
+      "law-bearing admission and transitions",
+      "proof authority and claim scope",
+      "semantic-diff authority",
+      "compensator retirement or distinct obligation",
+      "complete Goal proof inventory"
     ],
-    "isolated_restoration_requires_existing_construction_theorem": true,
-    "isolated_restoration_definition": "actuating/direct-repair-admission",
-    "architecture_successor_uses_direct_gate": false,
-    "normalization_is_default": false,
-    "normalization_requires_semantic_premise_falsifier": true,
-    "restoration_requires_same_theorem_reproof": true,
-    "failed_restoration_gate_falls_through_to_normalization": false,
-    "initial_implementation_review_prerequisite": false,
-    "counterexample_driven_mutation_requires_theorem_directed_response": true
+    "descriptive_labels": [
+      "isolated-restoration",
+      "construction-normalization"
+    ],
+    "labels_grant_mutation_or_weaker_proof": false,
+    "self_authored_semantic_digests_are_evidence": false,
+    "mixed_obligations_retain_individual_authority": true,
+    "unknown_evidence_does_not_certify_candidate": true,
+    "claim_narrowing_containment_and_deferral_require_authority": true
   },
   "same_family_recurrence": {
-    "member_specific_extension_forbidden_without_separation": true,
-    "reopens_construction_theorem": true,
-    "historical_absence_requires_complete_corpus_horizon": true,
     "same_claim_evidence_required": true,
     "same_law_or_owner_alone_insufficient": true,
-    "direct_theorem_premise_falsifier_revokes_immediately": true,
+    "same_claim_revokes_exclusion_immediately": true,
     "unmodeled_sanctioned_topology_element_revokes_immediately": true,
     "topology_falsifier_never_realization_local": true,
-    "first_same_claim_successor_invalidation_may_retain_only_if_realization_or_proof_local": true,
-    "second_same_claim_successor_invalidation_under_unchanged_theorem_revokes_theorem": true,
-    "third_reviewable_candidate_under_unchanged_theorem_forbidden": true,
-    "material_theorem_delta_required_for_reentry": true,
-    "source_anchored_admission_topology_required_for_reentry": true,
-    "executable_or_exhaustive_factorization_witness_required_for_reentry": true,
-    "same_law_different_family_does_not_increment": true,
-    "repeated_recurrence_changes_decision_surface": true
+    "reopens_causal_explanation_and_replays_history": true,
+    "member_specific_extension_not_family_proof": true,
+    "new_label_or_head_does_not_erase_evidence": true,
+    "historical_absence_requires_complete_corpus_horizon": true
   },
   "standard_convergence": {
     "required_consecutive_clean_attempts": 5,
@@ -318,39 +308,14 @@
     "every_live_source_disposition_required_before_cut": true,
     "unavailable_marks_horizon_incomplete": true,
     "durable_actuating_source_registry_forbidden": true,
-    "missing_live_source_closes_counterexample_driven_mutation_clean_credit_reviewability_and_closure": true
+    "omitted_live_finding_keeps_cut_open": true,
+    "unavailable_source_limits_only_dependent_claims": true
   },
-  "theorem_directed_response": {
-    "owner": "actuating",
-    "accepted_counterexample_selects_mutation_route": false,
-    "positive_claim_and_earliest_failed_premise_required": true,
-    "source_bound_predecessor_theorem_required": true,
-    "prose_theorem_fingerprint_sufficient": false,
-    "same_theorem_reproof_required_before_normalization": true,
-    "same_theorem_allowed_change_classes": [
-      "realization",
-      "proof",
-      "generated-output",
-      "artifact-binding"
-    ],
-    "derived_dispositions": [
-      "no-current-liability",
-      "authority-required",
-      "isolated-restoration",
-      "construction-normalization",
-      "claim-narrowing-or-containment",
-      "explicitly-deferred",
-      "blocked"
-    ],
-    "isolated_restoration_requires_reproof_and_direct_gate": true,
-    "failed_direct_gate_authorizes_normalization": false,
-    "normalization_requires_named_false_semantic_premise": true,
-    "normalization_is_default_or_fallback": false,
-    "metanoetic_and_universalist_only_after_theorem_revocation": true,
-    "severity_selects_route": false,
-    "authority_required_for_narrowing_containment_risk_or_deferral": true,
-    "closure_consequence_required_for_narrowing_containment_or_deferral": true,
-    "minimum_sufficient_semantic_delta_required": true,
-    "applies_only_to_counterexample_driven_mutation": true
+  "efficacy": {
+    "success_measure": "family generalization and preservation in realized code",
+    "counterexample_count_is_distance_to_correctness": false,
+    "policy_unit_tests_prove_model_efficacy": false,
+    "held_out_requires_witness_not_supplied_to_implementing_run": true,
+    "new_review_lane_or_runtime_score_required": false
   }
 }

@@ -1,113 +1,76 @@
 # Semantic Hotspots
 
-Load when a witnessed incorrect state or trace may expose a defect in
-construction, transition, composition, ownership, representation, admission, or
-observation. Do not load for a mechanical deviation inside a proved complete
-construction.
+Load when a witnessed state or trace may expose a defect in construction,
+transition, composition, ownership, representation, admission, or observation.
+Do not turn a mechanical correction into an architecture exercise.
 
-## From witness to family
+## From witness to cause
 
-Record:
+Combine the applicable current and retained witnesses with their original
+subjects, accepted laws, and required-valid observations. Identify the enabling
+mechanism, not just the file or detection surface. A hotspot is supported causal
+pressure, not a bug count, severity score, or durable registry.
 
-```text
-witness provenance
-current applicability
-Goal-law authority
-detection surface
-observational class
-governing law
-invalid family Phi
-predicted siblings or exhaustive domain
-family falsifier
-```
-
-Only currently applicable `entailed` evidence creates current counterexample
-pressure.
+State the smallest falsifiable family explanation and its discriminator before
+choosing the implementation: a predicted sibling partition or an independently
+derived domain that distinguishes removing the cause from patching one example.
+Do not merge unrelated laws or let repeated descriptions impersonate independent
+witnesses. Unknown applicability or authority cannot authorize correctness work.
 
 ## From family to admission topology
 
-Do not stop at where the bug was detected. Enumerate every sanctioned producer
-and path that can create or admit the invalid distinction, including
-constructors, parsers, serializers, adapters, compatibility, migration, retry,
-recovery, rehydration, and alternate runtime paths.
+Follow every sanctioned way of producing trusted behavior: constructors, parsers,
+serializers, adapters, compatibility, migration, retry, recovery, rehydration,
+and alternate runtimes. Derive that domain from the strongest repository-native
+authority, not a handwritten list of the paths already found by reviewers.
 
-Return:
+Identify the current admitted domain, trusted consumers, semantic owners,
+bypasses, and earliest enforceable cut. Ask what can still vary independently
+that must instead be related, derived, owned, or made unconstructible.
 
-```text
-current admitted domain
-sanctioned producers
-trusted consumers
-current semantic owners
-bypasses and alternate interpretations
-earliest enforceable cut
-candidate admitted carrier
-```
+## Soundness and preservation
 
-A hotspot is this live conjunction, not a file, score, bug count, or registry.
-
-## Soundness
-
-For candidate `K`, safety requires:
+For the declared domain and supported family, require:
 
 ```text
-every concrete violation is reflected into Phi
-every admitted value lies outside Phi
-every required-valid behavior remains admitted
-every required observation retains accepted meaning
-every sanctioned producer factors through the selected boundary
-no bypass can mint or reinterpret admitted state independently
+concrete violations are reflected by the family explanation
+trusted inhabitants and legal transitions exclude that family
+required-valid behavior and observations retain their accepted meaning
+every sanctioned producer factors through the law-preserving boundary
+no bypass independently mints or reinterprets trusted state
 ```
 
-A conservative representation may reject optional behavior; it may not erase
-required meaning.
+A conservative construction may reject optional behavior; it may not erase
+required behavior merely to make the negative witnesses pass. Sampled sibling
+success is evidence of generalization, not a universal proof.
 
-## Theorem localization before architecture pressure
+## Challenge the mechanism before selecting code
 
-Project the source-bound predecessor theorem and attempt same-theorem reproof
-before emitting architecture or route pressure. A questionable family, owner,
-cut, representation, or solution class is evidence debt, not theorem revocation.
-When no exact semantic premise has been proved false, return `unresolved` and do
-not invoke Metanoetic or Universalist.
+A source-supported owner, carrier, cut, interpretation, or coverage failure
+reopens construction immediately. An exact same-claim recurrence revokes the
+falsified exclusion claim and reopens its causal explanation. It does not by
+itself prove that every implementation detail must change.
 
-Preserve architecture when the predecessor theorem re-proves with one existing
-carrier and cut excluding the complete family through every sanctioned path.
+When the ordinary explanation is enumerative, detection-shaped, contradicted,
+or incumbent-captive, invoke one bounded `$metanoetic` challenger under its
+normal trigger. Bind the accepted Goal and comparison surface. The challenger
+may reveal a better mechanism before a repair category has been chosen; its
+existence is not authority to adopt it. Actuating adjudicates and gives a live
+owned-boundary decision to `$universalist` after the Metanoetic comparison.
 
-Revoke the predecessor theorem only when exact evidence exposes:
-
-```text
-constructible forbidden state
-illegal transition or composition
-missing or distributed authority
-incomplete producer coverage
-bypassable admission
-raw representation interpreted independently by consumers
-downstream primary guard accretion
-same-family recurrence
-```
-
-## Metanoetic challenge
-
-After theorem revocation, invoke `$metanoetic` once on the unchanged decision
-surface when the ordinary family, carrier, owner, cut, representation, or
-solution class is enumerative, detection-shaped, incumbent-captive,
-contradicted, or merely one plausible frame. Metanoetic generates; Actuating
-adjudicates. Never emit normalization pressure merely because the incumbent is
-questionable or one plausible frame.
+A correction at an existing adequate owner and a representation-changing
+candidate compete on family exclusion, required-valid preservation, sanctioned
+path coverage, and independent semantic ownership. Neither local correction nor
+redesign wins by default. Do not require an imagined successor certificate or an
+exhaustive search disproving all possible local repairs.
 
 ## Output
 
-Return one bounded construction pressure statement:
+Return the source-supported cause, family and validity domain, preselected
+discriminator, current owners and bypasses, candidate construction pressure,
+required-valid obligations, and falsifier. Preserve material incomparability or
+unknowns rather than manufacturing a route verdict.
 
-```text
-family
-admission graph
-earliest cut
-carrier requirement
-producer-factorization requirement
-required-valid proof
-falsifier
-route pressure:
-  construction-normalization | isolated-restoration | unresolved
-```
-
-Create no durable artifact.
+The actual candidate and its proofs establish what changed. A local-restoration
+label cannot hide a changed topology, proof authority, or public claim. Create no
+durable hotspot artifact or replacement repair packet.

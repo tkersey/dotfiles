@@ -1,274 +1,141 @@
 #!/bin/sh
 set -eu
-
 skill_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
-jaq_bin=${JAQ_BIN:-jaq}
-fixture="$skill_root/tests/fixtures/construction-cycle-scenarios.json"
+node --input-type=module - "$skill_root" <<'JS'
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const root = process.argv[2];
+const read = path => JSON.parse(readFileSync(`${root}/${path}`, 'utf8'));
+const policy = read('references/review-contract.json');
+const fixture = read('tests/fixtures/construction-cycle-scenarios.json');
+const lenses = policy.required_lenses.map(x => x.name);
+assert.equal(fixture.schema, 'actuating-construction-cycle-scenarios/v5');
+assert.equal(new Set(fixture.scenarios.map(x => x.id)).size, fixture.scenarios.length);
 
-"$jaq_bin" -e '
-  def same_claim($i):
-    ($i.same_claim_finding // $i.same_family_finding // false);
+// Test-only reference model of receipt barriers. It neither runs CAS nor grants
+// authority to an agent. Unlike the removed fixture, it has no theorem-equality
+// or direct-gate input that can exempt a candidate from proof.
+function observe(i) {
+  const slots = new Map(), seen = new Set();
+  const semantic = r => ['clean', 'findings'].includes(r.verdict);
+  const material = r => r.findings?.some(f => f.authority === 'entailed' && f.applicability === 'current');
+  const initialComplete = () => lenses.every(l => semantic(slots.get(l)?.at(-1) ?? {}));
+  for (const r of i.receipts) {
+    assert(!seen.has(r.id), 'duplicate receipt'); seen.add(r.id);
+    assert.equal(r.head, i.head, 'stale receipt');
+    assert(lenses.includes(r.lens), 'unknown lens');
+    assert(['initial', 'confirmation'].includes(r.phase), 'unknown phase');
+    assert(['clean', 'findings', 'verdictless'].includes(r.verdict), 'unknown verdict');
+    if (r.lens === 'standard') assert.equal(r.custom_instructions, undefined, 'custom standard prompt');
+    if (r.phase === 'initial') assert.equal(r.slot, r.lens);
+    else {
+      assert.equal(r.lens, 'standard');
+      assert(initialComplete(), 'confirmation before initial barrier');
+      assert(![...slots.values()].flat().some(material), 'confirmation after material finding');
+    }
+    const history = slots.get(r.slot) ?? [];
+    if (history.length) {
+      assert.equal(history.at(-1).verdict, 'verdictless', 'duplicate semantic outcome');
+      assert(history.length <= policy.transport_recovery.maximum_fresh_recovery_attempts, 'recovery exhausted');
+    }
+    history.push(r); slots.set(r.slot, history);
+    if (history.length > policy.transport_recovery.maximum_fresh_recovery_attempts && !semantic(r))
+      assert.fail('recovery exhausted without a semantic verdict');
+  }
+  const last = [...slots.values()].map(xs => xs.at(-1));
+  const invalidated = last.some(material);
+  const barrier = initialComplete() && last.every(semantic);
+  const folded = last.every(r => i.folded.includes(r.id));
+  const sourcesFolded = i.sources.every(s => s.status !== 'unfolded');
+  const completionSources = i.sources.every(s => !s.required || ['folded', 'non-current'].includes(s.status));
+  const cleanStandards = invalidated ? 0 : last.filter(r => r.lens === 'standard' && r.verdict === 'clean').length;
+  const converged = barrier && !invalidated && sourcesFolded &&
+    cleanStandards >= policy.standard_convergence.required_consecutive_clean_attempts;
+  const cutClosed = invalidated && barrier && folded && sourcesFolded;
+  const open = i.receipts.length > 0 && !(cutClosed || converged);
+  const mutating = ['implement', 'review-closeout', 'bare'].includes(i.route);
+  const proofCurrent = i.proof?.head === i.head && i.proof?.status === 'passed';
+  return {
+    mutable: mutating && !open && sourcesFolded,
+    epoch_open: open,
+    complete: ['review-closeout', 'bare'].includes(i.route) && converged && proofCurrent && completionSources,
+    may_dispatch: i.route !== 'implement' && proofCurrent && i.receipts.length === 0 && sourcesFolded
+  };
+}
+for (const c of fixture.scenarios) {
+  const input = {...fixture.defaults, ...c.input};
+  input.receipts = input.receipts.map(ref => {
+    assert(Object.hasOwn(fixture.receipt_catalog, ref), `missing receipt ${ref}`);
+    return fixture.receipt_catalog[ref];
+  });
+  if (c.expected === 'invalid-or-blocked') assert.throws(() => observe(input), undefined, c.id);
+  else assert.deepEqual(observe(input), c.expected, c.id);
+}
 
-  def source_closed($i):
-    $i.source_topology_derived == true and
-    $i.topology_authority_bound == true and
-    $i.exact_head_topology_rederived == true and
-    $i.topology_transformation_proved == true and
-    $i.factorization_domain_total == true and
-    $i.cut_domination_complete == true and
-    $i.residuals_owned == true and
-    $i.model_authored_only != true;
+// Executable finite discriminator: a guard for the observed enum case misses
+// a sum/product sibling. An independent inhabitant enumerator also prevents the
+// reject-all shortcut. These are illustrative constructions, NOT a model A/B run.
+const E = n => ({kind:'enum', n}), S = xs => ({kind:'sum', xs});
+const P = xs => ({kind:'product', xs}), A = (x,n) => ({kind:'array', x,n});
+function cardinality(s) {
+  switch (s.kind) {
+    case 'enum': return s.n;
+    case 'sum': return s.xs.reduce((n,x) => n + cardinality(x), 0);
+    case 'product': return s.xs.reduce((n,x) => n * cardinality(x), 1);
+    case 'array': return cardinality(s.x) ** s.n;
+    default: throw Error('unknown schema');
+  }
+}
+function inhabitants(s) {
+  const product = sets => sets.reduce((rows,set) => rows.flatMap(row => set.map(x => [...row,x])), [[]]);
+  switch (s.kind) {
+    case 'enum': return Array.from({length:s.n}, (_,i) => i);
+    case 'sum': return s.xs.flatMap((x,tag) => inhabitants(x).map(value => ({tag,value})));
+    case 'product': return product(s.xs.map(inhabitants));
+    case 'array': return product(Array.from({length:s.n}, () => inhabitants(s.x)));
+    default: throw Error('unknown schema');
+  }
+}
+const domain = [E(0),E(1),E(2),S([]),P([]),S([E(0),E(1)]),P([E(0),E(2)]),A(E(0),0),A(E(0),2)];
+const enumPatch = s => !(s.kind === 'enum' && s.n === 0);
+assert.equal(enumPatch(E(0)), false); // observed example passes
+assert.equal(enumPatch(S([])), true); // sibling still fails
+for (const s of domain) assert.equal(cardinality(s), inhabitants(s).length);
+assert.equal(cardinality(A(E(0),0)), 1); // required-valid empty array survives
+assert.equal(cardinality(P([E(0),E(2)])), 0);
 
-  def bounded_closed($i):
-    (($i.claim_strength // "") == "bounded" or
-     ($i.claim_strength // "") == "contained") and
-    $i.claim_strength_explicit == true and
-    $i.bounded_domain_explicit == true and
-    $i.residuals_owned == true;
-
-  def review_ready($i):
-    $i.construction_complete == true and
-    $i.proof_inventory_current == true and
-    $i.live_owner_sources_complete == true and
-    $i.theorem_directed_response_complete == true and
-    (if ($i.derived_response_disposition == "explicitly-deferred" or
-         $i.derived_response_disposition == "claim-narrowing-or-containment")
-     then bounded_closed($i) and $i.closure_consequence_explicit == true
-     else (["no-current-liability", "isolated-restoration",
-            "construction-normalization"] |
-           index($i.derived_response_disposition // "")) != null
-     end) and
-    (source_closed($i) or bounded_closed($i));
-
-  def local_premise($i):
-    (["realization", "proof", "generated-output", "artifact-binding"] |
-      index($i.earliest_failed_premise // "")) != null;
-
-  def semantic_premise($i):
-    (["comparison-domain", "invalid-family", "semantic-interpretation",
-      "semantic-equivalence", "source-topology", "canonical-owner",
-      "admission-cut",
-      "carrier-or-invariant", "constructor-or-representation",
-      "legal-transition", "producer-factorization",
-      "admission-path-domination", "bypass-closure",
-      "required-valid-preservation"] |
-      index($i.earliest_failed_premise // "")) != null;
-
-  def theorem_localized($i):
-    $i.positive_claim_falsified == true and
-    (($i.earliest_failed_premise // "") != "") and
-    $i.source_bound_predecessor_theorem_projected == true and
-    (($i.exact_predecessor_theorem_reprovable | type) == "boolean");
-
-  def decide_selection($i):
-    if $i.semantic_barrier_complete != true or
-       $i.basis_complete != true or
-       $i.live_owner_sources_complete != true
-    then "blocked"
-    elif $i.law_authority == null or
-         $i.law_authority == "new-requirement" or
-         $i.law_authority == "underdetermined"
-    then "authority-required"
-    elif $i.law_authority != "entailed"
-    then "no-current-liability"
-    elif $i.counterexample_accepted == null
-    then "blocked"
-    elif $i.counterexample_accepted != true or
-         (["already-excluded", "not-comparable"] |
-           index($i.applicability_status // "still-present")) != null
-    then "no-current-liability"
-    elif theorem_localized($i) != true
-    then "blocked"
-    elif $i.explicit_deferral_requested == true
-    then if $i.deferral_authorized == true and
-            $i.closure_consequence_explicit == true
-         then "explicitly-deferred" else "blocked" end
-    elif ($i.earliest_failed_premise // "") == "claim-strength"
-    then if $i.weaker_claim_explicit == true and
-            $i.claim_narrowing_authorized == true and
-            $i.closure_consequence_explicit == true
-         then "claim-narrowing-or-containment" else "blocked" end
-    elif $i.exact_predecessor_theorem_reprovable == true and local_premise($i)
-    then if $i.direct_gate_valid == true
-         then "isolated-restoration" else "blocked" end
-    elif $i.exact_predecessor_theorem_reprovable == false and
-         $i.semantic_premise_falsified == true and semantic_premise($i)
-    then "construction-normalization"
-    else "blocked"
-    end;
-
-  def decide_implementation_entry($i):
-    if $i.route != "implement" or
-       $i.goal_bound != true or
-       $i.exact_subject_bound != true or
-       $i.review_epoch_open == true
-    then "blocked"
-    elif $i.counterexample_driven == true and
-         $i.theorem_directed_response_complete != true
-    then "blocked"
-    else "allow-mutation"
-    end;
-
-  def decide_review_epoch($i):
-    if $i.review_dispatched != true
-    then "no-review-epoch"
-    elif $i.review_epoch_open != true
-    then "blocked"
-    elif $i.candidate_invalidated != true
-    then "freeze-candidate"
-    elif $i.wave == "initial" and
-         $i.all_required_initial_outcomes_terminal == true and
-         $i.required_recovery_terminal == true and
-         $i.review_fold_complete == true
-    then "allow-successor-mutation"
-    elif $i.wave == "confirmation" and
-         $i.confirmation_finding_folded == true and
-         $i.already_live_owner_observations_folded == true and
-         $i.new_initial_wave_required != true
-    then "allow-successor-mutation"
-    else "freeze-candidate"
-    end;
-
-  def decide($i):
-    if $i.phase == "implementation-entry"
-    then decide_implementation_entry($i)
-    elif $i.phase == "review-epoch"
-    then decide_review_epoch($i)
-    elif $i.phase == "route-order"
-    then if $i.route == "bare" and
-            ($i.first_mutation_index | type) == "number" and
-            ($i.first_review_dispatch_index | type) == "number" and
-            $i.first_mutation_index < $i.first_review_dispatch_index
-         then "implement-before-review" else "blocked" end
-    elif $i.phase == "initial-review" and
-       $i.material_finding == true and
-       $i.semantic_barrier_complete != true
-    then "continue-evidence"
-    elif $i.phase == "confirmation" and $i.material_finding == true
-    then "close-cut"
-    elif $i.phase == "universalist-entry"
-    then if $i.topology_authority_bound == true and
-            $i.model_authored_only != true and
-            ($i.source_topology_derived == true or
-             $i.open_domain_generator == true)
-         then "allow-universalist" else "blocked" end
-    elif $i.phase == "post-review" and
-         ($i.direct_theorem_falsifier == true or
-          $i.unmodeled_sanctioned_topology_element == true)
-    then "theorem-rederive-required"
-    elif $i.phase == "post-review" and
-         same_claim($i) == true and
-         $i.theorem_materially_changed != true and
-         (($i.prior_same_claim_successor_invalidations // 0) >= 1)
-    then "theorem-rederive-required"
-    elif $i.phase == "post-review" and
-         (same_claim($i) == true or $i.same_law_finding == true)
-    then "theorem-response-required"
-    elif $i.phase == "theorem-reentry"
-    then if $i.theorem_revoked == true and
-            $i.theorem_materially_changed == true and
-            $i.source_topology_complete == true and
-            $i.exact_head_topology_rederived == true and
-            $i.topology_transformation_proved == true and
-            $i.factorization_witness_current == true
-         then "allow-reentry" else "blocked" end
-    elif $i.phase == "review-entry" and $i.theorem_revoked == true
-    then "blocked"
-    elif $i.phase == "review-entry"
-    then if review_ready($i)
-         then "reviewable" else "realizing" end
-    elif $i.phase == "review-dispatch"
-    then if review_ready($i)
-         then "allow-review" else "blocked" end
-    elif $i.phase == "gate"
-    then if $i.duplicate_gate == true
-         then "blocked"
-         elif $i.gate_head == $i.current_head
-         then "admit-gate"
-         else "blocked"
-         end
-    elif $i.phase == "route-set"
-    then if (($i.routes | sort) ==
-             (["construction-normalization", "isolated-restoration"] | sort))
-         then "mixed-successor" else "blocked" end
-    elif $i.phase == "selection"
-    then decide_selection($i)
-    else "blocked"
-    end;
-
-  .schema == "actuating-construction-cycle-scenarios/v4" and
-  (.scenarios | length) >= 49 and
-  ([.scenarios[].id] | length == (unique | length)) and
-  all(.scenarios[]; decide(.input) == .expected) and
-  ([.scenarios[] |
-      select(.equivalence_group == "arrival-order") |
-      .expected] | unique | length) == 1 and
-  any(.scenarios[];
-    .id == "live-provider-source-missing-blocks-selection" and
-    .expected == "blocked") and
-  any(.scenarios[];
-    .id == "high-severity-realization-defect-restores" and
-    .expected == "isolated-restoration") and
-  any(.scenarios[];
-    .id == "low-severity-owner-defect-normalizes" and
-    .expected == "construction-normalization") and
-  any(.scenarios[];
-    .id == "unreachable-witness-has-no-current-liability" and
-    .expected == "no-current-liability") and
-  any(.scenarios[];
-    .id == "new-requirement-needs-authority" and
-    .expected == "authority-required") and
-  any(.scenarios[];
-    .id == "authorized-claim-overstatement-narrows" and
-    .expected == "claim-narrowing-or-containment") and
-  any(.scenarios[];
-    .id == "failed-restoration-gate-does-not-normalize" and
-    .expected == "blocked") and
-  any(.scenarios[];
-    .id == "unknown-theorem-relation-does-not-normalize" and
-    .expected == "blocked") and
-  any(.scenarios[];
-    .id == "authorized-liability-deferral-is-explicit" and
-    .expected == "explicitly-deferred") and
-  any(.scenarios[];
-    .id == "first-same-claim-successor-reopens-construction" and
-    .expected == "theorem-response-required") and
-  any(.scenarios[];
-    .id == "second-same-claim-successor-revokes-unchanged-theorem" and
-    .expected == "theorem-rederive-required") and
-  any(.scenarios[];
-    .id == "unmodeled-sanctioned-path-revokes-topology-immediately" and
-    .expected == "theorem-rederive-required") and
-  any(.scenarios[];
-    .id == "self-authored-omission-list-is-not-reviewable" and
-    .expected == "realizing") and
-  any(.scenarios[];
-    .id == "source-derived-total-factorization-is-reviewable" and
-    .expected == "reviewable") and
-  any(.scenarios[];
-    .id == "bounded-claim-with-explicit-residuals-is-reviewable" and
-    .expected == "reviewable") and
-  any(.scenarios[];
-    .id == "material-theorem-delta-and-factorization-allow-reentry" and
-    .expected == "allow-reentry") and
-  any(.scenarios[];
-    .id == "implementation-without-review-allows-first-mutation" and
-    .expected == "allow-mutation") and
-  any(.scenarios[];
-    .id == "implementation-with-closed-counterexample-evidence-needs-no-fresh-review" and
-    .expected == "allow-mutation") and
-  any(.scenarios[];
-    .id == "open-review-epoch-freezes-candidate" and
-    .expected == "freeze-candidate") and
-  any(.scenarios[];
-    .id == "invalidated-initial-review-closes-after-complete-cut" and
-    .expected == "allow-successor-mutation") and
-  any(.scenarios[];
-    .id == "confirmation-finding-closes-without-new-auxiliary-wave" and
-    .expected == "allow-successor-mutation") and
-  any(.scenarios[];
-    .id == "bare-route-implements-before-review-dispatch" and
-    .expected == "implement-before-review")
-' "$fixture" >/dev/null
-
-echo "actuating theorem-directed construction and review-epoch scenarios: pass"
+// Derive the domain from a concrete graph, not from the candidate's declared
+// dispositions. A new public producer must fail even when labeled restoration.
+function verifyCut(graph, dispositions, cut, producers, consumer) {
+  assert.deepEqual(Object.keys(dispositions).sort(), Object.keys(graph).sort(), 'omitted source element');
+  for (const edges of Object.values(graph)) for (const to of edges) assert(Object.hasOwn(graph,to));
+  for (const start of producers) {
+    const seen = new Set(), pending = [start];
+    while (pending.length) {
+      const n = pending.pop();
+      if (n === cut || seen.has(n)) continue;
+      assert.notEqual(n, consumer, 'trusted consumer reachable around cut');
+      seen.add(n); pending.push(...graph[n]);
+    }
+  }
+}
+const graph = {producer:['admit'],admit:['consume'],consume:[]};
+const dispositions = {producer:'factor-through',admit:'owner',consume:'consumer'};
+verifyCut(graph,dispositions,'admit',['producer'],'consume');
+const bypass = {...graph,alternate:['consume']};
+assert.throws(() => verifyCut(bypass,dispositions,'admit',['producer','alternate'],'consume'), /omitted/);
+assert.throws(() => verifyCut(bypass,{...dispositions,alternate:'factor-through'},'admit',['producer','alternate'],'consume'), /around cut/);
+verifyCut({...graph,alternate:['admit']},{...dispositions,alternate:'factor-through'},'admit',['producer','alternate'],'consume');
+// A rejected review strengthening cannot ride along with an authorized repair.
+// Compare actual field deltas, not a batch's preferred response label.
+function verifyDelta(before, after, authority) {
+  for (const key of new Set([...Object.keys(before), ...Object.keys(after)]))
+    if (before[key] !== after[key]) assert(authority.has(key), `unauthorized delta: ${key}`);
+}
+const before = {evidenceSource:'caller', streaming:'unchanged'};
+const correction = {evidenceSource:'executor', streaming:'unchanged'};
+verifyDelta(before, correction, new Set(['evidenceSource']));
+assert.throws(() => verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource'])), /unauthorized/);
+verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource','streaming']));
+console.log(`actuating: ${fixture.scenarios.length} receipt scenarios and finite family/path/authority discriminators passed`);
+JS

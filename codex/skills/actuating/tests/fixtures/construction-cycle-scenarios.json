@@ -1,939 +1,680 @@
 {
-  "schema": "actuating-construction-cycle-scenarios/v4",
+  "schema": "actuating-construction-cycle-scenarios/v5",
+  "note": "Test-only receipt scenarios; not live CAS evidence, a runtime gate, or model-efficacy measurements.",
+  "defaults": {
+    "route": "review-closeout",
+    "head": "h1",
+    "proof": {
+      "head": "h1",
+      "status": "passed"
+    },
+    "receipts": [],
+    "folded": [],
+    "sources": []
+  },
+  "receipt_catalog": {
+    "r01": {
+      "id": "initial-standard-0",
+      "slot": "standard",
+      "phase": "initial",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "findings",
+      "findings": [
+        {
+          "authority": "entailed",
+          "applicability": "current",
+          "witness": "bad-input"
+        }
+      ]
+    },
+    "r02": {
+      "id": "initial-soundness-skeptic-0",
+      "slot": "soundness-skeptic",
+      "phase": "initial",
+      "lens": "soundness-skeptic",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r03": {
+      "id": "initial-footgun-finder-0",
+      "slot": "footgun-finder",
+      "phase": "initial",
+      "lens": "footgun-finder",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r04": {
+      "id": "initial-invariant-ace-0",
+      "slot": "invariant-ace",
+      "phase": "initial",
+      "lens": "invariant-ace",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r05": {
+      "id": "initial-complexity-mitigator-0",
+      "slot": "complexity-mitigator",
+      "phase": "initial",
+      "lens": "complexity-mitigator",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r06": {
+      "id": "initial-fresh-eyes-0",
+      "slot": "fresh-eyes",
+      "phase": "initial",
+      "lens": "fresh-eyes",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r07": {
+      "id": "initial-standard-0",
+      "slot": "standard",
+      "phase": "initial",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r08": {
+      "id": "confirmation-standard-1",
+      "slot": "confirmation-1",
+      "phase": "confirmation",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r09": {
+      "id": "confirmation-standard-2",
+      "slot": "confirmation-2",
+      "phase": "confirmation",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r10": {
+      "id": "confirmation-standard-3",
+      "slot": "confirmation-3",
+      "phase": "confirmation",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r11": {
+      "id": "confirmation-standard-4",
+      "slot": "confirmation-4",
+      "phase": "confirmation",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r12": {
+      "id": "confirmation-standard-3",
+      "slot": "confirmation-3",
+      "phase": "confirmation",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "findings",
+      "findings": [
+        {
+          "authority": "entailed",
+          "applicability": "current",
+          "witness": "bad-input"
+        }
+      ]
+    },
+    "r13": {
+      "id": "initial-fresh-eyes-0",
+      "slot": "fresh-eyes",
+      "phase": "initial",
+      "lens": "fresh-eyes",
+      "head": "h1",
+      "verdict": "verdictless"
+    },
+    "r14": {
+      "id": "initial-fresh-eyes-1",
+      "slot": "fresh-eyes",
+      "phase": "initial",
+      "lens": "fresh-eyes",
+      "head": "h1",
+      "verdict": "clean"
+    },
+    "r15": {
+      "id": "initial-fresh-eyes-1",
+      "slot": "fresh-eyes",
+      "phase": "initial",
+      "lens": "fresh-eyes",
+      "head": "h1",
+      "verdict": "verdictless"
+    },
+    "r16": {
+      "id": "confirmation-standard-1",
+      "slot": "confirmation-1",
+      "phase": "confirmation",
+      "lens": "standard",
+      "head": "h0",
+      "verdict": "clean"
+    },
+    "r17": {
+      "id": "initial-standard-0",
+      "slot": "standard",
+      "phase": "initial",
+      "lens": "standard",
+      "head": "h1",
+      "verdict": "clean",
+      "custom_instructions": "review only invariants"
+    }
+  },
   "scenarios": [
     {
-      "id": "serial-material-finding-completes-initial-wave",
+      "id": "implement-before-any-review",
       "input": {
-        "phase": "initial-review",
-        "mode": "serial-reviews",
-        "material_finding": true,
-        "initial_lenses_remaining": 3,
-        "semantic_barrier_complete": false
+        "route": "implement",
+        "proof": null
       },
-      "expected": "continue-evidence"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "parallel-material-finding-waits-for-launched-outcomes",
+      "id": "analyze-never-mutates",
       "input": {
-        "phase": "initial-review",
-        "mode": "parallel-reviews",
-        "material_finding": true,
-        "initial_lenses_remaining": 0,
-        "semantic_barrier_complete": false
+        "route": "analyze",
+        "proof": null
       },
-      "expected": "continue-evidence"
+      "expected": {
+        "mutable": false,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "confirmation-finding-stops-confirmation",
+      "id": "incomplete-candidate-can-be-implemented-not-reviewed",
       "input": {
-        "phase": "confirmation",
-        "mode": "serial-reviews",
-        "material_finding": true,
-        "initial_lenses_remaining": 0,
-        "semantic_barrier_complete": true
+        "proof": null
       },
-      "expected": "close-cut"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "construction-normalization-when-carrier-changes",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "carrier_already_complete": false,
-        "realization_defect_only": false,
-        "direct_gate_valid": false,
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": true,
-        "earliest_failed_premise": "carrier-or-invariant",
-        "semantic_premise_falsified": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
-      },
-      "expected": "construction-normalization"
+      "id": "local-proof-needs-no-counterexample",
+      "input": {},
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": true
+      }
     },
     {
-      "id": "isolated-restoration-when-theorem-preexists",
+      "id": "stale-proof-cannot-open-review",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "carrier_already_complete": true,
-        "producer_factorization_complete": true,
-        "bypasses_closed": true,
-        "realization_defect_only": true,
-        "direct_gate_valid": true,
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": true,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
+        "proof": {
+          "head": "h0",
+          "status": "passed"
+        }
       },
-      "expected": "isolated-restoration"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "rejected-isolated-restoration-blocks",
+      "id": "initial-finding-keeps-incomplete-wave-frozen",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "carrier_already_complete": true,
-        "producer_factorization_complete": true,
-        "bypasses_closed": true,
-        "realization_defect_only": true,
-        "direct_gate_valid": false,
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": true,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "missing-producer-factorization-normalizes",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "carrier_already_complete": true,
-        "producer_factorization_complete": false,
-        "bypasses_closed": true,
-        "realization_defect_only": true,
-        "direct_gate_valid": true,
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": true,
-        "earliest_failed_premise": "producer-factorization",
-        "semantic_premise_falsified": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
-      },
-      "expected": "construction-normalization"
-    },
-    {
-      "id": "source-derived-topology-allows-universalist",
-      "input": {
-        "phase": "universalist-entry",
-        "topology_authority_bound": true,
-        "source_topology_derived": true,
-        "model_authored_only": false
-      },
-      "expected": "allow-universalist"
-    },
-    {
-      "id": "model-authored-path-list-blocks-universalist",
-      "input": {
-        "phase": "universalist-entry",
-        "topology_authority_bound": false,
-        "source_topology_derived": false,
-        "model_authored_only": true
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "open-domain-generator-allows-universalist",
-      "input": {
-        "phase": "universalist-entry",
-        "topology_authority_bound": true,
-        "source_topology_derived": false,
-        "open_domain_generator": true,
-        "model_authored_only": false
-      },
-      "expected": "allow-universalist"
-    },
-    {
-      "id": "same-family-successor-reopens-construction",
-      "input": {
-        "phase": "post-review",
-        "same_family_finding": true,
-        "separation_proof": false
-      },
-      "expected": "theorem-response-required"
-    },
-    {
-      "id": "first-same-claim-successor-reopens-construction",
-      "input": {
-        "phase": "post-review",
-        "same_claim_finding": true,
-        "prior_same_claim_successor_invalidations": 0,
-        "theorem_materially_changed": false
-      },
-      "expected": "theorem-response-required"
-    },
-    {
-      "id": "second-same-claim-successor-revokes-unchanged-theorem",
-      "input": {
-        "phase": "post-review",
-        "same_claim_finding": true,
-        "prior_same_claim_successor_invalidations": 1,
-        "theorem_materially_changed": false
-      },
-      "expected": "theorem-rederive-required"
-    },
-    {
-      "id": "direct-theorem-falsifier-revokes-immediately",
-      "input": {
-        "phase": "post-review",
-        "same_claim_finding": true,
-        "prior_same_claim_successor_invalidations": 0,
-        "direct_theorem_falsifier": true
-      },
-      "expected": "theorem-rederive-required"
-    },
-    {
-      "id": "unmodeled-sanctioned-path-revokes-topology-immediately",
-      "input": {
-        "phase": "post-review",
-        "same_claim_finding": false,
-        "unmodeled_sanctioned_topology_element": true,
-        "prior_same_claim_successor_invalidations": 0
-      },
-      "expected": "theorem-rederive-required"
-    },
-    {
-      "id": "same-law-different-family-does-not-increment-recurrence",
-      "input": {
-        "phase": "post-review",
-        "same_claim_finding": false,
-        "same_law_finding": true,
-        "prior_same_claim_successor_invalidations": 1,
-        "theorem_materially_changed": false
-      },
-      "expected": "theorem-response-required"
-    },
-    {
-      "id": "revoked-theorem-blocks-third-candidate",
-      "input": {
-        "phase": "review-entry",
-        "theorem_revoked": true,
-        "construction_complete": true,
-        "proof_inventory_current": true
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "material-theorem-delta-and-factorization-allow-reentry",
-      "input": {
-        "phase": "theorem-reentry",
-        "theorem_revoked": true,
-        "theorem_materially_changed": true,
-        "source_topology_complete": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_witness_current": true
-      },
-      "expected": "allow-reentry"
-    },
-    {
-      "id": "theorem-delta-without-source-topology-blocks-reentry",
-      "input": {
-        "phase": "theorem-reentry",
-        "theorem_revoked": true,
-        "theorem_materially_changed": true,
-        "source_topology_complete": false,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_witness_current": true
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "theorem-delta-without-factorization-witness-blocks-reentry",
-      "input": {
-        "phase": "theorem-reentry",
-        "theorem_revoked": true,
-        "theorem_materially_changed": true,
-        "source_topology_complete": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_witness_current": false
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "self-authored-omission-list-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "model_authored_only": true,
-        "source_topology_derived": false,
-        "topology_authority_bound": false,
-        "exact_head_topology_rederived": false,
-        "topology_transformation_proved": false,
-        "factorization_domain_total": false,
-        "cut_domination_complete": false,
-        "residuals_owned": false
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "source-derived-total-factorization-is-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_domain_total": true,
-        "cut_domination_complete": true,
-        "residuals_owned": true,
-        "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true,
-        "derived_response_disposition": "construction-normalization"
-      },
-      "expected": "reviewable"
-    },
-    {
-      "id": "bounded-claim-with-explicit-residuals-is-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "bounded",
-        "claim_strength_explicit": true,
-        "bounded_domain_explicit": true,
-        "residuals_owned": true,
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true,
-        "derived_response_disposition": "claim-narrowing-or-containment",
-        "closure_consequence_explicit": true
-      },
-      "expected": "reviewable"
-    },
-    {
-      "id": "successor-topology-mismatch-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": false,
-        "factorization_domain_total": true,
-        "cut_domination_complete": true,
-        "residuals_owned": true
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "undispositioned-source-element-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_domain_total": false,
-        "cut_domination_complete": true,
-        "residuals_owned": true
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "incomplete-proof-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "construction_complete": true,
-        "proof_inventory_current": false
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "parallel-recovery-remains-in-semantic-barrier",
-      "input": {
-        "phase": "initial-review",
-        "mode": "parallel-reviews",
-        "material_finding": true,
-        "initial_lenses_remaining": 0,
-        "semantic_barrier_complete": false,
-        "required_recovery_pending": true
-      },
-      "expected": "continue-evidence"
-    },
-    {
-      "id": "later-generator-gate-binds-current-predecessor",
-      "input": {
-        "phase": "gate",
-        "duplicate_gate": false,
-        "gate_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-      },
-      "expected": "admit-gate"
-    },
-    {
-      "id": "stale-generator-gate-is-rejected",
-      "input": {
-        "phase": "gate",
-        "duplicate_gate": false,
-        "gate_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "duplicate-generator-gate-is-rejected",
-      "input": {
-        "phase": "gate",
-        "duplicate_gate": true,
-        "gate_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        "current_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "mixed-successor-routes-are-representable",
-      "input": {
-        "phase": "route-set",
-        "routes": [
-          "construction-normalization",
-          "isolated-restoration"
+        "receipts": [
+          "r01",
+          "r02"
         ]
       },
-      "expected": "mixed-successor"
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "review-cannot-run-during-realization",
+      "id": "complete-initial-findings-still-need-fold",
       "input": {
-        "phase": "review-dispatch",
-        "construction_complete": false,
-        "proof_inventory_current": true
+        "receipts": [
+          "r01",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06"
+        ]
       },
-      "expected": "blocked"
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "review-can-run-on-source-closed-successor",
+      "id": "folded-initial-wave-allows-successor",
       "input": {
-        "phase": "review-dispatch",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_domain_total": true,
-        "cut_domination_complete": true,
-        "residuals_owned": true,
-        "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true,
-        "derived_response_disposition": "construction-normalization"
-      },
-      "expected": "allow-review"
-    },
-    {
-      "id": "arrival-order-a",
-      "equivalence_group": "arrival-order",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "carrier_already_complete": false,
-        "finding_order": [
-          "a",
-          "b",
-          "c"
+        "receipts": [
+          "r01",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06"
         ],
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": true,
-        "earliest_failed_premise": "canonical-owner",
-        "semantic_premise_falsified": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
+        "folded": [
+          "initial-standard-0",
+          "initial-soundness-skeptic-0",
+          "initial-footgun-finder-0",
+          "initial-invariant-ace-0",
+          "initial-complexity-mitigator-0",
+          "initial-fresh-eyes-0"
+        ]
       },
-      "expected": "construction-normalization"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "arrival-order-b",
-      "equivalence_group": "arrival-order",
+      "id": "six-clean-lenses-do-not-complete-five-standard-cleans",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "carrier_already_complete": false,
-        "finding_order": [
-          "c",
-          "a",
-          "b"
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06"
+        ]
+      },
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
+    },
+    {
+      "id": "four-total-standard-cleans-not-enough",
+      "input": {
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r10"
+        ]
+      },
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
+    },
+    {
+      "id": "five-standard-cleans-and-all-auxiliaries-complete",
+      "input": {
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r10",
+          "r11"
+        ]
+      },
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": true,
+        "may_dispatch": false
+      }
+    },
+    {
+      "id": "analyze-wave-grants-no-closure",
+      "input": {
+        "route": "analyze",
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r10",
+          "r11"
+        ]
+      },
+      "expected": {
+        "mutable": false,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
+    },
+    {
+      "id": "confirmation-finding-freezes-until-folded",
+      "input": {
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r12"
+        ]
+      },
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
+    },
+    {
+      "id": "confirmation-cut-needs-no-new-auxiliary-wave",
+      "input": {
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r12"
         ],
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": true,
-        "earliest_failed_premise": "canonical-owner",
-        "semantic_premise_falsified": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
+        "folded": [
+          "initial-standard-0",
+          "initial-soundness-skeptic-0",
+          "initial-footgun-finder-0",
+          "initial-invariant-ace-0",
+          "initial-complexity-mitigator-0",
+          "initial-fresh-eyes-0",
+          "confirmation-standard-1",
+          "confirmation-standard-2",
+          "confirmation-standard-3"
+        ]
       },
-      "expected": "construction-normalization"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "live-provider-source-missing-blocks-selection",
+      "id": "verdictless-recovery-remains-in-barrier",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "counterexample_accepted": true,
-        "live_owner_sources_complete": false,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "direct_gate_valid": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
+        "receipts": [
+          "r01",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r13"
+        ],
+        "folded": [
+          "initial-standard-0",
+          "initial-soundness-skeptic-0",
+          "initial-footgun-finder-0",
+          "initial-invariant-ace-0",
+          "initial-complexity-mitigator-0",
+          "initial-fresh-eyes-0"
+        ]
       },
-      "expected": "blocked"
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "high-severity-realization-defect-restores",
+      "id": "one-fresh-recovery-closes-semantic-barrier",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "severity": "critical",
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "direct_gate_valid": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
+        "receipts": [
+          "r01",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r13",
+          "r14"
+        ],
+        "folded": [
+          "initial-standard-0",
+          "initial-soundness-skeptic-0",
+          "initial-footgun-finder-0",
+          "initial-invariant-ace-0",
+          "initial-complexity-mitigator-0",
+          "initial-fresh-eyes-0",
+          "initial-fresh-eyes-1"
+        ]
       },
-      "expected": "isolated-restoration"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "low-severity-owner-defect-normalizes",
+      "id": "second-verdictless-attempt-blocks",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "severity": "low",
-        "earliest_failed_premise": "canonical-owner",
-        "semantic_premise_falsified": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
+        "receipts": [
+          "r01",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r13",
+          "r15"
+        ]
       },
-      "expected": "construction-normalization"
+      "expected": "invalid-or-blocked"
     },
     {
-      "id": "unreachable-witness-has-no-current-liability",
+      "id": "duplicate-receipt-cannot-create-clean-credit",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": false,
-        "applicability_status": "already-excluded",
-        "earliest_failed_premise": "applicability",
-        "law_authority": "entailed"
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r10",
+          "r11",
+          "r11"
+        ]
       },
-      "expected": "no-current-liability"
+      "expected": "invalid-or-blocked"
     },
     {
-      "id": "new-requirement-needs-authority",
+      "id": "stale-review-head-cannot-create-credit",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": false,
-        "law_authority": "new-requirement",
-        "earliest_failed_premise": "law-authority"
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r16"
+        ]
       },
-      "expected": "authority-required"
+      "expected": "invalid-or-blocked"
     },
     {
-      "id": "authorized-claim-overstatement-narrows",
+      "id": "omitted-live-provider-finding-keeps-cut-open",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "earliest_failed_premise": "claim-strength",
-        "weaker_claim_explicit": true,
-        "claim_narrowing_authorized": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "closure_consequence_explicit": true,
-        "law_authority": "entailed"
+        "receipts": [
+          "r01",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06"
+        ],
+        "folded": [
+          "initial-standard-0",
+          "initial-soundness-skeptic-0",
+          "initial-footgun-finder-0",
+          "initial-invariant-ace-0",
+          "initial-complexity-mitigator-0",
+          "initial-fresh-eyes-0"
+        ],
+        "sources": [
+          {
+            "id": "provider-1",
+            "status": "unfolded",
+            "required": true
+          }
+        ]
       },
-      "expected": "claim-narrowing-or-containment"
+      "expected": {
+        "mutable": false,
+        "epoch_open": true,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "unauthorized-claim-narrowing-blocks",
+      "id": "unavailable-provider-is-not-a-clean-source",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "earliest_failed_premise": "claim-strength",
-        "weaker_claim_explicit": true,
-        "claim_narrowing_authorized": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "exact_predecessor_theorem_reprovable": false,
-        "law_authority": "entailed"
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r10",
+          "r11"
+        ],
+        "sources": [
+          {
+            "id": "provider",
+            "status": "unavailable",
+            "required": true
+          }
+        ]
       },
-      "expected": "blocked"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "failed-restoration-gate-does-not-normalize",
+      "id": "unavailable-provider-does-not-block-initial-implementation",
       "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "earliest_failed_premise": "artifact-binding",
-        "exact_predecessor_theorem_reprovable": true,
-        "direct_gate_valid": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "unknown-theorem-relation-does-not-normalize",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "earliest_failed_premise": "unknown",
-        "exact_predecessor_theorem_reprovable": false,
-        "semantic_premise_falsified": false,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "law_authority": "entailed"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "authorized-liability-deferral-is-explicit",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "explicit_deferral_requested": true,
-        "deferral_authorized": true,
-        "closure_consequence_explicit": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": false,
-        "law_authority": "entailed"
-      },
-      "expected": "explicitly-deferred"
-    },
-    {
-      "id": "same-theorem-reproof-contradicts-normalization",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "canonical-owner",
-        "exact_predecessor_theorem_reprovable": true,
-        "semantic_premise_falsified": true,
-        "direct_gate_valid": false,
-        "law_authority": "entailed"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "authorized-claim-narrowing-without-closure-consequence-blocks",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "claim-strength",
-        "exact_predecessor_theorem_reprovable": false,
-        "weaker_claim_explicit": true,
-        "claim_narrowing_authorized": true,
-        "law_authority": "entailed"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "authorized-deferral-without-theorem-localization-blocks",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "explicit_deferral_requested": true,
-        "deferral_authorized": true,
-        "closure_consequence_explicit": true,
-        "law_authority": "entailed"
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "missing-owner-source-completeness-blocks-selection",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "law_authority": "entailed",
-        "counterexample_accepted": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "direct_gate_valid": true
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "missing-law-authority-requires-authority",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "counterexample_accepted": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "direct_gate_valid": true
-      },
-      "expected": "authority-required"
-    },
-    {
-      "id": "missing-counterexample-acceptance-blocks",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "law_authority": "entailed",
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "realization",
-        "exact_predecessor_theorem_reprovable": true,
-        "direct_gate_valid": true
-      },
-      "expected": "blocked"
-    },
-    {
-      "id": "missing-owner-source-frontier-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "live_owner_sources_complete": false,
-        "theorem_directed_response_complete": true,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_domain_total": true,
-        "cut_domination_complete": true,
-        "residuals_owned": true
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "missing-theorem-response-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": false,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_domain_total": true,
-        "cut_domination_complete": true,
-        "residuals_owned": true
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "false-admission-cut-normalizes",
-      "input": {
-        "phase": "selection",
-        "semantic_barrier_complete": true,
-        "basis_complete": true,
-        "live_owner_sources_complete": true,
-        "law_authority": "entailed",
-        "counterexample_accepted": true,
-        "positive_claim_falsified": true,
-        "source_bound_predecessor_theorem_projected": true,
-        "earliest_failed_premise": "admission-cut",
-        "exact_predecessor_theorem_reprovable": false,
-        "semantic_premise_falsified": true
-      },
-      "expected": "construction-normalization"
-    },
-    {
-      "id": "complete-claim-with-deferral-is-not-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "complete",
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true,
-        "derived_response_disposition": "explicitly-deferred",
-        "closure_consequence_explicit": true,
-        "source_topology_derived": true,
-        "topology_authority_bound": true,
-        "exact_head_topology_rederived": true,
-        "topology_transformation_proved": true,
-        "factorization_domain_total": true,
-        "cut_domination_complete": true,
-        "residuals_owned": true
-      },
-      "expected": "realizing"
-    },
-    {
-      "id": "bounded-claim-with-authorized-deferral-is-reviewable",
-      "input": {
-        "phase": "review-entry",
-        "claim_strength": "bounded",
-        "claim_strength_explicit": true,
-        "bounded_domain_explicit": true,
-        "construction_complete": true,
-        "proof_inventory_current": true,
-        "live_owner_sources_complete": true,
-        "theorem_directed_response_complete": true,
-        "derived_response_disposition": "explicitly-deferred",
-        "closure_consequence_explicit": true,
-        "residuals_owned": true
-      },
-      "expected": "reviewable"
-    },
-    {
-      "id": "implementation-without-review-allows-first-mutation",
-      "input": {
-        "phase": "implementation-entry",
         "route": "implement",
-        "goal_bound": true,
-        "exact_subject_bound": true,
-        "review_epoch_open": false,
-        "counterexample_driven": false
+        "proof": null,
+        "sources": [
+          {
+            "id": "provider",
+            "status": "unavailable",
+            "required": true
+          }
+        ]
       },
-      "expected": "allow-mutation"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": false,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "implementation-with-closed-counterexample-evidence-needs-no-fresh-review",
+      "id": "adjudicated-non-liability-does-not-block-clean-closure",
       "input": {
-        "phase": "implementation-entry",
-        "route": "implement",
-        "goal_bound": true,
-        "exact_subject_bound": true,
-        "review_epoch_open": false,
-        "counterexample_driven": true,
-        "theorem_directed_response_complete": true
+        "receipts": [
+          "r07",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06",
+          "r08",
+          "r09",
+          "r10",
+          "r11"
+        ],
+        "sources": [
+          {
+            "id": "provider-1",
+            "status": "non-current",
+            "required": true
+          }
+        ]
       },
-      "expected": "allow-mutation"
+      "expected": {
+        "mutable": true,
+        "epoch_open": false,
+        "complete": true,
+        "may_dispatch": false
+      }
     },
     {
-      "id": "open-review-epoch-freezes-candidate",
+      "id": "forged-standard-customization-is-rejected",
       "input": {
-        "phase": "review-epoch",
-        "review_dispatched": true,
-        "review_epoch_open": true,
-        "candidate_invalidated": false
+        "receipts": [
+          "r17",
+          "r02",
+          "r03",
+          "r04",
+          "r05",
+          "r06"
+        ]
       },
-      "expected": "freeze-candidate"
+      "expected": "invalid-or-blocked"
     },
     {
-      "id": "invalidated-initial-review-with-incomplete-cut-stays-frozen",
+      "id": "initial-standard-alone-cannot-start-confirmation",
       "input": {
-        "phase": "review-epoch",
-        "review_dispatched": true,
-        "review_epoch_open": true,
-        "candidate_invalidated": true,
-        "wave": "initial",
-        "all_required_initial_outcomes_terminal": false,
-        "required_recovery_terminal": false,
-        "review_fold_complete": false
+        "receipts": [
+          "r07",
+          "r08"
+        ]
       },
-      "expected": "freeze-candidate"
-    },
-    {
-      "id": "invalidated-initial-review-closes-after-complete-cut",
-      "input": {
-        "phase": "review-epoch",
-        "review_dispatched": true,
-        "review_epoch_open": true,
-        "candidate_invalidated": true,
-        "wave": "initial",
-        "all_required_initial_outcomes_terminal": true,
-        "required_recovery_terminal": true,
-        "review_fold_complete": true
-      },
-      "expected": "allow-successor-mutation"
-    },
-    {
-      "id": "confirmation-finding-closes-without-new-auxiliary-wave",
-      "input": {
-        "phase": "review-epoch",
-        "review_dispatched": true,
-        "review_epoch_open": true,
-        "candidate_invalidated": true,
-        "wave": "confirmation",
-        "confirmation_finding_folded": true,
-        "already_live_owner_observations_folded": true,
-        "new_initial_wave_required": false
-      },
-      "expected": "allow-successor-mutation"
-    },
-    {
-      "id": "bare-route-implements-before-review-dispatch",
-      "input": {
-        "phase": "route-order",
-        "route": "bare",
-        "first_mutation_index": 0,
-        "first_review_dispatch_index": 1
-      },
-      "expected": "implement-before-review"
+      "expected": "invalid-or-blocked"
     }
   ]
 }
