@@ -1,515 +1,131 @@
 #!/bin/sh
 set -eu
-
+# Default includes the unchanged Review Fold/Ledger integration suite.
+# --local-only runs all Actuating checks without invoking that external owner.
+case "${1:-}" in
+  '') local_only=false ;;
+  --local-only) local_only=true ;;
+  *) echo "usage: $0 [--local-only]" >&2; exit 2 ;;
+esac
+[ "$#" -le 1 ] || { echo "too many arguments" >&2; exit 2; }
 skill_root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
-codex_root=$(CDPATH='' cd -- "$skill_root/../.." && pwd)
-review_fold_root="$codex_root/skills/review-fold"
-jaq_bin=${JAQ_BIN:-jaq}
-
-for removed in \
-  "$skill_root/definitions/ledger/cumulative-ablation-basis.json" \
-  "$skill_root/references/cumulative-ablation-contract.json" \
-  "$skill_root/tests/test-cumulative-ablation-basis.sh" \
-  "$skill_root/tests/test-cumulative-ablation-scenarios.sh" \
-  "$skill_root/tests/fixtures/cumulative-ablation-basis-valid.json" \
-  "$skill_root/tests/fixtures/cumulative-ablation-scenarios.json" \
-  "$skill_root/tests/test-review-candidate-traces.sh" \
-  "$skill_root/tests/fixtures/review-candidate-traces.json" \
-  "$skill_root/references/standard-review.md"
-do
-  if [ -e "$removed" ]; then
-    echo "retired process surface remains: $removed" >&2
-    exit 1
-  fi
-done
-
-grep -F 'counterexample-to-construction compiler' "$skill_root/SKILL.md" >/dev/null
-grep -F 'review-fold/counterexample-corpus' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Counterexample corpus basis IDs' "$skill_root/SKILL.md" >/dev/null
-grep -F 'No durable **Actuating** workflow' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Review-epoch immutability and evidence acquisition' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Exactly two bug-driven mutation routes' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Construction Working Set' "$skill_root/SKILL.md" >/dev/null
-grep -F 'No second Actuating Ledger definition' "$skill_root/SKILL.md" >/dev/null
-grep -F 'Construction completeness is a revocable proof lease' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'No third reviewable candidate under a materially unchanged theorem' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'The packet constrains admissibility, not imagination.' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F '`made irrelevant by mechanism change`' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'Metanoetic comparison surface / boundary dispositions / resource account' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'Treat each Universalist return as a **boundary contract**' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'source-derived predecessor topology T0' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'T1 = tau(T0)' "$skill_root/SKILL.md" >/dev/null
-grep -F 'domain(F) = T1' "$skill_root/SKILL.md" >/dev/null
-grep -F 'No self-authored omission list may serve as the sole evidence' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'A sanctioned path absent from the topology basis revokes' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F '| `$actuating analyze` |' "$skill_root/SKILL.md" >/dev/null
-grep -F '`analyze` runs the complete counterexample-to-construction compiler' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'initial six-lens falsification wave' "$skill_root/SKILL.md" >/dev/null
-grep -F 'The six review lenses falsify one completed construction' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'standard              Codex native/default best-judgment review' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'soundness-skeptic' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Theorem-directed response selection' "$skill_root/SKILL.md" >/dev/null
-grep -F '`implement` begins from the accepted Goal and exact Git state.' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'A review epoch opens when the first CAS review request binds' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'Before any mutation undertaken' "$skill_root/SKILL.md" >/dev/null
-grep -F 'No successor mutation while a review epoch is open' \
-  "$skill_root/SKILL.md" >/dev/null
-grep -F 'No review dispatch is required before initial implementation' \
-  "$skill_root/SKILL.md" >/dev/null
-if grep -F 'No mutation before the complete initial falsification wave' \
-  "$skill_root/SKILL.md" >/dev/null
-then
-  echo "global review-before-mutation rule remains" >&2
-  exit 1
+if [ -n "${JAQ_BIN:-}" ]; then jaq_bin=$JAQ_BIN
+elif command -v jaq >/dev/null 2>&1; then jaq_bin=jaq
+else jaq_bin=jq
 fi
-grep -F 'No normalization fallback' "$skill_root/SKILL.md" >/dev/null
-grep -F '## Live owner-source frontier' "$skill_root/references/review-contract.md" >/dev/null
-test -s "$skill_root/references/theorem-directed-response.md"
-
-if grep -F '$actuating triage' "$skill_root/SKILL.md" >/dev/null ||
-   grep -F '$actuating remediation-plan' "$skill_root/SKILL.md" >/dev/null
-then
-  echo "retired Actuating public route remains in SKILL.md" >&2
-  exit 1
+node --input-type=module - "$skill_root" <<'JS'
+import assert from 'node:assert/strict';
+import {readFileSync, readdirSync, existsSync} from 'node:fs';
+import {resolve, dirname, relative} from 'node:path';
+const root = resolve(process.argv[2]);
+const text = p => readFileSync(resolve(root,p), 'utf8');
+const json = p => JSON.parse(text(p));
+const c = json('references/review-contract.json');
+const d = json('references/decision-contract.json').skill_decision_contract;
+const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
+assert.equal(c.schema, 'actuating-review-contract/v16');
+assert.equal(c.contract_id, 'actuating-review-contract-v18');
+assert.equal(d.contract_version, 'SKDC-v1');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v10');
+assert.deepEqual(c.required_lenses.map(l => l.name), names);
+assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
+assert.deepEqual(c.review_scheduling.initial_lens_order, names);
+assert.equal(c.review_scheduling.default_mode, 'parallel-reviews');
+assert.deepEqual(Object.keys(c.review_scheduling.modes).sort(), ['parallel-reviews','serial-reviews']);
+assert.equal(c.review_scheduling.modes['parallel-reviews'].non_cancelling, true);
+assert.equal(c.review_scheduling.modes['parallel-reviews'].all_launched_semantic_outcomes_before_cut, true);
+assert.equal(c.review_scheduling.modes['serial-reviews'].continue_remaining_initial_lenses_after_invalidation, true);
+assert.equal(c.review_scheduling.modes['serial-reviews'].post_invalidation_lenses_are_evidence_only, true);
+assert.deepEqual(c.standard_convergence, {
+  required_consecutive_clean_attempts:5, initial_standard_counts:true,
+  later_attempts_serial:true, findings_reset_streak:true,
+  native_default_review_required:true, custom_instructions_forbidden:true
+});
+assert.equal(c.transport_recovery.maximum_fresh_recovery_attempts, 1);
+assert.equal(c.transport_recovery.required_recovery_is_part_of_semantic_barrier, true);
+assert.equal(c.attempt_quality.required_backend_class, 'cas-start-wait');
+assert.equal(c.attempt_quality.required_capability, 'cas_workflow_bound_owner_lived_review_v1');
+for (const key of ['strong_principal_required','current_tuple_required','exact_instruction_digest_required',
+  'exact_workflow_binding_required','owner_lived_transport_required','fallback_forbidden']) assert.equal(c.attempt_quality[key], true, key);
+assert.equal(c.review_epoch.initial_implementation_requires_review_dispatch, false);
+assert.equal(c.review_epoch.successor_mutation_forbidden_while_open, true);
+assert.equal(c.review_epoch.confirmation_invalidation_requires_new_initial_wave, false);
+assert.equal(c.evidence_acquisition.initial_implementation_requires_initial_falsification_wave, false);
+assert.equal(c.counterexample_corpus.definition, 'review-fold/counterexample-corpus');
+assert.equal(c.counterexample_corpus.current_applicability_recomputed, true);
+assert.equal(c.counterexample_corpus.actuating_copy_or_store_forbidden, true);
+assert.equal(c.construction_selection.objective, 'family-exclusion-with-required-valid-preservation');
+for (const key of ['cumulative_causal_basis_before_candidate_selection','discriminator_selected_before_implementation',
+  'mechanical_defect_requires_no_invented_sibling_quota','metanoetic_before_universalist_when_triggered',
+  'live_boundary_not_route_label_triggers_universalist']) assert.equal(c.construction_selection[key], true, key);
+for (const key of ['local_repair_first_required','incumbent_preservation_is_dominance',
+  'pre_mutation_theorem_equality_required','two_complete_implementations_required']) assert.equal(c.construction_selection[key], false, key);
+assert.equal(c.review_entry.common_candidate_proof_regardless_of_label, true);
+assert.equal(c.review_entry.actual_semantic_diff_authority_required, true);
+assert.equal(c.candidate_acceptance.labels_grant_mutation_or_weaker_proof, false);
+assert.equal(c.candidate_acceptance.self_authored_semantic_digests_are_evidence, false);
+for (const key of ['strongest_repository_native_authority_required','independently_governed_axes_require_split',
+  'complete_actuating_projection_required','total_topology_transformation_required','total_disposition_law_required',
+  'exact_head_topology_rederivation_required_before_reviewable','topology_transformation_equality_required',
+  'factorization_domain_equality_required','factorized_routes_cross_cut_or_owned_residual_required',
+  'claim_strength_may_not_increase']) assert.equal(c.universalist_compilation[key], true, key);
+assert.equal(c.universalist_compilation.self_authored_omission_list_sufficient, false);
+assert.deepEqual(c.universalist_compilation.allowed_element_dispositions,
+  ['factor-through','retire','privatize','derived-adapter','residual']);
+assert.equal(c.same_family_recurrence.same_claim_revokes_exclusion_immediately, true);
+assert.equal(c.same_family_recurrence.unmodeled_sanctioned_topology_element_revokes_immediately, true);
+assert.equal(c.owner_source_frontier.omitted_live_finding_keeps_cut_open, true);
+assert.equal(c.owner_source_frontier.unavailable_source_limits_only_dependent_claims, true);
+assert.equal(c.efficacy.policy_unit_tests_prove_model_efficacy, false);
+assert.equal(c.efficacy.counterexample_count_is_distance_to_correctness, false);
+assert.deepEqual(d.routes.map(r => r.route_id).sort(),
+  ['ACT-IMPLEMENT','ACT-ANALYZE','ACT-REVIEW-CLOSEOUT','ACT-CLOSE'].sort());
+assert.deepEqual(d.routes.find(r => r.route_id === 'ACT-ANALYZE').aliases, ['analyze']);
+for (const field of ['routes','triggers','clauses']) {
+  const key = {routes:'route_id',triggers:'trigger_id',clauses:'clause_id'}[field];
+  assert.equal(new Set(d[field].map(x => x[key])).size, d[field].length, field);
+}
+for (const cl of d.clauses) {
+  for (const id of cl.trigger_refs) assert(d.triggers.some(t => t.trigger_id === id), id);
+  for (const id of [...cl.expected_routes,...cl.prohibited_routes]) assert(d.routes.some(r => r.route_id === id), id);
+}
+assert.deepEqual(json('definitions/manifest.json'), {schema:'skill-definition-set/v1',skill:'actuating',seq:[],ledger:[]});
+const retired = [
+  'references/theorem-directed-response.md','references/standard-review.md',
+  'definitions/ledger/direct-repair-admission.json',
+  'tests/test-direct-repair-admission.sh','tests/fixtures/direct-repair-admission-valid.json'
+];
+for (const p of retired) assert(!existsSync(resolve(root,p)), `retired surface: ${p}`);
+const walk = p => readdirSync(p,{withFileTypes:true}).flatMap(e => e.isDirectory() ? walk(resolve(p,e.name)) : [resolve(p,e.name)]);
+assert.deepEqual(walk(resolve(root,'definitions')).map(p => relative(root,p)), ['definitions/manifest.json']);
+for (const lens of c.required_lenses.slice(1)) {
+  assert.equal(lens.role, 'auxiliary');
+  assert(lens.instructions_ref.startsWith('codex/skills/actuating/'));
+  assert(text(lens.instructions_ref.replace('codex/skills/actuating/','')).length > 0);
+}
+const forbidden = /direct-repair-admission|theorem-directed-response|predecessor_semantic_model_digest|successor_semantic_model_digest|theorem_directed_response|route_specific_construction_proof/;
+for (const p of walk(root).filter(p => !relative(root,p).startsWith('tests/'))) {
+  const s = readFileSync(p,'utf8');
+  assert(!forbidden.test(s), `retired mechanism reference in ${p}`);
+  if (p.endsWith('.json')) JSON.parse(s);
+  if (p.endsWith('.md')) for (const m of s.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    if (/^(https?:|#)/.test(m[1])) continue;
+    assert(existsSync(resolve(dirname(p),m[1].split('#')[0])), `broken link: ${p} -> ${m[1]}`);
+  }
+}
+assert(!/\$actuating (triage|remediation-plan)/.test(text('SKILL.md')));
+assert(text('SKILL.md').includes('It dispatches no\nreview'));
+assert(text('references/review-contract.md').includes('codex-default-review/v1'));
+assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
+console.log('actuating: contract, routing, proof ownership, retired surfaces, and reference links passed');
+JS
+sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
+sh "$skill_root/tests/test-post-elimination-scenarios.sh"
+JAQ_BIN="$jaq_bin" sh "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
+if [ "$local_only" = true ]; then
+  echo "actuating local suite: pass; Review Fold/Ledger integration explicitly not run"
+else
+  review_fold_root="$skill_root/../review-fold"
+  JAQ_BIN="$jaq_bin" sh "$review_fold_root/tests/test-counterexample-corpus.sh"
+  echo "actuating reconciler and Review Fold corpus integration: pass"
 fi
-
-if grep -F 'initial five-lens' "$skill_root/SKILL.md" >/dev/null ||
-   grep -F 'The five review lenses' "$skill_root/SKILL.md" >/dev/null ||
-   grep -F 'initial five-lens' "$skill_root/references/review-contract.md" >/dev/null ||
-   grep -F 'complete initial five-lens semantic barrier' \
-     "$skill_root/references/decision-contract.json" >/dev/null
-then
-  echo "retired five-lens wording remains" >&2
-  exit 1
-fi
-
-grep -F '# Counterexample-to-Construction Compilation' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Durable source basis' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Consistency preflight' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Source-derived admission topology' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Admitted semantic carrier' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Invariant locus and semantic identity' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Source-derived factorization closure' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'Adding a producer, edge, consumer, adapter, or bypass without a' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F '## Producer migration' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-grep -F 'Ablation is evidence that the construction absorbed the law' \
-  "$skill_root/references/counterexample-guided-normalization.md" >/dev/null
-
-grep -F '# Counterexample Corpus' \
-  "$review_fold_root/references/counterexample-corpus.md" >/dev/null
-grep -F 'Persist counterexamples; recompile their meaning.' \
-  "$review_fold_root/references/counterexample-corpus.md" >/dev/null
-grep -F 'Capture each independent witness' \
-  "$review_fold_root/SKILL.md" >/dev/null
-grep -F 'Do not persist a Review Fold, class registry, family registry' \
-  "$review_fold_root/SKILL.md" >/dev/null
-
-grep -F 'continue the remaining initial lenses' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'for evidence only' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'A material confirmation finding' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F '## Counterexample history projection' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F '### Construction-theorem proof lease' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F '## Source-derived factorization closure' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'A model-authored path list' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'second exact same-claim successor invalidation' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'codex-default-review/v1' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'Launch all six initial owner-live requests' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'The initial six-lens wave is already complete' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'soundness-skeptic' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F '## Review epoch' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'Initial implementation occurs outside a review epoch' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F '## Invalidation inside an open review epoch' \
-  "$skill_root/references/review-contract.md" >/dev/null
-grep -F 'confirmation epoch closes' \
-  "$skill_root/references/review-contract.md" >/dev/null
-
-grep -F 'source-derived predecessor topology T0' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'T1 = tau(T0) and domain(F) = T1' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'revokes topology and factorization closure immediately' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'all five auxiliary lenses have terminal semantic outcomes' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'five consecutive distinct native/default standard cleans' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'every completion-relevant live owner source is folded or non-current' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'source-bound predecessor topology identity remains' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'topology transformation is required' \
-  "$skill_root/references/closure.md" >/dev/null
-grep -F 'def theorem_localized($i):' \
-  "$skill_root/tests/test-construction-cycle-scenarios.sh" >/dev/null
-grep -F '$i.exact_predecessor_theorem_reprovable == false and' \
-  "$skill_root/tests/test-construction-cycle-scenarios.sh" >/dev/null
-
-for lens in \
-  "$skill_root/references/lenses/soundness-review.md" \
-  "$skill_root/references/lenses/footgun-review.md" \
-  "$skill_root/references/lenses/invariant-review.md" \
-  "$skill_root/references/lenses/complexity-review.md" \
-  "$skill_root/references/lenses/fresh-eyes-review.md"
-do
-  test -s "$lens"
-done
-
-grep -F '# Soundness-Skeptic Review Lens' \
-  "$skill_root/references/lenses/soundness-review.md" >/dev/null
-grep -F 'positive semantic judgment' \
-  "$skill_root/references/lenses/soundness-review.md" >/dev/null
-grep -F 'claim-strength' \
-  "$skill_root/references/lenses/soundness-review.md" >/dev/null
-
-"$jaq_bin" -e '
-  .schema == "skill-definition-set/v1" and
-  .skill == "actuating" and
-  .seq == [] and
-  .ledger == [
-    {
-      "id": "actuating/direct-repair-admission",
-      "path": "ledger/direct-repair-admission.json"
-    }
-  ]
-' "$skill_root/definitions/manifest.json" >/dev/null
-
-"$jaq_bin" -e '
-  .schema == "skill-definition-set/v1" and
-  .skill == "review-fold" and
-  .seq == [] and
-  .ledger == [
-    {
-      "id": "review-fold/counterexample-corpus",
-      "path": "ledger/counterexample-corpus.json"
-    }
-  ]
-' "$review_fold_root/definitions/manifest.json" >/dev/null
-
-"$jaq_bin" -e '
-  .schema == "ledger-artifact-definition/v1" and
-  .id == "review-fold/counterexample-corpus" and
-  .owner == "review-fold" and
-  .storage.kind == "event-log" and
-  .storage.slots.events.path == "review-fold/counterexamples/events.jsonl" and
-  ([.operations | keys[]] | sort) ==
-    (["bind-existing", "capture", "rebind-existing"] | sort) and
-  ([.projections | keys[]] | sort) ==
-    (["basis", "law-history", "record"] | sort)
-' "$review_fold_root/definitions/ledger/counterexample-corpus.json" >/dev/null
-
-"$jaq_bin" -e '
-  .schema == "actuating-review-contract/v15" and
-  .contract_id == "actuating-review-contract-v17" and
-  (.required_lenses | length) == 6 and
-  [.required_lenses[].name] == [
-    "standard",
-    "soundness-skeptic",
-    "footgun-finder",
-    "invariant-ace",
-    "complexity-mitigator",
-    "fresh-eyes"
-  ] and
-  .required_lenses[0] == {
-    "name": "standard",
-    "role": "standard",
-    "instruction_source": "codex-default",
-    "custom_instructions": false
-  } and
-  .required_lenses[1].role == "auxiliary" and
-  .required_lenses[1].instructions_ref ==
-    "codex/skills/actuating/references/lenses/soundness-review.md" and
-  .owner_source_frontier.every_live_source_disposition_required_before_cut == true and
-  .owner_source_frontier.missing_live_source_closes_counterexample_driven_mutation_clean_credit_reviewability_and_closure == true and
-  .theorem_directed_response.accepted_counterexample_selects_mutation_route == false and
-  .theorem_directed_response.same_theorem_reproof_required_before_normalization == true and
-  .theorem_directed_response.failed_direct_gate_authorizes_normalization == false and
-  .theorem_directed_response.normalization_is_default_or_fallback == false and
-  .theorem_directed_response.normalization_requires_named_false_semantic_premise == true and
-  .theorem_directed_response.severity_selects_route == false and
-  .mutation_routes.normalization_is_default == false and
-  .mutation_routes.failed_restoration_gate_falls_through_to_normalization == false and
-  .review_scheduling.default_mode == "parallel-reviews" and
-  .review_scheduling.initial_lens_order == [
-    "standard",
-    "soundness-skeptic",
-    "footgun-finder",
-    "invariant-ace",
-    "complexity-mitigator",
-    "fresh-eyes"
-  ] and
-  .review_scheduling.standard_review.owner == "codex" and
-  .review_scheduling.standard_review.source == "native-default" and
-  .review_scheduling.standard_review.custom_instructions_argument_forbidden == true and
-  .review_scheduling.standard_review.skill_authored_instruction_file_forbidden == true and
-  .review_scheduling.standard_review.best_judgment_unconstrained_by_auxiliary_taxonomy == true and
-  .review_scheduling.modes["parallel-reviews"].non_cancelling == true and
-  .review_scheduling.modes["serial-reviews"].continue_remaining_initial_lenses_after_invalidation == true and
-  .review_scheduling.modes["serial-reviews"].post_invalidation_lenses_are_evidence_only == true and
-  .counterexample_corpus.owner == "review-fold" and
-  .counterexample_corpus.definition == "review-fold/counterexample-corpus" and
-  .counterexample_corpus.project_before_current_fold == true and
-  .counterexample_corpus.capture_after_current_fold == true and
-  .counterexample_corpus.current_applicability_recomputed == true and
-  .counterexample_corpus.actuating_copy_or_store_forbidden == true and
-  .candidate_lifecycle.construction_theorem_is_revocable_proof_lease == true and
-  .candidate_lifecycle.topology_theorem_is_revocable_proof_lease == true and
-  .candidate_lifecycle.revoked_theorem_closes_mutation_ship_and_review == true and
-  .candidate_lifecycle.reviewable_reentry_after_revocation_requires_material_theorem_delta == true and
-  .evidence_acquisition.initial_falsification_wave_complete_before_successor_selection == true and
-  .evidence_acquisition.projected_counterexamples_are_reclassified == true and
-  .review_entry.admitted_carrier_required == true and
-  .review_entry.complete_producer_factorization_required == true and
-  .review_entry.complete_bypass_disposition_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_boundary_contract_realized_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_claim_strength_preserved_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].split_seams_proved_before_recomposition_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].source_derived_topology_required_for_complete_claim == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].topology_authority_identity_strength_and_falsifier_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].universalist_total_transformation_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].exact_head_successor_topology_rederived_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].topology_transformation_equality_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].factorization_domain_equality_required == true and
-  .review_entry.route_specific_construction_proof["construction-normalization"].cut_domination_or_owned_residual_required == true and
-  .review_entry.route_specific_construction_proof["isolated-restoration"].source_bound_predecessor_topology_unchanged_required == true and
-  .review_entry.route_specific_construction_proof["isolated-restoration"].direct_repair_admission_materialization_required == true and
-  .review_entry.route_specific_construction_proof["isolated-restoration"].universalist_invocation_forbidden == true and
-  .review_entry.self_authored_omission_list_sufficient == false and
-  .review_entry.unproved_complete_factorization_lowers_to_bounded_or_contained == true and
-  .universalist_compilation.owner == "actuating" and
-  .universalist_compilation.topology_domain_owner == "actuating" and
-  .universalist_compilation.strongest_repository_native_authority_required == true and
-  .universalist_compilation.model_authored_path_list_exhaustive_forbidden == true and
-  .universalist_compilation.predecessor_topology_passed_to_universalist == true and
-  .universalist_compilation.total_topology_transformation_required == true and
-  .universalist_compilation.total_disposition_law_required == true and
-  .universalist_compilation.allowed_element_dispositions ==
-    ["factor-through", "retire", "privatize", "derived-adapter", "residual"] and
-  .universalist_compilation.aggregate_outcomes_not_element_dispositions ==
-    ["contained", "obstructed"] and
-  .universalist_compilation.exact_head_topology_rederivation_required_before_reviewable == true and
-  .universalist_compilation.topology_transformation_equality_required == true and
-  .universalist_compilation.factorization_domain_equality_required == true and
-  .universalist_compilation.factorized_routes_cross_cut_or_owned_residual_required == true and
-  .universalist_compilation.self_authored_omission_list_sufficient == false and
-  .universalist_compilation.prose_only_nomination_forbidden == true and
-  .universalist_compilation.ephemeral_working_set_only == true and
-  .mutation_routes.allowed ==
-    ["construction-normalization", "isolated-restoration"] and
-  .same_family_recurrence.same_claim_evidence_required == true and
-  .same_family_recurrence.same_law_or_owner_alone_insufficient == true and
-  .same_family_recurrence.direct_theorem_premise_falsifier_revokes_immediately == true and
-  .same_family_recurrence.unmodeled_sanctioned_topology_element_revokes_immediately == true and
-  .same_family_recurrence.topology_falsifier_never_realization_local == true and
-  .same_family_recurrence.second_same_claim_successor_invalidation_under_unchanged_theorem_revokes_theorem == true and
-  .same_family_recurrence.third_reviewable_candidate_under_unchanged_theorem_forbidden == true and
-  .same_family_recurrence.material_theorem_delta_required_for_reentry == true and
-  .same_family_recurrence.source_anchored_admission_topology_required_for_reentry == true and
-  .same_family_recurrence.executable_or_exhaustive_factorization_witness_required_for_reentry == true and
-  .same_family_recurrence.same_law_different_family_does_not_increment == true and
-  .standard_convergence.required_consecutive_clean_attempts == 5 and
-  .standard_convergence.initial_standard_counts == true and
-  .standard_convergence.native_default_review_required == true and
-  .standard_convergence.custom_instructions_forbidden == true
-' "$skill_root/references/review-contract.json" >/dev/null
-
-"$jaq_bin" -e '
-  .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v9" and
-  ((.skill_decision_contract.triggers[] |
-    select(.trigger_id == "ACT-ROUTE") |
-    .cue_literals) == [
-      "$actuating implement",
-      "$actuating analyze",
-      "$actuating review-closeout"
-    ]) and
-  ([.skill_decision_contract.routes[].route_id] | sort) ==
-    (["ACT-IMPLEMENT", "ACT-ANALYZE", "ACT-REVIEW-CLOSEOUT", "ACT-CLOSE"] | sort) and
-  ((.skill_decision_contract.routes[] |
-    select(.route_id == "ACT-ANALYZE") |
-    .aliases) == ["analyze"]) and
-  ((.skill_decision_contract.routes[] |
-    select(.route_id == "ACT-ANALYZE") |
-    .terminal) == true) and
-  ([.skill_decision_contract.routes[].route_id] | index("ACT-TRIAGE")) == null and
-  ([.skill_decision_contract.routes[].route_id] | index("ACT-REMEDIATION")) == null and
-  all(.skill_decision_contract.clauses[];
-    (.expected_routes | index("ACT-TRIAGE")) == null and
-    (.expected_routes | index("ACT-REMEDIATION")) == null) and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-CONSTRUCTION-COMPILER-001")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
-    .expected_routes) | index("ACT-ANALYZE")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
-    .required_artifacts) |
-    index("source-derived predecessor topology T0")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-CONSTRUCTION-COMPILER-001") |
-    .required_artifacts) |
-    index("domain(F) = T1")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
-    .required_artifacts) |
-    index("Codex native/default standard review with no custom instructions")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
-    .required_artifacts) |
-    index("soundness-skeptic auxiliary instruction and exact binding")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
-    .required_artifacts) |
-    index("complete initial six-lens semantic barrier")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-REVIEW-EVIDENCE-001") |
-    .required_artifacts) |
-    index("review-fold/counterexample-corpus basis projection or explicit incomplete horizon")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-THEOREM-DIRECTED-RESPONSE-001")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-THEOREM-DIRECTED-RESPONSE-001") |
-    .failure_signals) |
-    index("construction normalization is the fallback response")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-METANOETIC-ADMISSIBILITY-001")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-UNIVERSALIST-COMPILATION-001")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
-    .required_artifacts) == [
-      "one architectural axis and typed hole per Universalist invocation",
-      "source-derived predecessor topology T0 with authority, identity, evidence strength, and falsifier",
-      "candidate | preserve-incumbent | obstructed nomination",
-      "linked split invocations for independently governed axes",
-      "complete Universalist Actuating projection",
-      "canonical admission cut K",
-      "total topology transformation tau over T0",
-      "total disposition law F with explicit residuals",
-      "compiled boundary contract",
-      "claim-strength ceiling",
-      "factorization-closure verifier selected before mutation",
-      "exact-head independently re-derived successor topology T1",
-      "T1 = tau(T0)",
-      "domain(F) = T1",
-      "cut-domination or owned-residual proof",
-      "exact-head boundary-contract realization proof"
-    ]) and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
-    .success_signals) |
-    index("Universalist receives the repository-derived topology rather than rediscovering it from Actuating prose")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-UNIVERSALIST-COMPILATION-001") |
-    .failure_signals) |
-    index("a model-authored omission list is the sole completeness proof")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-CLOSURE-001") |
-    .required_artifacts) |
-    index("construction-normalization: Universalist boundary-contract realization, source-derived successor-topology re-derivation, and total factorization-domain and cut-domination proof")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-CLOSURE-001") |
-    .required_artifacts) |
-    index("isolated-restoration: unchanged source-bound predecessor topology identity and direct-repair admission materialization")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-ISOLATED-RESTORATION-001") |
-    .required_artifacts) |
-    index("localized realization, proof, generated-output, or artifact-binding defect")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-ISOLATED-RESTORATION-001")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-CLOSURE-001")) != null
-' "$skill_root/references/decision-contract.json" >/dev/null
-
-"$jaq_bin" -e '
-  .skill_decision_contract.skill.source_fingerprint ==
-    "review-fold-counterexample-corpus-v1" and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("RF-COUNTEREXAMPLE-CORPUS-001")) != null and
-  .skill_decision_contract.instrumentation.counterexample_corpus ==
-    "review-fold/counterexample-corpus"
-' "$review_fold_root/references/decision-contract.json" >/dev/null
-
- "$jaq_bin" -e '
-  .schema == "actuating-review-contract/v15" and
-  .contract_id == "actuating-review-contract-v17" and
-  .candidate_lifecycle.mutation_closed_while_review_epoch_open == true and
-  .candidate_lifecycle.initial_implementation_requires_review_dispatch == false and
-  .review_epoch.derived_not_stored == true and
-  .review_epoch.opens_on_first_review_dispatch == true and
-  .review_epoch.binds_exact_reviewable_candidate_head == true and
-  .review_epoch.candidate_frozen_while_open == true and
-  .review_epoch.successor_mutation_forbidden_while_open == true and
-  .review_epoch.initial_implementation_occurs_outside_epoch == true and
-  .review_epoch.initial_implementation_requires_review_dispatch == false and
-  .review_epoch.initial_invalidation_closes_after_required_outcomes_recovery_and_fold == true and
-  .review_epoch.confirmation_invalidation_requires_new_initial_wave == false and
-  .review_epoch.confirmation_invalidation_closes_after_finding_and_live_owner_fold == true and
-  .evidence_acquisition.applies_after_review_dispatch == true and
-  .evidence_acquisition.initial_implementation_requires_review_dispatch == false and
-  .evidence_acquisition.initial_implementation_requires_initial_falsification_wave == false and
-  .mutation_routes.initial_implementation_review_prerequisite == false and
-  .mutation_routes.counterexample_driven_mutation_requires_theorem_directed_response == true and
-  .theorem_directed_response.applies_only_to_counterexample_driven_mutation == true
-' "$skill_root/references/review-contract.json" >/dev/null
-
-"$jaq_bin" -e '
-  .skill_decision_contract.skill.source_fingerprint ==
-    "actuating-construction-compiler-v9" and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-IMPLEMENT-ENTRY-001")) != null and
-  ([.skill_decision_contract.clauses[].clause_id] |
-    index("ACT-REVIEW-EPOCH-001")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-IMPLEMENT-ENTRY-001") |
-    .success_signals) |
-    index("initial implementation may mutate without review dispatch")) != null and
-  ((.skill_decision_contract.clauses[] |
-    select(.clause_id == "ACT-REVIEW-EPOCH-001") |
-    .success_signals) |
-    index("the exact candidate remains immutable while its review epoch is open")) != null
-' "$skill_root/references/decision-contract.json" >/dev/null
-
-JAQ_BIN="$jaq_bin" "$review_fold_root/tests/test-counterexample-corpus.sh"
-JAQ_BIN="$jaq_bin" "$skill_root/tests/test-direct-repair-admission.sh"
-JAQ_BIN="$jaq_bin" "$skill_root/tests/test-semantic-hotspot-scenarios.sh"
-JAQ_BIN="$jaq_bin" "$skill_root/tests/test-post-elimination-scenarios.sh"
-JAQ_BIN="$jaq_bin" "$skill_root/tests/test-construction-cycle-scenarios.sh"
-
-echo "actuating counterexample-to-construction and corpus contract: pass"
