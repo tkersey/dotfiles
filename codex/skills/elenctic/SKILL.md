@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only, read-only review of one file's changes and their causal consequences throughout the codebase. Fuse all Actuating auxiliary review concerns into one evidence-backed investigation and one deduplicated report. Use only when the user explicitly invokes $elenctic; not for automatic routing, implementation, or Actuating convergence credit."
+description: "Explicit-only, read-only review of one file's changes and their causal consequences throughout the codebase. Fuse all Actuating auxiliary review concerns into one evidence-backed investigation and one deduplicated report. Finish with real blockers or a scoped approval. Use only when the user explicitly invokes $elenctic; not for automatic routing, implementation, or Actuating convergence credit."
 ---
 
 # Elenctic
@@ -29,10 +29,11 @@ are combined; the independence of five reviews is not reproduced. This is not
 Codex's native/default standard review and earns no Actuating review credit.
 
 Remain read-only: do not edit source or the index, implement repairs, stage,
-commit, publish comments, approve, or mark files viewed. Safe targeted tests and
-scratch reproductions are allowed; isolate generated output and avoid commands
-that rewrite the reviewed files or affect external systems. Return evidence to
-the caller, not permission to mutate or merge.
+commit, publish comments, submit GitHub reviews, merge, or mark files viewed.
+Safe targeted tests and scratch reproductions are allowed; isolate generated
+output and avoid commands that rewrite reviewed files or affect external
+systems. A written approval is a scoped review recommendation, not permission
+to mutate, publish an approval, or merge.
 
 ## Bind the change
 
@@ -58,6 +59,15 @@ the caller, not permission to mutate or merge.
    unrelated working-tree bytes. For mutable views, record the relevant content
    identities and recheck them before reporting. Re-read changed evidence or
    mark the affected conclusion incomplete; never combine incompatible states.
+5. For PRs, check base-only changes since the merge base for causal interaction
+   with the target's changed contracts. When they interact, inspect an isolated
+   prospective merge of the pinned base/head, or mark integration coverage
+   incomplete. This supplements, not replaces, the target delta; do not audit
+   unrelated base changes. Keep head and merge evidence separate, identify the
+   view for each finding, and never alter the user's checkout or index to
+   construct it. Recheck PR refs before reporting; rebind affected evidence or
+   mark it incomplete if either moved. Head-only evidence does not establish
+   merge compatibility when relevant base-only changes remain unexamined.
 
 ## Load the auxiliary concerns once
 
@@ -128,11 +138,15 @@ makes it violate the selected change's contract; show that causal difference.
 Report a soundness gap when an indispensable premise of an actual positive
 claim is unsupported; do not equate missing tests with a demonstrated bug.
 Distinguish accepted requirements from preferences, optional strengthening, and
-new requirements. Complexity and fresh-eyes findings need a witnessed defect or
-falsified incumbent claim, not line-count reduction or novelty alone. Explain
-why a suspected compensator is not legitimate defense in depth. Identify the
-failed obligation or upstream cause without selecting a successor architecture
-or turning the review into a repair plan.
+new requirements. Complexity findings may rest on a witnessed defect,
+falsified claim, or concrete structural evidence of a duplicated correctness
+obligation or unjustified ownership split. Tie that burden to the delta and
+explain why it is not legitimate derived defense in depth; absent an established
+violation, it can support a concern without an invented failing execution.
+Fresh-eyes findings still need a witness or materially different admissible
+construction that falsifies an incumbent claim. Line-count reduction and novelty
+alone are insufficient. Identify the failed obligation or upstream cause without
+selecting a successor architecture or turning the review into a repair plan.
 
 ## Adjudicate before reporting
 
@@ -144,15 +158,16 @@ them as concerns. Assign each retained finding exactly one disposition:
 | Disposition | Evidence and merge consequence |
 |---|---|
 | **Concern** | A grounded nonblocking issue or open question worth clarifying or improving, without an established material failure path or unmet merge condition. Name the observation and useful clarification or follow-up; do not assert an unproved defect. |
-| **Risk** | A credible conditional failure or exposure with a concrete trigger, mechanism, and impact, but no established violation of a mandatory merge condition. State the uncertainty, existing mitigation, and validation or risk-acceptance decision still needed; do not imply permission to merge. |
+| **Risk** | A credible conditional failure or exposure with a concrete trigger, mechanism, and impact, but no established material violation or unmet mandatory merge condition. State the unresolved premise, existing mitigation, and validation or risk-acceptance decision still needed; classification alone is not approval. |
 | **Merge blocker** | Current evidence establishes a material violation of an accepted requirement, invariant, or compatibility contract, or an unmet mandatory merge condition, including missing required verification. Cite the authority, witness or missing required evidence, and obligation that must be satisfied before merge. |
 
 Disposition is not severity or confidence. Use the strongest disposition the
 evidence supports: a high-impact suspicion is not automatically a blocker, and
 an unmet mandatory condition is not softened merely because no runtime failure
-was reproduced. Missing optional tests, speculative redesign, and new
-requirements do not create merge gates. Apply the same standard to local and
-propagated findings.
+was reproduced. Conditional does not mean nonblocking: a demonstrated violation
+on a supported path remains a blocker even when rare. Missing optional tests,
+speculative redesign, and new requirements do not create merge gates. Apply the
+same standard to local and propagated findings.
 
 Explain why the disposition holds and what evidence would change it. Only an
 explicit, applicable exception from an authorized owner may alter a mandatory
@@ -165,14 +180,17 @@ without choosing a repair, invoking another reviewer, or opening a new workflow.
 Group findings as **Merge blockers**, **Risks**, then **Concerns**, ordered by
 severity within each group using repository conventions. Deduplicate a shared
 causal defect across lenses and dispositions while retaining distinct witnesses
-and affected paths. Each finding should compactly establish:
+and affected paths. Keep each path's uncertainty intact; one proven consequence
+does not prove another. Each finding should compactly establish:
 
 - **Disposition:** concern, risk, or merge blocker; adjudication rationale;
   severity and confidence separately; what would resolve or reclassify it.
 - **Where and why:** target change location, affected code locations, affected
   contract or claim, and the earliest failed premise or causal mechanism.
-- **Witness and impact:** triggering input, actor, or execution path; expected
-  versus observed or conditional behavior; consequence and supporting evidence.
+- **Evidence and impact:** observed fact and decision-relevant question for a
+  concern; trigger, mechanism, impact, and unresolved premise for a risk;
+  established violation or missing mandatory evidence for a merge blocker.
+  Do not invent a failing execution to fill a field.
 - **Scope and certainty:** local, propagated, or both; introduced or newly
   exposed by this delta; material assumptions and verification limits.
 
@@ -182,12 +200,29 @@ and the affected location; never force it onto an unrelated changed line. For a
 soundness finding, state the positive judgment, failed premise, and honest
 claim-strength consequence. Do not duplicate it under other lens headings.
 
-Close with a brief scope/coverage note: reviewed base and candidate view,
-important causal paths inspected, checks actually run, and unresolved evidence
-gaps. State explicitly when **no merge blockers were identified in the reviewed
-scope**; do not use that as a synonym for no risks, no concerns, or complete
-coverage. Report **no findings in the reviewed scope** only when all three
-categories are empty and the review was completed; neither statement proves
-soundness or approves the whole PR. Return supported findings even when other
-paths remain **incomplete**, but never present partial coverage, missing lens
-instructions, or stale evidence as clean.
+Before the bottom line, give a brief scope/coverage note: reviewed base and
+candidate view, integration coverage where applicable, important causal paths
+inspected, checks actually run, and unresolved evidence gaps. Return supported
+findings even when other paths remain incomplete. Report **no findings in the
+reviewed scope** only when all three categories are empty and coverage is
+complete; never present missing lens instructions or stale evidence as clean.
+
+## End with the decision
+
+Boil the adjudicated report down to one short bottom line at the very end:
+what actually must be satisfied before this change should merge? This is
+synthesis of the same evidence, not another review, a fourth finding category,
+or permission to discard inconvenient blockers. Keep the findings and verdict
+consistent; resolve or reclassify a blocker only with evidence or an applicable
+authorized exception.
+
+| Verdict | Decision rule |
+|---|---|
+| **BLOCKED — Real blockers:** | At least one supported merge blocker remains, even if other paths are incomplete. Summarize every distinct unsatisfied merge obligation, why it blocks, and the minimum evidence or outcome needed to clear it; refer to findings instead of restating the report. |
+| **APPROVE — No real blockers in the reviewed scope.** | The selected review is complete, no supported merge blocker remains, and no material evidence gap prevents the decision. Approval may coexist with nonblocking risks or concerns; briefly say why they do not block. Do not demand optional improvements or invent risk-acceptance gates. |
+| **INCOMPLETE — Approval withheld.** | No supported blocker is established, but missing/stale evidence, required lens coverage, relevant integration coverage, or an unreviewed/no-delta target prevents a decision. Name the specific missing evidence; do not invent a defect. |
+
+Approval covers only the selected change and traced consequences in the
+identified candidate view, not the whole PR or unverified merge integration.
+Never issue conditional approval when a prerequisite remains: use BLOCKED for
+an established unmet obligation or INCOMPLETE for decision-limiting evidence.
