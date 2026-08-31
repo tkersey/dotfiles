@@ -209,7 +209,7 @@ complete; never present missing lens instructions or stale evidence as clean.
 
 ## End with the decision
 
-Boil the adjudicated report down to one short bottom line at the very end:
+Boil the adjudicated report down to a concise final decision at the very end:
 what actually must be satisfied before this change should merge? This is
 synthesis of the same evidence, not another review, a fourth finding category,
 or permission to discard inconvenient blockers. Keep the findings and verdict
@@ -218,9 +218,37 @@ authorized exception.
 
 | Verdict | Decision rule |
 |---|---|
-| **BLOCKED — Real blockers:** | At least one supported merge blocker remains, even if other paths are incomplete. Summarize every distinct unsatisfied merge obligation, why it blocks, and the minimum evidence or outcome needed to clear it; refer to findings instead of restating the report. |
+| **BLOCKED — Real blockers:** | At least one supported merge blocker remains, even if other paths are incomplete. List every distinct unsatisfied merge obligation using the numbered format below, with why it blocks and the minimum evidence or outcome needed to clear it; refer to findings instead of restating the report. |
 | **APPROVE — No real blockers in the reviewed scope.** | The selected review is complete, no supported merge blocker remains, and no material evidence gap prevents the decision. Approval may coexist with nonblocking risks or concerns; briefly say why they do not block. Do not demand optional improvements or invent risk-acceptance gates. |
 | **INCOMPLETE — Approval withheld.** | No supported blocker is established, but missing/stale evidence, required lens coverage, relevant integration coverage, or an unreviewed/no-delta target prevents a decision. Name the specific missing evidence; do not invent a defect. |
+
+For **BLOCKED**, give a numbered list with one entry per distinct real merge
+blocker, ordered by severity. Each entry names the blocker, references its
+finding, and contains the proposed inline review comment separately from its
+location metadata:
+
+```markdown
+1. **<Blocker title>** — `<path>:<line or range>` (<diff side/view>; <finding>)
+
+   **Proposed inline review comment:**
+   > <Subject> should <minimum required outcome>, because <failure or unmet obligation and its impact>.
+```
+
+Write each comment to this instruction: **"Be succinct, suggestive, provide the
+why and use should not could."** Prefer one or two sentences. Direct the
+suggestion at the code or required verification, use "should" rather than
+"could", and explain the evidence-backed mechanism or unmet obligation and why
+it matters. Recommend the required outcome, not a speculative patch or
+successor architecture; do not overstate evidence to make the comment firmer.
+
+Verify proposed locations against the reviewed diff, including the base side
+for deletions. For a propagated blocker, use a relevant causal anchor and name
+the affected dependent in the comment. If no valid inline location is available,
+retain the blocker and draft text, mark **inline location unavailable**, and
+cite the actual evidence location rather than inventing an anchor. Drafts are
+for human approval only; do not post comments or submit a review. Include every
+real blocker once; do not promote risks, concerns, or evidence gaps to fill the
+list. For APPROVE or INCOMPLETE, omit the blocker list and proposed comments.
 
 Approval covers only the selected change and traced consequences in the
 identified candidate view, not the whole PR or unverified merge integration.
