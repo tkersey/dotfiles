@@ -52,10 +52,11 @@ falsified exclusion claim and reopens its causal explanation. It does not by
 itself prove that every implementation detail must change.
 
 When the ordinary explanation is enumerative, detection-shaped, contradicted,
-or incumbent-captive, invoke one bounded `$metanoetic` challenger under its
-normal trigger. Bind the accepted Goal and comparison surface. The challenger
-may reveal a better mechanism before a repair category has been chosen; its
-existence is not authority to adopt it. Actuating adjudicates and gives a live
+or incumbent-captive, use the same Glaze-primed Metanoetic pass defined in
+[architecture-reconciliation.md](architecture-reconciliation.md), under the
+unchanged Metanoetic trigger; do not run a second pass. Bind the accepted Goal
+and comparison surface. The challenger may reveal a better mechanism before a
+repair category has been chosen; its existence is not authority to adopt it. Actuating adjudicates and gives a live
 owned-boundary decision to `$universalist` after the Metanoetic comparison.
 
 A correction at an existing adequate owner and a representation-changing
