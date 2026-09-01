@@ -21,7 +21,7 @@ brew "hub"
 brew "jaq"
 brew "jq"
 brew "lazygit"
-brew "luajit", args: ['HEAD']
+brew "luajit"
 brew "luarocks"
 brew "mas"
 brew "neovim", args: ['HEAD']
@@ -31,8 +31,8 @@ brew "python"
 brew "rclone"
 brew "ripgrep"
 brew "tree"
-brew "tree-sitter", args: ['HEAD']
-brew "tree-sitter-cli", args: ['HEAD']
+brew "tree-sitter"
+brew "tree-sitter-cli"
 brew "treetok"
 brew "unxip"
 brew "uv"
