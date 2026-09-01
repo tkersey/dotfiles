@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v10"
+      "source_fingerprint": "actuating-construction-compiler-v11"
     },
     "triggers": [
       {
@@ -282,14 +282,16 @@
           "resource account, smallest witness, and falsifier"
         ],
         "success_signals": [
-          "one bounded challenge when the existing trigger is live, before Universalist",
+          "one bounded Glaze-primed Metanoetic challenge under the existing trigger, before Universalist",
+          "canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof",
           "incumbent-generated burdens may be eliminated while required observations survive",
           "adopted mechanism change updates actual proof obligations"
         ],
         "failure_signals": [
           "pre-mutation theorem certificate required to think about a better mechanism",
           "hard constraints ignored or new authority silently adopted",
-          "unchanged surface receives duplicate challenges"
+          "unchanged surface receives duplicate challenges",
+          "Glaze adds a trigger, pass, report, review, or acceptance authority"
         ],
         "rationale": "Constrain candidate admissibility, not imagination; preserve bounded supporting ownership."
       },

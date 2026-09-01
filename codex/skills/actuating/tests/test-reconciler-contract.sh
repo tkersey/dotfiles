@@ -26,7 +26,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v16');
 assert.equal(c.contract_id, 'actuating-review-contract-v18');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v10');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v11');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -117,7 +117,29 @@ assert(!/\$actuating (triage|remediation-plan)/.test(text('SKILL.md')));
 assert(text('SKILL.md').includes('It dispatches no\nreview'));
 assert(text('references/review-contract.md').includes('codex-default-review/v1'));
 assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
-console.log('actuating: contract, routing, proof ownership, retired surfaces, and reference links passed');
+// Pairing source-contract regressions; these do not measure model efficacy.
+const architecture = text('references/architecture-reconciliation.md').replace(/\s+/g, ' ');
+const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('3. Derive')[0].replace(/\s+/g, ' ');
+assert(rootStep.includes('When the existing Metanoetic trigger fires'));
+assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`'));
+assert(rootStep.includes('once per unchanged decision surface'));
+assert(rootStep.includes('reuse an already consumed challenger rather than adding a pass'));
+assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
+assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
+assert(architecture.includes('Under the unchanged Metanoetic trigger'));
+assert(architecture.includes('`$glaze` then `$metanoetic` verbatim in the same candidate-generation context'));
+assert(architecture.includes('once per unchanged decision surface'));
+assert(architecture.includes('do not add a Glaze pass, report, review request, or adjudication stage'));
+assert(architecture.includes('Actuating may retain, modify, or reject the challenger'));
+assert(architecture.includes('Remove the coupling if it adds narration or scaffolding'));
+assert(text('references/semantic-hotspots.md').includes('do not run a second pass'));
+assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in the same bounded challenger pass'));
+const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
+assert(challenger.success_signals.includes('one bounded Glaze-primed Metanoetic challenge under the existing trigger, before Universalist'));
+assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
+assert(challenger.failure_signals.includes('Glaze adds a trigger, pass, report, review, or acceptance authority'));
+// End pairing source-contract regressions.
+console.log('actuating: contract, routing, proof ownership, challenger pairing, retired surfaces, and reference links passed');
 JS
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"

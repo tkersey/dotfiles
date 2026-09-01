@@ -20,11 +20,22 @@ Inspect constructors, parsers, schemas, transitions, capability mints, sanctione
 producers, trusted consumers, composition, compatibility/recovery/serialization
 paths, bypasses, primary owners, derived guards, and proof authority.
 
-Bind the accepted Goal and concrete incumbent before a bounded `$metanoetic`
-challenge. Required-valid observations, explicit compatibility, non-goals, and
+Bind the accepted Goal and concrete incumbent for the existing challenger pass.
+Required-valid observations, explicit compatibility, non-goals, and
 authorized effects constrain admissibility. Host capabilities and authority-backed
 resource ceilings require a feasible operational account. Incumbent representation,
 size, latency, and lifecycle burden are evidence, not immutable constraints.
+
+Under the unchanged Metanoetic trigger, read both canonical skills and apply
+`$glaze` then `$metanoetic` verbatim in the same candidate-generation context,
+once per unchanged decision surface. Reuse the bound Goal, cumulative evidence,
+incumbent, comparison criteria, and falsifier. Reuse an already-consumed challenger;
+do not add a Glaze pass, report, review request, or adjudication stage.
+
+Direct ambition at a construction that removes the enabling cause and makes
+compensation unnecessary, not a larger architecture or expanded requirement.
+Encouragement is not evidence: admissibility, proof, and claim strength stay
+unchanged. Actuating may retain, modify, or reject the challenger.
 
 Require boundary dispositions `preserved`, `made irrelevant by mechanism change`,
 or `requires new authority`, plus a changed mechanism, smallest witness, and
@@ -74,3 +85,8 @@ Git and executed verifiers own the result. Actuating retains only the current
 Working Set: Goal/head, causal basis/discriminator, selected mechanism, topology
 and nomination references, actual proof, retirement, residuals, and falsifier.
 No architecture registry, theorem-equality certificate, or transition gate.
+
+Evaluate the pairing through existing offline matched-snapshot audits against
+Metanoetic alone, with the same evidence and resource budget. More ambitious prose
+or more adopted challengers is not efficacy. Remove the coupling if it adds
+narration or scaffolding without better family exclusion and preservation.

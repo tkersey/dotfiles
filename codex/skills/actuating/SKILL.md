@@ -169,14 +169,20 @@ for a pre-mutation theorem-identity certificate to reconsider the mechanism.
 
 1. Bind the incumbent-independent premise basis with `$first-principles` and
    the cumulative Review Fold. Preserve source-fixed boundaries.
-2. When its normal trigger fires, run one bounded `$metanoetic` challenger before
-   `$universalist`. Bind required behavior, observations, hard compatibility,
-   non-goals, effects, host capabilities, and authority-backed resource ceilings.
+2. When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
+   then `$metanoetic` verbatim in the same bounded challenger pass, before
+   `$universalist`. Run once per unchanged decision surface; reuse an already
+   consumed challenger rather than adding a pass. Bind required behavior,
+   observations, hard compatibility, non-goals, effects, host capabilities,
+   and authority-backed resource ceilings.
    Incumbent size, latency, representation, and lifecycle burden are evidence,
    not immutable constraints. Constrain admissibility, not imagination. Require
    `preserved`, `made irrelevant by mechanism change`, or `requires new authority`
    for supplied boundaries, plus the changed mechanism, resource account,
    smallest witness, and falsifier. Retain, modify, reject, combine, or split.
+   Expand ambition toward removing the enabling cause, not expanding the Goal.
+   Encouragement changes neither admissibility nor the proof bar; rejection
+   remains legitimate. Add no separate Glaze report or adjudication stage.
 3. Derive predecessor topology `T0` from the strongest repository-native authority
    for the affected seam. Give `$universalist` one independently governed axis,
    one typed hole, and that domain. Require `candidate`, `preserve-incumbent`, or
