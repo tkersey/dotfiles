@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "elenctic"
-  short_description: "Review one file or aggregate same-name session blockers"
-  default_prompt: "Use $elenctic in its explicitly requested mode. Default mode reviews one selected file and its codebase-wide consequences, adjudicates and falsifies blockers, then ends with retained real blockers or scoped approval. In session-corpus mode, use $seq only as the passive adapter to discover current exact-name sessions and provenance-bound completed Elenctic reports, aggregate and causally deduplicate their blocker claims, rebind and falsify them against the current candidate, and return aggregate real blockers or an honest scoped approval/incomplete verdict."
+  short_description: "Review one file, aggregate sessions, or run a PR campaign"
+  default_prompt: "Use $elenctic only in its explicitly requested mode. Default mode reviews one selected file and its codebase-wide consequences. Session-corpus mode uses $seq to aggregate existing same-name reports. Campaign mode binds one exact PR head, creates clean per-file Elenctic tasks with a sliding concurrency ceiling of 20, admits and causally aggregates their reports, marks only accepted complete current-head files Viewed, and ends with retained real blockers, scoped approval, or an honest incomplete verdict. Bare aggregate must expose incomplete file coverage and offer continue or reviewed-only unless the caller already selected one."
