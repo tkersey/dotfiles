@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "elenctic"
-  short_description: "Review one file's impact; give blockers or approval"
-  default_prompt: "Use $elenctic to review the selected file's changes and their consequences throughout the codebase in one read-only investigation. Adjudicate merge blockers, risks, and concerns, then falsify every provisional blocker against the exact change, governing authority, counterevidence, and existing defenses before ending with retained real blockers or an explicit scoped approval; withhold approval when material evidence is incomplete."
+  short_description: "Review one file or aggregate same-name session blockers"
+  default_prompt: "Use $elenctic in its explicitly requested mode. Default mode reviews one selected file and its codebase-wide consequences, adjudicates and falsifies blockers, then ends with retained real blockers or scoped approval. In session-corpus mode, use $seq only as the passive adapter to discover current exact-name sessions and provenance-bound completed Elenctic reports, aggregate and causally deduplicate their blocker claims, rebind and falsify them against the current candidate, and return aggregate real blockers or an honest scoped approval/incomplete verdict."

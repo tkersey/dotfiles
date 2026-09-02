@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only, read-only review of one file's changes and their causal consequences throughout the codebase. Fuse all Actuating auxiliary review concerns into one evidence-backed investigation and one deduplicated report. Finish with real blockers or a scoped approval. Use only when the user explicitly invokes $elenctic; not for automatic routing, implementation, or Actuating convergence credit."
+description: "Explicit-only, read-only review of one file's changes and their causal consequences throughout the codebase. Fuse all Actuating auxiliary review concerns into one evidence-backed investigation and one deduplicated report. Optional session-corpus mode uses $seq to aggregate real blockers from current same-name review sessions. Finish with real blockers or a scoped approval. Use only when the user explicitly invokes $elenctic; not for automatic routing, implementation, or Actuating convergence credit."
 ---
 
 # Elenctic
@@ -9,24 +9,41 @@ description: "Explicit-only, read-only review of one file's changes and their ca
 changed in the selected file and what that change makes wrong, unsafe,
 unjustified, or unnecessarily difficult elsewhere.
 
-## Invocation and limits
+## Invocation and modes
 
 ```text
+# Default: review one file and its causal consequences.
 $elenctic src/session.ts
 $elenctic src/session.ts against origin/main
 $elenctic src/session.ts in PR #123
 $elenctic src/session.ts — staged changes only
+
+# Optional: aggregate completed reviews from current same-name sessions.
+$elenctic session-corpus
+$elenctic session-corpus in PR #123
+$elenctic aggregate same-name sessions
 ```
 
-These are natural-language scope selectors, not a separate CLI. Resolve one
-file from the invocation or unambiguous caller context. Never expand the target
-to every changed file or activate merely because someone requests a review.
+These are natural-language scope selectors, not a separate CLI. Default mode
+resolves one file from the invocation or unambiguous caller context. Never
+expand that target to every changed file or activate merely because someone
+requests a review.
 
-Perform one integrated investigation in the current reviewing agent. Do not
-spawn reviewers, invoke auxiliary skills, dispatch CAS reviews, or run separate
-lens passes, verdicts, confirmation streaks, or fix/review loops. The concerns
-are combined; the independence of five reviews is not reproduced. This is not
-Codex's native/default standard review and earns no Actuating review credit.
+Activate **session-corpus mode** only when the caller explicitly requests
+`session-corpus`, aggregation, or same-name session evidence. Read and follow
+[session-corpus.md](references/session-corpus.md). A file selector is optional
+in this mode because it aggregates completed single-file Elenctic reports; it
+does not silently launch missing reviews or turn into a whole-PR audit.
+
+Perform one integrated investigation in the current reviewing agent. In default
+mode, do not spawn reviewers, invoke auxiliary skills, dispatch CAS reviews, or
+run separate lens passes, verdicts, confirmation streaks, or fix/review loops.
+In session-corpus mode, `$seq` is the sole permitted sibling skill and acts only
+as the passive adapter for physical session discovery and report evidence. Do
+not invoke review lenses, spawn reviewers, or grant historical reports action,
+review, or closure authority. The concerns are combined; the independence of
+five reviews is not reproduced. Neither mode is Codex's native/default standard
+review or earns Actuating review credit.
 
 Remain read-only: do not edit source or the index, implement repairs, stage,
 commit, publish comments, submit GitHub reviews, merge, or mark files viewed.
@@ -34,6 +51,11 @@ Safe targeted tests and scratch reproductions are allowed; isolate generated
 output and avoid commands that rewrite reviewed files or affect external
 systems. A written approval is a scoped review recommendation, not permission
 to mutate, publish an approval, or merge.
+
+The remaining change-binding and investigation sections govern default
+single-file mode. Session-corpus mode uses its reference for discovery,
+candidate binding, corpus admission, aggregation, and coverage, then reuses the
+adjudication, blocker-falsification, comment, and decision standards here.
 
 ## Bind the change
 
@@ -259,6 +281,19 @@ inspected, checks actually run, and unresolved evidence gaps. Return supported
 findings even when other paths remain incomplete. Report **no findings in the
 reviewed scope** only when all three categories are empty and coverage is
 complete; never present missing lens instructions or stale evidence as clean.
+
+Immediately before the final decision, emit exactly one machine-readable
+identity line. In default mode use canonical one-line JSON in this shape:
+
+```text
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name-or-absolute-root>","target":"<path>","base":"<sha-or-content-id>","candidate":"<sha-or-content-id>","view":"<pr-head|prospective-merge|staged|unstaged|range>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+```
+
+Bind every field to the exact reviewed state; do not reconstruct an identity
+from branch names or mutable refs when an immutable identity is available. The
+identity verdict must equal the final decision. Session-corpus mode emits the
+corpus identity defined by its reference. This line is report provenance, not
+approval or closure authority.
 
 ## End with the decision
 
