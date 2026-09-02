@@ -175,6 +175,59 @@ merge obligation where the governing contract permits it; never invent a
 waiver. State the minimum clarification, validation, or obligation needed,
 without choosing a repair, invoking another reviewer, or opening a new workflow.
 
+## Falsify provisional blockers
+
+Before reporting findings, drafting inline comments, or selecting the final
+verdict, treat every provisional merge blocker as a claim to falsify. Reread the
+exact base and candidate evidence, affected paths, governing authority, and
+verification results without relying on the narrative that produced the
+finding. Use a fresh-eyes stance over the blocker claim inside this investigation;
+do not invoke `$fresh-eyes`, spawn another reviewer, or reopen a whole-target
+review. This is a mandatory adjudication cut, not another review lane.
+
+For each provisional blocker, construct the strongest evidence-backed case that
+it should not block merge. Determine whether:
+
+- the selected change actually introduces, newly exposes, or materially worsens
+  the violation; for a verification blocker, the requirement applies to this
+  change and remains unsatisfied;
+- the cited requirement, invariant, compatibility obligation, or merge
+  condition is accepted, applicable, and mandatory before merge;
+- the triggering path is supported and reachable, or the exact mandatory
+  evidence is identified and genuinely absent;
+- caller obligations, existing defenses, companion changes, mitigations, base
+  behavior, or an applicable authorized exception defeat or narrow the claim;
+- the required outcome is truly a merge prerequisite rather than an optional
+  strengthening, preference, legitimate follow-up, or speculative redesign.
+
+Inspect readily available evidence that could exonerate or narrow the finding.
+Do not retain a blocker merely because it is severe, plausible, confidently
+worded, or expensive to dismiss. Do not demand impossible universal proof; test
+the blocker against the strongest concrete counter-case supported by the bound
+candidate and accepted authority.
+
+Assign each provisional blocker exactly one result:
+
+- **Retained merge blocker:** delta causality, mandatory authority, concrete
+  basis, and merge necessity survive the strongest counter-case.
+- **Reclassified risk:** a credible conditional mechanism remains, but an
+  unresolved premise prevents establishing a material mandatory violation.
+- **Reclassified concern:** a grounded nonblocking observation remains without
+  an established material failure path or unmet merge condition.
+- **Rejected:** the claim is false, refuted, unrelated, preference-only, already
+  satisfied, or pre-existing without a new exposure, material worsening, or
+  contract violation caused by this delta.
+- **Incomplete:** evidence needed to decide the blocker claim is missing or
+  stale; name the gap instead of preserving or inventing a blocker.
+
+Run this cut once per provisional blocker. Do not recursively reconsider an
+unchanged result. A newly discovered issue must pass the ordinary investigation,
+adjudication, and this cut if provisionally blocking; do not generate a
+replacement finding merely because another blocker was rejected. Move
+reclassified findings to their resulting report group, omit rejected claims,
+and carry decision-limiting gaps into coverage. After this cut, only retained
+merge blockers are real blockers.
+
 ## Return one report
 
 Group findings as **Merge blockers**, **Risks**, then **Concerns**, ordered by
@@ -213,26 +266,34 @@ Boil the adjudicated report down to a concise final decision at the very end:
 what actually must be satisfied before this change should merge? This is
 synthesis of the same evidence, not another review, a fourth finding category,
 or permission to discard inconvenient blockers. Keep the findings and verdict
-consistent; resolve or reclassify a blocker only with evidence or an applicable
-authorized exception.
+consistent; resolve or reclassify a blocker only through the falsification cut,
+new evidence, or an applicable authorized exception.
 
 | Verdict | Decision rule |
 |---|---|
-| **BLOCKED — Real blockers:** | At least one supported merge blocker remains, even if other paths are incomplete. List every distinct unsatisfied merge obligation using the numbered format below, with why it blocks and the minimum evidence or outcome needed to clear it; refer to findings instead of restating the report. |
+| **BLOCKED — Real blockers:** | At least one retained merge blocker remains after falsification, even if other paths are incomplete. List every distinct unsatisfied merge obligation using the numbered format below, with why it survived the strongest counter-case and the minimum evidence or outcome needed to clear it; refer to findings instead of restating the report. |
 | **APPROVE — No real blockers in the reviewed scope.** | The selected review is complete, no supported merge blocker remains, and no material evidence gap prevents the decision. Approval may coexist with nonblocking risks or concerns; briefly say why they do not block. Do not demand optional improvements or invent risk-acceptance gates. |
 | **INCOMPLETE — Approval withheld.** | No supported blocker is established, but missing/stale evidence, required lens coverage, relevant integration coverage, or an unreviewed/no-delta target prevents a decision. Name the specific missing evidence; do not invent a defect. |
 
 For **BLOCKED**, give a numbered list with one entry per distinct real merge
 blocker, ordered by severity. Each entry names the blocker, references its
-finding, and contains the proposed inline review comment separately from its
-location metadata:
+finding, states why it survived falsification, and contains the proposed inline
+review comment separately from its location metadata:
 
 ```markdown
 1. **<Blocker title>** — `<path>:<line or range>` (<diff side/view>; <finding>)
 
+   **Why this is a real blocker:** <How this delta introduces, newly exposes, or
+   materially worsens the violation; the mandatory authority; and why the
+   strongest relevant counter-case or defense does not defeat it.>
+
    **Proposed inline review comment:**
    > <Subject> should <minimum required outcome>, because <failure or unmet obligation and its impact>.
 ```
+
+The survival explanation must identify evidence, not merely restate confidence
+or severity. Draft the inline comment only after the blocker survives
+falsification.
 
 Write each comment to this instruction: **"Be succinct, suggestive, provide the
 why and use should not could."** Prefer one or two sentences. Direct the
