@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only, read-only review of one file's changes and their causal consequences throughout the codebase. Fuse all Actuating auxiliary review concerns into one evidence-backed investigation and one deduplicated report. Optional session-corpus mode uses $seq to aggregate real blockers from current same-name review sessions. Finish with real blockers or a scoped approval. Use only when the user explicitly invokes $elenctic; not for automatic routing, implementation, or Actuating convergence credit."
+description: "Explicit-only Elenctic modes: one-file causal review; $seq-backed same-name session aggregation; and an exact-head PR campaign that creates up to 20 clean file-review tasks, aggregates their blockers, and marks accepted complete files Viewed. Finish with real blockers or scoped approval; never edit code, post comments, submit reviews, approve, or merge."
 ---
 
 # Elenctic
@@ -18,10 +18,18 @@ $elenctic src/session.ts against origin/main
 $elenctic src/session.ts in PR #123
 $elenctic src/session.ts — staged changes only
 
-# Optional: aggregate completed reviews from current same-name sessions.
+# Optional, read-only: aggregate completed reviews from same-name sessions.
 $elenctic session-corpus
 $elenctic session-corpus in PR #123
 $elenctic aggregate same-name sessions
+
+# Optional campaign: review every PR file with bounded clean tasks and aggregate.
+$elenctic campaign in PR #123
+$elenctic campaign in PR #123 with concurrency 20
+$elenctic campaign resume
+$elenctic aggregate
+$elenctic aggregate continue
+$elenctic aggregate reviewed-only
 ```
 
 These are natural-language scope selectors, not a separate CLI. Default mode
@@ -30,32 +38,47 @@ expand that target to every changed file or activate merely because someone
 requests a review.
 
 Activate **session-corpus mode** only when the caller explicitly requests
-`session-corpus`, aggregation, or same-name session evidence. Read and follow
+`session-corpus`, `aggregate same-name sessions`, or equivalent same-name
+session evidence. Read and follow
 [session-corpus.md](references/session-corpus.md). A file selector is optional
-in this mode because it aggregates completed single-file Elenctic reports; it
-does not silently launch missing reviews or turn into a whole-PR audit.
+because this mode aggregates completed single-file Elenctic reports; it does not
+launch missing reviews or turn into a whole-PR audit.
 
-Perform one integrated investigation in the current reviewing agent. In default
-mode, do not spawn reviewers, invoke auxiliary skills, dispatch CAS reviews, or
-run separate lens passes, verdicts, confirmation streaks, or fix/review loops.
-In session-corpus mode, `$seq` is the sole permitted sibling skill and acts only
-as the passive adapter for physical session discovery and report evidence. Do
-not invoke review lenses, spawn reviewers, or grant historical reports action,
-review, or closure authority. The concerns are combined; the independence of
-five reviews is not reproduced. Neither mode is Codex's native/default standard
-review or earns Actuating review credit.
+Activate **campaign mode** only when the caller explicitly requests a campaign,
+review of all PR files through Elenctic tasks, campaign resume, or bare
+`aggregate`, `aggregate continue`, or `aggregate reviewed-only`. Read and follow
+[campaign.md](references/campaign.md). Bare `aggregate` runs the campaign
+coverage choice gate; the suffixed forms make the choice without another
+question.
 
-Remain read-only: do not edit source or the index, implement repairs, stage,
-commit, publish comments, submit GitHub reviews, merge, or mark files viewed.
-Safe targeted tests and scratch reproductions are allowed; isolate generated
-output and avoid commands that rewrite reviewed files or affect external
-systems. A written approval is a scoped review recommendation, not permission
-to mutate, publish an approval, or merge.
+Default mode performs one integrated investigation in the current reviewing
+agent and does not spawn reviewers, invoke auxiliary skills, dispatch CAS
+reviews, or run separate lens passes, verdicts, confirmation streaks, or
+fix/review loops. Session-corpus mode may use `$seq` only as a passive adapter
+for physical session discovery and report evidence. Campaign mode may create
+clean, directly identified review tasks and may use `$seq` only for recovery or
+provenance. Each worker still performs one ordinary integrated single-file
+investigation. Do not invoke review lenses as skills or grant worker or
+historical output action, publication, merge, or closure authority. The
+concerns are combined; the independence of five reviews is not reproduced. No
+mode is Codex's native/default standard review or earns Actuating review credit.
 
-The remaining change-binding and investigation sections govern default
-single-file mode. Session-corpus mode uses its reference for discovery,
-candidate binding, corpus admission, aggregation, and coverage, then reuses the
-adjudication, blocker-falsification, comment, and decision standards here.
+Default and session-corpus modes remain read-only. Campaign mode may create and
+observe review tasks and mark an accepted complete current-head file Viewed only
+under its reference. No mode may edit source or the index, implement repairs,
+stage, commit, publish comments, submit GitHub reviews, approve, merge, or unmark
+files. Safe targeted tests and scratch reproductions are allowed; isolate
+generated output and avoid commands that rewrite reviewed files or affect other
+external systems. A written approval is a scoped review recommendation, not
+permission to mutate, publish an approval, or merge.
+
+The remaining change-binding and investigation sections govern ordinary
+single-file reviews, including campaign workers. Session-corpus mode uses its
+reference for discovery, candidate binding, corpus admission, aggregation, and
+coverage. Campaign mode uses its reference for PR inventory, assignment,
+scheduling, task admission, Viewed projection, and aggregation. Both reuse the
+adjudication, blocker-falsification, proposed-comment, and decision standards
+below.
 
 ## Bind the change
 
@@ -286,14 +309,19 @@ Immediately before the final decision, emit exactly one machine-readable
 identity line. In default mode use canonical one-line JSON in this shape:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name-or-absolute-root>","target":"<path>","base":"<sha-or-content-id>","candidate":"<sha-or-content-id>","view":"<pr-head|prospective-merge|staged|unstaged|range>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name-or-absolute-root>","target":"<path>","base":"<sha-or-content-id>","candidate":"<sha-or-content-id>","view":"<pr-head|prospective-merge|staged|unstaged|range>","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
-Bind every field to the exact reviewed state; do not reconstruct an identity
-from branch names or mutable refs when an immutable identity is available. The
-identity verdict must equal the final decision. Session-corpus mode emits the
-corpus identity defined by its reference. This line is report provenance, not
-approval or closure authority.
+`coverage` states whether all material causal paths and required concern
+coverage for the selected file were completed. It is independent of verdict: a
+supported blocker may coexist with incomplete coverage. Campaign workers add
+`pr`, `campaign_id`, and `assignment_id` as specified by their assignment.
+Consumers must tolerate these additive fields but never infer them. Bind every
+field to the exact reviewed state; do not reconstruct an identity from branch
+names or mutable refs when an immutable identity is available. The identity
+verdict must equal the final decision. Session-corpus and campaign coordinator
+modes emit the identities defined by their references. This line is report
+provenance, not approval or closure authority.
 
 ## End with the decision
 
