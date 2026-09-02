@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "elenctic"
   short_description: "Review one file's impact; give blockers or approval"
-  default_prompt: "Use $elenctic to review the selected file's changes and their consequences throughout the codebase in one read-only investigation. Adjudicate merge blockers, risks, and concerns, then end with the real blockers or an explicit scoped approval; withhold approval when material evidence is incomplete."
+  default_prompt: "Use $elenctic to review the selected file's changes and their consequences throughout the codebase in one read-only investigation. Adjudicate merge blockers, risks, and concerns, then falsify every provisional blocker against the exact change, governing authority, counterevidence, and existing defenses before ending with retained real blockers or an explicit scoped approval; withhold approval when material evidence is incomplete."
