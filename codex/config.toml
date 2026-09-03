@@ -54,6 +54,7 @@ extract_model = "gpt-5.4-mini"
 consolidation_model = "gpt-5.3-codex"
 
 [tui]
+auto_recap = false
 status_line = ["codex-version", "current-dir", "pull-request-number", "git-branch", "branch-changes", "weekly-limit", "five-hour-limit", "model-with-reasoning"]
 theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
