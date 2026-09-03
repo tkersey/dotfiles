@@ -34,13 +34,18 @@ $elenctic aggregate continue
 $elenctic aggregate reviewed-only
 ```
 
-An explicit `campaign` invocation authorizes creation and observation of review
-tasks and marking files Viewed for the selected PR under this contract. It does
-not authorize code edits, commits, proposed-comment publication, GitHub review
-submission, approval submission, merge, or unmarking files.
+An explicit `campaign` or `campaign resume` invocation authorizes creation and
+observation of review tasks and marking files Viewed for the selected PR under
+this contract. It does not authorize code edits, commits, proposed-comment
+publication, GitHub review submission, approval submission, merge, or unmarking
+files.
 
 Bare `aggregate` runs the coverage choice gate below. `aggregate continue` and
-`aggregate reviewed-only` make that choice explicitly. `session-corpus` and
+`aggregate reviewed-only` make that choice explicitly, but do not independently
+grant task-creation or Viewed-mutation authority. They may use authority already
+established by an explicit campaign invocation in the current coordinator;
+otherwise `aggregate continue` requires `campaign resume`, and
+`aggregate reviewed-only` remains read-only. `session-corpus` and
 `aggregate same-name sessions` retain the read-only manual-corpus semantics in
 [session-corpus.md](session-corpus.md).
 
@@ -51,7 +56,8 @@ Require an open pull request and bind:
 ```text
 repository name with owner
 pull request number and node ID
-base object ID
+base-tip object ID
+review merge-base object ID
 head object ID
 complete changed-file inventory
 inventory digest
@@ -62,7 +68,7 @@ campaign ID
 Use `gh` as the GitHub authority. Begin with the compact PR identity:
 
 ```bash
-gh pr view <pr> --json id,number,url,baseRefOid,headRefOid,changedFiles
+gh pr view <pr> --json id,number,url,state,baseRefOid,headRefOid,changedFiles
 ```
 
 Enumerate the complete file connection and the current viewer's Viewed state
@@ -79,6 +85,7 @@ gh api graphql --paginate \
       pullRequest(number:$number){
         id
         number
+        state
         baseRefOid
         headRefOid
         files(first:100,after:$endCursor){
@@ -91,6 +98,19 @@ gh api graphql --paginate \
   }'
 ```
 
+Require both identity reads to report `state: OPEN`. Resolve the immutable review
+base separately from the base-branch tip, using the pinned base and head SHAs:
+
+```bash
+gh api \
+  "repos/<owner>/<repo>/compare/<base-sha>...<head-sha>" \
+  --jq .merge_base_commit.sha
+```
+
+Bind `baseRefOid` as the campaign base tip and `merge_base_commit.sha` as the
+review merge base. Workers review merge base to head as required by ordinary
+single-file Elenctic; base-tip movement still invalidates the campaign epoch.
+
 Preserve the raw page envelopes, flatten every file exactly once, and verify the
 unique path count equals `totalCount` and the compact `changedFiles` value.
 Record rename/delete/binary/generated characteristics when available; none is a
@@ -102,9 +122,11 @@ Define a campaign identity that cannot collide across coordinators or PR heads:
 elenctic-campaign-v1:<owner/name>#<pr>@<head-sha>:<coordinator-session-id>
 ```
 
-The file inventory and identities are an immutable review epoch. Before
+The base tip, review merge base, file inventory, and identities are an immutable
+review epoch. Before
 launching another task, admitting a report, marking a file Viewed, or issuing a
-final verdict, re-read the PR identity. If base or head moved:
+final verdict, re-read the PR identity and require `state: OPEN`. If state, base,
+or head moved:
 
 1. stop launching assignments for the old epoch;
 2. mark unadmitted old reports stale and do not project them to Viewed;
@@ -127,7 +149,8 @@ assignment_id
 campaign_id
 ordinal and total
 target path
-base SHA
+base-tip SHA
+review merge-base SHA
 head SHA
 worker thread ID
 state
@@ -170,7 +193,8 @@ Use a compact assignment prompt:
 
 ```text
 Elenctic campaign <campaign-id>, assignment <assignment-id>. Use $elenctic to
-review <path> in PR #<number> at base <base-sha> and head <head-sha>. Do not
+review <path> in PR #<number> at review merge base <merge-base-sha> and head
+<head-sha>. Do not
 aggregate, edit, mark Viewed, post comments, submit a review, approve, or merge.
 Emit the required Review identity with pr, campaign_id, assignment_id, and
 coverage.
@@ -235,6 +259,8 @@ Example shape:
 Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"owner/name","pr":123,"campaign_id":"elenctic-campaign-v1:...","assignment_id":"file-007","target":"src/session.ts","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"complete","verdict":"BLOCKED"}
 ```
 
+The identity's `base` is the bound review merge base, not `baseRefOid`.
+
 `coverage` is independent of `verdict`. A report can establish a real blocker
 while leaving another material path incomplete. That report contributes its
 supported blocker, but its file is not campaign-complete and must not be marked
@@ -246,10 +272,11 @@ Read a worker by its direct thread ID. Admit a report only when:
 
 - the terminal assistant message contains exactly one unquoted Review identity;
 - schema and mode are the expected Elenctic single-file values;
-- repository, PR, campaign, assignment, target, base, candidate, and view match;
+- repository, PR, campaign, assignment, target, review merge base, candidate,
+  and view match;
 - the report verdict equals the identity verdict;
 - the report was produced after the assignment and before the aggregation cut;
-- the exact PR base/head still match the campaign epoch;
+- the exact open PR base-tip/head still match the campaign epoch;
 - the result satisfies ordinary Elenctic evidence and blocker-falsification
   requirements.
 
@@ -270,7 +297,8 @@ Disposition accepted evidence as follows:
 Only campaign mode may mark files Viewed. Stage the intended mutations as
 assignments become accepted, then apply them at an aggregation checkpoint:
 
-1. recheck the PR node ID, base SHA, head SHA, and complete inventory;
+1. recheck that the PR is open and that its node ID, base-tip SHA, head SHA, and
+   complete inventory match the campaign epoch;
 2. select only current-epoch assignments with `coverage: complete`;
 3. skip files already reported as `VIEWED`;
 4. mark each remaining accepted path with GraphQL;
@@ -281,13 +309,16 @@ Mutation form:
 ```bash
 gh api graphql \
   -f pullRequestId='<pull-request-node-id>' \
-  -f path='<path>' \
+  -f "path=$assignment_path" \
   -f query='mutation($pullRequestId:ID!,$path:String!){
     markFileAsViewed(input:{pullRequestId:$pullRequestId,path:$path}){
       pullRequest{id}
     }
   }'
 ```
+
+Keep each inventory path in a data variable or structured tool argument. Never
+substitute a PR-controlled path into generated shell source or quote syntax.
 
 Mark complete blocked files Viewed: Viewed means inspected, not approved. Never
 mark `incomplete`, `failed`, `stale`, queued, running, or needs-input assignments.
@@ -349,9 +380,12 @@ Do not ask when the caller already selected `aggregate continue` or
 continues running work, and surfaces needs-input assignments without granting
 permission. Rebind or restart against a moved head before continuing.
 
-`reviewed-only` launches no work. It may project accepted complete files to
-Viewed, then aggregates only current accepted reports and states every missing
-coverage class explicitly.
+`reviewed-only` launches no work. With previously established campaign authority,
+it may project accepted complete files to Viewed; without that authority it
+performs no mutation. In either case it aggregates semantic evidence from every
+current admitted report, including supported blockers from incomplete reports,
+while using accepted complete reports only for coverage and Viewed projection.
+It states every missing coverage class explicitly.
 
 Verdict semantics are:
 
@@ -384,7 +418,7 @@ Before the final verdict, report:
 PR campaign:
 - campaign ID: <id>
 - repository / PR: <repo>#<number>
-- exact base / head: <sha> / <sha>
+- exact base tip / review merge base / head: <sha> / <sha> / <sha>
 - changed files: <total>
 - accepted complete: <count>
 - blocked / approved complete reports: <counts>
@@ -401,13 +435,18 @@ Immediately before the final decision, emit:
 Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
+The campaign identity's `base` is likewise the bound review merge base; report
+the separately bound base tip in the campaign summary above.
+
 Use the ordinary real-blocker list and inline-comment style. Add sanitized
 supporting assignment/session provenance without repeating the complete worker
 reports.
 
 ## Hard rules
 
-- Explicit campaign authority is required before task creation or Viewed writes.
+- Explicit `campaign` or `campaign resume` authority in the current coordinator
+  is required before task creation or Viewed writes; aggregate-only commands do
+  not grant it.
 - Create one clean single-file Elenctic task per changed file.
 - Cap active workers at 20 and use a sliding window.
 - Bind assignments, reports, Viewed writes, and verdicts to one exact PR epoch.
