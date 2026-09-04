@@ -1,16 +1,18 @@
 # PR Campaign Mode
 
-Use this reference only when `$elenctic` is explicitly invoked to create,
-resume, or aggregate a PR review campaign. Campaign mode creates bounded
-single-file review tasks, admits their exact-head reports, projects accepted
-progress into GitHub's Viewed state, and automatically applies the existing
-causal aggregation and blocker-falsification rules.
+Use this reference whenever `SKILL.md` resolves an explicit `$elenctic`
+invocation to campaign mode, including bare invocation, a PR or branch selector,
+the `campaign` alias, resume, or campaign aggregation. Campaign mode creates
+bounded file-mode review tasks, admits their exact-head reports, projects
+accepted progress into GitHub's Viewed state, and automatically applies the
+existing causal aggregation and blocker-falsification rules.
 
 ## Governing invariant
 
 ```text
-A campaign is complete only when every changed file at one exact PR head has a
-terminal, current, provenance-bound review disposition.
+A campaign is complete only when every file selected as unchecked at one exact
+PR-head inventory cut has a terminal, current, provenance-bound review
+disposition.
 ```
 
 GitHub Viewed state is an output of accepted review evidence, never its source:
@@ -21,11 +23,17 @@ Viewed                                  -/> reviewed
 ```
 
 A file may be completely reviewed and blocked. A file may be manually Viewed
-without any Elenctic review. Keep those facts separate.
+without any Elenctic review. Keep those facts separate. Viewed state selects the
+remaining campaign surface at the inventory cut; it never proves review coverage
+or correctness.
 
 ## Invocation and authority
 
 ```text
+$elenctic
+$elenctic this PR
+$elenctic this branch
+$elenctic PR #123
 $elenctic campaign in PR #123
 $elenctic campaign in PR #123 with concurrency 20
 $elenctic campaign resume
@@ -34,20 +42,27 @@ $elenctic aggregate continue
 $elenctic aggregate reviewed-only
 ```
 
-An explicit `campaign` or `campaign resume` invocation authorizes creation and
-observation of review tasks and marking files Viewed for the selected PR under
-this contract. It does not authorize code edits, commits, proposed-comment
-publication, GitHub review submission, approval submission, merge, or unmarking
-files.
+Any explicit `$elenctic` invocation that `SKILL.md` resolves and normalizes to
+campaign mode authorizes creation and observation of review tasks and marking
+accepted files Viewed for the selected PR under this contract. This includes
+bare invocation and explicit PR or branch selectors; the literal word
+`campaign` is not required after normalization. This authority does not extend
+to code edits, commits, proposed-comment publication, GitHub review submission,
+approval submission, merge, or unmarking files.
 
 Bare `aggregate` runs the coverage choice gate below. `aggregate continue` and
 `aggregate reviewed-only` make that choice explicitly, but do not independently
 grant task-creation or Viewed-mutation authority. They may use authority already
 established by an explicit campaign invocation in the current coordinator;
-otherwise `aggregate continue` requires `campaign resume`, and
-`aggregate reviewed-only` remains read-only. `session-corpus` and
+otherwise `aggregate continue` requires a new explicit campaign-mode
+invocation, and `aggregate reviewed-only` remains read-only. `session-corpus` and
 `aggregate same-name sessions` retain the read-only manual-corpus semantics in
 [session-corpus.md](session-corpus.md).
+
+Resolve bare `$elenctic`, bare `$elenctic campaign`, `this PR`, and `this branch`
+with `gh pr view` without a positional argument. Pass an explicit PR
+number, URL, or named branch to `gh pr view` unchanged as its positional
+selector. Never substitute the current branch for a caller-supplied selector.
 
 ## Bind one exact PR epoch
 
@@ -60,8 +75,12 @@ base-tip object ID
 review merge-base object ID
 head object ID
 complete changed-file inventory
-inventory digest
+initial `viewerViewedState` for every file
+selected unchecked-path set
+pre-Viewed exclusion set
+inventory and selected-set digests
 coordinator session ID
+campaign instance ID
 campaign ID
 ```
 
@@ -114,19 +133,41 @@ single-file Elenctic; base-tip movement still invalidates the campaign epoch.
 Preserve the raw page envelopes, flatten every file exactly once, and verify the
 unique path count equals `totalCount` and the compact `changedFiles` value.
 Record rename/delete/binary/generated characteristics when available; none is a
-silent exclusion from campaign coverage.
+silent file-type exclusion.
 
-Define a campaign identity that cannot collide across coordinators or PR heads:
+At the inventory cut, partition the complete PR inventory exactly once:
 
 ```text
-elenctic-campaign-v1:<owner/name>#<pr>@<head-sha>:<coordinator-session-id>
+selected unchecked files
+  viewerViewedState != VIEWED
+
+pre-Viewed exclusions
+  viewerViewedState == VIEWED
 ```
 
-The base tip, review merge base, file inventory, and identities are an immutable
-review epoch. Before
-launching another task, admitting a report, marking a file Viewed, or issuing a
-final verdict, re-read the PR identity and require `state: OPEN`. If state, base,
-or head moved:
+Create campaign assignments only for the selected unchecked set. Treat
+`DISMISSED`, null, unknown non-`VIEWED`, and any other unchecked state as
+selected. Record pre-Viewed files as user-owned scope exclusions, never as
+Elenctic-reviewed, clean, approved, or covered. Freeze both sets with the exact
+PR epoch. A later manual check does not cancel a selected assignment, and a
+later manual uncheck does not silently expand the active campaign; use a new
+campaign or explicit epoch refresh.
+
+Allocate a fresh opaque UUID or runtime-issued unique token as the campaign
+instance ID for every initial campaign, restart, or epoch refresh, even when the
+PR head and selected set are unchanged. Never derive it from mutable Viewed
+state or reuse it within the coordinator session. Define a campaign identity
+that cannot collide across coordinators, selection cuts, or refreshes:
+
+```text
+elenctic-campaign-v1:<owner/name>#<pr>@<head-sha>:<selected-set-digest>:<coordinator-session-id>:<campaign-instance-id>
+```
+
+The base tip, review merge base, complete inventory, initial Viewed-state map,
+selected unchecked set, pre-Viewed exclusions, and identities form one immutable
+review epoch. Before launching another task, admitting a report, marking a file
+Viewed, or issuing a final verdict, re-read the PR identity and require
+`state: OPEN`. If state, base, or head moved:
 
 1. stop launching assignments for the old epoch;
 2. mark unadmitted old reports stale and do not project them to Viewed;
@@ -140,7 +181,8 @@ unchanged. Its causal evidence may depend on another file that changed.
 
 ## Create deterministic assignments
 
-Create one assignment per changed path. Keep this coordinator-owned working set
+Create one assignment per path in the frozen selected unchecked set. Create no
+assignment for a pre-Viewed exclusion. Keep this coordinator-owned working set
 in the current session; do not create a repository ledger merely to run the
 campaign:
 
@@ -192,10 +234,10 @@ worker's findings or the coordinator's emerging aggregate theory.
 Use a compact assignment prompt:
 
 ```text
-Elenctic campaign <campaign-id>, assignment <assignment-id>. Use $elenctic to
-review <path> in PR #<number> at review merge base <merge-base-sha> and head
-<head-sha>. Do not
-aggregate, edit, mark Viewed, post comments, submit a review, approve, or merge.
+Elenctic campaign <campaign-id>, assignment <assignment-id>. Use
+$elenctic file <path> to review that file in PR #<number> at review merge base
+<merge-base-sha> and head <head-sha>. Do not aggregate, edit, mark Viewed, post
+comments, submit a review, approve, or merge.
 Emit the required Review identity with pr, campaign_id, assignment_id, and
 coverage.
 ```
@@ -211,7 +253,7 @@ findings. If neither route can preserve clean worker inputs and direct task
 identity, stop rather than launching shell-managed Codex processes or generic
 untracked subagents.
 
-Each worker runs ordinary single-file Elenctic exactly once. The campaign does
+Each worker runs ordinary Elenctic file mode exactly once. The campaign does
 not replace that investigation with a shorter worker prompt, per-file diff
 summary, or standard Codex review.
 
@@ -224,8 +266,8 @@ Default to a concurrency ceiling of 20. Clamp an explicit value to:
 ```
 
 and further reduce it to the runtime-advertised task capacity. Concurrency is
-not the total file budget: a 100-file PR uses a 20-wide queue until every file
-has a terminal disposition.
+not the total file budget: 100 selected unchecked files use a 20-wide queue
+until every selected file has a terminal disposition.
 
 Maintain a sliding window. When one worker reaches a terminal state, admit or
 disposition it and launch the next queued assignment. Shard wait/read calls to
@@ -244,13 +286,12 @@ behalf.
 
 ## Require campaign-bound worker identities
 
-A campaign worker extends the ordinary single-file identity with these fields:
+A campaign worker uses the ordinary PR-scoped single-file `pr` field and adds
+these campaign fields:
 
 ```text
-"pr": <number>
 "campaign_id": "<campaign-id>"
 "assignment_id": "<assignment-id>"
-"coverage": "complete" | "incomplete"
 ```
 
 Example shape:
@@ -292,6 +333,37 @@ Disposition accepted evidence as follows:
 - supported blockers in an incomplete report may nominate aggregate claims, but
   do not establish file completion.
 
+## Admit evidence for pre-Viewed exclusions
+
+Do not create campaign assignments or new workers for pre-Viewed exclusions.
+A pre-Viewed path contributes to whole-PR coverage only when the coordinator is
+given an existing terminal Elenctic file report directly, already holds its
+direct thread identity, or recovers that exact report with `$seq`. Discovery
+does not grant admission: require exactly one unquoted single-file Review
+identity whose repository, PR, target, review merge base, candidate, and
+`view: "pr-head"` match the campaign epoch and whose verdict matches the report.
+Require the report to predate the aggregation cut, re-read the exact PR epoch as
+open, and apply ordinary Elenctic evidence and blocker-falsification rules. For
+whole-PR coverage credit, also require the report to state the reviewed base-tip
+SHA matching the campaign epoch, or revalidate its relevant integration
+coverage against that exact base tip. Reject aggregate identities, quoted
+reports, head/merge-base mismatches, and reports without a direct session or
+task provenance reference.
+
+Record admitted excluded-file evidence separately from campaign assignments.
+Supported blockers contribute to aggregation even when the report's coverage is
+incomplete. Only `coverage: complete` contributes whole-PR coverage. Excluded
+evidence never authorizes a Viewed mutation and never retroactively makes the
+excluded path campaign-selected.
+
+Derive whole-PR coverage from both dimensions:
+
+- `complete` only when selected-scope coverage is complete and every pre-Viewed
+  exclusion has complete, base-tip-current evidence;
+- `partial` when whole-PR coverage is not complete but at least one changed file
+  has complete selected or excluded evidence;
+- `not-established` when no changed file has complete Elenctic evidence.
+
 ## Project accepted progress to Viewed
 
 Only campaign mode may mark files Viewed. Stage the intended mutations as
@@ -300,8 +372,10 @@ assignments become accepted, then apply them at an aggregation checkpoint:
 1. recheck that the PR is open and that its node ID, base-tip SHA, head SHA, and
    complete inventory match the campaign epoch;
 2. select only current-epoch assignments with `coverage: complete`;
-3. skip files already reported as `VIEWED`;
-4. mark each remaining accepted path with GraphQL;
+3. if a selected file is now already `VIEWED`, retain its accepted Elenctic
+   evidence and record that no mutation was needed; do not reinterpret the
+   checkbox as the source of coverage;
+4. mark each remaining accepted selected path with GraphQL;
 5. requery `viewerViewedState` and record the observed result.
 
 Mutation form:
@@ -352,8 +426,9 @@ whole-campaign approval unavailable and prevents any remaining Viewed writes.
 ## Coverage choice on aggregate
 
 Before bare `$elenctic aggregate` launches, resumes, or waits for work, compare
-the complete current PR inventory with accepted current-epoch assignments.
-Classify every path as:
+the frozen selected unchecked set with accepted current-epoch assignments.
+Report the complete PR count and pre-Viewed exclusion count separately; do not
+treat exclusions as missing campaign work. Classify every selected path as:
 
 ```text
 accepted complete
@@ -365,20 +440,21 @@ running
 queued or unassigned
 ```
 
-If any path is not accepted complete, report the exact counts and representative
-paths, then offer exactly these choices:
+If any selected path is not accepted complete, report the exact counts and
+representative paths, then offer exactly these choices:
 
 ```text
-1. Continue the campaign for every non-complete path, then aggregate.
-2. Aggregate the reviewed files now without launching more tasks.
+1. Continue the campaign for every non-complete selected path, then aggregate.
+2. Aggregate the reviewed selected files now without launching more tasks.
 ```
 
 Do not ask when the caller already selected `aggregate continue` or
 `aggregate reviewed-only`.
 
-`continue` requeues unassigned, stale, retryable failed, and incomplete work,
-continues running work, and surfaces needs-input assignments without granting
-permission. Rebind or restart against a moved head before continuing.
+`continue` requeues unassigned, stale, retryable failed, and incomplete work
+only within the frozen selected set, continues running selected work, and
+surfaces needs-input assignments without granting permission. Rebind or restart
+against a moved head before continuing.
 
 `reviewed-only` launches no work. With previously established campaign authority,
 it may project accepted complete files to Viewed; without that authority it
@@ -391,10 +467,21 @@ Verdict semantics are:
 
 - any current blocker surviving aggregate falsification -> **BLOCKED**, even
   when other files are not reviewed;
-- no surviving blocker with incomplete PR coverage -> **INCOMPLETE**, with no
-  real blockers identified in the reviewed subset;
-- whole-PR **APPROVE** -> every changed file has accepted complete current-head
-  coverage and relevant integration evidence is complete.
+- no surviving blocker with incomplete selected-set coverage -> **INCOMPLETE**,
+  with no real blockers identified in the reviewed selected subset;
+- scoped **APPROVE** -> every selected unchecked file has accepted complete
+  current-head coverage, no blocker survives, and relevant integration evidence
+  for that selected scope is complete;
+- whole-PR **APPROVE** -> selected-scope coverage is complete, every pre-Viewed
+  exclusion (if any) has complete current-head Elenctic evidence bound or
+  revalidated to the campaign base tip, no blocker survives, and relevant
+  integration evidence is complete.
+
+Never issue a vacuous approval when the selected set is empty. Launch no workers;
+aggregate separately admissible current-head Elenctic evidence when available,
+but issue whole-PR approval only when every excluded file has complete,
+base-tip-current evidence. Otherwise report that every file was pre-Viewed and
+withhold an Elenctic whole-PR approval.
 
 ## Resume and recover
 
@@ -420,23 +507,31 @@ PR campaign:
 - repository / PR: <repo>#<number>
 - exact base tip / review merge base / head: <sha> / <sha> / <sha>
 - changed files: <total>
-- accepted complete: <count>
-- blocked / approved complete reports: <counts>
+- pre-Viewed exclusions: <count>
+- selected unchecked files: <count>
+- accepted complete selected files: <count>
+- blocked / approved complete selected reports: <counts>
 - incomplete / failed / stale / needs-input: <counts>
 - running / queued: <counts>
 - Viewed confirmed / already Viewed / projection failed: <counts>
 - aggregate causal blockers: <count>
-- coverage: complete | partial
+- selected-scope coverage: complete | partial
+- whole-PR Elenctic coverage: complete | partial | not-established
 ```
 
 Immediately before the final decision, emit:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","selected_scope_coverage":"<complete|partial>","whole_pr_coverage":"<complete|partial|not-established>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
 The campaign identity's `base` is likewise the bound review merge base; report
-the separately bound base tip in the campaign summary above.
+the separately bound base tip in the campaign summary above. For v1 compatibility,
+`coverage` remains conservative whole-PR coverage: it is `complete` only when
+`whole_pr_coverage` is `complete`, and otherwise is `partial` (including when
+whole-PR coverage is `not-established`). The two explicit coverage fields
+preserve selected-set completion independently from whole-PR Elenctic coverage
+for recovery and automation.
 
 Use the ordinary real-blocker list and inline-comment style. Add sanitized
 supporting assignment/session provenance without repeating the complete worker
@@ -444,14 +539,17 @@ reports.
 
 ## Hard rules
 
-- Explicit `campaign` or `campaign resume` authority in the current coordinator
-  is required before task creation or Viewed writes; aggregate-only commands do
-  not grant it.
-- Create one clean single-file Elenctic task per changed file.
+- Explicit `$elenctic` invocation resolved to campaign mode in the current
+  coordinator is required before task creation or Viewed writes; aggregate-only
+  commands do not grant it.
+- Freeze initial Viewed state and create one clean file-mode task only for each
+  file that was unchecked at the inventory cut.
+- Record pre-Viewed files as scope exclusions, never as Elenctic coverage.
 - Cap active workers at 20 and use a sliding window.
 - Bind assignments, reports, Viewed writes, and verdicts to one exact PR epoch.
 - Continue collecting all file outcomes after finding a blocker.
-- Never infer review coverage from GitHub Viewed state.
+- Use GitHub Viewed state only to select the initial remaining-work set; never
+  infer review coverage, correctness, or approval from it.
 - Never mark a file Viewed without an accepted complete current-head report.
 - Never unmark Viewed, post comments, submit a review, approve, merge, or edit
   source code.
