@@ -80,6 +80,7 @@ selected unchecked-path set
 pre-Viewed exclusion set
 inventory and selected-set digests
 coordinator session ID
+campaign instance ID
 campaign ID
 ```
 
@@ -152,10 +153,14 @@ PR epoch. A later manual check does not cancel a selected assignment, and a
 later manual uncheck does not silently expand the active campaign; use a new
 campaign or explicit epoch refresh.
 
-Define a campaign identity that cannot collide across coordinators or PR heads:
+Allocate a fresh opaque UUID or runtime-issued unique token as the campaign
+instance ID for every initial campaign, restart, or epoch refresh, even when the
+PR head and selected set are unchanged. Never derive it from mutable Viewed
+state or reuse it within the coordinator session. Define a campaign identity
+that cannot collide across coordinators, selection cuts, or refreshes:
 
 ```text
-elenctic-campaign-v1:<owner/name>#<pr>@<head-sha>:<coordinator-session-id>
+elenctic-campaign-v1:<owner/name>#<pr>@<head-sha>:<selected-set-digest>:<coordinator-session-id>:<campaign-instance-id>
 ```
 
 The base tip, review merge base, complete inventory, initial Viewed-state map,
@@ -337,18 +342,19 @@ given an existing terminal Elenctic file report directly, already holds its
 direct thread identity, or recovers that exact report with `$seq`. Discovery
 does not grant admission: require exactly one unquoted single-file Review
 identity whose repository, PR, target, review merge base, candidate, and
-`view: "pr-head"` match the campaign epoch, whose `coverage` is `complete`, and
-whose verdict matches the report. Require the report to predate the aggregation
-cut, re-read the exact PR epoch as open, and apply ordinary Elenctic evidence
-and blocker-falsification rules. Reject aggregate identities, quoted reports,
-head/base mismatches, and reports without a direct session or task provenance
-reference.
+`view: "pr-head"` match the campaign epoch and whose verdict matches the report.
+Require the report to predate the aggregation cut, re-read the exact PR epoch as
+open, and apply ordinary Elenctic evidence and blocker-falsification rules.
+Reject aggregate identities, quoted reports, head/base mismatches, and reports
+without a direct session or task provenance reference.
 
 Record admitted excluded-file evidence separately from campaign assignments.
-It contributes blockers and whole-PR coverage, but it never authorizes a Viewed
-mutation and never retroactively makes the excluded path campaign-selected. If
-any pre-Viewed path lacks such evidence, whole-PR coverage is `partial` when at
-least one excluded path is admitted and `not-established` when none are.
+Supported blockers contribute to aggregation even when the report's coverage is
+incomplete. Only `coverage: complete` contributes whole-PR coverage. Excluded
+evidence never authorizes a Viewed mutation and never retroactively makes the
+excluded path campaign-selected. If any pre-Viewed path lacks complete evidence,
+whole-PR coverage is `partial` when at least one excluded path has complete
+evidence and `not-established` when none do.
 
 ## Project accepted progress to Viewed
 
@@ -510,10 +516,12 @@ Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo
 ```
 
 The campaign identity's `base` is likewise the bound review merge base; report
-the separately bound base tip in the campaign summary above. `coverage` is the
-compatibility alias for `selected_scope_coverage` and must equal it. The two
-explicit coverage fields preserve selected-set completion independently from
-whole-PR Elenctic coverage for recovery and automation.
+the separately bound base tip in the campaign summary above. For v1 compatibility,
+`coverage` remains conservative whole-PR coverage: it is `complete` only when
+`whole_pr_coverage` is `complete`, and otherwise is `partial` (including when
+whole-PR coverage is `not-established`). The two explicit coverage fields
+preserve selected-set completion independently from whole-PR Elenctic coverage
+for recovery and automation.
 
 Use the ordinary real-blocker list and inline-comment style. Add sanitized
 supporting assignment/session provenance without repeating the complete worker
