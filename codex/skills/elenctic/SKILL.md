@@ -46,20 +46,21 @@ with this precedence:
 
 1. `session-corpus`, `aggregate same-name sessions`, or equivalent same-name
    evidence language selects **session-corpus mode**.
-2. `file`, `single-file`, or an explicit file path without a campaign or
-   aggregate selector selects **file mode**. The path-only form remains a
-   compatibility shorthand.
-3. `aggregate`, `resume`, `campaign`, an explicit PR or branch selector, or a
-   bare `$elenctic` selects **campaign mode**.
+2. `file`, `single-file`, or an explicit file path selects **file mode**, even
+   when accompanied by a PR, branch, range, staged-only, or unstaged-only
+   comparison selector. Only an explicit `campaign` or `aggregate` selector
+   overrides a file target. The path-only form remains a compatibility shorthand.
+3. `aggregate`, `resume`, `campaign`, or a PR or branch selector without a file
+   target, or a bare `$elenctic`, selects **campaign mode**.
 
-Campaign is the user-facing default. For bare `$elenctic`, `this PR`, or
-`this branch`, resolve the open PR associated with the current branch through
-`gh pr view` without a PR argument. If no unique open PR is available, stop
-without creating tasks or mutating Viewed state and request an explicit PR; do
-not silently fall back to file mode. Pass an explicit PR number, URL, or named
-branch to `gh pr view` as its positional selector; never replace it with the
-current branch. Normalize every successful default route to the canonical
-`$elenctic campaign <resolved-pr>` selector before applying
+Campaign is the user-facing default. For bare `$elenctic`, bare `$elenctic campaign`,
+`this PR`, or `this branch`, resolve the open PR associated with the
+current branch through `gh pr view` without a PR argument. If no unique open PR
+is available, stop without creating tasks or mutating Viewed state and request
+an explicit PR; do not silently fall back to file mode. Pass an explicit PR
+number, URL, or named branch to `gh pr view` as its positional selector; never
+replace it with the current branch. Normalize every successful default route
+to the canonical `$elenctic campaign <resolved-pr>` selector before applying
 [campaign.md](references/campaign.md). That normalized explicit selector carries
 the campaign authority required by the reference.
 

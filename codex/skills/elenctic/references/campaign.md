@@ -59,10 +59,10 @@ invocation, and `aggregate reviewed-only` remains read-only. `session-corpus` an
 `aggregate same-name sessions` retain the read-only manual-corpus semantics in
 [session-corpus.md](session-corpus.md).
 
-Resolve bare `$elenctic`, `this PR`, and `this branch` with `gh pr view`
-without a positional argument. Pass an explicit PR number, URL, or named branch
-to `gh pr view` unchanged as its positional selector. Never substitute the
-current branch for a caller-supplied selector.
+Resolve bare `$elenctic`, bare `$elenctic campaign`, `this PR`, and `this branch`
+with `gh pr view` without a positional argument. Pass an explicit PR
+number, URL, or named branch to `gh pr view` unchanged as its positional
+selector. Never substitute the current branch for a caller-supplied selector.
 
 ## Bind one exact PR epoch
 
@@ -344,17 +344,26 @@ does not grant admission: require exactly one unquoted single-file Review
 identity whose repository, PR, target, review merge base, candidate, and
 `view: "pr-head"` match the campaign epoch and whose verdict matches the report.
 Require the report to predate the aggregation cut, re-read the exact PR epoch as
-open, and apply ordinary Elenctic evidence and blocker-falsification rules.
-Reject aggregate identities, quoted reports, head/base mismatches, and reports
-without a direct session or task provenance reference.
+open, and apply ordinary Elenctic evidence and blocker-falsification rules. For
+whole-PR coverage credit, also require the report to state the reviewed base-tip
+SHA matching the campaign epoch, or revalidate its relevant integration
+coverage against that exact base tip. Reject aggregate identities, quoted
+reports, head/merge-base mismatches, and reports without a direct session or
+task provenance reference.
 
 Record admitted excluded-file evidence separately from campaign assignments.
 Supported blockers contribute to aggregation even when the report's coverage is
 incomplete. Only `coverage: complete` contributes whole-PR coverage. Excluded
 evidence never authorizes a Viewed mutation and never retroactively makes the
-excluded path campaign-selected. If any pre-Viewed path lacks complete evidence,
-whole-PR coverage is `partial` when at least one excluded path has complete
-evidence and `not-established` when none do.
+excluded path campaign-selected.
+
+Derive whole-PR coverage from both dimensions:
+
+- `complete` only when selected-scope coverage is complete and every pre-Viewed
+  exclusion has complete, base-tip-current evidence;
+- `partial` when whole-PR coverage is not complete but at least one changed file
+  has complete selected or excluded evidence;
+- `not-established` when no changed file has complete Elenctic evidence.
 
 ## Project accepted progress to Viewed
 
