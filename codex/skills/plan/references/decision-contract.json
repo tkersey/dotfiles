@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v8-unified-spec-to-plan"
+      "source_fingerprint": "plan-v9-reader-first-output"
     },
     "triggers": [
       {
@@ -129,14 +129,18 @@
         "success_signals": [
           "bare $plan selects spec-to-plan",
           "$plan direct alone bypasses full specification governance",
-          "revision preserves the existing plan_id"
+          "revision preserves the existing plan_id",
+          "bare and implicit planning select the reader-first human output view",
+          "explicit EPG JSON is fully indented and exact-byte validated"
         ],
         "failure_signals": [
           "direct mode inferred from apparent candidate completeness",
           "caller must separately invoke another planning skill",
-          "distinct objectives merged under one plan identity"
+          "distinct objectives merged under one plan identity",
+          "default output is dominated by inline EPG JSON",
+          "human projection is not executable without reading the EPG dump"
         ],
-        "rationale": "The public mode expresses intent; specification operation, rigor, authority, and terminal result remain separate dimensions."
+        "rationale": "The public mode expresses intent; specification operation, rigor, authority, terminal result, and output view remain separate dimensions."
       },
       {
         "clause_id": "PLAN-SPEC-GOVERNANCE-001",
