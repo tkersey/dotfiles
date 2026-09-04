@@ -473,14 +473,16 @@ Verdict semantics are:
 - scoped **APPROVE** -> every selected unchecked file has accepted complete
   current-head coverage, no blocker survives, and relevant integration evidence
   for that selected scope is complete;
-- whole-PR **APPROVE** -> the selected set covered the complete PR inventory, or
-  every pre-Viewed exclusion also has separately admissible current-head
-  Elenctic evidence, and relevant integration evidence is complete.
+- whole-PR **APPROVE** -> selected-scope coverage is complete, every pre-Viewed
+  exclusion (if any) has complete current-head Elenctic evidence bound or
+  revalidated to the campaign base tip, no blocker survives, and relevant
+  integration evidence is complete.
 
 Never issue a vacuous approval when the selected set is empty. Launch no workers;
 aggregate separately admissible current-head Elenctic evidence when available,
-otherwise report that every file was pre-Viewed and withhold an Elenctic
-whole-PR approval.
+but issue whole-PR approval only when every excluded file has complete,
+base-tip-current evidence. Otherwise report that every file was pre-Viewed and
+withhold an Elenctic whole-PR approval.
 
 ## Resume and recover
 
