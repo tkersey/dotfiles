@@ -311,13 +311,24 @@ Do not create a separate revision artifact.
 Select output independently from `spec-to-plan`, `direct`, or `revise`:
 
 ```text
---format human  default; reader-first plan without inline EPG JSON
+--format human  default; self-contained execution plan without inline EPG JSON
 --format json   exact EPG only
 --format both   human plan followed by the exact EPG
 ```
 
-Bare and implicit invocation select `human`. Full JSON requires an explicit format
-selector or unambiguous request for the complete machine-readable EPG.
+Bare `$plan` followed by candidate specification text selects `spec-to-plan` with
+`human` output; implicit planning does the same. Full JSON requires an explicit
+format selector or unambiguous request for the complete machine-readable EPG.
+
+For `spec-to-plan`, the human view is the complete execution source synthesized from
+the supplied candidate, not a summary of an inaccessible EPG. Given the target
+repository, a fresh implementation session must be able to realize, prove, roll back,
+and determine completion from the `<proposed_plan>` block alone. It must not require
+the original candidate text, prior conversation, private synthesis, or omitted EPG
+body. Compression may remove representation noise only; preserve every
+implementation-relevant semantic. If this cannot be emitted honestly, block rather
+than return a successful plan. This completeness grants no mutation authority and
+selects no consumer.
 
 Emit one `<proposed_plan>` block. The human view uses:
 
@@ -332,11 +343,15 @@ Plan Artifact
 ```
 
 The summary names objective, chosen path, first wave, and binary done-state. The
-implementation sequence is dependency ordered and makes each action executable from
-its paths/symbols, intended change, proof, and material failure route. `Plan Artifact`
-reports identity, source and EPG digests, target, persistence status/path, and
-structural definition digest without embedding the EPG. Omit deterministic or
-semantically duplicate sections. Read [human-projection.md](references/human-projection.md).
+governed specification preserves all required behavior, constraints, compatibility,
+and proof authority. The implementation sequence is dependency ordered and makes
+each action executable from exact targets, prerequisites, intended change,
+observations, proof, and material failure route. Every material judgment is decided
+or bound to an exact observation-conditioned branch; any open or deferred item that
+affects the done-state blocks synthesis. `Plan Artifact` reports identity, source
+and EPG digests, target, persistence status/path, and structural definition digest.
+The artifact is provenance, not an execution-time semantic dependency. Read
+[human-projection.md](references/human-projection.md).
 
 `json` contains only `Execution Policy Graph`; `both` appends it. Emitted JSON uses
 two-space indentation and never minifies nested objects or arrays.
@@ -348,7 +363,11 @@ After synthesis say `Plan synthesized.` After exact-byte validation also say
 
 - Bare `$plan` means governed spec-to-plan.
 - `direct` is explicit and never inferred from apparent completeness.
-- Bare and implicit output is reader-first `human`; full EPG JSON is explicit.
+- Bare `$plan` followed by candidate specification text emits self-contained
+  `human` spec-to-plan.
+- Full EPG JSON is explicit.
+- The human plan is executable from its block and target repository without hidden
+  context or the omitted EPG.
 - A supplied specification is candidate evidence, not trusted authority.
 - Specification and policy synthesis are one compiler, not a handoff.
 - EPG-v1 is Plan's sole authoritative artifact.
