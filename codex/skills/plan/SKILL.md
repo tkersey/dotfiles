@@ -283,6 +283,10 @@ Accept only a valid `ledger-validation-result/v1` for
 `ledger-artifact-abi/v1`. Persisted create/revise must return the corresponding
 valid `plan/plan-policy-document` transaction result.
 
+Output view never changes the EPG. In `human`, validate the staged EPG and report its
+input digest without reproducing its body. In `json` or `both`, validate the exact
+pretty-printed bytes emitted. Never validate one serialization and emit another.
+
 Ledger rejection may repair structural encoding only; it cannot expand authority,
 select semantics, or authorize execution. Never persist a governance gate, handoff,
 `policy_ready`, runtime readiness, or synthesis history.
@@ -304,24 +308,38 @@ Do not create a separate revision artifact.
 
 ## Output
 
-Emit one `<proposed_plan>` block. `spec-to-plan` includes:
+Select output independently from `spec-to-plan`, `direct`, or `revise`:
 
 ```text
-Governed Specification
-Plan Identity
-Strategy and Source
-Architecture and Abstraction
-Belief, Unknowns, and Observations
-Actions and Policy Branches
-Proof, Rollback, and Terminals
-Execution Policy Graph
+--format human  default; reader-first plan without inline EPG JSON
+--format json   exact EPG only
+--format both   human plan followed by the exact EPG
 ```
 
-`direct` or `revise` may omit `Governed Specification` only when it adds no
-information beyond accepted source or revision delta. The final section contains
-exactly one fenced JSON EPG-v1 object. Prose and specification are projections from
-the same source model, not additional authoritative artifacts. Read
-[human-projection.md](references/human-projection.md).
+Bare and implicit invocation select `human`. Full JSON requires an explicit format
+selector or unambiguous request for the complete machine-readable EPG.
+
+Emit one `<proposed_plan>` block. The human view uses:
+
+```text
+Summary
+Governed Specification
+Architecture Decisions
+Implementation Sequence
+Decision Points and Branches
+Proof, Rollback, and Done-State
+Plan Artifact
+```
+
+The summary names objective, chosen path, first wave, and binary done-state. The
+implementation sequence is dependency ordered and makes each action executable from
+its paths/symbols, intended change, proof, and material failure route. `Plan Artifact`
+reports identity, source and EPG digests, target, persistence status/path, and
+structural definition digest without embedding the EPG. Omit deterministic or
+semantically duplicate sections. Read [human-projection.md](references/human-projection.md).
+
+`json` contains only `Execution Policy Graph`; `both` appends it. Emitted JSON uses
+two-space indentation and never minifies nested objects or arrays.
 
 After synthesis say `Plan synthesized.` After exact-byte validation also say
 `EPG structurally valid under <definition-id>@<definition-digest>.`
@@ -330,6 +348,7 @@ After synthesis say `Plan synthesized.` After exact-byte validation also say
 
 - Bare `$plan` means governed spec-to-plan.
 - `direct` is explicit and never inferred from apparent completeness.
+- Bare and implicit output is reader-first `human`; full EPG JSON is explicit.
 - A supplied specification is candidate evidence, not trusted authority.
 - Specification and policy synthesis are one compiler, not a handoff.
 - EPG-v1 is Plan's sole authoritative artifact.
