@@ -337,15 +337,19 @@ identity line. In file mode use canonical one-line JSON in this shape:
 Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name-or-absolute-root>","target":"<path>","base":"<sha-or-content-id>","candidate":"<sha-or-content-id>","view":"<pr-head|prospective-merge|staged|unstaged|range>","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
+For PR-scoped file mode, add `"pr":<number>` after `repo`; this is required for
+both standalone PR file reviews and campaign workers. Omit `pr` only when the
+review is not bound to a pull request.
+
 `coverage` states whether all material causal paths and required concern
 coverage for the selected file were completed. It is independent of verdict: a
-supported blocker may coexist with incomplete coverage. Campaign workers add
-`pr`, `campaign_id`, and `assignment_id` as specified by their assignment.
-Consumers must tolerate these additive fields but never infer them. Bind every
-field to the exact reviewed state; do not reconstruct an identity from branch
-names or mutable refs when an immutable identity is available. The identity
-verdict must equal the final decision. Session-corpus and campaign coordinator
-modes emit the identities defined by their references. This line is report
+supported blocker may coexist with incomplete coverage. Campaign workers also
+add `campaign_id` and `assignment_id` as specified by their assignment. Consumers
+must tolerate these additive fields but never infer them. Bind every field to
+the exact reviewed state; do not reconstruct an identity from branch names or
+mutable refs when an immutable identity is available. The identity verdict must
+equal the final decision. Session-corpus and campaign coordinator modes emit the
+identities defined by their references. This line is report
 provenance, not approval or closure authority.
 
 ## End with the decision

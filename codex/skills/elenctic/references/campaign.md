@@ -286,13 +286,12 @@ behalf.
 
 ## Require campaign-bound worker identities
 
-A campaign worker extends the ordinary single-file identity with these fields:
+A campaign worker uses the ordinary PR-scoped single-file `pr` field and adds
+these campaign fields:
 
 ```text
-"pr": <number>
 "campaign_id": "<campaign-id>"
 "assignment_id": "<assignment-id>"
-"coverage": "complete" | "incomplete"
 ```
 
 Example shape:
