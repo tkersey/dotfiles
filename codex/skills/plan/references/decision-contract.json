@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v9-reader-first-output"
+      "source_fingerprint": "plan-v10-execution-complete-human-output"
     },
     "triggers": [
       {
@@ -124,10 +124,11 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "one final EPG-v1 when synthesis succeeds"
+          "one final EPG-v1 when synthesis succeeds",
+          "self-contained execution plan when human or both output is selected"
         ],
         "success_signals": [
-          "bare $plan selects spec-to-plan",
+          "bare $plan followed by candidate text selects spec-to-plan",
           "$plan direct alone bypasses full specification governance",
           "revision preserves the existing plan_id",
           "bare and implicit planning select the reader-first human output view",
@@ -137,10 +138,39 @@
           "direct mode inferred from apparent candidate completeness",
           "caller must separately invoke another planning skill",
           "distinct objectives merged under one plan identity",
-          "default output is dominated by inline EPG JSON",
-          "human projection is not executable without reading the EPG dump"
+          "default output is dominated by inline EPG JSON"
         ],
         "rationale": "The public mode expresses intent; specification operation, rigor, authority, terminal result, and output view remain separate dimensions."
+      },
+      {
+        "clause_id": "PLAN-HUMAN-EXECUTION-001",
+        "trigger_refs": [
+          "PLAN-SPEC-TO-PLAN",
+          "PLAN-DIRECT",
+          "PLAN-REVISE"
+        ],
+        "expected_routes": [
+          "PLAN-GOVERN",
+          "PLAN-SYNTHESIZE",
+          "PLAN-REVISE-EPG",
+          "PLAN-RETURN-JUDGMENT",
+          "PLAN-BLOCK"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "execution-complete human projection when human or both output is selected"
+        ],
+        "success_signals": [
+          "a fresh implementation session can execute from the proposed_plan block and target repository alone",
+          "every material judgment is decided or bound to an exact observation-conditioned branch",
+          "compression removes representation noise without removing implementation semantics"
+        ],
+        "failure_signals": [
+          "execution requires the original candidate text, prior conversation, private synthesis, or omitted EPG body",
+          "an action lacks its dependency, target, intended change, proof, or material failure route",
+          "a material open or deferred item remains inside the claimed done-state"
+        ],
+        "rationale": "The ordinary human view is the execution source; machine canonicality cannot justify a lossy public plan."
       },
       {
         "clause_id": "PLAN-SPEC-GOVERNANCE-001",
@@ -306,7 +336,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The governed projection and canonical EPG expose the consequential result; passive Ledger validation is structural evidence only."
+      "rationale": "The execution-complete human projection and canonical EPG expose the consequential result; passive Ledger validation is structural evidence only."
     }
   }
 }
