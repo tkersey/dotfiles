@@ -59,6 +59,11 @@ invocation, and `aggregate reviewed-only` remains read-only. `session-corpus` an
 `aggregate same-name sessions` retain the read-only manual-corpus semantics in
 [session-corpus.md](session-corpus.md).
 
+Resolve bare `$elenctic`, `this PR`, and `this branch` with `gh pr view`
+without a positional argument. Pass an explicit PR number, URL, or named branch
+to `gh pr view` unchanged as its positional selector. Never substitute the
+current branch for a caller-supplied selector.
+
 ## Bind one exact PR epoch
 
 Require an open pull request and bind:
@@ -324,6 +329,27 @@ Disposition accepted evidence as follows:
 - supported blockers in an incomplete report may nominate aggregate claims, but
   do not establish file completion.
 
+## Admit evidence for pre-Viewed exclusions
+
+Do not create campaign assignments or new workers for pre-Viewed exclusions.
+A pre-Viewed path contributes to whole-PR coverage only when the coordinator is
+given an existing terminal Elenctic file report directly, already holds its
+direct thread identity, or recovers that exact report with `$seq`. Discovery
+does not grant admission: require exactly one unquoted single-file Review
+identity whose repository, PR, target, review merge base, candidate, and
+`view: "pr-head"` match the campaign epoch, whose `coverage` is `complete`, and
+whose verdict matches the report. Require the report to predate the aggregation
+cut, re-read the exact PR epoch as open, and apply ordinary Elenctic evidence
+and blocker-falsification rules. Reject aggregate identities, quoted reports,
+head/base mismatches, and reports without a direct session or task provenance
+reference.
+
+Record admitted excluded-file evidence separately from campaign assignments.
+It contributes blockers and whole-PR coverage, but it never authorizes a Viewed
+mutation and never retroactively makes the excluded path campaign-selected. If
+any pre-Viewed path lacks such evidence, whole-PR coverage is `partial` when at
+least one excluded path is admitted and `not-established` when none are.
+
 ## Project accepted progress to Viewed
 
 Only campaign mode may mark files Viewed. Stage the intended mutations as
@@ -480,11 +506,14 @@ PR campaign:
 Immediately before the final decision, emit:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","selected_scope_coverage":"<complete|partial>","whole_pr_coverage":"<complete|partial|not-established>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
 The campaign identity's `base` is likewise the bound review merge base; report
-the separately bound base tip in the campaign summary above.
+the separately bound base tip in the campaign summary above. `coverage` is the
+compatibility alias for `selected_scope_coverage` and must equal it. The two
+explicit coverage fields preserve selected-set completion independently from
+whole-PR Elenctic coverage for recovery and automation.
 
 Use the ordinary real-blocker list and inline-comment style. Add sanitized
 supporting assignment/session provenance without repeating the complete worker

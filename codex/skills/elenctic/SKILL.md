@@ -56,8 +56,10 @@ Campaign is the user-facing default. For bare `$elenctic`, `this PR`, or
 `this branch`, resolve the open PR associated with the current branch through
 `gh pr view` without a PR argument. If no unique open PR is available, stop
 without creating tasks or mutating Viewed state and request an explicit PR; do
-not silently fall back to file mode. Normalize every successful default route
-to the canonical `$elenctic campaign <resolved-pr>` selector before applying
+not silently fall back to file mode. Pass an explicit PR number, URL, or named
+branch to `gh pr view` as its positional selector; never replace it with the
+current branch. Normalize every successful default route to the canonical
+`$elenctic campaign <resolved-pr>` selector before applying
 [campaign.md](references/campaign.md). That normalized explicit selector carries
 the campaign authority required by the reference.
 
