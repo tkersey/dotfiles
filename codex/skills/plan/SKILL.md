@@ -312,8 +312,8 @@ Select output independently from `spec-to-plan`, `direct`, or `revise`:
 
 ```text
 --format human  default; self-contained execution plan without inline EPG JSON
---format json   exact EPG only
---format both   human plan followed by the exact EPG
+--format json   raw EPG JSON document only; no prose or Markdown fence
+--format both   human plan followed by the exact EPG in a Markdown fence
 ```
 
 Bare `$plan` followed by candidate specification text selects `spec-to-plan` with
@@ -353,11 +353,16 @@ and EPG digests, target, persistence status/path, and structural definition dige
 The artifact is provenance, not an execution-time semantic dependency. Read
 [human-projection.md](references/human-projection.md).
 
-`json` contains only `Execution Policy Graph`; `both` appends it. Emitted JSON uses
-two-space indentation and never minifies nested objects or arrays.
+`json` consists solely of the raw EPG JSON document. `both` appends one fenced EPG
+object after the human plan. In either JSON-bearing view, validate the exact JSON
+payload bytes; Markdown fence delimiters in `both` are not part of the validation
+input. Emitted JSON uses two-space indentation and never minifies nested objects or
+arrays.
 
-After synthesis say `Plan synthesized.` After exact-byte validation also say
-`EPG structurally valid under <definition-id>@<definition-digest>.`
+For `human` and `both`, after synthesis say `Plan synthesized.` After exact-byte
+validation also say
+`EPG structurally valid under <definition-id>@<definition-digest>.` For `json`, emit
+no status prose: the response is only the exact validated EPG JSON document.
 
 ## Hard rules
 

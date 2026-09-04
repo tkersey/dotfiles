@@ -7,8 +7,8 @@ IR dump. EPG-v1 remains the sole canonical machine representation.
 
 ```text
 human  default; self-contained execution plan without inline EPG JSON
-json   exact machine-readable EPG without prose projection
-both   human plan followed by the exact EPG
+json   raw machine-readable EPG only; no prose or Markdown fence
+both   human plan followed by the exact EPG in a Markdown fence
 ```
 
 Bare and implicit invocation select `human`. Full JSON requires `--format json`,
@@ -89,11 +89,14 @@ the block and repository alone. Any missing semantic returns to synthesis.
 
 ## JSON views
 
-`json` emits only `Execution Policy Graph`; `both` appends it after `Plan Artifact`.
-The section contains exactly one fenced EPG object with two-space indentation, stable
-schema order, one trailing newline, and no minified nested object or array. Validate
-the exact fenced bytes and never include Ledger's validation-result JSON.
+`json` emits only the raw EPG JSON document. `both` appends the EPG after `Plan
+Artifact` inside exactly one Markdown fence. In either view, the validation input is
+the exact JSON payload: for `both`, exclude the fence delimiters. Use two-space
+indentation, stable schema order, one trailing newline, and no minified nested object
+or array. Never include Ledger's validation-result JSON.
 
-Report `Plan synthesized.` after synthesis and, after exact-byte validation,
-`EPG structurally valid under <definition-id>@<definition-digest>.` Never convert
-structural validity into semantic correctness, readiness, authority, or completion.
+For `human` and `both`, report `Plan synthesized.` after synthesis and, after
+exact-byte validation,
+`EPG structurally valid under <definition-id>@<definition-digest>.` For `json`, emit
+no status prose before or after the JSON document. Never convert structural validity
+into semantic correctness, readiness, authority, or completion.

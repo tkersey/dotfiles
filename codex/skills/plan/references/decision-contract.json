@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v10-execution-complete-human-output"
+      "source_fingerprint": "plan-v11-output-view-consistency"
     },
     "triggers": [
       {
@@ -158,17 +158,20 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "execution-complete human projection when human or both output is selected"
+          "execution-complete human projection when synthesis succeeds with human or both output selected"
         ],
         "success_signals": [
           "a fresh implementation session can execute from the proposed_plan block and target repository alone",
           "every material judgment is decided or bound to an exact observation-conditioned branch",
-          "compression removes representation noise without removing implementation semantics"
+          "compression removes representation noise without removing implementation semantics",
+          "json output contains only raw validated EPG JSON while both validates the payload bytes inside its fence"
         ],
         "failure_signals": [
           "execution requires the original candidate text, prior conversation, private synthesis, or omitted EPG body",
           "an action lacks its dependency, target, intended change, proof, or material failure route",
-          "a material open or deferred item remains inside the claimed done-state"
+          "a material open or deferred item remains inside the claimed done-state",
+          "json output includes status prose or Markdown delimiters",
+          "structural validation includes Markdown fence delimiters instead of the EPG payload"
         ],
         "rationale": "The ordinary human view is the execution source; machine canonicality cannot justify a lossy public plan."
       },

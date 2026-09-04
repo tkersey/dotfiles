@@ -185,7 +185,8 @@ needs evidence outside the horizon
 
 ## Final output policy
 
-The final Plan output is an on-demand projection plus one EPG. It should not include:
+The final Plan output is the selected view of one EPG: a human projection without
+inline JSON, the raw EPG JSON document, or both together. It should not include:
 
 ```text
 draft-by-draft logs
@@ -221,8 +222,13 @@ Ledger must additionally establish:
 ```text
 EPG structurally valid under <definition-id>@<definition-digest>
 =
-exact emitted EPG satisfies the named passive structural definition
+exact staged EPG in `human`, or exact emitted JSON payload bytes in `json` or `both`,
+satisfy the named passive structural definition
 ```
+
+For `both`, Markdown fence delimiters are presentation and are excluded from the
+validation input. For `json`, emit only the raw validated EPG JSON document without
+status prose or Markdown delimiters.
 
 Validation does not establish that the private synthesis process occurred, that
 architecture is semantically correct, that source state is current, or that

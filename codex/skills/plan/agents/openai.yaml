@@ -23,5 +23,8 @@ interface:
     block alone, without the original candidate, prior conversation, private
     synthesis, or omitted EPG. Preserve every implementation-relevant semantic;
     block on material unresolved judgment unless an exact observation-conditioned
-    branch resolves it. Emit the full EPG only for explicit `--format json|both`;
-    when emitted, use two-space indentation and validate those exact bytes.
+    branch resolves it. Emit the full EPG only for explicit `--format json|both`
+    or an unambiguous natural-language request for the complete machine-readable
+    EPG. For `json`, emit only raw EPG JSON with no status prose or Markdown fence;
+    for `both`, validate the JSON payload bytes inside the fence. Always use
+    two-space indentation and validate the exact EPG bytes emitted.
