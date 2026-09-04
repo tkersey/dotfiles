@@ -27,6 +27,14 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     .inputs.ordinary_interpretation_adequacy == "coarse" or
     .inputs.law_distinct_behaviors_collapsed == true;
 
+  def theory_adjudication:
+    if .inputs.architectonic_disposition == "split" then "split"
+    elif (.inputs.architectonic_disposition as $disposition |
+          (["retain", "replace", "combine"] | index($disposition)) != null)
+      then "adjudicated"
+    else "blocked"
+    end;
+
   def theory_disposition:
     if class_disposition != "candidate" then "not-applicable"
     elif (.inputs.semantic_observation_domain_status != "stated" or
@@ -44,21 +52,10 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
           .inputs.required_valid_behaviors_preserved != true or
           .inputs.required_observations_preserved != true) then
       "blocked"
-    elif .inputs.architecture_reveals_better_theory == true then
-      if (.inputs.co_refinement_used == true and
-          (.inputs.architectonic_disposition as $disposition |
-           (["retain", "replace", "combine", "split"] |
-            index($disposition)) != null))
-      then "co-refined"
-      else "blocked"
-      end
+    elif .inputs.architecture_reveals_better_theory == true then theory_adjudication
     elif theory_pressure then
       if .inputs.metanoetic_run != true then "blocked"
-      elif .inputs.architectonic_disposition == "split" then "split"
-      elif (.inputs.architectonic_disposition as $disposition |
-            (["retain", "replace", "combine"] |
-             index($disposition)) != null) then "adjudicated"
-      else "blocked"
+      else theory_adjudication
       end
     else "ordinary"
     end;
@@ -104,8 +101,8 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
 
   .defaults as $defaults |
   .scenarios |= map(.inputs = ($defaults * .inputs)) |
-  .schema == "actuating-semantic-hotspot-scenarios/v4" and
-  (.scenarios | length) >= 28 and
+  .schema == "actuating-semantic-hotspot-scenarios/v5" and
+  (.scenarios | length) >= 29 and
   ([.scenarios[].id] | length == (unique | length)) and
   all(.scenarios[];
     (.inputs.family_claim_strength as $strength |
@@ -142,7 +139,6 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
   ([.scenarios[].expected.theory_disposition] |
     index("ordinary") != null and
     index("adjudicated") != null and
-    index("co-refined") != null and
     index("blocked") != null) and
   ([.scenarios[].expected.architecture_disposition] |
     index("preserve") != null and
@@ -181,12 +177,16 @@ fixture="$skill_root/tests/fixtures/semantic-hotspot-scenarios.json"
     .expected.architecture_disposition == "blocked") and
   any(.scenarios[];
     .inputs.architecture_reveals_better_theory == true and
-    .inputs.co_refinement_used == true and
-    .expected.theory_disposition == "co-refined") and
+    .inputs.architectonic_disposition == "replace" and
+    .expected.theory_disposition == "adjudicated") and
   any(.scenarios[];
     .inputs.architecture_reveals_better_theory == true and
-    .inputs.co_refinement_used == false and
+    .inputs.architectonic_disposition == "unresolved" and
     .expected.architecture_disposition == "blocked") and
+  any(.scenarios[];
+    .inputs.architecture_reveals_better_theory == true and
+    .inputs.architectonic_disposition == "split" and
+    .expected.architecture_disposition == "split") and
   any(.scenarios[];
     .inputs.derived_guards_required == true and
     .expected.architecture_disposition == "preserve") and

@@ -73,7 +73,9 @@ Team/subagent mode remains explicit-request only.
 
 ## Common path
 
-The common path must complete without loading any deeper reference.
+The common path must complete without loading any deeper reference. Inside
+Actuating, use the composition handoff below instead of also emitting the
+standalone disposition template; the same applicable obligations remain.
 
 1. Attribute the trigger evidence. If no implicit trigger condition is
    evidenced, stop without a disposition.
@@ -230,98 +232,46 @@ invocation point and calls Universalist only after architecture reconsideration
 is live. Do not run a duplicate root or worker pass merely because Actuating
 will cross a boundary while realizing an already selected architecture.
 
-Return exactly one of:
+Return `candidate`, `preserve-incumbent`, or `obstructed` with the smallest
+code-bound argument that changes Actuating's decision: trigger evidence, owner
+and operation, required law/observations, discriminator, and material migration,
+residual, or invalidation consequences. For counterexample-driven work, identify
+the enabling freedom removed or lawfully controlled. Reuse supplied facts and proof references. No fixed field projection
+or second Working Set report is required.
 
-```text
-candidate
-preserve-incumbent
-obstructed
-```
+An ordinary nomination can be direct: derive the receipt subject from the
+execution-owned evidence instead of accepting both independently; retire the
+unchecked constructor, migrate callers, and identify the mismatch witness and
+required-valid counterpart. This nominates work; it is not proof of a successor.
+Admission, preservation under permitted operations, and sanctioned-path coverage
+remain distinct obligations. Adequate native evidence may discharge them without
+a duplicate topology account. When route or migration coverage needs explicit
+accounting, return the relevant source-derived topology obligations to Actuating.
 
-with trigger evidence, the incoming incumbent or ordinary candidate, the
-material decision delta, mechanic, boundary owner, required observations, law,
-falsifier, residual obligations, invalidators, and transition needed by
-Actuating.
+A candidate may improve the causal explanation. Return the material delta and
+its discriminator for Actuating's existing selection decision; do not silently
+redefine the family or require a separate co-refinement pass. The family is not
+just its observed examples, and a local correction may still be the adequate
+construction.
 
-When Actuating supplies a bug-driven counterexample theory and topology, also
-return this projection for every live candidate:
+When a candidate changes the comparison domain, quotients distinctions, or
+conservatively approximates behavior, justify total interpretation over that
+domain, reflection of every concrete violation, exclusion of invalid behavior,
+and preservation of required valid behaviors and observations at an explicit
+evidence strength. Do not underapproximate danger or erase required distinctions.
+Report any optional safe behavior excluded by a conservative approximation;
+diagnostic exactness is separate from safety. Do not invent these transformations
+or their reporting fields for a candidate that does not use them.
 
-```text
-Selected counterexample theory:
-Candidate theory delta: none | proposed
-Candidate interpretation delta: none | proposed
-Accidental incumbent coordinate, when proposed:
-Proposed semantic observation domain or law, when proposed:
-Comparison universe U / sanctioned behavior B:
-Witness interpretation into the selected or proposed domain:
-Candidate interpretation into the selected or proposed domain:
-Interpretation totality:
-Violation-reflection evidence:
-Abstract-exclusion evidence:
-Required valid behaviors preserved:
-Required observations preserved:
-Correctness-bearing distinctions preserved:
-Distinctions intentionally quotiented:
-Optional safe behavior excluded:
-Safety/Goal strength and falsifiers:
-Diagnostic-exactness status, strength, and counterexample:
-Predicted sibling counterexamples, when proposed:
-Theory-delta falsifier, when proposed:
-Current owner set and status:
-Candidate semantic owner:
-Enforcement locus or admission cut:
-Family predicate or generator:
-Domain and sanctioned admission relation:
-Claim strength and comparison evidence:
-Invalid family excluded:
-Unchecked sanctioned paths retired:
-Primary enforcement:
-Derived guards preserved:
-Valid observations preserved:
-Residual invalidity and owner:
-Disposition supported: eliminated | contained | obstructed | unresolved
-Falsifier:
-Transition and retirement:
-```
+Keep primary enforcement distinct from derived trust-boundary, compatibility,
+observability, and compensating guards. Do not nominate a construction as adequate
+while a sanctioned escape or permitted transition still admits its claimed family.
 
-A candidate may expose a materially simpler, more representation-independent,
-more sound, or more causally adequate counterexample theory. Report that as a
-candidate theory or interpretation delta; do not silently redefine the family,
-underapproximate danger, or erase required behavior. Actuating alone decides
-whether to use its single bounded co-refinement before target selection.
-
-A named interpretation is not enough. A candidate is not correctness-comparable
-unless its interpretation is total over the declared comparison universe,
-reflects every concrete violation into the invalidity predicate, excludes that
-predicate from sanctioned behavior, and preserves every Goal-required valid
-behavior and observation at an explicit evidence strength.
-
-Diagnostic exactness is separate. A conservative overapproximation may remain a
-correct-by-construction candidate when its false positives exclude only optional
-safe behavior. Report that restriction so Actuating can compare permissiveness,
-conceptual compression, and cost among safety-equivalent candidates.
-
-Do not define the family as only the observed witnesses. Do not invent one
-frontier when the repository requires a minimal admission cut. Do not collapse
-primary enforcement, derived trust-boundary guards, compatibility adapters,
-observability guards, and compensating guards into one undifferentiated layer.
-Do not nominate a candidate as correct by construction when its semantic
-abstraction underapproximates danger or rejects required valid behavior.
-
-Universalist must not:
-
-- select or reopen Actuating's target architecture;
-- adjudicate Actuating's ordinary and Metanoetic counterexample theories;
-- grant mutation;
-- convert accepted Review Fold classes directly into an architecture decision;
-- allocate a Universalist plan or emit a root receipt;
-- persist or overwrite an Actuating architecture artifact.
-
-Actuating alone adjudicates the nomination and any theory or interpretation
-delta and updates its ephemeral Architecture Working Set. The Git tree is the
-realized construction.
-
-Standalone work may select under root authority after completing the applicable
+Universalist never selects or reopens Actuating's target, adjudicates its causal
+alternatives, grants mutation or closure, allocates a plan/root receipt, or persists
+an Actuating architecture artifact. Actuating alone adjudicates the nomination
+and any interpretation delta in its active Working Set. Git and actual proof own
+the realized result. Standalone selection remains subject to its applicable
 consequential and durability contracts.
 
 ## Execution-time reclassification (`UNI-RECLASSIFY`)

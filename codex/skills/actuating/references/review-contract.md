@@ -70,7 +70,8 @@ An incomplete candidate may be implemented but may not enter closure review.
 A material current entailed finding invalidates the candidate and resets all
 credit, but does not authorize editing. The initial epoch closes only after every
 required initial outcome, required recovery, and the cumulative Review Fold are
-complete. A clean epoch remains open through the standard convergence sequence.
+complete. A clean epoch remains open through standard convergence and folding of
+all terminal semantic outcomes, including recovered outcomes.
 A material confirmation finding closes its epoch after that finding and already-live
 required owner evidence are folded; no new auxiliary wave runs on the invalid head.
 
@@ -151,41 +152,26 @@ first, or demand a pre-mutation theorem-equality certificate.
 A local correction and a redesigned mechanism face the same family, required-valid,
 authority, and path-coverage obligations. Their labels describe the realized delta;
 they cannot switch off proof. Where an owned boundary changes, invoke Universalist
-at the existing architecture decision and prove its complete contract. Metanoetic
+at the existing architecture decision and prove every applicable construction obligation. Metanoetic
 may challenge a plausible mechanism error before selection without a fictional
 proof that every local alternative is impossible.
 
-## Source-derived factorization closure
+## Source-derived coverage and preservation
 
-For an affected boundary, derive `T0` from repository-native type/schema/IR,
-exports, route/build registries, graph reachability, or generated inventories.
-Bind the exact source, domain, assumptions, strength, and falsifier. A model-authored
-path list cannot establish exhaustive topology.
+Use the construction argument in
+[counterexample-guided-normalization.md](counterexample-guided-normalization.md).
+Universalist nominates a code-bound owner/operation change, not a second Working Set
+projection. Select the verifier before implementation and execute it on the actual
+successor. Prove admission, permitted-transition preservation, source-derived
+coverage, required-valid observations, and migration/retirement/residual obligations.
+Cut passage alone does not establish preservation after admission.
 
-Universalist receives one axis, one typed hole, and `T0`; its complete projection
-nominates `K`, `tau`, `F`, residuals, observations, laws, transitions, invalidators,
-and claim ceiling. Select the verifier before implementation; execute it on the
-actual successor. Prove:
-
-```text
-T1 = tau(T0)
-domain(F) = T1
-every relevant successor element has one disposition
-every factorized trusted route crosses K
-predecessor retirement/privatization is realized as declared by tau
-adapters delegate rather than duplicate the law
-residuals are owned with failure behavior, invalidators, and claim consequences
-```
-
-Derive `T1` independently of the candidate's asserted list. New undispositioned
-source elements must invalidate coverage. A residual admitting the family prevents
-complete exclusion of that family. Reuse adequate existing derivations rather than
-require fresh architecture paperwork for an unchanged boundary.
-
-Complete claims need a source-derived finite domain with adequate proof or a
-justified generator and preservation argument. Sibling probes and generated samples
-are not universal proof. Without enough evidence, retain the explicit authorized
-bound instead of an elimination claim.
+Adequate native construction/operation evidence may discharge coverage directly.
+Where route or migration coverage remains unestablished, use explicit source-derived
+`T0`, `K`, `tau`, `F`, and independently derived `T1` with the same obligations.
+A candidate-authored list cannot be its own verification domain. New unaccounted
+sanctioned paths invalidate coverage under either representation. Residual invalidity
+precludes complete family exclusion; samples do not become universal proof.
 
 ## Review entry and authority-complete diff
 
@@ -198,7 +184,7 @@ source-supported causal explanation for counterexample-driven changes
 preselected sibling/domain discriminator and actual results or explicit limitation
 required-valid behavior and compatibility preserved
 law-bearing mechanism and supported sanctioned-path/bypass coverage
-complete boundary nomination and source-derived closure when that boundary changed
+all applicable changed-boundary obligations with source-derived coverage evidence
 all selected migrations, residuals, and compensator retirements realized
 all correctness-bearing Git changes supported by accepted authority
 ```
@@ -216,7 +202,7 @@ obligation's authority rather than laundering them through one restoration label
 ## Falsification and resumption
 
 A current entailed witness against an exact declared exclusion revokes that claim.
-A sanctioned topology element absent from the claimed basis revokes coverage
+A sanctioned path absent from either claimed coverage basis revokes coverage
 immediately. Reopen the causal explanation and its cumulative siblings; no packet,
 route label, new family name, or new Git head can erase the contrary evidence.
 

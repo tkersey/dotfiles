@@ -23,10 +23,10 @@ const json = p => JSON.parse(text(p));
 const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
-assert.equal(c.schema, 'actuating-review-contract/v16');
-assert.equal(c.contract_id, 'actuating-review-contract-v18');
+assert.equal(c.schema, 'actuating-review-contract/v17');
+assert.equal(c.contract_id, 'actuating-review-contract-v19');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v11');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v12');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -65,13 +65,30 @@ assert.equal(c.review_entry.actual_semantic_diff_authority_required, true);
 assert.equal(c.candidate_acceptance.labels_grant_mutation_or_weaker_proof, false);
 assert.equal(c.candidate_acceptance.self_authored_semantic_digests_are_evidence, false);
 for (const key of ['strongest_repository_native_authority_required','independently_governed_axes_require_split',
-  'complete_actuating_projection_required','total_topology_transformation_required','total_disposition_law_required',
-  'exact_head_topology_rederivation_required_before_reviewable','topology_transformation_equality_required',
-  'factorization_domain_equality_required','factorized_routes_cross_cut_or_owned_residual_required',
-  'claim_strength_may_not_increase']) assert.equal(c.universalist_compilation[key], true, key);
-assert.equal(c.universalist_compilation.self_authored_omission_list_sufficient, false);
-assert.deepEqual(c.universalist_compilation.allowed_element_dispositions,
+  'exact_head_source_coverage_required_before_reviewable','factorized_routes_cross_cut_or_owned_residual_required',
+  'factorization_closure_verifier_selected_before_mutation','claim_strength_may_not_increase'])
+  assert.equal(c.universalist_compilation[key], true, key);
+const compilation = c.universalist_compilation;
+assert.equal(compilation.self_authored_omission_list_sufficient, false);
+assert.equal(compilation.nomination_is_executed_proof, false);
+assert(!Object.hasOwn(compilation, 'complete_actuating_projection_required'));
+assert(!Object.hasOwn(compilation, 'total_topology_transformation_required'));
+assert.deepEqual(compilation.explicit_topology.allowed_element_dispositions,
   ['factor-through','retire','privatize','derived-adapter','residual']);
+assert.deepEqual(compilation.explicit_topology.required_relations,
+  ['T1 = tau(T0)','domain(F) = T1','every factorized trusted route crosses K']);
+assert.match(compilation.explicit_topology.when, /cannot otherwise establish route or migration coverage/);
+assert.match(compilation.native_coverage, /opacity or a passing build alone is insufficient/);
+for (const obligation of ['admission and transition preservation','source-derived sanctioned-path coverage',
+  'migration and retirement','residual obligations']) assert(compilation.required_obligation_classes.includes(obligation));
+assert.match(c.construction_selection.causal_target, /construction or transition/);
+assert.match(c.construction_selection.discriminator_target, /valid-state transition/);
+const universalist = text('../universalist/SKILL.md');
+const reduction = text('../reduce/SKILL.md').split('## Actuating composition')[1].split('## Implementation mode')[0];
+assert(!universalist.includes('Selected counterexample theory:'));
+assert(!universalist.includes('single bounded co-refinement'));
+assert(!reduction.includes('Return exactly:'));
+assert(!text('tests/fixtures/semantic-hotspot-scenarios.json').includes('co_refinement_used'));
 assert.equal(c.same_family_recurrence.same_claim_revokes_exclusion_immediately, true);
 assert.equal(c.same_family_recurrence.unmodeled_sanctioned_topology_element_revokes_immediately, true);
 assert.equal(c.owner_source_frontier.omitted_live_finding_keeps_cut_open, true);
@@ -119,7 +136,7 @@ assert(text('references/review-contract.md').includes('codex-default-review/v1')
 assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
 // Pairing source-contract regressions; these do not measure model efficacy.
 const architecture = text('references/architecture-reconciliation.md').replace(/\s+/g, ' ');
-const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('3. Derive')[0].replace(/\s+/g, ' ');
+const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('3. Give')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
 assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`'));
 assert(rootStep.includes('once per unchanged decision surface'));
