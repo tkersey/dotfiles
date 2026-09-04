@@ -283,6 +283,10 @@ Accept only a valid `ledger-validation-result/v1` for
 `ledger-artifact-abi/v1`. Persisted create/revise must return the corresponding
 valid `plan/plan-policy-document` transaction result.
 
+Output view never changes the EPG. In `human`, validate the staged EPG and report its
+input digest without reproducing its body. In `json` or `both`, validate the exact
+pretty-printed bytes emitted. Never validate one serialization and emit another.
+
 Ledger rejection may repair structural encoding only; it cannot expand authority,
 select semantics, or authorize execution. Never persist a governance gate, handoff,
 `policy_ready`, runtime readiness, or synthesis history.
@@ -304,32 +308,71 @@ Do not create a separate revision artifact.
 
 ## Output
 
-Emit one `<proposed_plan>` block. `spec-to-plan` includes:
+Select output independently from `spec-to-plan`, `direct`, or `revise`:
 
 ```text
-Governed Specification
-Plan Identity
-Strategy and Source
-Architecture and Abstraction
-Belief, Unknowns, and Observations
-Actions and Policy Branches
-Proof, Rollback, and Terminals
-Execution Policy Graph
+--format human  default; self-contained execution plan without inline EPG JSON
+--format json   raw EPG JSON document only; no prose or Markdown fence
+--format both   human plan followed by the exact EPG in a Markdown fence
 ```
 
-`direct` or `revise` may omit `Governed Specification` only when it adds no
-information beyond accepted source or revision delta. The final section contains
-exactly one fenced JSON EPG-v1 object. Prose and specification are projections from
-the same source model, not additional authoritative artifacts. Read
+Bare `$plan` followed by candidate specification text selects `spec-to-plan` with
+`human` output; implicit planning does the same. Full JSON requires an explicit
+format selector or unambiguous request for the complete machine-readable EPG.
+
+For `spec-to-plan`, the human view is the complete execution source synthesized from
+the supplied candidate, not a summary of an inaccessible EPG. Given the target
+repository, a fresh implementation session must be able to realize, prove, roll back,
+and determine completion from the `<proposed_plan>` block alone. It must not require
+the original candidate text, prior conversation, private synthesis, or omitted EPG
+body. Compression may remove representation noise only; preserve every
+implementation-relevant semantic. If this cannot be emitted honestly, block rather
+than return a successful plan. This completeness grants no mutation authority and
+selects no consumer.
+
+Emit one `<proposed_plan>` block. The human view uses:
+
+```text
+Summary
+Governed Specification
+Architecture Decisions
+Implementation Sequence
+Decision Points and Branches
+Proof, Rollback, and Done-State
+Plan Artifact
+```
+
+The summary names objective, chosen path, first wave, and binary done-state. The
+governed specification preserves all required behavior, constraints, compatibility,
+and proof authority. The implementation sequence is dependency ordered and makes
+each action executable from exact targets, prerequisites, intended change,
+observations, proof, and material failure route. Every material judgment is decided
+or bound to an exact observation-conditioned branch; any open or deferred item that
+affects the done-state blocks synthesis. `Plan Artifact` reports identity, source
+and EPG digests, target, persistence status/path, and structural definition digest.
+The artifact is provenance, not an execution-time semantic dependency. Read
 [human-projection.md](references/human-projection.md).
 
-After synthesis say `Plan synthesized.` After exact-byte validation also say
-`EPG structurally valid under <definition-id>@<definition-digest>.`
+`json` consists solely of the raw EPG JSON document. `both` appends one fenced EPG
+object after the human plan. In either JSON-bearing view, validate the exact JSON
+payload bytes; Markdown fence delimiters in `both` are not part of the validation
+input. Emitted JSON uses two-space indentation and never minifies nested objects or
+arrays.
+
+For `human` and `both`, after synthesis say `Plan synthesized.` After exact-byte
+validation also say
+`EPG structurally valid under <definition-id>@<definition-digest>.` For `json`, emit
+no status prose: the response is only the exact validated EPG JSON document.
 
 ## Hard rules
 
 - Bare `$plan` means governed spec-to-plan.
 - `direct` is explicit and never inferred from apparent completeness.
+- Bare `$plan` followed by candidate specification text emits self-contained
+  `human` spec-to-plan.
+- Full EPG JSON is explicit.
+- The human plan is executable from its block and target repository without hidden
+  context or the omitted EPG.
 - A supplied specification is candidate evidence, not trusted authority.
 - Specification and policy synthesis are one compiler, not a handoff.
 - EPG-v1 is Plan's sole authoritative artifact.

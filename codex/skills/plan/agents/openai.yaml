@@ -17,3 +17,14 @@ interface:
     architecture and policy to a fixed point, run one private radical candidate,
     validate the exact EPG through Plan's passive Ledger definition, and never
     mutate implementation state, grant execution authority, or select a consumer.
+    Default to `--format human`: emit a self-contained, dependency-ordered execution
+    plan without inline EPG JSON. Given the target repository, a fresh implementation
+    session must be able to realize and prove the plan from the `<proposed_plan>`
+    block alone, without the original candidate, prior conversation, private
+    synthesis, or omitted EPG. Preserve every implementation-relevant semantic;
+    block on material unresolved judgment unless an exact observation-conditioned
+    branch resolves it. Emit the full EPG only for explicit `--format json|both`
+    or an unambiguous natural-language request for the complete machine-readable
+    EPG. For `json`, emit only raw EPG JSON with no status prose or Markdown fence;
+    for `both`, validate the JSON payload bytes inside the fence. Always use
+    two-space indentation and validate the exact EPG bytes emitted.

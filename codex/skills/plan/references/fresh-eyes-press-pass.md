@@ -22,5 +22,7 @@ Check:
   `valid: true`.
 
 If a material issue remains, revise or restart the affected specification/policy
-phase and rerun downstream synthesis. Otherwise emit the structurally validated EPG.
-Do not create an audit artifact or readiness gate.
+phase and rerun downstream synthesis. Otherwise emit the selected validated view:
+human without inline EPG JSON, raw JSON without prose or Markdown delimiters, or both
+with validation bound to the payload inside the fence. Do not create an audit
+artifact or readiness gate.
