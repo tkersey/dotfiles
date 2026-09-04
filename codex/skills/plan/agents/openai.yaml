@@ -17,3 +17,6 @@ interface:
     architecture and policy to a fixed point, run one private radical candidate,
     validate the exact EPG through Plan's passive Ledger definition, and never
     mutate implementation state, grant execution authority, or select a consumer.
+    Default to `--format human`: emit a reader-first, dependency-ordered plan without
+    inline EPG JSON. Emit the full EPG only for explicit `--format json|both`; when
+    emitted, use two-space indentation and validate those exact bytes.
