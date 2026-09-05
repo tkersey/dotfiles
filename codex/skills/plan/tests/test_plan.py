@@ -116,11 +116,12 @@ class NativeAdmissionTests(unittest.TestCase):
         if json.loads(result.stdout).get("valid") is not True:
             raise AssertionError("native definition check did not validate the export definition")
 
-    def validate(self, data, valid):
+    def validate(self, data, valid, *, definition=None):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "policy.json"
             path.write_text(json.dumps(data, indent=2) + "\n")
-            result = subprocess.run(["ledger", "validate", "--definition", str(self.definition),
+            result = subprocess.run(["ledger", "validate", "--definition",
+                                     str(definition or self.definition),
                                      "--input", f"policy={path}", "--format", "json"],
                                     capture_output=True, text=True)
             envelope = json.loads(result.stdout)
@@ -161,6 +162,73 @@ class NativeAdmissionTests(unittest.TestCase):
         action["kind"] = "probe"
         del action["rollback"]
         self.validate(data, False)
+
+    def test_every_displaced_factor_requires_retirement(self):
+        legacy = self.definition.with_name("execution-policy-graph.json")
+        for disposition in ("ablate", "normalize", "quotient"):
+            with self.subTest(disposition=disposition):
+                data = load()
+                graph = data["execution_policy_graph"]
+                factor = next(f for f in graph["architectonic"]["seams"][0]["factors"]
+                              if f["factor_id"] == "FACTOR-DUAL")
+                factor["disposition"] = disposition
+                self.validate(data, True)
+                for action in graph["actions"]:
+                    action["retires_factor_refs"] = []
+                # The export adds mandatory retirement coverage, beyond the
+                # legacy rule that only checks references which are present.
+                self.validate(data, True, definition=legacy)
+                self.validate(data, False)
+
+    def test_no_displaced_factors_need_no_retirement(self):
+        data = load()
+        graph = data["execution_policy_graph"]
+        architecture = graph["architectonic"]
+        seam = architecture["seams"][0]
+        seam["factors"] = [f for f in seam["factors"] if f["factor_id"] != "FACTOR-DUAL"]
+        seam["incumbent"]["factor_refs"] = ["FACTOR-API"]
+        architecture["conceptual_compression"]["dominated_factor_refs"] = []
+        for action in graph["actions"]:
+            action["retires_factor_refs"] = []
+        self.validate(data, True)
+
+    def test_local_actions_may_omit_architecture_fields(self):
+        for omitted in (True, False):
+            with self.subTest(omitted=omitted):
+                data = load()
+                graph = data["execution_policy_graph"]
+                graph["architectonic"] = {
+                    "mode": "not_required", "reason": "Unchanged exact boundary.", "seams": [],
+                }
+                for action in graph["actions"]:
+                    for field in ("architectonic_seam_refs", "realizes_factor_refs",
+                                  "retires_factor_refs", "preservation_observation_refs"):
+                        if omitted:
+                            action.pop(field, None)
+                        else:
+                            action[field] = []
+                self.validate(data, True)
+
+    def test_actions_collection_is_already_required_by_legacy_shape(self):
+        legacy = self.definition.with_name("execution-policy-graph.json")
+        for state in ("missing", "empty", "null", "object"):
+            with self.subTest(state=state):
+                data = load()
+                graph = data["execution_policy_graph"]
+                if state == "missing":
+                    del graph["actions"]
+                else:
+                    graph["actions"] = {"empty": [], "null": None, "object": {}}[state]
+                self.validate(data, False, definition=legacy)
+                self.validate(data, False)
+
+    def test_retirement_cannot_name_unknown_or_preserved_factors(self):
+        for extra in ("UNKNOWN-FACTOR", "FACTOR-API"):
+            with self.subTest(extra=extra):
+                data = load()
+                # Keep required coverage while adding a forbidden reference.
+                data["execution_policy_graph"]["actions"][1]["retires_factor_refs"].append(extra)
+                self.validate(data, False)
 
 
 if __name__ == "__main__":
