@@ -112,6 +112,24 @@ not improvement. Distinguish general derivation, exhaustive finite evidence,
 sampled tests, unrun model replays, and unmeasured performance. Report failures
 and regressions alongside wins; do not imply that authored fixtures were run.
 
+### Eliminator-first representation cases
+
+`representation-evaluation-cases.json` adds artifact cases, not routing policy or
+an executable test runner. Use it only during tuning/auditing alongside the
+existing `artifact_cases`. The root's eliminator question belongs in both B and
+C; test the gated representation guidance as the incremental C contribution.
+For a focused ablation, remove only that guidance while holding all other source,
+evidence, and budgets fixed. Keep evaluator expectations out of agent prompts.
+
+A win can be a native fused loop, an ordinary fold retained, or explicit data
+preserved at an audit/replay boundary. Score required behavior and the actual
+eliminated obligation, not Church syntax. Reconstruct the data with the constructor
+algebra when confidentiality is claimed; compare effect traces and failure timing,
+mutable captures, repeated consumption/destruction, and whole-workload cost.
+Do not infer initiality or parametricity from a typed-looking interface or finite
+round trips. Authored cases, finite witness checks, host benchmarks, and paired
+model runs remain separate evidence; report which actually ran.
+
 ## Corpus evolution
 
 Freeze additions to the construction-card corpus until repeated paired cases

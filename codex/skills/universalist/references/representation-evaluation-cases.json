@@ -1,0 +1,137 @@
+{
+  "schema": "universalist-representation-evaluation/v1",
+  "skill_version": "17.8.0",
+  "purpose": "Audit-only artifact discriminators for eliminator-first representation; not a new routing policy or executable test runner.",
+  "status": "authored_not_model_replayed",
+  "evaluation": "Present scenarios and required behavior to the agent; reserve expected artifacts, falsifiers, and evidence criteria for evaluation. Accept any admissible implementation satisfying the same requirements.",
+  "artifact_cases": [
+    {
+      "id": "pure-fold-build-eliminates-intermediate",
+      "scenario": "An activated representation decision concerns a pure constructor-generated finite-list producer immediately followed by a right fold. No consumer inspects, retains, shares, serializes, or authorizes the intermediate list. Its allocation is the witnessed cost.",
+      "required_behavior": [
+        "Preserve empty, singleton, and longer outputs, including nonassociative fold algebras and fixed right-fold nesting.",
+        "Preserve all required final outputs; eliminate only the unneeded intermediate representation."
+      ],
+      "expected_artifact": [
+        "A native fused loop or local producer/algebra lowering is admissible; a public Church datatype is not required.",
+        "Name the pure, total, finite, parametric assumptions and the fold/build preservation argument."
+      ],
+      "falsifier": "A left-fold reassociation changes subtraction results, or the implementation merely renames the allocated intermediate while claiming fusion.",
+      "required_valid_counterpart": "A constructor-generated producer preserves its list under constructor interpretation and preserves the final right-fold result under direct interpretation.",
+      "evidence_required": [
+        "Representation round trips and algebra-morphism preservation at an explicit evidence strength.",
+        "Eliminated nodes in the actual lowering or a declared finite cost model; whole-host-workload measurements before claiming performance."
+      ]
+    },
+    {
+      "id": "multiple-interpreters-native-fold-wins",
+      "scenario": "A proposal replaces an adequate finite Expr datatype and its fold solely because it has numeric and rendering interpreters. The native API meets every current requirement and no representation cost or missing capability is evidenced.",
+      "required_behavior": [
+        "Keep numeric evaluation, rendering, and existing callers correct."
+      ],
+      "expected_artifact": [
+        "Preserve the native datatype/fold against this live proposal, or justify a genuinely material alternative rather than treating interpreter multiplicity as sufficient."
+      ],
+      "falsifier": "Introduce a higher-rank callback framework or select a universal route merely because there are two interpreters.",
+      "required_valid_counterpart": "The native fold already evaluates Add(Literal(1),Literal(2)) to 3 and renders (1+2).",
+      "evidence_required": [
+        "The same observations under both candidates and an explicit dividend, or its evidenced absence."
+      ]
+    },
+    {
+      "id": "approved-plan-retains-durable-data",
+      "scenario": "An operation plan must be inspected and authorized, stored in a versioned format, and replayed after restart. A proposed callback replacement captures mutable state that can change the plan after approval.",
+      "required_behavior": [
+        "Execute only the exact approved plan under its authorized context.",
+        "Retain required serialization, restart replay, inspection, and migration capabilities."
+      ],
+      "expected_artifact": [
+        "Retain explicit versioned plan data at those boundaries. A private specialized executor is admissible only with a preservation and exact-plan binding argument."
+      ],
+      "falsifier": "Approve a plan containing operation A, mutate the capture to operation B, then execute B; or make restart replay depend on an unavailable closure.",
+      "required_valid_counterpart": "An approved unchanged plan survives serialization/restart and executes its permitted operation; rejecting all execution is not a repair.",
+      "evidence_required": [
+        "Approved-subject/executed-subject agreement, context validity, and round trips through the required wire/storage representation."
+      ]
+    },
+    {
+      "id": "repeated-destruction-retains-sharing",
+      "scenario": "A native persistent list exposes repeated head/tail inspection and shared-tail identity. Replacing it with a fold-only representation is proposed based on cheap construction.",
+      "required_behavior": [
+        "Preserve head/tail behavior, the required shared-tail identity, and the established whole-workload resource bound."
+      ],
+      "expected_artifact": [
+        "Keep the native representation unless a proposed alternative proves those capabilities and costs. Compare Scott-style one-layer elimination only when useful; do not assume an encoding name supplies the cost law."
+      ],
+      "falsifier": "Repeatedly reconstruct or traverse the suffix, lose shared identity, or report only constructor cost while ignoring destruction and reification.",
+      "required_valid_counterpart": "Two native references to the same tail still observe the same required identity and can inspect it without rebuilding.",
+      "evidence_required": [
+        "Construction plus repeated consumption/destruction, reification, stack, and allocation evidence in the actual host.",
+        "Acknowledge expressibility versus efficiency: folds can encode deconstruction, but that does not establish the required resource bound."
+      ]
+    },
+    {
+      "id": "constructor-algebra-defeats-secrecy-claim",
+      "scenario": "An unrestricted CExpr = forall R. Algebra<R> -> R is proposed as a way to hide literal values because its tree constructors are private.",
+      "required_behavior": [
+        "Do not grant a confidentiality or authorization guarantee that the public elimination surface defeats."
+      ],
+      "expected_artifact": [
+        "Apply the constructor algebra to reconstruct the expression and reject the secrecy claim. Any restricted-observation replacement needs its own authority owner and revised representation claim."
+      ],
+      "falsifier": "Treat private representation as secret data while decode(c) reconstructs Add(Literal(1),Literal(2)).",
+      "required_valid_counterpart": "Public numeric and rendering interpretations still work when they are permitted; unrestricted reconstruction is not a bug in a representation with no secrecy requirement.",
+      "evidence_required": [
+        "An executable reconstructing interpretation and an explicit distinction between representation abstraction and access control."
+      ]
+    },
+    {
+      "id": "ignored-algebra-call-breaks-effectful-fusion",
+      "scenario": "An eager host admits g(k,z) that calls k(99,z), discards that result, and returns k(1,z). The consumer logs its input and sums, or throws when its input is 99.",
+      "required_behavior": [
+        "Preserve returned values, effect traces, and exception timing, not only numeric results."
+      ],
+      "expected_artifact": [
+        "Reject unqualified fold/build fusion for these admitted callbacks/algebras, or supply a separate effect-aware law that actually covers them."
+      ],
+      "falsifier": "foldr(k,0,build(g)) returns 1 with trace [1], but g(k,0) returns 1 with trace [99,1]; only the latter throws at 99.",
+      "required_valid_counterpart": "The pure constructor-generated singleton producer still satisfies the finite pure law; do not reject all fusion.",
+      "evidence_required": [
+        "Both traces and outcomes, explicit eager evaluation, and the missing purity/admission hypothesis."
+      ]
+    },
+    {
+      "id": "mutable-producer-is-not-stable-data",
+      "scenario": "A delayed builder captures a mutable list initially [1]. The incumbent materializes a stable value before that list becomes [1,2]; a proposed replacement interprets the capture later.",
+      "required_behavior": [
+        "Preserve the promised snapshot across mutation and repeated observations.",
+        "Preserve the actual lifetime and consumption policy for any one-shot resource."
+      ],
+      "expected_artifact": [
+        "Snapshot the required data, enforce immutable ownership, or retain the native value. Do not call an unrestricted closure a parametric immutable value."
+      ],
+      "falsifier": "The stored value observes [1] while delayed interpretation sees [1,2], or a second interpretation silently reconsumes a one-shot source.",
+      "required_valid_counterpart": "An immutable snapshot continues to yield [1] through both constructor and length interpretations after external mutation.",
+      "evidence_required": [
+        "Mutation/repeated-consumption observations and ownership or protocol evidence, not only a constructor-time check."
+      ]
+    },
+    {
+      "id": "encoded-fold-does-not-prove-initiality",
+      "scenario": "A host interface has the schematic shape forall R. (F R -> R) -> R and some passing samples, but arbitrary callbacks, casts, effects, or divergence remain admitted. A proposal claims initiality and dependent induction from that shape.",
+      "required_behavior": [
+        "Match claims to the actual model and admission surface without obstructing a useful ordinary implementation."
+      ],
+      "expected_artifact": [
+        "Keep a lawful structure or explicit weaker claim when justified. For initiality, state the functor/model, constructors, admissible algebra maps, parametricity/equivalence assumptions, factorization, and uniqueness argument.",
+        "Do not infer dependent induction, totality, or a performance improvement from fold computation rules or sampled round trips."
+      ],
+      "falsifier": "Promote a polymorphic-looking API or finite example equality into a universal property while omitting admitted hostile callbacks.",
+      "required_valid_counterpart": "Pure constructor-generated finite expressions can be evaluated and reconstructed under their stated assumptions without requiring an initiality claim to use them.",
+      "evidence_required": [
+        "Separate computation, two representation round trips, algebra-morphism preservation, universal uniqueness, and induction claims.",
+        "Classify derivation, exhaustive finite evidence, sampled tests, and unrun formal/model evaluations honestly."
+      ]
+    }
+  ]
+}

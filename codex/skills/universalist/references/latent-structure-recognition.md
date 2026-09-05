@@ -40,6 +40,7 @@ After boundary activation, run a lightweight recognition pass when repository ev
 - callbacks, closures, handlers, or predicates crossing an ownership boundary;
 - several interpreters over the same operation vocabulary;
 - repeated folds, traversals, accumulators, reducers, or transition loops;
+- a temporary structure is built only to be consumed through a stable fold, with a material representation or traversal cost;
 - wrapper families that repeatedly add the same context;
 - projections or reports that duplicate one observation vocabulary;
 - composition code that repeatedly checks the same compatibility rule;
@@ -184,6 +185,7 @@ square boundary matching and interchange
 
 Examples:
 
+- **stored data versus its eliminator** — does a consumer need only a fold, or also constructor inspection, original substructures, sharing, or durable identity? Multiple interpreters alone do not decide this.
 - **applicative versus monadic** — can later operation shape be known before earlier results?
 - **pointwise versus Day composition** — does only the same index combine, or must every legal decomposition contribute?
 - **Reader parameter versus Tambara framing** — is there an actual context action with unit, associative framing, and endpoint naturality?
@@ -271,6 +273,8 @@ The existing comparison universe, dominance relation, current-context contract, 
 | nested decomposition loops combine indexed descriptions | Day or promonoidal composition | all legal decompositions or witnesses must contribute | bounded indexed representation and normalizer |
 | local meanings restrict and must glue across overlaps | presheaf / sheaf candidate | restrictions compose and compatible locals glue uniquely-up-to | usage-site index then exact global model |
 | recursive traversals differ only by result algebra | fold / initial-algebra pattern | constructors determine the traversal homomorphism | one recursion scheme or repository-native fold |
+| a temporary representation is built only to be folded | eliminator-oriented / Church-style producer | round trips, algebra-morphism preservation, and fold/build law under actual host assumptions | native fold or fused loop; retain required materialization |
+| consumers repeatedly need one constructor layer or original substructures | native case analysis / Scott or paramorphism comparison | demand, sharing, and whole-workload costs remain correct | keep explicit data unless an alternative has a measured dividend |
 | transitions expose observable ongoing behavior | coalgebra / state machine | step and observation determine traces | explicit transition and observation API |
 | runtime processes compose and architecture changes compose separately | double-category candidate | both directions compose; compatibility squares paste; interchange is observable | typed arrows, squares, pasting, and interpreter |
 
@@ -316,6 +320,14 @@ use `domain-algebra/property-test-derivation.md` for fold/interpreter preservati
 and cost separation. When future behavior or phase ordering is the discriminator,
 use the matching example in `effects-and-coalgebras.md`. These are targeted
 references, not additional mandatory passes.
+
+When the live alternative changes whether a representation is materialized,
+load `syntax-semantics-pivot.md` for the eliminator-first comparison, then only
+`domain-algebra/property-test-derivation.md` when the representation/fusion law
+needs checking. Reuse the existing recognition packet's eliminators, observations,
+false friend, dividend, and transition witness. This is not a new card, trigger,
+proof profile, or separate pass. A callback or a familiar encoding name alone
+supplies no reason to replace an already adequate datatype.
 
 ## False-positive guardrails
 
