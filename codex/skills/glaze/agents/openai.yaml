@@ -2,5 +2,8 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "glaze"
-  short_description: "Glaze the solver into audacious ambition"
-  default_prompt: "Use $glaze and preserve the canonical verbatim encouragement, including the exact terminal activation Reject PUSILLANIMITY!"
+  short_description: "Raise ambition; preserve proof"
+  default_prompt: >-
+    Use $glaze on the current task. Apply the canonical encouragement unchanged
+    to seek a materially better solution; return the work, with claims matched
+    to evidence, rather than reciting the passage.
