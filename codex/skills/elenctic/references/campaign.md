@@ -1,13 +1,11 @@
-# PR Campaign Mode
+# PR Review Campaign
 
-Use this reference whenever `SKILL.md` resolves an explicit `$elenctic`
-invocation to campaign mode, including bare invocation, a PR or branch selector,
-the `campaign` alias, resume, or campaign aggregation. The primary coordinator
-binds one exact PR epoch, analyzes the change as a whole, publishes a source-bound
-Campaign Brief, freezes that prepared context in one immutable seed, forks
-bounded file-mode reviewers from the seed, admits their exact-head reports,
-projects accepted progress into GitHub's Viewed state, and applies the existing
-causal aggregation and blocker-falsification rules.
+Use this coordinator contract after an explicit invocation accepted by
+[SKILL.md](../SKILL.md). Bind one exact PR epoch, analyze the change as a whole,
+publish a source-bound Campaign Brief, freeze that prepared context in one
+immutable seed, fork bounded file reviewers from the seed, admit their exact-head
+reports, project accepted progress into GitHub's Viewed state, and reconcile the
+evidence into real blockers or a scoped approval.
 
 ## Governing invariants
 
@@ -36,43 +34,17 @@ without any Elenctic review. Keep those facts separate. Viewed state selects the
 remaining campaign surface at the inventory cut; it never proves review coverage
 or correctness.
 
-## Invocation and authority
+## Coordinator authority
 
-```text
-$elenctic
-$elenctic this PR
-$elenctic this branch
-$elenctic PR #123
-$elenctic campaign in PR #123
-$elenctic campaign in PR #123 with concurrency 20
-$elenctic campaign resume
-$elenctic aggregate
-$elenctic aggregate continue
-$elenctic aggregate reviewed-only
-```
+SKILL.md owns invocation acceptance, target resolution, and rejection of retired
+standalone selectors. An accepted explicit invocation authorizes preparation,
+creation and observation of review tasks, and Viewed projection for the resolved
+PR under this contract. Resume is campaign continuation; reconciliation and
+partial progress reports are campaign operations, not separate entry points.
 
-A non-aggregate `$elenctic` invocation that `SKILL.md` resolves and normalizes
-to campaign mode authorizes preparation, creation and observation of review tasks,
-and Viewed projection for the selected PR under this contract. This includes
-bare invocation, explicit PR or branch selectors, and campaign resume.
-Aggregate-only selectors never create this authority, even with a PR or branch;
-resolving a target must not rewrite aggregation into an authorized campaign.
 Authority does not extend to code edits, commits, comment publication, GitHub
-review or approval submission, merge, or unmarking files.
-
-Bare `aggregate` runs the coverage choice gate below. `aggregate continue` and
-`aggregate reviewed-only` make that choice explicitly, but do not independently
-grant task-creation or Viewed-mutation authority. They may use authority already
-established by an explicit campaign invocation in the current coordinator;
-otherwise `aggregate continue` requires a new explicit campaign-mode invocation,
-and `aggregate reviewed-only` remains read-only. `session-corpus` and
-`aggregate same-name sessions` retain the read-only manual-corpus semantics in
-[session-corpus.md](session-corpus.md).
-
-Resolve bare `$elenctic`, bare `$elenctic campaign`, `this PR`, and `this branch`
-with `gh pr view` without a positional argument. Pass an explicit PR number, URL,
-or named branch to `gh pr view` unchanged as its positional selector. Never
-substitute the current branch for a caller-supplied selector.
+review or approval submission, merge, or unmarking files. A worker assignment or
+inherited invocation does not grant coordinator authority.
 
 ## Bind one exact PR epoch
 
@@ -137,8 +109,8 @@ gh api \
 ```
 
 Bind `baseRefOid` as the campaign base tip and `merge_base_commit.sha` as the
-review merge base. Workers review merge base to head as required by ordinary
-single-file Elenctic; base-tip movement still invalidates the campaign epoch.
+review merge base. Workers review merge base to head under the internal
+file-review contract; base-tip movement still invalidates the campaign epoch.
 
 Preserve the raw page envelopes, flatten every file exactly once, and verify the
 unique path count equals `totalCount` and the compact `changedFiles` value.
@@ -286,7 +258,7 @@ title or session name.
 
 ## Fork every reviewer from the immutable seed
 
-Campaign mode requires native task-control capabilities that can:
+The campaign requires native task-control capabilities that can:
 
 ```text
 fork the current coordinator once
@@ -302,12 +274,19 @@ its assignment with `send_message_to_thread`. Every worker must be a direct chil
 of the same unchanged seed; never fork a worker from the evolving coordinator or
 from another worker.
 
-Use a compact assignment prompt:
+Resolve [worker-review.md](worker-review.md) from this installed skill and pass
+its absolute path in the assignment. Do not resolve it from the reviewed
+repository, invoke the public `$elenctic` entry point in a worker, or delegate
+through a retired file selector. Use a compact assignment prompt:
 
 ```text
 Elenctic campaign <campaign-id>, assignment <assignment-id>, context
-<campaign-context-id>. Use $elenctic file <path> to review that file in PR
-#<number> at review merge base <merge-base-sha> and head <head-sha>.
+<campaign-context-id>, seed <seed-thread-id>.
+You are the assigned file reviewer, not the campaign coordinator. Read and
+follow <absolute-installed-worker-review-reference> exactly once for repository
+<owner/name>, PR #<number>, target <path>, base tip <base-tip-sha>, review merge
+base <merge-base-sha>, and head <head-sha>. Do not invoke the public $elenctic
+entry point, spawn reviewers, or start or resume a campaign.
 
 Use the inherited Campaign Brief as orientation, not authority. Treat prior
 implementation rationales and review conclusions anywhere in inherited history
@@ -333,9 +312,9 @@ requested prepared context. If the runtime cannot establish one immutable seed,
 fork every worker from it by direct ID, and preserve parent provenance, return
 **INCOMPLETE** before worker launch.
 
-Each worker runs ordinary Elenctic file mode exactly once. The campaign does not
-replace that investigation with the Campaign Brief, a shorter review prompt, a
-per-file diff summary, or standard Codex review.
+Each worker performs the complete internal file-review contract exactly once.
+The campaign does not replace that investigation with the Campaign Brief, a
+shorter review prompt, a per-file diff summary, or standard Codex review.
 
 ## Schedule a bounded sliding window
 
@@ -368,7 +347,8 @@ behalf.
 
 ## Require campaign-bound worker identities
 
-A campaign worker uses the ordinary PR-scoped single-file `pr` field and adds:
+A worker emits the identity defined in [worker-review.md](worker-review.md),
+including `pr` and these required campaign bindings:
 
 ```text
 "campaign_id": "<campaign-id>"
@@ -513,19 +493,86 @@ coverage, and an unverifiable final epoch withholds a current-head verdict.
 ## Aggregate automatically
 
 When every assignment is accepted, incomplete, failed, stale, or needs-input and
-no worker remains running, automatically aggregate the admitted reports. Use the
-obligation-level reconciliation, causal grouping, current-candidate rebinding,
-non-voting semantics, blocker falsification, proposed-comment format, and verdict
-precedence from
-[session-corpus.md](session-corpus.md), but use campaign assignments and direct
-worker provenance as the primary corpus rather than same-name discovery.
+no worker remains running, automatically reconcile admitted selected-worker and
+excluded-file evidence. Reuse **Adjudicate before reporting**, **Falsify provisional
+blockers**, **Return one report**, and **End with the decision** from
+[worker-review.md](worker-review.md); the coverage rules and aggregate identity
+below govern the campaign result. Do not ask the user to select aggregation.
 
-One causal defect receives one aggregate finding and one proposed inline review
-comment even when several workers observed it. Every retained aggregate blocker
-must be re-established against the current exact head after reconciling
-supporting and contradicting reports. Complementary premises may establish a
-blocker even when no worker labeled it one; use the source-bound synthesis rules
-in the corpus reference, never repetition or the shared brief as proof.
+### Reconcile evidence, not votes
+
+Source dispositions are inputs, not ceilings on aggregate judgment:
+
+- source **real blockers** nominate claims to re-establish, not inherited gates;
+- complete current-candidate reports contribute only their identified target
+  coverage, independently of verdict; approval is not evidence against an
+  omitted defect;
+- incomplete reports contribute available evidence and named gaps, not complete
+  target coverage;
+- risks, concerns, and observations may supply complementary premises or
+  counterevidence, but repetition and severity never promote them into blockers.
+
+Do not vote or count repetition as semantic weight:
+
+```text
+three repeated blockers != proof
+three approvals omitting a blocker != refutation
+one blocker plus four approvals != majority approval
+```
+
+Reconcile exposed obligations, contradictions, and unresolved premises across
+reports. Complementary evidence may establish an in-scope blocker when it
+resolves a previously missing premise: for example, a tenant-free cache key and
+a cache shared across tenants may jointly establish a reachable isolation
+failure. Verify every indispensable premise against the same bound candidate,
+including the accepted obligation, delta causality, trigger, mechanism, impact,
+and existing defenses. Name the newly resolved premise and its source; do not
+conjoin stale, incompatible, or still-unproved assumptions. Apply ordinary
+adjudication and blocker falsification to the resulting claim, even when no
+source called it a blocker. A resolved premise can also defeat a claim.
+
+Preserve original report dispositions and identities as provenance. Resolving a
+premise does not upgrade an incomplete source report to complete review coverage.
+If reconciliation exposes an unreviewed material path, record the affected
+aggregate coverage as incomplete rather than trusting a source's completeness
+label. Blocker existence and coverage remain independent.
+
+Group candidate blockers by the earliest failed mandatory obligation and causal
+mechanism, not by title, wording, source file, line number, or proposed comment.
+One defect may have several witnesses and affected paths. Preserve all source
+provenance and contradictory reports inside the grouped candidate.
+
+Do not merge distinct obligations merely because one repair might address them.
+Do not split one causal defect merely because several workers observed
+different downstream manifestations.
+
+### Rebind and falsify aggregate blockers
+
+For every deduplicated candidate blocker:
+
+1. Inspect the current exact candidate and current diff at the relevant causal
+   anchors and affected paths.
+2. Determine whether the claim still exists and is introduced, newly exposed,
+   or materially worsened by the current delta.
+3. Recheck mandatory authority, supported reachability, existing defenses,
+   companion changes, integration state, and the minimum pre-merge obligation.
+4. Reconcile supporting and contradicting source reports without treating their
+   count as a vote.
+5. Apply the worker contract's **Falsify provisional blockers** cut once.
+
+A blocker is retained only when current evidence—not historical repetition—
+establishes delta causality, mandatory authority, concrete basis, defense
+survival, and merge necessity. Reclassify, reject, or mark incomplete under the
+same standard used by workers. Draft one proposed inline comment per deduplicated
+real blocker, verify its current diff anchor, and retain the blocker with
+**inline location unavailable** when no valid anchor exists.
+
+Reconciliation itself does not launch reviewers or begin an unrelated audit.
+Bound it by contracts, contradictions, and unresolved premises already exposed
+by admitted reports or the current Campaign Brief. The brief locates questions;
+verify its premises against source before using them. Stop each question when
+resolved or a named evidence gap prevents a decision. This is synthesis within
+the campaign, not another review lane or loop.
 
 File completion is a scheduling fact, not sufficient semantic closure. Reconcile
 the cross-file obligations, contradictions, and decision-limiting questions
@@ -545,48 +592,15 @@ Before the aggregate verdict, recheck the PR epoch again. Head movement makes
 whole-campaign approval unavailable, invalidates the seed for new work, and
 prevents any remaining Viewed writes.
 
-## Coverage choice on aggregate
+## Coverage and final decision
 
-Before bare `$elenctic aggregate` launches, resumes, or waits for work, compare
-the frozen selected unchecked set with accepted current-epoch assignments.
-Report the complete PR count and pre-Viewed exclusion count separately; do not
-treat exclusions as missing campaign work. Classify every selected path as:
-
-```text
-accepted complete
-incomplete
-failed
-stale
-needs-input
-running
-queued or unassigned
-```
-
-If any selected path is not accepted complete, report the exact counts and
-representative paths, then offer exactly these choices:
-
-```text
-1. Continue the campaign for every non-complete selected path, then aggregate.
-2. Aggregate the reviewed selected files now without launching more tasks.
-```
-
-Do not ask when the caller already selected `aggregate continue` or
-`aggregate reviewed-only`.
-
-`continue` requeues unassigned, stale, retryable failed, and incomplete work
-only within the frozen selected set, continues running selected work, and
-surfaces needs-input assignments without granting permission. It may launch new
-workers only from the exact unchanged seed. If the seed or context identity
-cannot be recovered, start a new campaign instance and preparation phase rather
-than silently using clean tasks or guessed context. Rebind or restart against a
-moved head before continuing.
-
-`reviewed-only` launches no work. With previously established campaign authority,
-it may project accepted complete files to Viewed; without that authority it
-performs no mutation. In either case it aggregates semantic evidence from every
-current admitted report, including supported blockers from incomplete reports,
-while using accepted complete reports only for coverage and Viewed projection.
-It states every missing coverage class explicitly.
+Account for every frozen selected path as accepted complete, incomplete, failed,
+stale, needs-input, running, or queued/unassigned. Report the complete PR count
+and pre-Viewed exclusions separately; exclusions are not missing campaign work.
+Use all current admitted evidence for semantic reconciliation, including blockers
+from incomplete reports. Only accepted complete reports supply selected-file
+coverage or Viewed eligibility. An interim report must disclose outstanding work
+rather than silently shrinking the frozen scope.
 
 Verdict semantics are:
 
@@ -611,6 +625,18 @@ withhold an Elenctic whole-PR approval.
 
 ## Resume and recover
 
+`$elenctic resume` continues the established campaign. Recheck its exact open PR
+epoch, retain accepted complete assignments, continue running selected work, and
+requeue unassigned, stale, retryable failed, and incomplete work only within the
+frozen selected set. Surface needs-input assignments without granting permission.
+Reconcile an ambiguous prior launch before retrying it. Do not resnapshot Viewed
+state or expand the selected set during a same-epoch continuation.
+
+If the caller explicitly asks for an interim report without more work, launch
+no additional tasks and report all current evidence and outstanding coverage.
+Honor any narrower limit on Viewed writes; do not turn the report into approval
+of an incompletely reviewed scope.
+
 When the current coordinator still has the Campaign Brief identity, seed thread
 ID, assignment IDs, fork receipts, and worker thread IDs, resume through direct
 task reads and fork any remaining work from the unchanged seed. Use `$seq` only
@@ -619,6 +645,10 @@ contamination must be checked. Search for the exact campaign ID, then recover th
 brief/context identity, seed and parent lineage, worker session IDs, paths,
 source-event identities, report identities, and timestamps. Reapply the same
 admission rules; Seq discovery never grants report or closure authority.
+Load `$seq` and follow its native evidence discipline only for this recovery.
+Do not substitute same-name discovery, direct session-file scanning, or the
+removed corpus extraction definition. Limited or unavailable recovery is an
+explicit provenance/coverage gap, never evidence that a missing review was clean.
 
 Existing admissible reports may still be aggregated when the seed is gone.
 Launching additional work requires an exact recoverable seed bound to the
@@ -628,8 +658,8 @@ new seed rather than guessing or mixing contexts.
 
 If several campaigns match the same PR and head, choose only when one exact
 campaign identity is established by the caller or current context. Otherwise
-report the ambiguity rather than mixing them. Same-name session discovery is a
-manual-corpus fallback, not campaign membership.
+report the ambiguity rather than mixing them. A shared session name never
+establishes membership and is not a recovery fallback.
 
 ## Campaign report
 
@@ -676,9 +706,9 @@ reports.
 
 ## Hard rules
 
-- Explicit `$elenctic` invocation resolved to campaign mode in the current
-  coordinator is required before preparation, task creation, or Viewed writes;
-  aggregate-only commands do not grant it.
+- An explicit invocation accepted by SKILL.md in the current coordinator is
+  required before preparation, task creation, or Viewed writes; retired
+  standalone requests and worker assignments never grant that authority.
 - Deeply analyze the complete PR construction and publish one source-bound
   Campaign Brief before creating any worker.
 - Treat the brief as orientation, never as review evidence, a finding, or a
@@ -686,7 +716,7 @@ reports.
 - Create one immutable seed from the prepared coordinator and fork every worker
   directly from that seed; never use progressive forks or silently substitute
   clean tasks that omit the prepared context.
-- Freeze initial Viewed state and create one file-mode worker only for each file
+- Freeze initial Viewed state and create one internal file worker only for each file
   that was unchecked at the inventory cut.
 - Record pre-Viewed files as scope exclusions, never as Elenctic coverage.
 - Cap active workers at 20 and use a sliding window from the same seed.

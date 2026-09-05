@@ -1,6 +1,6 @@
 # Campaign Preparation and Brief
 
-Use this reference only from PR campaign mode, after the exact PR epoch and
+Use this reference only from the PR campaign coordinator, after the exact PR epoch and
 initial Viewed-state partition are frozen and before any file-review worker is
 created. The primary coordinator owns this preparation.
 
@@ -141,7 +141,7 @@ not from another worker.
 
 If the runtime cannot fork the coordinator, cannot later fork the seed by direct
 thread ID, cannot return direct worker IDs, or cannot preserve the parent
-relation, campaign mode is **INCOMPLETE** before worker launch. Do not silently
+relation, the campaign is **INCOMPLETE** before worker launch. Do not silently
 substitute clean `create_thread` tasks, generic subagents, shell-managed
 processes, or copied summaries: those routes do not preserve the requested
 prepared context.
@@ -155,10 +155,11 @@ and prior review conclusions must be revalidated before use. Applicable user
 requirements and constraints retain their authority. Matching brief digests or
 shared seed ancestry do not make correlated judgments independent.
 
-Each worker still performs the complete ordinary `$elenctic file <path>`
-investigation and blocker-falsification cut. Shared context does not convert
-correlated repetition into proof. The aggregate coordinator must likewise
-rebind and falsify deduplicated blockers against the current candidate.
+Each worker performs the complete [internal file-review contract](worker-review.md)
+and blocker-falsification cut without invoking the public skill or becoming a
+coordinator. Shared context does not convert correlated repetition into proof.
+The aggregate coordinator must likewise rebind and falsify deduplicated blockers
+against the current candidate.
 
 ## Invalidation and recovery
 
