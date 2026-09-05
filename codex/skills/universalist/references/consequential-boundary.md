@@ -153,6 +153,10 @@ canonical merge
 typed compatibility witness
 ```
 
+Carry forward the common path's grounded law-derived challenger, if one survives.
+Do not rediscover it in a second pass. A first-use boundary can supply enough
+requirements and operations to derive an alternative without duplicated code.
+
 Then define the comparison universe:
 
 ```text
@@ -172,7 +176,7 @@ resources. It does not mean shortest source code or the simplest
 category-theory name.
 
 A candidate dominates another only with evidence that it preserves required
-observations while reducing one or more of:
+observations and required-valid behaviors while reducing one or more of:
 
 ```text
 invalid representable states
@@ -195,7 +199,11 @@ When several candidates are incomparable minima, return `underdetermined`.
 
 ## One axis and one typed hole
 
-Analyze one architectural axis and one compatible hole per packet.
+Name one primary architectural axis and one compatible hole per packet.
+The unit of reasoning is the smallest interacting law family needed to decide
+that hole, not an isolated equation. Constructor validity plus permitted mutation,
+state equivalence plus future transitions, and description composition plus
+effect interpretation must be checked together when they interact.
 
 ```text
 axes:
@@ -225,8 +233,9 @@ holes:
   proof
 ```
 
-Independent pressures become linked packets. Do not force several axes into one
-global winner.
+Independent pressures become linked packets. Necessary cross-axis interactions
+remain in this argument; do not split them into individually valid but jointly
+unsound certificates. Do not force unrelated axes into one global winner.
 
 ## Latent-structure integration
 
@@ -258,7 +267,9 @@ Use `references/universal-construction-registry.yaml` only after the axis and
 typed hole are known. Read only card fragments relevant to evidenced signals,
 requirements, and the ordinary comparison.
 
-Construction cards are theorem nominations. They do not authorize mutation.
+Construction cards nominate structures or universal constructions. They do not
+authorize mutation. Select the proof profile from the actual claim as specified
+by the registry; a legacy `universal` default is not evidence of universality.
 
 For every relevant card record exactly one disposition:
 
@@ -421,9 +432,25 @@ A context-relative boundary artifact satisfies every applicable law:
     claimed relation, the discriminating law rejects the nearest false friend,
     and the transition preserves required observations.
 
-## Universal witness contract
+## Claim-appropriate witness contract
 
-A consequential categorical nomination requires:
+Keep claim kind separate from realization strength. A lawful categorical model
+(`structure`) is not automatically a universal construction (`universal`).
+Use the existing proof-profile surface; do not add a workflow or route.
+
+For a **structure** claim, establish the carrier and operations, their applicable
+laws, preservation by interpretation and permitted operations, effectivity, and a
+discriminating counterexample. A coalgebra needs transition/observation laws,
+not finality. An observation vocabulary needs preservation and, before quotienting,
+adequacy under required future continuations, not a fabricated Yoneda argument.
+A lawful transformation needs its hypotheses and observation-preserving equation;
+performance or resource improvements need their own evidence.
+
+### Universal witness contract
+
+Only a nomination that claims a **universal construction** additionally requires
+an explicit diagram, admissible competitors and maps, factorization equations,
+and a uniqueness argument. The full profile is:
 
 ```text
 Existence:
@@ -446,10 +473,17 @@ Falsifier:
   a nearby weaker or illegal construction fails observably.
 ```
 
-Engineering realizations may approximate mediation and uniqueness through
-opaque constructors, canonical identifiers, normalized IR, one public
-interpreter, one sanctioned projection, generated code, removal of bypasses, or
-bounded search.
+Opacity, a single public interpreter, canonical IDs, and removal of bypasses
+may enforce a representation. They do not by themselves prove mediation or
+uniqueness. Show why every admissible competitor factors and why two mediators
+with the required equations are equal under the declared equivalence. Tests can
+falsify a claim or exhaust a finite universe; sampled success is not a universal
+proof. Any restriction of the competitor universe must come from requirements
+or an explicitly bounded claim, not from excluding an inconvenient alternative.
+
+A missing universal proof is evidence debt about that stronger claim, not an
+obstruction to an adequate structure-only implementation. Nominate the weaker
+honest artifact when it suffices, without silently retaining universal wording.
 
 State claim strength:
 
@@ -459,8 +493,11 @@ effective realization
 bounded approximation
 ```
 
-A bounded approximation states what is included, excluded, possibly lost, and
-what evidence would refine it.
+These strengths apply independently to structure and universal claims. A bounded
+approximation states its domain, included and excluded behaviors or competitors,
+possible losses, evidence strength, and refinement condition. It must not erase
+required distinctions or reject required-valid behavior without declaring the
+remaining requirement residual or obstructed. Neither disposition discharges it.
 
 ## Transition witness
 
@@ -605,7 +642,8 @@ Assign a route after lowering:
 - `UNI-ORDINARY` — the ordinary artifact closes the seam without material
   advanced-construction delta.
 - `UNI-CANONICAL` — an advanced card materially strengthens the ordinary
-  candidate and has a complete effective witness.
+  candidate and has a complete claim-appropriate effective witness. The route
+  name itself does not assert a universal property.
 - `UNI-OBSTRUCT` — no honest representable or effective artifact remains.
 
 In Actuating composition, this is a nomination. Standalone root authority may
