@@ -1,7 +1,7 @@
 # Noetic Effect Composition Laws
 
-Use this reference before selecting more than one operator or escalating to
-`$metanoetic`.
+Use this reference for Noetic Effects operator composition and dispatcher-selected
+Metanoetic escalation, not as a prerequisite for independent entry points.
 
 A doctrine stack is a small control program. Order, type, ownership, and stopping
 behavior matter more than vocabulary density.
@@ -135,25 +135,14 @@ reopen condition.
 
 ### Metanoetic escalation
 
-```text
-DEFAMILIARIZING
-  -> EXCAVATORY
-  -> APORETIC
-  -> RETOPOLOGIZING
-  -> AUDACIOUS
-  -> POIETIC
-  -> SALTATORY pressure
-```
+[Metanoetic's SKILL.md](../../metanoetic/SKILL.md) owns the canonical intervention.
+When invoked, read and apply that text verbatim; do not reconstruct or substitute
+it from this reference's operator taxonomy. The taxonomy is explanatory, not a
+second runtime definition.
 
-Runtime owner:
-
-```text
-$metanoetic
-```
-
-Use only when the cognitive regime itself is suspect and the coupled stages have
-live distinct roles. The composite generates challengers; it exits into the
-receiving workflow's adjudication.
+The pass generates challengers only; the receiving workflow adjudicates them.
+For this dispatcher's selection rule and independent invocation boundary, use
+[Metanoetic escalation](../SKILL.md#metanoetic-escalation).
 
 `SALTATORY` is terminal pressure, not proof that a breakthrough occurred.
 
@@ -315,7 +304,7 @@ Reject or repair:
 - `ARCHITECTONIC` after implementation has already been selected and started;
 - `ABLATIVE` without a live-obligation inventory or preservation relation;
 - `ACTUATING` before the target and legal lever are known;
-- `METANOETIC` appended after the canonical Metanoetic component sequence;
+- a second Metanoetic pass over an unchanged decision surface;
 - context-reset effects that discard verified facts;
 - retopology that collapses authority, safety, privacy, type, or information-flow
   distinctions;
@@ -323,7 +312,7 @@ Reject or repair:
 
 ## Escalation decision
 
-Use one primitive when one pressure dominates:
+In this dispatcher, use one primitive when one pressure dominates:
 
 ```text
 shallow cause                  -> EXCAVATORY
@@ -335,7 +324,7 @@ unearned surface               -> ABLATIVE
 analysis without action        -> ACTUATING
 ```
 
-Use `$metanoetic` when the following are simultaneously true:
+For dispatcher-selected escalation, use `$metanoetic` when all are true:
 
 1. the incumbent frame or regime is plausibly trapping the answer;
 2. two or more distinct operations are necessary;
@@ -344,7 +333,8 @@ Use `$metanoetic` when the following are simultaneously true:
    evidence;
 5. an owning workflow will adjudicate the challenger.
 
-Otherwise select the smallest primitive or skip.
+Otherwise this dispatcher selects the smallest primitive or skips; it does not
+veto independent invocation.
 
 ## Stop law
 

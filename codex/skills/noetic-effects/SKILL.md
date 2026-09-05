@@ -72,7 +72,7 @@ Before selecting an effect, bind:
 ```text
 objective
 current decision point
-incumbent frame, route, or candidate
+incumbent frame, causal explanation, route, or candidate
 observed pressure
 current evidence
 receiving owner
@@ -97,8 +97,8 @@ Skipping is a successful dispatch result.
 
 ### Selection law
 
-Select zero or one primitive effect by default. Choose the semantically weakest
-effect that can change the decision route.
+In this dispatcher, select zero or one primitive effect by default. Choose the
+semantically weakest effect that can change the decision route.
 
 | Witnessed pressure | Primary effect | Required consequence |
 |---|---|---|
@@ -121,7 +121,12 @@ ambiguous, a specialist operator may dominate, or a formal distinction matters.
 
 ### Metanoetic escalation
 
-Select `$metanoetic` only when:
+The primitive/composite selection rule governs this dispatcher only; it does not
+gate explicit `$metanoetic` invocation or a receiving workflow's native
+Metanoetic trigger. Those entry points retain their binding, authority, and
+one-pass limits; dispatch is not a prerequisite.
+
+For dispatcher-selected escalation, require:
 
 - two or more primitive effects have distinct coupled roles;
 - no one primitive can produce the required route delta;
@@ -140,6 +145,13 @@ operators or selecting the Metanoetic route.
 Compile the selected effect into the active workflow's native decision surface.
 If the workflow already owns an equivalent handler, use that handler and do not
 run a duplicate root pass.
+
+Reuse an in-flight or completed Metanoetic pass across explicit, root, dispatcher,
+and native-workflow entry points for the same decision surface. New labels,
+commits, reviewers, or review waves alone do not reopen it. Reopen only when
+changed objectives, authoritative constraints, or evidence could materially change
+the prior search or disposition. Reuse the owner's comparison and any existing
+falsifier; add no invocation ledger.
 
 Examples:
 
@@ -250,6 +262,10 @@ Prefer object-level evidence:
 - fewer user corrections at equal correctness;
 - lower cost at equal or stronger outcomes.
 
+A rejected challenger is informative only when it changes the evidential basis
+for the decision, such as exposing an assumption or yielding a discriminator.
+Neither adoption nor mere participation in comparison establishes value.
+
 Use `$emulator` for fresh matched comparisons when a consequential doctrine
 claim is testable. Historical sessions may identify pressures and candidate
 operators, but fresh execution should decide adoption when practical.
@@ -271,8 +287,8 @@ operators, but fresh execution should decide adoption when practical.
 - No final-prose doctrine styling.
 - No announcement for implicit dispatch.
 - No operator ledger or receipt merely to prove invocation.
-- One primitive effect by default.
-- Composite escalation only when one primitive is insufficient.
+- One primitive effect by default in this dispatcher.
+- Dispatcher-selected composite escalation only when one primitive is insufficient.
 - Trigger, operation, governor, stop, route delta, and receiving owner must align.
 - Typed distinctions are semantic: outcomes, failures, relations, and governors
   are not interchangeable with executable transforms.
