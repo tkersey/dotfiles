@@ -74,7 +74,6 @@
 - Treat memory-source notes as immutable derived admission snapshots, not canonical stores. Phase 2 owns `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit those outputs directly during ordinary work.
 - When `$learnings`, `$negative-ledger`, or `$synesthesia` accepts a memory-source admission, invoke `$memory-source-notes` in the same turn. It owns adapter selection, validation, diagnostics, and delegation to the immutable writer.
 - Keep the `memory-note` CLI as the sole immutable note writer; it is not a skill. Never bypass `$memory-source-notes` when transporting an accepted source admission.
-- Failure to create or update a memory-source admission note must not invalidate or roll back a successful canonical source-store write.
 
 ### Source-evidence retention mandate
 
