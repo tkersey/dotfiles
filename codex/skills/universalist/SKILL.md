@@ -96,6 +96,13 @@ standalone disposition template; the same applicable obligations remain.
    behavior as well as excluding invalid behavior. Keep necessary state, effect,
    resource, and observation interactions in the same argument. Reuse any equivalent
    challenger supplied by the receiving workflow; no second pass or packet.
+   For a representation alternative, choose by required elimination: does the next
+   boundary need inspectable data, or only its fold? Consider removing intermediate
+   materialization only when its inspection, sharing, persistence, authorization,
+   and rewriting roles are absent or preserved elsewhere. A native datatype plus
+   fold or loop remains the baseline. Church-style callbacks alone establish
+   neither parametricity, initiality, confidentiality, nor a performance gain;
+   apply the existing observation, effect, resource, and claim-strength obligations.
 4. Record the compact disposition:
 
 ```text

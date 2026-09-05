@@ -45,6 +45,16 @@ required semantic distinctions are representable or observable
 syntax transformation preserves declared observations
 ```
 
+## Representation change (only when material)
+
+Reuse these facts in the receiving workflow rather than issuing another report.
+
+- Required eliminator and ordinary datatype/fold baseline:
+- Retained inspection, sharing, identity, persistence, and authority boundaries:
+- Encode/decode or direct-interpretation law and admitted model/host assumptions:
+- Effect, demand, failure, replay, and resource discriminator:
+- Whole-lifecycle cost evidence and unmeasured claims:
+
 ## Falsifier
 
 - Accepted syntax with invalid semantics:

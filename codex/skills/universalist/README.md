@@ -1,4 +1,4 @@
-# Universalist 17.7.0
+# Universalist 17.8.0
 
 Universalist is an implicitly invocable **boundary-decision** lens with
 evidence-indexed progressive disclosure.
@@ -149,7 +149,9 @@ improves a concrete artifact or proof beyond the routine kernel. Use
 `references/efficacy-evaluation.md` and
 `references/routing-evaluation-cases.json` only while tuning or auditing the
 skill; neither belongs in ordinary runtime context. The corpus includes 20
-routing cases and 12 artifact-level discriminators. Written fixtures are not
+routing cases and 20 artifact-level discriminators: 12 in that corpus plus eight
+in `references/representation-evaluation-cases.json`. Both corpora are audit-only.
+Written fixtures are not
 model-run results or evidence of improved efficacy.
 
 Worked derivations live in existing references: compatible-pair adequacy in
@@ -157,6 +159,23 @@ latent recognition; continuation-sensitive state distinctions, ordered phases,
 and indexed transitions in effects/coalgebras; and fold/interpreter fusion in
 property-test derivation. They should produce simpler repository-native artifacts,
 not more theorem names or framework code.
+
+## Eliminator-first representation
+
+Church-style reasoning extends the existing syntax/semantics pivot in both
+directions: reify behavior for inspection, or remove temporary materialization
+when only its lawful fold is required. `references/syntax-semantics-pivot.md`
+compares native data/folds, Church-style producers, one-layer elimination, and
+hybrid boundaries. `references/domain-algebra/property-test-derivation.md` adds
+round trips, algebra-morphism preservation, and fold/build fusion with effectful
+and mutable-capture counterexamples.
+
+Native data, folds, and loops remain the baseline. Reconstruction is not
+confidentiality; polymorphic-looking callbacks are not proof of parametricity,
+initiality, or induction. Keep inspection, authorization, persistence, identity,
+and replay where required, and measure complete workloads before claiming speed.
+This adds examples and claim-specific evidence within the existing contracts,
+not a new trigger, route, construction card, proof profile, or runtime framework.
 
 ## Package invariants
 
