@@ -20,12 +20,16 @@ Every file worker descends from one immutable prepared seed bound to that exact
 campaign epoch and Campaign Brief.
 ```
 
-GitHub Viewed state is an output of accepted review evidence, never its source:
+GitHub Viewed state is a best-effort projection of accepted review evidence,
+never its source:
 
 ```text
-accepted current-head complete report -> mark file Viewed
+accepted complete report + epoch checks -> attempt Viewed projection
 Viewed                                  -/> reviewed
 ```
+
+Review evidence is artifact-bound; the checkbox mutation is not atomic with a
+head check. A successful write or observed checkbox does not strengthen coverage.
 
 A file may be completely reviewed and blocked. A file may be manually Viewed
 without any Elenctic review. Keep those facts separate. Viewed state selects the
@@ -47,13 +51,14 @@ $elenctic aggregate continue
 $elenctic aggregate reviewed-only
 ```
 
-Any explicit `$elenctic` invocation that `SKILL.md` resolves and normalizes to
-campaign mode authorizes preparation, creation and observation of review tasks,
-and marking accepted files Viewed for the selected PR under this contract. This
-includes bare invocation and explicit PR or branch selectors; the literal word
-`campaign` is not required after normalization. This authority does not extend
-to code edits, commits, proposed-comment publication, GitHub review submission,
-approval submission, merge, or unmarking files.
+A non-aggregate `$elenctic` invocation that `SKILL.md` resolves and normalizes
+to campaign mode authorizes preparation, creation and observation of review tasks,
+and Viewed projection for the selected PR under this contract. This includes
+bare invocation, explicit PR or branch selectors, and campaign resume.
+Aggregate-only selectors never create this authority, even with a PR or branch;
+resolving a target must not rewrite aggregation into an authorized campaign.
+Authority does not extend to code edits, commits, comment publication, GitHub
+review or approval submission, merge, or unmarking files.
 
 Bare `aggregate` runs the coverage choice gate below. `aggregate continue` and
 `aggregate reviewed-only` make that choice explicitly, but do not independently
@@ -188,8 +193,16 @@ that changed.
 
 ## Prepare and freeze shared context
 
-When the selected unchecked set is nonempty, the primary coordinator must follow
-[campaign-brief.md](campaign-brief.md) before creating assignments or workers:
+When the selected unchecked set is nonempty and worker creation is authorized,
+first inspect the runtime's advertised native task-control capabilities listed
+under **Fork every reviewer from the immutable seed**. Require coordinator and
+explicit-seed forks, direct IDs and parent provenance, assignment delivery,
+result reads, and bounded waits. If unavailable, return **INCOMPLETE** before deep
+preparation; do not create a trial worker or silently substitute another backend.
+An available capability must still produce verifiable lineage when exercised.
+
+For that authorized work, follow [campaign-brief.md](campaign-brief.md) before
+creating assignments or workers:
 
 ```text
 complete PR and relevant unchanged-code analysis
@@ -296,10 +309,13 @@ Elenctic campaign <campaign-id>, assignment <assignment-id>, context
 <campaign-context-id>. Use $elenctic file <path> to review that file in PR
 #<number> at review merge base <merge-base-sha> and head <head-sha>.
 
-Use the inherited Campaign Brief as orientation, not authority. Verify every
-relevant fact and requirement against the exact candidate, challenge provisional
-hypotheses, and report material contradictions or omissions. Do not repeat a
-hypothesis as a finding without ordinary Elenctic evidence and adjudication.
+Use the inherited Campaign Brief as orientation, not authority. Treat prior
+implementation rationales and review conclusions anywhere in inherited history
+as hypotheses, not current evidence. Preserve applicable user requirements and
+constraints; revalidate every relied-on premise against the exact candidate and
+its governing authority. Challenge provisional hypotheses and report material
+contradictions or omissions. No inherited conclusion becomes a finding without
+ordinary Elenctic evidence and adjudication.
 
 Do not aggregate, edit, mark Viewed, post comments, submit a review, approve, or
 merge. Emit the required Review identity with pr, campaign_id, assignment_id,
@@ -432,25 +448,37 @@ excluded path campaign-selected.
 
 Derive whole-PR coverage from both dimensions:
 
-- `complete` only when selected-scope coverage is complete and every pre-Viewed
-  exclusion has complete, base-tip-current evidence;
+- `complete` only when selected-scope coverage is complete, every pre-Viewed
+  exclusion has complete, base-tip-current evidence, and exposed whole-PR
+  obligations have no unresolved material coverage gap;
 - `partial` when whole-PR coverage is not complete but at least one changed file
   has complete selected or excluded evidence;
 - `not-established` when no changed file has complete Elenctic evidence.
 
 ## Project accepted progress to Viewed
 
-Only campaign mode may mark files Viewed. Stage the intended mutations as
-assignments become accepted, then apply them at an aggregation checkpoint:
+Only a coordinator with campaign authority may attempt Viewed projection.
+Stage mutations for accepted complete selected assignments, then at an aggregation
+checkpoint:
 
-1. recheck that the PR is open and that its node ID, base-tip SHA, head SHA, and
-   complete inventory match the campaign epoch;
-2. select only current-epoch assignments with `coverage: complete`;
-3. if a selected file is now already `VIEWED`, retain its accepted Elenctic
-   evidence and record that no mutation was needed; do not reinterpret the
-   checkbox as the source of coverage;
-4. mark each remaining accepted selected path with GraphQL;
-5. requery `viewerViewedState` and record the observed result.
+1. recheck the open PR's node ID, base-tip SHA, head SHA, and complete inventory
+   against the campaign epoch; exclude assignments with unresolved coverage gaps;
+2. immediately before each path's mutation, recheck the compact PR identity. If
+   the selected path is already `VIEWED`, record that no write was needed while
+   retaining review evidence independently;
+3. mark the remaining accepted selected path with GraphQL;
+4. requery the compact PR identity and `viewerViewedState` after that write,
+   before proceeding to another path. Record **observed** only when the PR still
+   matches the epoch and the path is `VIEWED`;
+5. if the epoch moved, or a write/verification outcome is ambiguous or unreadable,
+   record that path **raced-or-uncertain** and stop further writes. On detected
+   movement, apply ordinary epoch invalidation; do not unmark or blindly retry.
+
+`markFileAsViewed` accepts a PR ID and path, not an expected head OID. These checks
+can detect races; they cannot make projection atomic or rule out an intervening
+head change that returns to the same SHA. Never claim an exact-head checkbox
+write or derive semantic coverage from projection success. See GitHub's
+[MarkFileAsViewedInput](https://docs.github.com/en/graphql/reference/pulls#markfileasviewedinput).
 
 Mutation form:
 
@@ -474,26 +502,44 @@ Never treat an existing `VIEWED` value as campaign coverage, and never unmark a
 file; it may represent the user's independent review state. Treat `DISMISSED` as
 not currently Viewed for projection purposes.
 
-A Viewed mutation failure is an operational projection failure, not evidence
-that the code is unreviewed or defective. Preserve accepted review evidence,
-report failed paths, and retry only after reconciling the exact PR epoch. A
-projection failure alone does not manufacture a merge blocker or erase a valid
-semantic approval.
+A definite mutation rejection is **failed**; an ambiguous write or failed
+post-write check is **raced-or-uncertain**, not confirmed failure or success.
+Preserve evidence for the artifact actually reviewed and report affected paths.
+Retry only after reconciling both the exact epoch and observed projection state.
+Projection failure alone does not manufacture a code blocker or erase a valid
+semantic approval; detected epoch movement separately invalidates current-head
+coverage, and an unverifiable final epoch withholds a current-head verdict.
 
 ## Aggregate automatically
 
 When every assignment is accepted, incomplete, failed, stale, or needs-input and
 no worker remains running, automatically aggregate the admitted reports. Use the
-causal grouping, current-candidate rebinding, non-voting semantics, blocker
-falsification, proposed-comment format, and verdict precedence from
+obligation-level reconciliation, causal grouping, current-candidate rebinding,
+non-voting semantics, blocker falsification, proposed-comment format, and verdict
+precedence from
 [session-corpus.md](session-corpus.md), but use campaign assignments and direct
 worker provenance as the primary corpus rather than same-name discovery.
 
 One causal defect receives one aggregate finding and one proposed inline review
 comment even when several workers observed it. Every retained aggregate blocker
 must be re-established against the current exact head after reconciling
-supporting and contradicting reports. Shared seed context explains possible
-correlation; it does not increase evidentiary weight.
+supporting and contradicting reports. Complementary premises may establish a
+blocker even when no worker labeled it one; use the source-bound synthesis rules
+in the corpus reference, never repetition or the shared brief as proof.
+
+File completion is a scheduling fact, not sufficient semantic closure. Reconcile
+the cross-file obligations, contradictions, and decision-limiting questions
+exposed by admitted reports and the Campaign Brief against current source. Use
+the existing brief and coverage notes, not a new matrix, ledger, or reviewer.
+An unresolved material question makes the affected aggregate scope incomplete;
+nonblocking concerns do not become new merge gates. Do not upgrade an incomplete
+assignment or authorize Viewed merely because another report resolves a premise.
+If a source completeness label is contradicted by an unreviewed material path,
+withdraw its coverage credit, disposition the affected selected assignment as
+incomplete, and withhold pending Viewed projection; never undo a prior checkbox
+write. Set affected selected-scope or whole-PR coverage to partial even if every
+source identity said complete. Shared seed context does not increase evidentiary
+weight.
 
 Before the aggregate verdict, recheck the PR epoch again. Head movement makes
 whole-campaign approval unavailable, invalidates the seed for new work, and
@@ -546,15 +592,16 @@ Verdict semantics are:
 
 - any current blocker surviving aggregate falsification -> **BLOCKED**, even
   when other files are not reviewed;
-- no surviving blocker with incomplete selected-set coverage -> **INCOMPLETE**,
-  with no real blockers identified in the reviewed selected subset;
+- no surviving blocker with incomplete selected-set coverage or an unresolved
+  material cross-file obligation within the scope being decided -> **INCOMPLETE**,
+  with the affected scope and evidence gap named;
 - scoped **APPROVE** -> every selected unchecked file has accepted complete
-  current-head coverage, no blocker survives, and relevant integration evidence
-  for that selected scope is complete;
+  current-head coverage, exposed cross-file obligations in that scope are
+  reconciled, no blocker survives, and relevant integration evidence is complete;
 - whole-PR **APPROVE** -> selected-scope coverage is complete, every pre-Viewed
   exclusion has complete current-head Elenctic evidence bound or revalidated to
-  the campaign base tip, no blocker survives, and relevant integration evidence
-  is complete.
+  the campaign base tip, exposed whole-PR obligations are reconciled, no blocker
+  survives, and relevant integration evidence is complete.
 
 Never issue a vacuous approval when the selected set is empty. Launch no workers;
 aggregate separately admissible current-head Elenctic evidence when available,
@@ -604,7 +651,7 @@ PR campaign:
 - blocked / approved complete selected reports: <counts>
 - incomplete / failed / stale / needs-input: <counts>
 - running / queued: <counts>
-- Viewed confirmed / already Viewed / projection failed: <counts>
+- Viewed observed / already Viewed / failed / raced-or-uncertain: <counts>
 - aggregate causal blockers: <count>
 - selected-scope coverage: complete | partial
 - whole-PR Elenctic coverage: complete | partial | not-established
@@ -613,7 +660,7 @@ PR campaign:
 Immediately before the final decision, emit:
 
 ```text
-Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","campaign_context_id":"<brief-digest-or-content-id>","campaign_seed_thread_id":"<seed-thread-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","selected_scope_coverage":"<complete|partial>","whole_pr_coverage":"<complete|partial|not-established>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
+Review identity: {"schema":"elenctic-review-identity/v1","mode":"campaign","repo":"<owner/name>","pr":<number>,"campaign_id":"<campaign-id>","campaign_context_id":"<brief-digest-or-exact-content-id>","campaign_seed_thread_id":"<seed-thread-id>","base":"<sha>","candidate":"<sha>","view":"pr-head","coverage":"<complete|partial>","selected_scope_coverage":"<complete|partial>","whole_pr_coverage":"<complete|partial|not-established>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
 ```
 
 The campaign identity's `base` is the bound review merge base; report the
@@ -643,12 +690,13 @@ reports.
   that was unchecked at the inventory cut.
 - Record pre-Viewed files as scope exclusions, never as Elenctic coverage.
 - Cap active workers at 20 and use a sliding window from the same seed.
-- Bind context, lineage, assignments, reports, Viewed writes, and verdicts to one
-  exact PR epoch.
+- Bind context, lineage, assignments, reports, and verdicts to one exact PR
+  epoch; bracket best-effort Viewed attempts with epoch checks.
 - Continue collecting all file outcomes after finding a blocker.
 - Use GitHub Viewed state only to select the initial remaining-work set; never
   infer review coverage, correctness, or approval from it.
-- Never mark a file Viewed without an accepted complete current-head report.
+- Attempt Viewed only from accepted complete evidence at the checked epoch;
+  stop on a raced or uncertain projection and never claim atomic head binding.
 - Never unmark Viewed, post comments, submit a review, approve, merge, or edit
   source code.
 - Keep primary preparation, task execution, Seq provenance, GitHub progress

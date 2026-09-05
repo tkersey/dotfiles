@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only Elenctic defaults to an exact-head PR campaign for the current branch, creating up to 20 clean file-review tasks, aggregating their blockers, and marking accepted complete files Viewed. Use file mode for one-file causal review and session-corpus for $seq-backed same-name aggregation. Finish with real blockers or scoped approval; never edit code, post comments, submit reviews, approve, or merge."
+description: "Explicit-only Elenctic defaults to an exact-head PR campaign for the current branch, forking prepared file reviewers with at most 20 active at once, reconciling their evidence, and projecting accepted complete reviews to Viewed. Use file mode for one-file causal review and session-corpus for $seq-backed same-name aggregation. Finish with real blockers or scoped approval; never edit code, post comments, submit reviews, approve, or merge."
 ---
 
 # Elenctic
@@ -62,7 +62,11 @@ number, URL, or named branch to `gh pr view` as its positional selector; never
 replace it with the current branch. Normalize every successful default route
 to the canonical `$elenctic campaign <resolved-pr>` selector before applying
 [campaign.md](references/campaign.md). That normalized explicit selector carries
-the campaign authority required by the reference.
+the campaign authority required by the reference. Aggregate-only selectors route
+to that reference without this normalization: `aggregate`, `aggregate continue`,
+and `aggregate reviewed-only` never create campaign authority, even with a PR or
+branch selector. They may use authority already established in this coordinator;
+otherwise they remain read-only and cannot launch or resume workers or mark Viewed.
 
 Activate **session-corpus mode** only through its selectors above. Read and
 follow [session-corpus.md](references/session-corpus.md). A file selector is
@@ -76,9 +80,9 @@ performs one integrated investigation in the current reviewing agent and does
 not spawn reviewers, invoke auxiliary skills, dispatch CAS reviews, or run
 separate lens passes, verdicts, confirmation streaks, or fix/review loops.
 
-Campaign mode follows [campaign.md](references/campaign.md). It may create
-clean, directly identified file-mode tasks and may use `$seq` only for recovery
-or provenance. A campaign worker with an explicit target path always resolves
+Campaign mode follows [campaign.md](references/campaign.md). With campaign
+authority, it may fork directly identified file-mode reviewers from one prepared
+seed and may use `$seq` only for recovery or provenance. A campaign worker with an explicit target path always resolves
 to file mode even when its prompt uses the path-only compatibility form; the
 canonical worker form is `$elenctic file <path>`. Session-corpus mode may use
 `$seq` only as a passive adapter for physical session discovery and report
@@ -90,8 +94,9 @@ the independence of five reviews is not reproduced. No mode is Codex's
 native/default standard review or earns Actuating review credit.
 
 File and session-corpus modes remain read-only. Campaign mode may create and
-observe review tasks and mark an accepted complete current-head file Viewed only
-under its reference. No mode may edit source or the index, implement repairs,
+observe review tasks and attempt epoch-checked Viewed projection of accepted
+complete reports only under its reference; projection is not an atomic head-bound
+write. No mode may edit source or the index, implement repairs,
 stage, commit, publish comments, submit GitHub reviews, approve, merge, or
 unmark files. Safe targeted tests and scratch reproductions are allowed;
 isolate generated output and avoid commands that rewrite reviewed files or
