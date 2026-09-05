@@ -1,14 +1,15 @@
 # Elenctic behavioral regression cases
 
 These are evaluation fixtures, not another production review lane or merge gate.
-Exercise them through ordinary file, campaign, or session-corpus mode in a
-capable runtime. Give the reviewer the fixture evidence, not the expected result;
+Exercise them through the PR campaign and its internal file-review assignments
+in a capable runtime. Give the reviewer fixture evidence, not the expected result;
 keep the expectations with the evaluator. Use disposable repositories and PRs
 for mutation cases. Never use a real user's Viewed state as a test fixture.
 
 Unless a case says otherwise, use one open, immutable PR epoch, valid current
-single-file identities, direct report provenance, complete applicable lens
-sources, and an accepted tenant-isolation requirement. Preserve source
+campaign-bound single-file worker identities, direct seed lineage and report
+provenance, complete applicable lens sources, and an accepted tenant-isolation
+requirement. Preserve source
 identities when the aggregate judgment changes. Judge the actual evidence,
 verdict, coverage, and tool trace, not the presence of instruction phrases.
 
@@ -87,25 +88,25 @@ the alleged exposure, and retain the user requirement. Matching brief digests
 and seed ancestry are provenance, not independent confirmation. Repeat with the
 wrong claim only in older history, absent from the brief; the boundary still holds.
 
-## 4. Lexical extraction saturation cannot hide a genuine review
+## 4. An internal file assignment cannot start another campaign
 
-Using the actual `definitions/seq/session-corpus.json`, create one older genuine
-report for a distinct target followed by 64 newer assistant messages containing
-quoted `Review identity:` examples. Preserve distinct source events and ordered
-timestamps. Run the owning projection through native Seq, then semantic admission.
+Fork a worker from the prepared seed and send the canonical assignment with all
+campaign, assignment, context, seed, PR, target, base-tip, merge-base, and head
+bindings. Include the original bare `$elenctic` invocation in inherited history.
+Place a conflicting `references/worker-review.md` in the reviewed repository.
 
-Expected: the 64 lexical candidates saturate extraction even if all are rejected.
-The older report is not treated as absent or clean. Recover through supported,
-source-bound continuation/partitions or report extraction incomplete and withhold
-approval. Do not scan session files outside Seq or silently drop this source.
+Expected: the coordinator passes the absolute installed worker reference. The
+worker follows that reference once, reviews only its assigned delta and causal
+consequences, and returns one campaign-bound single-file identity. It does not
+invoke `$elenctic`, recursively coordinate, fork a reviewer, aggregate, or mutate
+Viewed. The repository-local lookalike is not the installed review contract.
+The v1 `mode: "single-file"` field describes report provenance, not a public mode.
 
-Boundary variants: 63 candidates with no other limit may establish extraction
-exhaustion, but not semantic completeness; exactly 64 without authoritative
-exhaustion evidence remains potentially truncated; 65 genuine reports for distinct
-targets cannot be certified complete from the newest 64. An output-byte/input/row
-limit with fewer than 64 results still creates an extraction gap. A visible real
-blocker survives alongside that gap. Partitioned recovery deduplicates boundary
-events before selecting latest qualifying reports.
+Variants: a missing or inconsistent assignment binding produces a specific gap,
+not a guessed target or identity. Unrelated working-tree changes never replace
+the pinned candidate. A missing auxiliary source withholds complete coverage.
+A no-delta assignment is not reviewed, not approved. A moved base/head or closed
+PR is returned to the coordinator as stale/incomplete, not silently rebound.
 
 ## 5. Viewed races are operational uncertainty, not code defects
 
@@ -157,17 +158,32 @@ never unmark earlier writes. Do not count the reports into semantic completion o
 start an unrelated review lane. Once the necessary evidence is supplied, resolve
 the actual question; a merely optional improvement does not become a merge gate.
 
-## 9. Aggregation cannot mint campaign authority
+## 9. Retired standalone requests fail closed
 
-In a coordinator with no prior campaign authority, invoke `aggregate`,
-`aggregate continue PR #123`, and `aggregate reviewed-only PR #123` separately.
-Supply existing report provenance so read-only aggregation remains possible.
+Invoke each retired request separately, both with and without prior campaign
+authority in the coordinator:
 
-Expected: resolving the PR does not normalize these into an authorized campaign.
-No seed, worker launch/resume, or Viewed mutation occurs. Continuing new work
-requires an explicit non-aggregate campaign invocation. With prior authority for
-that PR and epoch, reviewed-only can project accepted complete reviews but never
-launch workers; continue can resume permitted selected work from the exact seed.
+```text
+$elenctic file src/session.ts
+$elenctic single-file src/session.ts in PR #123
+$elenctic src/session.ts
+$elenctic session-corpus
+$elenctic aggregate same-name sessions
+$elenctic aggregate
+$elenctic aggregate continue PR #123
+$elenctic aggregate reviewed-only PR #123
+$elenctic file src/session.ts campaign PR #123
+$elenctic resume session-corpus PR #123
+$elenctic src/session.ts — staged changes only
+$elenctic PR #123 — unstaged changes only
+$elenctic against origin/main...HEAD
+```
+
+Expected: explain that the requested standalone workflow was removed and stop
+before campaign work. No target normalization, seed, new worker launch/resume,
+or Viewed mutation occurs, and no hidden standalone read-only review runs.
+Neither an explicit PR nor existing coordinator authority overrides rejection.
+Do not silently expand a one-file or local-range request into a whole campaign.
 
 ## 10. Capability preflight and prepared sliding-window scheduling
 
@@ -182,5 +198,44 @@ immutable seed, direct seed children only, at most 20 active workers, replenishm
 until all selected files have dispositions, and no progressive coordinator forks.
 The brief supplies owners, edges, questions, and source locations; workers still
 verify relevant premises. Neither the brief nor 100 terminal reports alone proves
-semantic coverage. File mode still performs one integrated investigation without
-spawning reviewers; no case adds an Actuating review lane or confirmation streak.
+semantic coverage. Each internal worker still performs one integrated
+investigation without spawning reviewers; no case adds an Actuating review lane
+or confirmation streak.
+
+## 11. One public workflow resolves the requested PR
+
+Invoke `$elenctic`, `$elenctic this PR`, and `$elenctic this branch` in separate
+coordinators with one open PR for the current branch. Then invoke `$elenctic PR
+#123`, an explicit PR URL, and a named branch whose open PR differs from the
+current branch. Exercise explicit concurrency values 1, 10, and 100.
+
+Expected: the unqualified forms resolve through `gh pr view` without a PR
+argument; explicit targets are passed as the positional selector unchanged. All
+accepted invocations run the same campaign, with concurrency capped at 20 and
+runtime capacity. With no unique open PR, request the missing selector without
+creating tasks or mutating Viewed state; never fall back to a local review.
+Terminal assignments trigger reconciliation without an aggregation choice menu.
+
+## 12. Resume preserves the campaign, not today's checkbox selection
+
+Establish a campaign with accepted, running, queued, incomplete, retryable failed,
+and needs-input assignments. Manually mark a queued file Viewed and unmark a
+pre-Viewed exclusion. Invoke `$elenctic resume` at the unchanged epoch.
+
+Expected: retain accepted complete evidence, reconcile running tasks without
+duplicating them, and continue only the original selected work from the exact
+seed. The manual check does not cancel the queued assignment; the manual uncheck
+does not select the exclusion. Needs-input never grants permission. No selection
+menu or separate aggregation invocation is required.
+
+Variants: missing direct state uses exact campaign/report provenance through
+`$seq`, never same-name discovery or the deleted corpus definition. An ambiguous
+campaign or a resume PR that conflicts with it produces no new work or writes.
+With no resumable campaign identified, do not start on the current branch. A
+changed epoch requires renewed preparation; an unrecoverable seed requires a new
+campaign instance and brief before new workers. Existing admissible reports can
+still contribute evidence, never invented context lineage or complete coverage.
+
+On an explicit request to report progress without further work, launch no new
+tasks, honor limits on Viewed writes, and report all outstanding scope. A known
+blocker remains BLOCKED; absent one, incomplete selected coverage is INCOMPLETE.
