@@ -166,13 +166,17 @@ class MigrationTests(unittest.TestCase):
         self.assertEqual(backup.read_bytes(), expected)
 
     def test_rejects_already_pulled_link_to_reduced_baseline(self):
-        self.user.unlink()
-        self.user.symlink_to(self.source)
-        with self.assertRaisesRegex(RuntimeError, "BEFORE pulling"):
-            self.run_install()
-        self.assertTrue(self.user.is_symlink())
-        self.assertFalse(self.system.exists())
-        self.assertEqual(self.commands, [])
+        other_checkout = self.root / "another reduced checkout.toml"
+        other_checkout.write_bytes(BASELINE)
+        for target in (self.source, other_checkout):
+            with self.subTest(target=target):
+                self.user.unlink()
+                self.user.symlink_to(target)
+                with self.assertRaisesRegex(RuntimeError, "BEFORE pulling"):
+                    self.run_install()
+                self.assertTrue(self.user.is_symlink())
+                self.assertFalse(self.system.exists())
+                self.assertEqual(self.commands, [])
 
     def test_rejects_user_system_alias(self):
         with self.assertRaisesRegex(RuntimeError, "must be different"):
@@ -333,6 +337,8 @@ class MigrationTests(unittest.TestCase):
         backup, = self.user.parent.glob("*.pre-system-split.*")
         self.assertEqual(backup.read_bytes(), LIVE)
         self.assertEqual(stat.S_IMODE(backup.stat().st_mode), 0o600)
+        live_target.write_bytes(BASELINE)  # Simulate pulling the reduced tracked file.
+        self.assertEqual(self.user.read_bytes(), LIVE)
         self.run_install()
         self.assertEqual(overlay(parsed(BASELINE), parsed(self.user.read_bytes())),
                          overlay(parsed(BASELINE), parsed(LIVE)))
