@@ -48,7 +48,7 @@ of a previously proposed restoration label.
 
 Give Universalist one live independently governed axis, one typed hole, the
 Goal's construction obligation or source-supported loss of guarantee, required
-observations, and available source-domain evidence. Require `candidate`, `preserve-incumbent`, or `obstructed`
+observations, and available source-domain evidence. Require `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed`
 with the proposed construction or reason to preserve the owner, its discriminator,
 preservation obligations, and material migration or residual consequences. This replaces a duplicate
 Working Set projection, not its semantic obligations. Split independent seams
@@ -82,8 +82,10 @@ changed boundary.
 
 A sanctioned path omitted from either coverage basis revokes that claim
 immediately. An exact same-claim successor finding reopens the causal explanation; do not append named-member
-guards or reset recurrence through a new label. Preserve material incomparability
-and return a bounded obstruction when evidence cannot choose an adequate candidate.
+guards or reset recurrence through a new label. Missing evidence or incomparable
+adequate candidates return `unresolved`, not an invented winner or obstruction.
+Actuating decides the smallest authorized discriminator and blocks only dependent
+work. Reserve `obstructed` for an evidenced obstruction.
 
 Git and executed verifiers own the result. Actuating retains only the current
 Working Set: Goal/head, causal basis/discriminator, selected mechanism, source-domain

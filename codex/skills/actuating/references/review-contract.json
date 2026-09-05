@@ -243,6 +243,7 @@
     "allowed_nomination_results": [
       "candidate",
       "preserve-incumbent",
+      "unresolved",
       "obstructed"
     ],
     "independently_governed_axes_require_split": true,

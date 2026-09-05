@@ -70,7 +70,18 @@ The workflow binding remains opaque:
 }
 ```
 
-CAS echoes it and does not infer Actuating policy.
+CAS echoes it and does not infer Actuating policy. The echo binds identity;
+it does not deliver the hashed context or prove that a reviewer saw it.
+
+Repository sources and references accessible through the existing review backend
+are evidence; parent-only conversation premises are not implicitly inherited.
+For a premise-dependent judgment, distinguish an accessible accepted source from
+an opaque digest or an unresolved reference. The same diff under different
+compatibility contracts cannot be distinguished by digest alone. Preserve any
+material access limitation in the caller's existing evidence horizon, without
+rewriting the owner verdict or asserting review of an undisclosed premise.
+This clarification adds no context packet, prompt argument, review gate, attempt,
+or retry. Native standard and exact auxiliary instruction bytes remain unchanged.
 
 ## Receipt interpretation
 

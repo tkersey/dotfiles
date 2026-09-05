@@ -89,8 +89,13 @@ it only when architecture reconsideration is live. Universalist nominates only:
 ```text
 candidate
 preserve-incumbent
+unresolved
 obstructed
 ```
+
+`unresolved` reports missing evidence or incomparable adequate candidates. It is
+a nomination result, not a new mode or evidence of obstruction. Actuating owns
+any further authorized discrimination.
 
 Do not run a duplicate root or worker pass merely because realization crosses an
 already accepted boundary. Actuating reconstructs the incumbent from the
