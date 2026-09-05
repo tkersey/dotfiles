@@ -120,6 +120,11 @@ def install_config(source: Path, user: Path, system: Path, *, dry_run: bool = Fa
     if user.resolve() == system.resolve():
         raise RuntimeError("User and system config paths must be different.")
     original = snapshot(user)
+    if original[0] is not None and original[1].startswith(MARKER):
+        raise RuntimeError(
+            "User config links to a shared baseline in another checkout. Preserve "
+            "the live config BEFORE pulling; see codex/CONFIGURATION.md for recovery."
+        )
     system_original = snapshot(system)
     if system_original[0] is not None:
         raise RuntimeError("Refusing to replace a symlink at the system config path.")
