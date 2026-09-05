@@ -38,7 +38,12 @@ fi
 '
 ```
 
-Then pull/checkout the change. Do not discard unrelated working-tree changes.
+Then pull/checkout the change. If Git reports local edits to the old tracked
+`codex/config.toml`, inspect them with `git diff -- codex/config.toml`. Once the
+live config is safely detached and backed up, `git restore -- codex/config.toml`
+resets only that tracked copy; it no longer changes the detached user file. Do not
+discard unrelated working-tree changes.
+
 A separate worktree is also supported: running its installer can detach a live
 symlink pointing to the **old** checkout, without changing that checkout's file.
 
