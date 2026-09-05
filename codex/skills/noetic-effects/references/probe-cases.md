@@ -212,6 +212,9 @@ Expected:
 
 ## Composite selection
 
+These cases exercise `$noetic-effects dispatch`, not independent Metanoetic
+entry points.
+
 ### Full cognitive-regime trap
 
 ```text
@@ -224,7 +227,7 @@ Expected:
 
 - disposition: `metanoetic`;
 - invoke `$metanoetic` once on the bounded decision surface;
-- preserve the canonical sequence;
+- read and preserve the canonical intervention from `$metanoetic/SKILL.md`;
 - receiving workflow adjudicates challengers.
 
 ### One pressure is not a composite
@@ -248,6 +251,22 @@ Expected:
 
 - collapse to one effect or `skip`;
 - synonym count is not composition.
+
+## Metanoetic entry points and decision reuse
+
+Run each case with the named entry point and current authoritative evidence.
+Expected behavior is a probe specification, not an executed model-efficacy result.
+
+| Scenario | Expected behavior |
+|---|---|
+| Explicit: the user invokes `$metanoetic` over a concrete diagnosis, objective, evidence, and comparison surface; only shallow causality is evident. | Run the canonical pass once, not an `EXCAVATORY` substitute. Do not require dispatcher approval or proof that two primitive effects are necessary. The receiving workflow still adjudicates. |
+| Native: repeated repair triggers the active workflow's Metanoetic handler, with a bounded comparison and plausible representation error, but no prior operator decomposition. | Honor the native trigger without first calling dispatch. Preserve admissibility, proof, and selection ownership; do not require an already-designed challenger. |
+| Unbounded: `$metanoetic` is named with no antecedent or comparison surface anywhere in context. | Explicit use is `blocked`; implicit use skips. Independent invocation does not waive the existing binding or authority limits. |
+| Duplicate: an explicit pass is in flight or completed, then root, dispatch, and the native workflow reach the same unchanged comparison. | Reuse that pass or its result; generate no second challenger pass and no invocation receipt. |
+| Superficial change: a new commit, reviewer, or review wave supplies another already-predicted member of the same failure family without changing the earlier comparison. | Reuse the comparison; do not reopen Metanoetic merely because the label, head, or example changed. The owner still refreshes source and proof evidence where required. |
+| Material change: a new counterexample falsifies the assumption on which a prior challenger was rejected. | Rebind current evidence and allow one new bounded pass on the changed decision surface. A previous invocation is not a permanent veto. |
+| Shadow definition: an operator decomposition differs from the canonical skill and is offered as its runtime replacement. | Read `$metanoetic/SKILL.md` and apply its actual text verbatim. Do not execute, synchronize, or maintain a second canonical sequence. |
+| Rejection value: one challenger violates an already-known ceiling; another exposes an unrecognized assumption and a decisive discriminator but is also rejected. | Mere consideration of the first is not evidence of value. The second may improve the evidential basis despite rejection. Do not force adoption or weaken the ceiling. |
 
 ## Composition distinctions
 
