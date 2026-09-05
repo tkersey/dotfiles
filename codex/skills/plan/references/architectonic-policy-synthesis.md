@@ -1,303 +1,60 @@
-# Architectonic Policy Synthesis
+# Architecture-to-Action Derivation
 
-`$plan` refines one joint candidate:
+Architecture is part of the same candidate as the governed specification and
+execution sequence. This derivation is format-independent; it does not require EPG.
+Use architectonic-specification.md for seam admission and authority, and
+policy-synthesis-fixed-point.md for the single refinement loop.
 
-```text
-C = (A0, delta_A, P)
+## Bind actions to decisions
 
-A0      = architecture and abstraction owned by the accepted source
-delta_A = source-bounded or explicitly plan-local architectonic refinement
-P       = execution policy
-```
+Each consequential action identifies the seam and factors it realizes, preserves,
+migrates, or retires, with preservation observations. A factor belongs to one seam;
+an action cannot claim it through a different seam. Every introduced factor needs
+realization, and every displaced factor needs retirement or a source-authorized,
+explicitly owned compatibility obligation. Do not retain both organizations by
+making cleanup optional.
 
-Architecture is not a detached review section. It is part of the state over which
-the existing policy-synthesis fixed point converges.
+For local work inside an unchanged exact boundary, state that fact without fabricated
+seams, factor inventories, or composition scaffolding. In EPG this is
+`architectonic.mode = not_required`; otherwise export explicit seams.
 
-## Proportional admission
+## Transport changed decisions
 
-Every EPG chooses exactly one mode:
+When a selected representation, owner, or factor changes:
 
-```text
-not_required
-  no consequential architecture or abstraction decision exists;
-  emit only the mode, one reason, and an empty seams list
+1. Identify affected actions, observations, proof, rollback, and terminal predicates.
+2. Preserve work whose assumptions still hold; revise changed dependencies and
+   realization; retire work for displaced factors; introduce only newly owed work.
+3. Check that the new route preserves required observations, authority, compatibility,
+   effects, resource constraints, and proof strength. Name a falsifier.
+4. Resume the existing refinement at the earliest affected decision.
 
-explicit
-  at least one consequential seam exists;
-  compile the complete architectonic state below
-```
+An implementation-level improvement within a source-bounded or delegated local seam
+is not a source-authority change. A required outcome or fixed constraint cannot be
+silently replaced. Reconsidering the means must not erase failed evidence.
 
-Do not invent a preserved seam or empty factor/composition scaffolding for one
-bounded operation inside an unchanged exact boundary.
+Use a compatibility square when it genuinely clarifies transporting actions across
+an architecture change. Claim double-category structure only when horizontal and
+vertical composition and interchange actually matter; one compatibility comparison
+is not such a structure. Never add square bookkeeping to an ordinary local edit.
 
-## Architectonic state
+## Condition unknown architecture
 
-In `explicit` mode, for every consequential seam record:
+A consequential unresolved choice must define its admissible candidate space,
+required deciding observations, forbidden results, safe default or blocker, and
+invalidators. Its actions are conditional, not all simultaneously required.
+Dependencies must admit a start and a lawful route to completion or a safe terminal.
+A cycle in prerequisite actions without an independently established entry is not
+an executable plan. Recurrence belongs in an explicit observed branch, not cyclic
+prerequisite declarations.
 
-```yaml
-architectonic_seam:
-  seam_id:
-  authority:
-    source_fixed |
-    source_bounded |
-    plan_local
-  boundary:
-    owner:
-    source:
-    target:
-  axis:
-    data_shape |
-    behavior |
-    syntax_semantics |
-    composition |
-    representation |
-    ownership |
-    context |
-    transport |
-    proof
-  typed_hole:
-    object |
-    map |
-    representation |
-    interpreter |
-    composition |
-    equivalence |
-    owner |
-    proof
-  live_obligation_refs: []
-  required_observation_refs: []
-  compatibility_and_migration: []
-  host_capabilities: []
-  incumbent:
-    organization:
-    factor_refs: []
-  candidate_movements:
-    preserve:
-    restrict_admitted_domain:
-    strengthen_representation_or_owner:
-    ablate_or_normalize:
-  disposition:
-    selected |
-    evidence_conditioned |
-    underdetermined |
-    obstructed
-  selected_organization:
-  decision_observation_refs: []
-  factors:
-    - factor_id:
-      owner:
-      live_obligation_refs: []
-      obligation_status:
-        live |
-        moved |
-        expired |
-        duplicated |
-        invalid |
-        unknown
-      disposition:
-        preserve |
-        factor |
-        quotient |
-        ablate |
-        normalize |
-        introduce
-  law:
-  falsifier:
-  residual_obligations: []
-  invalidators: []
-```
+Bind proof to the selected route and realized tree. A proof defined on route A does
+not justify route B merely because its identifier exists. Graph reference validity
+and semantic execution coherence are different obligations.
 
-Use one architectural axis and one typed hole per seam. Keep independent seams
-independent unless an evidenced composition law relates them.
+## Exclusions
 
-## Authority
-
-- `source_fixed` — preserve or return to the source owner. Plan may not replace it.
-- `source_bounded` — Plan may iteratively select and improve architecture inside the
-  source's required observations, compatibility, authority, scope, and proof bar.
-- `plan_local` — Plan may refine architecture only when the accepted source
-  explicitly leaves the seam to Plan.
-
-An architecture change does not by itself require `return_to_spec`. Return only when
-it contradicts source-fixed semantics or exceeds a source-bounded envelope.
-
-## Candidate movements
-
-For each consequential seam, compare:
-
-```text
-realization preserve
-admitted-domain restriction
-representation or owner strengthening
-ablation or normalization
-```
-
-State the ordinary candidate first. Do not reward abstraction novelty, category
-vocabulary, file count, or implementation momentum.
-
-A candidate dominates another only when it is no weaker on live obligations,
-required observations, compatibility, enforcement, proof, effects, and resources,
-and strictly reduces at least one accidental distinction, duplicate owner, bypass,
-reconstruction path, invalid representable state, or unearned factor.
-
-## Conceptual compression
-
-Plan may accrete justification while ablating surface.
-
-The fixed point should be monotone in:
-
-```text
-explained obligations
-evidenced decisions
-preserved observations
-excluded invalid states
-proof strength
-retired uncertainty
-```
-
-It need not be monotone in:
-
-```text
-action count
-factor count
-owner count
-branch count
-file count
-policy prose
-```
-
-A later iteration may replace six actions and three abstractions with two actions and
-one governing representation. That is an accretive improvement when it increases
-explanatory and proof power.
-
-## Action binding
-
-Every consequential action names:
-
-```text
-architectonic seam refs
-factors realized
-factors retired
-preservation observations
-```
-
-An action is incomplete when it assumes an unnamed representation or owner,
-reintroduces an ablated factor, bypasses a canonical owner, or depends on an
-unresolved architectural choice without an observation-conditioned route.
-
-A factor reference is qualified by its owning seam. An action may realize or retire
-that factor only when the same seam appears in the action's architectonic refs.
-
-## Double-category transport
-
-Use two-dimensional composition when policy processes and architecture changes form
-two genuinely different compositional directions:
-
-```text
-horizontal arrows
-  policy actions and their sequencing
-
-vertical arrows
-  architecture, representation, ownership, migration, and abstraction changes
-
-squares
-  compatibility witnesses transporting actions across those changes
-```
-
-For an affected action:
-
-```text
-A_before ---- action_before ----> B_before
-   |                                  |
-   | architectonic change             | architectonic change
-   v                                  v
-A_after  ----- action_after ---->  B_after
-```
-
-The square commutes when both routes preserve the declared observations, authority,
-compatibility, effects, resources, and proof obligations.
-
-Horizontal pasting composes sequential actions. Vertical pasting composes successive
-architectonic changes. Interchange requires rearchitecting-then-replanning to agree
-with transporting the current plan through the rearchitecture up to the declared
-equivalence.
-
-When architecture changes:
-
-1. identify affected seams, factors, actions, proofs, rollback, and terminals;
-2. preserve actions bound only to preserved factors;
-3. retire actions bound to retired factors;
-4. revise actions bound to changed factors;
-5. introduce realization and proof for introduced factors;
-6. record the square result and falsifier;
-7. restart synthesis from the earliest affected existing lens.
-
-Do not claim double-category structure for one isolated compatibility check when no
-horizontal and vertical pasting matter.
-
-## Lift the existing nine lenses
-
-Do not create a second architectonic loop. Lift every existing fixed-point lens over
-`(A0, delta_A, P)`:
-
-- `source_fidelity` — preserve source-fixed seams and prohibited organizations;
-- `semantic_authority` — classify source-fixed, source-bounded, and plan-local
-  decisions honestly;
-- `system_regime` — distinguish known architecture, evidence-conditioned selection,
-  stabilization-first work, and genuine underdetermination;
-- `belief_and_observation` — bind choices and invalidators to observable evidence;
-- `action_completeness` — realize introduced factors, migrate changed boundaries,
-  and retire displaced factors;
-- `policy_closure` — route every architectural observation outcome lawfully;
-- `safety_and_rollback` — restore a coherent architecture rather than merely old
-  files;
-- `proof_and_terminal_state` — prove laws, preservation, migration, retirement, and
-  falsifiers;
-- `simplicity_and_compilability` — reject dominated factors, duplicate truth,
-  needless owners, bypasses, and semantic-surface growth.
-
-These nine identifiers remain the internal synthesis order. No pass log or
-convergence receipt is emitted.
-
-## Radical candidate
-
-After apparent convergence, generate the strongest non-obvious change to the
-organizing abstraction, admitted domain, representation, ownership, factorization,
-evidence strategy, or policy that improves correctness, conceptual compression,
-proof, and realizability without exceeding source authority.
-
-An adopted architectonic candidate transports the affected policy and restarts the
-existing fixed point. Creativity remains mandatory; architectural accretion does
-not. The final EPG records the resulting architecture-policy state, not the private
-candidate or its rejected alternatives.
-
-## Stopping rule
-
-Convergence requires:
-
-```text
-all consequential seams dispositioned
-no simpler organization dominates
-all retained factors earn live obligations
-every action is bound to the architecture it realizes
-migration and retirement are complete
-all required squares commute or are honestly blocked
-policy closure, proof, rollback, and terminals are complete
-one clean nine-lens sweep
-one clean independent fresh-eyes pass
-one radical candidate disposition
-```
-
-## Failure modes
-
-Reject:
-
-- policy optimization inside an unquestioned inherited decomposition;
-- architecture as an unbound prose note;
-- file-shaped factorization;
-- architecture theater or abstraction proliferation;
-- appending around a superseded organization instead of transporting the plan;
-- validators, caches, correlation, or bypasses that reconstruct forgotten truth;
-- rollback that restores files but not architectural coherence;
-- accretive rhetoric used to justify monotonically increasing surface;
-- returning to the source merely because a plan-local architecture improved.
+Reject file-shaped factorization, unnamed owners, reintroduced ablated factors,
+canonical-owner bypasses, forgotten information later reconstructed by compensators,
+unearned abstraction, and rollback that restores files but not coherent behavior.
+These exclusions constrain the result; they are not a second review loop.

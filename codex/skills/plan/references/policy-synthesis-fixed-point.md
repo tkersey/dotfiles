@@ -1,235 +1,84 @@
-# Policy Synthesis Fixed Point
+# Joint Synthesis Fixed Point
 
-`$plan` must exhaustively refine the complete candidate before emission.
-
-The candidate is:
-
-```text
-C = (A0, delta_A, P)
-
-A0      = source-owned architecture and abstraction state
-delta_A = source-bounded or explicitly plan-local architectonic refinement
-P       = execution policy
-```
-
-This preserves the strongest feature of the earlier `$plan`: repeated improvement
-until no material architecture-policy improvement remains. It does **not** restore
-public iteration ceremony.
-
-Read [architectonic-policy-synthesis.md](architectonic-policy-synthesis.md) for the
-Architectonic Thread, authority classes, factor dispositions, conceptual compression,
-and double-category transport law.
-
-## Sweep lenses
-
-A complete sweep retains the existing nine identifiers in this order:
+This file is the sole owner of Plan's refinement lenses and stopping rule. They
+apply to the same semantic candidate in every output format:
 
 ```text
-source_fidelity
-semantic_authority
-system_regime
-belief_and_observation
-action_completeness
-policy_closure
-safety_and_rollback
-proof_and_terminal_state
-simplicity_and_compilability
+C = (S, A, P)
+S = governed requirements and authority
+A = selected or evidence-conditioned architecture
+P = actions, branches, proof, rollback, and terminals
 ```
 
-Each lens evaluates the whole `(A0, delta_A, P)` candidate:
+EPG encoding is an optional backend. Do not create it merely to perform these checks.
 
-- `source_fidelity` — preserve source-fixed architectonic seams, required
-  observations, compatibility, non-goals, and prohibited organizations;
-- `semantic_authority` — distinguish source-fixed, source-bounded, and plan-local
-  architecture decisions without authority drift;
-- `system_regime` — decide whether architecture is known, evidence-conditioned,
-  stabilization-first, or genuinely underdetermined;
-- `belief_and_observation` — bind architectonic choices and invalidators to facts,
-  unknowns, observations, and freshness;
-- `action_completeness` — realize every introduced factor, migrate every changed
-  boundary, retire every displaced factor, and bind each action to the seam it
-  serves;
-- `policy_closure` — provide a lawful route or terminal for every architectural and
-  execution observation outcome;
-- `safety_and_rollback` — ensure rollback restores a coherent organization rather
-  than merely old files;
-- `proof_and_terminal_state` — prove laws, preservation, migration, retirement,
-  falsifiers, and terminal predicates;
-- `simplicity_and_compilability` — reject dominated factors, accidental
-  distinctions, duplicate owners, bypasses, reconstruction paths, and needless
-  semantic surface while keeping the policy structurally executable.
-
-These identifiers are an internal synthesis order, not a persisted pass log.
-
-## Loop
+## Lenses
 
 ```text
-synthesize initial architecture-policy candidate
-run lenses in order
-if a lens finds material improvement:
-  apply the minimal source-preserving improvement
-  if architecture changed:
-    transport the affected policy through the architectonic change
-    preserve, revise, retire, or introduce actions by factor disposition
-    record compatibility-square results and falsifiers
-  restart from the earliest affected lens
-
-if a lens finds a material source-authority gap:
-  return_to_spec or return_to_grill
-
-if a full sweep is clean:
-  run independent fresh-eyes pass over architecture and policy
-
-if fresh eyes finds material issue:
-  apply or route it, then restart affected lenses
-
-otherwise:
-  convergence reached
+source_fidelity             required behavior, non-goals, compatibility, source fidelity
+semantic_authority          user-fixed constraints versus delegated, revisable means
+system_regime               known actions, adaptive evidence, or stabilization first
+belief_and_observation      unknowns, deciding observations, freshness, invalidators
+action_completeness         bounded realization, migration, retirement, accountable owners
+policy_closure              each material outcome has a lawful successor or safe stop
+safety_and_rollback          no denied action; restore coherent behavior, not just files
+proof_and_terminal_state    independent coverage, discriminators, branch-local proof, done-state
+simplicity_and_compilability no duplicate truth, unearned factor, or needless planning machinery
 ```
 
-An architecture change inside source-bounded or plan-local authority is a normal
-refinement. Return to the source only when it contradicts source-fixed semantics,
-scope, compatibility, authority, or proof bar.
+Use these questions proportionally; they are not nine documents, subagent jobs,
+receipts, or separately elaborated ceremonies. One concrete observation may settle
+several lenses. Reuse adequate derivations while their assumptions remain unchanged.
 
-## Accretive, not accumulative
+## Material refinement
 
-The loop should be monotone in:
+A restart requires a concrete violated requirement, unsupported authority, missing
+coverage or proof, unsafe/unrouted outcome, impossible dependency, or an admissible
+candidate that materially improves the same obligations. Rewording, speculative
+scope, more categories, and procedural elaboration are not material improvements.
 
-```text
-explained obligations
-evidenced decisions
-preserved observations
-excluded invalid states
-proof strength
-retired uncertainty
-```
+Apply the smallest sufficient correction. When architecture changes, transport its
+actions, proof, rollback, and terminals: preserve, revise, retire, or introduce only
+what the changed factors require. Restart at the earliest affected lens, not the
+entire unaffected investigation. A source-fixed contradiction returns to the
+relevant specification decision; it does not authorize changing the objective.
 
-It need not be monotone in action count, factor count, owners, branches, files, or
-policy prose. A later iteration may delete earlier actions and abstractions when a
-stronger governing organization makes them unnecessary.
+Accrete justification and ablate dominated surface. Progress is not monotone in
+factor count, action count, branch count, file count, or prose. Required behavior
+must not be traded for fewer lines or a superficially simpler construction.
 
-Governing law:
+## Challenge and final reread
 
-```text
-accrete justification
-ablate dominated surface
-```
+Retain the strongest invariant challenge from specification-challenge.md. Once the
+candidate appears stable, generate the strongest non-obvious admissible alternative
+to its mechanism, representation, owner, admitted domain, evidence strategy, or
+organization. This radical candidate is mandatory; adoption is not. Reuse an
+equivalent challenge already evaluated over the same unchanged decision surface,
+including a workflow-owned Metanoetic challenger. Do not run it again just to
+record an invocation. Reject candidates that expand authority, lose required-valid
+behavior, increase unearned surface, or lack decision-relevant evidence.
 
-## Architectonic transport
+Then perform one independent reread from original authority and repository evidence,
+not the story of how the draft was produced. Include the exact human block's fresh-
+session executability and every conditional route. An unfamiliar implementation
+owner must not need omitted context or evidence produced only on a different branch.
+A material result returns to affected refinement and invalidates the affected clean
+check. Independence means independent comparison against source evidence; do not
+claim another agent reviewed the plan unless one actually did.
 
-When policy processes compose horizontally and architecture changes compose
-vertically, compatibility squares witness that actions remain lawful across the
-change. Horizontal pasting composes sequential actions. Vertical pasting composes
-successive architectonic changes. Interchange requires
-rearchitecting-then-replanning to agree with transporting the current plan through
-the rearchitecture up to declared observations and equivalence.
+For explicit EPG export, also compare the graph against this exact specification
+and follow epg-export.md. Encoding defects repair the export, not the authority.
+A semantic discrepancy reopens the affected candidate; regenerate both views.
 
-Do not call one isolated compatibility check a double category when neither square
-pasting nor interchange matters.
+## Stop
 
-## No fixed cap
+There is no fixed iteration cap. Stop successfully only after a complete sweep finds
+no concrete material delta, the radical candidate is dispositioned, the final source
+reread is clean, all material decisions are owned, and the plan is executable or
+honestly conditional through safe terminals. This is not a claim that all possible
+architectures have been enumerated or all future defects excluded.
 
-Do not stop because of an iteration count.
-
-Stop only for:
-
-```text
-convergence
-return_to_spec
-return_to_grill
-blocked
-user stop
-tool/safety limit
-```
-
-If forced to stop before convergence:
-
-```text
-improvements_exhausted = false
-```
-
-## Mandatory radical candidate
-
-After the architecture-policy pair is apparently converged, generate the strongest
-non-obvious candidate improvement to the governing organization, admitted domain,
-representation, ownership, abstraction factorization, evidence strategy, or
-execution policy.
-
-The candidate is mandatory. Adoption is not mandatory.
-
-Valid dispositions remain:
-
-```text
-adopt
-reject
-defer
-return_to_spec
-none
-```
-
-`return_to_spec` is reserved for contradiction with source-fixed authority. An
-architectural improvement within source-bounded or plan-local authority may be
-adopted, transported through the affected policy, and synthesized again.
-
-A rejected candidate should explain the governing reason:
-
-```text
-source-expanding
-unsafe
-dominated
-surface-increasing
-not execution-relevant
-worse than current architecture-policy pair
-needs evidence outside the horizon
-```
-
-## Final output policy
-
-The final Plan output is the selected view of one EPG: a human projection without
-inline JSON, the raw EPG JSON document, or both together. It should not include:
-
-```text
-draft-by-draft logs
-Iteration: N footers
-rewrite-ratio self claims
-fabricated no-op rows
-mandatory architectural addition just to show creativity
-synthesis receipt
-readiness gate
-execution handoff
-```
-
-## Emission and structural validation
-
-```text
-plan synthesized
-=
-all consequential seams dispositioned
-+ no dominated architectonic factor remains
-+ actions realize and retire the declared factors
-+ any admitted architecture-policy squares commute or block honestly
-+ complete clean nine-lens sweep
-+ clean fresh-eyes pass
-+ radical candidate evaluated
-+ no unresolved blockers
-```
-
-These terms are private synthesis discipline, not machine-certified history. The
-resulting EPG is the complete Plan truth surface.
-
-Ledger must additionally establish:
-
-```text
-EPG structurally valid under <definition-id>@<definition-digest>
-=
-exact staged EPG in `human`, or exact emitted JSON payload bytes in `json` or `both`,
-satisfy the named passive structural definition
-```
-
-For `both`, Markdown fence delimiters are presentation and are excluded from the
-validation input. For `json`, emit only the raw validated EPG JSON document without
-status prose or Markdown delimiters.
-
-Validation does not establish that the private synthesis process occurred, that
-architecture is semantically correct, that source state is current, or that
-execution is authorized.
+Unavailable judgment, unresolved contradiction, tool/safety limit, or user stop
+ends the affected work honestly. Do not label a partial plan synthesized or complete.
+Do not emit iteration history, no-op rows, readiness gates, handoff packets, theorem
+hashes, or a convergence certificate.

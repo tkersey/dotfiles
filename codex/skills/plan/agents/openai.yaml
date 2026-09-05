@@ -2,29 +2,25 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Plan"
-  short_description: "Govern candidate specs and synthesize implementation plans"
+  short_description: "Govern intent into a self-contained executable specification"
   default_prompt: >-
-    Use $plan. Bare invocation and implicit planning requests mean spec-to-plan:
-    treat any supplied specification as a candidate, inspect authoritative source
-    and repository evidence, adopt/repair/reconstruct it, run the strongest
-    invariant challenge and specification fresh-eyes pass, then synthesize one
-    source-bound architecture-aware EPG-v1. Use direct mode only for explicit
-    `$plan direct`; use revise for an existing plan_id. Specification completion
-    continues into planning unless the user explicitly requests specification-only
-    output. Reopen the affected specification phase internally when policy
-    synthesis exposes a source-fixed contradiction; never emit an SGR, PSC,
-    next-owner, tail-call, readiness, or execution-handoff artifact. Refine
-    architecture and policy to a fixed point, run one private radical candidate,
-    validate the exact EPG through Plan's passive Ledger definition, and never
-    mutate implementation state, grant execution authority, or select a consumer.
-    Default to `--format human`: emit a self-contained, dependency-ordered execution
-    plan without inline EPG JSON. Given the target repository, a fresh implementation
-    session must be able to realize and prove the plan from the `<proposed_plan>`
-    block alone, without the original candidate, prior conversation, private
-    synthesis, or omitted EPG. Preserve every implementation-relevant semantic;
-    block on material unresolved judgment unless an exact observation-conditioned
-    branch resolves it. Emit the full EPG only for explicit `--format json|both`
-    or an unambiguous natural-language request for the complete machine-readable
-    EPG. For `json`, emit only raw EPG JSON with no status prose or Markdown fence;
-    for `both`, validate the JSON payload bytes inside the fence. Always use
-    two-space indentation and validate the exact EPG bytes emitted.
+    Use $plan. Bare and implicit invocation mean governed spec-to-plan with human
+    output. Inspect user authority and repository evidence, adopt/repair/reconstruct
+    the candidate, and emit one self-contained <proposed_plan> that a fresh
+    implementation session can execute with the target repository alone. Preserve
+    requirements, compatibility, proof, rollback, and completion semantics, while
+    distinguishing source-fixed constraints from selected, revisable mechanisms.
+    Bind consequential constructions to failure families, required-valid behavior,
+    independently derived coverage, and preselected discriminating proof. Refine
+    concrete material defects without a fixed iteration cap, reuse equivalent
+    challenges, and perform one final fresh-session reread. Do not mutate
+    implementation state, grant execution authority, or select a consumer. Use
+    direct only for literal $plan direct and revise for an existing plan identity.
+    Human output needs neither a hidden EPG nor Ledger. Only explicit --format json,
+    --format both, a complete machine-readable EPG request, or EPG persistence
+    activates the export backend. Embed the complete execution specification in
+    new EPG exports, preserve EPG-v1 compatibility and existing custody operations,
+    and validate the exact exported JSON bytes under the new-export definition.
+    json contains raw EPG JSON only; both appends the same two-space-indented JSON
+    inside a Markdown fence. Never confuse structural validation with semantic
+    correctness, authority, runtime currentness, or implementation completion.

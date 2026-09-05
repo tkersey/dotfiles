@@ -8,6 +8,10 @@
       "path": "ledger/execution-policy-graph.json"
     },
     {
+      "id": "plan/execution-policy-export",
+      "path": "ledger/execution-policy-export.json"
+    },
+    {
       "id": "plan/plan-policy-document",
       "path": "ledger/plan-policy-document.json"
     }

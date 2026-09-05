@@ -1,40 +1,23 @@
-# Human Projection
+# Human Execution Specification
 
-The default public plan is a reader-first execution projection of EPG-v1, not an
-IR dump. EPG-v1 remains the sole canonical machine representation.
+The ordinary public plan is the primary semantic representation, not a lossy summary
+of an internal EPG. It remains self-contained whether or not a machine export exists.
 
-## Views
+## Completeness
 
-```text
-human  default; self-contained execution plan without inline EPG JSON
-json   raw machine-readable EPG only; no prose or Markdown fence
-both   human plan followed by the exact EPG in a Markdown fence
-```
-
-Bare and implicit invocation select `human`. Full JSON requires `--format json`,
-`--format both`, or an unambiguous request for the complete EPG.
-
-## Execution completeness
-
-The `human` view is not a summary or review aid. For `spec-to-plan`, it is the
-complete implementation specification synthesized from the supplied candidate.
 Given the target repository, a fresh implementation session must be able to choose,
 order, realize, validate, roll back, and determine completion using only the emitted
-`<proposed_plan>` block. It must not depend on the original candidate text, prior
-conversation, private synthesis, or omitted EPG body.
+`<proposed_plan>` block. Do not depend on the original candidate, conversation,
+private synthesis, inaccessible attachments, or an omitted machine representation.
 
-This is semantic completeness, not field parity. Compression may remove schema
-syntax, duplicate explanation, nulls, and settled bookkeeping, but never an
-implementation-relevant requirement, constraint, compatibility obligation,
-architectural decision, action, branch condition, proof obligation, abort criterion,
-or terminal predicate. If that projection cannot be emitted honestly, block rather
-than return a successful human plan.
+Compression may remove duplicates, empty sections, schema syntax, and bookkeeping;
+it must preserve required behavior, constraints, compatibility, material design
+choices, branches, actions, proofs, abort criteria, and terminal predicates. An
+unresolved material choice needs an exact observation-conditioned envelope or blocks.
 
-Execution completeness grants no mutation authority and selects no consumer.
+## Shape
 
-## Human view
-
-Emit one `<proposed_plan>` block with:
+Emit one block, using these headings where applicable:
 
 ```text
 Summary
@@ -43,60 +26,51 @@ Architecture Decisions
 Implementation Sequence
 Decision Points and Branches
 Proof, Rollback, and Done-State
-Plan Artifact
+Plan Identity and Source
 ```
 
-`direct` or `revise` may omit `Governed Specification` only when the emitted block
-still contains every implementation-relevant semantic from the accepted source or
-revision. Omit `Decision Points and Branches` when no live unknown or conditional
-route exists.
+The summary identifies the objective, chosen path, first action, and binary done-
+state. The governed specification preserves current state, scope, non-goals, user-
+fixed decisions, selected defaults, behavior, compatibility, and proof authority.
+Do not label a planner's default a locked user decision.
 
-Rules:
+Architecture decisions identify the consequential owner and boundary, authority
+class, incumbent-to-target change, law, falsifier, factor dispositions, and invalidators.
+Say which mechanisms are revisable means. Accepting a plan does not turn all its
+means into hard requirements. No architecture section is needed for unchanged,
+owner-local work with no live semantic boundary decision.
 
-- `Summary` states objective, chosen path, first implementation wave, and binary
-  done-state.
-- `Governed Specification` exposes current state, scope, non-goals, locked decisions
-  and defaults, requirements, compatibility and migration obligations, proof bar,
-  and only non-blocking open or deferred items. A material unresolved judgment
-  blocks or becomes an explicit observation-conditioned branch.
-- `Architecture Decisions` shows only consequential seams: authority, owner,
-  incumbent-to-target change, law, falsifier, and factor disposition.
-- `Implementation Sequence` orders actions by dependency rather than EPG field order.
-  Each consequential action names its stable ID and outcome, prerequisites and
-  dependencies, exact paths and symbols, intended change and preserved invariants,
-  required observations, proof command or exact verifier reference, and material
-  failure or rollback route. Do not hide work behind broad verbs such as "update
-  relevant files" or "handle edge cases."
-- `Decision Points and Branches` renders
-  `unknown -> exact observation -> outcome-conditioned route`, distinguishes policy
-  horizon from active commitment, and leaves no material design choice implicit.
-- `Proof, Rollback, and Done-State` groups evidence by obligation and terminal,
-  states exact validation commands or repository-native verifier references, and
-  names abort criteria, restoration proof, blocked routes, and the binary completion
-  predicate.
-- `Plan Artifact` reports plan and policy identity, source and exact-input EPG
-  digests, target tuple, transient or persisted location, and structural definition
-  digest. It is provenance, not an execution-time semantic dependency.
-- Keep the plan executable and reviewable in one pass. Remove duplication before
-  implementation detail; omit empty arrays, nulls, settled bookkeeping, and
-  field-by-field JSON prose.
-- Do not expose iteration history, receipts, readiness gates, source packets,
-  execution handoffs, runtime state, or the EPG body in `human`.
+The implementation sequence is dependency-ordered. Each consequential action names
+its stable ID and outcome, exact paths/symbols, prerequisite actions and evidence,
+intended change, invariants, proof command or exact verifier reference, and failure
+or rollback route. Broad verbs such as "update relevant files" are not executable
+instructions. Migration and retirement belong with the mechanisms they replace.
 
-Before emission, perform a fresh-session executability check: an implementation
-owner unfamiliar with the original request must be able to execute the plan from
-the block and repository alone. Any missing semantic returns to synthesis.
+Decision points use `unknown -> exact observation -> outcome-conditioned route`.
+Include unavailable, invalid, or inconclusive evidence when material. Say what may
+proceed before the observation and what must wait. An empirical choice may remain
+conditional; a hidden user judgment may not be disguised as an experiment.
 
-## JSON views
+Proof binds the supported invalid family and preserved valid domain to the actual
+enforcement mechanism, coverage source, discriminator, and claim strength. Proof
+must belong to the branch that can produce it: evidence from an unselected branch
+cannot close an obligation. State exact commands, artifact binding, abort criteria,
+restoration proof, and the binary completion predicate. A proposed proof is not an
+executed proof or a universal theorem.
 
-`json` emits only the raw EPG JSON document. `both` appends the EPG after `Plan
-Artifact` inside exactly one Markdown fence. In either view, the validation input is
-the exact JSON payload: for `both`, exclude the fence delimiters. Use two-space
-indentation, stable schema order, one trailing newline, and no minified nested object
-or array. Never include Ledger's validation-result JSON.
+Identity names the plan ID, revision, target repository/branch and inspected state,
+source authority and decisions, material invalidators, and persistence status/path.
+Hash only bytes actually available and computed. No EPG or Ledger digest is required
+for human-only output. Do not put an export digest inside the primary block: the
+optional export embeds this block and cannot hash itself.
 
-For `human` and `both`, report `Plan synthesized.` after synthesis and, after
-exact-byte validation,
-`EPG structurally valid under <definition-id>@<definition-digest>.` For `json`, emit
-no status prose before or after the JSON document. Never convert structural validity
-into semantic correctness, readiness, authority, or completion.
+## Final check
+
+Perform the final reread defined in policy-synthesis-fixed-point.md on the exact
+block, not a richer private draft. Ask whether an unfamiliar implementation owner
+could proceed without inventing requirements, design choices, proof commands, or
+failure routes. Walk each live branch through completion or an explicit safe stop.
+Return missing semantics to synthesis, without an extra audit artifact.
+
+For `human` and `both`, report `Plan synthesized.` only when complete. For machine
+views, follow epg-export.md. A human-only plan must never claim EPG validation.

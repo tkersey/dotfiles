@@ -4,12 +4,12 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v11-output-view-consistency"
+      "source_fingerprint": "plan-v12-execution-specification-primary"
     },
     "triggers": [
       {
         "trigger_id": "PLAN-SPEC-TO-PLAN",
-        "description": "A candidate specification or objective needs governance followed by one implementation-ready execution policy.",
+        "description": "A candidate specification or objective needs a complete executable specification.",
         "cue_literals": [
           "$plan",
           "implementation specification",
@@ -23,12 +23,13 @@
           "direct implementation",
           "debugging",
           "code review",
+          "explanation",
           "divergent options"
         ]
       },
       {
         "trigger_id": "PLAN-DIRECT",
-        "description": "The user explicitly authorizes bypassing full specification governance for already accepted decision-complete intent.",
+        "description": "Only explicit bypass of full specification governance.",
         "cue_literals": [
           "$plan direct"
         ],
@@ -37,7 +38,7 @@
       },
       {
         "trigger_id": "PLAN-REVISE",
-        "description": "An existing plan identity must be revised for changed source, evidence, architecture, repository state, or proof assumptions.",
+        "description": "Revise an exact existing plan identity.",
         "cue_literals": [
           "$plan revise",
           "revise the plan",
@@ -49,25 +50,38 @@
       },
       {
         "trigger_id": "PLAN-ARCHITECTONIC",
-        "description": "Specification or policy depends on a consequential architecture, representation, owner, composition law, or abstraction factorization.",
+        "description": "A live semantic choice about a boundary, representation, or owner.",
         "cue_literals": [
           "architecture",
-          "abstraction",
           "representation",
-          "owner",
-          "rearchitecture",
+          "ownership",
           "migration",
           "normalize",
           "ablate"
         ],
         "cue_regexes": [],
         "exclusions": []
+      },
+      {
+        "trigger_id": "PLAN-EXPORT",
+        "description": "Explicit EPG output or stored EPG work.",
+        "cue_literals": [
+          "--format json",
+          "--format both",
+          "complete EPG",
+          "persist EPG",
+          "revise stored EPG"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "ordinary human output"
+        ]
       }
     ],
     "routes": [
       {
         "route_id": "PLAN-GOVERN",
-        "description": "Adopt, repair, or reconstruct the candidate specification before policy synthesis.",
+        "description": "Govern candidate intent.",
         "aliases": [
           "spec-to-plan"
         ],
@@ -75,7 +89,7 @@
       },
       {
         "route_id": "PLAN-SYNTHESIZE",
-        "description": "Emit one source-bound architecture-aware EPG after exhaustive refinement and passive Ledger validation.",
+        "description": "Emit a complete executable specification.",
         "aliases": [
           "synthesize",
           "direct"
@@ -84,15 +98,24 @@
       },
       {
         "route_id": "PLAN-REVISE-EPG",
-        "description": "Revise the existing plan identity from the earliest affected specification or policy phase.",
+        "description": "Revise the same plan identity; EPG only when requested.",
         "aliases": [
           "revise"
         ],
         "terminal": true
       },
       {
+        "route_id": "PLAN-EXPORT-EPG",
+        "description": "Encode and validate an explicitly requested export.",
+        "aliases": [
+          "json",
+          "both"
+        ],
+        "terminal": true
+      },
+      {
         "route_id": "PLAN-RETURN-JUDGMENT",
-        "description": "Return an unresolved material user judgment that inspected artifacts cannot answer.",
+        "description": "Return unavailable material user judgment.",
         "aliases": [
           "return-to-user"
         ],
@@ -100,7 +123,7 @@
       },
       {
         "route_id": "PLAN-BLOCK",
-        "description": "Block because source authority, identity, evidence, architecture, proof, or structural validation is unavailable or contradictory.",
+        "description": "Report exact authority, evidence, completeness, or export obstruction.",
         "aliases": [
           "blocked"
         ],
@@ -119,28 +142,26 @@
           "PLAN-GOVERN",
           "PLAN-SYNTHESIZE",
           "PLAN-REVISE-EPG",
+          "PLAN-EXPORT-EPG",
           "PLAN-RETURN-JUDGMENT",
           "PLAN-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "one final EPG-v1 when synthesis succeeds",
-          "self-contained execution plan when human or both output is selected"
+          "one complete execution specification on successful synthesis"
         ],
         "success_signals": [
-          "bare $plan followed by candidate text selects spec-to-plan",
-          "$plan direct alone bypasses full specification governance",
-          "revision preserves the existing plan_id",
-          "bare and implicit planning select the reader-first human output view",
-          "explicit EPG JSON is fully indented and exact-byte validated"
+          "bare invocation governs and emits human output",
+          "direct is explicit",
+          "revision preserves identity for the same objective",
+          "bounded specification operations do not claim a complete execution plan"
         ],
         "failure_signals": [
-          "direct mode inferred from apparent candidate completeness",
-          "caller must separately invoke another planning skill",
-          "distinct objectives merged under one plan identity",
-          "default output is dominated by inline EPG JSON"
+          "direct inferred from polished input",
+          "different objectives share an ID",
+          "planning discards requested implementation"
         ],
-        "rationale": "The public mode expresses intent; specification operation, rigor, authority, terminal result, and output view remain separate dimensions."
+        "rationale": "Mode, authority, output, and bounded inspection are distinct."
       },
       {
         "clause_id": "PLAN-HUMAN-EXECUTION-001",
@@ -153,193 +174,157 @@
           "PLAN-GOVERN",
           "PLAN-SYNTHESIZE",
           "PLAN-REVISE-EPG",
+          "PLAN-EXPORT-EPG",
           "PLAN-RETURN-JUDGMENT",
           "PLAN-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "execution-complete human projection when synthesis succeeds with human or both output selected"
+          "self-contained proposed_plan block for human and both"
         ],
         "success_signals": [
-          "a fresh implementation session can execute from the proposed_plan block and target repository alone",
-          "every material judgment is decided or bound to an exact observation-conditioned branch",
-          "compression removes representation noise without removing implementation semantics",
-          "json output contains only raw validated EPG JSON while both validates the payload bytes inside its fence"
+          "fresh session can execute from block and repository alone",
+          "each material choice is owned or observation-conditioned",
+          "human output has no hidden EPG or Ledger requirement"
         ],
         "failure_signals": [
-          "execution requires the original candidate text, prior conversation, private synthesis, or omitted EPG body",
-          "an action lacks its dependency, target, intended change, proof, or material failure route",
-          "a material open or deferred item remains inside the claimed done-state",
-          "json output includes status prose or Markdown delimiters",
-          "structural validation includes Markdown fence delimiters instead of the EPG payload"
+          "omitted candidate/context needed",
+          "missing target, intended change, dependency, proof, or failure route",
+          "unresolved done-state dependency",
+          "human-only output claims EPG validation"
         ],
-        "rationale": "The ordinary human view is the execution source; machine canonicality cannot justify a lossy public plan."
+        "rationale": "The primary artifact is the execution source, not an IR summary."
       },
       {
-        "clause_id": "PLAN-SPEC-GOVERNANCE-001",
-        "trigger_refs": [
-          "PLAN-SPEC-TO-PLAN",
-          "PLAN-ARCHITECTONIC"
-        ],
-        "expected_routes": [
-          "PLAN-GOVERN",
-          "PLAN-SYNTHESIZE",
-          "PLAN-RETURN-JUDGMENT",
-          "PLAN-BLOCK"
-        ],
-        "prohibited_routes": [],
-        "required_artifacts": [
-          "governed specification projection",
-          "source and repository evidence binding",
-          "scope and non-goals",
-          "locked decisions and defaults distinguished",
-          "proof and rollback bar",
-          "lawful architectonic seam dispositions"
-        ],
-        "success_signals": [
-          "candidate disposition is adopt, repair, reconstruct, or block",
-          "one strongest invariant challenge completed",
-          "specification fresh eyes is clean",
-          "governed specification lowers directly into policy"
-        ],
-        "failure_signals": [
-          "candidate treated as trusted authority",
-          "source-fixed decision invented",
-          "hidden consequential architecture",
-          "governance receipt or handoff packet introduced"
-        ],
-        "rationale": "A strong externally generated specification is valuable candidate evidence, not proof of current repository fit or authority."
-      },
-      {
-        "clause_id": "PLAN-ARCHITECTONIC-001",
+        "clause_id": "PLAN-AUTHORITY-001",
         "trigger_refs": [
           "PLAN-SPEC-TO-PLAN",
           "PLAN-DIRECT",
-          "PLAN-REVISE",
           "PLAN-ARCHITECTONIC"
         ],
         "expected_routes": [
           "PLAN-GOVERN",
           "PLAN-SYNTHESIZE",
           "PLAN-REVISE-EPG",
+          "PLAN-EXPORT-EPG",
           "PLAN-RETURN-JUDGMENT",
           "PLAN-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "architectonic admission",
-          "authority classes for consequential seams",
-          "factor obligations",
-          "action bindings"
+          "fixed requirements and selected means distinguished"
         ],
         "success_signals": [
-          "not_required plans contain no fabricated seams",
-          "explicit seams are dispositioned",
-          "no dominated retained factor",
-          "no action realizes a foreign or retired factor"
+          "repository establishes facts and existing obligations",
+          "selected mechanisms remain revisable inside authority",
+          "required-valid behavior survives domain restriction"
         ],
         "failure_signals": [
-          "architecture exists only in prose",
-          "file-shaped factors",
-          "duplicated or reconstructed truth"
+          "incumbent vetoes authorized behavior change",
+          "plan acceptance silently locks all mechanisms",
+          "weakened requirement presented as simpler construction"
         ],
-        "rationale": "Architecture and abstraction are state over which specification and policy jointly converge."
+        "rationale": "Preserve required outcomes without freezing proposed means."
       },
       {
-        "clause_id": "PLAN-SYNTHESIS-001",
+        "clause_id": "PLAN-CONSTRUCTION-PROOF-001",
+        "trigger_refs": [
+          "PLAN-ARCHITECTONIC",
+          "PLAN-SPEC-TO-PLAN"
+        ],
+        "expected_routes": [
+          "PLAN-GOVERN",
+          "PLAN-SYNTHESIZE",
+          "PLAN-REVISE-EPG",
+          "PLAN-EXPORT-EPG",
+          "PLAN-RETURN-JUDGMENT",
+          "PLAN-BLOCK"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "family, valid domain, enforcement, independent coverage, discriminator, claim strength for consequential construction"
+        ],
+        "success_signals": [
+          "proof obligations chosen before implementation",
+          "migration and retirement derived with realization",
+          "branch uses evidence actually produced on that branch"
+        ],
+        "failure_signals": [
+          "checked-type name treated as proof",
+          "candidate-only coverage inventory",
+          "other branch proof credited",
+          "samples described as universal exclusion"
+        ],
+        "rationale": "Plan prepares discriminating proof; execution establishes it on actual code."
+      },
+      {
+        "clause_id": "PLAN-REFINEMENT-001",
         "trigger_refs": [
           "PLAN-SPEC-TO-PLAN",
           "PLAN-DIRECT",
           "PLAN-REVISE"
         ],
         "expected_routes": [
+          "PLAN-GOVERN",
           "PLAN-SYNTHESIZE",
           "PLAN-REVISE-EPG",
-          "PLAN-GOVERN",
+          "PLAN-EXPORT-EPG",
           "PLAN-RETURN-JUDGMENT",
           "PLAN-BLOCK"
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "EPG-v1 with immutable plan_id",
-          "source digest",
-          "target branch",
-          "structural validation bound to exact bytes"
+          "one source-bound complete result"
         ],
         "success_signals": [
-          "architecture-policy candidate reaches a zero-material-delta sweep",
-          "private radical candidate is dispositioned",
-          "exact emitted EPG is structurally valid under Plan's passive definition"
+          "material defects drive uncapped affected refinement",
+          "equivalent challenges reused",
+          "radical candidate dispositioned",
+          "final reread checks the exact block"
         ],
         "failure_signals": [
-          "structural validation described as semantic authority",
-          "policy optimized inside an unchallenged invalid specification",
-          "runtime state or execution authority authored by Plan"
+          "duplicate loop or receipt",
+          "rewording treated as material progress",
+          "tool stop misreported as convergence"
         ],
-        "rationale": "Planning quality depends on continuous specification-to-policy refinement, not schema presence or an ownership-transfer protocol."
+        "rationale": "Intellectual pressure does not require procedural reenactment."
       },
       {
-        "clause_id": "PLAN-REVISION-001",
+        "clause_id": "PLAN-EXPORT-001",
         "trigger_refs": [
-          "PLAN-REVISE"
-        ],
-        "expected_routes": [
-          "PLAN-REVISE-EPG",
-          "PLAN-GOVERN",
-          "PLAN-RETURN-JUDGMENT",
-          "PLAN-BLOCK"
-        ],
-        "prohibited_routes": [
-          "PLAN-SYNTHESIZE"
-        ],
-        "required_artifacts": [
-          "existing plan_id",
-          "exact prior revision",
-          "source and policy delta",
-          "transported actions when architecture changes"
-        ],
-        "success_signals": [
-          "same plan_id with incremented revision",
-          "earliest affected specification or policy phase rerun",
-          "stale actions retired or revised"
-        ],
-        "failure_signals": [
-          "new plan identity for unchanged objective",
-          "existing plan selected only because it is recent",
-          "revision bypasses source drift"
-        ],
-        "rationale": "Revision preserves objective identity while recompiling every affected semantic and execution consequence."
-      },
-      {
-        "clause_id": "PLAN-IMPLICIT-ROUTING-001",
-        "trigger_refs": [
-          "PLAN-SPEC-TO-PLAN",
-          "PLAN-REVISE"
+          "PLAN-EXPORT"
         ],
         "expected_routes": [
           "PLAN-GOVERN",
-          "PLAN-REVISE-EPG",
           "PLAN-SYNTHESIZE",
+          "PLAN-REVISE-EPG",
+          "PLAN-EXPORT-EPG",
           "PLAN-RETURN-JUDGMENT",
           "PLAN-BLOCK"
         ],
         "prohibited_routes": [],
-        "required_artifacts": [],
+        "required_artifacts": [
+          "EPG-v1 with embedded exact specification and source digest",
+          "exact-byte native export validation and graph check"
+        ],
         "success_signals": [
-          "detailed specification or planning intent may activate implicitly",
-          "direct implementation, debugging, review, factual explanation, and divergent options remain with their owners"
+          "json is raw JSON only",
+          "both embeds the same primary block without circular export digests",
+          "legacy validator and custody preserved",
+          "new exports require owners, effect boundaries, rollback, retirement, acyclic prerequisites, and owning seams"
         ],
         "failure_signals": [
-          "Plan seizes mixed plan-and-implement work and discards execution",
-          "ordinary explanation becomes an EPG",
-          "direct mode activates without its explicit literal"
+          "new export loses source semantics",
+          "legacy artifact silently migrated",
+          "Ledger structural validity claimed as semantic proof",
+          "one serialization validated and another emitted"
         ],
-        "rationale": "Implicit availability reduces caller skill-selection burden without widening Plan into a universal turn owner."
+        "rationale": "Strict new-export admission must not make EPG compulsory or break historical custody."
       }
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "rationale": "The execution-complete human projection and canonical EPG expose the consequential result; passive Ledger validation is structural evidence only."
+      "rationale": "The execution specification is primary; machine validation applies only to explicit export and grants no authority."
     }
   }
 }
