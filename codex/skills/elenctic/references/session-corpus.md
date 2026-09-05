@@ -2,9 +2,9 @@
 
 Use this reference only when `$elenctic` is explicitly invoked to aggregate
 same-name sessions. The mode does not run new file reviews. It reconstructs a
-bounded corpus of completed Elenctic reports, rebinds their blocker claims to one
-current candidate, deduplicates them causally, and applies the ordinary blocker
-falsification and final-decision standards.
+bounded corpus of completed Elenctic reports, reconciles their claims and
+complementary evidence against one current candidate, deduplicates causal defects,
+and applies ordinary blocker falsification and final-decision standards.
 
 ## Governing model
 
@@ -12,7 +12,7 @@ falsification and final-decision standards.
 same-name session discovery
   + repository and candidate binding
   + provenance-preserving report extraction
-  + causal deduplication
+  + obligation-level evidence reconciliation and causal deduplication
   + current-candidate blocker falsification
   = aggregate real blockers
 ```
@@ -115,6 +115,23 @@ The definition returns bounded assistant messages that may contain a completed
 Elenctic identity or verdict. It does not decide whether a message is genuine,
 current, complete, or authoritative.
 
+Check extraction completeness **before** rejecting quoted, stale, malformed, or
+superseded messages. The definition limits lexical candidates to 64 before
+semantic admission. A result reaching that bound is potentially truncated, even
+if all 64 are later rejected; fewer admitted reports do not prove exhaustion.
+Treat any Seq input, row, output-byte, or partial-result limit as a coverage gap
+even when fewer than 64 candidates were returned. Exactly 64 candidates need not
+mean overflow, but without authoritative exhaustion evidence they cannot certify
+complete extraction.
+
+Use only supported Seq continuation or exhaustive source-bound partitions to
+recover omitted candidates; preserve the frozen source cut, include boundary
+events, union by source-event identity, then select latest qualifying reports.
+Do not guess cursors, expand the corpus, or bypass Seq with direct file scanning.
+When exhaustion cannot be established, report the affected source and bound as
+**extraction incomplete**. Available evidence may still establish a blocker, but
+no aggregate approval may depend on treating that source as fully extracted.
+
 For each returned message:
 
 1. Require exactly one unquoted `Review identity:` line containing valid
@@ -141,14 +158,16 @@ qualifying report is a coverage fact, not evidence that the session was clean.
 
 ## Build the aggregate evidence set
 
-Ingest source outcomes asymmetrically:
+Source dispositions are inputs, not ceilings on aggregate judgment:
 
-- source **real blockers** nominate candidate blocker claims;
-- source **approvals** establish only their identified target coverage at their
-  exact candidate;
-- source **incomplete** decisions contribute named evidence gaps;
-- source risks and concerns may supply counterevidence or context but are not
-  promoted into blockers by aggregation.
+- source **real blockers** nominate claims to re-establish, not inherited gates;
+- complete current-candidate reports contribute only their identified target
+  coverage, independently of verdict; approval is not evidence against an
+  omitted defect;
+- incomplete reports contribute available evidence and named gaps, not complete
+  target coverage;
+- risks, concerns, and observations may supply complementary premises or
+  counterevidence, but repetition and severity never promote them into blockers.
 
 Do not vote or count repetition as semantic weight:
 
@@ -157,6 +176,23 @@ three repeated blockers != proof
 three approvals omitting a blocker != refutation
 one blocker plus four approvals != majority approval
 ```
+
+Reconcile exposed obligations, contradictions, and unresolved premises across
+reports. Complementary evidence may establish an in-scope blocker when it
+resolves a previously missing premise: for example, a tenant-free cache key and
+a cache shared across tenants may jointly establish a reachable isolation
+failure. Verify every indispensable premise against the same bound candidate,
+including the accepted obligation, delta causality, trigger, mechanism, impact,
+and existing defenses. Name the newly resolved premise and its source; do not
+conjoin stale, incompatible, or still-unproved assumptions. Apply ordinary
+adjudication and blocker falsification to the resulting claim, even when no
+source called it a blocker. A resolved premise can also defeat a claim.
+
+Preserve original report dispositions and identities as provenance. Resolving a
+premise does not upgrade an incomplete source report to complete review coverage.
+If reconciliation exposes an unreviewed material path, record the affected
+aggregate coverage as incomplete rather than trusting a source's completeness
+label. Blocker existence and coverage remain independent.
 
 Group candidate blockers by the earliest failed mandatory obligation and causal
 mechanism, not by title, wording, source file, line number, or proposed comment.
@@ -186,9 +222,12 @@ establishes delta causality, mandatory authority, concrete basis, defense
 survival, and merge necessity. Reclassify, reject, or mark incomplete exactly as
 single-file mode requires.
 
-Do not use corpus mode to discover unrelated new defects or to launch missing
-single-file reviews. A newly noticed issue must be causally necessary to
-adjudicate an imported blocker; otherwise omit it from this aggregation.
+Do not begin an unrelated review or launch missing single-file reviews.
+Reconciliation is bounded by contracts, contradictions, and unresolved premises
+already exposed by admitted reports or, in campaign mode, the current Campaign
+Brief. The brief locates questions; verify its premises against source before
+using them. Stop each question when resolved or a named evidence gap prevents a
+decision. This is synthesis within aggregation, not another review lane or loop.
 
 ## Coverage and aggregate verdict
 
@@ -205,7 +244,7 @@ Session corpus:
 - stale, contaminated, legacy, or otherwise excluded reports: <counts>
 - distinct target files covered: <count>
 - changed-file coverage: <covered>/<total-or-unknown>
-- unresolved corpus limitations: <none-or-list>
+- unresolved corpus limitations: <including saturated/limited extraction sources>
 ```
 
 Use the ordinary verdict priority with aggregate semantics:
@@ -215,7 +254,8 @@ Use the ordinary verdict priority with aggregate semantics:
   corpus gaps, which remain disclosed.
 - **APPROVE — No real blockers across the aggregated reviewed scope.** Every
   selected eligible session has a completed or explicitly excluded disposition,
-  every included approval is current-candidate bound, no material corpus gap
+  included coverage is current-candidate bound, exposed cross-file obligations
+  and contradictions are reconciled, no material evidence or extraction gap
   prevents the decision, and no aggregate blocker survives.
 - **INCOMPLETE — Aggregate approval withheld.** No aggregate blocker is
   established, but name discovery, corpus selection, candidate binding,

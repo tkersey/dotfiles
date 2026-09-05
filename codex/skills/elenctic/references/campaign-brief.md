@@ -6,8 +6,9 @@ created. The primary coordinator owns this preparation.
 
 ## Purpose
 
-The campaign should pay once for understanding the change as a whole, then let
-each file reviewer specialize with the same architectural and causal context:
+Pay once to map and explain the change topology; verify locally to justify
+conclusions. After campaign capability preflight, prepare the same architectural
+and causal orientation for each file reviewer:
 
 ```text
 exact PR epoch
@@ -55,8 +56,10 @@ preparation.
 
 Before creating the campaign seed, publish one concise Campaign Brief in the
 coordinator transcript. Private reasoning, implicit model state, scratch notes,
-and a statement that analysis occurred are not transferable context. The exact
-brief text is the context workers inherit.
+and a statement that analysis occurred are not transferable context. The brief
+must be present in inherited history, but a fork may also copy earlier coordinator
+history. Its digest identifies the brief bytes, not the whole inherited context
+or independent judgment; seed lineage identifies the shared checkpoint.
 
 Use this shape, omitting empty sections and narrative history:
 
@@ -110,9 +113,10 @@ must be explicitly provisional and include a discriminator or falsifier. Do not
 smuggle a preferred repair, successor architecture, severity, confidence, or
 merge consequence into the brief.
 
-Compress the result to decision-relevant context that every worker can scan.
-Deep analysis is measured by the quality of the causal model, not by reproducing
-the entire diff or emitting a long chronology.
+Compress to owners, contract edges, discriminating questions, and source
+locations every worker can scan. Shared discovery is not shared proof: workers
+verify relevant premises locally. Do not duplicate their investigation or
+adjudication in preparation, reproduce the entire diff, or emit a chronology.
 
 ## Freeze the campaign context
 
@@ -144,14 +148,12 @@ prepared context.
 
 ## Worker epistemic independence
 
-The worker assignment must say that inherited context is untrusted orientation:
-
-```text
-Use the inherited Campaign Brief as orientation, not authority. Verify every
-relevant fact and requirement against the exact candidate, challenge provisional
-hypotheses, and report material contradictions or omissions. Do not repeat a
-hypothesis as a finding without ordinary Elenctic evidence and adjudication.
-```
+Use the canonical assignment prompt in [campaign.md](campaign.md). Its
+orientation-not-authority boundary applies to the entire inherited history, not
+just the brief: earlier implementation rationales, abandoned interpretations,
+and prior review conclusions must be revalidated before use. Applicable user
+requirements and constraints retain their authority. Matching brief digests or
+shared seed ancestry do not make correlated judgments independent.
 
 Each worker still performs the complete ordinary `$elenctic file <path>`
 investigation and blocker-falsification cut. Shared context does not convert
