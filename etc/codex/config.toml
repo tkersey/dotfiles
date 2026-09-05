@@ -1,6 +1,4 @@
-# Managed by tkersey/dotfiles: codex/config.toml
-# Install with ./install --codex-config; do not symlink into ~/.codex.
-# Machine-local overrides and app-managed state belong in $CODEX_HOME/config.toml.
+# Shared defaults: /etc/codex/config.toml
 
 model = "gpt-6-astra"
 model_reasoning_effort = "high"

@@ -10,7 +10,6 @@ BACKUP_SCRIPT="$DOTFILES_ROOT/backups/backup"
 DO_SYMLINK=false
 DO_HOMEBREW=false
 DO_ICLOUD_BACKUP=false
-DO_CODEX_CONFIG=false
 DO_ALL=true
 
 # Process command line arguments
@@ -28,20 +27,15 @@ while [ $# -gt 0 ]; do
       DO_ICLOUD_BACKUP=true
       DO_ALL=false
       ;;
-    --codex-config)
-      DO_CODEX_CONFIG=true
-      DO_ALL=false
-      ;;
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  --symlink        Create symlinks from links.conf"
       echo "  --homebrew       Run homebrew installation/update"
       echo "  --icloud-backup  Install the rclone iCloud backup LaunchAgent"
-      echo "  --codex-config   Install shared Codex defaults (opt-in; requests sudo)"
       echo "  --help           Show this help message"
       echo ""
-      echo "If no options are specified, symlinks, Homebrew, and iCloud backup run."
+      echo "If no options are specified, all tasks will be run."
       echo "If any options are specified, only those tasks will be run."
       exit 0
       ;;
@@ -54,7 +48,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-# Codex system configuration is opt-in, even on an otherwise full installation.
+# If no specific flags were set, do everything
 if [ "$DO_ALL" = true ]; then
   DO_SYMLINK=true
   DO_HOMEBREW=true
@@ -227,13 +221,6 @@ if [ "$DO_ICLOUD_BACKUP" = true ]; then
   else
     fail "error installing iCloud backup automation"
   fi
-fi
-
-if [ "$DO_CODEX_CONFIG" = true ]; then
-  command -v uv >/dev/null 2>&1 || fail "uv is required; install the Brewfile dependencies first"
-  info "installing shared Codex defaults"
-  uv run --script "$DOTFILES_ROOT/codex/install-config.py"
-  success "Codex configuration installed"
 fi
 
 echo ''

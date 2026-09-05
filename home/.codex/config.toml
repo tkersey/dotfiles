@@ -1,0 +1,210 @@
+# User settings: ~/.codex/config.toml
+
+notify = ["/Users/tk/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+gpt-6-astra = 4
+
+[notice]
+hide_rate_limit_model_nudge = true
+fast_default_opt_out = true
+
+[projects."/Users/tk/workspace/tk/codex"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/shift"]
+trust_level = "trusted"
+
+[projects."/Users/tk/.dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/skills-zig"]
+trust_level = "trusted"
+
+[projects."/Users/tk/Downloads"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/opencode-harness-gist"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/nullclaw"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/art/interview/point"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/art/gamelan"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk"]
+trust_level = "trusted"
+
+[projects."/private/tmp"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/actuate"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/ability"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/boundary"]
+trust_level = "trusted"
+
+[projects."/tmp/cron-brew-smoke-debug.p2USE9/cwd-two"]
+trust_level = "trusted"
+
+[projects."/tmp/cron-brew-smoke.R3Qobw/cwd-two"]
+trust_level = "trusted"
+
+[projects."/tmp/cron-brew-smoke.VznGYL/cwd-two"]
+trust_level = "trusted"
+
+[projects."/private/tmp/cron-zig-repo2.31bvlu"]
+trust_level = "trusted"
+
+[projects."/tmp/cron-brew-smoke-debug.p2USE9/cwd one"]
+trust_level = "trusted"
+
+[projects."/tmp/cron-brew-smoke-debug.sx2vRu/cwd-two"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/world"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/blog"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/art"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/world-host"]
+trust_level = "trusted"
+
+[projects."/Users/tk"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/art/voyager"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/homebrew-tap"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/world-capabilities"]
+trust_level = "trusted"
+
+[projects."/Users/tk/Documents/Codex/2026-08-01/realtime-voice-chat"]
+trust_level = "trusted"
+
+[projects."/Users/tk/.codex"]
+trust_level = "trusted"
+
+[projects."/Users/tk/workspace/tk/agent"]
+trust_level = "trusted"
+
+[marketplaces.openai-bundled]
+last_updated = "2026-08-01T14:24:35Z"
+source_type = "local"
+source = "/Users/tk/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-08-01T14:21:29Z"
+source_type = "local"
+source = "/Users/tk/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[desktop]
+appearanceLightCodeThemeId = "rose-pine"
+appearanceDarkCodeThemeId = "rose-pine"
+preventSleepWhileRunning = true
+keepRemoteControlAwakeWhilePluggedIn = true
+followUpQueueMode = "queue"
+dock-icon-preference = "codex-system"
+realtimeVoiceScreenContextEnabled = true
+
+[desktop.appearanceLightChromeTheme]
+accent = "#d7827e"
+contrast = 45
+ink = "#575279"
+opaqueWindows = false
+surface = "#faf4ed"
+
+[desktop.appearanceLightChromeTheme.fonts]
+
+[desktop.appearanceLightChromeTheme.semanticColors]
+diffAdded = "#56949f"
+diffRemoved = "#797593"
+skill = "#907aa9"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#ea9a97"
+contrast = 60
+ink = "#e0def4"
+opaqueWindows = false
+surface = "#232136"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#9ccfd8"
+diffRemoved = "#908caa"
+skill = "#c4a7e7"
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/tk/.codex"
+CODEX_HOME = "/Users/tk/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.727.51351"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.computer-use]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+args = ["mcp"]
+cwd = "."
+enabled = false
+
+[shell_environment_policy.set]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/tk/.codex"
