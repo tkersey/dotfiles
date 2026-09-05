@@ -1,66 +1,6 @@
-model = "gpt-6-astra"
-model_reasoning_effort = "high"
-model_context_window = 1000000
-model_auto_compact_token_limit = 900000
-plan_mode_reasoning_effort = "max"
-suppress_unstable_features_warning = true
-web_search = "live"
-personality = "pragmatic"
+# User settings: ~/.codex/config.toml
 
 notify = ["/Users/tk/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
-service_tier = "default"
-
-[features]
-context_management.experimental_mode = true
-unified_exec = true
-personality = true
-memories = true
-prevent_idle_sleep = true
-realtime_conversation = true
-default_mode_request_user_input = true
-fast_mode = true
-chronicle = true
-external_migration = true
-goals = true
-terminal_resize_reflow = true
-mentions_v2 = true
-js_repl = false
-
-[features.multi_agent_v2]
-enabled = true
-
-[agents]
-max_concurrent_threads_per_session = 21
-
-[apps._default]
-enabled = false
-
-[realtime]
-version = "v2"
-type = "conversational"
-transport = "webrtc"
-voice = "marin"
-
-[memories]
-generate_memories = true
-use_memories = true
-dedicated_tools = true
-max_rollout_age_days = 90
-max_rollouts_per_startup = 128
-min_rollout_idle_hours = 6
-max_raw_memories_for_consolidation = 1024
-max_unused_days = 180
-disable_on_external_context = false
-extract_model = "gpt-5.4-mini"
-consolidation_model = "gpt-5.3-codex"
-
-[tui]
-auto_recap = false
-status_line = ["codex-version", "current-dir", "pull-request-number", "git-branch", "branch-changes", "weekly-limit", "five-hour-limit", "model-with-reasoning"]
-theme = "coldark-dark"
-terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
-notification_condition = "always"
-status_line_use_colors = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
@@ -257,9 +197,6 @@ NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS th
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
 BROWSER_USE_CODEX_APP_VERSION = "26.727.51351"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
-
-[mcp_servers.openaiDeveloperDocs]
-url = "https://developers.openai.com/mcp"
 
 [mcp_servers.computer-use]
 command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
