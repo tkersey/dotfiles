@@ -5,54 +5,52 @@
     "plan_id": "PLAN-cache-strategy",
     "revision": 1,
     "parent": null,
-    "created_at": "2026-06-24T12:00:00-07:00",
-    "profile": "strict",
     "source": {
       "mode": "spec_handoff",
-      "authority": "spec-pipeline/SGR-v2",
+      "authority": "user requirements and delegated choices in the embedded execution specification",
       "source_refs": [
-        "docs/cache-strategy-spec.md",
-        "SGR-cache-001"
+        "embedded-specification"
       ],
-      "source_digest": "sha256:16d96409090f9f523b17f4f7609c753df3b23e07d1c00701cad692ea3b15addd",
-      "spec_id": "SPEC-cache-001",
-      "spec_governance_ref": "SGR-cache-001",
+      "source_digest": "sha256:a293ad48f73af103ab06b2fd42488e6473af256a151a3f4807d8e40794170120",
+      "execution_specification": "<proposed_plan>\n## Summary\nDeliver one internal Cache representation that preserves the public API and\ninvalidation correctness while meeting the stated latency and memory bounds.\nFirst compare the two allowed mechanisms on one workload; implement only the\nselected route. Done requires final-tree acceptance proof and no dual strategy.\n\n## Governed Specification\nThis is an illustrative Zig repository, not a claim about an inspected checkout.\nThe public Cache.get and Cache.invalidate signatures in src/cache.zig are fixed.\nThe source permits either generation-tagged entries (A) or eager invalidation (B)\ninternally, and forbids a runtime strategy switch or new public API. A get after\ninvalidate must never return the old value. Required-valid observations include\nhits, misses, repeated invalidation, and subsequent refill. P95 must be at most\n10 ms and peak cache memory at most 8 MiB on bench/workload.json.\nThe assumed build already supplies bench-cache, test-cache-a, test-cache-b, and\ncheck targets. Verify these assumptions before effects; missing targets or an\nunrepresentative workload returns to planning, not fabricated evidence.\n\n## Architecture Decisions\nSEAM-CACHE is source_bounded: keep the public API and required behavior, while\nselecting A or B using OBS-ROUTE. Cache is the only production owner. A uses a\nCache-owned generation, tags entries, and admits a hit only for the current\ngeneration; safely clear entries before counter reuse. B evicts affected entries\non invalidation so stale entries cannot satisfy a hit. Synchronization must preserve\nthis ordering on all supported access paths. Retire the losing representation and\nany strategy-switch owner. These means are revisable only within the stated source\nenvelope; expanding the candidate space requires source revision.\nThe family is stale reads enabled by an invalidation bypass. Preserve every valid\nhit/miss/refill outcome. Falsifier: a sanctioned path returns a stale value, both\nrepresentations remain active, or public API/latency/memory requirements fail.\n\n## Implementation Sequence\nACTION-PROBE (performance owner): Verify the source/API/workload binding, then run\n`zig build bench-cache -- --workload bench/workload.json --json` without production\nmutation. Compare p95_ms, peak_bytes, and invalidation_pass for A and B using the\nsame workload digest. Failed, missing, contradictory, or inconclusive evidence is\ncontract_invalid. OBS-ROUTE selects the route by the exact rules below.\n\nACTION-A (engineering owner; after ACTION-PROBE and only route_a): Implement the\ngeneration-tagged mechanism in src/cache.zig::Cache.get and Cache.invalidate;\nupdate test/cache_test.zig for stale-read, generation rollover, and valid-refill\ncases. Retire the losing owner/runtime switch. Run\n`zig build test-cache-a --summary all` on that tree. Failure requires restoring\nonly session-owned edits and rechecking the baseline before a revised attempt.\n\nACTION-B (engineering owner; after ACTION-PROBE and only route_b): Implement eager\ninvalidation in the same owner and symbols; update test/cache_test.zig for stale-\nread and valid-refill cases. Retire the losing owner/runtime switch. Run\n`zig build test-cache-b --summary all`. Failure has the same bounded restoration\nroute. ACTION-A and ACTION-B are alternatives, never dependencies of one another.\n\nACTION-FINAL (engineering owner; after the selected implementation passes): Run\n`zig build check --summary all` on the exact final tree. This common verifier must\ncheck the fixed public API, required-valid matrix, stale-read exclusion, workload\nlatency/memory limits, and absence of the rejected production representation.\nInspect actual imports, construction, reads, invalidation, concurrency, and cache\nownership paths independently of the candidate's asserted inventory. Missing\ncoverage or an inadequate check target returns to planning; never claim the target\nproves more than it checks. Only this common final proof closes both obligations.\n\n## Decision Points and Branches\nOBS-ROUTE: a candidate qualifies only if invalidation_pass is true, p95_ms <= 10,\nand peak_bytes <= 8388608. Select the sole qualifier. If both qualify, select lower\npeak_bytes, then lower p95_ms, then A on an exact tie. Neither qualifying blocks.\nInvalid/inconclusive evidence or a false source assumption returns to planning.\nFocused or final proof failure stops delivery and triggers restoration/revision.\nObserve planned successor trees; expected implementation edits alone do not make\nthe plan stale. Unexpected source, workload, or relevant API changes invalidate\nonly affected assumptions and proof.\n\n## Proof, Rollback, and Done-State\nSelect the stale-read and valid-refill discriminator before implementation. Derive\ncoverage from the repository's real sanctioned paths, including concurrency and\ncounter reuse for A. Samples are bounded evidence, not a universal guarantee;\nclaim full family exclusion only with a justified construction/preservation argument.\nNo source-required outcome may be weakened to make a test green. The common\nPROOF-FINAL, produced after either selected implementation, closes OBL-IMPL and\nOBL-FINAL; the other branch's focused proof is not required or credited.\nOn abort, restore the session-owned code/test delta without overwriting unrelated\nchanges and rerun the baseline checks. No deployment or publication is authorized.\nDone requires one production representation, unchanged required API/valid behavior,\nall acceptance checks on the final tree, and no unowned coverage or proof residual.\n\n## Plan Identity and Source\nplan_id: PLAN-cache-strategy\nrevision: 1\nTarget: illustrative /repo/cache on feature/cache; base/head labels are illustrative,\nnot observed commits. Source authority: the user requirements and delegated choices\nfully stated in this block. Persistence: transient; optional EPG export embeds this\nexact block. Runtime currentness and mutation authority remain with the consumer.\n</proposed_plan>\n",
       "artifact_state": {
         "repo_bound": "yes",
         "repository": "/repo/cache",
         "branch": "feature/cache",
-        "base": "base-sha",
-        "head": "head-sha",
-        "dirty_fingerprint": "sha256:85067f37b8beae9917f4a78fc064f83002089a7eefaa11f4f5ab70a00784eb20"
+        "base": "illustrative-base",
+        "head": "illustrative-head",
+        "dirty_fingerprint": "illustrative-clean-tree"
       },
       "locked_decision_refs": [
-        "SPEC-DEC-public-api"
+        "fixed-cache-api",
+        "invalidation-correctness",
+        "resource-bounds"
       ]
     },
     "goal": {
-      "objective": "Select and deliver the smallest cache strategy that meets latency and correctness requirements without public API growth.",
+      "objective": "Deliver one allowed cache representation meeting required-valid behavior and resource/API constraints.",
       "obligations": [
         {
           "obligation_id": "OBL-IMPL",
-          "statement": "One evidence-selected cache strategy is implemented without the rejected strategy surface.",
+          "statement": "One allowed representation implements the required cache behavior without a dual strategy.",
           "source_refs": [
-            "SPEC-cache-001#implementation"
+            "embedded-specification"
           ],
           "terminal_predicate_refs": [
-            "TP-IMPL"
+            "TP-OBL-IMPL"
           ],
           "proof_refs": [
-            "PROOF-IMPLEMENT"
+            "PROOF-FINAL"
           ]
         },
         {
           "obligation_id": "OBL-FINAL",
-          "statement": "The final tree meets latency, invalidation correctness, and repository closure proof.",
+          "statement": "Exact final-tree proof establishes all acceptance obligations and coverage.",
           "source_refs": [
-            "SPEC-cache-001#proof"
+            "embedded-specification"
           ],
           "terminal_predicate_refs": [
-            "TP-FINAL"
+            "TP-OBL-FINAL"
           ],
           "proof_refs": [
             "PROOF-FINAL"
@@ -61,54 +59,30 @@
       ],
       "terminal_predicates": [
         {
-          "predicate_id": "TP-IMPL",
-          "statement": "Selected implementation obligation is closed.",
+          "predicate_id": "TP-OBL-IMPL",
+          "statement": "Final acceptance closes this obligation.",
           "atom": "obligation:OBL-IMPL=closed"
         },
         {
-          "predicate_id": "TP-FINAL",
-          "statement": "Final proof obligation is closed.",
+          "predicate_id": "TP-OBL-FINAL",
+          "statement": "Final acceptance closes this obligation.",
           "atom": "obligation:OBL-FINAL=closed"
         }
       ],
-      "safety_invariants": [
-        {
-          "invariant_id": "INV-PUBLIC",
-          "statement": "No public cache API is added.",
-          "violation_atom": "custom:public-api-growth",
-          "source_refs": [
-            "SPEC-DEC-public-api"
-          ]
-        },
-        {
-          "invariant_id": "INV-CORRECT",
-          "statement": "Invalidation correctness is never traded for latency.",
-          "violation_atom": "custom:invalidation-incorrect",
-          "source_refs": [
-            "SPEC-cache-001#correctness"
-          ]
-        }
-      ],
-      "forbidden_states": [
-        {
-          "forbidden_id": "FORBID-BOTH",
-          "statement": "Both cache strategies survive in production.",
-          "atom": "custom:both-strategies-live",
-          "response_terminal": "rollback"
-        }
-      ]
+      "safety_invariants": [],
+      "forbidden_states": []
     },
     "architectonic": {
       "mode": "explicit",
-      "reason": "Cache representation and ownership are evidence-conditioned consequential decisions.",
+      "reason": "A real representation choice depends on workload evidence.",
       "seams": [
         {
-          "seam_id": "SEAM-CACHE-REPRESENTATION",
+          "seam_id": "SEAM-CACHE",
           "authority": "source_bounded",
           "boundary": {
             "owner": "Cache",
-            "source": "source-locked cache API and representative workload evidence",
-            "target": "one selected internal cache representation"
+            "source": "fixed public API and required-valid cache behavior",
+            "target": "one evidence-selected internal representation"
           },
           "axis": "representation",
           "typed_hole": "representation",
@@ -118,39 +92,38 @@
           ],
           "required_observation_refs": [
             "OBS-ROUTE",
-            "OBS-IMPLEMENT-A",
-            "OBS-IMPLEMENT-B",
+            "OBS-A",
+            "OBS-B",
             "OBS-FINAL"
           ],
           "compatibility_and_migration": [
-            "preserve the source-locked public API",
-            "ship exactly one internal representation"
+            "preserve Cache.get and Cache.invalidate",
+            "retain valid hit/miss/refill and invalidation ordering",
+            "retire the losing representation and runtime switch"
           ],
           "host_capabilities": [
-            "bounded Zig benchmark",
-            "focused invalidation tests",
-            "final-tree repository check"
+            "existing Zig benchmark and focused/final proof targets"
           ],
           "incumbent": {
-            "organization": "two candidate representations with no selected production owner",
+            "organization": "candidate generation-tagged and eager-invalidation routes",
             "factor_refs": [
-              "FACTOR-DUAL-STRATEGY"
+              "FACTOR-DUAL"
             ]
           },
           "candidate_movements": {
-            "preserve": "reject; it leaves the production representation undecided",
-            "restrict_admitted_domain": "admit only the route selected by OBS-ROUTE",
-            "strengthen_representation_or_owner": "one Cache-owned internal representation",
-            "ablate_or_normalize": "ablate the losing route and any runtime strategy switch"
+            "preserve": "not sufficient while the production representation is undecided",
+            "restrict_admitted_domain": "choose one representation, not fewer required-valid requests",
+            "strengthen_representation_or_owner": "one Cache-owned representation enforces invalidation ordering",
+            "ablate_or_normalize": "retire dual strategy/runtime switch"
           },
           "disposition": "evidence_conditioned",
-          "selected_organization": "OBS-ROUTE selects exactly one Cache-owned representation; the other route is absent from production",
+          "selected_organization": "Use OBS-ROUTE and the exact acceptance/tie rules in the embedded specification.",
           "decision_observation_refs": [
             "OBS-ROUTE"
           ],
           "factors": [
             {
-              "factor_id": "FACTOR-PUBLIC-API",
+              "factor_id": "FACTOR-API",
               "owner": "Cache",
               "live_obligation_refs": [
                 "OBL-IMPL",
@@ -160,7 +133,7 @@
               "disposition": "preserve"
             },
             {
-              "factor_id": "FACTOR-CACHE-REPRESENTATION",
+              "factor_id": "FACTOR-REPRESENTATION",
               "owner": "Cache",
               "live_obligation_refs": [
                 "OBL-IMPL",
@@ -170,18 +143,17 @@
               "disposition": "introduce"
             },
             {
-              "factor_id": "FACTOR-DUAL-STRATEGY",
-              "owner": "none",
+              "factor_id": "FACTOR-DUAL",
+              "owner": "Cache",
               "live_obligation_refs": [],
               "obligation_status": "invalid",
               "disposition": "ablate"
             }
           ],
-          "law": "Exactly one evidence-selected internal cache representation owns production behavior without public API growth.",
-          "falsifier": "Both strategies remain live, a runtime strategy switch exists, or callers observe a new cache API.",
+          "law": "One production representation excludes stale reads across sanctioned paths while preserving required-valid behavior and resource/API constraints.",
+          "falsifier": "A stale read, bypass, lost valid behavior, dual strategy, or unmet bound.",
           "residual_obligations": [
-            "OBS-ROUTE must bind both candidates to one workload digest",
-            "OBS-FINAL must bind proof to the realized final tree"
+            "Derive actual sanctioned-path coverage independently; missing coverage blocks the claimed done-state."
           ],
           "invalidators": [
             "INV-SOURCE",
@@ -193,7 +165,7 @@
         "seam_dependency_edges": [],
         "independent_seam_sets": [
           [
-            "SEAM-CACHE-REPRESENTATION"
+            "SEAM-CACHE"
           ]
         ]
       },
@@ -203,22 +175,22 @@
           "OBL-FINAL"
         ],
         "independent_factor_refs": [
-          "FACTOR-PUBLIC-API",
-          "FACTOR-CACHE-REPRESENTATION"
+          "FACTOR-API",
+          "FACTOR-REPRESENTATION"
         ],
         "independent_owner_refs": [
           "Cache"
         ],
         "exceptional_path_refs": [],
         "dominated_factor_refs": [
-          "FACTOR-DUAL-STRATEGY"
+          "FACTOR-DUAL"
         ]
       }
     },
     "regime": {
       "kind": "complex",
-      "confidence": "high",
-      "rationale": "The correct representation depends on representative workload evidence unavailable before execution.",
+      "confidence": "medium",
+      "rationale": "Selection depends on representative workload evidence; this is an illustrative fixture.",
       "reclassify_on_observation_refs": [
         "OBS-ROUTE"
       ]
@@ -226,43 +198,29 @@
     "belief": {
       "facts": [
         {
-          "fact_id": "FACT-SOURCE-CURRENT",
-          "atom": "fact:FACT-SOURCE-CURRENT",
-          "statement": "The governed spec and repository tuple are current.",
+          "fact_id": "FACT-SOURCE-BOUND",
+          "atom": "fact:FACT-SOURCE-BOUND",
+          "statement": "Consumer has verified current source, API, build targets, and workload binding.",
           "evidence_refs": [
-            "SGR-cache-001",
-            "git:head-sha"
+            "embedded-specification"
           ],
-          "confidence": "high",
           "invalidators": [
             "INV-SOURCE",
             "INV-TREE"
-          ]
-        },
-        {
-          "fact_id": "FACT-API-LOCKED",
-          "atom": "fact:FACT-API-LOCKED",
-          "statement": "The public API is locked by the source spec.",
-          "evidence_refs": [
-            "SPEC-DEC-public-api"
-          ],
-          "confidence": "high",
-          "invalidators": [
-            "INV-SOURCE"
           ]
         }
       ],
       "unknowns": [
         {
           "unknown_id": "UNKNOWN-ROUTE",
-          "statement": "Which representation meets the workload bar with the least semantic surface?",
-          "consequence_if_wrong": "Implementation rework or latency/correctness failure.",
-          "decision_relevance": "Selects the only allowed production mutation route.",
+          "statement": "Which allowed representation qualifies under the exact selection rule?",
+          "consequence_if_wrong": "Incorrect or resource-inadequate implementation.",
+          "decision_relevance": "Selects the only permitted production route.",
           "evidence_required": [
             "same workload digest",
-            "P95 latency",
-            "memory ceiling",
-            "invalidation proof"
+            "p95_ms",
+            "peak_bytes",
+            "invalidation_pass"
           ],
           "observation_refs": [
             "OBS-ROUTE"
@@ -275,14 +233,8 @@
     "observations": [
       {
         "observation_id": "OBS-ROUTE",
-        "source_kind": "metric",
-        "command_or_evidence": "run bounded comparison benchmark and correctness matrix",
-        "predicate": "Compare both strategies under the same workload and correctness checks.",
-        "freshness": "valid only for current source/workload/tree digest",
-        "evidence_schema": "route, workload_digest, p95_ms, memory_bytes, invalidation_pass",
-        "resolves_unknown_refs": [
-          "UNKNOWN-ROUTE"
-        ],
+        "source_kind": "command",
+        "command_or_evidence": "zig build bench-cache -- --workload bench/workload.json --json",
         "outcomes": [
           {
             "outcome": "route_a",
@@ -303,40 +255,32 @@
         ]
       },
       {
-        "observation_id": "OBS-IMPLEMENT-A",
-        "source_kind": "test",
+        "observation_id": "OBS-A",
+        "source_kind": "command",
         "command_or_evidence": "zig build test-cache-a --summary all",
-        "predicate": "Selected route A satisfies focused latency and invalidation obligations.",
-        "freshness": "current implementation tree",
-        "evidence_schema": "status, p95_ms, invalidation_pass, artifact_digest",
-        "resolves_unknown_refs": [],
         "outcomes": [
           {
             "outcome": "pass",
-            "atom": "obs:OBS-IMPLEMENT-A=pass"
+            "atom": "obs:OBS-A=pass"
           },
           {
             "outcome": "fail",
-            "atom": "obs:OBS-IMPLEMENT-A=fail"
+            "atom": "obs:OBS-A=fail"
           }
         ]
       },
       {
-        "observation_id": "OBS-IMPLEMENT-B",
-        "source_kind": "test",
+        "observation_id": "OBS-B",
+        "source_kind": "command",
         "command_or_evidence": "zig build test-cache-b --summary all",
-        "predicate": "Selected route B satisfies focused latency and invalidation obligations.",
-        "freshness": "current implementation tree",
-        "evidence_schema": "status, p95_ms, invalidation_pass, artifact_digest",
-        "resolves_unknown_refs": [],
         "outcomes": [
           {
             "outcome": "pass",
-            "atom": "obs:OBS-IMPLEMENT-B=pass"
+            "atom": "obs:OBS-B=pass"
           },
           {
             "outcome": "fail",
-            "atom": "obs:OBS-IMPLEMENT-B=fail"
+            "atom": "obs:OBS-B=fail"
           }
         ]
       },
@@ -344,10 +288,6 @@
         "observation_id": "OBS-FINAL",
         "source_kind": "command",
         "command_or_evidence": "zig build check --summary all",
-        "predicate": "Complete final-tree closure proof passes.",
-        "freshness": "exact final tree/toolchain/options",
-        "evidence_schema": "status, artifact_digest, command, toolchain",
-        "resolves_unknown_refs": [],
         "outcomes": [
           {
             "outcome": "pass",
@@ -367,8 +307,7 @@
         "owner": "performance",
         "preconditions": {
           "all": [
-            "fact:FACT-SOURCE-CURRENT",
-            "fact:FACT-API-LOCKED"
+            "fact:FACT-SOURCE-BOUND"
           ],
           "any": [],
           "none": [
@@ -380,7 +319,7 @@
         },
         "requires_actions": [],
         "architectonic_seam_refs": [
-          "SEAM-CACHE-REPRESENTATION"
+          "SEAM-CACHE"
         ],
         "realizes_factor_refs": [],
         "retires_factor_refs": [],
@@ -388,28 +327,18 @@
           "OBS-ROUTE"
         ],
         "mutation_boundary": {
-          "kind": "repository",
-          "paths": [
-            "bench/cache_bench.zig",
-            "test/cache_test.zig"
-          ],
+          "kind": "none",
+          "paths": [],
           "symbols": []
         },
-        "lock_roots": [
-          "bench/cache_bench.zig",
-          "test/cache_test.zig"
-        ],
+        "lock_roots": [],
         "expected_effects": {
           "facts_added": [],
           "unknowns_resolved": [
             "UNKNOWN-ROUTE"
           ],
           "obligations_closed": [],
-          "potential_delta": {
-            "critical_unknowns": -1,
-            "unsatisfied_obligations": 0,
-            "hard_semantic_surface": 0
-          }
+          "potential_delta": {}
         },
         "expected_observation_refs": [
           "OBS-ROUTE"
@@ -420,9 +349,9 @@
         "proof_obligations": [
           {
             "proof_id": "PROOF-PROBE",
-            "statement": "Both alternatives use one workload and correctness oracle.",
-            "evidence_kind": "experiment",
-            "command_or_evidence": "run bounded comparison benchmark",
+            "statement": "Execute this route\u2019s proof against its evaluated tree.",
+            "evidence_kind": "command",
+            "command_or_evidence": "zig build bench-cache -- --workload bench/workload.json --json",
             "artifact_binding": "action"
           }
         ],
@@ -431,49 +360,39 @@
             "obs:OBS-ROUTE=contract_invalid"
           ],
           "action_id": null,
-          "instructions": "Discard probe changes and return to the source contract."
+          "instructions": "Stop effects/delivery; restore only session-owned edits without overwriting concurrent changes, run baseline checks, and revise affected assumptions."
         },
         "utility": {
-          "obligation_reduction": 0,
-          "information_gain": 100,
-          "downstream_unlock": 100,
-          "proof_gain": 30,
-          "execution_cost": 25,
-          "irreversible_risk": 5,
-          "semantic_surface_growth": 0,
-          "rework_risk": 5
+          "execution_cost": 0
         },
         "repeatable": false
       },
       {
-        "action_id": "ACTION-IMPLEMENT-A",
+        "action_id": "ACTION-A",
         "kind": "mutate",
         "owner": "engineering",
         "preconditions": {
           "all": [
             "obs:OBS-ROUTE=route_a",
-            "fact:FACT-API-LOCKED"
+            "fact:FACT-SOURCE-BOUND"
           ],
           "any": [],
-          "none": [
-            "custom:public-api-growth",
-            "custom:both-strategies-live"
-          ]
+          "none": []
         },
         "requires_actions": [
           "ACTION-PROBE"
         ],
         "architectonic_seam_refs": [
-          "SEAM-CACHE-REPRESENTATION"
+          "SEAM-CACHE"
         ],
         "realizes_factor_refs": [
-          "FACTOR-CACHE-REPRESENTATION"
+          "FACTOR-REPRESENTATION"
         ],
         "retires_factor_refs": [
-          "FACTOR-DUAL-STRATEGY"
+          "FACTOR-DUAL"
         ],
         "preservation_observation_refs": [
-          "OBS-IMPLEMENT-A"
+          "OBS-A"
         ],
         "mutation_boundary": {
           "kind": "repository",
@@ -487,30 +406,25 @@
           ]
         },
         "lock_roots": [
-          "src/cache.zig"
+          "src/cache.zig",
+          "test/cache_test.zig"
         ],
         "expected_effects": {
           "facts_added": [],
           "unknowns_resolved": [],
-          "obligations_closed": [
-            "OBL-IMPL"
-          ],
-          "potential_delta": {
-            "critical_unknowns": 0,
-            "unsatisfied_obligations": -1,
-            "hard_semantic_surface": 0
-          }
+          "obligations_closed": [],
+          "potential_delta": {}
         },
         "expected_observation_refs": [
-          "OBS-IMPLEMENT-A"
+          "OBS-A"
         ],
         "failure_observation_refs": [
-          "OBS-IMPLEMENT-A"
+          "OBS-A"
         ],
         "proof_obligations": [
           {
-            "proof_id": "PROOF-IMPLEMENT",
-            "statement": "Route A focused latency and invalidation proof passes.",
+            "proof_id": "PROOF-A",
+            "statement": "Execute this route\u2019s proof against its evaluated tree.",
             "evidence_kind": "command",
             "command_or_evidence": "zig build test-cache-a --summary all",
             "artifact_binding": "action"
@@ -518,52 +432,42 @@
         ],
         "rollback": {
           "trigger_atoms": [
-            "obs:OBS-IMPLEMENT-A=fail"
+            "obs:OBS-A=fail"
           ],
           "action_id": null,
-          "instructions": "Revert route A implementation and return to policy."
+          "instructions": "Stop effects/delivery; restore only session-owned edits without overwriting concurrent changes, run baseline checks, and revise affected assumptions."
         },
         "utility": {
-          "obligation_reduction": 80,
-          "information_gain": 20,
-          "downstream_unlock": 80,
-          "proof_gain": 60,
-          "execution_cost": 50,
-          "irreversible_risk": 20,
-          "semantic_surface_growth": 20,
-          "rework_risk": 20
+          "execution_cost": 0
         },
         "repeatable": false
       },
       {
-        "action_id": "ACTION-IMPLEMENT-B",
+        "action_id": "ACTION-B",
         "kind": "mutate",
         "owner": "engineering",
         "preconditions": {
           "all": [
             "obs:OBS-ROUTE=route_b",
-            "fact:FACT-API-LOCKED"
+            "fact:FACT-SOURCE-BOUND"
           ],
           "any": [],
-          "none": [
-            "custom:public-api-growth",
-            "custom:both-strategies-live"
-          ]
+          "none": []
         },
         "requires_actions": [
           "ACTION-PROBE"
         ],
         "architectonic_seam_refs": [
-          "SEAM-CACHE-REPRESENTATION"
+          "SEAM-CACHE"
         ],
         "realizes_factor_refs": [
-          "FACTOR-CACHE-REPRESENTATION"
+          "FACTOR-REPRESENTATION"
         ],
         "retires_factor_refs": [
-          "FACTOR-DUAL-STRATEGY"
+          "FACTOR-DUAL"
         ],
         "preservation_observation_refs": [
-          "OBS-IMPLEMENT-B"
+          "OBS-B"
         ],
         "mutation_boundary": {
           "kind": "repository",
@@ -577,30 +481,25 @@
           ]
         },
         "lock_roots": [
-          "src/cache.zig"
+          "src/cache.zig",
+          "test/cache_test.zig"
         ],
         "expected_effects": {
           "facts_added": [],
           "unknowns_resolved": [],
-          "obligations_closed": [
-            "OBL-IMPL"
-          ],
-          "potential_delta": {
-            "critical_unknowns": 0,
-            "unsatisfied_obligations": -1,
-            "hard_semantic_surface": 0
-          }
+          "obligations_closed": [],
+          "potential_delta": {}
         },
         "expected_observation_refs": [
-          "OBS-IMPLEMENT-B"
+          "OBS-B"
         ],
         "failure_observation_refs": [
-          "OBS-IMPLEMENT-B"
+          "OBS-B"
         ],
         "proof_obligations": [
           {
-            "proof_id": "PROOF-IMPLEMENT-B",
-            "statement": "Route B focused latency and invalidation proof passes.",
+            "proof_id": "PROOF-B",
+            "statement": "Execute this route\u2019s proof against its evaluated tree.",
             "evidence_kind": "command",
             "command_or_evidence": "zig build test-cache-b --summary all",
             "artifact_binding": "action"
@@ -608,42 +507,31 @@
         ],
         "rollback": {
           "trigger_atoms": [
-            "obs:OBS-IMPLEMENT-B=fail"
+            "obs:OBS-B=fail"
           ],
           "action_id": null,
-          "instructions": "Revert route B implementation and return to policy."
+          "instructions": "Stop effects/delivery; restore only session-owned edits without overwriting concurrent changes, run baseline checks, and revise affected assumptions."
         },
         "utility": {
-          "obligation_reduction": 80,
-          "information_gain": 20,
-          "downstream_unlock": 80,
-          "proof_gain": 60,
-          "execution_cost": 55,
-          "irreversible_risk": 20,
-          "semantic_surface_growth": 15,
-          "rework_risk": 20
+          "execution_cost": 0
         },
         "repeatable": false
       },
       {
-        "action_id": "ACTION-FINAL-PROOF",
+        "action_id": "ACTION-FINAL",
         "kind": "prove",
         "owner": "engineering",
         "preconditions": {
-          "all": [
-            "obligation:OBL-IMPL=closed"
-          ],
+          "all": [],
           "any": [
-            "obs:OBS-IMPLEMENT-A=pass",
-            "obs:OBS-IMPLEMENT-B=pass"
+            "obs:OBS-A=pass",
+            "obs:OBS-B=pass"
           ],
-          "none": [
-            "custom:invalidation-incorrect"
-          ]
+          "none": []
         },
         "requires_actions": [],
         "architectonic_seam_refs": [
-          "SEAM-CACHE-REPRESENTATION"
+          "SEAM-CACHE"
         ],
         "realizes_factor_refs": [],
         "retires_factor_refs": [],
@@ -660,13 +548,10 @@
           "facts_added": [],
           "unknowns_resolved": [],
           "obligations_closed": [
+            "OBL-IMPL",
             "OBL-FINAL"
           ],
-          "potential_delta": {
-            "critical_unknowns": 0,
-            "unsatisfied_obligations": -1,
-            "hard_semantic_surface": 0
-          }
+          "potential_delta": {}
         },
         "expected_observation_refs": [
           "OBS-FINAL"
@@ -677,7 +562,7 @@
         "proof_obligations": [
           {
             "proof_id": "PROOF-FINAL",
-            "statement": "Final-tree repository closure proof passes.",
+            "statement": "Execute this route\u2019s proof against its evaluated tree.",
             "evidence_kind": "command",
             "command_or_evidence": "zig build check --summary all",
             "artifact_binding": "final_tree"
@@ -688,17 +573,10 @@
             "obs:OBS-FINAL=fail"
           ],
           "action_id": null,
-          "instructions": "Do not deliver; return to implementation or rollback."
+          "instructions": "Stop effects/delivery; restore only session-owned edits without overwriting concurrent changes, run baseline checks, and revise affected assumptions."
         },
         "utility": {
-          "obligation_reduction": 100,
-          "information_gain": 10,
-          "downstream_unlock": 100,
-          "proof_gain": 100,
-          "execution_cost": 30,
-          "irreversible_risk": 0,
-          "semantic_surface_growth": 0,
-          "rework_risk": 5
+          "execution_cost": 0
         },
         "repeatable": false
       }
@@ -706,27 +584,6 @@
     "policy": {
       "selection": "lexicographic_utility",
       "utility_order": [
-        {
-          "maximize": "obligation_reduction"
-        },
-        {
-          "maximize": "information_gain"
-        },
-        {
-          "maximize": "downstream_unlock"
-        },
-        {
-          "maximize": "proof_gain"
-        },
-        {
-          "minimize": "irreversible_risk"
-        },
-        {
-          "minimize": "semantic_surface_growth"
-        },
-        {
-          "minimize": "rework_risk"
-        },
         {
           "minimize": "execution_cost"
         }
@@ -737,8 +594,7 @@
           "priority": 10,
           "when": {
             "all": [
-              "fact:FACT-SOURCE-CURRENT",
-              "fact:FACT-API-LOCKED"
+              "fact:FACT-SOURCE-BOUND"
             ],
             "any": [],
             "none": [
@@ -751,23 +607,10 @@
           "candidate_action_ids": [
             "ACTION-PROBE"
           ],
-          "terminal": null,
-          "rationale": "Resolve the critical route uncertainty before production mutation.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [
-            "UNKNOWN-ROUTE"
-          ],
-          "evidence_refs": [
-            "SPEC-cache-001"
-          ],
-          "replan_if_atoms": [
-            "obs:OBS-ROUTE=contract_invalid"
-          ]
+          "terminal": null
         },
         {
-          "rule_id": "RULE-IMPLEMENT-A",
+          "rule_id": "RULE-A",
           "priority": 20,
           "when": {
             "all": [
@@ -775,29 +618,17 @@
             ],
             "any": [],
             "none": [
-              "action:ACTION-IMPLEMENT-A=success"
+              "action:ACTION-A=success",
+              "obs:OBS-A=fail"
             ]
           },
           "candidate_action_ids": [
-            "ACTION-IMPLEMENT-A"
+            "ACTION-A"
           ],
-          "terminal": null,
-          "rationale": "Route A won the governed evidence comparison.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [
-            "UNKNOWN-ROUTE"
-          ],
-          "evidence_refs": [
-            "obs:OBS-ROUTE=route_a"
-          ],
-          "replan_if_atoms": [
-            "obs:OBS-IMPLEMENT-A=fail"
-          ]
+          "terminal": null
         },
         {
-          "rule_id": "RULE-IMPLEMENT-B",
+          "rule_id": "RULE-B",
           "priority": 21,
           "when": {
             "all": [
@@ -805,57 +636,33 @@
             ],
             "any": [],
             "none": [
-              "action:ACTION-IMPLEMENT-B=success"
+              "action:ACTION-B=success",
+              "obs:OBS-B=fail"
             ]
           },
           "candidate_action_ids": [
-            "ACTION-IMPLEMENT-B"
+            "ACTION-B"
           ],
-          "terminal": null,
-          "rationale": "Route B won the governed evidence comparison.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [
-            "UNKNOWN-ROUTE"
-          ],
-          "evidence_refs": [
-            "obs:OBS-ROUTE=route_b"
-          ],
-          "replan_if_atoms": [
-            "obs:OBS-IMPLEMENT-B=fail"
-          ]
+          "terminal": null
         },
         {
-          "rule_id": "RULE-FINAL-PROOF",
+          "rule_id": "RULE-FINAL",
           "priority": 30,
           "when": {
-            "all": [
-              "obligation:OBL-IMPL=closed"
-            ],
+            "all": [],
             "any": [
-              "obs:OBS-IMPLEMENT-A=pass",
-              "obs:OBS-IMPLEMENT-B=pass"
+              "obs:OBS-A=pass",
+              "obs:OBS-B=pass"
             ],
             "none": [
-              "action:ACTION-FINAL-PROOF=success"
+              "action:ACTION-FINAL=success",
+              "obs:OBS-FINAL=fail"
             ]
           },
           "candidate_action_ids": [
-            "ACTION-FINAL-PROOF"
+            "ACTION-FINAL"
           ],
-          "terminal": null,
-          "rationale": "Close the final obligation only on the current realized tree.",
-          "obligation_refs": [
-            "OBL-FINAL"
-          ],
-          "unknown_refs": [],
-          "evidence_refs": [
-            "PROOF-IMPLEMENT"
-          ],
-          "replan_if_atoms": [
-            "obs:OBS-FINAL=fail"
-          ]
+          "terminal": null
         },
         {
           "rule_id": "RULE-SUCCESS",
@@ -867,27 +674,13 @@
               "obs:OBS-FINAL=pass"
             ],
             "any": [],
-            "none": [
-              "custom:public-api-growth",
-              "custom:invalidation-incorrect",
-              "custom:both-strategies-live"
-            ]
+            "none": []
           },
           "candidate_action_ids": [],
-          "terminal": "success",
-          "rationale": "All source obligations and final proof are current.",
-          "obligation_refs": [
-            "OBL-IMPL",
-            "OBL-FINAL"
-          ],
-          "unknown_refs": [],
-          "evidence_refs": [
-            "PROOF-FINAL"
-          ],
-          "replan_if_atoms": []
+          "terminal": "success"
         },
         {
-          "rule_id": "RULE-BLOCK-NEITHER",
+          "rule_id": "RULE-NEITHER",
           "priority": 5,
           "when": {
             "all": [
@@ -897,21 +690,10 @@
             "none": []
           },
           "candidate_action_ids": [],
-          "terminal": "blocked",
-          "rationale": "Neither source-authorized route meets the bar.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [
-            "UNKNOWN-ROUTE"
-          ],
-          "evidence_refs": [
-            "OBS-ROUTE"
-          ],
-          "replan_if_atoms": []
+          "terminal": "blocked"
         },
         {
-          "rule_id": "RULE-RETURN-SPEC",
+          "rule_id": "RULE-INVALID",
           "priority": 4,
           "when": {
             "all": [
@@ -921,65 +703,36 @@
             "none": []
           },
           "candidate_action_ids": [],
-          "terminal": "return_to_spec",
-          "rationale": "The experiment invalidated the governing contract.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [
-            "UNKNOWN-ROUTE"
-          ],
-          "evidence_refs": [
-            "OBS-ROUTE"
-          ],
-          "replan_if_atoms": []
+          "terminal": "return_to_spec"
         },
         {
-          "rule_id": "RULE-ROLLBACK-A",
+          "rule_id": "RULE-ROLLBACK-OBS-A",
           "priority": 3,
           "when": {
             "all": [
-              "obs:OBS-IMPLEMENT-A=fail"
+              "obs:OBS-A=fail"
             ],
             "any": [],
             "none": []
           },
           "candidate_action_ids": [],
-          "terminal": "rollback",
-          "rationale": "Route A failed its focused proof.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [],
-          "evidence_refs": [
-            "OBS-IMPLEMENT-A"
-          ],
-          "replan_if_atoms": []
+          "terminal": "rollback"
         },
         {
-          "rule_id": "RULE-ROLLBACK-B",
+          "rule_id": "RULE-ROLLBACK-OBS-B",
           "priority": 2,
           "when": {
             "all": [
-              "obs:OBS-IMPLEMENT-B=fail"
+              "obs:OBS-B=fail"
             ],
             "any": [],
             "none": []
           },
           "candidate_action_ids": [],
-          "terminal": "rollback",
-          "rationale": "Route B failed its focused proof.",
-          "obligation_refs": [
-            "OBL-IMPL"
-          ],
-          "unknown_refs": [],
-          "evidence_refs": [
-            "OBS-IMPLEMENT-B"
-          ],
-          "replan_if_atoms": []
+          "terminal": "rollback"
         },
         {
-          "rule_id": "RULE-ROLLBACK-FINAL",
+          "rule_id": "RULE-ROLLBACK-OBS-FINAL",
           "priority": 1,
           "when": {
             "all": [
@@ -989,62 +742,27 @@
             "none": []
           },
           "candidate_action_ids": [],
-          "terminal": "rollback",
-          "rationale": "Final-tree proof failed.",
-          "obligation_refs": [
-            "OBL-FINAL"
-          ],
-          "unknown_refs": [],
-          "evidence_refs": [
-            "OBS-FINAL"
-          ],
-          "replan_if_atoms": []
+          "terminal": "rollback"
         }
       ],
       "tie_breakers": [
-        "lowest_irreversible_risk",
-        "lowest_semantic_surface_growth",
         "action_id"
       ]
     },
     "potential": {
       "lexicographic_order": [
-        "safety_violations",
-        "critical_unknowns",
-        "unsatisfied_obligations",
-        "hard_semantic_surface"
+        "unsatisfied_obligations"
       ],
       "dimensions": [
         {
-          "dimension_id": "safety_violations",
-          "statement": "Violated safety invariants.",
-          "direction": "minimize",
-          "terminal_threshold": 0
-        },
-        {
-          "dimension_id": "critical_unknowns",
-          "statement": "Unresolved critical unknowns.",
-          "direction": "minimize",
-          "terminal_threshold": 0
-        },
-        {
           "dimension_id": "unsatisfied_obligations",
-          "statement": "Open source obligations.",
+          "statement": "Required acceptance obligations not yet established.",
           "direction": "minimize",
           "terminal_threshold": 0
-        },
-        {
-          "dimension_id": "hard_semantic_surface",
-          "statement": "Hard production semantic surface.",
-          "direction": "minimize",
-          "terminal_threshold": 1
         }
       ],
       "baseline_expectation": {
-        "safety_violations": 0,
-        "critical_unknowns": 1,
-        "unsatisfied_obligations": 2,
-        "hard_semantic_surface": 1
+        "unsatisfied_obligations": 2
       }
     },
     "safety_shield": {
@@ -1052,49 +770,45 @@
         {
           "shield_id": "SHIELD-A",
           "when": {
-            "all": [
-              "fact:FACT-SOURCE-CURRENT"
-            ],
+            "all": [],
             "any": [],
             "none": []
           },
           "forbids_action_ids": [
-            "ACTION-IMPLEMENT-A"
+            "ACTION-A"
           ],
           "forbids_action_kinds": [],
           "requires_atoms": [
-            "obs:OBS-ROUTE=route_a",
-            "fact:FACT-API-LOCKED"
+            "fact:FACT-SOURCE-BOUND",
+            "obs:OBS-ROUTE=route_a"
           ],
           "response": "block",
-          "reason": "Route A mutation requires route-A evidence and locked API authority."
+          "reason": "Production mutation requires current authority and selecting evidence."
         },
         {
           "shield_id": "SHIELD-B",
           "when": {
-            "all": [
-              "fact:FACT-SOURCE-CURRENT"
-            ],
+            "all": [],
             "any": [],
             "none": []
           },
           "forbids_action_ids": [
-            "ACTION-IMPLEMENT-B"
+            "ACTION-B"
           ],
           "forbids_action_kinds": [],
           "requires_atoms": [
-            "obs:OBS-ROUTE=route_b",
-            "fact:FACT-API-LOCKED"
+            "fact:FACT-SOURCE-BOUND",
+            "obs:OBS-ROUTE=route_b"
           ],
           "response": "block",
-          "reason": "Route B mutation requires route-B evidence and locked API authority."
+          "reason": "Production mutation requires current authority and selecting evidence."
         }
       ]
     },
     "horizon": {
       "mutation_actions_max": 1,
-      "evidence_actions_max": 3,
-      "delivery_transitions_max": 1
+      "evidence_actions_max": 2,
+      "delivery_transitions_max": 0
     },
     "terminal_states": {
       "success": {
@@ -1105,11 +819,7 @@
             "obs:OBS-FINAL=pass"
           ],
           "any": [],
-          "none": [
-            "custom:public-api-growth",
-            "custom:invalidation-incorrect",
-            "custom:both-strategies-live"
-          ]
+          "none": []
         },
         "proof_refs": [
           "PROOF-FINAL"
@@ -1137,8 +847,8 @@
         "when": {
           "all": [],
           "any": [
-            "obs:OBS-IMPLEMENT-A=fail",
-            "obs:OBS-IMPLEMENT-B=fail",
+            "obs:OBS-A=fail",
+            "obs:OBS-B=fail",
             "obs:OBS-FINAL=fail"
           ],
           "none": []
@@ -1148,23 +858,22 @@
     "invalidators": [
       {
         "invalidator_id": "INV-SOURCE",
-        "condition": "The source specification or governance digest changes.",
+        "condition": "User requirements, fixed API, workload, or build/proof authority changes unexpectedly.",
         "required_action": "return_to_spec",
         "affected_refs": [
-          "SPEC-cache-001",
           "OBL-IMPL",
           "OBL-FINAL"
         ]
       },
       {
         "invalidator_id": "INV-TREE",
-        "condition": "The repository head, tree, or workload artifact changes before the selected action.",
-        "required_action": "replan",
+        "condition": "An unexpected relevant tree change invalidates an action assumption; planned successor edits alone do not fire this invalidator.",
+        "required_action": "refresh affected observations or revise",
         "affected_refs": [
           "ACTION-PROBE",
-          "ACTION-IMPLEMENT-A",
-          "ACTION-IMPLEMENT-B",
-          "ACTION-FINAL-PROOF"
+          "ACTION-A",
+          "ACTION-B",
+          "ACTION-FINAL"
         ]
       }
     ]

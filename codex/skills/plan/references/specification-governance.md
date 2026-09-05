@@ -1,228 +1,98 @@
 # Specification Governance
 
-The default Plan route treats a supplied implementation specification as a candidate
-to govern before architecture-policy synthesis. The purpose is to preserve the
-candidate's useful decisions while refusing unsupported authority, drift, hidden
-architecture, and proof-shaped omissions.
+A supplied specification is candidate evidence. Preserve its useful decisions while
+correcting unsupported authority, repository mismatch, drift, hidden architecture,
+and proof-shaped omissions. Do not preserve its organization merely because prose
+already exists.
 
-## Candidate and authority
+## Authority and evidence
 
-Bind these sources before editing the candidate:
+User requirements govern intended behavior. Repository artifacts establish current
+facts and existing obligations, not a veto against explicitly authorized changes.
+Accepted public contracts, compatibility, and migration constraints still matter;
+resolve a real conflict instead of either blindly preserving or discarding them.
+Candidate mechanisms remain proposed means unless accepted authority fixes them.
 
-```text
-user objective and explicit decisions
-repository and artifact state
-existing public and compatibility contracts
-tests, schemas, migrations, operational evidence, and proof topology
-candidate specification
-prior governed plan when revising
-```
+Inspect the objective and explicit decisions, relevant repository state, existing
+contracts, tests/schemas/migrations, operational evidence, candidate specification,
+and the exact prior specification when revising. For substantial or reconstructed
+work, surface only an evidence brief that changes a decision: current behavior,
+relevant surfaces, constraints, proof available, unverified facts, and missing user
+judgment. Do not emit a fixed inventory of empty fields.
 
-The candidate does not outrank the user or repository. It may propose decisions, but
-a decision becomes source authority only when accepted by the user, entailed by
-inspected artifacts, or necessary inside an explicitly delegated specification-local
-seam.
+Ask 1-3 atomic, bounded questions per round only for material judgment that artifacts
+cannot resolve. Prefer a justified recommendation. When no question is needed,
+proceed; keep the reason internal. A default has an owner, consequence, and
+invalidator, and is not a locked user decision.
 
-## Evidence Brief
-
-For `full` or materially reconstructed work, emit:
-
-```text
-## Evidence Brief
-- Current state:
-- Relevant surfaces:
-- Existing behavior:
-- Known constraints:
-- Obvious risks:
-- Proof surfaces already available:
-- Facts not yet verified:
-- Judgment calls still needed:
-```
-
-Use `none` only after considering the field. Evidence may be concise when the
-candidate and repository already make the answer obvious.
-
-## Judgment acquisition
-
-Ask 1-3 bounded questions per round only when a material user judgment remains.
-Each question must be atomic, have a stable `snake_case` ID, place the recommended
-option first when justified, and avoid discoverable facts.
-
-When no question is needed, preserve internally:
-
-```yaml
-no_grill_justification:
-  reasons: []
-  material_unknowns_remaining: false
-  defaulted_decisions: {}
-```
-
-A default is not a locked user decision. Record its owner, consequence, and
-invalidator.
-
-## Anti-drift check
-
-Before compiling or repairing the specification, compare against the authoritative
-objective:
+## Disposition and drift
 
 ```text
-target
-scope and non-goals
-authority boundary
-compatibility posture
-proof bar
-rollout and rollback posture
-public behavior boundary
-source-fixed architecture and abstraction constraints
+adopt        decision-complete and source-consistent
+repair       sound direction with bounded invalid or missing sections
+reconstruct  unsound authority, organization, scope, or proof basis
+block        unavailable judgment or authority prevents an honest specification
 ```
 
-Unapproved change to one of these blocks with a concrete drift statement. Do not
-normalize drift into a new accepted objective.
+Even `adopt` receives the invariant challenge and final source reread. Repair only
+implicated sections and every dependent derivation. Reconstruct the means without
+erasing valid required behavior or failed evidence.
 
-## Candidate disposition
-
-Choose one:
-
-```text
-adopt
-  candidate is decision-complete, current, and source-consistent
-
-repair
-  one or more bounded sections or seams are invalid or incomplete
-
-reconstruct
-  governing factorization, authority, scope, or proof basis is materially unsound
-
-block
-  unavailable judgment or authority prevents an honest specification
-```
-
-`adopt` still runs the invariant challenge and fresh-eyes pass. `repair` changes only
-implicated sections and all downstream derivations. `reconstruct` preserves valid
-source decisions and evidence; it does not preserve the candidate's organization
-merely because prose already exists.
+Compare the result against the authoritative objective, target, scope/non-goals,
+public behavior, compatibility, authorized effects, proof bar, rollback, and truly
+source-fixed architecture. Unapproved drift blocks with the concrete difference.
+Do not turn the repository's incumbent mechanism or the planner's selected means
+into a new required outcome.
 
 ## Decision completeness
 
-Before implementation-spec compilation, establish:
+Establish the goal, intended user/maintainer, scope, non-goals, fixed decisions,
+primary invariant, required-valid domain, acceptance, proof bar, compatibility,
+rollout/rollback, and consequential seam dispositions. Use
+architectonic-specification.md only when the boundary is a live semantic choice.
+
+Every material open question needs an owner, consequence, default or blocker, and
+invalidator. Every evidence-conditioned implementation choice needs its admissible
+alternatives, exact deciding observations, forbidden outcomes, and safe stop/default.
+An empirical choice may remain conditional. Missing authority cannot be hidden in
+an observation branch. A deferred item affecting the done-state blocks completion.
+
+Decision-complete means no material decision is unowned. Selected means may change
+within their source-bounded or delegated local envelope; required outcomes and hard
+constraints may not. Preserve this distinction in the emitted plan.
+
+## Derive the specification
+
+Include the following semantics, combining headings when that removes duplication:
 
 ```text
-goal and target maintainer/user
+objective and current state
 scope and non-goals
-locked decisions and accepted tradeoffs
-primary invariant and success criteria
-proof bar
-compatibility posture
-rollout and rollback posture
-architectonic authority and seam dispositions
-conceptual-compression constraints
-downstream-open decisions
-open, deferred, and defaulted items
+fixed decisions, selected means, and explicit defaults
+requirements and compatibility
+architecture, owners, laws, falsifiers, and invalidators
+implementation approach and dependency-ordered work
+requirement -> owner -> factor -> enforcement -> implementation -> proof
+migration, retirement, risks, rollback/abort, and binary done-state
+non-blocking open/deferred items
 ```
 
-For every material open question record:
+For a consequential construction, use action-contract.md to bind the supported
+invalid family, preserved valid domain, admission/ownership/transition mechanism,
+independently derived coverage, preselected discriminator, and claim strength.
+Do not confuse a test command or a checked type name with proof of family exclusion.
+Plan prepares these obligations; execution establishes them on actual code.
 
-```text
-stable ID
-question
-owner
-default or blocker
-consequence
-why it is non-blocking, when applicable
-invalidator
-```
+Each action establishes, transports, migrates, retires, proves, or removes a bypass
+for a factor. Re-derive work that realizes a superseded factor or bypasses its owner.
+The specification and execution sequence are one result; do not maintain parallel
+spec-level and EPG-level task inventories in human-only planning.
 
-For every downstream-open architectonic decision record:
+## Readiness and stop
 
-```text
-admissible candidate space
-required deciding observations
-forbidden outcomes
-safe default or blocker
-invalidators
-```
-
-An open design choice without that envelope is not decision-complete.
-
-## Semantic readiness gate
-
-Complete this sentence from governed facts:
-
-```text
-We are building X, for Y, by changing Z, while explicitly not doing A/B/C,
-under architectonic constraints D/E, and success means P/Q/R proofs pass.
-```
-
-Planning may continue only when:
-
-```text
-authoritative objective is present and current
-material user judgments are resolved or honestly blocked
-scope, non-goals, compatibility, and proof bar are explicit
-all consequential seams have lawful dispositions
-implementation sequence derives from those dispositions
-no source-fixed contradiction remains
-rollback and binary done-state are testable
-```
-
-This is a semantic compiler condition, not a persisted gate or receipt.
-
-## Implementation specification
-
-Use these sections in order:
-
-1. Objective
-2. Context / Current State
-3. Locked Decisions
-4. Scope
-5. Non-Goals
-6. Requirements
-7. Architecture and Abstraction
-8. Design / Implementation Approach
-9. Dependency-Ordered Implementation Sequence
-10. Requirement-Owner-Enforcement-Proof Traceability
-11. Proof Commands
-12. Risks and Edge Cases
-13. Rollback / Abort Criteria
-14. Binary Done-State
-15. Open / Deferred Items
-
-`Architecture and Abstraction` carries the Architectonic Thread: seam authority,
-incumbent organization, ordinary and alternative candidates, selected or conditioned
-organization, canonical owners, factor dispositions, laws, falsifiers, residuals,
-and invalidators.
-
-Every downstream section derives through:
-
-```text
-requirement
--> semantic owner
--> architectural factor
--> enforcement locus
--> implementation surface
--> proof
--> invalidator
-```
-
-Each sequence item says whether it establishes, transports, migrates, retires,
-proves, or removes a bypass for a factor. A sequence that realizes a quotiented,
-ablated, normalized, or superseded factor is inconsistent and must be regenerated.
-
-Keep the sequence at specification level. Do not emit EPG action rows, policy
-branches, commitment horizons, or execution-wave ceremony in this phase.
-
-## Stop conditions
-
-Block before EPG synthesis when:
-
-```text
-material user judgment is unavailable
-source authority conflicts
-objective drift remains
-consequential seam is obstructed
-proof bar cannot be made operational
-compatibility or rollback consequence is unowned
-```
-
-A blocked default route reports the exact missing authority or observation. It does
-not emit a partial EPG that certifies its own readiness.
+The result must state what is being built, for whom, by changing what, explicitly
+excluding what, under which fixed constraints, with which completion evidence.
+Block only affected synthesis for unavailable material judgment, conflicting
+source authority, objective drift, an obstructed seam, an inoperable proof bar, or
+an unowned compatibility/rollback consequence. Report the missing authority or
+observation. Do not certify partial output or create a governance receipt.
