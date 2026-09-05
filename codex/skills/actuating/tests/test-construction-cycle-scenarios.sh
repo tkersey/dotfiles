@@ -48,7 +48,13 @@ function observe(i) {
   const folded = last.every(r => i.folded.includes(r.id));
   const sourcesFolded = i.sources.every(s => s.status !== 'unfolded');
   const completionSources = i.sources.every(s => !s.required || ['folded', 'non-current'].includes(s.status));
-  const cleanStandards = invalidated ? 0 : last.filter(r => r.lens === 'standard' && r.verdict === 'clean').length;
+  // Adjudication cannot turn a non-clean owner verdict into clean credit.
+  // Verdictless transport attempts are not semantic outcomes; recovery stays
+  // in the existing barrier. Count the ordered semantic suffix, not totals.
+  let cleanStandards = 0;
+  for (const r of i.receipts) if (r.lens === 'standard' && semantic(r))
+    cleanStandards = r.verdict === 'clean' ? cleanStandards + 1 : 0;
+  if (invalidated) cleanStandards = 0;
   const converged = barrier && !invalidated && folded && sourcesFolded &&
     cleanStandards >= policy.standard_convergence.required_consecutive_clean_attempts;
   const cutClosed = invalidated && barrier && folded && sourcesFolded;
@@ -87,6 +93,38 @@ const recovered = {...cleanInput, receipts:cleanInput.receipts.flatMap(r =>
   r.lens === 'fresh-eyes' ? [fixture.receipt_catalog.r13, fixture.receipt_catalog.r14] : [r])};
 assert.deepEqual(observe(recovered), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
 assert.equal(observe({...recovered, folded:[...recovered.folded, fixture.receipt_catalog.r14.id]}).complete, true);
+
+// A rejected strengthening breaks the native clean suffix without becoming
+// mutation authority. These traces previously completed on five TOTAL cleans.
+const initial = cleanInput.receipts.filter(r => r.phase === 'initial');
+const confirmation = (n, verdict = 'clean', authority = 'strengthening') => ({
+  id:`suffix-${n}`, slot:`suffix-${n}`, phase:'confirmation', lens:'standard',
+  head:cleanInput.head, verdict,
+  ...(verdict === 'findings' ? {findings:[{authority, applicability:'current'}]} : {})
+});
+const evaluate = receipts => observe({...cleanInput, receipts, folded:receipts.map(r => r.id)});
+for (const authority of ['strengthening','preference']) {
+  const prefix = [...initial, confirmation(1), confirmation(2,'findings',authority)];
+  for (let count = 0; count <= 5; count++) {
+    const receipts = [...prefix, ...Array.from({length:count}, (_,n) => confirmation(n+3))];
+    assert.deepEqual(evaluate(receipts),
+      {mutable:count === 5, epoch_open:count !== 5, complete:count === 5, may_dispatch:false},
+      `${authority}: suffix ${count}, not cumulative clean count`);
+  }
+}
+// An auxiliary non-liability does not interrupt the standard-only suffix.
+const auxiliaryFinding = cleanInput.receipts.map(r => r.lens === 'footgun-finder'
+  ? {...r, verdict:'findings', findings:[{authority:'preference', applicability:'current'}]} : r);
+assert.equal(evaluate(auxiliaryFinding).complete, true);
+// A verdictless final confirmation remains pending, then its one fresh semantic
+// recovery can complete the existing suffix; it supplies no extra clean itself.
+const pending = [...initial, ...[1,2,3].map(n => confirmation(n)), confirmation(4,'verdictless')];
+assert.equal(evaluate(pending).complete, false);
+assert.equal(evaluate([...pending, {...confirmation(4), id:'suffix-4-recovery'}]).complete, true);
+// A material finding invalidates all credit and forbids more confirmations.
+const materialCut = [...initial, confirmation(1,'findings','entailed')];
+assert.deepEqual(evaluate(materialCut), {mutable:true, epoch_open:false, complete:false, may_dispatch:false});
+assert.throws(() => evaluate([...materialCut, confirmation(2)]), /confirmation after material finding/);
 
 // Executable finite discriminator: a guard for the observed enum case misses
 // a sum/product sibling. An independent inhabitant enumerator also prevents the
@@ -204,3 +242,4 @@ assert.throws(() => verifyDelta(before, {...correction, streaming:'new-requireme
 verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource','streaming']));
 console.log(`actuating: ${fixture.scenarios.length} receipt scenarios and finite family/path/preservation/authority discriminators passed`);
 JS
+sh "$skill_root/tests/test-composition-contract.sh"

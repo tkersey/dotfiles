@@ -1,6 +1,6 @@
 ---
 name: review-fold
-description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, a strengthening, preference, new requirement, or underdetermined. Persist only accepted entailed witnesses in the Review Fold counterexample corpus; recompute classes, families, recurrence, architecture, and closure from current evidence."
+description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, a strengthening, preference, new requirement, or underdetermined. With enclosing write authority, persist only accepted entailed witnesses in the Review Fold counterexample corpus; recompute classes, families, recurrence, architecture, and closure from current evidence."
 ---
 
 # Review Fold
@@ -17,8 +17,8 @@ current owner evidence
 + projected counterexample corpus
 + optional current elimination-claim excerpt
 -> facts, law authority, applicability, observational classes, blockers
--> accepted counterexample capture
--> no mutation or architecture authority
+-> accepted counterexample capture when authorized
+-> no implementation mutation or architecture authority
 ```
 
 `$review-fold` owns evidence classification, Goal-law relation, observational
@@ -39,6 +39,7 @@ review_fold_input:
   repository:
   base:
   current_head:
+  corpus_write_authorized: true | false # enclosing task; omitted means false
   current_elimination_claim: null | {
     law:
     family:
@@ -67,6 +68,16 @@ rows as currently applicable without re-evaluation.
 
 Read [counterexample-corpus.md](references/counterexample-corpus.md) before the
 first corpus projection or capture in a workflow.
+
+## Effect authority
+
+`corpus_write_authorized` must follow the enclosing task's actual effect scope;
+review pressure and corpus ownership cannot grant it. It is always false in
+Actuating `analyze`. Adjudication and available read-only projection remain
+permitted without capture. Do not repair bindings, provision a tool, or write a
+source-memory note to evade that boundary. Return accepted in-context evidence
+and empty `captured_ids` when writing is unauthorized; do not claim persistence
+or block unrelated analysis solely because capture was intentionally skipped.
 
 ## Minimal law
 
@@ -123,7 +134,18 @@ underdetermined
   -> blocked with authority_action: seek-authority
 ```
 
-Reviewer consensus does not manufacture entailment.
+Reviewer consensus does not manufacture entailment. Adjudication never rewrites
+an owner-issued `findings` verdict into `clean`.
+
+Preserve a judgment challenge's positive claim, earliest failed premise, and
+claim-strength consequence in the existing witness handoff. Distinguish an
+observed behavior violation from an omitted coverage path or an unsupported
+proof claim. Missing proof alone is not evidence that the behavior is false;
+it may falsify an accepted evidence or truthfulness obligation. Apply the same
+law-authority test before admission and let Actuating decide the response.
+A workflow fingerprint binds identity, not reviewer access to parent-only
+premises; preserve material evidence-access limitations in the existing horizon.
+Do not infer a new correctness liability from an unavailable premise.
 
 ## Output
 
@@ -158,6 +180,10 @@ review_fold:
       post_elimination_basis:
       witnesses:
         - observed_fact:
+          # Optional, only when the source challenges a positive judgment:
+          challenged_judgment:
+          earliest_failed_premise:
+          claim_strength_consequence:
           witness_subject:
             repository:
             git_head_or_build:
@@ -214,9 +240,10 @@ witness subject, and observed fact.
 12. If an eliminated claim is supplied, classify exact relation to its law,
     family, validity horizon, and reconsideration falsifier. Do not revoke or
     preserve the claim; Actuating owns that effect.
-13. Capture each independent witness whose current applicability is
-    `still-present` or `transformed-applicable`, law authority is `entailed`, and
-    disposition is `accepted`.
+13. When `corpus_write_authorized` is true, capture each independent witness
+    whose current applicability is `still-present` or `transformed-applicable`,
+    law authority is `entailed`, and disposition is `accepted`. Otherwise retain
+    that accepted evidence only in the current fold.
 14. Return the fold and corpus IDs directly.
 
 A clean source may return an empty `classes` list and performs no capture.

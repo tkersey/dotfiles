@@ -38,6 +38,19 @@ Actuating
 A stored row never proves that the witness remains applicable or belongs to the
 current family. Persist counterexamples; recompile their meaning.
 
+## Effect authority
+
+Capture additionally requires `corpus_write_authorized: true` from the enclosing
+task. Omitted or false authority permits available read-only projection and
+adjudication, not `ledger transact`, binding repair, provisioning, or source-memory
+writes. Actuating `analyze` always supplies false. Corpus ownership cannot grant
+these effects. A doctor-prescribed repair still needs the enclosing authority.
+
+With no write authority, retain accepted witnesses in context and return empty
+`captured_ids`; report non-persistence only when material to the handoff. This is
+not a failed adjudication or a new workflow mode. Current claims use the available
+source evidence; historical absence still needs a complete relevant horizon.
+
 ## Store and definition
 
 ```text
@@ -84,9 +97,10 @@ Use `law-history` for a focused exact-law projection and `record` for one known
 
 ## Capture after folding
 
-Capture one record for each independent witness satisfying all of:
+With enclosing write authority, capture one record for each independent witness satisfying all of:
 
 ```text
+corpus_write_authorized = true
 current applicability = still-present | transformed-applicable
 law authority = entailed
 disposition = accepted

@@ -31,6 +31,16 @@ copy/paste or default use preserves the trap
 
 If no plausible actor and action exist, classify the candidate as `not_a_footgun` even if the code looks odd.
 
+## Actuating composition
+
+Within Actuating, the checked-in [footgun review lens](../actuating/references/lenses/footgun-review.md)
+owns the lane's scope and return shape: plausible misuse that bypasses the admitted
+construction, not the full standalone affordance audit. Preserve its actor, easy
+path, reasonable belief, hidden bypass, consequence, and affected law. Return
+only that evidence; do not launch companion reviews, select mitigations, or emit
+a standalone ledger or agenda. This section takes precedence over standalone
+routing and output below only within Actuating; standalone modes are unchanged.
+
 ## Boundary with companion skills
 
 Use this skill with, but do not replace:

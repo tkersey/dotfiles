@@ -34,37 +34,18 @@ Correcting unsupported prose does not waive a required behavior.
 
 ## Construction adequacy
 
-Use the same proof obligations for local corrections and redesigned constructions:
+Apply the [common proof obligations](../SKILL.md#realization-and-common-proof-obligations)
+and their [construction argument](counterexample-guided-normalization.md) to the
+actual exact head. Those obligations govern local corrections and redesigned
+constructions alike; closure consumes their evidence rather than restating or
+weakening them. In particular, coverage is not transition preservation, sampled
+success is not universal proof, and an independent oracle is not redundant merely
+because it checks the producer's law.
 
-```text
-applicable current and retained witnesses addressed
-source-supported causal explanation and declared invalid-family domain
-required-valid behavior, observations, progress, and compatibility preserved
-preselected sibling/domain discriminator executed with its real evidence strength
-actual admission, permitted-transition preservation, and closure of sanctioned escapes
-all relevant sanctioned paths and bypasses accounted for
-proof authority and public claims bound to exact inputs and execution
-redundant primary compensation retired or justified by distinct obligations
-complete Goal-required proof inventory on the exact candidate
-```
-
-A restoration label, theorem digest, plan, green sample, or review streak cannot
-substitute for those observations. Do not classify several independent obligations
-as local merely because they share a commit or a broad causal theme.
-
-For a changed boundary, verify every applicable construction obligation using
-[counterexample-guided-normalization.md](counterexample-guided-normalization.md).
-Adequate native admission/operation evidence needs no duplicate topology report;
-explicit topology remains necessary where route or migration coverage needs it.
-Cut coverage does not establish preservation after admission. The source domain
-must not come solely from the candidate's asserted list, and a residual admitting
-the family precludes complete elimination under either proof representation.
-
-A complete domain requires an adequate construction/preservation proof or finite
-exhaustion. Generated samples and sibling probes alone remain bounded evidence.
-If proof is weaker, state the scope and residuals honestly; do not silently narrow
-accepted requirements. No independent oracle may be deleted merely for checking
-the same law as a constructor.
+Reuse current verifier evidence; an invalidated subject, assumption, domain, or
+claim requires the affected proof again. No route label, review streak, nomination,
+or digest substitutes for that evidence. Independent obligations retain their
+own authority even when one successor realizes them.
 
 ## Reviewability and completion
 

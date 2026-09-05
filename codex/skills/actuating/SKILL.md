@@ -101,8 +101,13 @@ underdetermined   seek authority; no correctness mutation from the claim
 Only current accepted witnesses authorize counterexample response. Duplicate
 observations add provenance, not independent failures. Historical absence cannot
 prove first occurrence, disjointness, or elimination under an incomplete horizon.
-Review Fold captures newly accepted independent witnesses; Actuating neither
-copies the corpus nor persists its current interpretation.
+Review Fold captures newly accepted independent witnesses only with enclosing
+corpus-write authority. Pass `corpus_write_authorized` on every handoff: true when
+that effect is authorized; `corpus_write_authorized: false` for `analyze` or absent
+authority. Read-only analysis may project and adjudicate available evidence but
+never writes repository/source-memory stores or provisions tools for capture.
+Other routes inherit their actual effect scope; supporting skills cannot expand it.
+Actuating neither copies the corpus nor persists its current interpretation.
 
 A rejected strengthening must not enter code to placate a reviewer or protect a
 clean streak. Reopen authority or remove it. Correcting an unsupported public
@@ -162,7 +167,9 @@ when the Goal or evidence makes a boundary a live semantic decision. Do not wait
 for a pre-mutation theorem-identity certificate to reconsider the mechanism.
 
 1. Bind the incumbent-independent premise basis with `$first-principles` and
-   the cumulative Review Fold. Preserve source-fixed boundaries.
+   the cumulative Review Fold. Reuse adequate derivations and re-examine only
+   premises material to this decision. Source-fixed outcomes remain chosen
+   objectives even when not derivable from technical premises. Preserve them.
 2. When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
    then `$metanoetic` verbatim in the same bounded challenger pass, before
    `$universalist`. Run once per unchanged decision surface; reuse an already
@@ -179,9 +186,11 @@ for a pre-mutation theorem-identity certificate to reconsider the mechanism.
    remains legitimate. Add no separate Glaze report or adjudication stage.
 3. Give `$universalist` one independently governed axis, one typed hole, and
    the strongest source-derived domain evidence for the seam. Require `candidate`,
-   `preserve-incumbent`, or `obstructed` with a code-bound construction argument,
+   `preserve-incumbent`, `unresolved`, or `obstructed` with a code-bound argument,
    not a second description of the Working Set. Split independent seams and prove
-   their composition. Universalist nominates; Actuating selects and proves.
+   their composition. `unresolved` preserves missing evidence or incomparability;
+   it is not a new mode, obstruction proof, or permission to pick arbitrarily.
+   Universalist nominates; Actuating selects and proves.
 4. Choose the exact-head verifier before implementation. Compile the nomination's
    actual admission, transition, coverage, preservation, migration, and residual
    obligations into the existing work. Native evidence may discharge them directly;

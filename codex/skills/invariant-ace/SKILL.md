@@ -11,6 +11,17 @@ Turn "should never happen" into "cannot happen" with minimal, high-leverage chan
 
 This skill is **discriminative**, not decorative. An invariant proposal is a claim to adjudicate, not a mandate to add checks. A property may be true, useful, or reviewer-sounding and still be the wrong invariant, wrong owner, wrong scope, wrong phase, wrong witness, or wrong boundary.
 
+## Actuating composition
+
+Within Actuating, the checked-in [invariant review lens](../actuating/references/lenses/invariant-review.md)
+owns the lane's scope and return shape. Use that evidence-only contract, not a
+second authority workflow. Return concrete invariant/transition witnesses to
+Review Fold; Actuating retains selection, implementation, proof, and closure.
+Do not launch authority fanout, emit clearance packets, or require the standalone
+Invariant Gate. This section takes precedence over the standalone modes, gates,
+output templates, and companion routing below only within Actuating. Standalone
+invocation is unchanged; no review lane or proof obligation is added or removed.
+
 ## Default mode
 
 Use **Authority-Gated v1** when invariant analysis can affect implementation, review adjudication, proof closure, validation, or downstream handoff.

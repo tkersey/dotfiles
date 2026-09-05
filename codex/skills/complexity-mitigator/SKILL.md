@@ -52,38 +52,17 @@ Handoff instead:
 7. State the recomposition rule and smallest proof signal.
 8. Return a handoff; do not implement.
 
-## Review handoff
+## Actuating composition
 
-When selected as an Actuating review lens, return only current-head evidence:
-
-```yaml
-complexity_evidence:
-  bound_head:
-  owner_boundary:
-  governing_law:
-  participating_abstractions:
-    - abstraction:
-      live_obligation:
-      status: retain | retire | collapse | delegate | replace | validate-first
-  dominated_factors: []
-  smallest_local_repair:
-  local_repair_adds_semantic_machinery: true | false
-  structural_pressure: []
-  proof_surface_before: []
-  proof_surface_after: []
-  falsifier:
-  evidence_refs: []
-```
-
-`$review-fold` may use this evidence while classifying the current review
-horizon. `$actuating` evaluates the fold against the incumbent architecture and
-its ephemeral Architecture Working Set. This lens never selects a repair,
-reopens architecture, grants mutation, or persists workflow state.
-
-If a local repair introduces a protocol, state, helper abstraction, repeated
-branch family, compatibility route, or wound-specific proof family, mark it as
-semantic growth. Actuating decides whether the incumbent remains closed under
-the obligation or architecture selection must reopen.
+Within Actuating, the checked-in [complexity review lens](../actuating/references/lenses/complexity-review.md)
+owns the lane's scope and return shape. Its focus is unnecessary correctness
+machinery and duplicate semantic ownership, not the full standalone comprehension
+preflight. Return the duplicated obligation, evidence, and implicated owner defect;
+distinguish legitimate derived guards. Do not select a repair, launch companion
+reviews, or emit a second preflight, evidence table, or proposed-repair agenda.
+Review Fold adjudicates and Actuating owns the construction decision. This section
+takes precedence over standalone workflow, routing, and output only within
+Actuating. Standalone behavior is unchanged.
 
 ## Output
 

@@ -254,12 +254,19 @@ invocation point and calls Universalist only after architecture reconsideration
 is live. Do not run a duplicate root or worker pass merely because Actuating
 will cross a boundary while realizing an already selected architecture.
 
-Return `candidate`, `preserve-incumbent`, or `obstructed` with the smallest
+Return `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed` with the smallest
 code-bound argument that changes Actuating's decision: trigger evidence, owner
 and operation, required law/observations, discriminator, and material migration,
 residual, or invalidation consequences. For counterexample-driven work, identify
 the enabling freedom removed or lawfully controlled. Reuse supplied facts and proof references. No fixed field projection
 or second Working Set report is required.
+
+Return `unresolved` when evidence is missing or adequate candidates remain
+incomparable; name that reason and the smallest available discriminator. This
+is a supporting result, not a new route or mode. Do not convert uncertainty into
+`obstructed`, preserve an unjustified incumbent, or invent a winner. Actuating
+owns any authorized experiment outside an open review epoch and blocks only the
+affected decision. Obstruction still requires the evidence specified below.
 
 An ordinary nomination can be direct: derive the receipt subject from the
 execution-owned evidence instead of accepting both independently; retire the
