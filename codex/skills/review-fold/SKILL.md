@@ -118,7 +118,7 @@ underdetermined
 Record an `entailment_basis` or `non_entailment_basis`.
 
 ```text
-entailed + current falsifier
+entailed + validated current, task-relevant falsifier
   -> accepted
 
 strengthening
@@ -146,6 +146,62 @@ law-authority test before admission and let Actuating decide the response.
 A workflow fingerprint binds identity, not reviewer access to parent-only
 premises; preserve material evidence-access limitations in the existing horizon.
 Do not infer a new correctness liability from an unavailable premise.
+
+## Counterexample admission
+
+An incoming finding is a proposed falsifier, not an established program fact.
+A CAS receipt proves what the reviewer reported about its subject, not that the
+allegation is true. Before admission, establish each witness independently:
+
+1. **Obligation.** Cite the accepted outcome, compatibility contract, invariant,
+   protocol, or mandatory verification condition and its required observation.
+   Derived obligations need a traceable basis, not a verbatim user sentence;
+   preferences and optional strengthening do not become laws through severity.
+2. **Validity.** Trace the actual candidate, caller preconditions, permitted
+   operations, environment, and observed consequence. Establish a feasible
+   violation or the exact unmet mandatory proof obligation. Use the smallest
+   decisive source trace, existing verifier result, or authorized reproduction.
+   An expected result needs authority independent of the allegation: a test that
+   merely asserts the reviewer's desired behavior is not an independent oracle.
+3. **Relevance.** Bind that evidence to the current head and accepted Goal.
+   Compare the base when delta causality matters. Neither an unchanged file nor
+   a pre-existing defect is exempt when a Goal-wide obligation applies. Historical
+   provenance alone establishes no current liability; require current applicability.
+4. **Countercase.** Inspect the strongest readily available source evidence that
+   could refute or narrow the finding: existing enforcement, actual call paths,
+   companion changes, caller obligations, mitigations, or an applicable authorized
+   exception. A named guard, opaque type, passing suite, or reviewer consensus is
+   not a defense without showing how it defeats this witness. Equally, malformed
+   input at a covered trust boundary is not out of scope merely because it is
+   invalid; safe rejection may be the obligation. A rare but demonstrated
+   violation remains real.
+
+Settle the decisive premise, then stop. An obvious source trace can suffice;
+do not require an executable reproduction, fabricate a defense, or demand proof
+that no possible bug exists. Respect enclosing effect authority and frozen-head
+rules. An unavailable or unsafe experiment leaves an evidence gap, not authority
+to mutate the candidate or invent a result. Failed reproduction alone does not
+refute a possible interleaving. Reuse an unchanged decision and its evidence;
+reconsider only when material new evidence changes it. No extra reviewer, lane,
+recursive challenge loop, mandatory report, acceptance quota, or rejection quota.
+
+Admit only the supported claim after this examination. Separate established
+validity, its consequence for a mandatory completion obligation, and any proposed
+repair. A valid witness proves neither the suggested fix nor the whole causal
+family. Validate members before grouping; one proven consequence cannot admit
+an unvalidated sibling. Preserve the original allegation when accepting a
+narrower claim. Do not manufacture a replacement finding to save a refuted one;
+a genuinely new issue needs its own evidence and provenance.
+
+Use existing dispositions: `accepted` for a validated relevant violation;
+`rejected` for a refuted, already-satisfied, unrelated, or preference-only claim;
+`follow-up` for an unrequired improvement or new requirement. Keep a material
+unknown in `unresolved_questions`; use `blocked` only for the claim or action
+whose required decision depends on it. Unknown is neither acceptance nor
+exoneration, and an unmet mandatory verification condition is not downgraded
+merely because no runtime failure was reproduced. Record the decisive evidence,
+countercase result, and any limiting premise in the existing witness handoff,
+not a second packet. An all-accepted wave is legitimate when every claim earns it.
 
 ## Output
 
@@ -179,7 +235,9 @@ review_fold:
         same-law-different-family | outside-horizon | different-law | unknown
       post_elimination_basis:
       witnesses:
-        - observed_fact:
+        - reported_claim:
+          observed_fact: # established only; omit when unresolved
+          admission_basis: # decisive evidence, countercase result, limiting premise
           # Optional, only when the source challenges a positive judgment:
           challenged_judgment:
           earliest_failed_premise:
@@ -224,13 +282,15 @@ witness subject, and observed fact.
 1. Project the repository counterexample basis and preserve its exact IDs and
    source references. An absent local store is not proof of complete history.
 2. Preserve every current and historical witness's original subject.
-3. Judge current applicability separately against the current Goal and head.
-4. Separate claim, observed fact, suggested repair, and transport status.
-5. Attribute the proposed law and classify its Goal authority.
-6. Assign disposition from authority plus current applicability.
-7. Name detection boundaries and exact owner evidence.
-8. Quotient duplicates only when law, authority, applicability, discrepancy, and
-   causal evidence agree.
+3. Separate reported claim, established fact, suggested repair, and transport
+   status; do not copy an allegation into `observed_fact` as proof of itself.
+4. Attribute the proposed law and classify its Goal authority.
+5. Apply Counterexample admission to each proposed witness, establishing validity,
+   current applicability, Goal relevance, and the decisive countercase result.
+6. Assign disposition from that evidence; keep unresolved premises explicit.
+7. Name detection boundaries and exact owner evidence supporting the disposition.
+8. Quotient only independently adjudicated witnesses whose law, authority,
+   applicability, discrepancy, and causal evidence agree.
 9. Permit one class to span owner sites when distributed ownership may be the
    defect.
 10. State the family only as a hypothesis. Distinguish predicted siblings from
@@ -241,9 +301,9 @@ witness subject, and observed fact.
     family, validity horizon, and reconsideration falsifier. Do not revoke or
     preserve the claim; Actuating owns that effect.
 13. When `corpus_write_authorized` is true, capture each independent witness
-    whose current applicability is `still-present` or `transformed-applicable`,
-    law authority is `entailed`, and disposition is `accepted`. Otherwise retain
-    that accepted evidence only in the current fold.
+    that passed Counterexample admission, whose current applicability is
+    `still-present` or `transformed-applicable`, law authority is `entailed`, and
+    disposition is `accepted`. Otherwise retain accepted evidence in context.
 14. Return the fold and corpus IDs directly.
 
 A clean source may return an empty `classes` list and performs no capture.
@@ -301,7 +361,9 @@ cannot establish current recurrence, family coverage, or a post-elimination
 falsifier.
 
 A corpus row proves only that its original witness was admitted under its
-recorded Goal and subject. Re-evaluate it before using it against current code.
+recorded Goal and subject. Re-evaluate validity and relevance before using it
+against current code; a spurious historical admission gains no current authority.
+Preserve the historical admission and provenance rather than rewriting them.
 
 ## Evidence horizon
 
@@ -384,5 +446,5 @@ current `entailed` `same-claim` falsifier.
 Return exact evidence references, corpus IDs, law-authority classifications,
 current applicability, observational classes, post-elimination relations,
 family hypotheses, sibling predictions when evidenced, recurrence status,
-evidence gaps, and unresolved questions. Actuating decides what those facts
-require.
+decisive admission or refutation evidence, evidence gaps, and unresolved
+questions. Actuating decides what those facts require.

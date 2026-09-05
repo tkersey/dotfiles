@@ -97,6 +97,13 @@ Use `law-history` for a focused exact-law projection and `record` for one known
 
 ## Capture after folding
 
+Apply [Counterexample admission](../SKILL.md#counterexample-admission) before
+capture. A structured finding or prior admission is not validation of its content.
+Use existing authority/evidence references and bounded observed facts for the
+supported claim; retain the original allegation through its source reference.
+Do not persist rejected or unresolved claims as counterexamples, or add current
+adjudication state to the immutable schema.
+
 With enclosing write authority, capture one record for each independent witness satisfying all of:
 
 ```text
@@ -104,6 +111,7 @@ corpus_write_authorized = true
 current applicability = still-present | transformed-applicable
 law authority = entailed
 disposition = accepted
+Counterexample admission established validity and current Goal relevance
 owner-issued evidence and original subject are exact
 ```
 

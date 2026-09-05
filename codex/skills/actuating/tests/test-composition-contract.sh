@@ -84,3 +84,4 @@ assert(!text('../complexity-mitigator/SKILL.md').includes('complexity_evidence:'
 assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-common-proof-obligations/);
 console.log('actuating: composition source contracts, unchanged modes, review policy, proof bar, and exact lens bytes passed');
 JS
+node "$skill_root/../review-fold/tests/test-counterexample-admission.mjs"

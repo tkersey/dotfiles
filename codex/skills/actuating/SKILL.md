@@ -98,6 +98,15 @@ new-requirement   reopen Goal authority
 underdetermined   seek authority; no correctness mutation from the claim
 ```
 
+Have Review Fold apply its [counterexample admission](../review-fold/SKILL.md#counterexample-admission)
+standard before treating a proposed finding as a current liability. Require the
+accepted obligation, validated witness or exact unmet proof obligation, current
+Goal relevance, and decisive evidence after a source-backed countercase. Consume
+only the supported claim; unresolved premises justify otherwise-authorized
+investigation, not an invented repair. Admission does not validate a suggested fix or causal family.
+This strengthens the existing fold, not the review inventory, scheduling, freeze,
+or credit rules; it adds no reviewer or separate adjudication loop.
+
 Only current accepted witnesses authorize counterexample response. Duplicate
 observations add provenance, not independent failures. Historical absence cannot
 prove first occurrence, disjointness, or elimination under an incomplete horizon.
