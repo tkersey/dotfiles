@@ -23,31 +23,26 @@ witness remains evidence even when its dedicated guard or test is superseded.
 
 ## Causal explanation and discriminator
 
-For each affected accepted law, identify the source-supported mechanism permitting
-the invalid behavior. Ask what the construction allows to vary independently
-that the law requires to agree, which transition permits invalidity, or which
-path can acquire trusted status without the canonical admission.
+For each affected accepted law, locate the first sanctioned construction or
+transition where the required guarantee is absent or lost. What can a caller,
+alias, producer, or scheduler choose independently that must instead be derived,
+owned, related, or made unavailable? Use source-supported operations, not a family
+name, as the explanation. Untrusted input may be invalid; trusted status and its
+subsequent permitted use must enforce the law.
 
-Typical mechanisms include duplicate semantic owners, caller-authored evidence,
-mutable authenticated inputs, a partial grammar used as a complete domain,
-independently supplied correlated fields, and invalid transition composition.
-These are search examples, not a mandatory taxonomy or a generic architecture.
+Choose the smallest mechanism-discriminating witness before implementation. For
+independent claim/evidence fields, vary their relationship; for an incomplete
+grammar, vary its relevant production; for aliasing or temporal failure, start
+with valid admitted state and execute the write, retry, ordering, or composition
+that loses the guarantee. These are examples, not a required taxonomy or quota.
+The resulting construction should exclude the predicted sibling without another
+production special case. Samples test the explanation, not universal coverage.
 
-Use the complete applicable basis, not one repair per observation. Same file,
-reviewer, or broad law does not establish a causal family. Independent obligations
-retain separate authority and proof even when realized in one successor.
-
-Before implementing, choose a discriminating sibling partition or source-derived
-domain and state why the cause predicts it. For example, a missing empty-enum
-case raises the typed owner's zero-cardinality algebra; an omitted module edge
-raises grammar coverage; forged receipt fields raise the independence of claim
-and evidence. The family is not the list of examples already seen.
-
-Use the smallest useful discriminator. A wrong argument shape before any semantic
-input is consumed may need only the existing call contract, a reproduction, and
-its valid counterpart. Do not invent siblings or force a new abstraction for a
-mechanical correction. When prediction is unsupported, retain that limitation
-and investigate rather than manufacturing an exhaustive family.
+Combine applicable current and retained evidence. Same file, reviewer, or broad
+law does not establish a causal family, and independent obligations retain their
+authority and proof. When the existing owner is adequate, a reproduction, valid
+counterpart, and correction of that owner's operation may suffice. Do not invent
+a new abstraction for a mechanical defect or manufacture unsupported predictions.
 
 ## Consistency preflight
 
@@ -86,96 +81,68 @@ owns the full law and the actual edit restores its implementation. A representat
 change is appropriate when it removes a cause that local checks preserve. Both
 face the common candidate-proof obligations below.
 
-## Source-derived admission topology
+## Construction argument and source-derived coverage
 
-Select the strongest repository-native authority for the affected seam:
+Use the strongest adequate native evidence for the affected seam: closed types
+and their construction/operation surface, compiler IR, schemas, exports, build or
+route registries, reachability, or generated producer/codec inventories. Bind the
+exact subject, domain, assumptions, strength, and falsifier. A candidate-authored
+path list cannot establish its own completeness. Unknown dynamic paths require
+an explicit bound or residual, not silent omission.
 
-```text
-closed type or enum reflection
-compiler IR or schema traversal
-public export inventory
-build or route registry
-actual component/control-graph reachability
-generated producer, codec, adapter, or compatibility inventory
-```
+For an invariant-style safety law, establish that admitted starting states satisfy
+the invariant, every permitted observable transition preserves it, and the invariant
+implies the law. Check ownership/lifetime and sanctioned escapes. An intrinsic
+carrier, admitted refinement, or encapsulated transition can enforce the law;
+its name cannot. Transient invalidity must remain unobservable outside its owner.
+Unique identity or an explicit equivalence must be respected by trusted operations.
+Required progress, ordering, external effects, and other trace obligations are not
+proved merely by a state invariant or by refusing every operation.
 
-Derive predecessor topology `T0` with exact subject, derivation, evidence strength,
-assumptions, and falsifier. There is no universal analyzer. A handwritten path
-list or review inventory cannot establish its own completeness. Unknown dynamic
-paths require an explicit bound or residual, not silent omission.
+A closed native surface may discharge coverage directly: establish all public
+construction and operation paths, lawful transitions, and the absence of writable
+aliases or unchecked trusted mints. Include codecs, recovery, compatibility, unsafe
+operations, and foreign interfaces when present. Opacity or a successful build
+alone does not establish those facts. Reuse an adequate native proof rather than
+redescribing it as a graph, transformation, and disposition table.
 
-Use a graph or generated relation rather than enumerating all execution traces.
-The predecessor domain is an accounting basis, not a requirement to preserve every
-incumbent path. Existing adequate derivations may be reused and rerun on the exact
-candidate; a local fix does not require inventing another topology artifact.
-
-## Admitted semantic carrier
-
-Use the strongest honest locus available in the repository:
-
-```text
-intrinsic carrier: every trusted inhabitant satisfies the law
-admitted refinement: only checked or proved values acquire trusted status
-encapsulated transition: transient invalidity cannot escape the owning boundary
-```
-
-The carrier may be an opaque value, checked constructor, resolved graph, schema,
-normalized IR, capability, or state machine. Establish constructor admission,
-transition preservation, ownership/lifetime, and bypass closure. Declare either
-unique canonical identity or an explicit equivalence respected by trusted
-operations and observations. A name or copied validation predicate proves none
-of this.
-
-A common causal correction is to derive correlated facts from their owner rather
-than accept them independently. Derive release claims from exact executed evidence;
-derive physical requirements from the storage owner; consume owned admitted bytes
-rather than repeatedly trusting mutable pathnames. Preserve the actual trust
-boundary: the constructor, executor, and derivation still require verification.
-
-## Source-derived factorization closure
-
-When a boundary is a live semantic decision, pass `$universalist` one axis, one
-typed hole, and `T0`. Compile its complete nomination into the existing Working Set:
+When native evidence does not otherwise establish route or migration coverage,
+use explicit topology reconciliation. Derive predecessor `T0` from source, give
+Universalist that domain with one live axis and typed hole, and select the verifier
+before implementation. On the actual successor derive `T1` independently of the
+candidate's asserted list and establish:
 
 ```text
-K    canonical cut
-tau  topology transformation accounting for every relevant predecessor element
-F    disposition law over the actual successor topology
-T1   independently re-derived topology of the exact realized successor
-```
-
-Select the verifier before implementation; run it after the candidate exists.
-For the declared domain, prove:
-
-```text
-T1 = tau(T0)
-domain(F) = T1
-every relevant successor element has exactly one disposition
-every factorized producer-to-trusted-consumer route crosses K
-retirements and privatizations in tau hold in the actual public/trusted surface
-derived adapters delegate to K rather than reimplement its law
+T1 = tau(T0)                         predecessor-to-successor accounting
+domain(F) = T1                      one disposition per actual successor element
+every factorized trusted route crosses the law-preserving cut K
+retirements and privatizations declared by tau hold in the actual surface
+adapters delegate to the owner instead of reimplementing its law
 residuals have owners, failure behavior, invalidators, and claim consequences
-no actual successor element is omitted and no surviving contract element is invented
 ```
 
-Retired predecessor paths are accounted for by `tau`, not required to exist in
-`T1`. An owned residual does not prove family elimination on that residual route.
-A complete exclusion claim permits no residual that still admits its family.
+Account for retired predecessors through `tau`, not by requiring them in `T1`.
+Use a graph or generated relation, not enumeration of all execution traces. Cut
+coverage establishes passage through the owner; it does not prove preservation
+afterward. An admitted value with a mutable external alias can pass the cut and
+still violate the invariant at consumption.
 
-The verifier must derive its domain independently of the candidate's asserted
-list. Adding a sanctioned producer, edge, consumer, or bypass without a disposition
-must invalidate coverage. If the derivation itself misses a sanctioned path, its
-coverage claim is revoked immediately; adding the latest omission to a handwritten
-list does not re-establish it.
+Both proof representations must cover every relevant sanctioned path, migration,
+retirement, and residual. Newly unaccounted source elements invalidate coverage;
+the verifier must not accept a candidate-authored list as its verification domain.
+A missing path revokes the coverage claim, and appending its name to a list does
+not re-establish completeness. An owned residual still admitting the family
+precludes complete elimination of that family.
 
-Finite domains may be established by exhaustive enumeration or an adequate proof.
-An open domain needs a justified generator and preservation argument for a complete
-claim. Otherwise use the explicit bounded domain and owned residuals. Passing
-sibling probes or a generated sample does not become a universal proof.
+Finite domains need exhaustive coverage or adequate proof. Complete open-domain
+claims need a justified generator and preservation argument. Otherwise state the
+bounded domain and residuals. A generated sample or repaired sibling is not a
+universal proof. Choose and execute the native verifier on the actual candidate;
+a proposed argument or nomination is not executed evidence.
 
 ## Producer migration and compensator retirement
 
-Each affected predecessor element is migrated through the cut, retired, privatized,
+Each affected predecessor element is migrated through the owner, retired, privatized,
 turned into a derived adapter, or explicitly residual. Prove required-valid
 observational preservation, including identity, ordering, custody, errors,
 serialization, and composition. Where compatibility is reversible, prove its
@@ -198,7 +165,7 @@ label. A false code-to-claim binding invalidates evidence regardless of test sta
 
 If discovery exposes an owner, carrier, interpretation, proof-domain, or topology
 change not considered during selection, reopen that affected architecture decision
-and satisfy its full nomination and proof obligations before review or Ship.
+and satisfy its applicable construction obligations before review or Ship.
 Do not merely relabel a finished patch. The simplest adequate existing construction
 may still win; novelty is not required.
 
@@ -219,6 +186,8 @@ Raw counterexample counts across changed heads are not a progress metric. Use
 existing session audits or matched-snapshot offline replays; keep later witnesses
 hidden from the implementing run when measuring held-out generalization. Compare
 proof strength, retained obligations, recurrence, semantic owners, and cost.
+Include independent-truth, temporal/composition, and genuinely local defects in
+matched replays: a policy that redesigns every case has not improved selection.
 Do not call policy unit tests a controlled model-efficacy experiment.
 
 Narrow or delete these instructions if they add narration without changing the

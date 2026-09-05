@@ -1,5 +1,5 @@
 {
-  "schema": "actuating-semantic-hotspot-scenarios/v4",
+  "schema": "actuating-semantic-hotspot-scenarios/v5",
   "defaults": {
     "witness_subject_recorded": true,
     "applicability_subject_recorded": true,
@@ -24,7 +24,6 @@
     "metanoetic_run": false,
     "architectonic_disposition": "not-needed",
     "architecture_reveals_better_theory": false,
-    "co_refinement_used": false,
     "ordinary_interpretation_adequacy": "sound",
     "selected_interpretation_adequacy": "sound",
     "interpretation_adequacy_strength": "bounded",
@@ -346,12 +345,11 @@
       "inputs": {
         "architecture_claim_falsified": true,
         "architecture_reveals_better_theory": true,
-        "co_refinement_used": true,
         "architectonic_disposition": "replace"
       },
       "expected": {
         "class_disposition": "candidate",
-        "theory_disposition": "co-refined",
+        "theory_disposition": "adjudicated",
         "frontier_shape": "single",
         "architecture_disposition": "reopen",
         "hotspot_disposition": "architectural"
@@ -361,7 +359,7 @@
       "id": "architecture-theory-delta-unadjudicated",
       "inputs": {
         "architecture_reveals_better_theory": true,
-        "architectonic_disposition": "replace"
+        "architectonic_disposition": "unresolved"
       },
       "expected": {
         "class_disposition": "candidate",
@@ -491,6 +489,20 @@
         "frontier_shape": "single",
         "architecture_disposition": "blocked",
         "hotspot_disposition": "unresolved"
+      }
+    },
+    {
+      "id": "architecture-theory-delta-splits-independent-seams",
+      "inputs": {
+        "architecture_reveals_better_theory": true,
+        "architectonic_disposition": "split"
+      },
+      "expected": {
+        "class_disposition": "candidate",
+        "theory_disposition": "split",
+        "frontier_shape": "single",
+        "architecture_disposition": "split",
+        "hotspot_disposition": "false-hotspot"
       }
     }
   ]

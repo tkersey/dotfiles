@@ -21,7 +21,9 @@ Localize the supported failure: authority/applicability, family interpretation,
 source domain, owner/cut, carrier, transitions, factorization, bypass, preservation,
 realization, proof, artifact binding, or claim scope. Re-evaluate applicable prior
 witnesses and choose a discriminator that tests the proposed explanation rather
-than merely replaying the newest example.
+than merely replaying the newest example. Locate the first loss of guarantee;
+when a permitted transition invalidates admitted state, discriminate that operation
+or interleaving rather than adding another malformed-input example.
 
 A design may survive an implementation error. That is a hypothesis about an
 existing adequate mechanism, not retention of the old elimination claim and not
@@ -29,7 +31,8 @@ proof of a nonexistent successor. Restore it directly when source evidence suppo
 that candidate; replace it when the cause requires a different construction.
 Do not require a local attempt first or manufacture pre-mutation theorem equality.
 
-A sanctioned path absent from the topology basis falsifies that basis immediately.
+A sanctioned path absent from either native or explicit-topology coverage
+falsifies that coverage claim immediately.
 A missing assertion can be local only when the independent domain and mechanism
 already account for the relevant behavior. If the domain, proof authority, or
 carrier changes, satisfy the changed construction's full proof obligations.

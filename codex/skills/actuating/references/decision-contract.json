@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v11"
+      "source_fingerprint": "actuating-construction-compiler-v12"
     },
     "triggers": [
       {
@@ -240,25 +240,27 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "cumulative current and applicable historical basis",
-          "source-supported enabling cause and invalid-family domain",
+          "source-supported first loss of guarantee, enabling operation, and invalid-family domain",
           "required-valid boundary",
-          "pre-implementation sibling or source-domain discriminator",
+          "pre-implementation mechanism-discriminating operation or source-domain witness",
           "selected adequate mechanism and falsifier",
           "actual exact-head proof and compensator dispositions"
         ],
         "success_signals": [
-          "selection targets family exclusion rather than preservation of the incumbent",
+          "selection removes, derives, or lawfully controls the enabling independent choice rather than preserving the incumbent",
           "a local correction may restore an adequate family mechanism without forced redesign",
           "a mechanism change may win without disproving every possible local repair",
-          "plausible subtractive alternatives are tested when redundancy is evidenced"
+          "plausible subtractive alternatives are tested when redundancy is evidenced",
+          "admission, permitted-transition preservation, law implication, and escape closure are distinguished; required progress survives"
         ],
         "failure_signals": [
           "one special case per finding",
           "mandatory local-repair-first or refactor-everything default",
           "restoration label bypasses family or path proof",
-          "hypothesized family or sampled siblings called universal proof"
+          "hypothesized family or sampled siblings called universal proof",
+          "cut passage or a checked constructor is credited as preservation under later permitted operations"
         ],
-        "rationale": "Learn a cause, predict beyond observed examples, and prove the realized construction."
+        "rationale": "A causal explanation directs an operation-level change and a discriminating test, not another report."
       },
       {
         "clause_id": "ACT-METANOETIC-ADMISSIBILITY-001",
@@ -312,27 +314,26 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "live independently governed axis and typed hole",
-          "source-derived predecessor topology T0",
-          "complete candidate, preserve-incumbent, or obstructed nomination",
-          "cut K, topology transformation tau, total disposition law F",
-          "verifier selected before implementation and executed on actual T1",
-          "T1 = tau(T0)",
-          "domain(F) = T1",
-          "preservation, cut coverage, residuals, and claim ceiling"
+          "source-derived domain evidence and compact code-bound nomination",
+          "verifier selected before implementation and executed on the actual exact head",
+          "admission, transition, coverage, preservation, migration, retirement, residuals, and claim ceiling",
+          "T0, K, tau, F, and independently derived T1 when native evidence cannot otherwise establish route or migration coverage",
+          "total interpretation, violation reflection, exclusion, and preservation when a candidate changes the comparison domain or its abstraction"
         ],
         "success_signals": [
           "source authority determines the domain instead of a model-authored list",
           "independent seams are split and recomposed with proof",
-          "new undispositioned source elements invalidate closure",
-          "adequate existing derivations are reused for unchanged boundaries"
+          "new unaccounted sanctioned source elements invalidate coverage under either proof representation",
+          "adequate native evidence discharges obligations without duplicate topology or Working Set reports"
         ],
         "failure_signals": [
-          "prose nomination substitutes for complete realization",
-          "a local label waives a changed boundary contract",
+          "compact nomination substitutes for executed construction proof",
+          "an ordinary or restoration label waives applicable changed-boundary obligations",
+          "native proof assumed from opacity or a passing build without coverage and transition evidence",
           "retired predecessor paths are required to exist in T1",
           "bounded evidence silently becomes elimination"
         ],
-        "rationale": "Universalist nominates the boundary; Actuating proves actual source-derived realization."
+        "rationale": "Preserve every construction obligation, not one mandatory representation of its proof."
       },
       {
         "clause_id": "ACT-REVIEW-EVIDENCE-001",
@@ -379,7 +380,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "actual exact-head construction proof under a common bar",
-          "complete changed-boundary contract when applicable",
+          "all applicable changed-boundary construction obligations",
           "authority-complete semantic diff",
           "complete Goal proof inventory",
           "Ship/provider and CAS convergence when required"

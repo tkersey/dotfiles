@@ -12,9 +12,9 @@ obligation is unproved, expired, moved, duplicated, invalid, or outweighed by
 their change tax. Recommend a smaller normal form while preserving essential
 truth.
 
-Inside Actuating, return one compact challenge for the current candidate. The
-ephemeral Architecture Working Set carries Actuating's adjudication. Reduce
-never selects architecture or grants mutation.
+Inside Actuating, return only a material challenge to the current construction;
+no challenge needs no report. Actuating adjudicates in its active Working Set.
+Reduce never selects architecture or grants mutation.
 
 ## Doctrine
 
@@ -114,6 +114,9 @@ proved. Preserve required derived, compatibility, and observability behavior.
 
 ## Workflow
 
+For standalone audits. Inside Actuating use the composition below directly,
+applying relevant rules without a duplicate audit table or verdict template.
+
 1. Map the relevant layers, lower primitives, public/wire/storage boundaries,
    proof surfaces, invariants, invalid states, escape paths, and owner set.
 2. Trace at least one real request, change, or command through each major
@@ -147,41 +150,33 @@ proved. Preserve required derived, compatibility, and observability behavior.
 
 ## Actuating composition
 
-Return exactly:
+Reuse Actuating's exact candidate, source evidence, and accepted obligations.
+Return only a factor whose obligation is discharged, an independently maintained
+truth that can become derived, or a concrete smaller adequate construction that
+could change selection. Name the affected code and enforcement role, the proposed
+delete/derive/replace operation, preserved obligations, and the decisive evidence
+or falsifier. Report material incomparability, an essential-shape gap, or missing
+proof rather than manufacturing a smaller winner. No material challenge means
+silence, not a `minimal` report or an additional audit.
 
-```text
-Reduction Challenge
-Bound head:
-Candidate:
-Family predicate and claim strength, when applicable:
-Disputable factors:
-Enforcement-site classifications:
-Invalid-region comparison and evidence strength:
-Admission and escape-path comparison:
-Compensating detection movement:
-Derived guards preserved:
-Owner- or cut-level alternative:
-Verdict: minimal | dominated | incomparable | essential-shape-gap | blocked
-Smaller admissible candidate:
-Obligations preserved:
-Recomposition proof or falsifier:
-```
+Merely moving detection while leaving the same invalid state, transition, or
+escape admissible is not constructional improvement. Preserve derived trust-boundary,
+compatibility, and observability guards unless their distinct obligations are
+discharged. Unknown ownership is not deletion authority. Never remove an independent
+oracle merely because it checks the same law as the producer.
 
-Mark `Compensating detection movement: yes` when a candidate merely changes
-where invalidity is noticed while leaving the same state, trace, owner dilution,
-or sanctioned escape path admissible.
-
-This is supporting analysis, not an artifact or selection. Use
-[reduction-certificate.md](references/reduction-certificate.md) only for a
-standalone audit, explicitly requested certificate, or handoff that must remain
-independently durable outside the active Actuating run.
+This is supporting analysis, not a selection or durable artifact. Use
+[reduction-certificate.md](references/reduction-certificate.md) only for a standalone
+audit, explicitly requested certificate, or independently durable handoff outside
+Actuating. Do not call Universalist or reopen architecture; return a material gap
+to Actuating.
 
 ## Implementation mode
 
 When explicitly asked to implement:
 
-1. Hand the Reduction Challenge to Actuating.
-2. Actuating updates its ephemeral Architecture Working Set and binds it to the
+1. Hand the material construction challenge to Actuating.
+2. Actuating updates its ephemeral Working Set and binds it to the
    exact current Git head.
 3. Implement one coherent reduction seam.
 4. Preserve the old surface until the selected proof relation passes unless

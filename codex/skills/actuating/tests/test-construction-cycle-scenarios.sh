@@ -49,7 +49,7 @@ function observe(i) {
   const sourcesFolded = i.sources.every(s => s.status !== 'unfolded');
   const completionSources = i.sources.every(s => !s.required || ['folded', 'non-current'].includes(s.status));
   const cleanStandards = invalidated ? 0 : last.filter(r => r.lens === 'standard' && r.verdict === 'clean').length;
-  const converged = barrier && !invalidated && sourcesFolded &&
+  const converged = barrier && !invalidated && folded && sourcesFolded &&
     cleanStandards >= policy.standard_convergence.required_consecutive_clean_attempts;
   const cutClosed = invalidated && barrier && folded && sourcesFolded;
   const open = i.receipts.length > 0 && !(cutClosed || converged);
@@ -71,6 +71,22 @@ for (const c of fixture.scenarios) {
   if (c.expected === 'invalid-or-blocked') assert.throws(() => observe(input), undefined, c.id);
   else assert.deepEqual(observe(input), c.expected, c.id);
 }
+
+// Each terminal outcome is necessary, not just a nonempty fold or a standard-only
+// fold. The same condition protects both completion and the frozen epoch.
+const cleanCase = fixture.scenarios.find(c => c.id === 'five-standard-cleans-and-all-auxiliaries-complete');
+assert(cleanCase);
+const cleanInput = {...fixture.defaults, ...cleanCase.input};
+cleanInput.receipts = cleanInput.receipts.map(ref => fixture.receipt_catalog[ref]);
+for (const receipt of cleanInput.receipts) {
+  assert.deepEqual(observe({...cleanInput, folded:cleanInput.folded.filter(id => id !== receipt.id)}),
+    {mutable:false, epoch_open:true, complete:false, may_dispatch:false}, `unfolded ${receipt.id}`);
+}
+// A folded verdictless predecessor cannot stand in for its recovered outcome.
+const recovered = {...cleanInput, receipts:cleanInput.receipts.flatMap(r =>
+  r.lens === 'fresh-eyes' ? [fixture.receipt_catalog.r13, fixture.receipt_catalog.r14] : [r])};
+assert.deepEqual(observe(recovered), {mutable:false, epoch_open:true, complete:false, may_dispatch:false});
+assert.equal(observe({...recovered, folded:[...recovered.folded, fixture.receipt_catalog.r14.id]}).complete, true);
 
 // Executable finite discriminator: a guard for the observed enum case misses
 // a sum/product sibling. An independent inhabitant enumerator also prevents the
@@ -126,6 +142,55 @@ const bypass = {...graph,alternate:['consume']};
 assert.throws(() => verifyCut(bypass,dispositions,'admit',['producer','alternate'],'consume'), /omitted/);
 assert.throws(() => verifyCut(bypass,{...dispositions,alternate:'factor-through'},'admit',['producer','alternate'],'consume'), /around cut/);
 verifyCut({...graph,alternate:['admit']},{...dispositions,alternate:'factor-through'},'admit',['producer','alternate'],'consume');
+// A covered admission path can still lose its guarantee through a writable
+// alias. These concrete scalar-range constructions test that distinction, not
+// model effectiveness or a universal theorem about JavaScript objects.
+const temporalGraph = {producer:['admit'], admit:['mutate'], mutate:['consume'], consume:[]};
+verifyCut(temporalGraph,
+  {producer:'factor-through', admit:'owner', mutate:'transition', consume:'consumer'},
+  'admit', ['producer'], 'consume');
+const validRange = r => Number.isSafeInteger(r.bounds.start) && Number.isSafeInteger(r.bounds.end) &&
+  r.bounds.start <= r.bounds.end && r.length === r.bounds.end - r.bounds.start;
+const rawRange = (start,end) => ({bounds:{start,end}, length:end-start});
+const admitAlias = raw => { assert(validRange(raw)); return raw; };
+const raw = rawRange(1,3), admittedAlias = admitAlias(raw);
+assert(validRange(admittedAlias));
+raw.bounds.end = 4; // valid bounds, but the admitted length is now stale
+assert(!validRange(admittedAlias));
+const shallowRaw = rawRange(1,3), shallow = Object.freeze({...admitAlias(shallowRaw)});
+shallowRaw.bounds.start = 0; // freezing only the wrapper keeps the same cause
+assert(!validRange(shallow));
+
+// Own the admitted scalar snapshot and derive the correlated fact. No generic
+// deep-freeze helper, repeated consumer validation, or caller-authored length.
+function admitOwned(raw) {
+  const {start,end} = raw.bounds;
+  assert(Number.isSafeInteger(start) && Number.isSafeInteger(end) && start <= end);
+  assert(Number.isSafeInteger(end-start));
+  return Object.freeze({bounds:Object.freeze({start,end}), length:end-start});
+}
+const observeRange = r => [r.bounds.start, r.bounds.end, r.length];
+const shiftRange = (r,delta) => admitOwned({bounds:{start:r.bounds.start+delta, end:r.bounds.end+delta}});
+for (const [start,end] of [[0,0],[0,2],[1,3]]) {
+  const source = rawRange(start,end), owned = admitOwned(source);
+  assert.deepEqual(observeRange(owned), [start,end,end-start]); // required-valid observations
+  assert.deepEqual(observeRange(admitOwned({...source, length:999})), observeRange(owned));
+  source.bounds.end += 1;
+  source.bounds.start -= 1; // a sibling operation, not another production case
+  source.length = -1;
+  assert(validRange(owned));
+  assert.deepEqual(observeRange(owned), [start,end,end-start]);
+  assert.throws(() => { owned.bounds.end += 1; }, TypeError);
+  assert.throws(() => { owned.length = -1; }, TypeError);
+  for (const delta of [-1,0,1]) {
+    const shifted = shiftRange(owned,delta);
+    assert(validRange(shifted));
+    assert.deepEqual(observeRange(shifted), [start+delta,end+delta,end-start]);
+  }
+}
+assert.throws(() => admitOwned({bounds:{start:2,end:1}}));
+assert.throws(() => admitOwned({bounds:{start:NaN,end:1}}));
+
 // A rejected review strengthening cannot ride along with an authorized repair.
 // Compare actual field deltas, not a batch's preferred response label.
 function verifyDelta(before, after, authority) {
@@ -137,5 +202,5 @@ const correction = {evidenceSource:'executor', streaming:'unchanged'};
 verifyDelta(before, correction, new Set(['evidenceSource']));
 assert.throws(() => verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource'])), /unauthorized/);
 verifyDelta(before, {...correction, streaming:'new-requirement'}, new Set(['evidenceSource','streaming']));
-console.log(`actuating: ${fixture.scenarios.length} receipt scenarios and finite family/path/authority discriminators passed`);
+console.log(`actuating: ${fixture.scenarios.length} receipt scenarios and finite family/path/preservation/authority discriminators passed`);
 JS

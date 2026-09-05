@@ -1,6 +1,6 @@
 {
-  "schema": "actuating-review-contract/v16",
-  "contract_id": "actuating-review-contract-v18",
+  "schema": "actuating-review-contract/v17",
+  "contract_id": "actuating-review-contract-v19",
   "required_lenses": [
     {
       "name": "standard",
@@ -160,18 +160,20 @@
     "live_boundary_not_route_label_triggers_universalist": true,
     "plausible_subtractive_comparison_when_redundancy_evidenced": true,
     "two_complete_implementations_required": false,
-    "source_size_only_after_constructional_adequacy": true
+    "source_size_only_after_constructional_adequacy": true,
+    "causal_target": "first sanctioned construction or transition lacking the required guarantee",
+    "discriminator_target": "the enabling independent choice, write, ordering, or authority; a valid-state transition when implicated"
   },
   "candidate_acceptance": {
     "actual_exact_head_required": true,
     "common_obligations": [
       "accepted authority",
       "current and applicable historical witnesses",
-      "required-valid behavior and observations",
+      "required-valid behavior and observations, including required progress and trace behavior",
       "causal family at declared strength",
       "preselected discriminator result or explicit limitation",
       "supported source-domain and sanctioned-path coverage",
-      "law-bearing admission and transitions",
+      "law-bearing admission, permitted-operation preservation, and closure of sanctioned escapes",
       "proof authority and claim scope",
       "semantic-diff authority",
       "compensator retirement or distinct obligation",
@@ -235,11 +237,9 @@
   "universalist_compilation": {
     "owner": "actuating",
     "one_axis_and_typed_hole_per_invocation": true,
-    "topology_domain_owner": "actuating",
+    "source_domain_owner": "actuating",
     "strongest_repository_native_authority_required": true,
-    "predecessor_topology_identity_required": true,
     "model_authored_path_list_exhaustive_forbidden": true,
-    "predecessor_topology_passed_to_universalist": true,
     "allowed_nomination_results": [
       "candidate",
       "preserve-incumbent",
@@ -247,46 +247,45 @@
     ],
     "independently_governed_axes_require_split": true,
     "boundary_contract_compiled_before_selection": true,
-    "complete_actuating_projection_required": true,
-    "total_topology_transformation_required": true,
-    "total_disposition_law_required": true,
-    "allowed_element_dispositions": [
-      "factor-through",
-      "retire",
-      "privatize",
-      "derived-adapter",
-      "residual"
-    ],
-    "aggregate_outcomes_not_element_dispositions": [
-      "contained",
-      "obstructed"
-    ],
+    "nomination": "compact code-bound construction argument; reuse supplied facts instead of a fixed projection",
     "required_obligation_classes": [
       "owner",
       "required observations",
       "law",
       "falsifier",
-      "transition",
+      "admission and transition preservation",
+      "source-derived sanctioned-path coverage",
+      "migration and retirement",
       "residual obligations",
       "invalidators",
-      "claim strength",
-      "source-derived predecessor topology",
-      "canonical admission cut",
-      "topology transformation",
-      "total disposition law",
-      "trusted consumers",
-      "composition edges",
-      "bypasses"
+      "claim strength"
     ],
+    "native_coverage": "adequate closed construction/operation evidence may discharge coverage directly; opacity or a passing build alone is insufficient",
+    "explicit_topology": {
+      "when": "native evidence cannot otherwise establish route or migration coverage",
+      "required_relations": [
+        "T1 = tau(T0)",
+        "domain(F) = T1",
+        "every factorized trusted route crosses K"
+      ],
+      "allowed_element_dispositions": [
+        "factor-through",
+        "retire",
+        "privatize",
+        "derived-adapter",
+        "residual"
+      ],
+      "source_domains": "derive T0 and actual exact-head T1 independently of the candidate asserted list",
+      "migration": "prove retirements, privatizations, adapter delegation, and owned residual consequences"
+    },
+    "interpretation_obligations": "when a candidate changes the comparison domain, quotients distinctions, or conservatively approximates behavior, justify total interpretation, violation reflection, exclusion, and required-valid observation preservation",
     "claim_strength_may_not_increase": true,
     "factorization_closure_verifier_selected_before_mutation": true,
-    "exact_head_topology_rederivation_required_before_reviewable": true,
-    "topology_transformation_equality_required": true,
-    "factorization_domain_equality_required": true,
+    "exact_head_source_coverage_required_before_reviewable": true,
     "factorized_routes_cross_cut_or_owned_residual_required": true,
     "open_domain_generator_and_preservation_required_for_complete_claim": true,
     "self_authored_omission_list_sufficient": false,
-    "prose_only_nomination_forbidden": true,
+    "nomination_is_executed_proof": false,
     "ephemeral_working_set_only": true
   },
   "owner_source_frontier": {

@@ -46,44 +46,48 @@ of a previously proposed restoration label.
 
 ## Nomination and realization
 
-1. Derive `T0` from the strongest repository-native authority for the live seam;
-   bind the exact head, derivation, domain, strength, assumptions, and falsifier.
-2. Give Universalist one independently governed axis, one typed hole, and `T0`.
-   Require `candidate`, `preserve-incumbent`, or `obstructed` and its complete
-   Actuating projection. Split independent seams; prove composition explicitly.
-3. Compile owners, observations, laws, falsifiers, transitions, residual obligations,
-   invalidators, claim ceiling, cut `K`, transformation `tau`, and disposition `F`
-   into ordinary realization obligations. Do not create another packet.
-4. Choose a repository-native verifier for the candidate's actual source domain.
-   Selection names intended proof; it is not an executed successor proof.
-5. Ask `$reduce` which current owners, mirrors, guards, and proof helpers become
-   redundant. Prefer family exclusion and canonical ownership to preserving the
-   incumbent or minimizing the diff. Test plausible subtractive alternatives only
-   where evidence makes the comparison useful.
-6. Realize the selected mechanism and all migration/retirement obligations. Then
-   derive `T1` from the exact candidate and prove `T1 = tau(T0)`, `domain(F) = T1`,
-   cut coverage, required-valid preservation, and explicit residual consequences.
-   Account for retired predecessors through `tau`; prove surviving successors
-   against `F`. No path list proves its own completeness.
+Give Universalist one live independently governed axis, one typed hole, the
+Goal's construction obligation or source-supported loss of guarantee, required
+observations, and available source-domain evidence. Require `candidate`, `preserve-incumbent`, or `obstructed`
+with the proposed construction or reason to preserve the owner, its discriminator,
+preservation obligations, and material migration or residual consequences. This replaces a duplicate
+Working Set projection, not its semantic obligations. Split independent seams
+and prove composition.
 
-A source-derived finite domain or justified generator/preservation argument is
-required for complete factorization. Otherwise retain an honest authorized bound.
-Reuse existing adequate derivations instead of inventing a universal analyzer.
+Actuating adjudicates any proposed causal or interpretation change against the
+same accepted law and required-valid behavior. A candidate that changes the
+comparison domain, quotients distinctions, or conservatively approximates it
+must justify total interpretation, violation reflection, exclusion, and observation
+preservation. An ordinary candidate need not manufacture those transformations.
+
+Choose the repository-native verifier before implementation. Adequate native
+construction/operation evidence may discharge coverage directly. Use explicit
+`T0`, `K`, `tau`, `F`, and independently derived `T1` when route or migration
+coverage needs that accounting, following
+[counterexample-guided-normalization.md](counterexample-guided-normalization.md).
+Neither a compact nomination nor an ordinary label waives admission, transition,
+coverage, preservation, retirement, or residual proof.
+
+Ask Reduce only for material retirement or smaller-construction challenges;
+reuse the candidate and evidence instead of requesting another audit table.
+Realize the selected mechanism, migrations, and retirements together. Verify the
+actual exact-head construction, not the nomination's intended result.
 
 ## Acceptance
 
 A local correction and a redesigned carrier face the same accepted law, family,
 required-valid behavior, and path-coverage obligations. Reuse adequate proof; do
-not waive it through a route label. Verify any changed boundary's full nomination.
+not waive it through a route label. Verify every applicable obligation of the
+changed boundary.
 
-A source-topology omission revokes coverage immediately. An exact same-claim
-successor finding reopens the causal explanation; do not append named-member
+A sanctioned path omitted from either coverage basis revokes that claim
+immediately. An exact same-claim successor finding reopens the causal explanation; do not append named-member
 guards or reset recurrence through a new label. Preserve material incomparability
 and return a bounded obstruction when evidence cannot choose an adequate candidate.
 
 Git and executed verifiers own the result. Actuating retains only the current
-Working Set: Goal/head, causal basis/discriminator, selected mechanism, topology
-and nomination references, actual proof, retirement, residuals, and falsifier.
+Working Set: Goal/head, causal basis/discriminator, selected mechanism, source-domain
+evidence, actual proof, retirement, residuals, and falsifier.
 No architecture registry, theorem-equality certificate, or transition gate.
 
 Evaluate the pairing through existing offline matched-snapshot audits against

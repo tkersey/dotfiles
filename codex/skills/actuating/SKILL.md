@@ -126,40 +126,34 @@ Fold it and already-live required owner observations; do not launch another
 auxiliary wave on the invalidated head. A clean epoch closes after convergence.
 Outside an open review epoch, review is not a prerequisite for implementation.
 
-## Compile the cause, not a repair label
+## Compile the first loss of guarantee
 
 Read [counterexample-guided-normalization.md](references/counterexample-guided-normalization.md).
-For each affected law, combine all applicable current and retained evidence.
-Localize the earliest supported failure and identify the mechanism permitting it:
-independent sources of correlated truth, an illicit mint, mutable admitted data,
-an incomplete domain, an invalid transition, or another source-supported cause.
+For each affected law, combine applicable current and retained evidence. Locate
+where a sanctioned construction or transition first lacks the required guarantee:
+what can be chosen, written, ordered, or authorized independently that the law
+requires to agree? Change that enabling freedom, not just the detection site.
 
-Before choosing code, state the smallest falsifiable explanation of the family,
-the required-valid boundary, and a discriminator: a sibling partition or
-repository-derived finite domain that distinguishes eliminating the cause from
-patching the example. Choose it before implementation, not after seeing a green
-result. A trivial realization defect needs no invented architecture or arbitrary
-sibling quota; identify the existing adequate mechanism and test its correction.
+Before implementation, choose the smallest discriminator that distinguishes
+removing the mechanism from patching its reported example. For lifetime, aliasing,
+retry, or composition failures, prefer an admitted valid state followed by the
+operation or interleaving that breaks its guarantee. Predict along the causal
+dimension, not a checklist of superficially similar inputs. A family remains a
+revisable hypothesis; unsupported predictions remain limitations, not invented
+coverage. Keep independent laws separate even when one successor realizes them.
 
-Do not merge different obligations merely because they share a file or review
-wave. Conversely, do not split siblings into one repair per reviewer. The family
-is a revisable hypothesis, never just a list of reported examples.
+Select against the same laws, required-valid observations, compatibility,
+resources, and family evidence. Remove, derive, or lawfully control the enabling
+freedom at the smallest adequate owner. A local correction wins when it restores
+an already adequate mechanism; there is no local-repair-first prerequisite or
+refactor-everything default. Neither novelty nor preserving the incumbent is an
+objective. Required behavior is never traded for a smaller diff.
 
-Select the simplest adequate construction against the same accepted laws,
-required-valid observations, compatibility, resources, and family evidence.
-There is no mandatory local-repair-first attempt, no refactor-everything default,
-and no requirement to disprove every possible same-theorem repair. Preserving
-the incumbent is not a selection objective. A small correction wins when it
-restores an adequate family mechanism; a changed representation wins when it
-removes the enabling cause more completely.
-
-When evidence implicates duplicate owners, branch-new compensation, or a factor
-superseded by the cumulative basis, test a plausible deletion, delegation,
-collapse, or replacement at the smallest useful seam. Do not build two complete
-implementations or a nonsense deletion merely for comparison. Prefer the
-candidate with stronger family exclusion and fewer independently maintained
-truths; only constructionally equivalent candidates are ordered by lifecycle
-cost and then source size. Required behavior is never traded for a smaller diff.
+Where duplicate owners or compensation are implicated, test a plausible deletion,
+delegation, collapse, or replacement at the smallest useful seam. Do not build two
+complete implementations or manufacture a useless deletion. Prefer stronger family
+exclusion and fewer independently maintained truths; compare lifecycle cost and
+source size only among constructionally equivalent candidates.
 
 ## Architecture compilation
 
@@ -183,23 +177,24 @@ for a pre-mutation theorem-identity certificate to reconsider the mechanism.
    Expand ambition toward removing the enabling cause, not expanding the Goal.
    Encouragement changes neither admissibility nor the proof bar; rejection
    remains legitimate. Add no separate Glaze report or adjudication stage.
-3. Derive predecessor topology `T0` from the strongest repository-native authority
-   for the affected seam. Give `$universalist` one independently governed axis,
-   one typed hole, and that domain. Require `candidate`, `preserve-incumbent`, or
-   `obstructed` and the complete Actuating projection; use linked split invocations
-   for independent seams. Universalist nominates; Actuating selects and proves.
-4. Compile its boundary contract into ordinary realization obligations: owner,
-   observations, law, falsifier, transitions, residuals, invalidators, claim
-   strength, cut `K`, topology transformation `tau`, and disposition law `F`.
-   Choose the verifier before implementation; execute it on the actual successor.
-5. Use `$reduce` to identify redundant owners and compensators. Realize the
-   selected construction, migrations, and retirements together, not as optional
-   cleanup after review. A mechanism-changing challenger cannot be adopted while
-   preserving a claim that its owner, representation, or proof authority is unchanged.
+3. Give `$universalist` one independently governed axis, one typed hole, and
+   the strongest source-derived domain evidence for the seam. Require `candidate`,
+   `preserve-incumbent`, or `obstructed` with a code-bound construction argument,
+   not a second description of the Working Set. Split independent seams and prove
+   their composition. Universalist nominates; Actuating selects and proves.
+4. Choose the exact-head verifier before implementation. Compile the nomination's
+   actual admission, transition, coverage, preservation, migration, and residual
+   obligations into the existing work. Native evidence may discharge them directly;
+   use explicit topology reconciliation when route or migration coverage needs it.
+   No proof obligation disappears because its reporting format is unnecessary.
+5. Use `$reduce` for material retirement challenges, not a duplicate audit. Realize
+   the mechanism, migrations, and retirements together. An adopted owner,
+   representation, interpretation, or proof change updates the affected obligations;
+   a restoration label cannot preserve claims contradicted by the actual change.
 
-Reuse adequate existing source derivations. Do not impose a whole-repository
-architecture exercise on an isolated local defect. A current sanctioned path
-missing from the claimed topology revokes that coverage claim immediately.
+Reuse adequate source derivations. Do not impose whole-repository architecture
+work on an isolated defect. A sanctioned path missing from the coverage basis
+revokes that claim immediately, whichever proof representation was used.
 
 ## Realization and common proof obligations
 
@@ -215,24 +210,31 @@ current witness addressed and required-valid behavior preserved
 supported causal family covered at the declared claim strength
 preselected sibling/domain discriminator executed, or explicit limitation
 all relevant sanctioned producers, consumers, transitions, and bypasses accounted for
-actual admission/ownership mechanism enforces the law
+admission and permitted operations enforce the required law in the declared domain
 proof authority, inputs, domain, and public claim agree
 all correctness-bearing Git changes have accepted authority
 displaced primary compensators retired or justified by distinct obligations
 complete Goal-required proof inventory on the exact candidate
 ```
 
-If an owned boundary changes, prove its full Universalist contract. Independently
-re-derive successor topology `T1`; prove `T1 = tau(T0)`, `domain(F) = T1`, cut
-coverage, and owned residuals. Account for retired predecessor elements through
-`tau`; do not require deleted paths to exist in `T1`. Newly added undispositioned
-paths must invalidate coverage automatically. Never derive the verification
-domain solely from the candidate's own asserted list.
+For an invariant-style safety law, establish valid admission, preservation under
+permitted operations, implication of the law, and closure of sanctioned escapes.
+Cut coverage proves passage through an owner, not preservation afterward. Account
+for aliases, lifetime, interleavings, and externally visible effects when implicated;
+transient invalidity must not escape its owning transition. Required progress and
+trace behavior need their own arguments; disabling all operations is not success.
+
+Prove every applicable changed-boundary obligation using the strongest adequate
+repository-native evidence. A closed construction/operation surface can establish
+coverage directly; an opaque type name or passing build alone cannot. Where route
+or migration coverage remains unestablished, use the source-derived topology proof
+in [counterexample-guided-normalization.md](references/counterexample-guided-normalization.md).
+Never derive the verification domain solely from the candidate's asserted list.
+New unaccounted sanctioned paths invalidate coverage under either representation.
 
 For finite domains, complete claims need exhaustive coverage or a justified
 construction proof. For open domains, they need a justified generator and
-preservation argument. Samples,
-sibling tests, and clean reviews are falsification evidence, not universal proof.
+preservation argument. Samples, sibling tests, and clean reviews are falsification evidence, not universal proof.
 Otherwise report the explicit bounded domain and residuals; never silently turn
 containment into elimination or weaken required behavior to obtain a green result.
 
@@ -271,14 +273,15 @@ Retain only in the active thread or accepted implementation specification:
 Goal / immutable base / exact candidate and proof head
 applicable CEX basis / provenance / unavailable sources / claim horizon
 causal explanation / invalid family / required-valid boundary / discriminator
-selected mechanism / owner / cut / source-domain derivation
+selected mechanism / owner / source-domain evidence / topology when needed
 Universalist obligations when activated / migration and residual dispositions
 actual candidate evidence / authority-complete diff / compensator retirement
 claim strength / falsifier / unresolved work
 ```
 
-No new packet, registry, theorem hash, event log, or durable Actuating store.
-Keep historical witness provenance even when stronger proofs subsume old tests.
+These are working facts, not a mandatory report template. Surface only the material
+construction decision, evidence, and unresolved limitations. No new packet, registry,
+theorem hash, event log, or durable Actuating store. Keep historical witness provenance even when stronger proofs subsume old tests.
 
 ## Review and closure
 

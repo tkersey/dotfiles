@@ -39,9 +39,9 @@ Use the same proof obligations for local corrections and redesigned construction
 ```text
 applicable current and retained witnesses addressed
 source-supported causal explanation and declared invalid-family domain
-required-valid behavior, observations, and compatibility preserved
+required-valid behavior, observations, progress, and compatibility preserved
 preselected sibling/domain discriminator executed with its real evidence strength
-actual law-preserving constructor, representation, or transition
+actual admission, permitted-transition preservation, and closure of sanctioned escapes
 all relevant sanctioned paths and bypasses accounted for
 proof authority and public claims bound to exact inputs and execution
 redundant primary compensation retired or justified by distinct obligations
@@ -52,12 +52,13 @@ A restoration label, theorem digest, plan, green sample, or review streak cannot
 substitute for those observations. Do not classify several independent obligations
 as local merely because they share a commit or a broad causal theme.
 
-For a changed boundary, additionally verify the complete Universalist nomination.
-Independently derive successor topology `T1`; prove `T1 = tau(T0)`, `domain(F) = T1`,
-cut domination, predecessor retirements, adapter delegation, and owned residuals.
-Reuse existing adequate derivations when no new boundary decision is needed.
-A claimed source domain must not come solely from the candidate's asserted list.
-A residual that still admits the family precludes its complete elimination claim.
+For a changed boundary, verify every applicable construction obligation using
+[counterexample-guided-normalization.md](counterexample-guided-normalization.md).
+Adequate native admission/operation evidence needs no duplicate topology report;
+explicit topology remains necessary where route or migration coverage needs it.
+Cut coverage does not establish preservation after admission. The source domain
+must not come solely from the candidate's asserted list, and a residual admitting
+the family precludes complete elimination under either proof representation.
 
 A complete domain requires an adequate construction/preservation proof or finite
 exhaustion. Generated samples and sibling probes alone remain bounded evidence.
@@ -76,7 +77,7 @@ For full `complete`, require:
 
 ```text
 required Ship/provider state matches the exact head
-no review epoch remains open
+no review epoch remains open; all terminal semantic outcomes are folded
 all five auxiliary lenses have terminal semantic outcomes and are adjudicated
 five consecutive distinct native/default standard cleans on the unchanged head
 no unresolved current accepted liability
@@ -91,7 +92,7 @@ not a universal soundness proof. A completion-relevant unavailable source cannot
 be silently credited; retain the authorized bounded or non-complete outcome.
 
 An exact same-claim witness revokes family exclusion immediately. A sanctioned
-path absent from source topology revokes that coverage claim. Reopen the causal
+path absent from the source-derived coverage basis revokes that claim. Reopen the causal
 explanation; neither a local label nor equal opaque digests can preserve the claim.
 
 A locally complete implementation awaiting required publication is `ready-to-ship`.
