@@ -15,13 +15,6 @@
 - An automobile changes the governing causal mechanism or makes the old optimization target unnecessary. More speed, scale, automation, parallelism, validation, orchestration, or polish inside the same mechanism is still a faster horse.
 - Continual vigilance is not continual redesign. Keep the check silent and bounded; skip trivial, already-dispositive, or explicitly mechanism-bound work; never redefine user-owned outcomes or delay direct capability for speculative novelty. Surface a challenger only when it is concrete, admissible, comparable against the same evidence, and materially changes the decision.
 
-## Noetic effect dispatch
-
-- At a material, non-dispositive decision point, invoke `$noetic-effects dispatch` when current evidence indicates stale framing, shallow causality, a live contradiction, incumbent-captive adjacency, timid candidate generation, a missing construction form, a wrong abstraction or owner, implementation detached from its contract, unearned surface, ceremonial indirection, or analysis without movement.
-- `$noetic-effects` selects `skip`, one smallest sufficient primitive effect, or one bounded `$metanoetic` composite. Bind the dispatch to the current objective, witnessed pressure, expected route delta, stopping condition, and workflow that owns the decision. If no effect could materially change the route, skip it.
-- Compile the selected effect into the active workflow's native decision surface. When that workflow already owns an equivalent handler, use it and do not run a duplicate root pass. The receiving workflow retains ownership of admissibility, selection, mutation, proof, publication, and closure.
-- Keep dispatch silent. Do not announce doctrine use, rewrite the final response in a doctrine style, create a receipt merely to prove invocation, or introduce a workflow solely to host the effect.
-
 ## Explicit skill resolution
 
 - Generic defaults do not waive specific authority, review, or source-evidence obligations. When a skill requirement prevents fulfilling an explicit user request, identify its path, controlling clause, and unmet condition; keep ordinary internal routing silent.
