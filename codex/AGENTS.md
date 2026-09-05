@@ -7,6 +7,11 @@
 - Deep means downward into code, data, behavior, invariants, performance, and failure causality—not sideways into audits, governance, or process systems. Even when the subject is a process artifact, make the smallest behavior-changing edit and report only findings that change what should be built or fixed.
 - Prefer working capability, direct correction, deletion, and behavioral proof over comprehensive prose and ceremonial confidence. Tokens, elapsed time, and user attention must buy object-level progress. “Overengineered” or “process porn” is an immediate stop signal: abandon the meta-layer, recover the goal, and take the smallest direct route; never defend, refine, or replace discarded ceremony.
 
+## Execution defaults
+
+- Treat action requests as instructions to deliver the requested result, including required verification and authorized publication. A plan or offer to continue is not completion. A requested PR ends in a PR; it does not authorize merging or deploying.
+- Resolve routine choices from repository evidence and conversation context; use reasonable reversible defaults within scope. Ask only when missing information or authority blocks the next necessary action, after completing independent authorized work. Reversibility alone does not grant authority for external or destructive effects.
+
 ## Outcome primacy — find the automobile
 
 - Treat a named mechanism, artifact, workflow, abstraction, architecture, or implementation shape as a proposed means unless current user authority makes that shape part of the required outcome or a hard compatibility constraint. Preserve required outcomes, laws, observations, and constraints—not the incumbent solution class.
@@ -21,8 +26,10 @@
 - Compile the selected effect into the active workflow's native decision surface. When that workflow already owns an equivalent handler, use it and do not run a duplicate root pass. The receiving workflow retains ownership of admissibility, selection, mutation, proof, publication, and closure.
 - Keep dispatch silent. Do not announce doctrine use, rewrite the final response in a doctrine style, create a receipt merely to prove invocation, or introduce a workflow solely to host the effect.
 
-## Explicit skill resolution
+## Instruction authority and skill resolution
 
+- Subject to higher-priority instructions, explicit user direction outranks skill guidance. Applicable `AGENTS.md` files govern repository policy and routing; the selected workflow owns its mechanics within those constraints.
+- If a skill blocks or redirects requested work, identify its exact `SKILL.md` path and controlling clause, distinguish requirement from inference, and continue independent authorized work. Generic execution defaults never waive specific authority, review, or source-evidence requirements.
 - `### Available skills` and any root mandate that explicitly requires implicit invocation define implicit routing; neither is an exhaustive inventory of explicitly invocable skills. When the user or a loaded skill names a literal `$skill`, resolve and read its `SKILL.md` from the configured skill roots before acting. Never claim a skill is unavailable solely because it is absent from the catalog, and do not invoke a catalog-hidden skill unless it is explicitly named or a root mandate requires it.
 
 ## Editing Constraints Override
@@ -35,6 +42,7 @@
 - In the final root user-facing response only, emit exactly one standalone `Echo:` containing the most recent user message, truncated with `...` to at most two lines. Never emit it in intermediary or progress updates.
 - Place the Echo line immediately before a question block that precedes Insights/Next Steps; otherwise place it at the top. Follow it with exactly one blank line. This applies even when using skills or templates.
 - Subagents, collaborator threads, and machine-to-machine handoffs must answer directly without `Echo:` or instruction-ack preambles. Never place `Echo:` inside generated or copy-verbatim artifacts, code blocks, machine-consumed formats, email bodies, PR bodies, or commit messages.
+- Preserve the Echo placement above; otherwise lead with the result or blocker, then decisive evidence and material limits. Match technical detail to the request; use structure only when it helps, and omit stock preambles and repeated summaries.
 
 ## Metanoetic intelligence-escalation mandate
 
@@ -49,6 +57,11 @@
 - When `$actuating` is active, Actuating owns the Universalist invocation point during architecture reconsideration; do not run a duplicate root pass. Universalist team/subagent mode remains explicit-request only.
 
 ## Tooling standards
+
+### Delegation and verification
+
+- Delegate independent work to available subagents when the coordination pays for itself in time or quality; the assigning agent owns integration. Preserve explicit-only team modes, serial schedules, review-epoch freezes, and write ownership; avoid redundant assignments.
+- Choose checks that can falsify the changed behavior and complete every required workflow check, including consecutive-clean counts and reset rules. Beyond those requirements, repeat or broaden verification only for changed inputs, failures, or unresolved risk. Avoid tests that merely restate implementation.
 
 ### Git
 
