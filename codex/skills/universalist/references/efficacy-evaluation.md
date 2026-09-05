@@ -48,10 +48,14 @@ conditions:
 A. No Universalist
 B. Routine kernel only
    trigger evidence + incoming candidate + owner + observations + law +
-   falsifier + ordinary candidate
+   falsifier + ordinary candidate + bounded law-derived challenger when grounded
 C. Full Universalist
    routine kernel + gated latent recognition + eligible construction cards
 ```
+
+The bounded challenger is now in the routine kernel, so include it in both B
+and C. To isolate that root change, optionally pair B with the same kernel with
+only that question disabled; report this contrast separately, not as C > B.
 
 Keep all non-Universalist instructions and evidence fixed. Do not let condition
 labels appear in the candidate output presented to evaluators.
@@ -84,6 +88,29 @@ A named theorem, category-shaped vocabulary, or successful merge is not an
 incremental-effect witness. A retained advanced mechanic must change the
 repository-native artifact, legal composition, migration, or proof compared
 with the ordinary candidate.
+
+## Artifact-level discrimination
+
+`routing-evaluation-cases.json` keeps routing `cases` separate from `artifact_cases`.
+Use the latter to evaluate the artifact or proof produced by each condition, not
+whether its explanation repeats the expected words. Retain independently chosen
+repository holdouts: a fixture's preferred pattern must not become the only
+accepted implementation when another artifact satisfies the same requirements.
+
+Check required-valid counterparts, reachable traces, failure paths, bypasses,
+interaction laws, and the actual strength of each mathematical claim. Include
+first-use boundaries, overrestrictive constructors, mutable checked values,
+current-status quotients with different continuations, ordinary coalgebras,
+observation APIs without Yoneda, phase barriers with ordered effects, and both
+valid pure fusion and invalid effectful fusion. A finite-model check validates
+that model, not the coding agent's ability to discover or implement the design.
+
+Score fewer obligations, eliminated work, safer legal composition, and reusable
+proofs even when the output stays `UNI-ORDINARY`. An increase in theorem names,
+`UNI-CANONICAL` counts, or raw code deletion without behavioral preservation is
+not improvement. Distinguish general derivation, exhaustive finite evidence,
+sampled tests, unrun model replays, and unmeasured performance. Report failures
+and regressions alongside wins; do not imply that authored fixtures were run.
 
 ## Corpus evolution
 

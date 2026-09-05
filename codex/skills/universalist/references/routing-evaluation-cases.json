@@ -1,6 +1,6 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-boundary-decision-v17",
+  "skill_fingerprint": "universalist-boundary-decision-v17.7",
   "purpose": "Evaluate implicit activation separately from route selection. Skip means no Universalist invocation, disposition, route, record, or receipt.",
   "expectations": {
     "skip": "No live semantic boundary decision is evidenced.",
@@ -112,6 +112,194 @@
       "expected": "activate",
       "expected_route": "UNI-PRESERVE",
       "reason": "Preservation is material because it defeats live change pressure without adding architecture."
+    },
+    {
+      "id": "first-use-state-boundary",
+      "scenario": "Choose a new workflow state representation; no implementation is duplicated, but required operations expose invalid flag combinations.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "The representation is a live semantic decision; duplication is not a prerequisite."
+    },
+    {
+      "id": "first-use-derived-challenger",
+      "scenario": "On an activated first-use seam, requirements derive a compatible-pair alternative to independently supplied values.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Discriminate the grounded law without first manufacturing a repeated implementation."
+    },
+    {
+      "id": "actuating-supplied-challenger",
+      "scenario": "Actuating reopens architecture and supplies an incumbent, one law-derived challenger, and its evidence.",
+      "expected": "activate",
+      "expected_route": null,
+      "reason": "Reuse the candidate in one nomination; do not run a second generative pass or allocate a plan."
+    },
+    {
+      "id": "future-observation-invalidator",
+      "scenario": "A permitted retry distinguishes two states previously identified by their current pending display.",
+      "expected": "reclassify",
+      "expected_route": null,
+      "reason": "The continuation falsifies the observation-equivalence proof lease."
+    },
+    {
+      "id": "accepted-law-derived-realization",
+      "scenario": "Implement a selected law-derived representation with unchanged owner, law family, observations, and invalidators.",
+      "expected": "skip",
+      "expected_route": null,
+      "reason": "Categorical origin does not justify another boundary pass during routine realization."
+    }
+  ],
+  "artifact_cases": [
+    {
+      "id": "first-use-exclusive-state",
+      "scenario": "A first-use request can be waiting with no result or completed with a result, never both.",
+      "must_preserve": [
+        "waiting and every required completed value"
+      ],
+      "must_reject": [
+        "contradictory flags",
+        "demanding duplicated code before considering explicit cases"
+      ],
+      "claim_check": "An ordinary tagged union is acceptable; no theorem card or new packet is required."
+    },
+    {
+      "id": "compatible-pair-adequacy",
+      "scenario": "Immutable A and B must both survive; every equal-tenant pair is required, including cross-backend pairs.",
+      "must_preserve": [
+        "both source projections",
+        "equal-tenant cross-backend pair"
+      ],
+      "must_reject": [
+        "mismatched tenants",
+        "extra same-backend policy"
+      ],
+      "claim_check": "For a pullback claim, derive h(x)=(u(x),v(x)) and uniqueness from both projections, not constructor privacy."
+    },
+    {
+      "id": "mutation-invalidates-check",
+      "scenario": "A pair is checked for tenant equality, but a permitted aliased mutation changes one tenant afterward.",
+      "must_preserve": [
+        "required valid updates through an invariant-preserving owner or reconstruction"
+      ],
+      "must_reject": [
+        "using stale agreement evidence",
+        "claiming an opaque constructor alone prevents mutation"
+      ],
+      "claim_check": "Construction and transition preservation must be checked together; account for aliases and decoding."
+    },
+    {
+      "id": "future-continuation-distinction",
+      "scenario": "NotSent and SentConfirmationUnknown both display pending; retry must respectively Send and Reconcile.",
+      "must_preserve": [
+        "fresh send",
+        "uncertain-send reconciliation"
+      ],
+      "must_reject": [
+        "quotient to pending",
+        "rejecting all retries"
+      ],
+      "claim_check": "Current projections are insufficient; the permitted retry is a distinguishing continuation."
+    },
+    {
+      "id": "coalgebra-without-finality",
+      "scenario": "An explicit transition system satisfies its required traces and recovery laws; no final-coalgebra property is required.",
+      "must_preserve": [
+        "adequate ordinary state machine"
+      ],
+      "must_reject": [
+        "fabricating finality",
+        "obstructing solely because no finality proof is supplied"
+      ],
+      "claim_check": "Use structure laws and preservation; finality is a separate stronger claim."
+    },
+    {
+      "id": "observations-without-yoneda",
+      "scenario": "A finite first-class report vocabulary preserves each required report across a representation change.",
+      "must_preserve": [
+        "every required report and any operation-relevant distinctions"
+      ],
+      "must_reject": [
+        "calling a finite probe list Yoneda without the natural correspondence",
+        "quotienting from report equality alone"
+      ],
+      "claim_check": "An ordinary observation API is sufficient unless the stronger representation theorem is needed."
+    },
+    {
+      "id": "unique-api-is-not-universality",
+      "scenario": "A normalized opaque object has one public constructor and one interpreter, but no specified competitor diagram.",
+      "must_preserve": [
+        "the useful lawful implementation"
+      ],
+      "must_reject": [
+        "claiming unique mediation from API count",
+        "shrinking competitors to only callers that already use the API"
+      ],
+      "claim_check": "Retain a structure-only claim or supply actual factorization and uniqueness evidence."
+    },
+    {
+      "id": "phase-order-and-failure",
+      "scenario": "Components declare registration and announcement locally; all registrations must succeed before announcements.",
+      "must_preserve": [
+        "within-phase order",
+        "cross-phase barrier",
+        "empty-plan identity",
+        "no announcements after registration failure"
+      ],
+      "must_reject": [
+        "flattening by component",
+        "reversing same-phase actions without a law",
+        "continuing after a swallowed earlier failure"
+      ],
+      "claim_check": "Cross-phase description movement need not reorder runtime effects; a two-list plan need not claim a full Day realization."
+    },
+    {
+      "id": "dynamic-shape-is-not-static",
+      "scenario": "The result of one operation chooses the kind and count of later external operations.",
+      "must_preserve": [
+        "the actual value-dependent branch and required effects"
+      ],
+      "must_reject": [
+        "precomputing later shape from stale values",
+        "assuming arbitrary monadic dependencies are free applicative"
+      ],
+      "claim_check": "Represent the dependency explicitly; prefer an ordinary sequence when adequate."
+    },
+    {
+      "id": "pure-fold-fusion",
+      "scenario": "For finite lists, pure total f and g, foldr f z follows map g; the intermediate list is a material cost.",
+      "must_preserve": [
+        "empty, singleton, and longer-list results",
+        "original nesting even when f is nonassociative"
+      ],
+      "must_reject": [
+        "unnecessary recursion-scheme framework",
+        "claiming measured speedup from semantic equality alone"
+      ],
+      "claim_check": "Derive the base and inductive cases; show eliminated work in the lowering and measure any performance claim."
+    },
+    {
+      "id": "effectful-fusion-counterexample",
+      "scenario": "An eager map logs g1,g2; a right fold logs f2,f1. Fusing changes the trace to g2,f2,g1,f1.",
+      "must_preserve": [
+        "required order and failure behavior"
+      ],
+      "must_reject": [
+        "value-only proof authorizing the effectful rewrite"
+      ],
+      "claim_check": "Pure fusion hypotheses do not hold; require an additional effect law or retain the original order."
+    },
+    {
+      "id": "indexed-transition-interaction",
+      "scenario": "Successful operations carry I-to-J state changes; failure and cancellation can leave different states, with aliases possible.",
+      "must_preserve": [
+        "composition at matching middle indices",
+        "explicit failure states and required recovery"
+      ],
+      "must_reject": [
+        "successful-state claims after failure",
+        "assuming phantom indices alone enforce ownership"
+      ],
+      "claim_check": "Lower only where host guarantees support the indices; keep authority, aliasing, and external freshness honest."
     }
   ]
 }

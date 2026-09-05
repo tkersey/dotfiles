@@ -32,7 +32,7 @@ A general pattern may be useful even when no advanced construction card is selec
 
 ## When to run the pass
 
-Run a lightweight recognition pass when repository evidence contains at least one of:
+After boundary activation, run a lightweight recognition pass when repository evidence contains at least one of:
 
 - the same invariant checked at several creation or boundary paths;
 - repeated branches that differ only by a case or parameter;
@@ -44,9 +44,10 @@ Run a lightweight recognition pass when repository evidence contains at least on
 - projections or reports that duplicate one observation vocabulary;
 - composition code that repeatedly checks the same compatibility rule;
 - migration, rewrite, or translation functions that preserve the same structure;
-- a concrete implementation plus an imminent variant whose shape is already constrained by the same law.
+- a concrete implementation plus an imminent variant whose shape is already constrained by the same law;
+- a requirement-bound alternative already derived on the common path whose law needs discrimination, even at a first-use boundary.
 
-Syntactic duplication alone is not enough. The pass needs a repeated semantic obligation, a stable law, or an imminent variant that would otherwise duplicate it.
+Syntactic duplication alone is not enough. Reuse the common path's derivation rather than running a second challenger. A first-use derivation starts from attributed requirements and permitted operations; do not fabricate representative implementations.
 
 ## Recognition packet
 
@@ -139,11 +140,11 @@ Ask:
 - which operations preserve the same law across representations?
 - is one owner missing, or is the distribution intentional?
 
-Anti-unify behavior and proof obligations, not merely shared syntax.
+Anti-unify behavior and proof obligations, not merely shared syntax. At a first-use boundary, derive from the required carrier, observations, and operations instead; anti-unification is inapplicable without neighboring instances.
 
 ### 4. Nominate a small candidate family
 
-Nominate no more than three nearby interpretations, including the boring alternative.
+Discriminate the supplied challenger against the ordinary candidate. Use at most three nearby interpretations only when an actual ambiguity needs a third; do not fill a candidate quota.
 
 For each candidate record:
 
@@ -201,6 +202,7 @@ A recognized pattern survives only when it materially provides at least one of:
 - one observation vocabulary replaces projection sprawl;
 - a future variant becomes new data or a new interpreter instead of new control flow;
 - migration becomes a structure-preserving map rather than per-case repair;
+- a lawful fusion, specialization, or interpreter transformation removes work without changing required behavior;
 - reusable property tests or proof obligations become possible;
 - a genuine obstruction becomes visible.
 
@@ -264,7 +266,7 @@ The existing comparison universe, dominance relation, current-context contract, 
 | later operation depends on an earlier value | monadic / value-dependent sequence | dependency cannot be represented statically | bindable program IR or ordinary sequence |
 | repeated associative combination with an identity | monoid / monoidal composition | identity and associativity hold under sanctioned observations | central combine operation plus property tests |
 | conversions preserve operations across representations | homomorphism / natural transformation | operation then convert equals convert then operation | explicit structure-preserving adapter |
-| many projections define effective equality | observation vocabulary / Yoneda-style presentation | sanctioned observations determine relevant equivalence | observation IR plus one runner |
+| many projections define effective equality | observation vocabulary; Yoneda only with its natural correspondence | equivalence is adequate under permitted future operations | observation IR plus one runner |
 | repeated context wrappers around one capability | action / Tambara candidate | real unit, associative framing, and naturality exist | one typed frame operation or reject to ordinary context parameter |
 | nested decomposition loops combine indexed descriptions | Day or promonoidal composition | all legal decompositions or witnesses must contribute | bounded indexed representation and normalizer |
 | local meanings restrict and must glue across overlaps | presheaf / sheaf candidate | restrictions compose and compatible locals glue uniquely-up-to | usage-site index then exact global model |
@@ -273,6 +275,47 @@ The existing comparison universe, dominance relation, current-context contract, 
 | runtime processes compose and architecture changes compose separately | double-category candidate | both directions compose; compatibility squares paste; interchange is observable | typed arrows, squares, pasting, and interpreter |
 
 The atlas is abductive guidance, not a replacement registry. If a row's discriminator is absent, leave the candidate unresolved or reject it.
+
+## Worked derivation: compatibility without extra policy
+
+Assume immutable `A` and `B`, total tenant projections `p : A -> T` and
+`q : B -> T`, and a requirement to retain both values and admit every pair
+whose projections agree. Derive:
+
+```text
+P = {(a,b) in A x B | p(a) = q(b)}
+make(a,b) = Ok((a,b)) exactly when p(a) = q(b)
+left(make(a,b)) = a; right(make(a,b)) = b       on successful construction
+```
+
+For any compatible producer `u : X -> A`, `v : X -> B`, the mediator is
+`h(x) = (u(x),v(x))`. It lands in `P` by the agreement equation. Any other
+mediator preserving both projections has the same pair at every `x`, so is equal
+in this set model. That argument, not a private constructor, supplies the
+pullback property. See `mechanics/pullbacks-and-pushouts.md` for the diagram.
+
+Lower to one opaque checked aggregate, not a generic categorical framework.
+Reject both false friends: a raw pair admits mismatches; an additional
+same-backend restriction rejects a required compatible cross-backend pair.
+Test a mismatch, a valid cross-backend pair, and both projections. One rejected
+invalid case does not establish representational adequacy. Tenant agreement is
+not complete authorization; other requirements retain their actual owners.
+
+If projection data may mutate, constructor validity is not enough. Freeze the
+relevant identity, derive one value from the other when requirements permit, or
+route mutation through an owner that preserves agreement. Test the mutation and
+alias/deserialization paths together. Do not erase one source when both are
+required observations. Translate one caller and retire its raw-pair bypass;
+expand only after this witness holds.
+
+## Derive transformations as well as carriers
+
+A law can remove a traversal, intermediate representation, or coordination rule
+without creating a new public abstraction. When this is the live alternative,
+use `domain-algebra/property-test-derivation.md` for fold/interpreter preservation
+and cost separation. When future behavior or phase ordering is the discriminator,
+use the matching example in `effects-and-coalgebras.md`. These are targeted
+references, not additional mandatory passes.
 
 ## False-positive guardrails
 

@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17"
+      "source_fingerprint": "universalist-boundary-decision-v17.7"
     },
     "triggers": [
       {
@@ -41,7 +41,7 @@
       },
       {
         "trigger_id": "UNI-RECOGNIZE",
-        "description": "Repository evidence exposes repeated semantic obligations that may share one law-bearing structure.",
+        "description": "After boundary activation, repeated semantic obligations or a grounded law-derived challenger require discrimination of one law-bearing structure; a first-use boundary need not have duplication.",
         "cue_literals": [
           "current encoding",
           "nearest false friend",
@@ -51,7 +51,7 @@
         "cue_regexes": [],
         "exclusions": [
           "surface resemblance without a discriminating law",
-          "one local helper with no repeated obligation"
+          "one local helper with no material law-derived alternative or repeated obligation"
         ]
       },
       {
@@ -99,7 +99,7 @@
       },
       {
         "route_id": "UNI-CANONICAL",
-        "description": "Nominate an advanced construction because it materially strengthens the ordinary candidate.",
+        "description": "Nominate an advanced construction because it materially strengthens the ordinary candidate with a claim-appropriate witness; the route does not itself assert universality.",
         "aliases": [],
         "terminal": false
       },
@@ -139,7 +139,9 @@
           "trigger evidence identifies a live choice, distributed law, fired invalidator, Actuating reconsideration handoff, or explicit invocation",
           "the incoming incumbent or ordinary candidate is explicit",
           "preservation defeats live change pressure without adding abstraction",
-          "Actuating owns its invocation point and receives one nomination"
+          "Actuating owns its invocation point and receives one nomination",
+          "ordinary-first supplies a baseline rather than suppressing one grounded law-derived alternative",
+          "an equivalent receiving-workflow challenger is reused without a second pass"
         ],
         "failure_signals": [
           "boundary presence or crossing is treated as sufficient activation",
@@ -148,7 +150,9 @@
           "duplicate root and Actuating passes",
           "boundary without owner",
           "symptom-only patch",
-          "missing falsifier or material decision delta"
+          "missing falsifier or material decision delta",
+          "a first-use boundary is denied law-derived alternatives solely because no duplicate exists",
+          "a challenger or extra packet is manufactured when evidence is already dispositive"
         ],
         "rationale": "Activation is useful only when semantic pressure exists and yields one exact disposition."
       },
@@ -167,18 +171,20 @@
         "required_artifacts": [
           "ordinary candidate",
           "comparison universe",
-          "one axis and typed hole",
+          "one primary axis and typed hole with necessary interacting laws",
           "alternatives",
           "material delta",
           "resource impact"
         ],
         "success_signals": [
           "incomparable minima remain underdetermined",
-          "Universalist nominates while Actuating selects"
+          "Universalist nominates while Actuating selects",
+          "required-valid behavior is preserved as well as invalid behavior excluded"
         ],
         "failure_signals": [
           "Universalist selects or reopens Actuating target architecture",
-          "candidate wins by omitted obligations"
+          "candidate wins by omitted obligations",
+          "interacting state, effect, resource, or observation obligations are certified only in isolation"
         ],
         "rationale": "Minimality is relative to one complete current obligation set."
       },
@@ -196,7 +202,7 @@
         "prohibited_routes": [],
         "required_artifacts": [
           "current encoding",
-          "representative instances",
+          "representative instances or a first-use requirement-bound derivation",
           "nearest false friend",
           "discriminating law",
           "generalization dividend",
@@ -204,7 +210,7 @@
         ],
         "success_signals": [
           "recognition begins from repository operations and observations",
-          "a retained pattern deletes or centralizes a material obligation"
+          "a retained pattern removes or centralizes an obligation, enables a lawful transformation, or strengthens a reusable proof with a material delta"
         ],
         "failure_signals": [
           "pattern selected by name",
@@ -321,11 +327,18 @@
         ],
         "success_signals": [
           "ordinary dominance explicitly rejects advanced mechanics",
-          "selected mechanics change the artifact and proof"
+          "selected mechanics change the artifact and proof",
+          "structure claims use laws and preservation without invented universality",
+          "universal claims identify a diagram, competitors, maps, factorization equations, and a uniqueness argument",
+          "realization strength and proof kind remain independent; bounded and sampled evidence is labelled"
         ],
         "failure_signals": [
           "decorative terminology",
-          "mechanics without evidenced prerequisites"
+          "mechanics without evidenced prerequisites",
+          "opacity or a single interpreter is treated as a uniqueness proof",
+          "a coalgebra is assumed final or finite observations are called Yoneda without the correspondence",
+          "a missing universal proof obstructs an otherwise adequate structure-only artifact",
+          "lawful fusion or phase composition silently changes required effects, failure behavior, or valid traces"
         ],
         "rationale": "Advanced mechanics remain evidence-bound."
       },

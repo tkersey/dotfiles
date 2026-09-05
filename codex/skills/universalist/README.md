@@ -1,4 +1,4 @@
-# Universalist 17.6.0
+# Universalist 17.7.0
 
 Universalist is an implicitly invocable **boundary-decision** lens with
 evidence-indexed progressive disclosure.
@@ -13,7 +13,7 @@ live semantic boundary pressure
 -> preserve, ordinary nomination, or evidence-backed escalation
 ```
 
-Category theory remains a hidden recognizer. Advanced constructions load only
+Category theory is a hidden recognizer and source of lawful transformations. Advanced constructions load only
 after repository evidence identifies a consequential typed hole that the
 ordinary candidate does not close.
 
@@ -59,13 +59,19 @@ Mechanic: ordinary | card:<id>
 Invalidates when:
 ```
 
+Ordinary-first is a baseline, not an intellectual ceiling. On an activated
+boundary, consider one grounded law-derived alternative before treating the
+ordinary candidate as dispositive; no duplication is required at a first-use
+boundary. Reuse a supplied challenger and emit no extra packet. Keep the smallest
+interacting law family together and preserve required-valid behavior.
+
 Activation is narrow; disclosure and escalation remain proportional.
 
 ## Evidence-indexed disclosure
 
 | Evidence | Module |
 |---|---|
-| Repeated semantic obligations may share one law | `references/latent-structure-recognition.md` |
+| Repeated obligations or a grounded law-derived challenger needs discrimination | `references/latent-structure-recognition.md` |
 | At least two routes materially differ | `references/consequential-boundary.md` |
 | A concrete typed hole remains | artifact selector, registry, and matching card fragments |
 | One advanced card remains live | only that card's exact `theory_refs` |
@@ -115,12 +121,16 @@ outside an active Actuating run. That standalone module may still use Ledger and
 
 ## Advanced mechanics
 
-The 56 construction cards remain evidence-bound theorem nominations. They do
-not select routes or authorize mutation.
+The 56 cards nominate structures or universal constructions. They do not select
+routes or authorize mutation. Proof profiles follow the actual claim: laws and
+interpretation for `structure`; a diagram, factorization, and uniqueness argument
+in addition for `universal`. Literal, effective, and bounded realization strengths
+remain independent. One interpreter or opaque constructor does not prove
+universality, and `UNI-CANONICAL` is not a theorem assertion.
 
 ```text
 ordinary candidate
--> one axis and typed hole
+-> one primary axis, typed hole, and necessary interacting laws
 -> relevant card fragment
 -> exact theory references
 -> repository-native lowering
@@ -133,7 +143,15 @@ Card expansion is frozen pending evidence that the full categorical path
 improves a concrete artifact or proof beyond the routine kernel. Use
 `references/efficacy-evaluation.md` and
 `references/routing-evaluation-cases.json` only while tuning or auditing the
-skill; neither belongs in ordinary runtime context.
+skill; neither belongs in ordinary runtime context. The corpus includes 20
+routing cases and 12 artifact-level discriminators. Written fixtures are not
+model-run results or evidence of improved efficacy.
+
+Worked derivations live in existing references: compatible-pair adequacy in
+latent recognition; continuation-sensitive state distinctions, ordered phases,
+and indexed transitions in effects/coalgebras; and fold/interpreter fusion in
+property-test derivation. They should produce simpler repository-native artifacts,
+not more theorem names or framework code.
 
 ## Package invariants
 

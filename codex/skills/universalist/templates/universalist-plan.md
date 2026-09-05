@@ -38,7 +38,7 @@ adjudication there instead of allocating this plan.
 ### Successor packets: owner + axis + seam / none
 
 ## Latent structure recognition (complete only when material):
-### Current encoding and representative instances:
+### Current encoding and representative instances or first-use requirement-bound derivation:
 ### Carriers / operations / observations:
 ### Candidate equations / known non-laws:
 ### Stable structure / varying parameters:
@@ -60,9 +60,9 @@ adjudication there instead of allocating this plan.
 ## Signal and evidence:
 ## Ordinary candidate:
 ## Comparison universe and dominance relation:
-## Architectural axis and typed hole:
+## Primary architectural axis, typed hole, and necessary interacting law family:
 ## Relevant cards and dispositions:
-## Alternatives considered:
+## Alternatives considered (reuse the grounded law-derived challenger, if any):
 ## Material architectural delta:
 ## Selected route:
 ## Applicable SKDC clause refs:
@@ -127,6 +127,12 @@ adjudication there instead of allocating this plan.
 ## Resource impact:
 ## Evidence debt:
 ## Advanced mechanics disposition and proof profile:
+Use `structure` for laws and preservation; use `universal` only with a named
+diagram, competitors, maps, factorization equations, and uniqueness argument.
+Keep this separate from literal / effective realization / bounded approximation.
+State the evidence strength and bounded exclusions where applicable. A private
+constructor or one interpreter is not a mediation or uniqueness proof. Do not
+fill universal fields for a structure-only claim or allocate another packet.
 ## Obstruction / reopening condition:
 
 ## Why this construction:

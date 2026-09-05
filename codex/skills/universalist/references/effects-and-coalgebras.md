@@ -85,6 +85,38 @@ Guardrails:
 - parallelization still requires Freyd centrality, observational commutativity, or resource-disjointness;
 - decomposition enumeration and normalization require an effective resource model.
 
+### Worked lowering: component-local plans, globally ordered phases
+
+Suppose components independently declare registration and readiness actions,
+while the requirement is that every registration succeeds before any readiness
+announcement. A finite ordinary lowering is:
+
+```text
+Plan = { register: List<Action>, announce: List<Action> }
+empty = { [], [] }
+combine(p,q) = { p.register ++ q.register, p.announce ++ q.announce }
+run(p) = runSequential(p.register); only on success runSequential(p.announce)
+```
+
+Unit and associativity follow from list concatenation, but composition is not
+commutative within a phase. Moving a phase-2-only description past a phase-1-only
+description preserves the interpreted order: registration still runs first.
+Reversing two registrations need not preserve observations. The runner, not
+construction order, owns phase order. Compare against the required phased
+semantics; do not preserve an incumbent trace that violates the accepted rule.
+
+This is a specialized engineering example of separating definition structure
+from execution structure. Gibbons, Kidney, Schrijvers, and Wu develop the richer
+applicative/Day construction in [Phases in Software Architecture, sections 3–4](https://www.cs.ox.ac.uk/jeremy.gibbons/publications/phases.pdf).
+A two-list implementation need not claim to realize that entire construction.
+
+The operation shape must be available before results; value-dependent later
+actions require an explicit dependency or monadic sequence, not captured stale
+values. Test exact within-phase order, cross-phase barriers, empty phases, and
+an early registration failure with no later announcements. Cancellation,
+partial external effects, and recovery retain explicit runtime owners. This
+removes duplicated phase orchestration, not effect-order or failure obligations.
+
 ## Context-stable profunctors / Tambara modules
 
 Use when the problem is not how descriptions combine or how effects execute, but how one generalized transformation remains valid when an admissible context is added around both endpoints.
@@ -157,7 +189,7 @@ observe : State -> ObservationResult
 Universal reading:
 
 ```text
-stateful behavior as coalgebra; equivalence by observations/traces
+stateful behavior as coalgebra; no finality claim follows from having step/observe
 ```
 
 Proof signals:
@@ -165,7 +197,7 @@ Proof signals:
 ```text
 trace(step, observe, initial, inputs) == expectedTrace
 invalid transition is rejected
-equivalent states produce equivalent observations
+claimed-equivalent states remain equivalent under permitted future continuations
 ```
 
 First seam examples:
@@ -175,6 +207,53 @@ First seam examples:
 - one actor mailbox step;
 - one stream processor state update;
 - one domain lifecycle with external observations.
+
+### Worked discriminator: current equality is not behavioral equality
+
+Suppose `NotSent` and `SentConfirmationUnknown` both display `pending`, but the
+required response to retry is `Send` in the first state and `Reconcile` in the
+second. A quotient to the display string loses information needed by a permitted
+operation. A single deterministic `retry(pending)` cannot satisfy both cases.
+Keep the states distinct and preserve the required reconciliation path; rejecting
+all retries is not an adequate repair when fresh sends must remain available.
+
+For a deterministic totalized transition model, include outputs, effects, and
+failures in the trace observation and test a candidate relation against:
+
+```text
+s ~ t implies Obs(run(s, inputs)) = Obs(run(t, inputs))
+for every finite permitted input sequence, including the empty sequence
+```
+
+A relation preserved by each step, with equal required step observations, gives
+an induction over these traces. Infinite behavior, divergence, fairness,
+probability, and nondeterminism need their own stated semantics; finite trace
+agreement is not automatically bisimulation or a liveness proof. Bounded tests
+are falsifiers unless they exhaust the declared finite model.
+
+This is ordinary coalgebraic reasoning, not a claim that the implementation is
+a final coalgebra. See Rutten, [Universal coalgebra: a theory of systems](https://ir.cwi.nl/pub/4802).
+Before a state quotient or representation change, connect this continuation test
+to the observation vocabulary; a list of present projections is insufficient.
+
+### Interacting state and effect laws
+
+When an operation changes admissible state, model the transition rather than
+certifying a checked value and an unrelated mutation API separately:
+
+```text
+T<I,J,A>                         success changes I to J and returns A
+then : T<I,J,A> x (A -> T<J,K,B>) -> T<I,K,B>
+```
+
+The middle indices must match. Represent failure states and recovery explicitly;
+success indices cannot silently describe a failed or cancelled operation. Lower
+to an existing tagged transition result, opaque capability, or indexed API only
+where the host can enforce it. Aliasing, stale external authority, and bypasses
+remain separate obligations; phantom indices alone do not enforce ownership.
+Atkey's [Parameterised Notions of Computation](https://bentnib.org/paramnotions-jfp.pdf)
+develops the underlying start/end-state parameterization. Use it when the
+interaction changes legal composition, not merely to rename a state machine.
 
 ## Comonad coalgebras / situated objects
 

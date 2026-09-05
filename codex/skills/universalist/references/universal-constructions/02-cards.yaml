@@ -54,7 +54,7 @@ constructions:
   - mechanics/pullbacks-and-pushouts.md
   - sources.md
 - id: supplied_behavior
-  expert_name: Exponential
+  expert_name: Strategy boundary / exponential only with evaluation and currying laws
   public_name: supplied strategy boundary
   route: UNI-ORDINARY
   moves:
@@ -73,9 +73,9 @@ constructions:
   fallback: named strategy interface
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: only for an exponential claim, maps X times A to B in the declared world
+    mediator: currying with an evaluation map; not supplied by a strategy interface alone
+    canonicality: beta and eta equations are required only when exponential structure is claimed
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 17
@@ -96,7 +96,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - structures-and-laws.md
   - canonical-boundary-artifacts.md
@@ -214,15 +214,16 @@ constructions:
   emits:
   - bindable-program-ir
   laws:
-  - bind preserves interpreter semantics
+  - left identity, right identity, and associativity hold under the declared observations
+  - bind preserves interpreter semantics and required effect ordering
   falsifiers:
   - a later operation is chosen before the required value exists
   fallback: ordinary sequential function
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: not required for monad laws; a separate free-construction claim names its models
+    mediator: not required for a lawful sequence; a free-construction claim must derive its interpreter
+    canonicality: monad laws do not imply freeness or a unique implementation
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 20
@@ -243,7 +244,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - effects-and-coalgebras.md
   - description-composition-doctrine.md
@@ -257,6 +258,7 @@ constructions:
   signals:
   - static-computation-shape
   - multiple-static-interpreters
+  - component-local-description-with-global-phases
   requires:
   - shape_known_before_results
   emits:
@@ -267,12 +269,13 @@ constructions:
   falsifiers:
   - a later operation depends on an earlier value
   - static structure is used to infer effect commutativity
+  - phase composition changes required within-phase order or runs later effects after an unhandled earlier failure
   fallback: explicit list or tree of operations
   universal:
     role: composition
-    competitors: every legal composite and every nearby illegal composition
-    mediator: one explicit composition path for each legal composite
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: for a free-applicative claim, applicatives with a natural interpretation of the generators
+    mediator: the induced applicative interpretation of the generated plan
+    canonicality: uniqueness follows from generator interpretation and applicative laws, not from one runner
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 21
@@ -315,16 +318,18 @@ constructions:
   - step-and-observe
   laws:
   - expected traces are reproduced
-  - observationally equivalent states remain equivalent
+  - claimed-equivalent states remain equivalent under every permitted continuation
+  - required outputs, effects, failures, and temporal observations are retained
   falsifiers:
   - invalid transition is accepted
-  - claimed-equivalent states have different observations
+  - states with the same current display have distinguishable required future traces
+  - a valid transition or required recovery behavior is excluded
   fallback: explicit state machine
   universal:
     role: observation
-    competitors: every behavior distinguishable by the sanctioned observations or traces
-    mediator: one observation path through the selected vocabulary or observer
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: only for a final-coalgebra claim, coalgebras of a specified functor
+    mediator: only for that stronger claim, a coalgebra morphism into the proposed final carrier
+    canonicality: finality requires a unique such morphism; an ordinary state machine does not
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 22
@@ -345,12 +350,12 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - effects-and-coalgebras.md
   - canonical-boundary-artifacts.md
 - id: observation_vocabulary
-  expert_name: Yoneda
+  expert_name: Observation vocabulary / Yoneda only with natural representability evidence
   public_name: first-class observation vocabulary
   route: UNI-CANONICAL
   moves:
@@ -364,14 +369,16 @@ constructions:
   - observation-ir-and-runner
   laws:
   - representation changes preserve every sanctioned observation
+  - quotienting requires adequacy under permitted future operations, not just current projections
   falsifiers:
-  - an allowed observation distinguishes values that were collapsed
+  - an allowed observation or continuation distinguishes values that were collapsed
+  - a finite probe list is called a Yoneda representation without the natural correspondence
   fallback: central projection service
   universal:
     role: observation
-    competitors: every behavior distinguishable by the sanctioned observations or traces
-    mediator: one observation path through the selected vocabulary or observer
-    canonicality: the comparison is unique up to the declared observations, equations, and normalization
+    competitors: only for a Yoneda claim, natural transformations from the specified representable functor
+    mediator: evaluation at identity and its natural inverse, not the observation runner alone
+    canonicality: the natural correspondence must be established; finite application probes do not supply it
     effectivity: construction, comparison, interpretation, and validation fit the declared resource model
   selection_mode: selectable
   diagnostic_order: 23
@@ -391,7 +398,7 @@ constructions:
   - literal
   - effective_realization
   - bounded_approximation
-  proof_profile: universal
+  proof_profile: structure
   theory_refs:
   - yoneda-coyoneda-defunctionalization.md
   - mechanics/yoneda-coyoneda.md

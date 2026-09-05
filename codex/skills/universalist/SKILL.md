@@ -20,11 +20,11 @@ Default discipline:
 one live semantic decision
 one owned boundary
 one current context
-one architectural axis
-one typed hole
+one primary architectural axis
+one typed hole with its interacting law family
 one ordinary candidate first
 one smallest effective artifact
-one law and one falsifier
+one governing law family and one discriminator
 ```
 
 Activation is semantic-pressure-triggered. Disclosure and escalation are
@@ -86,6 +86,16 @@ standalone disposition template; the same applicable obligations remain.
    record, tagged union, checked constructor, adapter, explicit parameter,
    state machine, operation IR, handler, labelled graph, query, bounded loop,
    canonical merge, or one typed compatibility witness.
+   Before treating it as dispositive, ask: **what representation or composition
+   would make the required behavior structural rather than a repeated obligation?**
+   Ordinary-first is a comparison baseline, not a ceiling on reasoning. Consider
+   at most one grounded law-derived challenger, including on a first-use boundary
+   with no duplication. Do not invent a challenger when current evidence already
+   decides the question. Derive an artifact, lawful transformation, or reusable
+   proof; it may still be an ordinary constructor or loop. Preserve required-valid
+   behavior as well as excluding invalid behavior. Keep necessary state, effect,
+   resource, and observation interactions in the same argument. Reuse any equivalent
+   challenger supplied by the receiving workflow; no second pass or packet.
 4. Record the compact disposition:
 
 ```text
@@ -126,7 +136,7 @@ the whole reference corpus to search for a reason to escalate.
 |---|---|---|
 | Live change pressure exists and the incumbent is exact | nothing | compact `preserve` disposition with a preservation delta |
 | One ordinary artifact clearly closes the seam | nothing | compact `ordinary` nomination and transition |
-| Repeated semantic obligations or an imminent constrained variant may share one law | `references/latent-structure-recognition.md` | encoding relation, false friend, discriminator, dividend, transition need |
+| Repeated obligations, an imminent constrained variant, or a grounded law-derived challenger needs discrimination | `references/latent-structure-recognition.md` | encoding relation, false friend, discriminator, dividend, transition need |
 | At least two plausible routes materially differ | `references/consequential-boundary.md` | context-relative comparison and Boundary Artifact Contract candidate |
 | A specific typed hole survives ordinary comparison | `references/artifact-selection-by-unknown-location.md`, then the matching registry card fragment only | evidence-bound card disposition |
 | One advanced card remains live | only that card's `theory_refs` | effective repository-native lowering and proof profile |
@@ -139,12 +149,16 @@ the whole reference corpus to search for a reason to escalate.
 Read `references/latent-structure-recognition.md` only when repository evidence
 contains a repeated semantic obligation, a distributed owner, repeated
 interpreter/composition/transition structure, or an imminent variant already
-constrained by the same law.
+constrained by the same law, or the common path has already derived a concrete
+alternative whose governing law needs discrimination. That alternative may arise
+at a first-use boundary; it does not require a second implementation. This changes
+recognition after activation, not the boundary-decision trigger.
 
 Syntactic duplication, shared vocabulary, or a category-shaped name is
 insufficient. Recognition must identify a nearest false friend and one
 executable law or counterexample that distinguishes it. A recognized pattern
-survives only when it deletes or centralizes a material obligation.
+survives only when it removes or centralizes a material obligation, enables a
+lawful transformation, or strengthens a reusable proof with an object-level delta.
 
 ### Consequential-decision gate (`UNI-CONSEQUENTIAL`)
 
@@ -186,6 +200,13 @@ After the ordinary candidate and consequential comparison:
 5. read only the selected or still-material card's exact `theory_refs`;
 6. lower any retained card into one repository-native boundary artifact.
 
+Match proof to the actual claim: a lawful structure needs its laws and
+interpretation, not an invented universal property. Mediation and uniqueness
+apply only to a named universal construction with specified competitors and maps.
+Opacity, one public interpreter, and passing examples alone establish neither.
+A bounded approximation states its domain, losses, and evidence limits. A route
+name never upgrades claim strength.
+
 Signals, registry order, `diagnostic_order`, evidence count, and theorem
 sophistication never prove prerequisites or select a route. Ordinary dominance
 is a successful advanced-mechanics rejection, not a failed analysis.
@@ -210,7 +231,8 @@ Assign routes only after lowering:
   pressure.
 - `UNI-ORDINARY` — nominate the smallest ordinary repository-native artifact.
 - `UNI-CANONICAL` — nominate an advanced construction only when it materially
-  strengthens the ordinary candidate and has a complete effective witness.
+  strengthens the ordinary candidate and has a complete claim-appropriate
+  effective witness; this route name does not itself assert universality.
 - `UNI-OBSTRUCT` — stop only when no honest representable or effective artifact
   remains, or an explicitly primitive bypass is contained.
 

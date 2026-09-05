@@ -1,7 +1,7 @@
 schema: universal-construction-registry/v6
 purpose: Use category theory as an active evidence-bound architectural decision table. Evaluate only cards
-  relevant to one seam and one architectural axis; the root workflow remains the sole architecture decision
-  authority.
+  relevant to one seam, one primary axis, and its necessary interacting law family; the root workflow
+  remains the sole architecture decision authority.
 plain_output_default: true
 claim_modes:
 - nomination
@@ -103,8 +103,25 @@ axes:
 - transport-realization
 - presentation
 - proof
+proof_profile_selection:
+  rule: Select obligations from the actual retained claim, not its name, route, or a legacy card default.
+  structure: A lawful model or transformation needs its operations, laws, preservation, effectivity, and falsifier;
+    mediation, uniqueness, representability, initiality, and finality are not implied.
+  universal: A universal claim additionally names the diagram, admissible competitors and maps, factorization
+    equations, and a uniqueness argument. A card's universal block is a nomination, never a supplied proof.
+  downgrade: When a legacy universal default is stronger than the required claim, explicitly retain only the
+    adequate structure and its laws; do not claim the theorem or fill mediation and canonicality with API ownership.
+  realization: Literal, effective_realization, and bounded_approximation are independent of claim kind.
+  evidence: Distinguish a derivation, exhaustive finite check, and sampled test; one interpreter or opaque constructor
+    does not prove uniqueness. Bounded claims declare their domain, exclusions, and refinement condition.
 proof_profiles:
   support: []
+  structure:
+  - existence
+  - laws
+  - preservation
+  - effectivity
+  - falsifier
   universal:
   - existence
   - commutation
@@ -121,7 +138,8 @@ proof_profiles:
   - reopening_condition
 decision_discipline:
   one_axis_at_a_time: true
-  cross_axis_signal: analyze the independent axis separately before root synthesis
+  cross_axis_signal: Split independently governed pressures; retain necessary state/effect/resource/observation
+    interactions in the same bounded argument. one_axis_at_a_time names the primary axis, not proof isolation.
   unknown_signal: leave the card unresolved rather than infer applicability or obstruction
   verification_target: verification mode names exactly one selectable construction card
 scope_obligations:
@@ -147,7 +165,7 @@ derived_mechanics:
     - generated_language
     - generated_semantics_transport
     rule: Represent the hard operation in an easier world, then verify the attributed interpretation back;
-      analyze each axis separately rather than selecting a new global winner.
+      keep the transport-preservation interaction explicit without selecting an unrelated global winner.
   two_dimensional_architecture:
     axes:
     - two-dimensional-composition
