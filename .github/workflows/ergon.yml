@@ -1,0 +1,63 @@
+name: Ergon qualification
+
+on:
+  push:
+    branches: [codex/ergon-ledger-prototype]
+    paths: ['codex/skills/ergon/**', '.github/workflows/ergon.yml']
+  pull_request:
+    paths: ['codex/skills/ergon/**', 'codex/skills/ledger/**', '.github/workflows/ergon.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v5
+        with:
+          repository: tkersey/skills-zig
+          ref: 09982f2b0abe11abae7922a7451763e3a3198f44
+          path: native-ledger
+          persist-credentials: false
+      - name: Install the native compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSLo "$RUNNER_TEMP/zig.tar.xz" https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
+          tar -xJf "$RUNNER_TEMP/zig.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/zig-x86_64-linux-0.16.0" >> "$GITHUB_PATH"
+      - name: Build native Ledger
+        working-directory: native-ledger
+        run: zig build build-ledger -Doptimize=ReleaseSafe
+      - name: Package reproducible development inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ergon-inputs"
+          git archive HEAD codex/skills/ergon codex/skills/ledger codex/AGENTS.md > "$RUNNER_TEMP/ergon-inputs/dotfiles.tar"
+          git -C native-ledger archive HEAD > "$RUNNER_TEMP/ergon-inputs/skills-zig.tar"
+          cp "$RUNNER_TEMP/zig.tar.xz" "$RUNNER_TEMP/ergon-inputs/"
+          cp native-ledger/zig-out/bin/ledger "$RUNNER_TEMP/ergon-inputs/"
+          if [ -d "$HOME/.cache/zig/p" ]; then tar -czf "$RUNNER_TEMP/ergon-inputs/zig-packages.tar.gz" -C "$HOME/.cache/zig" p; fi
+          sha256sum "$RUNNER_TEMP/ergon-inputs/"* > "$RUNNER_TEMP/ergon-inputs/SHA256SUMS"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ergon-native-inputs
+          path: ${{ runner.temp }}/ergon-inputs
+          retention-days: 3
+      - name: Exercise the complete Ergon contract
+        shell: bash
+        run: |
+          export PATH="$PWD/native-ledger/zig-out/bin:$PATH"
+          python3 codex/skills/ergon/tests/test_protocol.py --evidence "$RUNNER_TEMP/ergon-results.jsonl"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ergon-native-results
+          path: ${{ runner.temp }}/ergon-results.jsonl
+          if-no-files-found: warn
