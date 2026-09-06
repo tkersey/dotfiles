@@ -35,7 +35,13 @@ and decisive evidence/countercase. Inspect existing paths and companion changes
 that could satisfy the obligation. Missing accessible authority remains a named
 evidence gap; do not reconstruct parent-only requirements from a digest.
 
-Return `findings` only for supported findings; when none remain, return `clean`.
-Disclose material evidence gaps without asserting complete coverage. This search
-priority does not exclude other concrete in-scope defects. Review Fold owns
-admission. Do not implement repairs, invoke other skills, or select the successor.
+Return the native structured review object with `findings`, `overall_correctness`,
+`overall_explanation`, and `overall_confidence_score`, never a bare status word.
+Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
+and `code_location` (`absolute_file_path` and `line_range.start`/`line_range.end`).
+When no supported findings remain, use an empty `findings` array and
+`overall_correctness: "patch is correct"`; use `"patch is incorrect"` only with
+supported findings. Disclose material evidence gaps in `overall_explanation`
+without asserting complete coverage. This search priority does not exclude other
+concrete in-scope defects. Review Fold owns admission. Do not implement repairs,
+invoke other skills, or select the successor.
