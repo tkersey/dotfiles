@@ -57,8 +57,9 @@ Handoff instead:
 Within Actuating, the checked-in [complexity review lens](../actuating/references/lenses/complexity-review.md)
 owns the lane's scope and return shape. Its focus is unnecessary correctness
 machinery and duplicate semantic ownership, not the full standalone comprehension
-preflight. Return the duplicated obligation, evidence, and implicated owner defect;
-distinguish legitimate derived guards. Do not select a repair, launch companion
+preflight. Return the independently maintained truth, accepted obligation, and
+evidence; distinguish competing owners from derived guards and independent oracles.
+Keep grounded nonblocking opportunities separate from established violations. Do not select a repair, launch companion
 reviews, or emit a second preflight, evidence table, or proposed-repair agenda.
 Review Fold adjudicates and Actuating owns the construction decision. This section
 takes precedence over standalone workflow, routing, and output only within

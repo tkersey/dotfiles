@@ -34,9 +34,10 @@ If no plausible actor and action exist, classify the candidate as `not_a_footgun
 ## Actuating composition
 
 Within Actuating, the checked-in [footgun review lens](../actuating/references/lenses/footgun-review.md)
-owns the lane's scope and return shape: plausible misuse that bypasses the admitted
-construction, not the full standalone affordance audit. Preserve its actor, easy
-path, reasonable belief, hidden bypass, consequence, and affected law. Return
+owns the lane's scope and return shape: evidence-backed interface traps, including
+admission bypasses but not limited to them. Preserve its actor, plausible action,
+expectation and source, hidden hazard or contract mismatch, consequence, and
+affected obligation. This is not the full standalone affordance audit. Return
 only that evidence; do not launch companion reviews, select mitigations, or emit
 a standalone ledger or agenda. This section takes precedence over standalone
 routing and output below only within Actuating; standalone modes are unchanged.
