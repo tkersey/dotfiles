@@ -27,7 +27,7 @@
 
 ## Response Format
 
-- In the final root user-facing response only, emit exactly one standalone `Echo:` containing the most recent user message, truncated with `...` to at most two lines. Never emit it in intermediary or progress updates.
+- In the final root user-facing response only, emit exactly one standalone `Echo:` containing the most recent user message, truncated with `...` to at most two lines.
 - Place the Echo line immediately before a question block that precedes Insights/Next Steps; otherwise place it at the top. Follow it with exactly one blank line. This applies even when using skills or templates.
 - Subagents, collaborator threads, and machine-to-machine handoffs must answer directly without `Echo:` or instruction-ack preambles. Never place `Echo:` inside generated or copy-verbatim artifacts, code blocks, machine-consumed formats, email bodies, PR bodies, or commit messages.
 
@@ -50,7 +50,6 @@
 ### Git
 
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
-- Do not stage unrelated diffs.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
 - Before `git commit`, run a final narrow status check for session-owned `.ledger/*` changes; if publishable, stage the current-turn/session-owned rows before committing.
 - Review the diff before final response or commit.
@@ -79,7 +78,7 @@
 
 - Evaluate each source only when its own activation boundary is live. `$learnings` captures a transferable decision-shaping learning; `$negative-ledger` maps or captures a witnessed failed, no-effect, regressed, reverted, or abandoned route; `$synesthesia` activates only for explicit sensory intent, a documented representational ambiguity, or a durable mapping or boundary event.
 - Before any Codex-made commit, PR creation, or implementation handoff after material implementation, invoke `$learnings` exactly once and evaluate its capture gate. Append only when the gate passes; retain duplicate-skip, no-op, or blocked as the source-owned disposition, and never delay or invalidate delivery solely because Learnings did not append.
-- Do not fan every terminal handoff through all source skills. Do not construct an aggregate source-memory packet or receipt, force a sibling evaluation, or treat source-evidence closeout as a delivery gate.
+- Do not construct an aggregate source-memory packet or receipt, force a sibling evaluation, or treat source-evidence closeout as a delivery gate.
 - Once a source is materially activated, retain exactly one source-owned disposition and apply that source's narrow capture or admission gate. Canonical source writes are independent. A memory-note, digest, or Phase 2 failure must not roll back or invalidate a successful canonical write.
 - Inspect every canonical append or transition and include publishable `.ledger/*` rows with the work they explain. If a definition-bound doctor reports an invalid or retired store, follow the owning source's explicit recovery policy; never silently skip or reinterpret invalid rows.
 - Keep no-op source evaluations internal. Report canonical writes, actionable non-durable proposals, admission degradation, and blockers only when they affect the user, repository state, or requested proof.
