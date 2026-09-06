@@ -45,7 +45,7 @@ class Workspace(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="ergon-test-")
         self.addCleanup(self.temporary.cleanup)
-        self.repo = self.temporary.name
+        self.repo = str(Path(self.temporary.name).resolve())
         self.request_number = 0
 
     def project(self, name="current", **parameters):

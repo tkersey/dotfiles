@@ -1,6 +1,6 @@
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
 interface:
   display_name: "ergon"
   short_description: "Durable dependency-aware work tracking"
-  default_prompt: "Use $ergon only when explicitly invoked. Load the current $ledger skill and Ergon's passive definition, requiring Ledger 1.2 or newer within major version 1. Create, close, reopen, link or unlink prerequisites, and project ready work, exact blockers, dependencies, or history. Use native transactions against the selected repository and observed revision. Never substitute open for ready, maintain a second graph, select a repair implicitly, or treat readiness as authorization to execute work."
+  default_prompt: "Use $ergon for requests to maintain or query a durable task graph, including task prerequisites and ready or blocked tasks. Load the current $ledger skill and Ergon's passive definition, requiring Ledger 1.2 or newer within major version 1. Create, close, reopen, link or unlink prerequisites, and project ready work, exact blockers, dependencies, or history. Use native transactions against the selected repository and observed revision. Do not turn ordinary coding into mandatory bookkeeping or migrate existing tasks implicitly. Never substitute open for ready, maintain a second graph, select a repair implicitly, or treat readiness as authorization to execute work."

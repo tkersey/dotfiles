@@ -1,6 +1,6 @@
 ---
 name: ergon
-description: "Use explicitly for durable dependency-aware work tracking: create, close, reopen, link or unlink prerequisites, and inspect ready work, exact blockers, dependencies, or history. Ergon owns a passive Ledger definition; Ledger enforces the task graph atomically."
+description: "Use for durable dependency-aware work tracking: create, close, reopen, link or unlink task prerequisites, and inspect ready work, exact blockers, task dependencies, or task history. Invoke explicitly with $ergon or implicitly when the request calls for maintaining or querying a durable task graph. Ergon owns a passive Ledger definition; Ledger enforces the task graph atomically."
 ---
 
 # Ergon
@@ -11,9 +11,11 @@ in [manifest.json](definitions/manifest.json). Ledger supplies transactions,
 replay, and projections. There is no separate tracker, wrapper CLI, or
 agent-maintained readiness cache.
 
-Use only when explicitly invoked. Do not turn ordinary coding into mandatory
-bookkeeping, migrate existing tasks implicitly, or change `$plan`/`$actuating`
-routing. Work against the caller-selected repository, not a guessed location.
+Use when explicitly invoked or when the request calls for maintaining or querying
+a durable task graph, such as tracking task prerequisites or finding ready and
+blocked tasks. Do not turn ordinary coding into mandatory bookkeeping, migrate
+existing tasks implicitly, or change `$plan`/`$actuating` routing. Work against the
+caller-selected repository, not a guessed location.
 
 ## Runtime and custody
 
