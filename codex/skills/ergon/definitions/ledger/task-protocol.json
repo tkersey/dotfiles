@@ -9,6 +9,7 @@
       "bind-existing",
       "bounded-string",
       "compare-and-append",
+      "composite-identity",
       "enum",
       "event-kinds",
       "event-materialization",
@@ -19,8 +20,11 @@
       "id-lookup",
       "idempotency-key",
       "reducer",
+      "regex",
       "replay",
       "safe-identifier",
+      "sha256",
+      "tagged-union",
       "transition-table"
     ]
   },
@@ -45,6 +49,11 @@
       "max_bytes": 4096
     },
     "submission": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4096
+    },
+    "dependency": {
       "codec": "json",
       "required": false,
       "max_bytes": 4096
@@ -75,6 +84,70 @@
         }
       },
       "event": {
+        "tagged": {
+          "tag": "/kind",
+          "variants": [
+            {
+              "value": "task.created",
+              "node": [
+                "use",
+                "task-event"
+              ]
+            },
+            {
+              "value": "task.closed",
+              "node": [
+                "use",
+                "task-event"
+              ]
+            },
+            {
+              "value": "task.reopened",
+              "node": [
+                "use",
+                "task-event"
+              ]
+            },
+            {
+              "value": "dependency.added",
+              "node": [
+                "use",
+                "dependency-event"
+              ]
+            },
+            {
+              "value": "dependency.removed",
+              "node": [
+                "use",
+                "dependency-event"
+              ]
+            }
+          ]
+        }
+      },
+      "dependency": {
+        "object": "exact",
+        "fields": {
+          "record": {
+            "object": "exact",
+            "fields": {
+              "prerequisite": {
+                "identifier": {
+                  "max": 128
+                }
+              },
+              "task": {
+                "identifier": {
+                  "max": 128
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "types": {
+      "task-event": {
         "object": "exact",
         "fields": {
           "kind": {
@@ -92,10 +165,58 @@
           "record": {
             "object": "exact",
             "fields": {
+              "type": {
+                "enum": [
+                  "task"
+                ]
+              },
               "title": {
                 "string": {
                   "trimmed_min": 1,
                   "max": 512
+                }
+              }
+            }
+          }
+        }
+      },
+      "dependency-event": {
+        "object": "exact",
+        "fields": {
+          "kind": {
+            "enum": [
+              "dependency.added",
+              "dependency.removed"
+            ]
+          },
+          "id": {
+            "string": {
+              "min": 68,
+              "max": 68
+            },
+            "regex": {
+              "patterns": [
+                "^dep:[a-f0-9]+$"
+              ],
+              "max": 68
+            }
+          },
+          "record": {
+            "object": "exact",
+            "fields": {
+              "type": {
+                "enum": [
+                  "dependency"
+                ]
+              },
+              "task": {
+                "identifier": {
+                  "max": 128
+                }
+              },
+              "prerequisite": {
+                "identifier": {
+                  "max": 128
                 }
               }
             }
@@ -118,7 +239,9 @@
           "values": [
             "task.created",
             "task.closed",
-            "task.reopened"
+            "task.reopened",
+            "dependency.added",
+            "dependency.removed"
           ]
         }
       ],
@@ -128,7 +251,20 @@
           "key": "/id",
           "on": "/kind",
           "event_kind": "/kind",
-          "retain_once": "/record"
+          "retain_once": "/record",
+          "relation": {
+            "discriminator": "/type",
+            "vertex_tag": "task",
+            "edge_tag": "dependency",
+            "source": "/task",
+            "target": "/prerequisite",
+            "active_states": [
+              "present"
+            ],
+            "acyclic": true,
+            "max_vertices": 128,
+            "max_edges": 1024
+          }
         }
       ],
       [
@@ -136,7 +272,9 @@
         {
           "states": [
             "open",
-            "closed"
+            "closed",
+            "present",
+            "absent"
           ],
           "transitions": [
             {
@@ -153,6 +291,21 @@
               "from": "closed",
               "on": "task.reopened",
               "to": "open"
+            },
+            {
+              "from": null,
+              "on": "dependency.added",
+              "to": "present"
+            },
+            {
+              "from": "absent",
+              "on": "dependency.added",
+              "to": "present"
+            },
+            {
+              "from": "present",
+              "on": "dependency.removed",
+              "to": "absent"
             }
           ]
         }
@@ -167,7 +320,7 @@
         "path": "ergon/events.jsonl",
         "kind": "event-log",
         "codec": "jsonl",
-        "max_bytes": 1048576
+        "max_bytes": 16777216
       }
     }
   },
@@ -196,6 +349,28 @@
                 "field": "id",
                 "input_field": "id"
               }
+            ],
+            "derive": [
+              {
+                "name": "role",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "task"
+                  }
+                ],
+                "max_bytes": 16
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "type",
+                "derived": "role"
+              }
+            ],
+            "body_order": [
+              "title",
+              "type"
             ]
           }
         }
@@ -225,6 +400,28 @@
                 "field": "id",
                 "input_field": "id"
               }
+            ],
+            "derive": [
+              {
+                "name": "role",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "task"
+                  }
+                ],
+                "max_bytes": 16
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "type",
+                "derived": "role"
+              }
+            ],
+            "body_order": [
+              "title",
+              "type"
             ]
           },
           "expected_revision_param": "revision"
@@ -255,6 +452,28 @@
                 "field": "id",
                 "input_field": "id"
               }
+            ],
+            "derive": [
+              {
+                "name": "role",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "task"
+                  }
+                ],
+                "max_bytes": 16
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "type",
+                "derived": "role"
+              }
+            ],
+            "body_order": [
+              "title",
+              "type"
             ]
           },
           "expected_revision_param": "revision"
@@ -269,6 +488,172 @@
           "input": "event"
         }
       ]
+    },
+    "add-dependency": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "dependency",
+          "idempotency_param": "request",
+          "expected_revision_param": "revision",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "kind",
+              "id",
+              "record"
+            ],
+            "fields": [
+              {
+                "field": "kind",
+                "literal": "dependency.added"
+              },
+              {
+                "field": "id",
+                "derived": "edge_id"
+              }
+            ],
+            "derive": [
+              {
+                "name": "role",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "dependency"
+                  }
+                ],
+                "max_bytes": 16
+              },
+              {
+                "name": "fingerprint",
+                "op": "sha256",
+                "encoding": "hex",
+                "fragments": [
+                  {
+                    "input_text": "/record/task"
+                  },
+                  {
+                    "literal": "|"
+                  },
+                  {
+                    "input_text": "/record/prerequisite"
+                  }
+                ],
+                "max_bytes": 512
+              },
+              {
+                "name": "edge_id",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "dep:"
+                  },
+                  {
+                    "derived": "fingerprint"
+                  }
+                ],
+                "max_bytes": 68
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "type",
+                "derived": "role"
+              }
+            ],
+            "body_order": [
+              "task",
+              "prerequisite",
+              "type"
+            ]
+          }
+        }
+      ]
+    },
+    "remove-dependency": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "dependency",
+          "idempotency_param": "request",
+          "expected_revision_param": "revision",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "kind",
+              "id",
+              "record"
+            ],
+            "fields": [
+              {
+                "field": "kind",
+                "literal": "dependency.removed"
+              },
+              {
+                "field": "id",
+                "derived": "edge_id"
+              }
+            ],
+            "derive": [
+              {
+                "name": "role",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "dependency"
+                  }
+                ],
+                "max_bytes": 16
+              },
+              {
+                "name": "fingerprint",
+                "op": "sha256",
+                "encoding": "hex",
+                "fragments": [
+                  {
+                    "input_text": "/record/task"
+                  },
+                  {
+                    "literal": "|"
+                  },
+                  {
+                    "input_text": "/record/prerequisite"
+                  }
+                ],
+                "max_bytes": 512
+              },
+              {
+                "name": "edge_id",
+                "op": "concat",
+                "fragments": [
+                  {
+                    "literal": "dep:"
+                  },
+                  {
+                    "derived": "fingerprint"
+                  }
+                ],
+                "max_bytes": 68
+              }
+            ],
+            "body_fields": [
+              {
+                "field": "type",
+                "derived": "role"
+              }
+            ],
+            "body_order": [
+              "task",
+              "prerequisite",
+              "type"
+            ]
+          }
+        }
+      ]
     }
   },
   "projections": {
@@ -280,7 +665,10 @@
           "key_field": "id",
           "state_field": "status",
           "retained_field": "task",
-          "event_count_field": "event_count"
+          "event_count_field": "event_count",
+          "relation": {
+            "select": "vertices"
+          }
         }
       ]
     },
@@ -292,7 +680,10 @@
           "key_field": "id",
           "state_field": "status",
           "retained_field": "task",
-          "event_count_field": "event_count"
+          "event_count_field": "event_count",
+          "relation": {
+            "select": "vertices"
+          }
         },
         {
           "op": "filter",
@@ -309,7 +700,10 @@
           "key_field": "id",
           "state_field": "status",
           "retained_field": "task",
-          "event_count_field": "event_count"
+          "event_count_field": "event_count",
+          "relation": {
+            "select": "vertices"
+          }
         },
         {
           "op": "id-lookup",
@@ -326,14 +720,84 @@
           "op": "export"
         }
       ]
+    },
+    "ready": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "id",
+          "state_field": "status",
+          "retained_field": "task",
+          "event_count_field": "event_count",
+          "relation": {
+            "select": "vertices",
+            "target_states": [
+              "closed"
+            ],
+            "match": "all",
+            "unmatched_field": "blockers"
+          }
+        },
+        {
+          "op": "filter",
+          "path": "/status",
+          "equals": "open"
+        }
+      ]
+    },
+    "blockers": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "id",
+          "state_field": "status",
+          "retained_field": "task",
+          "event_count_field": "event_count",
+          "relation": {
+            "select": "vertices",
+            "target_states": [
+              "closed"
+            ],
+            "match": "not_all",
+            "unmatched_field": "blockers"
+          }
+        },
+        {
+          "op": "filter",
+          "path": "/status",
+          "equals": "open"
+        }
+      ]
+    },
+    "dependencies": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "id",
+          "state_field": "status",
+          "retained_field": "dependency",
+          "event_count_field": "event_count",
+          "relation": {
+            "select": "edges"
+          }
+        },
+        {
+          "op": "filter",
+          "path": "/status",
+          "equals": "present"
+        }
+      ]
     }
   },
   "bounds": {
     "max_input_bytes": 4096,
-    "max_store_bytes": 1048576,
-    "max_records": 2048,
-    "max_output_bytes": 1048576,
+    "max_store_bytes": 16777216,
+    "max_records": 16384,
+    "max_output_bytes": 16777216,
     "max_diagnostics": 16,
-    "max_reducer_states": 128
+    "max_reducer_states": 1152
   }
 }

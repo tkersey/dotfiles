@@ -1,32 +1,27 @@
 ---
 name: ergon
-description: "Explicit-only experimental task-domain skill implemented through an owner-local Ledger definition. Qualify durable task creation, closure, reopening, replay, and optimistic concurrency in an isolated workspace. Dependency operations and native readiness remain blocked; do not use this prototype to schedule real work."
+description: "Use explicitly for durable dependency-aware work tracking: create, close, reopen, link or unlink prerequisites, and inspect ready work, exact blockers, dependencies, or history. Ergon owns a passive Ledger definition; Ledger enforces the task graph atomically."
 ---
 
 # Ergon
 
-## Status and ownership
+Maintain a small, durable work graph across agent sessions. Ergon owns its task
+semantics in [task-protocol.json](definitions/ledger/task-protocol.json), listed
+in [manifest.json](definitions/manifest.json). Ledger supplies transactions,
+replay, and projections. There is no separate tracker, wrapper CLI, or
+agent-maintained readiness cache.
 
-**Experimental: lifecycle implemented; dependency-graph acceptance is not complete.**
-Use only when explicitly invoked. Until the graph acceptance tests pass, restrict
-mutations to an explicitly selected scratch workspace. Do not migrate live tasks,
-replace an existing task system, or route `$plan` or `$actuating` through Ergon.
-See [the outstanding capability boundary](references/capability-gap.md).
+Use only when explicitly invoked. Do not turn ordinary coding into mandatory
+bookkeeping, migrate existing tasks implicitly, or change `$plan`/`$actuating`
+routing. Work against the caller-selected repository, not a guessed location.
 
-Ergon owns task semantics in
-[task-protocol.json](definitions/ledger/task-protocol.json), registered by
-[manifest.json](definitions/manifest.json). Ledger owns generic enforcement and
-custody. No task-tracker binary, wrapper CLI, executable definition hooks, or
-agent-computed readiness cache belongs in this implementation.
+## Runtime and custody
 
-## Runtime
-
-Load `$ledger` and complete its current `ensure` procedure before the first
-native command. Reuse readiness only while the executable and environment remain
-unchanged. Do not copy the bootstrap handler into Ergon. Provisioning, recovery,
-and result interpretation follow the current `$ledger` contract.
-
-Set the actual installed skill path, or the checked-out path when developing:
+Load the current `$ledger` skill and complete its `ensure` procedure once per
+unchanged executable/environment. **Ergon requires Ledger 1.2.0 or newer within
+major version 1**, including reducer v6 and fold v7. The generic bootstrap's
+older minimum is not sufficient for this definition. Check the selected closure
+before first use or after it changes; do not silently fall back on Ledger 1.1.
 
 ```bash
 ergon_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ergon/definitions/ledger/task-protocol.json")"
@@ -34,86 +29,124 @@ ledger definition check --definition "$ergon_definition" --format json
 ledger definition describe --definition "$ergon_definition" --format json
 ```
 
-Check a new or changed closure, not every unchanged operation. A successful
-bootstrap does not establish support for this definition. The initial native
-qualification used Ledger 1.1.1; the definition's ABI and operators control
-compatibility, not that observation alone.
+For development, select the checked-out definition explicitly. Install/upgrade
+only through `$ledger`'s authorized canonical procedure; never install a build
+from this skill. Until Ledger 1.2 is released through the normal tap, development
+qualification is not evidence that the installed 1.1 binary supports Ergon.
 
-## Implemented protocol
+The authoritative store is `.ledger/ergon/events.jsonl` beneath the selected
+repository. Mutate only with Ergon's native transactions, and read through its
+projections or `doctor`. Tasks and dependencies share one revision and custody
+boundary. Do not hand-edit the store or calculate a second authoritative graph.
 
-A task has a repository-local stable `id`, immutable `title`, and lifecycle state
-`open` or `closed`. Legal transitions are creation into `open`, closing an open
-task, and reopening a closed task. Reusing a task ID, silently changing a title,
-or applying an illegal transition is rejected. Native idempotency keys are scoped
-to an operation: creation retries are idempotent, and conflicting reuse within
-that operation is rejected. Close/reopen revision checks precede idempotency,
-so repeating the original stale revision is rejected even after success.
+## Meaning
 
-Operations are `create`, `close`, and `reopen`. Each accepts the same submission:
+A task has a stable repository-local identifier, immutable title, and `open` or
+`closed` lifecycle state. Creation produces `open`; close and reopen must match
+the existing state. A dependency `B requires A` means B is eligible only when A
+is closed. Multiple prerequisites are conjunctive: **all must be closed**.
 
-```json
-{"id":"A","record":{"title":"Task A"}}
-```
+Readiness is derived: an open task is ready exactly when none of its direct
+prerequisites is open. Closing or reopening A changes the readiness of dependent
+open tasks without writing those tasks. Closed tasks do not automatically reopen;
+Ergon is not a downstream evidence-invalidation protocol. Closing an open task
+records an authorized domain decision, not a proof that its implementation is
+correct. Readiness neither reserves a task nor authorizes an agent to execute it.
 
-Write the submission to a scratch input file, not a store. Supply a unique
-`request` identifier for a new operation; retain that identifier and the exact
-submission for a retry after an uncertain outcome.
+Both dependency endpoints must exist. Missing endpoints, self-dependencies, and
+cycles are rejected atomically. Removing an edge preserves its history and
+removes its blocking effect. Re-adding it restores the same relationship identity.
+A distinct request to add a present edge or remove an absent edge is rejected;
+a retry of an accepted request follows native idempotency semantics.
+
+## Operations
+
+Write request JSON to a scratch input file outside `.ledger`. Native Ledger
+constructs accepted events and relationship identities; do not construct them
+by hand.
+
+| Operation | Input binding | Request JSON |
+| --- | --- | --- |
+| `create`, `close`, `reopen` | `submission` | `{"id":"A","record":{"title":"Task A"}}` |
+| `add-dependency`, `remove-dependency` | `dependency` | `{"record":{"task":"B","prerequisite":"A"}}` |
+
+Supply a unique `request` identifier for a new operation. Preserve its exact
+operation and request bytes for an uncertain-outcome retry. For every mutation
+except creation, first observe the current projection and supply its exact
+`store.revision`; retain the envelope, not just the payload.
 
 ```bash
 ledger transact --definition "$ergon_definition" \
-  --operation create --repo "<scratch-repo>" \
-  --input submission="<submission.json>" --param request="<request-id>" \
-  --format json
+  --operation create --repo "<repo-root>" \
+  --input submission="<task.json>" --param request="<request-id>" --format json
 
 ledger project --definition "$ergon_definition" \
-  --projection current --repo "<scratch-repo>" --format json
+  --projection current --repo "<repo-root>" --format json
+
+ledger transact --definition "$ergon_definition" \
+  --operation add-dependency --repo "<repo-root>" \
+  --input dependency="<dependency.json>" --param request="<request-id>" \
+  --param revision="<observed-store-revision>" --format json
 ```
 
-For `close` or `reopen`, first select the current task and preserve the projection
-envelope. Reuse its exact title and supply that envelope's `store.revision` as
-`--param revision="<revision>"` to the transaction. Creation checks ID absence
-under native custody; it does not take a caller-supplied prior revision.
+Close/reopen requests reuse the task's exact immutable title from `task` or
+`current`. Concurrent writers are serialized by Ledger; expected revisions catch
+stale decisions and graph admission still rejects cycles after a revision refresh.
+On a conflict, inspect current state/history and reconsider—not blindly retry the
+old decision under a new revision.
 
-After a stale-revision rejection, observe the current state and history again
-and reconsider the requested change. Do not blindly replay an old decision
-against a new revision. An idempotent receipt describes the original effect;
-project current state before claiming what is true now. Do not treat a rejected or idempotent transaction's metadata writes
-as a change to task history; preserve the native receipt rather than rewriting
-its `storage_mutated` field.
+Native request keys are operation-scoped. Revision checks precede idempotency,
+so an original stale-revision retry may fail even when its earlier attempt
+succeeded. Inspect state/history before deciding what to submit. An idempotent
+receipt describes the original effect; project current state before claiming what
+is true now. Do not rewrite native `storage_mutated`: rejected/idempotent requests
+can affect custody metadata without adding task history.
 
-| Projection | Meaning |
+## Projections
+
+```bash
+ledger project --definition "$ergon_definition" \
+  --projection ready --repo "<repo-root>" --format json
+```
+
+| Projection | Result |
 | --- | --- |
-| `current` | All tasks, lifecycle state, immutable title, and accepted event count |
-| `open` | Open tasks only; **not dependency-derived readiness** |
-| `task` with `--param id=<id>` | One selected task in the native result's data array |
-| `history` | Complete accepted event rows within the declared output bound |
+| `current` | All tasks: ID, status, immutable task record, accepted task event count |
+| `open` | Open tasks regardless of dependencies; never substitute this for `ready` |
+| `task` plus `--param id=<id>` | One task in the native result's data array |
+| `ready` | Open tasks with every prerequisite closed; `blockers` is empty |
+| `blockers` | Open blocked tasks with exact, sorted unresolved prerequisite IDs |
+| `dependencies` | Active directed relationships and their accepted event counts |
+| `history` | Accepted task and dependency events in store order |
 
-The definition deliberately has no `ready`, `blockers`, `add-dependency`, or
-`remove-dependency` surface yet. Do not invent these operations, silently drop
-dependencies, or return `open` as `ready`. Completion records a caller-authorized
-status change; it does not certify implementation correctness or authorize a
-merge, publication, or next task.
+All are deterministic projections of the selected revision. Dependency events do
+not inflate a task's lifecycle event count. Preserve envelope identities and any
+limitations; do not present a truncated result as a complete task or blocker set.
 
-## Custody and qualification
+## Bounds, maintenance, and reporting
 
-The only task store is `.ledger/ergon/events.jsonl` beneath the selected repo.
-Read through projections or `doctor`; write through the selected native
-transaction. The explicit `bind-existing` operation is maintenance for an
-owner-selected, fully validated current-format store, not an import or repair
-shortcut. There is no implicit binding, rebinding, migration, or fallback reader.
+Initial bounds: 128 tasks, 1,024 distinct dependency identities (including removed
+edges), 16,384 events, 16 MiB store/output, 4 KiB inputs, 128-byte IDs, 512-byte
+titles. Exhaustion fails closed. No compaction or implicit retention workaround.
+This release supports multiple processes over **one authoritative local store**,
+not disconnected replicas or Git conflict resolution.
 
-Initial bounds are 128 tasks, 2,048 event rows, a 1 MiB store, 4 KiB input,
-128-byte identifiers, and 512-byte titles. Exhaustion must fail closed; this
-prototype has no compaction or retention workaround.
+`bind-existing` is explicit maintenance for an owner-selected, fully validated
+current-format store. It is not a history-selection, import, migration, or repair
+shortcut. There is no implicit rebind or migration from the draft prototype.
+Recovery follows the current `$ledger` reference and exact transaction authority.
 
-Run [tests/test_protocol.py](tests/test_protocol.py) with `uv run`. The runner
-uses the current sibling Ledger bootstrap and the real binary, creates isolated
-workspaces, and performs no direct store edits or task-graph computation.
-The default suite includes required graph behavior and currently fails.
-`--lifecycle-only` is partial qualification, never full application acceptance.
-Optional `--evidence <new-file.jsonl>` retains native envelopes outside `.ledger`.
+Run the complete native acceptance suite:
 
-Keep definition-closure digest and exact store/input identities with the native
-results. Report the operation performed, actual outcome, domain-state changes,
-and unresolved capability; do not turn a green lifecycle subset into a claim
-that the dependency-aware task system is complete.
+```bash
+uv run codex/skills/ergon/tests/test_protocol.py
+```
+
+The runner uses sibling Ledger bootstrap and the real binary in isolated
+workspaces. It does not implement task transitions, graph algorithms, or storage.
+`--evidence <new-file.jsonl>` retains unchanged native envelopes outside `.ledger`.
+
+Report the performed operation or requested work view, actual task/edge changes,
+and relevant blockers or conflicts. Retain exact closure and state identities in
+working evidence. No structural receipt grants scheduling, publication, review,
+or merge authority.

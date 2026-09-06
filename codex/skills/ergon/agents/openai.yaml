@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: false
 interface:
   display_name: "ergon"
-  short_description: "Experimental Ledger-defined task lifecycle"
-  default_prompt: "Use $ergon only when explicitly invoked. Load the current $ledger skill and use Ergon's owner-local passive definition. This prototype is restricted to isolated workspaces: lifecycle operations are implemented, but dependency-graph acceptance remains blocked. Never report open tasks as ready, invent dependency operations, schedule real work, or edit stores directly. Preserve native result identities and report the actual qualification scope."
+  short_description: "Durable dependency-aware work tracking"
+  default_prompt: "Use $ergon only when explicitly invoked. Load the current $ledger skill and Ergon's passive definition, requiring Ledger 1.2 or newer within major version 1. Create, close, reopen, link or unlink prerequisites, and project ready work, exact blockers, dependencies, or history. Use native transactions against the selected repository and observed revision. Never substitute open for ready, maintain a second graph, select a repair implicitly, or treat readiness as authorization to execute work."

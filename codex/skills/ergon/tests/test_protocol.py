@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Exercise the real Ledger binary; never implement task or graph semantics here.
 
-Default runs include the still-red graph acceptance tests. --lifecycle-only is
-an explicit partial qualification, not acceptance of the task-graph application.
+The full suite qualifies lifecycle, dependencies, derived readiness, and graph admission.
+No Python graph implementation or direct task-store writes are used.
 """
 from __future__ import annotations
 
@@ -127,8 +127,8 @@ class Lifecycle(Workspace):
         # not a Python reducer or a persisted expected-state cache.
         current = self.project()
         self.assertEqual(current["data"], [
-            {"id": "A", "status": "open", "task": {"title": "Task A"}, "event_count": 3},
-            {"id": "B", "status": "open", "task": {"title": "Task B"}, "event_count": 1},
+            {"id": "A", "status": "open", "task": {"title": "Task A", "type": "task"}, "event_count": 3},
+            {"id": "B", "status": "open", "task": {"title": "Task B", "type": "task"}, "event_count": 1},
         ])
         replayed = self.project()
         self.assertEqual(current["data"], replayed["data"])
@@ -218,19 +218,19 @@ class GraphAcceptance(Workspace):
             revision = self.project()["store"]["revision"]
         return invoke(
             "transact", "--operation", operation, "--repo", self.repo,
-            "--input", "submission=-", "--param", f"request={request}",
+            "--input", "dependency=-", "--param", f"request={request}",
             "--param", f"revision={revision}",
-            payload={"id": task, "prerequisite": prerequisite},
+            payload={"record": {"task": task, "prerequisite": prerequisite}},
         )
 
     def accept_edge(self, task, prerequisite, **kwargs):
         code, result = self.edge("add-dependency", task, prerequisite, **kwargs)
-        self.assertEqual(code, 0, f"Graph acceptance is BLOCKED: {result}")
+        self.assertEqual(code, 0, result)
         return result
 
-    def reject_edge_unchanged(self, task, prerequisite):
+    def reject_edge_unchanged(self, task, prerequisite, *, operation="add-dependency", **kwargs):
         current, history = self.project(), self.project("history")
-        code, result = self.edge("add-dependency", task, prerequisite)
+        code, result = self.edge(operation, task, prerequisite, **kwargs)
         self.assertNotEqual(code, 0, result)
         after = self.project()
         self.assertEqual(current["store"], after["store"])
@@ -293,6 +293,106 @@ class GraphAcceptance(Workspace):
         ready = [row["id"] for row in self.project("ready")["data"]]
         self.assertIn(ready, [["A", "C"], ["B", "C"]])
 
+    def test_all_prerequisites_and_exact_blockers(self):
+        for ident in ["A", "B", "C", "D"]:
+            self.accept("create", ident, f"Task {ident}")
+        self.accept_edge("C", "B")
+        self.accept_edge("C", "A")
+        self.accept_edge("D", "A")
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], ["A", "B"])
+        blockers = self.project("blockers")
+        self.assertEqual([(r["id"], r["blockers"]) for r in blockers["data"]],
+                         [("C", ["A", "B"]), ("D", ["A"])])
+        self.assertEqual(blockers["store"], self.project()["store"])
+        self.accept("close", "A", "Task A")
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], ["B", "D"])
+        self.assertEqual([(r["id"], r["blockers"]) for r in self.project("blockers")["data"]], [("C", ["B"])])
+        self.accept("close", "B", "Task B")
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], ["C", "D"])
+        self.accept("reopen", "A", "Task A")
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], ["A"])
+        self.assertEqual([(r["id"], r["blockers"]) for r in self.project("blockers")["data"]],
+                         [("C", ["A"]), ("D", ["A"])])
+        self.assertEqual([r["event_count"] for r in self.project()["data"]], [3, 2, 1, 1])
+
+    def test_edge_removal_readdition_and_request_identity(self):
+        for ident in ["A", "B", "C"]:
+            self.accept("create", ident, f"Task {ident}")
+        self.accept_edge("B", "A", request="one-edge")
+        self.reject_edge_unchanged("B", "A")  # a distinct duplicate request
+        self.reject_edge_unchanged("C", "A", request="one-edge")
+        self.reject_edge_unchanged("C", "A", operation="remove-dependency")
+        code, result = self.edge("remove-dependency", "B", "A", request="remove-once")
+        self.assertEqual(code, 0, result)
+        self.assertEqual(self.project("dependencies")["data"], [])
+        history = self.project("history")["data"]
+        code, result = self.edge("remove-dependency", "B", "A", request="remove-once")
+        self.assertEqual(code, 0, result)
+        self.assertEqual(result["effects"][0]["result"], "idempotent")
+        self.assertEqual(history, self.project("history")["data"])
+        self.reject_edge_unchanged("B", "A", operation="remove-dependency")
+        self.accept_edge("B", "A")
+        edge = self.project("dependencies")["data"]
+        self.assertEqual(len(edge), 1)
+        self.assertEqual(edge[0]["dependency"], {"type": "dependency", "task": "B", "prerequisite": "A"})
+        self.assertEqual(edge[0]["event_count"], 3)
+        before = self.project("ready")
+        replay = self.project("ready")
+        self.assertEqual((before["data"], before["store"]), (replay["data"], replay["store"]))
+        code, result = invoke("doctor", "--repo", self.repo)
+        self.assertEqual(code, 0, result)
+        self.assertTrue(result["healthy"])
+
+    def test_refreshed_revision_still_rejects_cycle(self):
+        self.accept("create")
+        self.accept("create", "B", "Task B")
+        stale = self.project()["store"]["revision"]
+        self.accept_edge("A", "B", revision=stale)
+        self.reject_edge_unchanged("B", "A", revision=stale, request="stale-edge")
+        self.reject_edge_unchanged("B", "A", request="refreshed-edge")
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], ["B"])
+        self.assertEqual(len(self.project("dependencies")["data"]), 1)
+
+    def test_closed_tasks_are_not_implicitly_reopened(self):
+        self.accept("create")
+        self.accept("create", "B", "Task B")
+        self.accept_edge("B", "A")
+        # Readiness is eligibility, not authorization or an extra closure gate.
+        self.accept("close", "B", "Task B")
+        self.accept("close")
+        self.accept("reopen")
+        self.assertEqual(self.project("task", id="B")["data"][0]["status"], "closed")
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], ["A"])
+        self.assertEqual(self.project("blockers")["data"], [])
+        self.accept("reopen", "B", "Task B")
+        self.assertEqual([(r["id"], r["blockers"]) for r in self.project("blockers")["data"]], [("B", ["A"])])
+
+    def test_dependency_inputs_cannot_override_generated_fields(self):
+        for ident in ["A", "B"]:
+            self.accept("create", ident, f"Task {ident}")
+        self.accept_edge("B", "A")
+        before = self.project("history")
+        for payload in [
+            {"record": {"task": "A", "prerequisite": "B", "type": "task"}},
+            {"record": {"task": "A", "prerequisite": "B", "id": "forged"}},
+            {"record": {"task": "A", "prerequisite": "B"}, "ready": True},
+        ]:
+            code, result = invoke("transact", "--operation", "add-dependency", "--repo", self.repo,
+                                  "--input", "dependency=-", "--param", "request=forged-edge",
+                                  "--param", f"revision={before['store']['revision']}", payload=payload)
+            self.assertNotEqual(code, 0, result)
+        self.assertEqual(before["store"], self.project("history")["store"])
+        self.assertEqual(before["data"], self.project("history")["data"])
+
+    def test_long_ids_do_not_collide_with_edge_identities(self):
+        left, right = "a" * 128, "b" * 128
+        self.accept("create", left, "Long A")
+        self.accept("create", right, "Long B")
+        self.accept_edge(right, left)
+        self.assertEqual([r["id"] for r in self.project("ready")["data"]], [left])
+        self.assertEqual(self.project("blockers")["data"][0]["blockers"], [left])
+        self.reject_unchanged("create", ident="dep:ambiguous")
+
 
 def main() -> int:
     global LEDGER
@@ -324,7 +424,7 @@ def main() -> int:
         with evidence.open("x") as output:
             for row in EVIDENCE:
                 output.write(json.dumps(row, separators=(",", ":")) + "\n")
-    print("Qualification: lifecycle-only; graph acceptance remains blocked."
+    print("Qualification: lifecycle-only; graph acceptance was not run."
           if options.lifecycle_only else "Qualification: includes required graph acceptance.")
     return 0 if checked.wasSuccessful() else 1
 
