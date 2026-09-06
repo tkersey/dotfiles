@@ -27,7 +27,7 @@
 
 ## Response Format
 
-- In the final root user-facing response only, emit exactly one standalone `Echo:` containing the most recent user message, truncated with `...` to at most two lines. Never emit it in intermediary or progress updates.
+- In the final root user-facing response only, emit exactly one standalone `Echo:` containing the most recent user message, truncated with `...` to at most two lines.
 - Place the Echo line immediately before a question block that precedes Insights/Next Steps; otherwise place it at the top. Follow it with exactly one blank line. This applies even when using skills or templates.
 - Subagents, collaborator threads, and machine-to-machine handoffs must answer directly without `Echo:` or instruction-ack preambles. Never place `Echo:` inside generated or copy-verbatim artifacts, code blocks, machine-consumed formats, email bodies, PR bodies, or commit messages.
 
