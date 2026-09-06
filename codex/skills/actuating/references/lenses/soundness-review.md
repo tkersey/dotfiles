@@ -1,67 +1,43 @@
 # Soundness-Skeptic Review Lens
 
-Independently challenge whether the exact bound candidate makes a
-positive semantic judgment that its realized semantics and evidence do not
-justify.
+Start from a consequential positive judgment in the exact bound candidate and
+work backward through the evidence and premises that justify it. Program decisions
+count: authorization, admission, success, completion, committed effects, and
+reported cancellation, as well as claims of safety, equivalence, elimination,
+coverage, or proof. Do not invent a stronger claim than the candidate makes.
 
-A positive judgment may include:
+Bind the judgment to accessible accepted authority, its required observation,
+domain, assumptions, exact subject, and claim strength. Trace its weakest necessary
+premise rather than repeating a generic best-judgment review. Prioritize omitted
+sanctioned behavior, lost observations under interpretation or equivalence,
+unchecked construction or bypasses, stale applicability, evidence bound to the
+wrong artifact, and sampled or contained evidence presented as complete.
 
-```text
-admitted
-safe
-equivalent
-reviewable
-eliminated
-complete-factorization
-complete
-```
+Distinguish two finding bases:
 
-Try to produce one concrete witness where the judgment is granted but the
-claimed property is false, or where an indispensable premise is unsupported.
-Bind the challenge to the declared domain, assumptions, exact subject, and claim
-strength.
+- **Violation witness:** an actual decision or reachable observation contradicts
+  the accepted obligation. Give the smallest decisive source trace, verifier result,
+  or authorized reproduction and the expected observation's independent authority.
+- **Justification failure:** an actual claim depends on a specific contradicted
+  premise or genuinely unmet mandatory evidence obligation. Name that dependency
+  and its evidence. Do not manufacture a runtime failure; missing optional tests
+  alone establish neither this obligation nor a behavioral bug.
 
-Prioritize:
+Inspect the decisive counterevidence: actual enforcement, caller preconditions,
+companion changes, and exact-subject validation. A named guard or green suite is
+not a defense without defeating this witness. An inaccessible premise remains an
+evidence gap, not proof of a defect or of satisfaction; parent-only context and
+opaque digests do not supply its contents.
 
-```text
-an unentailed or stale law/application claim
-a declared domain that omits sanctioned behavior
-a semantic interpretation or equivalence that loses an observation
-a source topology, carrier, factorization, or bypass claim contradicted by code
-a proof bound to the wrong artifact or Git head
-sampled, bounded, or contained evidence upgraded to exhaustive,
-  eliminated, or complete
-```
+For each material finding, give the positive judgment, affected obligation,
+violation witness or exact justification failure, earliest failed premise,
+claim-strength consequence, and evidence reference. Useful premise names include
+law-authority, applicability, comparison-domain, semantic-interpretation,
+source-topology, carrier-or-invariant, producer-factorization, bypass-closure,
+required-valid-preservation, realization, proof-coverage, artifact-binding, and
+claim-strength. A minimal witness is not a one-finding limit.
 
-For each material finding, name:
-
-```text
-positive judgment
-claimed property
-concrete counterexample
-earliest failed premise
-claim-strength consequence
-evidence reference
-```
-
-Use one earliest failed premise:
-
-```text
-law-authority
-applicability
-comparison-domain
-semantic-interpretation
-source-topology
-carrier-or-invariant
-producer-factorization
-bypass-closure
-required-valid-preservation
-realization
-proof-coverage
-artifact-binding
-claim-strength
-```
-
-Return `clean` or `findings`. Do not repeat a generic best-judgment review,
-select or implement a repair, grant mutation, or treat failure to find a
-counterexample as proof of soundness.
+Return `findings` for supported findings, otherwise `clean`; disclose material
+evidence gaps without asserting complete coverage. This search priority does not
+exclude other concrete in-scope defects. Review Fold owns admission. Do not select
+or implement repairs, grant mutation, or treat a clean review as proof of soundness.

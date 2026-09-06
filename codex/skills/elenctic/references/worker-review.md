@@ -74,11 +74,11 @@ The current concerns are:
 
 | Concern | Question to carry through the same investigation |
 |---|---|
-| Soundness skepticism | Does a positive claim survive its law, applicability, domain, interpretation, premises, exact artifact, proof coverage, and claimed strength? |
-| Footguns | Can a reasonable caller take an apparently safe path that bypasses the intended owner, admission, lifecycle, recovery, or compatibility contract? |
-| Invariants | Do representations, constructors, transitions, aliases, composition, and every sanctioned producer preserve the law and required-valid behavior? |
-| Correctness complexity | Are duplicate owners, manual mirrors, adapters, downstream primary guards, or wound-specific proofs compensating for an upstream defect rather than providing derived defense in depth? |
-| Fresh eyes | Does a concrete witness or materially different admissible construction expose an earlier enforceable cut, wrong representation, erased distinction, omitted case, or obsolete workaround? |
+| Soundness skepticism | Starting from a positive decision or claim, do its necessary premises and exact-subject evidence justify it? Distinguish a behavioral witness from missing mandatory justification. |
+| Footguns | Starting from a reasonable actor and action, does the actual consequence match the evidence-backed expectation, including traps with no admission bypass? |
+| Invariants | Starting from valid admission, do permitted operations, aliases, interleavings, and lifetimes preserve the required law and valid behavior? Adequacy, not maximal strength, is the criterion. |
+| Correctness complexity | Which correctness truths are independently maintained, and do distinct accepted obligations justify them? Separate competing owners from derived guards and independent oracles. |
+| Fresh eyes | Reconstruct the required outcome independently and trace it end to end. Does omitted behavior or progress falsify it, or does a justified alternative refute an actual necessity claim? |
 
 The source instructions are authoritative for coverage; this table is an
 orientation, not a replacement. Consider every auxiliary concern internally

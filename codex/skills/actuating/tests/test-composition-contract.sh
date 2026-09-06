@@ -32,11 +32,11 @@ const protectedSections = {
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(skill,name)),digest,`protected Actuating section: ${name}`);
 const lensBlobs = {
-  'soundness-review.md':'58949402e604ee35a2454e64e98532a82825cde4',
-  'footgun-review.md':'00d80db3e5f94cc5365594c059c65ec27b737db4',
-  'invariant-review.md':'275cc488e082c493463c846ed47ec211ea3565d9',
-  'complexity-review.md':'d92f5244415343c9b6bb27c10f09cf991f74bf69',
-  'fresh-eyes-review.md':'e927acc958eae56c5ef5f7a0e42697162a114e71'
+  'soundness-review.md':'8e7fc5be27a73dd48798e88800763688414bbd87',
+  'footgun-review.md':'9cf1da75cfe7c38b47a9379782771ece99e6ef3c',
+  'invariant-review.md':'03c4eb9ad8cf04918b46e6493cbdedfc07636f37',
+  'complexity-review.md':'9af82f73f7fb64ebbf3237d01a8ee858c833cce4',
+  'fresh-eyes-review.md':'0fae3ebbb04f425c05db48a3c034a3084c796f0f'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
@@ -85,3 +85,4 @@ assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-comm
 console.log('actuating: composition source contracts, unchanged modes, review policy, proof bar, and exact lens bytes passed');
 JS
 node "$skill_root/../review-fold/tests/test-counterexample-admission.mjs"
+node "$skill_root/tests/test-auxiliary-discovery.mjs"
