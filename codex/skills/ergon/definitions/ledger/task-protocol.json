@@ -1,0 +1,339 @@
+{
+  "schema": "ledger-artifact-definition/v1",
+  "id": "ergon/task-protocol",
+  "owner": "ergon",
+  "requires": {
+    "abi": "ledger-artifact-abi/v1",
+    "operators": [
+      "append-only-log",
+      "bind-existing",
+      "bounded-string",
+      "compare-and-append",
+      "enum",
+      "event-kinds",
+      "event-materialization",
+      "exact-object",
+      "export",
+      "filter",
+      "fold",
+      "id-lookup",
+      "idempotency-key",
+      "reducer",
+      "replay",
+      "safe-identifier",
+      "transition-table"
+    ]
+  },
+  "parameters": {
+    "request": {
+      "type": "safe_identifier",
+      "required": false
+    },
+    "id": {
+      "type": "safe_identifier",
+      "required": false
+    },
+    "revision": {
+      "type": "digest",
+      "required": false
+    }
+  },
+  "inputs": {
+    "event": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4096
+    },
+    "submission": {
+      "codec": "json",
+      "required": false,
+      "max_bytes": 4096
+    }
+  },
+  "canonicalization": {},
+  "shape": {
+    "documents": {
+      "submission": {
+        "object": "exact",
+        "fields": {
+          "id": {
+            "identifier": {
+              "max": 128
+            }
+          },
+          "record": {
+            "object": "exact",
+            "fields": {
+              "title": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 512
+                }
+              }
+            }
+          }
+        }
+      },
+      "event": {
+        "object": "exact",
+        "fields": {
+          "kind": {
+            "enum": [
+              "task.created",
+              "task.closed",
+              "task.reopened"
+            ]
+          },
+          "id": {
+            "identifier": {
+              "max": 128
+            }
+          },
+          "record": {
+            "object": "exact",
+            "fields": {
+              "title": {
+                "string": {
+                  "trimmed_min": 1,
+                  "max": 512
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "constraints": {
+    "laws": [
+      [
+        "append-only-log",
+        {
+          "input": "event"
+        }
+      ],
+      [
+        "event-kinds",
+        {
+          "values": [
+            "task.created",
+            "task.closed",
+            "task.reopened"
+          ]
+        }
+      ],
+      [
+        "reducer",
+        {
+          "key": "/id",
+          "on": "/kind",
+          "event_kind": "/kind",
+          "retain_once": "/record"
+        }
+      ],
+      [
+        "transition-table",
+        {
+          "states": [
+            "open",
+            "closed"
+          ],
+          "transitions": [
+            {
+              "from": null,
+              "on": "task.created",
+              "to": "open"
+            },
+            {
+              "from": "open",
+              "on": "task.closed",
+              "to": "closed"
+            },
+            {
+              "from": "closed",
+              "on": "task.reopened",
+              "to": "open"
+            }
+          ]
+        }
+      ]
+    ]
+  },
+  "identity": {},
+  "storage": {
+    "kind": "event-log",
+    "slots": {
+      "events": {
+        "path": "ergon/events.jsonl",
+        "kind": "event-log",
+        "codec": "jsonl",
+        "max_bytes": 1048576
+      }
+    }
+  },
+  "operations": {
+    "create": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "submission",
+          "idempotency_param": "request",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "kind",
+              "id",
+              "record"
+            ],
+            "fields": [
+              {
+                "field": "kind",
+                "literal": "task.created"
+              },
+              {
+                "field": "id",
+                "input_field": "id"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "close": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "submission",
+          "idempotency_param": "request",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "kind",
+              "id",
+              "record"
+            ],
+            "fields": [
+              {
+                "field": "kind",
+                "literal": "task.closed"
+              },
+              {
+                "field": "id",
+                "input_field": "id"
+              }
+            ]
+          },
+          "expected_revision_param": "revision"
+        }
+      ]
+    },
+    "reopen": {
+      "effects": [
+        {
+          "op": "compare-and-append",
+          "slot": "events",
+          "input": "submission",
+          "idempotency_param": "request",
+          "event": {
+            "mode": "plain",
+            "body_input_field": "record",
+            "field_order": [
+              "kind",
+              "id",
+              "record"
+            ],
+            "fields": [
+              {
+                "field": "kind",
+                "literal": "task.reopened"
+              },
+              {
+                "field": "id",
+                "input_field": "id"
+              }
+            ]
+          },
+          "expected_revision_param": "revision"
+        }
+      ]
+    },
+    "bind-existing": {
+      "effects": [
+        {
+          "op": "bind-existing",
+          "slot": "events",
+          "input": "event"
+        }
+      ]
+    }
+  },
+  "projections": {
+    "current": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "id",
+          "state_field": "status",
+          "retained_field": "task",
+          "event_count_field": "event_count"
+        }
+      ]
+    },
+    "open": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "id",
+          "state_field": "status",
+          "retained_field": "task",
+          "event_count_field": "event_count"
+        },
+        {
+          "op": "filter",
+          "path": "/status",
+          "equals": "open"
+        }
+      ]
+    },
+    "task": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "fold",
+          "key_field": "id",
+          "state_field": "status",
+          "retained_field": "task",
+          "event_count_field": "event_count"
+        },
+        {
+          "op": "id-lookup",
+          "path": "/id",
+          "param": "id",
+          "required": true
+        }
+      ]
+    },
+    "history": {
+      "slot": "events",
+      "pipeline": [
+        {
+          "op": "export"
+        }
+      ]
+    }
+  },
+  "bounds": {
+    "max_input_bytes": 4096,
+    "max_store_bytes": 1048576,
+    "max_records": 2048,
+    "max_output_bytes": 1048576,
+    "max_diagnostics": 16,
+    "max_reducer_states": 128
+  }
+}
