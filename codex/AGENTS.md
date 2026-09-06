@@ -85,7 +85,7 @@
 
 ### Negative-evidence routing mandate
 
-- Invoke `$negative-ledger` implicitly when implementation, debugging, review, or validation encounters a witnessed failed/no-effect route, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy likely to recur, or a request about what has already been tried. Do not wait for the user to literally name the skill.
+- Invoke `$negative-ledger` implicitly when implementation, debugging, review, or validation encounters a witnessed failed/no-effect route, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy likely to recur, or a request about what has already been tried.
 - Before selecting a route that resembles a prior failure, run the owning
   Negative Evidence definition's current `route-gate` projection. A recalled
   learning may trigger this check but cannot suppress a route until promoted
