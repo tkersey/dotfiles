@@ -2,9 +2,7 @@
 
 set -euo pipefail
 
-readonly DEFAULT_FORMULA="tkersey/tap/ledger"
-
-formula="${LEDGER_BOOTSTRAP_FORMULA:-$DEFAULT_FORMULA}"
+readonly formula="tkersey/tap/ledger"
 install_allowed=false
 
 usage() {
@@ -52,14 +50,14 @@ inspect_availability() {
 inspect_readiness() {
   local capabilities line minor patch
   local abi_found=false
-  ledger_version="$("$ledger_path" version 2>/dev/null || true)"
+  ledger_version="$("$ledger_path" version 2>/dev/null)" || return 1
   [[ "$ledger_version" =~ ^1\.([0-9]+)\.([0-9]+)$ ]] || return 1
   minor="${BASH_REMATCH[1]}"
   patch="${BASH_REMATCH[2]}"
   if ((10#$minor == 0 && 10#$patch < 3)); then
     return 1
   fi
-  capabilities="$("$ledger_path" capabilities --format text 2>/dev/null || true)"
+  capabilities="$("$ledger_path" capabilities --format text 2>/dev/null)" || return 1
   while IFS= read -r line; do
     if [[ "$line" == "ABI: ledger-artifact-abi/v1" ]]; then
       abi_found=true
