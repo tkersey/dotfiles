@@ -13,12 +13,6 @@
 - Override generic guidance to stop on unexpected working-tree changes: treat them as concurrent edits and keep working.
 - Ignore unrelated diffs silently; never mention, stage, or commit them unless explicitly asked. For overlapping diffs, re-read and reconcile without clobbering concurrent changes, re-apply only the still-valid patch, and ask only when the files cannot resolve a real semantic conflict.
 
-## Response Format
-
-- In the final root user-facing response only, emit exactly one standalone `Echo:` containing the most recent user message, truncated with `...` to at most two lines.
-- Place the Echo line immediately before a question block that precedes Insights/Next Steps; otherwise place it at the top. Follow it with exactly one blank line. This applies even when using skills or templates.
-- Subagents, collaborator threads, and machine-to-machine handoffs must answer directly without `Echo:` or instruction-ack preambles. Never place `Echo:` inside generated or copy-verbatim artifacts, code blocks, machine-consumed formats, email bodies, PR bodies, or commit messages.
-
 ## Metanoetic intelligence-escalation mandate
 
 - `$metanoetic` is a selective one-pass generative interrupt over a concrete incumbent, not a default pass. Invoke it before adjudication only when a skill-owned escalation pressure is evidenced: contradiction; repeated same-surface repair or review accretion; a high-regret or difficult-to-reverse commitment; a plausible owner, model, representation, or solution-class error; an incumbent-generated burden another mechanism could eliminate; or a coherent but merely adequate local optimum with a materially different candidate still plausible. Mere substantiveness or consequentiality is insufficient.
