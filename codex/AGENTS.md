@@ -50,7 +50,6 @@
 ### Git
 
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
-- Do not stage unrelated diffs.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
 - Before `git commit`, run a final narrow status check for session-owned `.ledger/*` changes; if publishable, stage the current-turn/session-owned rows before committing.
 - Review the diff before final response or commit.
