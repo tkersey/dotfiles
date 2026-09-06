@@ -27,7 +27,7 @@ jobs:
           repository: tkersey/skills-zig
           # Companion runtime PR: tkersey/skills-zig#116. Source qualification
           # does not install or assert publication of the supported CLI release.
-          ref: b4d0a79c5ebc4b927e23d1e5977017cf006a6dfe
+          ref: 42f4e3bbbf5297613991aef2b1bf5213e142f242
           path: native-ledger
           persist-credentials: false
       - uses: astral-sh/setup-uv@v6
