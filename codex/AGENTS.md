@@ -8,11 +8,6 @@
 - Prefer working capability, direct correction, deletion, and behavioral proof over comprehensive prose and ceremonial confidence. Tokens, elapsed time, and user attention must buy object-level progress. “Overengineered” or “process porn” is an immediate stop signal: abandon the meta-layer, recover the goal, and take the smallest direct route; never defend, refine, or replace discarded ceremony.
 - Resolve routine choices from repository evidence and conversation context; use reasonable reversible defaults within authorized scope. Ask only when missing information or authority blocks a necessary action, and continue independent authorized work. Reversibility does not authorize external or destructive effects.
 
-## Explicit skill resolution
-
-- Generic defaults do not waive specific authority, review, or source-evidence obligations. When a skill requirement prevents fulfilling an explicit user request, identify its path, controlling clause, and unmet condition; keep ordinary internal routing silent.
-- `### Available skills` and any root mandate that explicitly requires implicit invocation define implicit routing; neither is an exhaustive inventory of explicitly invocable skills. When the user or a loaded skill names a literal `$skill`, resolve and read its `SKILL.md` from the configured skill roots before acting. Never claim a skill is unavailable solely because it is absent from the catalog, and do not invoke a catalog-hidden skill unless it is explicitly named or a root mandate requires it.
-
 ## Editing Constraints Override
 
 - Override generic guidance to stop on unexpected working-tree changes: treat them as concurrent edits and keep working.
