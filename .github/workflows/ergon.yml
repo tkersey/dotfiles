@@ -1,0 +1,59 @@
+name: Ergon qualification
+
+on:
+  push:
+    branches: [main]
+    paths: ['codex/skills/ergon/**', 'codex/skills/ledger/**', '.github/workflows/ergon.yml']
+  pull_request:
+    paths: ['codex/skills/ergon/**', 'codex/skills/ledger/**', '.github/workflows/ergon.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ergon-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v5
+        with:
+          repository: tkersey/skills-zig
+          # Companion runtime PR: tkersey/skills-zig#116. Source qualification
+          # does not install or assert publication of the supported CLI release.
+          ref: 42f4e3bbbf5297613991aef2b1bf5213e142f242
+          path: native-ledger
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - name: Install the pinned native compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSLo "$RUNNER_TEMP/zig.tar.xz" https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
+          printf '%s  %s\n' '70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00' "$RUNNER_TEMP/zig.tar.xz" | sha256sum -c -
+          tar -xJf "$RUNNER_TEMP/zig.tar.xz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/zig-x86_64-linux-0.16.0" >> "$GITHUB_PATH"
+      - name: Build native Ledger
+        working-directory: native-ledger
+        run: zig build build-ledger -Doptimize=ReleaseSafe
+      - name: Exercise the complete Ergon contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$PWD/native-ledger/zig-out/bin:$PATH"
+          uv run codex/skills/ergon/tests/test_protocol.py --evidence "$RUNNER_TEMP/ergon-results.jsonl" 2>&1 | tee "$RUNNER_TEMP/ergon-tests.log"
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ergon-native-results
+          path: |
+            ${{ runner.temp }}/ergon-results.jsonl
+            ${{ runner.temp }}/ergon-tests.log
+          retention-days: 7
+          if-no-files-found: warn

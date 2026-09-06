@@ -1,0 +1,11 @@
+{
+  "schema": "skill-definition-set/v1",
+  "skill": "ergon",
+  "seq": [],
+  "ledger": [
+    {
+      "id": "ergon/task-protocol",
+      "path": "ledger/task-protocol.json"
+    }
+  ]
+}
