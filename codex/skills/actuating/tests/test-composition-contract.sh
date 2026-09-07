@@ -36,7 +36,7 @@ const lensBlobs = {
   'footgun-review.md':'9cf1da75cfe7c38b47a9379782771ece99e6ef3c',
   'invariant-review.md':'03c4eb9ad8cf04918b46e6493cbdedfc07636f37',
   'complexity-review.md':'9af82f73f7fb64ebbf3237d01a8ee858c833cce4',
-  'fresh-eyes-review.md':'0fae3ebbb04f425c05db48a3c034a3084c796f0f'
+  'fresh-eyes-review.md':'392289a1e913435e5ad9abf2721b24ad0119682f'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
@@ -47,7 +47,7 @@ for (const [name, digest] of Object.entries(lensBlobs)) {
 // simulate an agent, execute Ledger/CAS, or prove model effectiveness.
 const nominationResults = ['candidate','preserve-incumbent','unresolved','obstructed'];
 assert.deepEqual(policy.universalist_compilation.allowed_nomination_results,nominationResults);
-for (const path of ['SKILL.md','references/architecture-reconciliation.md',
+for (const path of ['SKILL.md',
   '../universalist/SKILL.md','../universalist/README.md']) {
   const source = text(path);
   for (const result of nominationResults) assert(source.includes(result),`${path}: missing ${result}`);

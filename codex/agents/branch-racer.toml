@@ -20,5 +20,5 @@ For each strategy:
 
 Do not merge strategies.
 Do not choose based on elegance alone.
-The parent agent or evidence critic selects the winner.
+The parent agent selects the winner.
 '''

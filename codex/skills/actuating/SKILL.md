@@ -36,7 +36,7 @@ domain. Untrusted bytes may exist; acquiring trusted status must enforce the law
 
 | Fact | Owner |
 |---|---|
-| Required behavior, compatibility, scope, authorized effects | accepted source or user authority, compiled by `$goal-contract` |
+| Required behavior, compatibility, scope, authorized effects | accepted source or current user authority; bound directly by Actuating |
 | Realized construction and exact diff | Git commit and tree |
 | Executed validation and proof | the exact repository-native verifier |
 | Review attempt, target, verdict, and provenance | CAS |
@@ -74,6 +74,37 @@ is required to design software that does not yet exist.
 Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.
 These change scheduling only. They do not change authority or the review inventory.
 
+## Source binding
+
+Derive the Goal directly from the current accepted specification or direct user
+instruction; read the exact source, not just a prior summary. Preserve required
+outcomes, non-goals, hard constraints, compatibility contracts, permitted breaks,
+and migration obligations. Bind repository, immutable base, and authorized path
+scope; an implementation or plan cannot silently broaden them.
+
+Separate required deliverables and source-fixed architecture from preferences,
+examples, and proposed means. Do not promote a suggested mechanism into a law or
+demote an explicit requirement. Source binding records obligations; Actuating
+chooses source-permitted means. A plan, review, or prior implementation cannot
+broaden source authority.
+
+Keep semantic requirements distinct from execution authority. Bind mutation,
+validation, publication, and review posture to the accepted source and selected
+route; permission to work neither authorizes every effect nor proves completion.
+For each required law, retain applicability and its deciding observation. If that
+observation cannot be identified or required authority is missing, block only the
+dependent action or claim; continue independent authorized work.
+
+Before affected mutation, refresh these bindings when the source, authority,
+scope, compatibility, or required observations change. Have `$review-fold`
+reclassify all available applicable findings and failures against the refreshed
+Goal; preserve unresolved evidence and original provenance rather than erasing it
+or inventing continuity. Existing review-epoch and proof-invalidation rules apply.
+
+Reuse an adequate binding in the Working Set and existing downstream owner formats.
+No separate skill invocation, mandatory Goal Contract packet, durable record, or new
+identity is required. A summary or digest never replaces the source or proves completion.
+
 ## Observe and adjudicate
 
 At entry and after material change, bind the Goal, immutable base, exact head,
@@ -99,13 +130,14 @@ underdetermined   seek authority; no correctness mutation from the claim
 ```
 
 Have Review Fold apply its [counterexample admission](../review-fold/SKILL.md#counterexample-admission)
-standard before treating a proposed finding as a current liability. Require the
-accepted obligation, validated witness or exact unmet proof obligation, current
-Goal relevance, and decisive evidence after a source-backed countercase. Consume
-only the supported claim; unresolved premises justify otherwise-authorized
-investigation, not an invented repair. Admission does not validate a suggested fix or causal family.
-This strengthens the existing fold, not the review inventory, scheduling, freeze,
-or credit rules; it adds no reviewer or separate adjudication loop.
+before treating a report as a liability. A discrepancy may expose a defect in the
+implementation, the witness's interpretation, an oracle, or a proof/assessment
+claim. Establish which obligation actually fails; do not default to changing
+production code or to trusting the checker. A refuted allegation returns to Review
+Fold; an oracle correction needs its own source-grounded obligation and independent
+evidence, never changed expectations merely to agree with the candidate. Unresolved
+premises justify authorized investigation, not an invented repair. Acceptance of
+a witness proves neither the proposed fix nor its claimed causal family.
 
 Only current accepted witnesses authorize counterexample response. Duplicate
 observations add provenance, not independent failures. Historical absence cannot
@@ -142,77 +174,76 @@ Outside an open review epoch, review is not a prerequisite for implementation.
 
 ## Compile the first loss of guarantee
 
-Read [counterexample-guided-normalization.md](references/counterexample-guided-normalization.md).
-For each affected law, combine applicable current and retained evidence. Locate
-where a sanctioned construction or transition first lacks the required guarantee:
-what can be chosen, written, ordered, or authorized independently that the law
-requires to agree? Change that enabling freedom, not just the detection site.
+Combine current and applicable historical witnesses under the accepted law. Locate
+the first sanctioned construction or operation that loses the guarantee: what can
+be chosen, written, ordered, or authorized independently that must agree? Keep
+required-valid behavior and distinct obligations intact; the causal family remains
+a revisable hypothesis, not a list of examples.
 
-Before implementation, choose the smallest discriminator that distinguishes
-removing the mechanism from patching its reported example. For lifetime, aliasing,
-retry, or composition failures, prefer an admitted valid state followed by the
-operation or interleaving that breaks its guarantee. Predict along the causal
-dimension, not a checklist of superficially similar inputs. A family remains a
-revisable hypothesis; unsupported predictions remain limitations, not invented
-coverage. Keep independent laws separate even when one successor realizes them.
+Before implementation, choose the smallest discriminator of that explanation. For
+lifetime, aliasing, or composition, start from valid state and exercise the operation
+that loses the law. When source evidence identifies a shared obligation across
+operations, challenge whether the construction lets one omit it independently.
+Prefer making that omission unavailable over teaching each branch to remember
+another check. Preserve legitimate differences between those operations; a shared
+helper or exhaustive switch alone does not establish coverage.
 
-Select against the same laws, required-valid observations, compatibility,
-resources, and family evidence. Remove, derive, or lawfully control the enabling
-freedom at the smallest adequate owner. A local correction wins when it restores
-an already adequate mechanism; there is no local-repair-first prerequisite or
-refactor-everything default. Neither novelty nor preserving the incumbent is an
-objective. Required behavior is never traded for a smaller diff.
+Compare adequate candidates under the same laws, valid observations, compatibility,
+resources, and proof bar. Remove, derive, or lawfully control the enabling freedom.
+Ablation is constructive when it removes that freedom or makes compensation
+unnecessary, not when it deletes required behavior or an independent oracle. Test
+a plausible deletion, delegation, collapse, or replacement when redundancy is
+implicated; do not build two complete versions or manufacture a deletion quota.
+A local correction may restore an adequate owner. Neither local-repair-first nor
+redesign-everything is required. Prefer stronger exclusion and fewer independently
+maintained truths; source size and lifecycle cost compare constructionally adequate
+candidates, not weaker guarantees.
 
-Where duplicate owners or compensation are implicated, test a plausible deletion,
-delegation, collapse, or replacement at the smallest useful seam. Do not build two
-complete implementations or manufacture a useless deletion. Prefer stronger family
-exclusion and fewer independently maintained truths; compare lifecycle cost and
-source size only among constructionally equivalent candidates.
+Use the [construction argument](references/counterexample-guided-normalization.md)
+when domain, operation, or migration coverage needs it. Samples discriminate an
+explanation; they do not prove an open-domain exclusion.
 
 ## Architecture compilation
 
-Use [architecture-reconciliation.md](references/architecture-reconciliation.md)
-when the Goal or evidence makes a boundary a live semantic decision. Do not wait
-for a pre-mutation theorem-identity certificate to reconsider the mechanism.
+At a live boundary decision, use `$first-principles` with the cumulative evidence
+to separate accepted obligations from inherited means. Reuse adequate derivations;
+source-fixed outcomes remain binding even when not derived from technical premises.
+No pre-mutation theorem-identity certificate is needed to reconsider a mechanism.
 
-1. Bind the incumbent-independent premise basis with `$first-principles` and
-   the cumulative Review Fold. Reuse adequate derivations and re-examine only
-   premises material to this decision. Source-fixed outcomes remain chosen
-   objectives even when not derivable from technical premises. Preserve them.
-2. When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
-   then `$metanoetic` verbatim in the same bounded challenger pass, before
-   `$universalist`. Run once per unchanged decision surface; reuse an already
-   consumed challenger rather than adding a pass. Bind required behavior,
-   observations, hard compatibility, non-goals, effects, host capabilities,
-   and authority-backed resource ceilings.
-   Incumbent size, latency, representation, and lifecycle burden are evidence,
-   not immutable constraints. Constrain admissibility, not imagination. Require
-   `preserved`, `made irrelevant by mechanism change`, or `requires new authority`
-   for supplied boundaries, plus the changed mechanism, resource account,
-   smallest witness, and falsifier. Retain, modify, reject, combine, or split.
-   Expand ambition toward removing the enabling cause, not expanding the Goal.
-   Encouragement changes neither admissibility nor the proof bar; rejection
-   remains legitimate. Add no separate Glaze report or adjudication stage.
-3. Give `$universalist` one independently governed axis, one typed hole, and
-   the strongest source-derived domain evidence for the seam. Require `candidate`,
-   `preserve-incumbent`, `unresolved`, or `obstructed` with a code-bound argument,
-   not a second description of the Working Set. Split independent seams and prove
-   their composition. `unresolved` preserves missing evidence or incomparability;
-   it is not a new mode, obstruction proof, or permission to pick arbitrarily.
-   Universalist nominates; Actuating selects and proves.
-4. Choose the exact-head verifier before implementation. Compile the nomination's
-   actual admission, transition, coverage, preservation, migration, and residual
-   obligations into the existing work. Native evidence may discharge them directly;
-   use explicit topology reconciliation when route or migration coverage needs it.
-   No proof obligation disappears because its reporting format is unnecessary.
-5. Use `$reduce` for material retirement challenges, not a duplicate audit. Realize
-   the mechanism, migrations, and retirements together. An adopted owner,
-   representation, interpretation, or proof change updates the affected obligations;
-   a restoration label cannot preserve claims contradicted by the actual change.
+When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
+then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`.
+Run once per unchanged decision surface; reuse an already consumed challenger rather
+than adding a pass. The incumbent may be the construction, causal explanation,
+oracle/proof interpretation, or assessment of progress. Let the pass discover which
+premises and evidence need reinspection; do not confine it to selecting a different
+patch. A code rewrite or live architecture change is not a prerequisite for challenging
+a suspect model. Keep the accepted Goal fixed. Supplied boundaries must be
+`preserved`, `made irrelevant by mechanism change`, or `requires new authority`;
+required observations, compatibility, effects, host capabilities, and authorized
+resource ceilings still govern selection. Supply the resource account in the existing
+decision: justify feasibility against those ceilings using applicable evidence or
+a concrete bound; leave unestablished feasibility unresolved. Reuse evidence only
+while its subject and assumptions remain applicable; add no separate report or
+benchmark stage. Incumbent representations and lifecycle burdens are evidence, not
+immutable constraints. Retaining a sound construction or
+refuting an allegation can be the right outcome. Actuating adjudicates the result.
+Encouragement changes neither admissibility nor the proof bar. Add no separate Glaze
+report or adjudication stage, and no mandatory second review of the review.
 
-Reuse adequate source derivations. Do not impose whole-repository architecture
-work on an isolated defect. A sanctioned path missing from the coverage basis
-revokes that claim immediately, whichever proof representation was used.
+Only when architecture is live, give `$universalist` one independently governed
+axis, one typed hole, and source-derived domain evidence. Require `candidate`,
+`preserve-incumbent`, `unresolved`, or `obstructed` with a compact code-bound argument,
+its discriminator, and material migration/residual consequences. Missing evidence
+or incomparable adequate candidates remain `unresolved`, not an invented obstruction
+or arbitrary winner. Split independent seams and prove their composition.
+Universalist nominates; Actuating selects and proves.
+
+Choose the exact-head verifier before implementation and realize the mechanism,
+migrations, and retirements together under the common proof obligations. Use `$reduce`
+only for material retirement or smaller-construction challenges, not another audit.
+An adopted change to an owner, representation, interpretation, or proof updates the
+affected obligations regardless of its label. Native evidence may discharge coverage;
+use explicit topology only where route or migration accounting requires it.
 
 ## Realization and common proof obligations
 
@@ -272,34 +303,22 @@ successor. Source-domain omissions and authority failures cannot be dismissed as
 missing assertions. Same broad law or owner alone does not establish recurrence.
 A new head, route label, or family name does not erase contrary evidence.
 
-Measure progress in the realized construction: original witnesses excluded,
-independent siblings covered, valid behavior retained, sanctioned paths closed,
-and duplicate semantic owners or compensators removed. Raw CEX counts, gate
-passes, and line counts do not measure distance to correctness. Distinguish
-learning that an explanation was wrong from proving that code is now better.
-
-Use later session audits or offline matched-snapshot replays to evaluate efficacy.
-A historical sibling counts as held out only when it was not supplied to the
-implementing run. Do not add a review lane, a runtime score, or a new evaluation
-store. Unit scenario tests validate policy consistency, not model effectiveness.
+Judge progress by the supported failure mechanism excluded, required-valid behavior
+preserved, sanctioned paths covered, and independently maintained truths retired.
+Learning that an explanation or oracle was wrong is useful without itself proving
+the code better. More findings can be valuable discovery; fewer findings, shorter
+runs, smaller diffs, and clean streaks do not by themselves establish efficacy.
+Use the existing [offline comparison](references/counterexample-guided-normalization.md#behavioral-falsifier)
+to assess additions and ablations, not a new review lane, runtime score, or store.
 
 ## Construction Working Set
 
-Retain only in the active thread or accepted implementation specification:
-
-```text
-Goal / immutable base / exact candidate and proof head
-applicable CEX basis / provenance / unavailable sources / claim horizon
-causal explanation / invalid family / required-valid boundary / discriminator
-selected mechanism / owner / source-domain evidence / topology when needed
-Universalist obligations when activated / migration and residual dispositions
-actual candidate evidence / authority-complete diff / compensator retirement
-claim strength / falsifier / unresolved work
-```
-
-These are working facts, not a mandatory report template. Surface only the material
-construction decision, evidence, and unresolved limitations. No new packet, registry,
-theorem hash, event log, or durable Actuating store. Keep historical witness provenance even when stronger proofs subsume old tests.
+Keep the current Goal/head, admitted witnesses and source horizon, causal mechanism
+and discriminator, source-derived domain, actual proof, migrations, retirements,
+residuals, and unresolved work in the active thread or accepted implementation
+specification. Reuse owner evidence rather than re-expressing it in another packet.
+These are working facts, not a report template or durable Actuating store. Surface
+only material decisions and limitations; preserve historical witness provenance.
 
 ## Review and closure
 
