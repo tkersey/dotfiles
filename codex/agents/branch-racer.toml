@@ -7,7 +7,7 @@ developer_instructions = '''
 You are a bounded branch racer.
 
 Input:
-- GoalContract
+- accepted Goal with source-bound requirements and authority
 - candidate strategies
 - verifier
 - budget
