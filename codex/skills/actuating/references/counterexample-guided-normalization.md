@@ -4,84 +4,22 @@ Apply to current accepted counterexamples from reviews, tests, incidents,
 migrations, compatibility failures, and projected history. Review is one source,
 not a prerequisite for an authorized implementation using existing evidence.
 
-## Durable source basis
-
-Have `$review-fold` project `review-fold/counterexample-corpus`. Preserve original
-subjects and provenance; recompute current applicability, authority, recurrence,
-and family hypotheses. Combine applicable history with the current evidence cut.
-Only Review Fold captures newly accepted independent witnesses. Actuating stores
-no copy of the corpus and no current family or architecture in its rows.
-
-During an open review epoch, finish the required outcomes and fold before
-successor mutation. Outside review, use already-available evidence; do not launch
-a wave to justify implementation. An absent or unavailable corpus makes affected
-historical claims unknown, not first-observed. Missing provider or verifier
-results are unavailable evidence, not clean outcomes.
-
-Knowledge may accumulate while the implementation and its proof shrink. An old
-witness remains evidence even when its dedicated guard or test is superseded.
-
-## Causal explanation and discriminator
-
-For each affected accepted law, locate the first sanctioned construction or
-transition where the required guarantee is absent or lost. What can a caller,
-alias, producer, or scheduler choose independently that must instead be derived,
-owned, related, or made unavailable? Use source-supported operations, not a family
-name, as the explanation. Untrusted input may be invalid; trusted status and its
-subsequent permitted use must enforce the law.
-
-Choose the smallest mechanism-discriminating witness before implementation. For
-independent claim/evidence fields, vary their relationship; for an incomplete
-grammar, vary its relevant production; for aliasing or temporal failure, start
-with valid admitted state and execute the write, retry, ordering, or composition
-that loses the guarantee. These are examples, not a required taxonomy or quota.
-The resulting construction should exclude the predicted sibling without another
-production special case. Samples test the explanation, not universal coverage.
-
-Combine applicable current and retained evidence. Same file, reviewer, or broad
-law does not establish a causal family, and independent obligations retain their
-authority and proof. When the existing owner is adequate, a reproduction, valid
-counterpart, and correction of that owner's operation may suffice. Do not invent
-a new abstraction for a mechanical defect or manufacture unsupported predictions.
-
-## Consistency preflight
-
-Check `required-valid intersect Phi = empty`. If a proposed invalid family includes
-required-valid behavior, revise the hypothesis or seek authority. Reject-all is
-not a constructional improvement. Preserve accepted observations, compatibility,
-error and ordering behavior, custody, and resource constraints.
-
-A current accepted counterexample blocks the claim it falsifies, not every action
-in the repository. No current liability means no correctness mutation. Missing
-law authority requires escalation. Authorized claim correction, containment, or
-deferral must state its scope and closure consequence; never silently weaken an
-accepted requirement. Reviewer agreement and a clean-review target are not authority.
-
-## Candidate selection
-
-Choose a construction that removes the enabling cause across the supported family.
-There is no preliminary restoration-versus-normalization certificate and no
-mandatory local-repair-first attempt. Do not require proof that every conceivable
-local correction is impossible before exploring a better mechanism.
-
-Compare plausible candidates against the same law, witnesses, required-valid
-observations, supported domain, compatibility, resources, and proof standard.
-Prefer stronger family exclusion, an adequate invariant locus, complete path
-coverage, and fewer independently maintained truths. Only then compare lifecycle
-cost and source size. Retaining the incumbent is not a dominance criterion.
-
-When cumulative evidence identifies duplicate ownership or branch-new compensation,
-test a plausible deletion, collapse, delegation, or narrower facade at the
-smallest useful seam. A passing sample alone cannot establish that the alternative
-is adequate. Do not build two complete versions or manufacture a useless deletion
-for every finding. Distinct required obligations justify retained factors.
-
-A local correction is appropriate when an existing adequate construction already
-owns the full law and the actual edit restores its implementation. A representation
-change is appropriate when it removes a cause that local checks preserve. Both
-face the common candidate-proof obligations below.
+The [root construction decision](../SKILL.md#compile-the-first-loss-of-guarantee)
+owns causal explanation and selection; [Review Fold](../../review-fold/SKILL.md#counterexample-admission)
+owns admission and current applicability. Reuse their current evidence. This
+reference supplies the construction argument, not another decision procedure.
+Check `required-valid intersect Phi = empty`: revise a conflicting family hypothesis
+or seek authority, never silently reject required-valid behavior. An absent corpus
+limits historical claims; it neither proves absence nor prevents unrelated initial
+implementation. Preserve old witness provenance when stronger proof subsumes tests.
 
 ## Construction argument and source-derived coverage
+
+A candidate that changes the comparison domain, quotients distinctions, or
+conservatively approximates behavior must justify total interpretation, violation
+reflection, exclusion, and required-valid observation preservation. Optional safe
+behavior excluded by approximation must be disclosed; no required distinction may
+be erased. Do not invent these transformations for candidates that do not use them.
 
 Use the strongest adequate native evidence for the affected seam: closed types
 and their construction/operation surface, compiler IR, schemas, exports, build or
@@ -157,39 +95,40 @@ do not delete an independent oracle merely because it checks the same law.
 
 ## Common candidate proof
 
-On the actual exact head, check the witness, applicable historical witnesses,
-preselected discriminator, required-valid behavior, and the construction argument
-across sanctioned paths. Inspect every semantic diff against accepted authority.
-Changed proof authority or claim scope must not hide inside an implementation-local
-label. A false code-to-claim binding invalidates evidence regardless of test status.
-
-If discovery exposes an owner, carrier, interpretation, proof-domain, or topology
-change not considered during selection, reopen that affected architecture decision
-and satisfy its applicable construction obligations before review or Ship.
-Do not merely relabel a finished patch. The simplest adequate existing construction
-may still win; novelty is not required.
-
-`isolated-restoration` and `construction-normalization` are optional descriptions
-of this realized result, not permission tokens or distinct proof shortcuts. Mixed
-changes retain each obligation's authority; one local fix cannot admit unrelated
-claim narrowing or rejected strengthenings.
+Apply the [common proof obligations](../SKILL.md#realization-and-common-proof-obligations)
+on the actual exact head. If implementation exposes an unconsidered owner, carrier,
+interpretation, proof-domain, or topology change, reopen that affected decision and
+satisfy its obligations before review or Ship. Neither relabeling the delta nor
+correcting one obligation authorizes unrelated strengthening or claim narrowing.
 
 ## Behavioral falsifier
 
-Success is transfer beyond the observed example: an independently chosen sibling
-is excluded by the same construction without a new production special case, valid
-behavior survives, and displaced independent owners or compensation can disappear.
-The stronger claim still needs source-domain and construction evidence.
+Evaluate the actual construction: an independently chosen sibling is excluded by
+the same mechanism without a new production special case, required-valid behavior
+survives, and displaced semantic owners or compensation can disappear. Full claims
+still require the source-domain and preservation argument above. A retained design,
+rejected restriction, or corrected oracle can be the justified result; no redesign
+quota and no weakening an independent oracle to manufacture agreement.
 
-Distinguish a causal hypothesis being falsified from the code becoming better.
-Raw counterexample counts across changed heads are not a progress metric. Use
-existing session audits or matched-snapshot offline replays; keep later witnesses
-hidden from the implementing run when measuring held-out generalization. Compare
-proof strength, retained obligations, recurrence, semantic owners, and cost.
-Include independent-truth, temporal/composition, and genuinely local defects in
-matched replays: a policy that redesigns every case has not improved selection.
-Do not call policy unit tests a controlled model-efficacy experiment.
+For tuning, compare additions with genuine ablations using existing session audits
+or matched-snapshot replays. Keep the accepted Goal, contemporaneous evidence,
+model settings, resource budget, review mechanics, and required correctness endpoint
+comparable; withhold later witnesses from implementing runs. Test whether removing
+redundant instructions improves causal discovery and construction, not just prompt
+length. Include genuinely local defects, spurious allegations, oracle failures, and
+shared-obligation omissions so that blanket redesign, rejection, or extra checking
+cannot masquerade as progress. These are offline comparison dimensions, not a new
+runtime checklist or mandatory evaluation pass during delivery.
 
-Narrow or delete these instructions if they add narration without changing the
-selected construction or its out-of-example behavior. Add no replacement gate,
-packet, score, registry, or durable workflow store.
+Distinguish outcome quality, observable decision influence, and incremental benefit.
+A useful Metanoetic reconsideration is inspectable evidence even without an isolated
+control; file-read counts do not establish its effect, and weak attribution does not
+establish little value. An ongoing run or later finding alone does not establish
+inefficient convergence. Compare equivalent supported guarantees before cost; count
+whole-task implementation and qualification, not reviewer tokens alone. Policy
+fixtures validate consistency, not model efficacy.
+
+Delete instructions that add narration without better selection or out-of-example
+behavior. Do not relocate them into another mandatory reference, packet, registry,
+gate, or workflow store. Preserve the counterexample-to-construction mission, not
+the current amount of choreography used to pursue it.

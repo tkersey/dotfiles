@@ -109,6 +109,7 @@ for (const cl of d.clauses) {
 assert.deepEqual(json('definitions/manifest.json'), {schema:'skill-definition-set/v1',skill:'actuating',seq:[],ledger:[]});
 const retired = [
   'references/theorem-directed-response.md','references/standard-review.md',
+  'references/architecture-reconciliation.md','references/semantic-hotspots.md',
   'definitions/ledger/direct-repair-admission.json',
   'tests/test-direct-repair-admission.sh','tests/fixtures/direct-repair-admission-valid.json'
 ];
@@ -135,23 +136,27 @@ assert(text('SKILL.md').includes('It dispatches no\nreview'));
 assert(text('references/review-contract.md').includes('codex-default-review/v1'));
 assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
 // Pairing source-contract regressions; these do not measure model efficacy.
-const architecture = text('references/architecture-reconciliation.md').replace(/\s+/g, ' ');
-const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('3. Give')[0].replace(/\s+/g, ' ');
+const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
 assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`'));
 assert(rootStep.includes('once per unchanged decision surface'));
 assert(rootStep.includes('reuse an already consumed challenger rather than adding a pass'));
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
-assert(architecture.includes('Under the unchanged Metanoetic trigger'));
-assert(architecture.includes('`$glaze` then `$metanoetic` verbatim in the same candidate-generation context'));
-assert(architecture.includes('once per unchanged decision surface'));
-assert(architecture.includes('do not add a Glaze pass, report, review request, or adjudication stage'));
-assert(architecture.includes('Actuating may retain, modify, or reject the challenger'));
-assert(architecture.includes('Remove the coupling if it adds narration or scaffolding'));
-assert(text('references/semantic-hotspots.md').includes('do not run a second pass'));
+assert(rootStep.includes('Let the pass discover which premises and evidence need reinspection'));
+assert(rootStep.includes('Keep the accepted Goal fixed'));
+assert(rootStep.includes('Only when architecture is live'));
+assert(text('SKILL.md').includes('never changed expectations merely to agree with the candidate'));
+assert(text('SKILL.md').includes('Prefer making that omission unavailable'));
+assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
 assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in the same bounded challenger pass'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
+// Preserve the resource obligation in the existing decision, not a new artifact.
+assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
+assert(rootStep.includes('Supply the resource account in the existing decision: justify feasibility against those ceilings using applicable evidence or a concrete bound'));
+assert(rootStep.includes('leave unestablished feasibility unresolved'));
+assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
+assert(rootStep.includes('add no separate report or benchmark stage'));
 assert(challenger.success_signals.includes('one bounded Glaze-primed Metanoetic challenge under the existing trigger, before Universalist'));
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
 assert(challenger.failure_signals.includes('Glaze adds a trigger, pass, report, review, or acceptance authority'));
