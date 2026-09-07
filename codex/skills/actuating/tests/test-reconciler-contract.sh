@@ -151,6 +151,12 @@ assert(text('SKILL.md').includes('Prefer making that omission unavailable'));
 assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
 assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in the same bounded challenger pass'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
+// Preserve the resource obligation in the existing decision, not a new artifact.
+assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
+assert(rootStep.includes('Supply the resource account in the existing decision: justify feasibility against those ceilings using applicable evidence or a concrete bound'));
+assert(rootStep.includes('leave unestablished feasibility unresolved'));
+assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
+assert(rootStep.includes('add no separate report or benchmark stage'));
 assert(challenger.success_signals.includes('one bounded Glaze-primed Metanoetic challenge under the existing trigger, before Universalist'));
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
 assert(challenger.failure_signals.includes('Glaze adds a trigger, pass, report, review, or acceptance authority'));

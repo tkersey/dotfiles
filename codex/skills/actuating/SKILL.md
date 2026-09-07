@@ -189,8 +189,12 @@ patch. A code rewrite or live architecture change is not a prerequisite for chal
 a suspect model. Keep the accepted Goal fixed. Supplied boundaries must be
 `preserved`, `made irrelevant by mechanism change`, or `requires new authority`;
 required observations, compatibility, effects, host capabilities, and authorized
-resource ceilings still govern selection. Incumbent representations and lifecycle
-burdens are evidence, not immutable constraints. Retaining a sound construction or
+resource ceilings still govern selection. Supply the resource account in the existing
+decision: justify feasibility against those ceilings using applicable evidence or
+a concrete bound; leave unestablished feasibility unresolved. Reuse evidence only
+while its subject and assumptions remain applicable; add no separate report or
+benchmark stage. Incumbent representations and lifecycle burdens are evidence, not
+immutable constraints. Retaining a sound construction or
 refuting an allegation can be the right outcome. Actuating adjudicates the result.
 Encouragement changes neither admissibility nor the proof bar. Add no separate Glaze
 report or adjudication stage, and no mandatory second review of the review.
