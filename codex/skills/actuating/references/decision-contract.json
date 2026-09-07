@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v12"
+      "source_fingerprint": "actuating-construction-compiler-v14"
     },
     "triggers": [
       {
@@ -126,17 +126,24 @@
         ],
         "prohibited_routes": [],
         "required_artifacts": [
-          "accepted Goal",
+          "accepted Goal bound directly to current source and effect authority",
           "exact Git subject",
           "owner-issued proof, review, counterexample, and publication evidence as applicable"
         ],
         "success_signals": [
           "Git owns realization; verifiers own executed proof; CAS owns review; Review Fold owns CEX admission; Ship owns public effects",
-          "current causal interpretation and closure are ephemeral"
+          "current causal interpretation and closure are ephemeral",
+          "direct source binding preserves outcomes, non-goals, scope, compatibility, migration, and deciding observations",
+          "source-fixed requirements remain distinct from proposed means and execution authority",
+          "source revisions reclassify applicable evidence without erasing unresolved provenance",
+          "adequate bindings reuse the Working Set and existing owner formats without a separate Goal Contract packet"
         ],
         "failure_signals": [
           "agent-authored labels or equal digests certify semantics",
-          "Actuating duplicates an owner store or adds a transition gate"
+          "Actuating duplicates an owner store or adds a transition gate",
+          "suggested means promoted to laws or explicit requirements demoted",
+          "a summary, digest, prior plan, or implementation broadens source authority",
+          "an unobservable required law is silently waived or unrelated authorized work is blocked"
         ],
         "rationale": "Evidence ownership is not transferred by a packet or workflow label."
       },
@@ -389,13 +396,16 @@
           "family excluded at the declared strength and required-valid behavior survives",
           "all relevant paths and residuals accounted for",
           "redundant primary compensation retired or justified by distinct obligations",
-          "same-claim witness revokes exclusion and reopens its causal explanation"
+          "same-claim witness revokes exclusion and reopens its causal explanation",
+          "local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations",
+          "test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority"
         ],
         "failure_signals": [
           "only reported examples repaired",
           "labels or digests substitute for construction evidence",
           "unresolved or unauthorized residual liability called complete",
-          "clean reviews or policy fixtures claimed as universal proof or controlled model efficacy"
+          "clean reviews or policy fixtures claimed as universal proof or controlled model efficacy",
+          "passing a weakened suite discharges an unchanged requirement"
         ],
         "rationale": "Success is justified behavior in the actual code, not process completion or route classification."
       }

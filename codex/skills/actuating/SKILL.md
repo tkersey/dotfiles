@@ -36,7 +36,7 @@ domain. Untrusted bytes may exist; acquiring trusted status must enforce the law
 
 | Fact | Owner |
 |---|---|
-| Required behavior, compatibility, scope, authorized effects | accepted source or user authority, compiled by `$goal-contract` |
+| Required behavior, compatibility, scope, authorized effects | accepted source or current user authority; bound directly by Actuating |
 | Realized construction and exact diff | Git commit and tree |
 | Executed validation and proof | the exact repository-native verifier |
 | Review attempt, target, verdict, and provenance | CAS |
@@ -74,11 +74,52 @@ is required to design software that does not yet exist.
 Review-bearing routes accept `parallel-reviews` (default) or `serial-reviews`.
 These change scheduling only. They do not change authority or the review inventory.
 
+## Source binding
+
+Derive the Goal directly from the current accepted specification or direct user
+instruction; read the exact source, not just a prior summary. Preserve required
+outcomes, non-goals, hard constraints, compatibility contracts, permitted breaks,
+and migration obligations. Bind repository, immutable base, and authorized path
+scope; an implementation or plan cannot silently broaden them.
+
+Separate required deliverables and source-fixed architecture from preferences,
+examples, and proposed means. Do not promote a suggested mechanism into a law or
+demote an explicit requirement. Source binding records obligations; Actuating
+chooses source-permitted means. A plan, review, or prior implementation cannot
+broaden source authority.
+
+Keep semantic requirements distinct from execution authority. Bind mutation,
+validation, publication, and review posture to the accepted source and selected
+route; permission to work neither authorizes every effect nor proves completion.
+For each required law, retain applicability and its deciding observation. If that
+observation cannot be identified or required authority is missing, block only the
+dependent action or claim; continue independent authorized work.
+
+Before affected mutation, refresh these bindings when the source, authority,
+scope, compatibility, or required observations change. Have `$review-fold`
+reclassify all available applicable findings and failures against the refreshed
+Goal; preserve unresolved evidence and original provenance rather than erasing it
+or inventing continuity. Existing review-epoch and proof-invalidation rules apply.
+
+Reuse an adequate binding in the Working Set and existing downstream owner formats.
+No separate skill invocation, mandatory Goal Contract packet, durable record, or new
+identity is required. A summary or digest never replaces the source or proves completion.
+
 ## Observe and adjudicate
 
 At entry and after material change, bind the Goal, immutable base, exact head,
 current construction, proof inventory, and any publication state. Read the
 relevant source, not a remembered architecture. Unknown evidence receives no credit.
+
+Before accepting validation for local completion or reviewability, inspect the
+base-to-candidate diff and actual check selection for deleted tests, weakened
+assertions, skipped checks, or reduced coverage, including changes made directly
+by Actuating. Map each affected check to its source-backed obligation; require
+preserved or stronger proof, a source-grounded oracle correction with independent
+evidence, or explicit authority retiring the obligation. A passing weakened suite
+cannot discharge an unchanged requirement. Keep unexplained proof loss unresolved
+and block only dependent completion or reviewability. Reuse the existing proof
+inventory; no separate critic, packet, or review stage.
 
 Before counterexample-driven selection, reconcile relevant CAS, provider/PR,
 test, incident, migration, compatibility, verifier, and corpus evidence. Each
