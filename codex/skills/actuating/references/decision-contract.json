@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v13"
+      "source_fingerprint": "actuating-construction-compiler-v14"
     },
     "triggers": [
       {
@@ -396,13 +396,16 @@
           "family excluded at the declared strength and required-valid behavior survives",
           "all relevant paths and residuals accounted for",
           "redundant primary compensation retired or justified by distinct obligations",
-          "same-claim witness revokes exclusion and reopens its causal explanation"
+          "same-claim witness revokes exclusion and reopens its causal explanation",
+          "local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations",
+          "test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority"
         ],
         "failure_signals": [
           "only reported examples repaired",
           "labels or digests substitute for construction evidence",
           "unresolved or unauthorized residual liability called complete",
-          "clean reviews or policy fixtures claimed as universal proof or controlled model efficacy"
+          "clean reviews or policy fixtures claimed as universal proof or controlled model efficacy",
+          "passing a weakened suite discharges an unchanged requirement"
         ],
         "rationale": "Success is justified behavior in the actual code, not process completion or route classification."
       }

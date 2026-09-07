@@ -111,6 +111,16 @@ At entry and after material change, bind the Goal, immutable base, exact head,
 current construction, proof inventory, and any publication state. Read the
 relevant source, not a remembered architecture. Unknown evidence receives no credit.
 
+Before accepting validation for local completion or reviewability, inspect the
+base-to-candidate diff and actual check selection for deleted tests, weakened
+assertions, skipped checks, or reduced coverage, including changes made directly
+by Actuating. Map each affected check to its source-backed obligation; require
+preserved or stronger proof, a source-grounded oracle correction with independent
+evidence, or explicit authority retiring the obligation. A passing weakened suite
+cannot discharge an unchanged requirement. Keep unexplained proof loss unresolved
+and block only dependent completion or reviewability. Reuse the existing proof
+inventory; no separate critic, packet, or review stage.
+
 Before counterexample-driven selection, reconcile relevant CAS, provider/PR,
 test, incident, migration, compatibility, verifier, and corpus evidence. Each
 live source is folded, proven non-current, or explicitly unavailable. An omitted
