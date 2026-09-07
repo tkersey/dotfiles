@@ -29,13 +29,6 @@
 
 - Complete checks required by the task and active workflow, including review counts and reset rules. Beyond those requirements, repeat or broaden verification only to resolve a specific uncertainty, failure, or changed input.
 
-### Blocked review recovery
-
-- When a review attempt ends with a provider content-block notice, treat that result as unavailable evidence, not a finding or clean verdict. The notice alone establishes neither a task-wide prohibition nor a false positive.
-- When a controller remains active, or on a resumed turn, recover the latest outstanding user request, including corrections, and current repository/review state. Continue independently permitted work without asking the user to repeat the request; do not replay completed actions.
-- Preserve review freezes, required coverage, valid sibling evidence, and credit/reset rules. Blocked or partial reviews earn no clean credit. If required evidence remains unavailable, block only dependent actions and report the gap.
-- Respect provider restrictions and non-retryable errors; do not automatically replay content-blocked requests through generic retry rules. A narrower follow-up must be independently permitted and honestly scoped, never disguised or repeatedly resubmitted to obtain a different safety outcome.
-
 ### Git
 
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
