@@ -126,8 +126,10 @@ After publishing the brief and before consuming any worker result:
    repository-neutral digest mechanism is available; otherwise use a runtime
    content identity that binds those exact bytes. Do not invent a digest.
 2. Record the brief identity with the campaign epoch.
-3. Fork the current coordinator exactly once to create an immutable campaign
-   seed.
+3. Fork the current coordinator exactly once through the selected
+   [native route](native-forks.md) to create an immutable campaign seed. Verify
+   retention of its full prepared history through the brief before launching
+   reviewers. A fork that omits the current preparation turn is not a seed.
 4. Record the seed thread ID, fork receipt or parent edge, and the coordinator
    checkpoint represented by the seed.
 5. Give the seed a navigation title when supported, but never use its title as
@@ -135,16 +137,17 @@ After publishing the brief and before consuming any worker result:
 6. Never send a review assignment, worker result, aggregate finding, or follow-up
    message to the seed.
 
-The seed exists only to preserve one identical prepared context. Every file
-worker must fork directly from that seed, not from the evolving coordinator and
-not from another worker.
+The seed preserves one identical full prepared context, including the deep
+analysis that produced the brief. Every file worker must fork directly from
+that seed, not from the evolving coordinator and not from another worker.
+Supplying the brief to a fresh worker does not preserve this requirement.
 
-If the runtime cannot fork the coordinator, cannot later fork the seed by direct
-thread ID, cannot return direct worker IDs, or cannot preserve the parent
-relation, the campaign is **INCOMPLETE** before worker launch. Do not silently
-substitute clean `create_thread` tasks, generic subagents, shell-managed
-processes, or copied summaries: those routes do not preserve the requested
-prepared context.
+Use [native-forks.md](native-forks.md) to distinguish unavailable wrappers from
+unavailable native operations. If no qualifying native route can fork the
+coordinator and explicit seed, retain the prepared history, and return direct
+IDs and parent provenance, the campaign is **INCOMPLETE** before worker launch.
+Do not substitute clean tasks, generic subagents, independent `codex exec`
+sessions, or copied summaries.
 
 ## Worker epistemic independence
 
