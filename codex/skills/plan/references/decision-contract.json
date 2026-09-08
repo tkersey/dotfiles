@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v12-execution-specification-primary"
+      "source_fingerprint": "plan-v13-evidence-gated-challenger"
     },
     "triggers": [
       {
@@ -279,7 +279,7 @@
         "success_signals": [
           "material defects drive uncapped affected refinement",
           "equivalent challenges reused",
-          "radical candidate dispositioned",
+          "warranted challenger dispositioned; already-dispositive work skips alternative generation",
           "final reread checks the exact block"
         ],
         "failure_signals": [

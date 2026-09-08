@@ -97,3 +97,38 @@ required to create the package:
 
 Tune must verify current user authorization independently. A handoff written by
 the model cannot certify its own authority.
+
+## Empirical evolution
+
+After a generated repository skill has real decision episodes:
+
+```text
+$seq observe with Tune's skill-decision-audit definition
+-> $tune tune
+```
+
+Evaluate decision quality, trigger quality, missed and ceremonial activation,
+outcome association, and whether knowledge has become better owned by code,
+tests, tooling, CI, or guidance. Return changed law, authority, boundary, proof,
+freedom, or target posture to `$codebase-doctrine` refresh. Do not tune from raw
+mention counts.
+
+
+## Skill-creation handoff
+
+Codebase Doctrine recommends; it does not create.
+
+After explicit user authorization, hand `$tune create` the smallest sufficient
+context:
+
+- the candidate mission;
+- the governing doctrine and jurisdiction;
+- recurring triggers and non-triggers;
+- consequential decisions;
+- required context and outputs;
+- success, failure, narrowing, and retirement signals;
+- routes excluded by current canonical negative evidence;
+- the allowed package boundary.
+
+The effect owner must verify current user authority. A model-authored statement
+that authorization exists is not itself authority.

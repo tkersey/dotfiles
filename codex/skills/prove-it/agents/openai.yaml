@@ -2,5 +2,5 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Prove It"
-  short_description: "Help with Prove It tasks and workflows"
+  short_description: "Stress-test a claim with nine lenses and an oracle"
   default_prompt: "Use $prove-it for this task."

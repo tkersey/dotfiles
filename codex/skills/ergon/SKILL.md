@@ -28,13 +28,12 @@ before first use or after it changes; do not silently fall back on Ledger 1.1.
 ```bash
 ergon_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ergon/definitions/ledger/task-protocol.json")"
 ledger definition check --definition "$ergon_definition" --format json
-ledger definition describe --definition "$ergon_definition" --format json
 ```
 
-For development, select the checked-out definition explicitly. Install/upgrade
-only through `$ledger`'s authorized canonical procedure; never install a build
-from this skill. Until Ledger 1.2 is released through the normal tap, development
-qualification is not evidence that the installed 1.1 binary supports Ergon.
+Use `definition describe` when inspecting or diagnosing the compiled surface.
+For development, select the checked-out definition explicitly. Install or upgrade
+only through `$ledger`'s authorized canonical procedure. Development qualification
+does not establish that the selected installed binary supports the definition.
 
 The authoritative store is `.ledger/ergon/events.jsonl` beneath the selected
 repository. Mutate only with Ergon's native transactions, and read through its
@@ -138,7 +137,9 @@ current-format store. It is not a history-selection, import, migration, or repai
 shortcut. There is no implicit rebind or migration from the draft prototype.
 Recovery follows the current `$ledger` reference and exact transaction authority.
 
-Run the complete native acceptance suite:
+When changing Ergon's definition or runtime integration, run the complete native
+acceptance suite. Ordinary mutations use their native result and a focused
+current-state readback; a requested projection already supplies its own view:
 
 ```bash
 uv run codex/skills/ergon/tests/test_protocol.py

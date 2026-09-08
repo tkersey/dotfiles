@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v3"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v3-astra-compat-v1"
     },
     "triggers": [
       {

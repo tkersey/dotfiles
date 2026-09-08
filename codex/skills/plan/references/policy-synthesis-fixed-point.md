@@ -49,10 +49,12 @@ must not be traded for fewer lines or a superficially simpler construction.
 
 ## Challenge and final reread
 
-Retain the strongest invariant challenge from specification-challenge.md. Once the
-candidate appears stable, generate the strongest non-obvious admissible alternative
-to its mechanism, representation, owner, admitted domain, evidence strategy, or
-organization. This radical candidate is mandatory; adoption is not. Reuse an
+Retain the strongest invariant challenge from specification-challenge.md. When
+current evidence leaves a material choice about the mechanism, representation,
+owner, admitted domain, evidence strategy, or organization, generate the strongest
+non-obvious admissible alternative. An existing Metanoetic trigger also warrants
+this challenge. Skip alternative generation for already-dispositive work; the
+source reread and invariant challenge still apply. Adoption is not required. Reuse an
 equivalent challenge already evaluated over the same unchanged decision surface,
 including a workflow-owned Metanoetic challenger. Do not run it again just to
 record an invocation. Reject candidates that expand authority, lose required-valid
@@ -73,7 +75,7 @@ A semantic discrepancy reopens the affected candidate; regenerate both views.
 ## Stop
 
 There is no fixed iteration cap. Stop successfully only after a complete sweep finds
-no concrete material delta, the radical candidate is dispositioned, the final source
+no concrete material delta, any warranted challenger is dispositioned, the final source
 reread is clean, all material decisions are owned, and the plan is executable or
 honestly conditional through safe terminals. This is not a claim that all possible
 architectures have been enumerated or all future defects excluded.

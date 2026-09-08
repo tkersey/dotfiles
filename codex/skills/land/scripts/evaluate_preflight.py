@@ -189,9 +189,9 @@ def evaluate(snapshot: dict[str, Any]) -> dict[str, Any]:
     approvals = policy.get("approvals_required")
     if not isinstance(explicit, int) or isinstance(explicit, bool) or explicit < 0:
         issue(blockers, "EXPLICIT_BLOCKERS_INVALID", "reviews.explicit_blockers must be a non-negative integer")
-    if requested not in {True, False}:
+    if not isinstance(requested, bool):
         issue(blockers, "REQUESTED_CHANGES_STATE_INVALID", "reviews.requested_changes_active must be true or false")
-    if approvals not in {True, False}:
+    if not isinstance(approvals, bool):
         issue(blockers, "APPROVAL_POLICY_UNKNOWN", "policy.approvals_required must be true or false")
 
     live, started, done = set(unresolved), set(initial), set(recorded)
@@ -236,17 +236,17 @@ def evaluate(snapshot: dict[str, Any]) -> dict[str, Any]:
     required_expected = checks.get("required_expected")
     allow_skip = policy.get("allow_required_skipping")
     items = checks.get("items")
-    checks_ok = required_expected in {True, False} and allow_skip in {True, False} and isinstance(items, list)
-    if required_expected not in {True, False}:
+    checks_ok = isinstance(required_expected, bool) and isinstance(allow_skip, bool) and isinstance(items, list)
+    if not isinstance(required_expected, bool):
         issue(blockers, "REQUIRED_CHECK_POLICY_UNKNOWN", "checks.required_expected must be true or false")
-    if allow_skip not in {True, False}:
+    if not isinstance(allow_skip, bool):
         issue(blockers, "REQUIRED_SKIP_POLICY_UNKNOWN", "policy.allow_required_skipping must be true or false")
     if not isinstance(items, list):
         issue(blockers, "CHECK_ITEMS_INVALID", "checks.items must be a list")
         items = []
     required: list[dict[str, Any]] = []
     for i, item in enumerate(items):
-        if not isinstance(item, dict) or item.get("required") not in {True, False}:
+        if not isinstance(item, dict) or not isinstance(item.get("required"), bool):
             checks_ok = False
             issue(blockers, "CHECK_ITEM_INVALID", f"checks.items[{i}] is invalid")
         elif item["required"] is True:
@@ -282,9 +282,9 @@ def evaluate(snapshot: dict[str, Any]) -> dict[str, Any]:
         issue(blockers, "MERGE_METHOD_NOT_ALLOWED", "merge.method_allowed must be true")
     if admin is not False:
         issue(blockers, "ADMIN_OVERRIDE_PROHIBITED", "ordinary $land never performs an administrator bypass")
-    if current not in {True, False}:
+    if not isinstance(current, bool):
         issue(blockers, "BRANCH_FRESHNESS_UNKNOWN", "merge.branch_up_to_date must be true or false")
-    if strict not in {True, False}:
+    if not isinstance(strict, bool):
         issue(blockers, "STRICT_FRESHNESS_POLICY_UNKNOWN", "merge.strict_freshness_required must be true or false")
     gate(gates, "conflict_free", conflict)
     if delivery == "queue":

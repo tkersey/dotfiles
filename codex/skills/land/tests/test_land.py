@@ -46,7 +46,7 @@ def codes(value, field="blockers"):
 
 class ContractTests(unittest.TestCase):
     def test_review_closure_is_explicit_owned_work(self):
-        for phrase in ("allow_implicit_invocation: false", "reconcile every unresolved review thread"):
+        for phrase in ("allow_implicit_invocation: true", "reconcile every unresolved review thread"):
             self.assertIn(phrase, AGENT)
         for phrase in ("Every unresolved review thread", "must drive every unresolved thread"):
             self.assertIn(phrase, SKILL)
@@ -95,6 +95,36 @@ class EvaluatorTests(unittest.TestCase):
     def test_immediate_ready(self):
         value = report(snapshot())
         self.assertEqual(("pass", "ready", "merge-now"), (value["verdict"], value["merge_admission"], value["mode"]))
+
+    def test_boolean_fields_reject_non_boolean_json_values(self):
+        fields = (
+            ("reviews", "requested_changes_active", "REQUESTED_CHANGES_STATE_INVALID"),
+            ("policy", "approvals_required", "APPROVAL_POLICY_UNKNOWN"),
+            ("checks", "required_expected", "REQUIRED_CHECK_POLICY_UNKNOWN"),
+            ("policy", "allow_required_skipping", "REQUIRED_SKIP_POLICY_UNKNOWN"),
+            ("merge", "branch_up_to_date", "BRANCH_FRESHNESS_UNKNOWN"),
+            ("merge", "strict_freshness_required", "STRICT_FRESHNESS_POLICY_UNKNOWN"),
+        )
+        for section, field, code in fields:
+            for invalid in (0, 1, 0.0, 1.0, "true", None, [], {}):
+                with self.subTest(field=f"{section}.{field}", invalid=invalid):
+                    value = snapshot()
+                    value[section][field] = invalid
+                    self.assert_block(value, code)
+
+    def test_numeric_approval_policy_cannot_bypass_required_approval(self):
+        value = snapshot()
+        value["policy"]["approvals_required"] = 1
+        value["reviews"]["review_decision"] = "REVIEW_REQUIRED"
+        self.assert_block(value, "APPROVAL_POLICY_UNKNOWN")
+
+    def test_malformed_required_flag_cannot_hide_failed_check(self):
+        for invalid in (0, 1, 0.0, 1.0, "true", None, [], {}):
+            with self.subTest(invalid=invalid):
+                value = snapshot()
+                value["checks"]["required_expected"] = False
+                value["checks"]["items"][0].update(required=invalid, bucket="fail")
+                self.assert_block(value, "CHECK_ITEM_INVALID")
 
     def test_unresolved_thread_continues(self):
         value = snapshot()

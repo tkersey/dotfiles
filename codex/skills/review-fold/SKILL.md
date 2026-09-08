@@ -1,6 +1,6 @@
 ---
 name: review-fold
-description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, a strengthening, preference, new requirement, or underdetermined. With enclosing write authority, persist only accepted entailed witnesses in the Review Fold counterexample corpus; recompute classes, families, recurrence, architecture, and closure from current evidence."
+description: "Classify and quotient current review findings, tests, incidents, and other witnessed falsifiers while preserving original provenance. Decide current applicability and whether each proposed law is entailed by the accepted Goal, a strengthening, preference, new requirement, or underdetermined. With enclosing write authority, persist only accepted entailed witnesses in the Review Fold counterexample corpus; recompute current applicability, observational classes, recurrence, and family hypotheses from current evidence; Actuating owns architecture, repair, review credit, and closure."
 ---
 
 # Review Fold

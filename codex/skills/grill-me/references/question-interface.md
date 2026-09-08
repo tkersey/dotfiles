@@ -31,9 +31,17 @@ Why this is next: <settled prerequisite or relevant evidence>; this decides <dow
 
 Add a continuity sentence only when the relation to the previous answer is not already obvious. Do not emit a mandatory mini-report, lane matrix, hidden scores, or premature summary.
 
-## `request_user_input`
+## Choose the supported question channel
 
-Use `request_user_input` when available, with one to three questions.
+Follow the host's current tool contract and mode restrictions. Tool availability
+alone does not authorize using it for approvals or blocking decisions.
+
+Use `request_user_input_async` when permitted to ask while independent authorized
+work continues. Use `request_user_input` only for questions the current mode permits
+it to carry. If a required answer cannot use either tool, ask one concise,
+self-contained plain-text question. Do not turn a missing answer into approval.
+
+For `request_user_input`, send one to three questions.
 
 Each question contains:
 
@@ -44,18 +52,15 @@ Each question contains:
 
 Each option description states its consequence or trade-off. Put a recommended option first and suffix it with ` (Recommended)` only when the recommendation is independently supported by evidence or locked priorities.
 
-Do not add `Other` by default. Include it only when a meaningful answer may exist outside the bounded choices.
+Do not add an `Other` option or a free-text placeholder; the interface supplies
+free-text input. Use free-text input when the live choices cannot honestly fit
+the tool's option schema.
 
 ## Fallback
 
-When `request_user_input` is unavailable, say so in one line and use:
-
-```text
-GRILL ME: HUMAN INPUT REQUIRED
-1. [stable_question_id] <atomic question> Options: <choice and consequence> | <choice and consequence>.
-```
-
-Keep the same id if the decision must be re-asked.
+Ask the necessary question naturally, with enough context to explain what its
+answer controls. Do not expose tool availability, internal IDs, or a protocol
+banner. Keep the conceptual ID internally if the decision must be re-asked.
 
 ## Answer handling
 

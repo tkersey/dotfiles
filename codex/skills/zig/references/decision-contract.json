@@ -4,7 +4,7 @@
     "skill": {
       "name": "zig",
       "kind": "mixed",
-      "source_fingerprint": "generated-with-semantic-router-v3-tiger-style"
+      "source_fingerprint": "generated-with-semantic-router-v3-tiger-style-astra-compat-v1"
     },
     "triggers": [
       {
@@ -111,7 +111,7 @@
       },
       {
         "route_id": "ZIG-ROUTE-PROOF-CONTEXT",
-        "description": "Bind final proof to an exact ZPE-v1 context.",
+        "description": "Bind final proof to the final repository, toolchain, target, and execution context.",
         "aliases": [
           "proof-context"
         ],
@@ -149,8 +149,8 @@
           "Zig version",
           "artifact state",
           "ZSR-v1 for material work",
-          "ZTS-v1 for material code or a concrete non-material reason",
-          "ZPE-v1 for material closure or explicit non-material reason"
+          "cross-cutting bounds, assertions, and applicable exceptions for material code",
+          "final proof bound to the final repository, toolchain, target, and execution context"
         ],
         "success_signals": [
           "semantic family selected before first edit",
@@ -171,7 +171,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "ZSR-v1, ZTS-v1, and ZPE-v1 provide material routing, style, and proof evidence."
+      "rationale": "ZSR-v1 records material routing; existing cross-cutting constraints and final-context proof supply safety and closure evidence."
     }
   }
 }

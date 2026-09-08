@@ -162,7 +162,11 @@ Allowed routes:
 
 ## Output contract: Authority-Gated v1
 
-Emit these sections, in order, for consequential runs:
+For standalone work, report actionable invariant decisions, concrete traces,
+owners, proof, and unresolved vetoes concisely. Preserve all seven authority
+clearances, inventory coverage, and Invariant Gate evaluation in working evidence.
+Use the complete sections below when the caller requires Authority-Gated v1 or
+the user requests the full audit report; omit no required packet from that handoff:
 
 1. `Review Basis`
 2. `Candidate Invariant Inventory`

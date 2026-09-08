@@ -78,10 +78,8 @@ Before the first Ledger command in this workflow, load `$ledger` and complete
 `$ledger ensure` once. Require Ledger major version 1 and
 `ledger-artifact-abi/v1`:
 
-```bash
-ledger version
-ledger capabilities --format json
-```
+Reuse the unchanged `$ledger ensure` readiness result; recheck only when the
+executable, execution environment, or selected definition requirements change.
 
 Set the canonical definition once:
 
@@ -292,11 +290,17 @@ history with no future routing value.
 ## Admission Workflow
 
 After the source owner accepts admission for a capture or lifecycle transition,
-load `$memory-source-notes` and use the validated Negative Ledger adapter:
+load `$memory-source-notes` and resolve its installed root independently of the
+target repository, then use its validated adapter:
 
 ```bash
-uv run codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+```
+
+```bash
+uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
+  --repo "<repo-root>" \
   --id NEG-000001 \
   --kind ledger-projection
 ```
@@ -304,8 +308,9 @@ uv run codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
 For a status transition:
 
 ```bash
-uv run codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
+  --repo "<repo-root>" \
   --id NEG-000001 \
   --kind ledger-status-transition
 ```

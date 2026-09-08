@@ -4,7 +4,7 @@
     "skill": {
       "name": "land",
       "kind": "mixed",
-      "source_fingerprint": "land-v3-review-reconciliation-successor-epochs"
+      "source_fingerprint": "land-v3-review-reconciliation-successor-epochs-astra-compat-v1"
     },
     "triggers": [
       {

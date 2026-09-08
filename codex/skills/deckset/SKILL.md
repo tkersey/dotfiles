@@ -1,6 +1,6 @@
 ---
 name: deckset
-description: "Generate high-fidelity Deckset markdown presentations from conversation context. Use for decks, slides, presentations, speaker notes, Deckset markdown, or converting a conversation into a narrative slide flow. Checks upstream Deckset docs/examples without volatile refresh metadata."
+description: "Create Deckset markdown presentations and speaker notes from conversation context. Use for explicit Deckset requests, markdown slide decks, or edits to an existing Deckset deck. PowerPoint and Google Slides artifacts belong to the presentations skill."
 ---
 
 # Deckset

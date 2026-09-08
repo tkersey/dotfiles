@@ -45,7 +45,8 @@ Do not use `$land` merely to:
 - synchronize ordinary local state;
 - open, update, or promote a PR; use `$ship`.
 
-The skill is side-effecting and must remain explicit-invocation only.
+Invocation requires explicit user merge or land intent, including natural-language
+requests. Mentioning checks, branches, or PRs alone is insufficient.
 
 ## Input
 
@@ -191,7 +192,8 @@ After review reconciliation is complete, rebuild one current-head snapshot with:
 Run the pure evaluator:
 
 ```bash
-uv run python3 codex/skills/land/scripts/evaluate_preflight.py <snapshot.json>
+land_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/land")"
+uv run python3 "$land_skill_root/scripts/evaluate_preflight.py" <snapshot.json>
 ```
 
 Interpret its result:

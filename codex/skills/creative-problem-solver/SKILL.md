@@ -1,6 +1,6 @@
 ---
 name: creative-problem-solver
-description: "Generate a compact five-tier strategy portfolio when the next task is choosing among materially different paths. Implicitly invoke for explicit requests for options, alternatives, trade-offs, reframing, or help escaping repeated failure. A name-only or meta mention does not authorize the portfolio route. Do not activate for direct implementation, single-answer advice, skill analysis/tuning, repository-evidence opportunity mining ($ideate), or detailed planning ($plan)."
+description: "Generate a compact five-tier strategy portfolio when the next task is choosing among materially different paths. Implicitly invoke for explicit requests for options, alternatives, trade-offs, reframing, or help escaping repeated failure. A name-only or meta mention does not authorize the portfolio route. Do not activate for direct implementation, single-answer advice, skill analysis/tuning, repository-evidence opportunity mining, or detailed planning ($plan)."
 ---
 
 # Creative Problem Solver
@@ -24,9 +24,9 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 - Direct implementation, debugging, review, or execution after an approach is selected: use the owning workflow.
 - Mixed requests where options are subordinate to "choose and implement now": the execution owner may use this reasoning internally, but this skill must not seize the turn and discard the requested execution.
 - A factual answer, ordinary creative generation such as names or copy, or comparison of a small known set where a portfolio adds ceremony: answer directly.
-- Evidence-backed repository or product opportunity mining, ranked improvement discovery, or choosing what to plan next: use `$ideate`.
+- Evidence-backed repository or product opportunity mining, ranked improvement discovery, or choosing what to plan next: use direct evidence-backed opportunity analysis.
 - Turning a selected direction into a detailed implementation plan, specification, or execution decomposition: use `$plan`.
-- Architecture or codebase understanding without a request for divergent paths: use direct analysis or `$codebase-archaeology`.
+- Architecture or codebase understanding without a request for divergent paths: use direct codebase analysis.
 - Analysis, explanation, review, tuning, testing, or editing of this skill itself: use direct analysis or `$tune` as appropriate.
 - The user already chose a tier or path and asks to execute it: hand off to the execution owner; do not regenerate the portfolio.
 
@@ -38,7 +38,7 @@ Implicit invocation is enabled. Host loading is not portfolio authorization. The
 ### Tie-breakers
 
 - Explicit imperative portfolio invocation wins unless safety, a domain-specific owner, a meta-task owner, or a contradictory execution request requires another route.
-- `$ideate` wins when repository evidence mining and ranked opportunities are central.
+- Direct evidence-backed opportunity analysis owns repository mining and ranked improvement discovery.
 - `$plan` wins when the direction is selected and the requested output is an execution policy or detailed plan.
 - `$tune` wins when the object of work is the skill package itself.
 - Activate when the requested outcome is a choice set; do not activate when the outcome is one answer, one plan, or one implementation.
@@ -162,8 +162,8 @@ Add an assumption or evidence label only when it changes how the option should b
 - "I am blocked by this compiler error. What else can I try?" -> debugging owner
 - "Brainstorm twenty names for this command." -> direct creative generation
 - "Give me options, choose the best, and implement it now." -> execution owner; portfolio may be internal
-- "Mine this repository for evidence-backed product and DX opportunities." -> `$ideate`
+- "Mine this repository for evidence-backed product and DX opportunities." -> direct evidence-backed opportunity analysis
 - "Turn the chosen event-sourcing direction into a detailed implementation plan." -> `$plan`
-- "Explain this repository's architecture and data flow." -> direct analysis / `$codebase-archaeology`
+- "Explain this repository's architecture and data flow." -> direct codebase analysis
 - "Review this pull request for defects." -> review owner
 - "We chose the Quick Win. Build it now." -> execution owner

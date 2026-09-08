@@ -117,8 +117,11 @@ together without a fixed iteration cap. Concrete defects or genuinely better
 admissible candidates justify affected restarts; rewording, speculative scope,
 extra categories, and process elaboration do not.
 
-Retain the mandatory private radical candidate; reuse an equivalent challenger on
-the unchanged decision surface. Perform one final independent source reread including
+Generate a private challenger when evidence leaves a material choice about the
+mechanism, representation, owner, domain, or proof strategy, or an existing
+Metanoetic trigger is live. Reuse an equivalent challenger on the unchanged
+decision surface; skip alternative generation for already-dispositive work.
+Perform one final independent source reread including
 fresh-session executability of the exact emitted block. A material change reopens
 affected decisions and their dependents. Do not emit iteration histories, no-op rows,
 receipts, readiness certificates, or claims that every possible design was exhausted.

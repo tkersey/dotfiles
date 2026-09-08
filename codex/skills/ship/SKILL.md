@@ -217,14 +217,7 @@ Git and review context. It does not copy the receipt into a workflow event log.
 
 ## Output
 
-```text
-Ship Bottom Line:
-- Operation:
-- Final state:
-- PR:
-- Head:
-- Validation:
-- Publication readback:
-- Ship receipt:
-- Next owner:
-```
+Report the PR link, resulting public state, head, and relevant validation or
+limitations concisely. Include receipt identity and the next owner when an
+enclosing workflow needs that handoff. Preserve the full immutable publication
+evidence in the Ship receipt; do not repeat its fields as a mandatory chat form.

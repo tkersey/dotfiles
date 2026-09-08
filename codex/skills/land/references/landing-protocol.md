@@ -401,7 +401,8 @@ Normalize current observations without erasing unresolved thread identities:
 Evaluate:
 
 ```bash
-uv run python3 codex/skills/land/scripts/evaluate_preflight.py snapshot.json
+land_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/land")"
+uv run python3 "$land_skill_root/scripts/evaluate_preflight.py" snapshot.json
 ```
 
 The evaluator is pure. It performs no network, Git, filesystem, merge, thread
