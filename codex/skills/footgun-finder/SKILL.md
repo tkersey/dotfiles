@@ -175,7 +175,7 @@ non_issue
 
 A footgun can overlap, but one lens should own the next step.
 
-## Footgun ledger
+## Footgun ledger (full review)
 
 | id | priority | type | surface | actor | easy path | reasonable belief | hidden hazard | consequence | evidence | mitigation | owner/handoff |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -189,19 +189,15 @@ Rules:
 
 ## Output modes
 
-### Compact review
+### Compact review (default)
 
-```text
-Footgun Review:
-- surface:
-- accepted footguns:
-- top hazard:
-- not footguns:
-- handoffs:
-- bottom line:
-```
+Report prioritized findings with source location, actor/action/expected outcome,
+hidden hazard, consequence, and the smallest mitigation with a meaningful proof
+signal. Express short misuse traces in prose; use a table only when comparison
+benefits. Report clean scope and material verification limits once. Embedded
+reviews retain their caller's return contract.
 
-### Full review
+### Full review (when requested)
 
 1. `Review Basis`
 2. `Surface Map`
@@ -227,7 +223,7 @@ Footgun Lens:
 
 ## Mitigation agenda
 
-The agenda must be an exact projection of accepted ledger rows:
+For a requested full review, derive the agenda only from accepted ledger rows:
 
 | id | mitigation class | proposed change shape | proof signal | handoff owner |
 |---|---|---|---|---|
@@ -251,19 +247,6 @@ Good proof signals include:
 - Do not add ceremony when a rename, explicit flag, type split, or fail-closed check would remove the trap.
 - Do not use broad words like `unsafe` without a misuse trace.
 - Do not count merely surprising implementation internals unless a caller can reasonably touch or copy the hazard.
-
-## Final report
-
-End with:
-
-```text
-Footgun Bottom Line:
-- highest-risk footgun:
-- easiest wrong path:
-- smallest mitigation:
-- companion handoff:
-- proof signal:
-```
 
 ## Hard rules
 

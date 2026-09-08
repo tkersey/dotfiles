@@ -140,7 +140,8 @@ Once `$zig` is active:
 classify work surface
 classify semantic failure family
 emit ZSR-v1 for material changes
-emit ZTS-v1 for material code or state a concrete non-material reason
+apply the cross-cutting bounds/assertions and state applicable exceptions
+bind final proof to the final repository, toolchain, and execution context
 ```
 
 Combine with repository invariant or verification skills only when their

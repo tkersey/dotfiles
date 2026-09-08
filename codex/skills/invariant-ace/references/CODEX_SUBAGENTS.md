@@ -1,6 +1,9 @@
 # Specialist Workers for Invariant Ace
 
-Use the version-neutral worker model in `../../references/codex-specialist-worker-model.md`. Do not depend on one runtime's subagent invocation syntax or install path.
+Resolve the named specialist roles from the current runtime's available agents.
+Use its supported invocation syntax and pass the exact subject, relevant evidence,
+and assigned authority question. Do not depend on a fixed install path. Preserve
+the same-schema root-equivalent fallback below when a required worker is unavailable.
 
 ## Repository workers
 

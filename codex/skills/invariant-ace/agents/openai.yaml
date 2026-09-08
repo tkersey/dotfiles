@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "Invariant Ace"
   short_description: "Authority-gated invariant design with counterexamples, owner/scope, induction, boundary, witness parity, and verification gates"
-  default_prompt: "Use $invariant-ace in Authority-Gated v1 mode for this task."
+  default_prompt: "Use $invariant-ace to evaluate concrete counterexamples, owners, transitions, enforcement, witness parity, and proof. Preserve every required authority clearance and unresolved veto; report concise standalone decisions unless the caller requires the full Authority-Gated v1 handoff."

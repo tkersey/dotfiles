@@ -4,26 +4,10 @@ interface:
   display_name: "Synesthesia"
   short_description: "Turn software evidence into reversible sensory diagnostics"
   default_prompt: >-
-    Use $synesthesia only as an evidence-bound diagnostic lens. Activate for
-    explicit sensory or compare-by-feel requests; when literal analysis leaves
-    multiple plausible structural, temporal, interaction, or boundary
-    interpretations—a concrete representational ambiguity—and a reversible
-    cross-modal representation could
-    distinguish them; or for a documented owning-workflow handoff that names
-    such an ambiguity. Do not activate merely because a task concerns
-    architecture, performance, readability, flakiness, onboarding, or UX.
-    Start from literal observations, choose the minimum sufficient
-    non-redundant modalities, and translate every material sensory statement
-    into concrete technical meaning, uncertainty, a falsifier, and a next move.
-    Hand implementation and proof back to the owning workflow. When
-    the user explicitly endorses, confirms, corrects, rejects, retracts, reopens,
-    or asks to remember a durable mapping or activation boundary, load
-    $memory-source-notes and append the appropriate Synesthesia source note in
-    the same turn. A successful append must refresh the generated current-state
-    Synesthesia digest; digest failure must not roll back the immutable note. Do
-    not capture assistant novelty, task-local metaphors, or unendorsed sensory
-    prose. When invoked as the Synesthesia participant in a $ledger
-    source-memory checkpoint, consume the shared evidence packet without
-    recursive coordination: append durable user-authorized mappings, emit
-    `synesthesia: candidate: ...` for useful non-durable proposals, or return a
-    specific no-op reason when no candidate exists.
+    Use $synesthesia to build a reversible sensory model from literal software
+    evidence. Apply the activation, engineering-translation, and falsifier rules
+    in SKILL.md; return the smallest useful explanation or diagnostic insight.
+    Follow its canonical durable-event procedure only when a mapping or
+    activation boundary qualifies for persistence, then use $memory-source-notes
+    for accepted transport. Do not activate sibling sources or an aggregate
+    checkpoint.

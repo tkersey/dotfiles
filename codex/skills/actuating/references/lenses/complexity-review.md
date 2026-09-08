@@ -34,8 +34,14 @@ For each finding, name the independently maintained truth, code and enforcement
 roles, accepted obligation, decisive evidence/countercase, and any distinct role
 that must survive. Do not validate a proposed deletion or repair by reporting it.
 
-Return `findings` for supported findings, otherwise `clean`; disclose material
-evidence gaps without asserting complete coverage. This search priority does not
+Return the native structured review object with `findings`, `overall_correctness`,
+`overall_explanation`, and `overall_confidence_score`, never a bare status word.
+Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
+and `code_location` (`absolute_file_path` and `line_range.start`/`line_range.end`).
+When no supported findings remain, use an empty `findings` array and
+`overall_correctness: "patch is correct"`; use `"patch is incorrect"` only with
+supported findings. Disclose material evidence gaps in `overall_explanation`
+without asserting complete coverage. This search priority does not
 exclude other concrete in-scope defects. Review Fold owns admission and Actuating
 owns selection. Do not minimize raw line count, remove independent oracles, select
 repairs, or launch a separate reduction audit.

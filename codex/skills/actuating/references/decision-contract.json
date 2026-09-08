@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v14"
+      "source_fingerprint": "actuating-construction-compiler-v14-astra-compat-v1"
     },
     "triggers": [
       {
@@ -412,8 +412,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "counterexample_source": "review-fold/counterexample-corpus",
-      "rationale": "Current judgments are ephemeral; existing owner evidence and offline audits evaluate results."
+      "rationale": "Current judgments are ephemeral; existing owner evidence and offline audits evaluate results. Counterexample source: review-fold/counterexample-corpus."
     }
   }
 }

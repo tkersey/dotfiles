@@ -145,7 +145,11 @@ Update locked decisions, detect newly introduced scope or dependencies, prune su
 
 Use the same question id when re-asking the same conceptual decision.
 
-If an answer changes the target, scope, non-goals, authority boundary, compatibility posture, proof boundary, or rollback posture, surface the drift and ask whether to adopt or restore it before continuing.
+Apply an explicit user change to the target, scope, constraints, or authority and
+recompute affected decisions without asking the user to confirm the same choice.
+Ask only when the answer leaves a material conflict unresolved or when the model's
+inference would create a new user-owned commitment. Continue independent authorized
+work while that question is pending.
 
 ### 7. Stress-test proportionally
 
@@ -203,7 +207,9 @@ Clarified Brief
 - Recommended next owner:
 ```
 
-Then stop. Do not plan or implement unless the user separately asks the appropriate owner to continue.
+Stop when clarification alone was requested. If the user's request already
+authorizes planning or implementation after clarification, resume that work with
+the settled decisions; do not require another invocation or confirmation.
 
 ## Behavioral invariants
 

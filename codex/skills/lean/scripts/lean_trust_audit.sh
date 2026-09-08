@@ -21,9 +21,19 @@ fi
 pattern='\b(sorry|admit|axiom|unsafe|partial|noncomputable|native_decide)\b|@\[(implemented_by|csimp)\]|implemented_by|csimp|decide[[:space:]]+\+native|extern'
 
 if command -v rg >/dev/null 2>&1; then
-  rg -n --glob '*.lean' --glob '!.lake/**' --glob '!lake-packages/**' --glob '!build/**' "$pattern" "$@" || true
+  status=0
+  rg -n --glob '*.lean' --glob '!.lake/**' --glob '!lake-packages/**' --glob '!build/**' "$pattern" "$@" || status=$?
+  if [[ "$status" -gt 1 ]]; then
+    exit "$status"
+  fi
 else
   find "$@" -type f -name '*.lean' \
     ! -path '*/.lake/*' ! -path '*/lake-packages/*' ! -path '*/build/*' \
-    -print0 | xargs -0 grep -nE "$pattern" || true
+    -print0 | while IFS= read -r -d '' file; do
+      status=0
+      grep -nHE -- "$pattern" "$file" || status=$?
+      if [[ "$status" -gt 1 ]]; then
+        exit "$status"
+      fi
+    done
 fi

@@ -4,7 +4,7 @@
     "skill": {
       "name": "review-fold",
       "kind": "mixed",
-      "source_fingerprint": "review-fold-counterexample-corpus-v1"
+      "source_fingerprint": "review-fold-counterexample-corpus-v1-astra-compat-v1"
     },
     "triggers": [
       {
@@ -268,8 +268,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "not-needed",
-      "counterexample_corpus": "review-fold/counterexample-corpus",
-      "rationale": "The fold is current analysis; only admitted counterexample witnesses receive durable identities."
+      "rationale": "The fold is current analysis; only admitted counterexample witnesses receive durable identities. Counterexample source: review-fold/counterexample-corpus."
     }
   }
 }

@@ -2,9 +2,9 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "lift"
-  short_description: "Uber measured optimization with profile evidence and behavior proof"
+  short_description: "Measured optimization with profile evidence and behavior proof"
   default_prompt: >-
     Use $lift for a measured optimization pass: define a performance contract,
     run baseline and profiling, score opportunities, implement one behavior-proven
-    lever, verify before/after, and ship with a regression guard. If no workload
+    lever, verify before/after, and report the result with a regression guard. If no workload
     can run, use UNMEASURED mode with exact benchmark/profiling/proof commands.

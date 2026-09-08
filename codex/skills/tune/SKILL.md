@@ -85,16 +85,10 @@ Report a concrete blocker when requested publication cannot complete.
 
 1. Resolve the skill root, target, and mode.
 2. Search for an existing skill before creating another one.
-3. Read the relevant package:
-   ```text
-   SKILL.md
-   agents/openai.yaml
-   references/decision-contract.json
-   linked references/
-   linked scripts/
-   linked assets/
-   definitions/
-   ```
+3. Read `SKILL.md`, `agents/openai.yaml`, and an existing decision contract first.
+   Load linked references, scripts, assets, and definitions only when the selected
+   mode or proposed change depends on them; inspect affected integrations before
+   editing.
 4. Reconstruct only the operative contract:
    ```text
    trigger and non-trigger boundary
@@ -117,6 +111,11 @@ Report a concrete blocker when requested publication cannot complete.
 9. Validate package integrity and the strongest currently observable behavioral
    claim.
 10. Run the fresh-eyes pass, then publish only when separately authorized.
+
+For an explicitly requested portfolio pass, apply selection independently to each
+target and finish the authorized set. A supported defect in current package text
+can justify a direct edit; historical reconstruction is needed for claims about
+observed activation, recurrence, influence, or outcomes.
 
 When the intended or failed behavior is cognitive rather than only routing,
 authority, tooling, data transport, or output shape, invoke

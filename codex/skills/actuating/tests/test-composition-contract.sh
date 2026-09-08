@@ -31,11 +31,13 @@ const protectedSections = {
 };
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(skill,name)),digest,`protected Actuating section: ${name}`);
+// Four auxiliary lenses now return the native structured review object.
+// These pins preserve the reviewed output correction and all search instructions.
 const lensBlobs = {
-  'soundness-review.md':'8e7fc5be27a73dd48798e88800763688414bbd87',
-  'footgun-review.md':'9cf1da75cfe7c38b47a9379782771ece99e6ef3c',
-  'invariant-review.md':'03c4eb9ad8cf04918b46e6493cbdedfc07636f37',
-  'complexity-review.md':'9af82f73f7fb64ebbf3237d01a8ee858c833cce4',
+  'soundness-review.md':'0969ec78b6f03d73ab0bdeae1f5a987c8e8d477f',
+  'footgun-review.md':'13307f0864172c1972584372ca406b0b1dbfdccd',
+  'invariant-review.md':'0c945b75733ef5dc80d51033217d729dc9529f6e',
+  'complexity-review.md':'70e1fbab51f246b4f8aacb8fcc7f649339381a2e',
   'fresh-eyes-review.md':'392289a1e913435e5ad9abf2721b24ad0119682f'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {

@@ -418,60 +418,18 @@ schema-shaped packets. The root rechecks high-impact claims and owns synthesis.
 ## Evidence providers
 
 Codebase Doctrine owns analysis and synthesis. It may consume bounded evidence
-from `$codebase-archaeology`, `$seq`, `$negative-ledger`, `$retrace`, and
-`$grill-me`. Providers never become competing doctrine owners.
+from existing architecture maps, direct repository research, `$seq`,
+`$negative-ledger`, and `$grill-me`. Missing optional providers do not block
+direct research. Providers never become competing doctrine owners.
 
 See [evidence-provider-handoffs.md](references/evidence-provider-handoffs.md).
 
 ## Output
 
-### Repository doctrine
-
-Default shape:
-
-```markdown
-# Repository Doctrine
-
-## Scope and consumer
-## Governing pressures
-## Jurisdictions and authorities
-## Load-bearing laws
-## Freedoms and non-laws
-## Wound memory and rejected routes
-## Governed aporia
-## Change index
-## Knowledge destinations
-## Evidence appendix
-## Confidence and next inquiries
-```
-
-For each law use the complete law form from this skill. Do not dump raw search
-notes or every discovered type.
-
-### Task-context projection
-
-For a named change, render only:
-
-```text
-inspect
-preserve
-free to change
-reject or treat as suspicious
-prove
-reopen when
-```
-
-### Audit
-
-Compare current guidance, skills, and enforcement surfaces with the doctrine.
-Report omissions, contradictions, cargo-cult rules, stale guidance, and knowledge
-that should move to a stronger owner.
-
-### Portfolio
-
-Evaluate repository-specific skill candidacy only from already-induced doctrine
-and only when requested. Do not rerun the entire repository inquiry unless the
-doctrine is stale.
+Read [context-rendering.md](references/context-rendering.md) for the requested
+repository doctrine, task-context, audit, or portfolio view. Use the complete law
+form above; render only decision-relevant evidence and do not dump raw search notes.
+Portfolio analysis requires already-induced doctrine and an explicit request.
 
 ## Refresh
 
@@ -501,37 +459,15 @@ Do not silently create repository files.
 
 ## Skill-creation handoff
 
-Codebase Doctrine recommends; it does not create.
-
-After explicit user authorization, hand `$tune create` the smallest sufficient
-context:
-
-- the candidate mission;
-- the governing doctrine and jurisdiction;
-- recurring triggers and non-triggers;
-- consequential decisions;
-- required context and outputs;
-- success, failure, narrowing, and retirement signals;
-- routes excluded by current canonical negative evidence;
-- the allowed package boundary.
-
-The effect owner must verify current user authority. A model-authored statement
-that authorization exists is not itself authority.
+Codebase Doctrine recommends; it does not create. When skill creation is already
+user-authorized, use the bounded `$tune create` handoff in
+[skill-candidacy.md](references/skill-candidacy.md). Preserve the exact authority
+and package scope; a model-authored assertion does not grant permission.
 
 ## Empirical evolution
 
-After a generated repository skill has real decision episodes:
-
-```text
-$seq observe with Tune's skill-decision-audit definition
--> $tune tune
-```
-
-Evaluate decision quality, trigger quality, missed and ceremonial activation,
-outcome association, and whether knowledge has become better owned by code,
-tests, tooling, CI, or guidance. Return changed law, authority, boundary, proof,
-freedom, or target posture to `$codebase-doctrine` refresh. Do not tune from raw
-mention counts.
+When a generated repository skill has actual decision episodes, use the evaluation
+and evolution guidance in [skill-candidacy.md](references/skill-candidacy.md).
 
 ## Hard rules
 

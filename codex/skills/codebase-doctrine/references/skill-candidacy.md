@@ -80,6 +80,8 @@ Use actual decision episodes.
 
 ## Handoff to `$tune create`
 
+Codebase Doctrine recommends; it does not create.
+
 After explicit user authorization, provide `$tune create` only the context
 required to create the package:
 
@@ -92,8 +94,23 @@ required to create the package:
   and the conditions that make each deeper reference or asset relevant;
 - success and failure signals;
 - narrowing and retirement conditions;
-- currently applicable prohibited routes;
+- routes excluded by current canonical negative evidence;
 - allowed package boundary.
 
 Tune must verify current user authorization independently. A handoff written by
 the model cannot certify its own authority.
+
+## Empirical evolution
+
+After a generated repository skill has real decision episodes:
+
+```text
+$seq observe with Tune's skill-decision-audit definition
+-> $tune tune
+```
+
+Evaluate decision quality, trigger quality, missed and ceremonial activation,
+outcome association, and whether knowledge has become better owned by code,
+tests, tooling, CI, or guidance. Return changed law, authority, boundary, proof,
+freedom, or target posture to `$codebase-doctrine` refresh. Do not tune from raw
+mention counts.

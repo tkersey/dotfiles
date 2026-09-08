@@ -298,3 +298,140 @@ memory-note: failed: <concise reason>
 ```
 
 Do not emit routine `not-attempted` lines for ordinary diagnostic use.
+
+## Durable memory events
+
+Most sensory output must not become memory.
+
+When this workflow reaches a native Ledger command, load `$ledger` and complete
+`$ledger ensure` once. After readiness, invoke `ledger` directly.
+
+Resolve `<synesthesia-definition>` once to:
+
+```text
+<this-skill-root>/definitions/ledger/synesthesia-protocol.json
+```
+
+A durable memory event exists when the user explicitly:
+
+- says `remember this`, `save this`, `from now on`, or equivalent;
+- defines `when I say <phrase>, it means <technical pattern>`;
+- endorses a mapping as correct and reusable;
+- reuses an existing mapping in a new context and explicitly accepts it again;
+- corrects or rejects a prior mapping;
+- defines, changes, retracts, or reopens a durable activation or non-activation boundary.
+
+Repeated accepted operational use without an explicit durability phrase may qualify only across at least two independent contexts and with evidence that the mapping changed diagnosis or explanation.
+
+When a durable memory event exists:
+
+1. classify it as endorsement, confirmation, correction, rejection, activation boundary, boundary retraction, or reopening;
+2. identify the narrowest reusable scope;
+3. require an engineering translation and verification rule;
+4. identify the prior `SYN-*` ledger ID or `MSN-*` source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
+5. run `ledger doctor --definition <synesthesia-definition> --repo <repo> --format json`;
+6. execute [Canonical append](#canonical-append) once for this event; if that step already returned its `SYN-*` ID, reuse it without another capture;
+7. when global memory admission is warranted, follow [Same-turn memory-source admission](#same-turn-memory-source-admission) with that exact returned `SYN-*` ID;
+8. emit separate canonical and admission proof lines.
+
+Do not merely describe a qualifying memory event without attempting the handoff.
+
+When Synesthesia is legitimately active but durable authority is absent, a
+compact non-durable proposal may be useful:
+
+```text
+synesthesia: candidate: phrase="<sensory phrase>" translation="<engineering meaning>" needs=user-endorsement
+```
+
+State the evidence, activation boundary, non-activation boundary, and
+verification or falsifier nearby. A candidate is not a ledger row, memory note,
+or future authority. Do not run a candidate pass when the activation boundary
+is not already met.
+
+Do not emit a `memory-note: not-attempted` line during ordinary Synesthesia use. Emit a proof line only when the user requested persistence, supplied a durable event, or the admission gate was materially evaluated.
+
+## Memory admission gate
+
+Explicit durable user authority is sufficient for intended persistence. It does not also require repetition.
+
+Without explicit durable authority, require repeated accepted use across at least two independent contexts.
+
+Every admitted mapping or boundary must contain:
+
+- sensory phrase when a phrase is being mapped;
+- concrete engineering translation;
+- activation boundary;
+- non-activation boundary;
+- narrow envelope scope;
+- explicit or repeated-accepted authority;
+- source references;
+- reversible verification rule;
+- prior note relationship when changing an existing mapping.
+
+Do not capture:
+
+- one-off poetic phrases;
+- assistant novelty;
+- transient incidents;
+- ambient UI colors or passive screen context;
+- mappings with no engineering translation;
+- ordinary technical facts better owned by learnings;
+- failed-route exclusions better owned by negative ledger;
+- general operating corrections are outside Synesthesia scope unless they establish a sensory mapping or activation boundary.
+
+## Canonical Store
+
+```text
+<this-skill-root>/definitions/ledger/synesthesia-protocol.json
+```
+
+The passive definition owns the structural submission contract, `capture` and
+one-shot `bind-existing` transactions, and `record`, `memory-note`, `recent`,
+`query`, and `recall` projections. Invoke them only through generic
+`ledger doctor`, `ledger transact`, and `ledger project`.
+
+`.ledger/synesthesia/events.jsonl` is the current persistent adapter location,
+not a caller contract; do not open or hand-edit it in normal operation.
+Existing immutable Synesthesia memory-source notes remain byte-identical
+current data and require no migration. An existing event store must be bound
+once through the explicit `bind-existing` transaction before normal reads or
+writes; there is no implicit reader, note import, or fallback path.
+
+## Generated current-state digest
+
+A successful Synesthesia memory-source admission refreshes this regular-file materialized view automatically:
+
+```text
+${CODEX_HOME:-$HOME/.codex}/memories/extensions/synesthesia/resources/latest_synesthesia_digest.md
+```
+
+The digest folds immutable `assert`, `confirm`, `supersede`, `reject`, `retract`, and `reopen` events into the current active mappings and activation boundaries. It also preserves inactive entries, invalid notes, and unresolved event chains.
+
+The digest is disposable and non-canonical. Every promotable entry must retain resolvable `source_note_ids`; immutable notes remain authoritative. A digest-generation failure must never invalidate or roll back a successful source-note append.
+
+Manual refresh:
+
+```bash
+memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+uv run \
+  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
+  memory-digest
+```
+
+Run the doctor after copy-deploying the Phase 2 adapter or when promotion appears stale:
+
+```bash
+memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+uv run \
+  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
+  doctor \
+  --repo <repo> \
+  --format text
+```
+
+## Cross-extension ownership
+
+- evidence-backed execution learning -> `$learnings`;
+- failed-hypothesis exclusion or reopening -> `$negative-ledger`;
+- endorsed sensory mapping or sensory activation boundary -> `$synesthesia`;
+- immutable source-note transport and cross-source reconciliation -> `$memory-source-notes`.

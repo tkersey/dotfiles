@@ -1,6 +1,6 @@
 {
   "schema": "universalist-routing-evaluation/v1",
-  "skill_fingerprint": "universalist-boundary-decision-v17.7",
+  "skill_fingerprint": "universalist-boundary-decision-v17.7-astra-compat-v1",
   "purpose": "Evaluate implicit activation separately from route selection. Skip means no Universalist invocation, disposition, route, record, or receipt.",
   "expectations": {
     "skip": "No live semantic boundary decision is evidenced.",
