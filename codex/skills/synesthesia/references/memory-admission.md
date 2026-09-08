@@ -330,8 +330,8 @@ When a durable memory event exists:
 3. require an engineering translation and verification rule;
 4. identify the prior `SYN-*` ledger ID or `MSN-*` source-note ID for confirmation, correction, rejection, retraction, or reopening when one exists;
 5. run `ledger doctor --definition <synesthesia-definition> --repo <repo> --format json`;
-6. append the canonical row with `ledger transact --definition <synesthesia-definition> --operation capture --repo <repo> --input submission=<file|-> --format json`;
-7. when global memory admission is warranted, load `$memory-source-notes`, project `memory-note` with the same definition and exact returned `SYN-*` ID, then use the Synesthesia source-note adapter in the same turn;
+6. execute [Canonical append](#canonical-append) once for this event; if that step already returned its `SYN-*` ID, reuse it without another capture;
+7. when global memory admission is warranted, follow [Same-turn memory-source admission](#same-turn-memory-source-admission) with that exact returned `SYN-*` ID;
 8. emit separate canonical and admission proof lines.
 
 Do not merely describe a qualifying memory event without attempting the handoff.

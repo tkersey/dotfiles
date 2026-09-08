@@ -192,7 +192,7 @@ After review reconciliation is complete, rebuild one current-head snapshot with:
 Run the pure evaluator:
 
 ```bash
-land_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/land")"
+land_skill_root="$(realpath "$HOME/.agents/skills/land")"
 uv run python3 "$land_skill_root/scripts/evaluate_preflight.py" <snapshot.json>
 ```
 

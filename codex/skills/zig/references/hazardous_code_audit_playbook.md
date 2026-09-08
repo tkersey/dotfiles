@@ -115,7 +115,7 @@ current request or earlier conversation, without reconfirming authority already 
 Run the script or equivalent scan:
 
 ```bash
-zig_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/zig")"
+zig_skill_root="$(realpath "$HOME/.agents/skills/zig")"
 zig_audit_output="$(mktemp -d)"
 "$zig_skill_root/scripts/zig_hazard_audit_rg.sh" . > "$zig_audit_output/hazard-rg.txt"
 ```

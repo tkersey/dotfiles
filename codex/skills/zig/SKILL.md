@@ -212,7 +212,7 @@ What registry, build manifest, generator, golden, or aggregate check also owns t
 ```
 Run:
 ```bash
-zig_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/zig")"
+zig_skill_root="$(realpath "$HOME/.agents/skills/zig")"
 uv run python3 "$zig_skill_root/scripts/zig_repo_closure_scan.py" --root .
 ```
 Then inspect repository-specific contracts and run aggregate lint and build

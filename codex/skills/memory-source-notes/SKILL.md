@@ -116,7 +116,7 @@ Resolve adapter paths once from the installed skill, independently of the target
 repository's working directory:
 
 ```bash
-memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")"
 ```
 
 ## Synesthesia validated adapter
@@ -338,7 +338,7 @@ Reconciliation compares canonical source records, immutable source notes, and
 Phase 2 provenance without writing or deciding eligibility.
 
 ```bash
-memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")"
 uv run python \
   "$memory_source_notes_root/scripts/source-memory-reconcile.py" \
   --repo "$(git rev-parse --show-toplevel)" \

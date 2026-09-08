@@ -4,7 +4,7 @@
     "skill": {
       "name": "zig",
       "kind": "mixed",
-      "source_fingerprint": "generated-with-semantic-router-v3-tiger-style-astra-compat-v1"
+      "source_fingerprint": "generated-with-semantic-router-v3-tiger-style-astra-compat-v2"
     },
     "triggers": [
       {

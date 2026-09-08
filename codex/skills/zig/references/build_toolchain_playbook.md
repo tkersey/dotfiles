@@ -26,7 +26,7 @@ zig build --help
 zig build-exe --help | rg -- '-flto|-fno-lto|lld|new-linker'
 zig env
 find . -maxdepth 4 \( -name build.zig -o -name build.zig.zon \) -print
-zig_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/zig")"
+zig_skill_root="$(realpath "$HOME/.agents/skills/zig")"
 uv run python3 "$zig_skill_root/scripts/zig_repo_closure_scan.py" --root .
 ```
 

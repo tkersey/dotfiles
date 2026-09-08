@@ -401,7 +401,7 @@ Normalize current observations without erasing unresolved thread identities:
 Evaluate:
 
 ```bash
-land_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/land")"
+land_skill_root="$(realpath "$HOME/.agents/skills/land")"
 uv run python3 "$land_skill_root/scripts/evaluate_preflight.py" snapshot.json
 ```
 

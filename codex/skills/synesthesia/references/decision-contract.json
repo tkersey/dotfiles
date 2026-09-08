@@ -4,7 +4,7 @@
     "skill": {
       "name": "synesthesia",
       "kind": "decision",
-      "source_fingerprint": "synesthesia-v4.1.0-astra-compat-v1"
+      "source_fingerprint": "synesthesia-v4.1.0-astra-compat-v2"
     },
     "triggers": [
       {
