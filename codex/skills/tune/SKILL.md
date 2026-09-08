@@ -117,12 +117,6 @@ target and finish the authorized set. A supported defect in current package text
 can justify a direct edit; historical reconstruction is needed for claims about
 observed activation, recurrence, influence, or outcomes.
 
-When the intended or failed behavior is cognitive rather than only routing,
-authority, tooling, data transport, or output shape, invoke
-`$noetic-effects compile` after reconstructing the operative contract and before
-selecting the intervention. Use its result as a candidate semantic compilation;
-Tune still decides whether and how the package changes.
-
 If materially new evidence invalidates the frozen delta or selected intervention,
 return to step 4. Do not silently broaden the diagnosis during editing.
 
@@ -149,49 +143,6 @@ Before completion, prove:
 
 Keep `SKILL.md` under 500 lines. Move detail only when doing so improves
 progressive disclosure rather than hiding governing policy.
-
-## Noetic compilation
-
-Use `$noetic-effects compile` when the target skill needs to change how an agent
-frames, searches, constructs, selects, reduces, or actuates—not merely what it
-calls a route or how it formats an answer.
-
-Common pressures include:
-
-- inherited framing suppresses current evidence;
-- reasoning stops at symptoms;
-- a genuine contradiction is being flattened;
-- candidate generation is captive to incumbent adjacency;
-- the option set is timid or contains no adequate form;
-- the abstraction, owner, or composition law is suspect;
-- implementation is detached from the accepted contract;
-- accumulated surface owns no live obligation;
-- process machinery displaces object-level capability;
-- analysis does not become state movement.
-
-Require Noetic Effects to return the smallest sufficient effect or justified
-composition, then compile it into the target skill's own:
-
-```text
-witnessed trigger
-native operation
-governor or shadow-risk guard
-stopping condition
-expected route delta
-positive probe
-near-miss probe
-shadow-failure probe
-```
-
-Do not insert doctrine vocabulary as decoration. The target instruction must
-change a consequential route, candidate, construction, deletion decision,
-action, or proof obligation. If the target already owns an equivalent native
-handler, prefer `no-change` or sharpen that handler rather than duplicating it.
-
-`$noetic-effects` is read-only and does not choose Tune's intervention, edit the
-package, widen authority, or publish. Tune preserves the target skill's
-activation boundary, owner model, mutation policy, evidence contract, and
-closure semantics.
 
 ## Create mode
 
@@ -272,6 +223,24 @@ execution, proof, lifecycle, or outcome relation should change, stop with
 Regression is an evidence shape, not a mode. Bind the prior failure, involved
 trigger/clause/route, expected future behavior, and a reproduction query. Repair
 the witnessed failure class without installing an unsupported global ban.
+
+## Cognitive compilation
+
+When creating or changing how a target agent frames, searches, explains,
+constructs, selects, reduces, or turns a selected route into action, read
+[cognitive-compilation.md](references/cognitive-compilation.md) before selecting
+the intervention. Skip this reference for mechanical routing, authority,
+tooling, transport, or formatting edits that do not change cognition.
+
+Translate the requested or evidenced weakness into the target's native trigger,
+operation, shadow-risk guard, stopping condition, observable route delta, and
+positive, near-miss, and shadow-failure probes. Reuse an equivalent native rule;
+prefer `no-change` when no material delta is justified.
+
+This is conditional authoring knowledge, not another public mode, runtime
+dispatcher, handoff, or receipt. Tune's selection and authority gates still
+govern. Do not redefine canonical verbatim skills or gate their independent
+entry points through the operator taxonomy.
 
 ## Intervention selection
 
@@ -375,8 +344,8 @@ and router:
 - Did paths, names, links, contract IDs, or `agents/openai.yaml` drift?
 - Would the result cause false, missed, ceremonial, or partial activation?
 - Did the change add protocol where direct capability would suffice?
-- Did doctrine compilation change an actual decision procedure or only its
-  register?
+- For cognitive edits, did the native decision procedure change rather than just
+  its register, without duplicating a handler or widening authority?
 
 Fix a material finding before completion. Otherwise retain
 `fresh_eyes_delta: none` internally.
@@ -404,8 +373,6 @@ Omit empty or inapplicable fields.
 
 - `$tune` is the sole owner of skill creation, direct editing, and
   evidence-backed tuning.
-- `$noetic-effects` may compile cognitive semantics but never owns package
-  intervention selection, mutation, validation, or publication.
 - Mode expresses intent; authority, evidence shape, rigor, and result do not.
 - Diagnosis precedes mutation in tune mode.
 - Direct edit does not require ceremonial diagnosis.
