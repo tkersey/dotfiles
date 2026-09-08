@@ -42,6 +42,26 @@ cost separately. Track all original reports, not only the admitted corpus. Neith
 low acceptance nor high raw finding count establishes improvement. Duplicates can
 corroborate a defect but do not create independent witnesses or coverage.
 
+## Native format and incomplete-evidence regression
+
+Use `subject-16` as the missing-premise case for each of the four revised lenses.
+Grade the native object separately from its evidence strength: an empty `findings`
+array and `overall_correctness: "patch is correct"` must retain the unavailable
+reservation contract in `overall_explanation`, without inventing a defect, location,
+or proof of at-most-once behavior. Bare `clean` is not a native review object.
+
+In a separate Actuating continuation, supply that report and its original subject
+as owner evidence under the same Goal. The evaluator must check that the dependent
+safety/closure claim remains unestablished, while independent authorized work may
+continue. Neither a clean status nor a low confidence score discharges the missing
+premise. Do not turn the limitation into a production repair or a new review status.
+Use `subject-06` as a supported-preservation control; do not manufacture a blocker
+when source and the other required owner evidence establish the obligation.
+
+These are evaluator instructions, not worker context. A formatting-only probe or
+a source-contract test does not establish that this continuation behaves correctly;
+record live reviewer and continuation outcomes separately when actually run.
+
 Treat these small subjects as discriminators, not representative efficacy proof.
 Confirm promising changes with existing matched-snapshot offline audits of real
 work, including omitted behavior, temporal failures, genuinely local defects, and

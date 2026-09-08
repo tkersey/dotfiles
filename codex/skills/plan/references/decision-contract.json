@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v13-evidence-gated-challenger"
+      "source_fingerprint": "plan-v14-material-decision-challenger"
     },
     "triggers": [
       {
@@ -279,15 +279,17 @@
         "success_signals": [
           "material defects drive uncapped affected refinement",
           "equivalent challenges reused",
-          "warranted challenger dispositioned; already-dispositive work skips alternative generation",
+          "material non-source-fixed decisions and live Metanoetic triggers receive a dispositioned challenger",
+          "mechanical source-fixed realization needs no additional challenger",
           "final reread checks the exact block"
         ],
         "failure_signals": [
           "duplicate loop or receipt",
           "rewording treated as material progress",
+          "confidence in the incumbent or no recognized alternative waives a required challenge",
           "tool stop misreported as convergence"
         ],
-        "rationale": "Intellectual pressure does not require procedural reenactment."
+        "rationale": "Decision scope and source authority, not incumbent confidence, determine challenge; equivalent evidence prevents procedural reenactment."
       },
       {
         "clause_id": "PLAN-EXPORT-001",

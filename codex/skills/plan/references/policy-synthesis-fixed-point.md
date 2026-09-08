@@ -50,11 +50,14 @@ must not be traded for fewer lines or a superficially simpler construction.
 ## Challenge and final reread
 
 Retain the strongest invariant challenge from specification-challenge.md. When
-current evidence leaves a material choice about the mechanism, representation,
-owner, admitted domain, evidence strategy, or organization, generate the strongest
-non-obvious admissible alternative. An existing Metanoetic trigger also warrants
-this challenge. Skip alternative generation for already-dispositive work; the
-source reread and invariant challenge still apply. Adoption is not required. Reuse an
+the plan selects or changes a material mechanism, representation, owner, admitted
+domain, proof strategy, or action organization not fixed by accepted source
+authority, evaluate one strongest non-obvious admissible private challenger. An
+existing Metanoetic trigger also requires the challenge. Confidence in the incumbent,
+a coherent draft, and absence of a recognized alternative do not waive it.
+Mechanical realization of source-fixed decisions requires no additional challenger;
+source reread and invariant challenge still apply. A contradiction in fixed authority
+returns to governance, not unauthorized redesign. Adoption is not required. Reuse an
 equivalent challenge already evaluated over the same unchanged decision surface,
 including a workflow-owned Metanoetic challenger. Do not run it again just to
 record an invocation. Reject candidates that expand authority, lose required-valid
@@ -75,7 +78,7 @@ A semantic discrepancy reopens the affected candidate; regenerate both views.
 ## Stop
 
 There is no fixed iteration cap. Stop successfully only after a complete sweep finds
-no concrete material delta, any warranted challenger is dispositioned, the final source
+no concrete material delta, every required challenger is dispositioned, the final source
 reread is clean, all material decisions are owned, and the plan is executable or
 honestly conditional through safe terminals. This is not a claim that all possible
 architectures have been enumerated or all future defects excluded.
