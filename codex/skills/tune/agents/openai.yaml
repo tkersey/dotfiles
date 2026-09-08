@@ -7,3 +7,6 @@ interface:
     Use $tune in create, edit, or tune mode. Own the complete skill package, preserve
     diagnosis-before-mutation in tune mode, select the semantically weakest valid intervention before
     minimizing the diff, and mutate or publish only with corresponding authority.
+    For cognitive skill changes, use Tune's conditional cognitive-compilation reference to author
+    a native trigger, operation, guard, stop, route delta, and probes without adding a public mode
+    or an inter-skill handoff. Skip that reference for mechanical edits.

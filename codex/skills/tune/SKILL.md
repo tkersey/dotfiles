@@ -224,6 +224,24 @@ Regression is an evidence shape, not a mode. Bind the prior failure, involved
 trigger/clause/route, expected future behavior, and a reproduction query. Repair
 the witnessed failure class without installing an unsupported global ban.
 
+## Cognitive compilation
+
+When creating or changing how a target agent frames, searches, explains,
+constructs, selects, reduces, or turns a selected route into action, read
+[cognitive-compilation.md](references/cognitive-compilation.md) before selecting
+the intervention. Skip this reference for mechanical routing, authority,
+tooling, transport, or formatting edits that do not change cognition.
+
+Translate the requested or evidenced weakness into the target's native trigger,
+operation, shadow-risk guard, stopping condition, observable route delta, and
+positive, near-miss, and shadow-failure probes. Reuse an equivalent native rule;
+prefer `no-change` when no material delta is justified.
+
+This is conditional authoring knowledge, not another public mode, runtime
+dispatcher, handoff, or receipt. Tune's selection and authority gates still
+govern. Do not redefine canonical verbatim skills or gate their independent
+entry points through the operator taxonomy.
+
 ## Intervention selection
 
 Select by semantic weakness, then realize by physical minimality.
@@ -326,6 +344,8 @@ and router:
 - Did paths, names, links, contract IDs, or `agents/openai.yaml` drift?
 - Would the result cause false, missed, ceremonial, or partial activation?
 - Did the change add protocol where direct capability would suffice?
+- For cognitive edits, did the native decision procedure change rather than just
+  its register, without duplicating a handler or widening authority?
 
 Fix a material finding before completion. Otherwise retain
 `fresh_eyes_delta: none` internally.
