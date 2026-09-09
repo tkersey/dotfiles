@@ -113,12 +113,15 @@ quota and no weakening an independent oracle to manufacture agreement.
 For tuning, compare additions with genuine ablations using existing session audits
 or matched-snapshot replays. Keep the accepted Goal, contemporaneous evidence,
 model settings, resource budget, review mechanics, and required correctness endpoint
-comparable; withhold later witnesses from implementing runs. Test whether removing
-redundant instructions improves causal discovery and construction, not just prompt
-length. Include genuinely local defects, spurious allegations, oracle failures, and
-shared-obligation omissions so that blanket redesign, rejection, or extra checking
-cannot masquerade as progress. These are offline comparison dimensions, not a new
-runtime checklist or mandatory evaluation pass during delivery.
+comparable. Withhold later witnesses from implementing runs, freeze the first
+realized repair, and test it against those siblings and required-valid controls
+before allowing another edit. Distinguish model correction, operation preservation,
+and path coverage; a matrix derived only from the incumbent model can miss an
+erased distinction. Include local defects, spurious allegations, oracle failures,
+wrong-model and missing-path cases so that blanket redesign, rejection, or extra
+checking cannot masquerade as progress. Compare genuine ablations, not just prompt
+length. These are offline comparison dimensions, not a new runtime checklist or
+mandatory evaluation pass during delivery.
 
 Distinguish outcome quality, observable decision influence, and incremental benefit.
 A useful Metanoetic reconsideration is inspectable evidence even without an isolated

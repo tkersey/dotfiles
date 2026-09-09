@@ -140,8 +140,9 @@ underdetermined   seek authority; no correctness mutation from the claim
 ```
 
 Have Review Fold apply its [counterexample admission](../review-fold/SKILL.md#counterexample-admission)
-before treating a report as a liability. A discrepancy may expose a defect in the
-implementation, the witness's interpretation, an oracle, or a proof/assessment
+for review findings and failed checks before treating either as a liability.
+A failed execution stays failed; its diagnosis is adjudicated, not its history.
+A discrepancy may expose a defect in the implementation, the witness's interpretation, an oracle, or a proof/assessment
 claim. Establish which obligation actually fails; do not default to changing
 production code or to trusting the checker. A refuted allegation returns to Review
 Fold; an oracle correction needs its own source-grounded obligation and independent
@@ -184,30 +185,39 @@ Outside an open review epoch, review is not a prerequisite for implementation.
 
 ## Compile the first loss of guarantee
 
-Combine current and applicable historical witnesses under the accepted law. Locate
-the first sanctioned construction or operation that loses the guarantee: what can
-be chosen, written, ordered, or authorized independently that must agree? Keep
-required-valid behavior and distinct obligations intact; the causal family remains
-a revisable hypothesis, not a list of examples.
+Combine current and applicable historical witnesses under the accepted law.
+Acceptance establishes a supported disagreement, not the causal explanation.
+Keep the law fixed while challenging the account: which assumption makes this
+witness surprising? Locate the first loss of guarantee and what can be chosen,
+written, ordered, interpreted, or authorized independently that must agree.
+The family remains a hypothesis, not its observed examples; keep distinct laws separate.
 
-Before implementation, choose the smallest discriminator of that explanation. For
-lifetime, aliasing, or composition, start from valid state and exercise the operation
-that loses the law. When source evidence identifies a shared obligation across
-operations, challenge whether the construction lets one omit it independently.
-Prefer making that omission unavailable over teaching each branch to remember
-another check. Preserve legitimate differences between those operations; a shared
-helper or exhaustive switch alone does not establish coverage.
+Before implementation, choose the smallest source-grounded discriminator that
+could refute that explanation, not merely repeat the failing example. When a
+semantic model is implicated, seek a supported case separating notions it
+conflates or a dependency the law does not require. If the model treats two cases
+alike but the law requires different observations, retain or derive the missing
+distinction; more checks on the unchanged proxy cannot recover it. A decisive
+source argument can suffice; no paired-case quota or forced redesign.
 
-Compare adequate candidates under the same laws, valid observations, compatibility,
-resources, and proof bar. Remove, derive, or lawfully control the enabling freedom.
-Ablation is constructive when it removes that freedom or makes compensation
-unnecessary, not when it deletes required behavior or an independent oracle. Test
-a plausible deletion, delegation, collapse, or replacement when redundancy is
-implicated; do not build two complete versions or manufacture a deletion quota.
-A local correction may restore an adequate owner. Neither local-repair-first nor
-redesign-everything is required. Prefer stronger exclusion and fewer independently
-maintained truths; source size and lifecycle cost compare constructionally adequate
-candidates, not weaker guarantees.
+Distinguish a wrong model from omitted enforcement. Correcting a predicate does
+not prove every path uses it; applying it everywhere does not prove it expresses
+the law. For lifetime, aliasing, or composition, exercise permitted transitions
+from valid state and preserve required-valid counterparts. When source evidence
+identifies a shared obligation, ask whether an operation can omit or reinterpret
+it independently. Prefer making that omission unavailable over teaching each branch
+to remember another check. Preserve legitimate operation differences; a helper,
+exhaustive switch, or new type alone proves neither meaning nor coverage.
+
+Compare adequate candidates under the same laws, observations, compatibility,
+resources, and proof bar. Remove, derive, or lawfully control the enabling freedom;
+retire redundant production interpretations without merging away independent
+verification. Test a plausible deletion, delegation, collapse, or replacement when
+redundancy is implicated, not two complete versions or a deletion quota. A local
+correction or shared validator can be adequate when admission, permitted operations,
+and sanctioned paths establish the law. Neither local-repair-first nor redesign is
+compulsory. Prefer stronger exclusion and fewer independently maintained truths;
+source size and lifecycle cost cannot justify weaker guarantees.
 
 Use the [construction argument](references/counterexample-guided-normalization.md)
 when domain, operation, or migration coverage needs it. Samples discriminate an

@@ -149,9 +149,11 @@ Do not infer a new correctness liability from an unavailable premise.
 
 ## Counterexample admission
 
-An incoming finding is a proposed falsifier, not an established program fact.
-A CAS receipt proves what the reviewer reported about its subject, not that the
-allegation is true. Before admission, establish each witness independently:
+Review findings, failed assertions, differential mismatches, and verification
+failures use the same admission decision. A CAS receipt establishes what was
+reported; a test result establishes its recorded execution and disagreement,
+not the authority of its expectation or a production defect. Before admission,
+establish each witness independently:
 
 1. **Obligation.** Cite the accepted outcome, compatibility contract, invariant,
    protocol, or mandatory verification condition and its required observation.
@@ -176,7 +178,25 @@ allegation is true. Before admission, establish each witness independently:
    invalid; safe rejection may be the obligation. A rare but demonstrated
    violation remains real.
 
-Settle the decisive premise, then stop. An obvious source trace can suffice;
+For failed checks, inspect the expectation's source authority, fixture preconditions,
+actual artifact and environment, and the assertion or execution stage that failed.
+Attribute the supported defect to the implementation, oracle, fixture, or harness;
+an obsolete implementation-detail assertion is not a preserved law. Checker changes
+need independent justification and preserved verification of every still-required
+obligation, or explicit authority retiring that obligation. Never change expected
+results merely to agree with the candidate. Agreement among implementations sharing
+one assumption is not independent validation of that assumption.
+
+Preserve the exact failed result. Rejecting its diagnosis does not create a pass
+or waive mandatory verification; obtain fresh applicable evidence after correction.
+A check that could not run leaves evidence unavailable, not a behavioral falsifier.
+A resource failure within an accepted workload/budget can itself be a violation.
+A later passing retry does not erase an unexplained failure. Keep uncertainty in
+its dependent claim; do not label a failure flaky or environmental without evidence.
+
+Settle the decisive premise, then stop. Reuse decisive execution evidence rather
+than reproducing it ceremonially; routine expected-red implementation work needs
+no separate investigation or invented family. An obvious source trace can suffice;
 do not require an executable reproduction, fabricate a defense, or demand proof
 that no possible bug exists. Respect enclosing effect authority and frozen-head
 rules. An unavailable or unsafe experiment leaves an evidence gap, not authority

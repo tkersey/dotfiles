@@ -10,9 +10,12 @@ node codex/skills/review-fold/tests/test-counterexample-admission.mjs
 ```
 
 The test executes concrete candidate/probe snippets and checks their actual
-observations. Six pairs hold the allegation constant while changing the decisive
+observations. Seven pairs hold the allegation constant while changing the decisive
 program, authority, scope, or current-subject evidence. Additional cases cover
-unknown premises and narrowing a partially valid allegation. Source-contract
+unknown premises, narrowing, failed expectations, oracle defects, setup failures,
+incidental assertions, and passing retries after failures. Synthetic local probes
+distinguish a wrong return model from omitted entry checks and reject-all; they
+also separate ownership from drop permission. They are not historical replays. Source-contract
 checks cover the handoff from Actuating through Review Fold to corpus capture.
 The existing Actuating composition test invokes this test as well.
 
