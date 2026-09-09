@@ -4,7 +4,7 @@
     "skill": {
       "name": "actuating",
       "kind": "mixed",
-      "source_fingerprint": "actuating-construction-compiler-v14-astra-compat-v1"
+      "source_fingerprint": "actuating-construction-compiler-v15"
     },
     "triggers": [
       {
@@ -223,12 +223,14 @@
         "success_signals": [
           "only current entailed accepted witnesses create automatic correctness pressure",
           "every semantic delta has counterexample, Goal, or explicit new authority",
-          "claim corrections and residuals retain authority and closure consequences"
+          "claim corrections and residuals retain authority and closure consequences",
+          "failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes"
         ],
         "failure_signals": [
           "rejected strengthening implemented to protect review convergence",
           "duplicate observation treated as a new causal dimension",
-          "claim narrowing silently weakens accepted behavior"
+          "claim narrowing silently weakens accepted behavior",
+          "a refuted test diagnosis waives mandatory verification or changes expectations merely to match the candidate"
         ],
         "rationale": "Adjudication governs actual code, not just the response narrative."
       },
@@ -258,14 +260,17 @@
           "a local correction may restore an adequate family mechanism without forced redesign",
           "a mechanism change may win without disproving every possible local repair",
           "plausible subtractive alternatives are tested when redundancy is evidenced",
-          "admission, permitted-transition preservation, law implication, and escape closure are distinguished; required progress survives"
+          "admission, permitted-transition preservation, law implication, and escape closure are distinguished; required progress survives",
+          "a source-grounded discriminator challenges the causal model and separates conflated notions before enforcement is extended",
+          "model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct"
         ],
         "failure_signals": [
           "one special case per finding",
           "mandatory local-repair-first or refactor-everything default",
           "restoration label bypasses family or path proof",
           "hypothesized family or sampled siblings called universal proof",
-          "cut passage or a checked constructor is credited as preservation under later permitted operations"
+          "cut passage or a checked constructor is credited as preservation under later permitted operations",
+          "a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage"
         ],
         "rationale": "A causal explanation directs an operation-level change and a discriminating test, not another report."
       },

@@ -26,7 +26,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v17');
 assert.equal(c.contract_id, 'actuating-review-contract-v19');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v14-astra-compat-v1');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v15');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -175,6 +175,23 @@ assert(closureProof.success_signals.includes('local completion and reviewability
 assert(closureProof.success_signals.includes('test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority'));
 assert(closureProof.failure_signals.includes('passing a weakened suite discharges an unchanged requirement'));
 // End verifier-integrity regressions.
+// Admission/model-refinement source contracts; not a model-efficacy result.
+assert(proofAcceptance.includes('for review findings and failed checks before treating either as a liability'));
+const causal = text('SKILL.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+for (const rule of [
+  'Acceptance establishes a supported disagreement, not the causal explanation',
+  'source-grounded discriminator that could refute that explanation',
+  'retain or derive the missing distinction',
+  'Distinguish a wrong model from omitted enforcement',
+  'without merging away independent verification',
+  'no paired-case quota or forced redesign'
+]) assert(causal.includes(rule), 'lost model-refinement rule: ' + rule);
+const lawAdmission = d.clauses.find(cl => cl.clause_id === 'ACT-LAW-AUTHORITY-001');
+assert(lawAdmission.success_signals.includes('failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes'));
+const construction = d.clauses.find(cl => cl.clause_id === 'ACT-CONSTRUCTION-COMPILER-001');
+assert(construction.success_signals.includes('model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct'));
+assert(construction.failure_signals.includes('a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage'));
+// End admission/model-refinement source contracts.
 // Pairing source-contract regressions; these do not measure model efficacy.
 const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
