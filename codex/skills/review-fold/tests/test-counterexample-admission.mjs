@@ -92,6 +92,41 @@ add('case-14', 'narrowing', 'Both public entry points must reject negative quant
   '({submit:submit(-1), recover:recover(-1), stored})',
   {submit:'rejected',recover:'accepted',stored:[-1]}, 'accepted', 'Accept only the recovery bypass. Reject the submit allegation and preserve the original broader report; one true consequence cannot validate its sibling.');
 
+// Executable test failures do not make their expectations authoritative.
+const failedCheck = totalSource + `
+function check() {
+  const actual = total(2,3), expected = 5;
+  return {status:actual === expected ? 'passed' : 'failed', actual, expected};
+}`;
+const failedFinding = 'The failed assertion proves total must be changed to return 5.';
+for (const [id,goal,disposition,reason] of [
+  ['case-15','total(a,b) must add its arguments; valid verification is mandatory.','accepted','The failed execution demonstrates a product defect under the accepted sum law.'],
+  ['case-16','total(a,b) must subtract b from a; valid verification is mandatory.','rejected','The production diagnosis is refuted by the difference law. Correct the expectation and obtain valid verification; the original run remains failed, not a pass.']
+]) add(id,'failed-expectation',goal,failedFinding,failedCheck,'check()',
+  {status:'failed',actual:-1,expected:5},disposition,reason);
+
+add('case-17','oracle','Production and the independent oracle must release resources in reverse acquisition order. Both acquire 1 then 2; verification is mandatory.',
+  'The differential failure means production must use the oracle order.',
+  'function production(){return [2,1];} function oracle(){return [1,2];}',
+  '({actual:production(), expected:oracle()})',{actual:[2,1],expected:[1,2]},'accepted',
+  'Accept the oracle defect, not the proposed production change. The required order is independently specified; repair the checker and obtain fresh evidence.');
+add('case-18','setup','Completion requires running the current sum check in the supported environment.',
+  'The test failed, so the sum implementation must be wrong.',
+  'function total(a,b){return a+b;}',null,null,'blocked',
+  'No sum assertion executed. Product failure is unestablished; the missing required verification blocks dependent completion, not unrelated work.',
+  {owner_output:{status:'setup-failed',error:'cache PermissionDenied',assertions_executed:0}});
+add('case-19','incidental','doubled(n) must return n+n. Internal helper selection is unrestricted; behavioral verification remains required.',
+  'The helper-call assertion failed, so restore the old helper call.',
+  'let helperCalls=0; function oldHelper(n){helperCalls++;return n+n;} function doubled(n){return n+n;}',
+  '({actual:doubled(3), helperCalls, expectedHelperCalls:1})',
+  {actual:6,helperCalls:0,expectedHelperCalls:1},'rejected',
+  'The assertion enforces an incidental mechanism. It may be retired or replaced without restoring that mechanism, but required behavior still needs verification.');
+add('case-20','retry','Each independent invocation must emit exactly one effect; both normal and recovery paths are supported.',
+  'The first test emitted twice; a fresh retry passed, so ignore the earlier failure.',
+  'function emit(recovery){const trace=[];trace.push(1);if(recovery)trace.push(1);return trace.length;}',
+  '({first:emit(true), retry:emit(false)})',{first:2,retry:1},'accepted',
+  'The recovery path violates the accepted law. A passing independent normal run does not erase that witness or establish flakiness.');
+
 const task = 'Using Review Fold, adjudicate the proposed finding from the supplied source and accepted Goal. Return the supported claim, existing disposition, decisive evidence/countercase, and any unresolved premise. Do not implement a fix, invent unseen code, or manufacture a rejection quota.';
 function exported(c) { return {task, ...c.input}; }
 const args = process.argv.slice(2);
@@ -123,13 +158,34 @@ if (args.length === 1 && args[0] === '--list') {
       probes++;
     } else assert.equal(c.observation, null, 'do not manufacture an observation for missing evidence');
   }
-  for (const pair of ['admission-path','alias','authority','proof-authority','goal-scope','current-subject']) {
+  for (const pair of ['admission-path','alias','authority','proof-authority','goal-scope','current-subject','failed-expectation']) {
     const [a,b,...rest] = cases.filter(c => c.pair === pair);
     assert(a && b && !rest.length, pair);
     assert.equal(a.input.proposed_finding, b.input.proposed_finding, pair);
     assert.notEqual(a.disposition, b.disposition, pair);
     assert(a.input.goal !== b.input.goal || a.input.candidate_source !== b.input.candidate_source, pair);
   }
+  // Synthetic return semantics: protection preserves a future return obligation;
+  // cleanup completion resumes an already-checked exit. Not a Boundary replay.
+  const destination = valid => ({kind:'destination',valid});
+  const protection = parent => ({kind:'protection',parent});
+  const cleanup = {kind:'cleanup-completion',checkedExit:true};
+  const firstRepair = f => f.kind === 'destination' ? f.valid : true;
+  const model = f => f.kind === 'destination' ? f.valid :
+    f.kind === 'protection' ? model(f.parent) : f.checkedExit;
+  const frames = [destination(false), protection(destination(false)),
+    protection(destination(true)), cleanup];
+  const required = [false,false,true,true];
+  for (const entry of ['live','saved']) {
+    assert.deepEqual(frames.map(model),required,entry + ': corrected model and full participation');
+    assert.notDeepEqual(frames.map(firstRepair),required,entry + ': broader application cannot fix wrong meaning');
+  }
+  assert.notDeepEqual(frames.map(() => true),required,'correct model omitted at saved entry');
+  assert.notDeepEqual(frames.map(() => false),required,'reject-all violates required-valid behavior');
+  const affine = {copyable:false,dropAllowed:true}, reusable = {copyable:true,dropAllowed:true};
+  assert.equal(affine.dropAllowed,reusable.dropAllowed,'incumbent proxy merges these cases');
+  assert.notEqual(!affine.copyable,!reusable.copyable,'ownership requires the missing distinction');
+
   // These checks bind the fixture suite to the declared admission handoff;
   // they do not demonstrate that a model follows or benefits from the policy.
   const read = path => readFileSync(new URL(path, import.meta.url),'utf8');
@@ -144,5 +200,13 @@ if (args.length === 1 && args[0] === '--list') {
   assert.match(read('../references/counterexample-corpus.md'),/Counterexample admission established validity and current Goal relevance/);
   assert.match(read('../../actuating/SKILL.md'),/review-fold\/SKILL\.md#counterexample-admission/);
   assert.match(read('../agents/openai.yaml'),/Apply Counterexample admission to each proposed witness/);
-  console.log(`review-fold: ${probes} concrete fixture probes, ${cases.length} evaluation cases, six discriminating pairs, and admission handoff checks passed; no model evaluation run`);
+  const normalized = admission.replace(/\s+/g,' ');
+  for (const rule of [
+    'failed assertions, differential mismatches, and verification failures use the same admission decision',
+    "inspect the expectation's source authority, fixture preconditions",
+    'Rejecting its diagnosis does not create a pass or waive mandatory verification',
+    'Never change expected results merely to agree with the candidate',
+    'A later passing retry does not erase an unexplained failure'
+  ]) assert(normalized.includes(rule),rule);
+  console.log(`review-fold: ${probes} concrete fixture probes, ${cases.length} evaluation cases, seven discriminating pairs, model/coverage/preservation probes, and admission handoff checks passed; no model evaluation run`);
 }

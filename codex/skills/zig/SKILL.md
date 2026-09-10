@@ -212,7 +212,8 @@ What registry, build manifest, generator, golden, or aggregate check also owns t
 ```
 Run:
 ```bash
-python3 codex/skills/zig/scripts/zig_repo_closure_scan.py --root .
+zig_skill_root="$(realpath "$HOME/.agents/skills/zig")"
+uv run python3 "$zig_skill_root/scripts/zig_repo_closure_scan.py" --root .
 ```
 Then inspect repository-specific contracts and run aggregate lint and build
 proof. Do not hardcode one repository's registry filename as universal doctrine.

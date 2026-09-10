@@ -100,20 +100,24 @@ Required remediation:
 
 Record:
 
-- target path and whether an audit directory may be created;
+- target path and requested output location, if any;
 - Zig version and whether it matches the skill's assumed version;
 - build modes and target triples in scope;
 - local source, generated Zig, translated C, dependency packages, and vendored code in or out of scope;
 - whether remediation is audit-only, plan-only, or authorized active-checkout editing.
 
-For full audits, create `<project>/.zig-hazard-audit/` after permission. Do not edit source files until remediation is explicitly authorized.
+For full audits, use temporary output or the already-authorized artifact location.
+Preserve review-only scope; source remediation requires authorization from the
+current request or earlier conversation, without reconfirming authority already given.
 
 ### Phase 1 — Enumerate
 
 Run the script or equivalent scan:
 
 ```bash
-scripts/zig_hazard_audit_rg.sh . > .zig-hazard-audit/hazard-rg.txt
+zig_skill_root="$(realpath "$HOME/.agents/skills/zig")"
+zig_audit_output="$(mktemp -d)"
+"$zig_skill_root/scripts/zig_hazard_audit_rg.sh" . > "$zig_audit_output/hazard-rg.txt"
 ```
 
 Also inspect:

@@ -117,8 +117,13 @@ together without a fixed iteration cap. Concrete defects or genuinely better
 admissible candidates justify affected restarts; rewording, speculative scope,
 extra categories, and process elaboration do not.
 
-Retain the mandatory private radical candidate; reuse an equivalent challenger on
-the unchanged decision surface. Perform one final independent source reread including
+When the plan selects or changes a material mechanism, representation, owner,
+admitted domain, or proof strategy not fixed by accepted source authority, evaluate
+one strongest non-obvious admissible private challenger. An existing Metanoetic
+trigger also requires the challenge. Confidence in the incumbent or absence of a
+recognized alternative is not an exemption. Reuse an equivalent challenge already
+evaluated on the unchanged decision surface; mechanical realization of source-fixed
+decisions requires no additional challenger. Perform one final independent source reread including
 fresh-session executability of the exact emitted block. A material change reopens
 affected decisions and their dependents. Do not emit iteration histories, no-op rows,
 receipts, readiness certificates, or claims that every possible design was exhausted.

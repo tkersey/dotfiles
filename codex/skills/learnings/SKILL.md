@@ -81,6 +81,10 @@ Capture only when at least one decision-shaping event occurred:
 
 Require decision delta, transferability, and counterfactual cost. Prefer one essential learning; append at most three per turn.
 
+Evaluate this gate from available task evidence before bootstrap or store inspection
+when no recall or canonical operation is needed. If it does not pass, retain `no-op`
+internally and continue the task.
+
 ## Disposition Invariant
 
 At each material Learnings activation, retain exactly one internal outcome:

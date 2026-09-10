@@ -218,10 +218,25 @@ successor realization; intermediate commits receive no closure credit.
 
 ## Lens ownership and evaluation
 
-Standard remains Codex's default best-judgment review. Auxiliaries keep their
-existing checked-in search perspectives: soundness claims, unsafe admission paths,
-invariant closure, duplicate semantic owners, and a fresh construction perspective.
-Reviewers supply counterexamples, not repair authority.
+Standard remains Codex's default best-judgment review. Each auxiliary has a distinct
+investigative starting point, defined by its exact checked-in instruction file:
+
+| Lens | Starting point |
+|---|---|
+| soundness-skeptic | positive judgment -> necessary premises and supporting evidence |
+| footgun-finder | reasonable actor/action -> expectation versus actual consequence |
+| invariant-ace | valid admission -> permitted operations and preservation failures |
+| complexity-mitigator | independently maintained truths -> distinct live obligations |
+| fresh-eyes | accepted outcome -> independent end-to-end reconstruction |
+
+These are search priorities, not exclusive defect categories or finding quotas.
+Shared accessible authority does not require shared interpretations. Preserve
+material evidence-access limitations; a workflow digest does not disclose its
+premises. Reviewers supply supported findings and uncertainty, not repair authority.
+Review Fold retains counterexample admission; no auxiliary repeats that workflow
+or adds a reviewer. Nonblocking opportunities do not become correctness liabilities.
+Instruction changes invalidate their old instruction-bound credit; the existing
+inventory, scheduling, epoch, recovery, and convergence rules remain unchanged.
 
 Convergence is adversarial evidence, not proof by repeated absence of findings.
 Evaluate improvements through realized family exclusion, independent sibling

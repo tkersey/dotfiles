@@ -59,6 +59,10 @@ seq version
 seq capabilities --format json
 ```
 
+Check once per unchanged executable and execution environment; reuse the result
+across observations. Recheck the selected definition when its closure or required
+operators change.
+
 Capabilities report only physical adapters, native operators, renderers, cache
 format, and generic limits. A missing skill-specific flag is never a fallback
 signal; load the owning definition and check its ABI/operators.

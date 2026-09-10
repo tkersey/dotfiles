@@ -213,6 +213,9 @@ the doctrine. Report:
 ## Portfolio rendering
 
 Render portfolio decisions only after doctrine exists and only when requested.
+Reuse current induced doctrine; reopen only stale or invalidated seams rather than
+rerunning the entire repository inquiry. Preserve unaffected doctrine while its
+jurisdiction and evidence still apply.
 For each candidate explain the recurring judgment, governing law, independent
 trigger, observable value, stronger alternative considered, and retirement
 condition.

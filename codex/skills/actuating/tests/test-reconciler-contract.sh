@@ -26,7 +26,7 @@ const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','
 assert.equal(c.schema, 'actuating-review-contract/v17');
 assert.equal(c.contract_id, 'actuating-review-contract-v19');
 assert.equal(d.contract_version, 'SKDC-v1');
-assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v12');
+assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v15');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
 assert.deepEqual(c.required_lenses[0], {name:'standard',role:'standard',instruction_source:'codex-default',custom_instructions:false});
 assert.deepEqual(c.review_scheduling.initial_lens_order, names);
@@ -109,6 +109,7 @@ for (const cl of d.clauses) {
 assert.deepEqual(json('definitions/manifest.json'), {schema:'skill-definition-set/v1',skill:'actuating',seq:[],ledger:[]});
 const retired = [
   'references/theorem-directed-response.md','references/standard-review.md',
+  'references/architecture-reconciliation.md','references/semantic-hotspots.md',
   'definitions/ledger/direct-repair-admission.json',
   'tests/test-direct-repair-admission.sh','tests/fixtures/direct-repair-admission-valid.json'
 ];
@@ -134,24 +135,85 @@ assert(!/\$actuating (triage|remediation-plan)/.test(text('SKILL.md')));
 assert(text('SKILL.md').includes('It dispatches no\nreview'));
 assert(text('references/review-contract.md').includes('codex-default-review/v1'));
 assert(text('agents/openai.yaml').includes('allow_implicit_invocation: true'));
+// Source-binding regressions; source consistency is not model-efficacy evidence.
+const sourceBinding = text('SKILL.md').split('## Source binding\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+assert(sourceBinding, 'missing direct source binding');
+assert(!text('SKILL.md').includes('$goal-contract'), 'Actuating still delegates source binding');
+for (const rule of [
+  'read the exact source, not just a prior summary',
+  'outcomes, non-goals, hard constraints, compatibility contracts, permitted breaks, and migration obligations',
+  'Bind repository, immutable base, and authorized path scope',
+  'Do not promote a suggested mechanism into a law or demote an explicit requirement',
+  'Keep semantic requirements distinct from execution authority',
+  'For each required law, retain applicability and its deciding observation',
+  'block only the dependent action or claim; continue independent authorized work',
+  'Before affected mutation, refresh these bindings',
+  'reclassify all available applicable findings and failures against the refreshed Goal',
+  'preserve unresolved evidence and original provenance',
+  'Existing review-epoch and proof-invalidation rules apply',
+  'No separate skill invocation, mandatory Goal Contract packet, durable record, or new identity is required'
+]) assert(sourceBinding.includes(rule), 'lost source-binding rule: ' + rule);
+const ownerFacts = d.clauses.find(cl => cl.clause_id === 'ACT-OWNER-FACTS-001');
+assert(ownerFacts.required_artifacts.includes('accepted Goal bound directly to current source and effect authority'));
+assert(ownerFacts.success_signals.includes('source revisions reclassify applicable evidence without erasing unresolved provenance'));
+// End source-binding regressions.
+// Verifier-integrity regressions; source consistency is not model-efficacy evidence.
+const proofAcceptance = text('SKILL.md').split('## Observe and adjudicate\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+assert(proofAcceptance, 'missing root proof acceptance');
+for (const rule of [
+  'Before accepting validation for local completion or reviewability',
+  'base-to-candidate diff and actual check selection for deleted tests, weakened assertions, skipped checks, or reduced coverage',
+  'including changes made directly by Actuating',
+  'Map each affected check to its source-backed obligation',
+  'preserved or stronger proof, a source-grounded oracle correction with independent evidence, or explicit authority retiring the obligation',
+  'A passing weakened suite cannot discharge an unchanged requirement',
+  'Keep unexplained proof loss unresolved and block only dependent completion or reviewability',
+  'Reuse the existing proof inventory; no separate critic, packet, or review stage'
+]) assert(proofAcceptance.includes(rule), 'lost verifier-integrity rule: ' + rule);
+const closureProof = d.clauses.find(cl => cl.clause_id === 'ACT-CLOSURE-001');
+assert(closureProof.success_signals.includes('local completion and reviewability inspect deleted tests, weakened assertions, skipped checks, and reduced coverage against source-backed obligations'));
+assert(closureProof.success_signals.includes('test retirement preserves proof or has independent oracle-correction evidence or explicit obligation-retirement authority'));
+assert(closureProof.failure_signals.includes('passing a weakened suite discharges an unchanged requirement'));
+// End verifier-integrity regressions.
+// Admission/model-refinement source contracts; not a model-efficacy result.
+assert(proofAcceptance.includes('for review findings and failed checks before treating either as a liability'));
+const causal = text('SKILL.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+for (const rule of [
+  'Acceptance establishes a supported disagreement, not the causal explanation',
+  'source-grounded discriminator that could refute that explanation',
+  'retain or derive the missing distinction',
+  'Distinguish a wrong model from omitted enforcement',
+  'without merging away independent verification',
+  'no paired-case quota or forced redesign'
+]) assert(causal.includes(rule), 'lost model-refinement rule: ' + rule);
+const lawAdmission = d.clauses.find(cl => cl.clause_id === 'ACT-LAW-AUTHORITY-001');
+assert(lawAdmission.success_signals.includes('failed checks use counterexample admission without granting expectations authority or rewriting failed results as passes'));
+const construction = d.clauses.find(cl => cl.clause_id === 'ACT-CONSTRUCTION-COMPILER-001');
+assert(construction.success_signals.includes('model adequacy, permitted-operation preservation, and sanctioned-path participation remain distinct'));
+assert(construction.failure_signals.includes('a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage'));
+// End admission/model-refinement source contracts.
 // Pairing source-contract regressions; these do not measure model efficacy.
-const architecture = text('references/architecture-reconciliation.md').replace(/\s+/g, ' ');
-const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('3. Give')[0].replace(/\s+/g, ' ');
+const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
 assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`'));
 assert(rootStep.includes('once per unchanged decision surface'));
 assert(rootStep.includes('reuse an already consumed challenger rather than adding a pass'));
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
-assert(architecture.includes('Under the unchanged Metanoetic trigger'));
-assert(architecture.includes('`$glaze` then `$metanoetic` verbatim in the same candidate-generation context'));
-assert(architecture.includes('once per unchanged decision surface'));
-assert(architecture.includes('do not add a Glaze pass, report, review request, or adjudication stage'));
-assert(architecture.includes('Actuating may retain, modify, or reject the challenger'));
-assert(architecture.includes('Remove the coupling if it adds narration or scaffolding'));
-assert(text('references/semantic-hotspots.md').includes('do not run a second pass'));
+assert(rootStep.includes('Let the pass discover which premises and evidence need reinspection'));
+assert(rootStep.includes('Keep the accepted Goal fixed'));
+assert(rootStep.includes('Only when architecture is live'));
+assert(text('SKILL.md').includes('never changed expectations merely to agree with the candidate'));
+assert(text('SKILL.md').includes('Prefer making that omission unavailable'));
+assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
 assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in the same bounded challenger pass'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
+// Preserve the resource obligation in the existing decision, not a new artifact.
+assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
+assert(rootStep.includes('Supply the resource account in the existing decision: justify feasibility against those ceilings using applicable evidence or a concrete bound'));
+assert(rootStep.includes('leave unestablished feasibility unresolved'));
+assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
+assert(rootStep.includes('add no separate report or benchmark stage'));
 assert(challenger.success_signals.includes('one bounded Glaze-primed Metanoetic challenge under the existing trigger, before Universalist'));
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
 assert(challenger.failure_signals.includes('Glaze adds a trigger, pass, report, review, or acceptance authority'));

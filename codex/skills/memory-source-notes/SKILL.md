@@ -112,13 +112,20 @@ Do not silently install unreleased tooling. Never hand-author a note as a fallba
 6. Capture the structured result.
 7. Emit exactly one proof line when persistence was attempted.
 
+Resolve adapter paths once from the installed skill, independently of the target
+repository's working directory:
+
+```bash
+memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")"
+```
+
 ## Synesthesia validated adapter
 
 Synesthesia uses:
 
 ```bash
 uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
   append \
   --kind <logical-kind> \
   --json -
@@ -157,8 +164,9 @@ use:
 
 ```bash
 uv run \
-  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+  "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
+  --repo "<repo-root>" \
   --id NEG-... \
   --kind ledger-projection
 ```
@@ -176,8 +184,9 @@ Negative Ledger decides recurrence and utility. Inspect without writing via:
 
 ```bash
 uv run \
-  codex/skills/memory-source-notes/scripts/negative_ledger_memory_note.py \
+  "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   inspect \
+  --repo "<repo-root>" \
   --id NEG-...
 ```
 
@@ -187,7 +196,7 @@ Manual refresh:
 
 ```bash
 uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
   memory-digest
 ```
 
@@ -209,7 +218,7 @@ Synchronize Synesthesia instructions from the dotfiles repository into the live 
 
 ```bash
 uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
   sync-instructions
 ```
 
@@ -225,7 +234,7 @@ The command:
 
 ```bash
 uv run \
-  codex/skills/memory-source-notes/scripts/synesthesia_memory_note.py \
+  "$memory_source_notes_root/scripts/synesthesia_memory_note.py" \
   doctor \
   --repo <repo> \
   --format text
@@ -329,7 +338,7 @@ Reconciliation compares canonical source records, immutable source notes, and
 Phase 2 provenance without writing or deciding eligibility.
 
 ```bash
-memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+memory_source_notes_root="$(realpath "$HOME/.agents/skills/memory-source-notes")"
 uv run python \
   "$memory_source_notes_root/scripts/source-memory-reconcile.py" \
   --repo "$(git rev-parse --show-toplevel)" \

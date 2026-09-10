@@ -1,6 +1,6 @@
 ---
 name: emulator
-description: "Define, compile, run, mutate, compare, and export total synthetic or partial session-derived agent environments. Use for `$emulator`, session-derived environments, existing session corpora, correction windows, environment atlases, harness optimization, preference extraction, fresh baseline/candidate comparisons, synthetic worlds, counterexamples, trajectories, or EER-v1. Not for treating historical actions as expert labels, inventing unsupported transitions, or mutating a live harness without separate authority."
+description: "Define, compile, run, mutate, compare, and export total synthetic or partial session-derived agent environments. Use for `$emulator`, executable synthetic worlds, session-derived environment atlases and correction charts, fresh baseline/candidate harness comparisons, or environment-backed EER-v1, preference, and trajectory exports. Physical session queries belong to Seq. Never treat historical actions as expert labels, invent unsupported transitions, or mutate a live harness without separate authority."
 ---
 
 # Emulator

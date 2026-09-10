@@ -191,28 +191,8 @@ protocol is required.
 
 ## Standalone output
 
-1. Scope and assumptions
-2. Layer and boundary map
-3. Evidence
-4. Factorization and enforcement-role map
-5. Tax, value, invalid region, and dominance
-6. Quotient candidates
-7. Essential-abstraction check
-8. Winnowing decisions
-9. Target normal form
-10. Optional RC-v1 when independently required
-11. Migration and rollback
-12. Risks and unknowns
-
-```text
-Winnowing Bottom Line:
-- factor:
-- quotient:
-- ablate:
-- normalize:
-- invalidity eliminated:
-- derived guards preserved:
-- preserve because:
-- proof relation:
-- first safe move:
-```
+For a bounded seam, report the affected abstraction, live obligation, proposed
+operation, preservation evidence, and first safe change. Include material risks
+and uncertainty. A broad audit may expand the layer map, factorization, candidate
+comparison, migration, and rollback where they change a decision. Emit RC-v1 only
+when independently required. Do not repeat the findings in a second summary form.

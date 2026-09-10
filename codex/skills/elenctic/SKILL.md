@@ -53,12 +53,16 @@ Aggregation is automatic campaign reconciliation; continuation resumes the same
 work rather than selecting another review workflow.
 
 The coordinator prepares one source-bound [Campaign Brief](references/campaign-brief.md)
-and immutable seed, then assigns the internal
-[file-review contract](references/worker-review.md) directly to each selected
-worker. Resolve and pass that reference from this installed skill, not the
+and immutable seed containing its full prepared analysis history, then assigns
+the internal [file-review contract](references/worker-review.md) directly to each
+selected worker. Resolve and pass that reference from this installed skill, not the
 repository under review. Workers must not invoke the public `$elenctic` entry
 point, become coordinators, or inherit campaign authority from earlier invocation
 text. The worker contract is not a separately invocable skill.
+
+Resolve native fork capability through [native-forks.md](references/native-forks.md).
+A missing `fork_thread` tool does not establish that native forking is unavailable.
+The Campaign Brief never substitutes for the inherited analysis history.
 
 The coordinator reuses the worker contract's adjudication, blocker-falsification,
 reporting, and proposed-comment standards when reconciling evidence; campaign.md

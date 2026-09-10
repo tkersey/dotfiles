@@ -1,22 +1,47 @@
 # Complexity Review Lens
 
-Independently inspect the exact bound candidate for correctness complexity that
-the selected carrier should have made unnecessary.
+Start from independently maintained correctness facts in the exact bound candidate.
+Determine which live obligations require them, rather than assuming the selected
+representation should already have made them unnecessary. Trace the authority,
+producers, update paths, consumers, and proof surface of each implicated fact.
 
-Find:
+Prioritize duplicate semantic owners, manual mirrors of derivable state,
+downstream primary compensation, alias-driven casts or equality adapters,
+wound-specific branches or proof helpers, and public paths that independently
+reimplement admission. Ask what must be kept in agreement and where it can diverge.
+Syntactic repetition and raw line count do not establish redundant authority.
 
-```text
-duplicate semantic owners
-downstream guards still carrying primary correctness
-manual mirrors of a law derivable from the canonical representation
-normalizers, casts, substitutions, or equality adapters caused by aliases
-proofs or tests that mechanically mirror producer computation
-wound-specific branches, fixtures, or proof helpers
-public capabilities that bypass or duplicate admission
-```
+Distinguish competing production owners from derived trust-boundary guards,
+compatibility adapters, observability, and independent test or verification oracles.
+A test that computes its expected result with the same defective producer helper
+may be vacuous; a separate reference implementation may be the independent check
+that catches the defect. Checking the same law does not make an oracle redundant.
+Unknown ownership is uncertainty, not deletion authority.
 
-Repeated transport or mirrored proof is architecture pressure. A finding must
-name the duplicated obligation and the upstream carrier, cut, identity, or owner
-defect it suggests, and explain why the factor is not merely derived defense in
-depth. Return `clean` or `findings`. Do not minimize raw line count or select a
-repair.
+Inspect the strongest countercase: distinct accepted obligations, different trust
+assumptions, actual delegation, migration requirements, or evidence that one value
+is derived rather than independently maintained. Give a concrete disagreement,
+violated accepted structural requirement, or falsified claim when establishing a
+correctness finding. A source-level ownership violation need not invent a runtime
+failure, but its governing requirement must actually be accepted.
+
+Keep a grounded reduction opportunity separate from a demonstrated violation.
+Without an established obligation violation, a potentially smaller construction
+is nonblocking context, not an accepted counterexample or a reason to manufacture
+one. Report it only when concrete evidence could materially change selection.
+
+For each finding, name the independently maintained truth, code and enforcement
+roles, accepted obligation, decisive evidence/countercase, and any distinct role
+that must survive. Do not validate a proposed deletion or repair by reporting it.
+
+Return the native structured review object with `findings`, `overall_correctness`,
+`overall_explanation`, and `overall_confidence_score`, never a bare status word.
+Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
+and `code_location` (`absolute_file_path` and `line_range.start`/`line_range.end`).
+When no supported findings remain, use an empty `findings` array and
+`overall_correctness: "patch is correct"`; use `"patch is incorrect"` only with
+supported findings. Disclose material evidence gaps in `overall_explanation`
+without asserting complete coverage. This search priority does not
+exclude other concrete in-scope defects. Review Fold owns admission and Actuating
+owns selection. Do not minimize raw line count, remove independent oracles, select
+repairs, or launch a separate reduction audit.

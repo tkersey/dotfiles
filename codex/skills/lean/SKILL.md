@@ -265,7 +265,8 @@ rg -n --glob '*.lean' --glob '!.lake/**' --glob '!lake-packages/**' \
 If this replacement skill's script is available, prefer:
 
 ```bash
-scripts/lean_trust_audit.sh path/to/file-or-directory
+lean_skill_root="$(realpath "$HOME/.agents/skills/lean")"
+"$lean_skill_root/scripts/lean_trust_audit.sh" path/to/file-or-directory
 ```
 
 For each theorem supporting the final claim, temporarily inspect:

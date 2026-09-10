@@ -48,9 +48,10 @@ later workflow action is authorized.
 ## Bootstrap boundary
 
 Before the first native Ledger command in a workflow, load this skill and
-complete `$ledger ensure` once. That readiness applies to every Ledger consumer
-in the workflow; do not bootstrap per skill or per command. `$ledger` is skill
-syntax, not a shell command.
+complete `$ledger ensure` once. Reuse readiness across consumers while the
+resolved executable and execution environment remain unchanged; recheck after
+either changes, not per skill or per command. `$ledger` is skill syntax, not a
+shell command.
 
 Use [scripts/ensure-ledger](scripts/ensure-ledger):
 
@@ -59,8 +60,8 @@ ledger_skill_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/ledger")"
 "$ledger_skill_root/scripts/ensure-ledger"
 ```
 
-After the handler emits `ledger-bootstrap-ready/v1`, invoke the native CLI
-directly:
+After the handler exits successfully and emits `ledger-bootstrap-ready/v1`,
+invoke the native CLI directly:
 
 ```bash
 ledger <native-ledger-arguments...>
@@ -72,16 +73,12 @@ or upgrade the canonical Homebrew formula `tkersey/tap/ledger`. It does not
 proxy native commands. The native CLI owns integrity, stdout, stderr, exit
 status, and failure reporting after readiness.
 
-If `ledger` does not resolve on `PATH`:
-
-1. install only when the current request or standing environment policy
-   authorizes user-level CLI provisioning;
-2. pass `--install` to the bootstrap handler when that authority exists;
-3. otherwise stop with the handler's exact remediation;
-4. never use `curl | sh`, an unpinned download, or an alternate Ledger
-   implementation.
-
-Do not install during an active repository effect.
+If Ledger is missing or incompatible, pass `--install` only when the current
+request or standing environment policy authorizes user-level CLI provisioning;
+otherwise stop with the handler's exact remediation. The formula is fixed, not
+selected through environment overrides. Never use `curl | sh`, an unpinned
+download, or an alternate Ledger implementation. Do not install or upgrade
+during an active repository effect.
 
 ```yaml
 ledger_bootstrap_ready:
@@ -93,9 +90,13 @@ ledger_bootstrap_ready:
   action: none | installed | upgraded
 ```
 
-Bootstrap readiness grants no semantic authority.
+Readiness establishes runtime availability, not compatibility with every
+owner definition. The selected definition's ABI, operators, and storage
+requirements govern compatibility. Use `definition check` when selecting a new
+or changed closure or diagnosing support; do not add a redundant preflight to
+every unchanged operation. Readiness grants no semantic authority.
 
-## Native surface
+## Baseline native surface
 
 ```text
 ledger definition check
@@ -113,7 +114,9 @@ ledger version
 
 Do not invent aliases such as `ledger state`. Load the owning skill for its
 exact definition path, operation names, projection names, parameters, and
-semantic policy.
+semantic policy. Version-dependent maintenance commands are documented in
+[storage-maintenance.md](references/storage-maintenance.md); their availability
+does not authorize their use.
 
 ## Result semantics
 
@@ -136,8 +139,17 @@ semantic policy.
 - `recovery reclaim` performs only an explicitly authorized, transaction-bound
   reclaim after revalidating every required witness.
 
-Preserve the normal result envelope. Use `--payload-only` only for an explicit
-structural pipe whose receiver already owns interpretation.
+Preserve the normal result envelope, including the returned definition-closure
+digest and input, artifact, or store identities applicable to that result.
+A definition ID and ABI alone do not identify the exact law checked. Bind each
+claim to the selected closure and the exact bytes or state actually checked;
+do not apply a prior result to changed inputs, a changed closure, or a later
+store state, or reduce it to an unqualified "valid." Do not invent missing
+identity metadata or add a second receipt format.
+
+Use `--payload-only` only for an explicit structural pipe whose receiver
+already owns interpretation. Do not represent a payload-only projection as
+though it still carried the omitted envelope.
 
 ## Definition ownership
 
@@ -145,50 +157,15 @@ Passive definitions live beside their semantic owners, not in `$ledger`.
 The owner declares the protocol and lists it in that skill's
 `definitions/manifest.json`; Ledger compiles and enforces it generically.
 
-A definition may declare:
-
-- bounded JSON, JSONL, or UTF-8 inputs and codecs;
-- canonicalization and content identity;
-- closed shapes and cross-document laws;
-- pure, addressed-document, or event-log storage;
-- atomic operations, transitions, reducers, replay, and projections;
-- logical slots beneath the selected repository's `.ledger/` control root;
-- explicit output, diagnostic, record, and reducer-state bounds.
-
 Definitions are passive JSON. They must not name hooks, shell commands,
-executables, network calls, or hidden discovery procedures.
+executables, network calls, or hidden discovery procedures. Do not hardcode
+domain artifact families, protocol versions, operations, projections, or closure
+policy in this skill.
 
-### Authoring workflow
-
-1. Establish the semantic owner and the smallest stable artifact or protocol
-   boundary.
-2. Choose pure validation/materialization unless durable identity or history is
-   required; choose addressed storage for replaceable canonical documents and
-   an event log for append-only transitions or auditable replay.
-3. Declare explicit bounded inputs, canonicalization, identity, constraints,
-   storage slots, operations, and projections. Make illegal compositions
-   structurally unrepresentable where the native operator vocabulary permits.
-4. Keep workflow policy outside the definition. Encode only laws that can be
-   decided from admitted inputs and declared storage.
-5. Run `ledger definition check` and `ledger definition describe` before using
-   the definition.
-6. Exercise every operation and projection against representative valid,
-   invalid, boundary, replay, and store-binding cases.
-7. Search all consumers when a definition ID, operation, projection, field, or
-   semantic version changes.
-
-### Extension law
-
-Add or change an owner-local passive definition first. Add a native Ledger
-operator only when the capability is domain-independent, explicitly bounded,
-and either:
-
-- required by at least three unrelated definitions; or
-- necessary to preserve one live behavior without material correctness or
-  performance loss.
-
-Do not turn Ledger into a domain registry or grow native operators merely to
-avoid reconsidering an owner definition.
+Prefer pure validation/materialization unless durable identity or history is
+required. Before authoring, reviewing, debugging, or extending a definition,
+read [definition-authoring.md](references/definition-authoring.md) for the
+bounded vocabulary, counterexample discipline, and native extension law.
 
 ## Storage custody
 
@@ -205,33 +182,25 @@ replaces only binding metadata, and leaves store bytes unchanged. Do not add
 fallback readers, alternate paths, implicit migration, or source dispatch to
 Ledger.
 
-Never open, edit, compact, migrate, or repair a store outside the owning
-definition's operations and exact recovery surface.
+Rebinding establishes custody of a selected replacement, not authority to
+select that history. Do not use it to choose between divergent stores or bless
+an unknown replacement. Establish the authoritative transport first; preserve
+the losing lineage as explicit owner-controlled reconciliation input.
+
+Use the owning definition and selected `ledger transact` operation for normal
+store mutations. Never open, hand-edit, compact, migrate, or repair stores
+outside owner-selected operations and exact authorized maintenance surfaces.
+Fail closed on unknown definition closure, ABI, operator, binding, integrity,
+replay, projection, or recovery state.
 
 ## Recovery boundary
 
-Lease expiry is not authority transfer. Inspect one transaction and require the
-exact resource, lock identity, fencing token, owner, and witnessed lease state
-before reclaiming:
-
-```bash
-ledger recovery inspect \
-  --repo <repo> \
-  --transaction <dtx-id> \
-  --format json
-
-ledger recovery reclaim \
-  --repo <repo> \
-  --transaction <dtx-id> \
-  --resource <path> \
-  --lock-id <dlk-id> \
-  --fencing-token <u64> \
-  --format json
-```
-
-For an original legacy lease only, add `--confirm-no-legacy-writers` with actual
-operator authority and an inspectable basis for that assertion. Do not add it
-for an interrupted current recovery. There is no broad reclaim or repair mode.
+Lease expiry is not authority transfer. Recovery is explicitly authorized and
+bound to one transaction's exact resource, lock identity, fencing token, owner,
+and witnessed lease state; there is no broad reclaim or repair mode. Before
+recovery or version-dependent migration, read
+[storage-maintenance.md](references/storage-maintenance.md). The reference
+preserves the legacy-writer assertion and the native command's witness checks.
 
 ## Trigger cues
 
@@ -251,28 +220,12 @@ protocol.
 
 ## Reporting
 
-Report the operation actually performed, the selected definition ID and ABI,
-the result schema and verdict, whether storage mutated, the exact addressed
-store or transaction when relevant, and any owner action still required.
+Report the operation actually performed, the selected definition ID, closure
+digest and ABI when applicable, the result schema and verdict, whether storage
+mutated, and any owner action still required. Preserve the result identities
+above in the working evidence and surface the exact addressed store or
+transaction when relevant. Missing metadata limits the claim; do not fabricate it.
 
 Do not force unrelated calls into one generic status template. A pure
 validation, durable transaction, store doctor, and recovery inspection have
 different useful outputs.
-
-## Guardrails
-
-- Bootstrap once before the first native command; invoke `ledger` directly
-  afterward.
-- Do not install without current installation authority.
-- Do not install during an active repository effect.
-- Do not hardcode domain artifact families, protocol versions, operations,
-  projections, or closure policy in this skill.
-- Do not add source dispatch, executable hooks, alternate implementations,
-  implicit scanning, fallback paths, or workflow conclusions.
-- Do not treat a valid artifact, healthy store, exact replay, or successful
-  projection as independent semantic authority.
-- Do not mutate a store except through its owning definition and selected
-  `ledger transact` operation.
-- Keep `validate` and `materialize` repository-pure.
-- Fail closed on unknown definition closure, ABI, operator, binding, integrity,
-  replay, projection, or recovery state.

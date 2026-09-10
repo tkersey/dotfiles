@@ -1,5 +1,5 @@
 name = "repo_scout"
-description = "Read-only parallel repository scout for facts, invariants, proof surfaces, and owner boundaries relevant to a GoalContract or review fold."
+description = "Read-only parallel repository scout for facts, invariants, proof surfaces, and owner boundaries relevant to an accepted source-bound Goal or review fold."
 model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 nickname_candidates = ["Repo Scout", "Fact Scout", "Proof Surface Scout"]

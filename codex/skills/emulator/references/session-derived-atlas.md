@@ -607,6 +607,11 @@ adoption itself.
 
 ## First proof
 
+This qualification portfolio applies when establishing broad emulator or harness-
+selection capability. A request to construct or run a particular chart uses that
+requested scope and reports its limits; it does not require unrelated chart kinds
+or this full pilot.
+
 The first normative pilot uses 5 to 20 real correction charts, at least two
 holdout groups, exactly one human-selected factor, baseline plus at most three
 candidates, three repeats per harness/chart, hard oracles first, and residual

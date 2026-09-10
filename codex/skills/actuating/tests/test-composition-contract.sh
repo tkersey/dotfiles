@@ -31,12 +31,14 @@ const protectedSections = {
 };
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(skill,name)),digest,`protected Actuating section: ${name}`);
+// Four auxiliary lenses now return the native structured review object.
+// These pins preserve the reviewed output correction and all search instructions.
 const lensBlobs = {
-  'soundness-review.md':'58949402e604ee35a2454e64e98532a82825cde4',
-  'footgun-review.md':'00d80db3e5f94cc5365594c059c65ec27b737db4',
-  'invariant-review.md':'275cc488e082c493463c846ed47ec211ea3565d9',
-  'complexity-review.md':'d92f5244415343c9b6bb27c10f09cf991f74bf69',
-  'fresh-eyes-review.md':'e927acc958eae56c5ef5f7a0e42697162a114e71'
+  'soundness-review.md':'0969ec78b6f03d73ab0bdeae1f5a987c8e8d477f',
+  'footgun-review.md':'13307f0864172c1972584372ca406b0b1dbfdccd',
+  'invariant-review.md':'0c945b75733ef5dc80d51033217d729dc9529f6e',
+  'complexity-review.md':'70e1fbab51f246b4f8aacb8fcc7f649339381a2e',
+  'fresh-eyes-review.md':'392289a1e913435e5ad9abf2721b24ad0119682f'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
@@ -47,7 +49,7 @@ for (const [name, digest] of Object.entries(lensBlobs)) {
 // simulate an agent, execute Ledger/CAS, or prove model effectiveness.
 const nominationResults = ['candidate','preserve-incumbent','unresolved','obstructed'];
 assert.deepEqual(policy.universalist_compilation.allowed_nomination_results,nominationResults);
-for (const path of ['SKILL.md','references/architecture-reconciliation.md',
+for (const path of ['SKILL.md',
   '../universalist/SKILL.md','../universalist/README.md']) {
   const source = text(path);
   for (const result of nominationResults) assert(source.includes(result),`${path}: missing ${result}`);
@@ -85,3 +87,4 @@ assert.match(text('references/closure.md'),/\.\.\/SKILL\.md#realization-and-comm
 console.log('actuating: composition source contracts, unchanged modes, review policy, proof bar, and exact lens bytes passed');
 JS
 node "$skill_root/../review-fold/tests/test-counterexample-admission.mjs"
+node "$skill_root/tests/test-auxiliary-discovery.mjs"

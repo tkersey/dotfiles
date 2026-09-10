@@ -166,12 +166,14 @@ that changed.
 ## Prepare and freeze shared context
 
 When the selected unchecked set is nonempty and worker creation is authorized,
-first inspect the runtime's advertised native task-control capabilities listed
-under **Fork every reviewer from the immutable seed**. Require coordinator and
-explicit-seed forks, direct IDs and parent provenance, assignment delivery,
-result reads, and bounded waits. If unavailable, return **INCOMPLETE** before deep
-preparation; do not create a trial worker or silently substitute another backend.
-An available capability must still produce verifiable lineage when exercised.
+first resolve the native task-control capabilities in
+[native-forks.md](native-forks.md). Require coordinator and explicit-seed forks
+that retain the full prepared history, direct IDs and parent provenance,
+assignment delivery, result reads, and bounded waits. Inspect the native
+app-server route before treating an absent agent-facing tool as unavailable.
+If no qualifying route is available, return **INCOMPLETE** before deep preparation;
+do not create a trial reviewer or silently substitute another backend. A returned
+fork ID must still prove the required history boundary and lineage when exercised.
 
 For that authorized work, follow [campaign-brief.md](campaign-brief.md) before
 creating assignments or workers:
@@ -199,9 +201,11 @@ coordinator checkpoint represented by the seed
 ```
 
 The exact brief text must appear in the coordinator transcript before the seed
-is forked. Private reasoning and a claim that analysis occurred do not count as
-transferable context. The seed receives no review assignment, result, aggregate
-finding, or follow-up message and remains unchanged for the campaign epoch.
+is forked. Verify that the native fork retains the coordinator's full prepared
+history through that brief, including preparation in the current turn; a brief
+digest or a claim that analysis occurred does not prove this. The seed receives
+no review assignment, result, aggregate finding, or follow-up message and remains
+unchanged for the campaign epoch.
 
 If no file is selected, launch no workers and do not create a seed solely to
 preserve context for zero assignments; follow the empty-selection aggregation
@@ -269,8 +273,11 @@ read results and wait in bounded groups
 ```
 
 Fork the current coordinator exactly once after the Campaign Brief to create the
-seed. Then create each file worker with `fork_thread(<seed-thread-id>)` and send
-its assignment with `send_message_to_thread`. Every worker must be a direct child
+seed, using the native route and history checks in [native-forks.md](native-forks.md).
+Create each file worker from that explicit seed ID, verify its inherited history
+and direct parent, then send its assignment. With app-server these are
+`thread/fork` and `turn/start`; use agent-facing wrappers only when their actual
+history cut preserves the same preparation. Every worker must be a direct child
 of the same unchanged seed; never fork a worker from the evolving coordinator or
 from another worker.
 
@@ -301,14 +308,17 @@ merge. Emit the required Review identity with pr, campaign_id, assignment_id,
 campaign_context_id, campaign_seed_thread_id, and coverage.
 ```
 
-Omit a model override unless the caller explicitly requested one. Every worker
-inherits the prepared coordinator context and campaign repository, but must bind
-and inspect the immutable PR objects rather than trusting the brief or assuming
-the current checkout equals the candidate.
+Do not select a different model unless the caller explicitly requested one.
+Native requests may repeat the prepared source's resolved model and reasoning
+settings to preserve that selection instead of adopting app-server defaults.
+Every worker inherits the prepared coordinator context and campaign repository,
+but must bind and inspect the immutable PR objects rather than trusting the brief
+or assuming the current checkout equals the candidate.
 
-Do not silently substitute clean `create_thread` tasks, copied summaries, generic
-subagents, or shell-managed Codex processes. Those routes do not preserve the
-requested prepared context. If the runtime cannot establish one immutable seed,
+Do not substitute clean `create_thread` tasks, copied summaries, generic
+subagents, or independent `codex exec` sessions. Native app-server forks through
+CAS preserve the same thread history and are an admitted transport, not a
+summary-based substitute. If the runtime cannot establish one immutable seed,
 fork every worker from it by direct ID, and preserve parent provenance, return
 **INCOMPLETE** before worker launch.
 

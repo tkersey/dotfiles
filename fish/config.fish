@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+export PATH="$PATH:/Users/tk/.docker/bin"
+# End of Docker Desktop section.
+
 fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin

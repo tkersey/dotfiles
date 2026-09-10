@@ -25,6 +25,7 @@ goals = true
 terminal_resize_reflow = true
 mentions_v2 = true
 js_repl = false
+worktrees = true
 
 [features.multi_agent_v2]
 enabled = true

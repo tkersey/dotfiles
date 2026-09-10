@@ -3,7 +3,7 @@
 Codebase Doctrine owns analysis, doctrine induction, and context rendering.
 Providers supply bounded evidence; they do not become competing doctrine owners.
 
-## `$codebase-archaeology`
+## Existing architecture maps
 
 Use an existing architecture map as provisional descriptive evidence when it can
 save repeated repository orientation. Recheck any fact that becomes
@@ -34,10 +34,12 @@ Only a complete current projection with applicable scope and an unsatisfied
 reopening criterion may create durable route exclusion. Fuzzy similarity and one
 failed attempt remain advisory.
 
-## `$retrace`
+## Historical decision evidence
 
-Use bounded replay when a consequential historical architecture, authority, or
-proof decision has incomplete visible rationale.
+Use bounded `$seq` observations or available source history when a consequential
+historical architecture, authority, or proof decision has incomplete visible
+rationale. Treat an unavailable optional replay provider as a limitation on that
+evidence, not a prerequisite for direct repository research.
 
 Classify replay evidence as historically explicit, trace-inferred,
 replay-consistent, counterfactual-stable, or hindsight-informed. Replay remains

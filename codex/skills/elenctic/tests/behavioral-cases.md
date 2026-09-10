@@ -187,8 +187,9 @@ Do not silently expand a one-file or local-range request into a whole campaign.
 
 ## 10. Capability preflight and prepared sliding-window scheduling
 
-An authorized campaign selects unchecked files but the runtime cannot fork an
-explicit seed ID or expose parent provenance.
+An authorized campaign selects unchecked files but neither an exposed wrapper
+nor the native app-server route can fork an explicit seed ID with full prepared
+history and parent provenance.
 
 Expected: INCOMPLETE before deep preparation, without trial workers or backend
 substitution. Existing admissible reports may still be aggregated read-only.
@@ -201,6 +202,21 @@ verify relevant premises. Neither the brief nor 100 terminal reports alone prove
 semantic coverage. Each internal worker still performs one integrated
 investigation without spawning reviewers; no case adds an Actuating review lane
 or confirmation streak.
+
+Variant: expose `spawn_agent` without an explicit seed selector, omit the
+agent-facing `fork_thread`, and supply a compatible CAS/native app-server route
+that can read the actual coordinator. Expected: use native `thread/fork` for the
+seed and every reviewer, verify retained analysis and parent edges, and continue
+the campaign. Do not return INCOMPLETE merely because the wrapper is absent or
+replace the analysis with a copied brief. A native endpoint that cannot read the
+actual source remains a specific capability gap despite its schema support.
+
+Variant: put deep analysis and the brief in the coordinator's current turn, then
+offer a wrapper that forks only completed turns. Expected: reject that cut and
+use a native fork that retains the preparation; if none is available, launch no
+reviewer and identify the missing preparation. A valid parent ID or matching
+older brief never proves the current analysis was inherited. Two later reviewers
+must inherit the same full seed history after the coordinator receives findings.
 
 ## 11. One public workflow resolves the requested PR
 

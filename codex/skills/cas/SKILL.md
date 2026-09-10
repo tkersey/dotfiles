@@ -134,7 +134,6 @@ cas app-server preflight --cwd <repo> --profile review \
 
 cas review run --cwd <repo> --base <base> \
   --custom-instructions @<instructions> \
-  --workflow-binding-json @<binding.json> \
   --timeout-ms 2700000 --json
 
 cas review start --wait --cwd <repo> --base <base> \
