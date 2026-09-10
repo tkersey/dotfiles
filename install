@@ -103,7 +103,7 @@ install_config_file() {
   "$@" mkdir -p "$(dirname "$destination")"
   if [ -f "$destination" ]; then
     backup=$("$@" mktemp "$destination.backup.XXXXXX")
-    "$@" cp -p "$destination" "$backup"
+    "$@" cp "$destination" "$backup"
     success "backed up $destination to $backup"
   fi
 
