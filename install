@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # bootstrap installs things.
 
@@ -8,6 +8,7 @@ BACKUP_SCRIPT="$DOTFILES_ROOT/backups/backup"
 
 # Default flags
 DO_SYMLINK=false
+DO_CODEX_CONFIG=false
 DO_HOMEBREW=false
 DO_ICLOUD_BACKUP=false
 DO_ALL=true
@@ -23,6 +24,10 @@ while [ $# -gt 0 ]; do
       DO_HOMEBREW=true
       DO_ALL=false
       ;;
+    --codex-config)
+      DO_CODEX_CONFIG=true
+      DO_ALL=false
+      ;;
     --icloud-backup)
       DO_ICLOUD_BACKUP=true
       DO_ALL=false
@@ -31,6 +36,7 @@ while [ $# -gt 0 ]; do
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  --symlink        Create symlinks from links.conf"
+      echo "  --codex-config   Install regular system and user Codex config files"
       echo "  --homebrew       Run homebrew installation/update"
       echo "  --icloud-backup  Install the rclone iCloud backup LaunchAgent"
       echo "  --help           Show this help message"
@@ -51,6 +57,7 @@ done
 # If no specific flags were set, do everything
 if [ "$DO_ALL" = true ]; then
   DO_SYMLINK=true
+  DO_CODEX_CONFIG=true
   DO_HOMEBREW=true
   DO_ICLOUD_BACKUP=true
 fi
@@ -81,6 +88,56 @@ setup_files () {
   mkdir -p $(dirname "$2")
   ln -s "$1" "$2"
   success "linked $1 to $2"
+}
+
+install_config_file() {
+  local source_file="$1" destination="$2" mode="$3" backup temporary
+  shift 3
+
+  if [ -f "$destination" ] && [ ! -L "$destination" ] && cmp -s "$source_file" "$destination"; then
+    "$@" chmod "$mode" "$destination"
+    success "verified $destination"
+    return
+  fi
+
+  "$@" mkdir -p "$(dirname "$destination")"
+  if [ -f "$destination" ]; then
+    backup=$("$@" mktemp "$destination.backup.XXXXXX")
+    "$@" cp "$destination" "$backup"
+    success "backed up $destination to $backup"
+  fi
+
+  # Rename a prepared regular file over the destination, never write through a symlink.
+  temporary=$("$@" mktemp "$destination.install.XXXXXX")
+  if "$@" install -m "$mode" "$source_file" "$temporary" &&
+     "$@" mv -f "$temporary" "$destination"; then
+    success "installed $destination"
+  else
+    "$@" rm -f "$temporary"
+    fail "could not install $destination"
+  fi
+}
+
+install_codex_config() {
+  local system_config="${DESTDIR:-}/etc/codex/config.toml"
+  local user_config="${DESTDIR:-}$HOME/.codex/config.toml"
+  local config
+  local privilege=()
+
+  for config in "$DOTFILES_ROOT/etc/codex/config.toml" "$DOTFILES_ROOT/home/.codex/config.toml"; do
+    [ -f "$config" ] || fail "Source not found: $config"
+  done
+  for config in "$system_config" "$user_config"; do
+    if [ -e "$config" ] && [ ! -f "$config" ]; then
+      fail "Expected a file at $config"
+    fi
+  done
+  if [ -z "${DESTDIR:-}" ] && [ "$EUID" -ne 0 ]; then
+    privilege=(sudo)
+  fi
+
+  install_config_file "$DOTFILES_ROOT/etc/codex/config.toml" "$system_config" 644 "${privilege[@]}"
+  install_config_file "$DOTFILES_ROOT/home/.codex/config.toml" "$user_config" 600
 }
 
 install_homebrew() {
@@ -192,6 +249,20 @@ symlink_files() {
 }
 
 # Run installations based on flags
+if [ -n "${DESTDIR:-}" ]; then
+  case "$DESTDIR" in
+    /*) ;;
+    *) fail "DESTDIR must be an absolute path" ;;
+  esac
+  if [ "$DO_SYMLINK" = true ] || [ "$DO_HOMEBREW" = true ] || [ "$DO_ICLOUD_BACKUP" = true ]; then
+    fail "DESTDIR is supported only with --codex-config"
+  fi
+fi
+
+if [ "$DO_CODEX_CONFIG" = true ]; then
+  install_codex_config
+fi
+
 if [ "$DO_HOMEBREW" = true ]; then
   install_homebrew
   brew bundle
