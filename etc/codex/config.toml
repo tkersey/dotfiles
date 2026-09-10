@@ -52,8 +52,6 @@ min_rollout_idle_hours = 6
 max_raw_memories_for_consolidation = 1024
 max_unused_days = 180
 disable_on_external_context = false
-extract_model = "gpt-5.4-mini"
-consolidation_model = "gpt-5.3-codex"
 
 [tui]
 auto_recap = false
@@ -62,6 +60,3 @@ theme = "coldark-dark"
 terminal_title = ["spinner", "project", "status", "thread", "task-progress"]
 notification_condition = "always"
 status_line_use_colors = true
-
-[mcp_servers.openaiDeveloperDocs]
-url = "https://developers.openai.com/mcp"
