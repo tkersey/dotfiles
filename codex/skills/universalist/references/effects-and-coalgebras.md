@@ -294,6 +294,89 @@ First seam examples:
 - a schema object plus mappings/constraints/report neighborhood;
 - a component plus provider/dependency/configuration neighborhood.
 
+## Co-Kleisli extension / context-consuming rules
+
+Use when local rules consume structured context and callers repeatedly rebuild
+that context at other positions or between passes. Distinguish consuming context
+`f : W<A> -> B` from assigning a coalgebra structure `h : A -> W<A>`.
+A comonad supplies extension without requiring each value type to have an `h`:
+
+```text
+extract : W<A> -> A
+extend  : (W<A> -> B) x W<A> -> W<B>
+then(f,g)(w) = g(extend(f,w))        f : W<A> -> B; g : W<B> -> C
+```
+
+For pure total rules, require these equations under the declared observations:
+
+```text
+extend(extract,w) = w
+extract(extend(f,w)) = f(w)
+extend(g,extend(f,w)) = extend(v => g(extend(f,v)),w)
+map(k,w) = extend(v => k(extract(v)),w)
+duplicate(w) = extend(v => v,w)
+extend(f,w) = map(f,duplicate(w))
+```
+
+An independently supplied `map` must be a lawful functor and agree with these
+definitions. The first three equations make `extract` the identity and `then`
+associative; they do not assert a universal property. See the standard
+[Comonad interface and laws](https://hackage.haskell.org/package/comonad-5.0.10/docs/Control-Comonad.html).
+Uustalu and Vene's [Comonadic Notions of Computation](https://doi.org/10.1016/j.entcs.2008.05.029)
+develops context-dependent semantics; the following lowering is an engineering example.
+
+### Worked lowering: immutable focused views
+
+Let `View<A>` contain a finite nonempty immutable vector `xs` and a valid focus
+`i`. All elements are already authorized for this view. Empty input and invalid
+indices stay outside this carrier and receive explicit boundary handling; do not
+invent a default element to manufacture total extraction.
+
+```text
+extract({xs,i}) = xs[i]
+refocus({xs,i},j) = {xs,i:j}                           0 <= j < length(xs)
+map(k,{xs,i}) = {xs: [k(x) for x in xs], i}
+extend(f,w) = {xs: [f(refocus(w,j)) for j in indices(w.xs)], i: w.i}
+```
+
+Refocusing shares the same immutable input snapshot. Extension preserves shape
+and focus while replacing every label with its rule result. This derives the
+laws by pointwise equality: extraction selects the original focus, and nested
+extension applies the same rules to the same refocused views.
+
+Suppose normalization doubles the focused number and validation requires every
+number in the view to be even. At focus zero of `[1,3]`:
+
+```text
+normalizeHere(w) = 2 * extract(w)
+validateHere(w) = all(x % 2 == 0 for x in w.xs)
+then(normalizeHere,validateHere)({xs:[1,3],i:0}) = true   derived view [2,6]
+```
+
+Replacing only the center yields `[2,3]` and false: the second rule sees stale
+neighbors. A second negative witness is refocusing by re-fetching a mutable
+source: after it changes to `[2,4]`, `extend(extract,w)` no longer equals the
+original `[1,3]` view. Test both against the stable-snapshot implementation,
+including singleton views, every valid focus, and the boundary rejection cases.
+Bounded examples falsify mistakes; the pointwise argument supplies the general
+law under the stated pure, total, immutable assumptions.
+
+Lower to an existing record/cursor and loop or a staged immutable traversal, not
+a generic comonad runtime. Translate one caller, compare its complete derived
+view with the required semantics, then retire its bespoke reconstruction. Keep
+a simple environment argument when no reconstruction/composition obligation is
+removed: `W<A> = E x A` with `extend(f,(e,a)) = (e,f(e,a))` is already lawful.
+
+Snapshot acquisition, authorization, failure, cancellation, and external writes
+retain their owners. These laws do not permit extra reads, capability widening,
+effect duplication, parallelism, or reassociation of effectful rules. A closure
+capturing mutable data is not a stable snapshot. No performance gain follows:
+nested extension can repeat whole traversals; compare complete staged, memoized,
+or fused workloads before claiming improvement. When inspectable positions or
+composable refocusing witnesses matter, use only the
+[directed-container recipe](mechanics/comonads-as-spaces.md#directed-container-lowering)
+rather than loading density, basis, or sheaf machinery.
+
 ## Density comonads, bases, Day products, and spatial framing
 
 Use density when local patch types generate the situated world:
@@ -324,6 +407,7 @@ The context/halo family must form an honest ordinary, promonoidal, or dependent 
 - Choose **free applicative / Day static descriptions** when the whole operation/dependency shape is known before results and static analysis matters.
 - Choose **Tambara/contextual-morphism structure** when one profunctorial capability must survive several context extensions.
 - Choose **behavioral coalgebra** when the main smell is ongoing behavior with duplicated transition/observation logic.
+- Choose **co-Kleisli extension** when one coherent refocusing/extension operation can replace repeated context reconstruction between local rules; an ordinary view and loop can suffice.
 - Choose **comonadic spatiality** when locality, neighborhoods, restriction, local/global identity, or continuity are semantic.
 - Combine static/applicative descriptions with a Freyd runtime when plans are inspectable but execution order remains effectful.
 - Combine Tambara framing with a Freyd runtime when an effectful capability must retain residual/context semantics but order remains observable.
