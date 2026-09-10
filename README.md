@@ -25,7 +25,8 @@ The installer requests `sudo` only for the system file. It replaces existing
 config symlinks with regular files without changing their targets, and saves
 readable previous contents beside each destination as `config.toml.backup.*`.
 An old link whose target was removed by checkout is replaced directly.
-Identical regular files are left alone. The system file is installed with mode
+Identical regular file contents are left alone, and permissions are corrected
+on every run. The system file is installed with mode
 644 and the user file with mode 600. The default `./install` also includes this
 step; `--symlink` handles the remaining links only.
 

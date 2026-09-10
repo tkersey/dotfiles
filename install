@@ -95,7 +95,8 @@ install_config_file() {
   shift 3
 
   if [ -f "$destination" ] && [ ! -L "$destination" ] && cmp -s "$source_file" "$destination"; then
-    success "unchanged $destination"
+    "$@" chmod "$mode" "$destination"
+    success "verified $destination"
     return
   fi
 
