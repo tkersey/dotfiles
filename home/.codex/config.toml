@@ -149,6 +149,16 @@ enabled = true
 [plugins."computer-history@openai-bundled"]
 enabled = true
 
+# Use the compatibility adapter until the bundled server accepts Codex's
+# experimental codex/auth-change capability.
+[plugins."computer-history@openai-bundled".mcp_servers.computer-history]
+enabled = false
+
+[mcp_servers.computer-history]
+command = "node"
+args = ["/Users/tk/.dotfiles/codex/computer-history-mcp.cjs"]
+env_vars = ["CODEX_HOME"]
+
 [desktop]
 appearanceLightCodeThemeId = "rose-pine"
 appearanceDarkCodeThemeId = "rose-pine"
