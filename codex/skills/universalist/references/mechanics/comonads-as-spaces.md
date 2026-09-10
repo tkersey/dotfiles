@@ -413,6 +413,71 @@ Halo(point, entries, snapshot)
 
 Use when the relevant neighborhood is finite and snapshot-based.
 
+### Directed-container lowering
+
+Use this recipe only when a context representation needs explicit positions and
+composable changes of viewpoint. It is independent of density/basis claims.
+Ahman and Uustalu's [Directed Containers as Categories, sections 2–3](https://arxiv.org/html/1604.01187)
+identifies directed-container data with small-category data. On `Set`, write:
+
+```text
+W<A> = (s : Shape, labels : Position(s) -> A)
+root(s) : Position(s)
+subshape(s,p) : Shape                               p : Position(s)
+compose_s(p,q) : Position(s)                        q : Position(subshape(s,p))
+```
+
+Positions are arrows out of `s`; `subshape` gives their targets; `root` is the
+identity. Here composition means first `p`, then `q`. Require all five laws,
+with every position well-typed at its source and `t = subshape(s,p)`:
+
+```text
+subshape(s,root(s)) = s
+subshape(s,compose_s(p,q)) = subshape(subshape(s,p),q)
+compose_s(root(s),p) = p
+compose_s(p,root(subshape(s,p))) = p
+compose_s(compose_s(p,q),r) = compose_s(p,compose_t(q,r))
+```
+
+The second equation is target compatibility, not optional bookkeeping. With
+`Shape = Position(s) = {0,1}`, `root(s)=0`, and `subshape(s,p)=s XOR p`, using
+`p OR q` for composition passes identity and associativity but fails target
+compatibility at `p=q=1`. The lawful version uses XOR composition.
+The recipe derives the contextual operations:
+
+```text
+extract(s,labels) = labels(root(s))
+refocus((s,labels),p) = (t, q => labels(compose_s(p,q)))
+duplicate(s,labels) = (s, p => refocus((s,labels),p))
+extend(f,(s,labels)) = (s, p => f(refocus((s,labels),p)))
+```
+
+For the finite focused view, take `s=(n,i)`, `Position(s)=[0,n)`, `root(s)=i`,
+`subshape((n,i),j)=(n,j)`, and `compose_(n,i)(j,k)=k`, with `n>0` and valid
+indices. This is a disjoint family of codiscrete categories, one for each size;
+it lowers to the record and loop in
+[co-Kleisli extension](../effects-and-coalgebras.md#co-kleisli-extension--context-consuming-rules).
+Subtrees or typed paths need their own effective position representation and
+composition laws; they are not justified merely by this example.
+
+A directed graph alone lacks specified identities and composition; its free
+path category is a separate choice and cycles can make positions infinite.
+Keep required parallel witnesses, labels, and provenance even when endpoints
+agree. Prefer a native zipper, index, or path representation only when its
+inspection or composition removes a material obligation. Symbolic or lazy
+positions still need resource bounds; truncation must disclose law/observation
+losses rather than claim the exact comonad automatically.
+
+Do not identify three different categories: the encoded small category has
+shapes and positions; the co-Kleisli category has arrows `W<A> -> B`; the
+Eilenberg–Moore category has lawful structures `A -> W<A>` and their preserving
+maps. Nor does the object-level correspondence identify ordinary functors with
+comonad morphisms. A container map has a forward shape map `t : S -> S'` but
+backward position maps `Position'(t(s)) -> Position(s)`, subject to the directed
+laws; these are opcleavage-like, not arbitrary functors. Specify the actual
+transport and variance before claiming preservation. This complements, rather
+than replaces, the continuous-map distinction above.
+
 ### Bounded approximation
 
 ```text

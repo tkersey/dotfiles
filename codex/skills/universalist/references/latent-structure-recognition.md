@@ -270,6 +270,7 @@ The existing comparison universe, dominance relation, current-context contract, 
 | conversions preserve operations across representations | homomorphism / natural transformation | operation then convert equals convert then operation | explicit structure-preserving adapter |
 | many projections define effective equality | observation vocabulary; Yoneda only with its natural correspondence | equivalence is adequate under permitted future operations | observation IR plus one runner |
 | repeated context wrappers around one capability | action / Tambara candidate | real unit, associative framing, and naturality exist | one typed frame operation or reject to ordinary context parameter |
+| local rules repeatedly rebuild views at other positions | comonadic extension / co-Kleisli composition | extraction and nested extension cohere; later rules see derived neighbors, not stale ones | one native refocusing/extension owner; keep an adequate environment parameter |
 | nested decomposition loops combine indexed descriptions | Day or promonoidal composition | all legal decompositions or witnesses must contribute | bounded indexed representation and normalizer |
 | local meanings restrict and must glue across overlaps | presheaf / sheaf candidate | restrictions compose and compatible locals glue uniquely-up-to | usage-site index then exact global model |
 | recursive traversals differ only by result algebra | fold / initial-algebra pattern | constructors determine the traversal homomorphism | one recursion scheme or repository-native fold |
@@ -279,6 +280,13 @@ The existing comparison universe, dominance relation, current-context contract, 
 | runtime processes compose and architecture changes compose separately | double-category candidate | both directions compose; compatibility squares paste; interchange is observable | typed arrows, squares, pasting, and interpreter |
 
 The atlas is abductive guidance, not a replacement registry. If a row's discriminator is absent, leave the candidate unresolved or reject it.
+
+For the contextual-extension row, use the focused-view derivation in
+[`effects-and-coalgebras.md`](effects-and-coalgebras.md#co-kleisli-extension--context-consuming-rules).
+Unlike Tambara framing of both endpoints, this lifts a context-consuming rule
+across coherent alternative views. A fixed environment paired with a value can
+already be a lawful product comonad; reject an unnecessary abstraction for lack
+of dividend, not because that mathematical structure is absent.
 
 ## Worked derivation: compatibility without extra policy
 
