@@ -27,6 +27,8 @@ config file or old symlink, choose `o` at that destination's overwrite prompt
 to replace it with the new link. Overwrite removes the old file or link; keep
 any needed contents before selecting it. Choose `s` to preserve an existing
 file instead. The separate config-copying operation is removed.
+The installer sets the home config's repository target to mode `0600` before
+linking it, keeping personal settings private.
 
 Reopen Codex after installation. Shared defaults live in
 `etc/codex/config.toml`; personal settings and the Developer Docs MCP server
