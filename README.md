@@ -5,44 +5,37 @@ git clone https://github.com/tkersey/dotfiles.git ~/.dotfiles && cd ~/.dotfiles 
 
 ### Codex configuration
 
-The installer copies the two repository configs into regular files:
+The two repository configs are installed as symlinks:
 
-| Repository file | Installed file |
+| Repository file | Symlink |
 | --- | --- |
 | `etc/codex/config.toml` | `/etc/codex/config.toml` |
 | `home/.codex/config.toml` | `~/.codex/config.toml` |
 
-To migrate, quit Codex/ChatGPT and running Codex CLI sessions, preserve any
-uncommitted config changes, and check out the revision containing the split.
-Then run the repository installer as your normal user:
+Quit Codex/ChatGPT and running Codex CLI sessions, preserve any config edits
+that should be kept, and update your checkout. Then run the existing installer
+as your normal user:
 
 ```sh
 cd ~/.dotfiles
-./install --codex-config
+./install --symlink
 ```
 
-The installer requests `sudo` only for the system file. It replaces existing
-config symlinks with regular files without changing their targets, and saves
-readable previous contents beside each destination as `config.toml.backup.*`.
-An old link whose target was removed by checkout is replaced directly.
-Identical regular file contents are left alone, and permissions are corrected
-on every run. The system file is installed with mode
-644 and the user file with mode 600. The default `./install` also includes this
-step; `--symlink` handles the remaining links only.
+The default `./install` includes the same symlink step. The installer requests
+`sudo` only when creating or replacing `/etc/codex/config.toml`. For an existing
+config file or old symlink, choose `o` at that destination's overwrite prompt
+to replace it with the new link. Overwrite removes the old file or link; keep
+any needed contents before selecting it. Choose `s` to preserve an existing
+file instead. The separate config-copying operation is removed.
+The installer sets the home config's repository target to mode `0600` before
+linking it, keeping personal settings private.
 
-Reopen Codex and check that your model, plugins, and MCP tools load. User config
-values override system defaults. Installed files are independent of the
-checkout: pulling repository changes does not update them. Run
-`./install --codex-config` again to apply the repository versions; differing
-live settings are backed up before replacement.
-
-For an isolated installation check, the following prefixes both destinations
-with the staging path and does not use `sudo`. `DESTDIR` is supported only for
-this operation.
-
-```sh
-DESTDIR=/absolute/staging/path ./install --codex-config
-```
+Reopen Codex after installation. Shared defaults live in
+`etc/codex/config.toml`; personal settings and the Developer Docs MCP server
+live in `home/.codex/config.toml`. User values override system defaults.
+Because the live files link into this checkout, edits and repository updates
+are reflected through those links. Keep the checkout at a revision containing
+both files.
 
 ### iCloud directory backups
 
