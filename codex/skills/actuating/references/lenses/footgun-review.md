@@ -7,7 +7,11 @@ and canonical operations can still produce misleading or dangerous effects.
 
 Ground the expectation in accessible accepted contracts, documentation, examples,
 names and defaults in context, or established supported usage. Do not invent an
-obligation to prevent every imaginable misunderstanding. Trace:
+obligation to prevent every imaginable misunderstanding. Predict the relevant
+normal, failure, or lifecycle behavior from that caller-facing surface before
+inspecting the implementation; compare the actual path and effects rather than
+retrofitting the expectation to the code. This sharpens the same inquiry, not a
+new review stage. Trace:
 
 ```text
 actor -> plausible action -> evidence-backed expectation

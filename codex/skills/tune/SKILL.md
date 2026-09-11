@@ -137,12 +137,18 @@ Before completion, prove:
 - metadata carries every activation cue without claiming neighboring skills;
 - `SKILL.md` contains every always-required rule;
 - each deeper resource is linked beside the condition that requires it;
-- a common-path probe needs only the kernel and common resources;
-- a conditional-path probe loads only resources whose condition holds;
+- a common-path probe reaches its outcome with the kernel and common resources,
+  without requiring the consumer to reconstruct internal routing or choreography;
+- a conditional-path probe loads only resources whose condition holds, without
+  hiding an always-required obligation in an optional reference;
 - a near-miss prompt does not activate.
 
 Keep `SKILL.md` under 500 lines. Move detail only when doing so improves
-progressive disclosure rather than hiding governing policy.
+progressive disclosure rather than hiding governing policy. In those same probes,
+name what the consumer can stop knowing or coordinating and test a relevant change
+for locality. Merely moving text to references or exposing it through configuration
+does not deepen the skill. Retain specialized vocabulary only when it compresses a
+stable distinction the consumer can recover; private terminology is not capability.
 
 ## Create mode
 

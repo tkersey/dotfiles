@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v14-material-decision-challenger"
+      "source_fingerprint": "plan-v14-caller-contract-comparison-v1"
     },
     "triggers": [
       {
@@ -281,13 +281,15 @@
           "equivalent challenges reused",
           "material non-source-fixed decisions and live Metanoetic triggers receive a dispositioned challenger",
           "mechanical source-fixed realization needs no additional challenger",
-          "final reread checks the exact block"
+          "final reread checks the exact block",
+          "live interface alternatives are compared through complete caller contracts, representative use, and a source-supported change without another design loop"
         ],
         "failure_signals": [
           "duplicate loop or receipt",
           "rewording treated as material progress",
           "confidence in the incumbent or no recognized alternative waives a required challenge",
-          "tool stop misreported as convergence"
+          "tool stop misreported as convergence",
+          "a smaller surface wins while preserving hidden caller obligations or weakening required behavior"
         ],
         "rationale": "Decision scope and source authority, not incumbent confidence, determine challenge; equivalent evidence prevents procedural reenactment."
       },

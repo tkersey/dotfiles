@@ -219,6 +219,13 @@ and sanctioned paths establish the law. Neither local-repair-first nor redesign 
 compulsory. Prefer stronger exclusion and fewer independently maintained truths;
 source size and lifecycle cost cannot justify weaker guarantees.
 
+When an error or special case drives the construction, ask whether accepted
+semantics require it or the incumbent introduced an unnecessary precondition.
+Consider a total, uniform, or idempotent operation only within source authority:
+`ensureAbsent` can admit absence, but cannot silently replace `deleteExactlyOne`.
+Preserve required failure distinctions, permission checks, partial-effect visibility,
+and progress; state-level idempotency does not prove retries have no extra effects.
+
 Use the [construction argument](references/counterexample-guided-normalization.md)
 when domain, operation, or migration coverage needs it. Samples discriminate an
 explanation; they do not prove an open-domain exclusion.
@@ -257,6 +264,17 @@ its discriminator, and material migration/residual consequences. Missing evidenc
 or incomparable adequate candidates remain `unresolved`, not an invented obstruction
 or arbitrary winner. Split independent seams and prove their composition.
 Universalist nominates; Actuating selects and proves.
+
+In that existing selection, compare adequate interfaces through a representative
+caller and a source-supported change. What must callers know, choose, sequence,
+synchronize, or clean up, and what becomes owner-local? Prefer removing those
+obligations without weakening the common proof bar; merely concealing them is not
+reduction. Sketch the smallest complete caller-facing contract before committing
+to the boundary. Required implementation knowledge or avoidable choreography is
+reason to reconsider the interface, not shorten its explanation by omission.
+Keep the selected contract beside the interface when realizing it. Reuse supplied
+comparisons; add no design pass, report, review lane, or mandatory second implementation.
+Design opportunities remain nonblocking unless an accepted obligation is violated.
 
 Choose the exact-head verifier before implementation and realize the mechanism,
 migrations, and retirements together under the common proof obligations. Use `$reduce`

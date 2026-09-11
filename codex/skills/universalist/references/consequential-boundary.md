@@ -176,7 +176,9 @@ resources. It does not mean shortest source code or the simplest
 category-theory name.
 
 A candidate dominates another only with evidence that it preserves required
-observations and required-valid behaviors while reducing one or more of:
+observations, required-valid behaviors, laws, authority, compatibility, effects,
+and resource constraints, is no worse on the other material dimensions of the
+declared comparison, and reduces one or more of:
 
 ```text
 invalid representable states
@@ -184,16 +186,28 @@ illegal public compositions
 unchecked construction paths
 duplicated semantic authority
 runtime proof burden
+caller knowledge and lifecycle choreography
+change amplification and hidden dependencies
 information loss
 migration risk
 resource cost
 ```
 
-Do not count mere relocation, renaming, or hidden complexity as a reduction.
+Do not count relocation, renaming, or concealment when consumers retain the same
+reasoning and coordination obligations. Count genuine information hiding when a
+complete sufficient contract removes implementation knowledge or work from
+consumers and localizes a supported change, even if the owning implementation grows.
+Within the existing comparison, sketch a representative call site and a
+repository-grounded change: what must callers know, choose, order, synchronize,
+or clean up under each candidate? A single method exposing the mechanism through
+configuration can remain shallow. Do not add a score, report, second design pass,
+or requirement to implement both candidates.
+
 Reject a stronger construction when its onboarding, maintenance, migration, or
-resource cost exceeds the semantic risk it removes; when its laws cannot be
-tested or otherwise witnessed; or when required public API, wire, or persistence
-compatibility makes its transition inadmissible.
+resource cost exceeds its evidenced semantic and consumer benefit; when its laws
+cannot be tested or otherwise witnessed; or when required public API, wire, or
+persistence compatibility makes its transition inadmissible. Unranked material
+tradeoffs do not establish dominance.
 
 When several candidates are incomparable minima, return `underdetermined`.
 
@@ -445,6 +459,23 @@ not finality. An observation vocabulary needs preservation and, before quotienti
 adequacy under required future continuations, not a fabricated Yoneda argument.
 A lawful transformation needs its hypotheses and observation-preserving equation;
 performance or resource improvements need their own evidence.
+
+Information hiding can realize an abstract interface of operations, laws, and
+sanctioned observations without exposing its representation. To claim representation
+independence, establish a relation preserved by public construction and every
+permitted operation, with agreement on required observations and future continuations;
+account for aliasing, lifetime, effects, and bypasses where relevant. For a functional
+abstraction `alpha: R -> A` and matched unary operations, the commuting obligation is
+`alpha o op_R = op_A o alpha`; observations must agree through `alpha` as well.
+Use the appropriate simulation or relational argument when a functional abstraction
+is not justified. Do not force this model onto every interface or infer the claim
+from opacity. If distinctions are quotiented, the equivalence must respect permitted
+operations and required future observations, not merely today's examples.
+
+Lower caller burden is a context-relative design benefit, not an initiality,
+finality, parametricity, equivalence, or uniqueness proof. Preserve the selected
+claim's existing proof profile; an ordinary encapsulation needs no invented
+universal construction, and a genuine universal claim still needs the following.
 
 ### Universal witness contract
 
