@@ -46,31 +46,43 @@
 
 - Use `jaq` instead of `jq` when `jaq` is installed; fall back to `jq` when it is not.
 
-### Learnings and memory-source lifecycle
+### Source evidence and memory
 
-- Treat `.ledger/*` stores as canonical repo-local source evidence. Mutate them
-  only through the owning skill's explicit Ledger definition and
-  `ledger transact`; read them only through that definition with
-  `ledger project` or `ledger doctor`. Never hand-edit source JSONL.
-- Treat memory-source notes as immutable derived admission snapshots, not canonical stores. Phase 2 owns `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit those outputs directly during ordinary work.
-- When `$learnings`, `$negative-ledger`, or `$synesthesia` accepts a memory-source admission, invoke `$memory-source-notes` in the same turn. It owns adapter selection, validation, diagnostics, and delegation to the immutable writer.
-- Keep the `memory-note` CLI as the sole immutable note writer; it is not a skill. Never bypass `$memory-source-notes` when transporting an accepted source admission.
+- `.ledger/*` stores are canonical repo-local evidence. Read and mutate them only
+  through the owning skill's explicit Ledger definition and `ledger project`,
+  `ledger doctor`, or `ledger transact`; never hand-edit source JSONL. Invalid or
+  retired stores require the owner's explicit recovery policy, not skipped rows.
+- Memory-source notes are immutable derived admission snapshots. Phase 2 owns
+  `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit them
+  during ordinary work. Accepted admissions from `$learnings`, `$negative-ledger`,
+  or `$synesthesia` go through `$memory-source-notes` in the same turn. The
+  `memory-note` CLI remains the sole immutable writer, not a skill or bypass.
+- Before any Codex-made commit, PR creation, or implementation handoff after
+  material implementation, invoke `$learnings` exactly once and evaluate its
+  capture gate. Evaluate from task evidence before loading store procedures or
+  bootstrapping tools when no canonical operation is needed. Capture is
+  conditional; no-op, duplicate-skip, or failure to append alone never delays or
+  invalidates delivery.
+- Activate sibling sources only for their own evidence: `$negative-ledger` for a
+  witnessed failed/no-effect/regressed/reverted/abandoned route or a request about
+  prior attempts; `$synesthesia` for explicit sensory intent, documented
+  representational ambiguity, or a durable mapping/boundary event. No aggregate
+  packet, forced sibling evaluation, or source-memory delivery gate.
+- Each material activation retains one owner-defined disposition. Inspect canonical
+  appends/transitions and publish session-owned, publishable `.ledger/*` rows with
+  the work they explain. Canonical writes are independent; derived note/digest or
+  Phase 2 failures never roll them back. Keep no-ops internal; report writes,
+  actionable non-durable proposals, admission degradation, and blockers only when
+  they affect the user, repository state, or requested proof.
 
-### Source-evidence retention mandate
+### Negative-evidence routing
 
-- Evaluate each source only when its own activation boundary is live. `$learnings` captures a transferable decision-shaping learning; `$negative-ledger` maps or captures a witnessed failed, no-effect, regressed, reverted, or abandoned route; `$synesthesia` activates only for explicit sensory intent, a documented representational ambiguity, or a durable mapping or boundary event.
-- Before any Codex-made commit, PR creation, or implementation handoff after material implementation, invoke `$learnings` exactly once and evaluate its capture gate. Append only when the gate passes; retain duplicate-skip, no-op, or blocked as the source-owned disposition, and never delay or invalidate delivery solely because Learnings did not append.
-- Do not construct an aggregate source-memory packet or receipt, force a sibling evaluation, or treat source-evidence closeout as a delivery gate.
-- Once a source is materially activated, retain exactly one source-owned disposition and apply that source's narrow capture or admission gate. Canonical source writes are independent. A memory-note, digest, or Phase 2 failure must not roll back or invalidate a successful canonical write.
-- Inspect every canonical append or transition and include publishable `.ledger/*` rows with the work they explain. If a definition-bound doctor reports an invalid or retired store, follow the owning source's explicit recovery policy; never silently skip or reinterpret invalid rows.
-- Keep no-op source evaluations internal. Report canonical writes, actionable non-durable proposals, admission degradation, and blockers only when they affect the user, repository state, or requested proof.
-
-### Negative-evidence routing mandate
-
-- Invoke `$negative-ledger` implicitly when implementation, debugging, review, or validation encounters a witnessed failed/no-effect route, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy likely to recur, or a request about what has already been tried.
-- Before selecting a route that resembles a prior failure, run the owning
-  Negative Evidence definition's current `route-gate` projection. A recalled
-  learning may trigger this check but cannot suppress a route until promoted
-  through Negative Ledger with current applicability.
-- At a material strategy pivot, regression-confirmed revert, or implementation/review closeout that leaves a failed route likely to recur, evaluate capture. A transient red test, syntax error, first incomplete attempt, or discarded typo is `no-op` unless it exposes a durable failed hypothesis that changes future routing.
-- Retain exactly one internal disposition for each material activation: `mapped`, `captured`, `transitioned`, `no-op`, or `blocked`. Only active, witnessed, exact-enough, artifact-applicable exclusions may block route selection.
+- Before repeating a route resembling a prior failure, load `$negative-ledger`
+  and use its current definition-bound `route-gate`. A recalled learning can
+  trigger this check, not suppress the route. Only active, witnessed, exact-enough,
+  currently artifact-applicable exclusions may block selection.
+- Evaluate capture at a material strategy pivot, regression-confirmed revert, or
+  implementation/review closeout leaving a failed route likely to recur. Transient
+  red tests, syntax errors, first incomplete attempts, and typos are `no-op` unless
+  they expose a durable route-shaping failed hypothesis. The owning skill supplies
+  disposition and lifecycle mechanics; do not run tools to manufacture a no-op.

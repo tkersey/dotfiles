@@ -1,6 +1,6 @@
 ---
 name: universalist
-description: "Use when current work must decide or reconsider an owned code boundary: introducing, removing, migrating, bypassing, or materially changing its semantic owner, admitted domain, representation, composition, compatibility, effects, failure semantics, or proof; or when repeated implementations distribute one law across owners. Skip routine implementation, validation, review closure, rebasing, Ship, and Land against an accepted architecture unless new evidence fires an invalidator. In Actuating, nominate only when architecture reconsideration is live. Explicit invocation always runs. Team mode requires explicit request."
+description: "Choose or reconsider a semantic code boundary when ownership, representation, composition, or required laws are in question. Also use for distributed implementations of one law or invalidated decisions. Not routine work under an accepted architecture."
 ---
 
 # Universalist
@@ -73,9 +73,10 @@ Team/subagent mode remains explicit-request only.
 
 ## Common path
 
-The common path must complete without loading any deeper reference. Inside
-Actuating, use the composition handoff below instead of also emitting the
-standalone disposition template; the same applicable obligations remain.
+The standalone ordinary/preserve path must complete without loading any deeper
+reference. Inside Actuating, read [actuating-composition.md](actuating-composition.md)
+instead of also emitting the standalone disposition template; the same applicable
+obligations remain.
 
 1. Attribute the trigger evidence. If no implicit trigger condition is
    evidenced, stop without a disposition.
@@ -152,7 +153,7 @@ the whole reference corpus to search for a reason to escalate.
 | One ordinary artifact clearly closes the seam | nothing | compact `ordinary` nomination and transition |
 | Repeated obligations, an imminent constrained variant, or a grounded law-derived challenger needs discrimination | `references/latent-structure-recognition.md` | encoding relation, false friend, discriminator, dividend, transition need |
 | At least two plausible routes materially differ | `references/consequential-boundary.md` | context-relative comparison and Boundary Artifact Contract candidate |
-| A specific typed hole survives ordinary comparison | `references/artifact-selection-by-unknown-location.md`, then the matching registry card fragment only | evidence-bound card disposition |
+| A specific typed hole survives ordinary comparison | `advanced-mechanics.md`, then its selected registry fragment only | evidence-bound card disposition |
 | One advanced card remains live | only that card's `theory_refs` | effective repository-native lowering and proof profile |
 | A consequential decision must remain independently durable outside Actuating | `references/durable-decision.md` | one Ledger-addressed plan and, after standalone adjudication, one root receipt |
 | User explicitly requests Universalist subagents/team mode | `references/workflow/team-routing.md`, `references/workflow/subagent-packet-contract.md`, and `references/workflow/subagent-orchestration.md` | bounded read-only packets and one root synthesis |
@@ -201,29 +202,9 @@ interest do not establish consequentiality.
 
 ### Advanced-mechanics gate
 
-Advanced mechanics are selected by a concrete typed hole, not by browsing for
-an attractive theorem.
-
-After the ordinary candidate and consequential comparison:
-
-1. read `references/artifact-selection-by-unknown-location.md`;
-2. consult `references/universal-construction-registry.yaml`;
-3. inspect at most three nearby cards, including the ordinary alternative;
-4. classify each relevant card as `selected`, `rejected`, `contradicted`, or
-   `unresolved`;
-5. read only the selected or still-material card's exact `theory_refs`;
-6. lower any retained card into one repository-native boundary artifact.
-
-Match proof to the actual claim: a lawful structure needs its laws and
-interpretation, not an invented universal property. Mediation and uniqueness
-apply only to a named universal construction with specified competitors and maps.
-Opacity, one public interpreter, and passing examples alone establish neither.
-A bounded approximation states its domain, losses, and evidence limits. A route
-name never upgrades claim strength.
-
-Signals, registry order, `diagnostic_order`, evidence count, and theorem
-sophistication never prove prerequisites or select a route. Ordinary dominance
-is a successful advanced-mechanics rejection, not a failed analysis.
+When a specific typed hole survives ordinary and consequential comparison,
+read [advanced-mechanics.md](advanced-mechanics.md) before registry selection.
+Select by the hole, not theorem appeal; the route name never upgrades proof.
 
 ### Durability gate (`UNI-DURABLE`)
 
@@ -263,92 +244,18 @@ together.
 
 ## Actuating composition
 
-Inside `$actuating`, Universalist is a nominator only. Actuating owns the
-invocation point and calls Universalist only after architecture reconsideration
-is live. Do not run a duplicate root or worker pass merely because Actuating
-will cross a boundary while realizing an already selected architecture.
-
-Return `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed` with the smallest
-code-bound argument that changes Actuating's decision: trigger evidence, owner
-and operation, required law/observations, discriminator, and material migration,
-residual, or invalidation consequences. For counterexample-driven work, identify
-the enabling freedom removed or lawfully controlled. Reuse supplied facts and proof references. No fixed field projection
-or second Working Set report is required.
-
-Return `unresolved` when evidence is missing or adequate candidates remain
-incomparable; name that reason and the smallest available discriminator. This
-is a supporting result, not a new route or mode. Do not convert uncertainty into
-`obstructed`, preserve an unjustified incumbent, or invent a winner. Actuating
-owns any authorized experiment outside an open review epoch and blocks only the
-affected decision. Obstruction still requires the evidence specified below.
-
-An ordinary nomination can be direct: derive the receipt subject from the
-execution-owned evidence instead of accepting both independently; retire the
-unchecked constructor, migrate callers, and identify the mismatch witness and
-required-valid counterpart. This nominates work; it is not proof of a successor.
-Admission, preservation under permitted operations, and sanctioned-path coverage
-remain distinct obligations. Adequate native evidence may discharge them without
-a duplicate topology account. When route or migration coverage needs explicit
-accounting, return the relevant source-derived topology obligations to Actuating.
-
-A candidate may improve the causal explanation. Return the material delta and
-its discriminator for Actuating's existing selection decision; do not silently
-redefine the family or require a separate co-refinement pass. The family is not
-just its observed examples, and a local correction may still be the adequate
-construction.
-
-When a candidate changes the comparison domain, quotients distinctions, or
-conservatively approximates behavior, justify total interpretation over that
-domain, reflection of every concrete violation, exclusion of invalid behavior,
-and preservation of required valid behaviors and observations at an explicit
-evidence strength. Do not underapproximate danger or erase required distinctions.
-Report any optional safe behavior excluded by a conservative approximation;
-diagnostic exactness is separate from safety. Do not invent these transformations
-or their reporting fields for a candidate that does not use them.
-
-Keep primary enforcement distinct from derived trust-boundary, compatibility,
-observability, and compensating guards. Do not nominate a construction as adequate
-while a sanctioned escape or permitted transition still admits its claimed family.
-
-Universalist never selects or reopens Actuating's target, adjudicates its causal
-alternatives, grants mutation or closure, allocates a plan/root receipt, or persists
-an Actuating architecture artifact. Actuating alone adjudicates the nomination
-and any interpretation delta in its active Working Set. Git and actual proof own
-the realized result. Standalone selection remains subject to its applicable
-consequential and durability contracts.
+Inside Actuating, load [actuating-composition.md](actuating-composition.md) before
+nominating. Actuating owns the invocation point, selection, mutation, and closure;
+Universalist returns `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed`.
+Never load standalone durability mechanics in this composition.
 
 ## Execution-time reclassification (`UNI-RECLASSIFY`)
 
-Treat every compact disposition, nomination, or durable decision as a proof
-lease over current evidence.
-
-Reclassify before the next affected mutation only when new evidence may
-materially change the owner, requirements, observations, compatibility,
-effects, resources, axis, typed hole, law, falsifier, enforcement, residuals,
-route, or seam decomposition. Routine refinement under the same owner, axis,
-law, falsifier, route, obligations, and invalidators reuses the current proof
-lease silently.
-
-Record:
-
-```text
-Prior disposition or decision:
-New evidence:
-Material semantic delta:
-Outcome: retain / split / escalate / obstruct
-Invalidated artifacts: receipt / plan / proof lease / none
-Successor packets: owner + axis + seam / none
-```
-
-- **retain** — the same owner, axis, law, falsifier, route, and obligations hold;
-- **split** — independently governed owners or axes appeared;
-- **escalate** — the route materially changed; repeat consequential analysis;
-- **obstruct** — no honest current route is representable or authorized.
-
-Before Actuating selects a target architecture, revise the nomination in
-place. After implementation begins, return material evidence to Actuating;
-Universalist must not reopen the target directly. Never overwrite an existing
-root receipt.
+Reuse an unchanged disposition silently. When new evidence may materially change
+its owner, requirements, observations, compatibility, effects, resources, axis,
+typed hole, law, falsifier, enforcement, residuals, route, or decomposition, read
+[reclassification.md](reclassification.md) before the next affected mutation.
+Do not reopen Actuating's target or overwrite a root receipt.
 
 ## Evidence and obstruction
 

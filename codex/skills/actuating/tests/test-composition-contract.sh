@@ -29,13 +29,20 @@ const protectedSections = {
   "Review and closure": "9e9bf083b07812cb0cb2675d223bc94554fb51cfeecc1f1b7b3ff9edd0752225",
   "Realization and common proof obligations": "df2f70beac4ca71c55ca4e4bc8c6f63c23453aafe8ef7406102832f658055ad8"
 };
+// Relocation changes where the section is read, not its accepted bytes.
+const protectedSources = {
+  "Review-epoch immutability and evidence acquisition": text('review-closeout.md'),
+  "Review and closure": text('review-closeout.md')
+};
+assert(skill.includes('[review-closeout.md](review-closeout.md)'), 'review guide not routed');
 for (const [name, digest] of Object.entries(protectedSections))
-  assert.equal(sha256(section(skill,name)),digest,`protected Actuating section: ${name}`);
+  assert.equal(sha256(section(protectedSources[name] ?? skill,name)),digest,`protected Actuating section: ${name}`);
 // Four auxiliary lenses now return the native structured review object.
 // These pins preserve the reviewed output correction and all search instructions.
 const lensBlobs = {
   'soundness-review.md':'0969ec78b6f03d73ab0bdeae1f5a987c8e8d477f',
-  'footgun-review.md':'13307f0864172c1972584372ca406b0b1dbfdccd',
+  // #285 changed the caller-expectation inquiry; pin the already-merged bytes.
+  'footgun-review.md':'68a0b86f1e902817320c3f817c0490c3e384bcbc',
   'invariant-review.md':'0c945b75733ef5dc80d51033217d729dc9529f6e',
   'complexity-review.md':'70e1fbab51f246b4f8aacb8fcc7f649339381a2e',
   'fresh-eyes-review.md':'392289a1e913435e5ad9abf2721b24ad0119682f'
@@ -54,7 +61,8 @@ for (const path of ['SKILL.md',
   const source = text(path);
   for (const result of nominationResults) assert(source.includes(result),`${path}: missing ${result}`);
 }
-const universalist = section(text('../universalist/SKILL.md'),'Actuating composition');
+assert(text('../universalist/SKILL.md').includes('[actuating-composition.md](actuating-composition.md)'), 'composition guide not routed');
+const universalist = section(text('../universalist/actuating-composition.md'),'Actuating composition');
 assert.match(universalist,/Return `unresolved` when evidence is missing or adequate candidates remain\s+incomparable/);
 assert.match(universalist,/not a new route or mode/);
 const fold = text('../review-fold/SKILL.md');
