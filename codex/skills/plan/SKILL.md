@@ -1,6 +1,6 @@
 ---
 name: plan
-description: "Govern candidate specifications against user authority and repository evidence, then produce one self-contained, architecture-aware execution specification. Bare `$plan` defaults to spec-to-plan and human output, without EPG or Ledger. Use `$plan direct` only for accepted decision-complete intent, and `$plan revise` for an existing plan identity. Export EPG-v1 only for explicit machine-readable output or EPG persistence. Implicitly invoke for detailed specifications, execution plans, migrations, proof/rollback planning, and plan revision; never seize implementation, debugging, review, explanation, or divergent options."
+description: "Produce or revise a self-contained execution specification from an objective or candidate spec, including migration, proof, and rollback planning. Not implementation, debugging, generic review, explanation, or divergent options."
 ---
 
 # Plan
@@ -76,7 +76,9 @@ bypasses. Files and layers are not automatically the semantic factorization.
 Ask only for material user judgment, private constraints, irreversible approval,
 or an authority conflict that artifacts cannot resolve.
 
-Read [specification-governance.md](references/specification-governance.md). Recover
+For `spec-to-plan` or `revise`, read [specification-governance.md](references/specification-governance.md)
+before governing the candidate. `direct` skips that front-end procedure, not the
+following obligations. Recover
 requirements, non-goals, compatibility, fixed decisions, proof bar, and rollback;
 distinguish selected means and defaults. Repair affected derivations or reconstruct
 an unsound organization without losing valid requirements or failed evidence.

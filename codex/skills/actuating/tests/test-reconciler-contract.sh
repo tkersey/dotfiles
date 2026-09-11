@@ -83,7 +83,7 @@ for (const obligation of ['admission and transition preservation','source-derive
   'migration and retirement','residual obligations']) assert(compilation.required_obligation_classes.includes(obligation));
 assert.match(c.construction_selection.causal_target, /construction or transition/);
 assert.match(c.construction_selection.discriminator_target, /valid-state transition/);
-const universalist = text('../universalist/SKILL.md');
+const universalist = [text('../universalist/SKILL.md'), text('../universalist/actuating-composition.md')].join('\n');
 const reduction = text('../reduce/SKILL.md').split('## Actuating composition')[1].split('## Implementation mode')[0];
 assert(!universalist.includes('Selected counterexample theory:'));
 assert(!universalist.includes('single bounded co-refinement'));
@@ -158,7 +158,7 @@ assert(ownerFacts.required_artifacts.includes('accepted Goal bound directly to c
 assert(ownerFacts.success_signals.includes('source revisions reclassify applicable evidence without erasing unresolved provenance'));
 // End source-binding regressions.
 // Verifier-integrity regressions; source consistency is not model-efficacy evidence.
-const proofAcceptance = text('SKILL.md').split('## Observe and adjudicate\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
+const proofAcceptance = text('SKILL.md').split('## Proof acceptance\n')[1]?.split('\n## ')[0].replace(/\s+/g, ' ');
 assert(proofAcceptance, 'missing root proof acceptance');
 for (const rule of [
   'Before accepting validation for local completion or reviewability',
@@ -176,8 +176,9 @@ assert(closureProof.success_signals.includes('test retirement preserves proof or
 assert(closureProof.failure_signals.includes('passing a weakened suite discharges an unchanged requirement'));
 // End verifier-integrity regressions.
 // Admission/model-refinement source contracts; not a model-efficacy result.
-assert(proofAcceptance.includes('for review findings and failed checks before treating either as a liability'));
-const causal = text('SKILL.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+assert(text('counterexamples.md').includes('for review findings and failed checks before treating either as a liability'));
+assert(text('SKILL.md').includes('[counterexamples.md](counterexamples.md)'), 'counterexample guide not routed');
+const causal = text('counterexamples.md').split('## Compile the first loss of guarantee\n')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 for (const rule of [
   'Acceptance establishes a supported disagreement, not the causal explanation',
   'source-grounded discriminator that could refute that explanation',
@@ -193,7 +194,8 @@ assert(construction.success_signals.includes('model adequacy, permitted-operatio
 assert(construction.failure_signals.includes('a shared predicate, exhaustive switch, or new type is treated as proof of meaning or coverage'));
 // End admission/model-refinement source contracts.
 // Pairing source-contract regressions; these do not measure model efficacy.
-const rootStep = text('SKILL.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
+assert(text('SKILL.md').includes('[architecture.md](architecture.md)'), 'architecture guide not routed');
+const rootStep = text('architecture.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
 assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`'));
 assert(rootStep.includes('once per unchanged decision surface'));
@@ -203,8 +205,8 @@ assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
 assert(rootStep.includes('Let the pass discover which premises and evidence need reinspection'));
 assert(rootStep.includes('Keep the accepted Goal fixed'));
 assert(rootStep.includes('Only when architecture is live'));
-assert(text('SKILL.md').includes('never changed expectations merely to agree with the candidate'));
-assert(text('SKILL.md').includes('Prefer making that omission unavailable'));
+assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
+assert(text('counterexamples.md').includes('Prefer making that omission unavailable'));
 assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
 assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in the same bounded challenger pass'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');

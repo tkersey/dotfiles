@@ -1,6 +1,6 @@
 ---
 name: cas
-description: "Use the native CAS Codex control-plane CLI for app-server inspection and transport, account and goal facts, automations, smoke and conformance checks, instance fanout, tuple-bound reviews, and session inquiry. CAS owns execution and directly observed facts; callers retain semantic authority."
+description: "Operate the CAS Codex control-plane CLI: app-server, automations, account/goal facts, reviews, session inquiry, smoke/conformance checks, and instance fanout. Callers retain semantic authority."
 ---
 
 # CAS
@@ -37,75 +37,36 @@ cas conformance
 Underscore/hyphen spelling conveniences already shown by `cas --help` may be
 used. They do not create another product identity.
 
-## Runtime compatibility gate
+## Selected guidance
 
-Before an app-server-backed route whose compatibility has not already been
-established for the exact resolved Codex executable and current schema cache,
-run:
+Load the selected route before issuing its commands. Before an app-server-backed
+route, read [runtime-compatibility.md](runtime-compatibility.md) and establish its
+required profile for the exact executable/schema cache, or reuse an unchanged
+compatible result. Version strings alone are not compatibility proof.
 
-```bash
-cas app-server preflight \
-  --cwd <repo> \
-  --profile <core|review|session-inquiry|full> \
-  --app-server-transport <selected-transport> \
-  --json
-```
-
-Use these profiles:
-
-| Route | Profile |
+| Route | Selected guidance |
 |---|---|
-| schema inspection, smoke check, generic instance execution | `core` |
-| `cas review run|start` | `review` with `managed-ws` preflight |
-| `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` preflight and execution |
-| release conformance and the complete feature surface | `full` |
+| App-server, smoke, instance fanout, conformance | [app-server.md](app-server.md) plus the applicable compatibility profile |
+| Tuple-bound review | [reviews.md](reviews.md) plus `review`/`managed-ws` compatibility |
+| Session inquiry | [session-inquiry.md](session-inquiry.md) plus `session-inquiry`/`managed-ws` compatibility |
+| Automation | Automation below; use its store/scheduler doctor, not an unrelated app-server preflight. |
+| Account and native goals | Account and goals below |
 
-Require `status == "compatible"`, the intended resolved Codex path, contract
-ID `codex-app-server-capabilities-v2`, no missing required methods or handlers,
-and all required selected-profile probes passed. Codex version and release
-channel are diagnostic only. `degraded` is not compatible proof for a required
-route behavior.
+Read a deeper reference only where the selected route requires it. Do not preload
+review, inquiry, and automation manuals together.
 
-CAS 0.6.0 is qualified against released Codex 0.151.0. That version is an
-evidence baseline, not a runtime pin or upper bound: admit later released
-runtimes when the selected capability profile and probes pass. Do not use an
-unreleased or prerelease build as qualification evidence unless the caller
-explicitly requests prerelease testing.
+<a id="runtime-compatibility-gate"></a>
+Runtime compatibility: [runtime-compatibility.md](runtime-compatibility.md).
+<a id="route-guidance"></a>
+The selected-route table above replaces the combined route manual.
+<a id="app-server-smoke-and-instances"></a>
+App-server, smoke, and instances: [app-server.md](app-server.md).
+<a id="review"></a>
+Review: [reviews.md](reviews.md).
+<a id="session-inquiry"></a>
+Session inquiry: [session-inquiry.md](session-inquiry.md).
 
-For review and session inquiry, also require the preflight receipt's
-`transport.selected == "managed-ws"`; a compatible stdio receipt is not
-equivalent proof. CAS 0.6.0 review runs this gate internally before starting
-and reports the realized connection as `selectedTransport == "websocket"`.
-Session inquiry additionally receives `--transport managed-ws` on execution.
-
-Compile-time capabilities report what CAS implements. They do not prove that
-the resolved runtime implements it. For review, require both the compatible
-`review` preflight and
-`cas_capabilities.features.cas_structured_review_v1 == true`.
-
-See [codex_app_server_contract.md](references/codex_app_server_contract.md) and
-[codex-app-server-capability-matrix.md](references/codex-app-server-capability-matrix.md).
-
-## Route guidance
-
-### App-server, smoke, and instances
-
-Use `cas app-server schema --json` for a non-mutating schema/cache report and
-`cas app-server preflight --json` for the structural and behavioral verdict.
-Use `cas app-server session` for a raw stateful app-server stream and
-`cas app-server daemon` for released daemon lifecycle commands. Both delegate
-to the selected Codex executable, preserve its raw bytes and exit status, and
-accept `--codex-path`; they do not impose a version gate.
-Use `cas smoke_check` for bounded handshake and reachability observations.
-Use `cas instance_runner` for bounded raw requests or fanout. Preserve additive
-response, notification, and item data rather than projecting it away.
-
-Explicit transport or remote Code Mode host selection is fail-closed. The
-outbound Code Mode host is distinct from the inbound app-server endpoint and
-uses the released HTTP(S) root-endpoint form. Authenticated WebSocket listener
-flags belong to the delegated app-server session surface.
-
-### Automation
+## Automation
 
 Use `cas automation` for every automation operation. When store or scheduler
 compatibility is uncertain, and before troubleshooting or mutation that relies
@@ -122,50 +83,7 @@ non-default database; automation files still belong to the existing Codex
 automation root. See [automation.md](references/automation.md) and
 [automation-db.md](references/automation-db.md).
 
-### Review
-
-Use `run` for a standalone one-off review. Use one owner-lived
-`start --wait` process for workflow-bound or Actuating review. Use `wait` only
-to recover or inspect an already-started admissible attempt.
-
-```bash
-cas app-server preflight --cwd <repo> --profile review \
-  --app-server-transport managed-ws --json
-
-cas review run --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
-  --timeout-ms 2700000 --json
-
-cas review start --wait --cwd <repo> --base <base> \
-  --custom-instructions @<instructions> \
-  --workflow-binding-json @<binding.json> \
-  --timeout-ms 2700000 --json
-```
-
-A process is not a review. An attempt exists only after `reviewThreadId`; a
-semantic verdict exists only when the structured verdict binds the exact
-target tuple. CAS reports the backend. The caller decides credit and finding
-disposition. See [review-proof-boundary.md](references/review-proof-boundary.md).
-
-When the caller admits a new same-target attempt after terminal evidence, pass
-`--fresh-attempt <source-bound-reason>`. CAS records the reason; it does not
-decide whether the new attempt is permitted.
-
-### Session inquiry
-
-Use the `session-inquiry` preflight profile before execution. A paginated source
-is admissible when the exact runtime probe passes. Fork boundary and anchor
-digest verification remain mandatory. A successful paginated fork is not proof
-of historical workspace reconstruction.
-
-Pass `--transport managed-ws` to `session_inquiry run|start`; do not let the
-execution fall back to its `auto` default after proving a selected transport.
-
-Validate Retrace inputs with their owner definitions and validate the returned
-FIR with CAS's passive definition before interpreting it. See
-[retrace-session-inquiry.md](references/retrace-session-inquiry.md).
-
-### Account and goals
+## Account and goals
 
 `cas account status` reports account facts and preserves plan values as data.
 `cas goal` resolves, observes, mutates, or waits for native CAS goal state only
