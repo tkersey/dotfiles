@@ -198,7 +198,8 @@ if (args.length === 1 && args[0] === '--list') {
   assert.match(fold,/that passed Counterexample admission/);
   assert.match(fold,/reported_claim:[\s\S]*observed_fact: # established only/);
   assert.match(read('../references/counterexample-corpus.md'),/Counterexample admission established validity and current Goal relevance/);
-  assert.match(read('../../actuating/SKILL.md'),/review-fold\/SKILL\.md#counterexample-admission/);
+  assert.match(read('../../actuating/SKILL.md'),/\[counterexamples\.md\]\(counterexamples\.md\)/);
+  assert.match(read('../../actuating/counterexamples.md'),/review-fold\/SKILL\.md#counterexample-admission/);
   assert.match(read('../agents/openai.yaml'),/Apply Counterexample admission to each proposed witness/);
   const normalized = admission.replace(/\s+/g,' ');
   for (const rule of [
