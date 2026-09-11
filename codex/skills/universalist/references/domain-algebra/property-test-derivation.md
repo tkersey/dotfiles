@@ -32,6 +32,75 @@ False laws should have explicit counterexamples. A non-law is often more valuabl
 refund(capture(p)) != p under audit-trace observation
 ```
 
+## Test whether the laws specify the intended behavior
+
+Conformance to equations and adequacy of those equations are different claims.
+When adequacy is uncertain, construct one cheap wrong model that satisfies the
+candidate equations but violates a required observation. Reject it with the
+existing discriminator; this is not a universal mutation-testing quota.
+
+Maguire's *Algebra-Driven Design*, "Tiles", exposes the distinction: structural
+rotation equations do not determine which direction is clockwise, and comparing
+only zero-sized rasterizations makes every tile appear equal. For a concrete
+row-major observation, rotating `[[1,2],[3,4]]` clockwise must produce
+`[[3,1],[4,2]]`, not the counterclockwise `[[2,4],[1,3]]` or the original tile.
+Setting both rotations to identity passes four-turn and inverse equations;
+exchanging clockwise and counterclockwise passes those equations too. The
+asymmetric observation rejects both wrong models. Include non-square and
+nontrivial inputs where dimensions or other interactions matter; one example
+does not establish equality at every size.
+
+Use the same technique for a silent interpreter, a dropped reward multiplicity,
+or a state quotient that loses the next transition. Keep required-valid controls
+so that reject-all is not an adequate model. A surviving wrong model calls for a
+better observation or law, not automatically a production-code patch.
+
+## Discovered equations are candidates, not authority
+
+The book's QuickSpec technique can propose equations from an implementation:
+
+```text
+observed regularity -> candidate equation -> authority/observation adjudication
+                    -> accepted regression property
+```
+
+A discovery run may capture an implementation bug or a deficient generator.
+Resolve surprising or contradictory equations against accepted requirements,
+independent observations, and generator coverage before retaining them. A law
+supported only by current behavior stays a hypothesis, not a compatibility duty.
+Fresh samples can challenge a candidate but cannot supply missing source authority.
+Do not require QuickSpec, Haskell, or new discovery tooling for an adequate native
+property or model test.
+
+## Generator, observer, and shrinker adequacy
+
+When generated tests materially support the claim, inspect their effective domain:
+
+- Generate valid terms through the supported public algebra, covering relevant
+  operations and their law-sensitive compositions. Check the observed distribution
+  of constructors, depth, boundary values, and interaction cases; an operation
+  present in generator source but never exercised gives no coverage. Keep generator
+  coverage aligned when the public operation vocabulary changes. A sample shows
+  sampled coverage, not exhaustiveness over all compositions.
+- Separately exercise malformed inputs and sanctioned ingress, alias, mutation,
+  or deserialization paths at their actual admission owners. Public-constructor
+  tests do not replace boundary tests, and invalid internal terms do not by
+  themselves falsify the public algebra's law.
+- Make the comparator cover every observation relevant to the claim, including
+  parameters and permitted continuations that distinguish values. Identity,
+  multiplicity, ordering, failures, effects, and resources cannot disappear merely
+  because the default equality function ignores them.
+- Shrink toward a smaller witness while retaining the law's preconditions and
+  relevant failure stage. Recheck that the result still refutes the same claim;
+  an earlier fixture/setup failure is a different witness. Report timeouts,
+  discarded cases, and generator bias as coverage limits. Discarding expensive
+  cases cannot establish termination, latency, or resource safety.
+
+These adapt the book's "Property-Based Testing" and "Effective QuickSpec" into
+the existing property-test plan. Adequate native evidence can discharge the
+questions without an additional report or testing subsystem. Finite-model tests
+of these techniques are not evidence of coding-agent efficacy.
+
 ## Worked transformation: fold–map fusion
 
 For finite lists and pure total `g` and `f`, derive:

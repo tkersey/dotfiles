@@ -4,7 +4,7 @@
     "skill": {
       "name": "plan",
       "kind": "mixed",
-      "source_fingerprint": "plan-v14-caller-contract-comparison-v1"
+      "source_fingerprint": "plan-v14-caller-contract-comparison-algebra-derivation-v1"
     },
     "triggers": [
       {

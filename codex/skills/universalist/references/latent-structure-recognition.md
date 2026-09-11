@@ -129,6 +129,14 @@ effect boundaries
 
 Use tests, callers, schemas, traces, and compatibility behavior as evidence. Names and comments are hints, not proof.
 
+When the operation vocabulary, interacting equations, or observation carrier
+remains unresolved, use [domain algebra discovery](domain-algebra/algebra-driven-design.md)
+within this extraction. Derive from required uses; let contradictory laws revise
+the vocabulary or carrier, and consider a unifying observation when production
+traversals duplicate semantics. Reuse this packet and discriminator; preserve
+independent verification, complete caller contracts, and the existing gates.
+Do not load the method merely to rename an already-dispositive ordinary design.
+
 ### 3. Anti-unify neighboring instances
 
 Ask:

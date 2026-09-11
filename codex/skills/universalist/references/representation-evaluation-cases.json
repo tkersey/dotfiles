@@ -1,7 +1,7 @@
 {
   "schema": "universalist-representation-evaluation/v1",
   "skill_version": "17.8.0",
-  "purpose": "Audit-only artifact discriminators for eliminator-first representation; not a new routing policy or executable test runner.",
+  "purpose": "Audit-only artifact discriminators for eliminator-first representation and algebra-derived design; not a new routing policy or executable test runner.",
   "status": "authored_not_model_replayed",
   "evaluation": "Present scenarios and required behavior to the agent; reserve expected artifacts, falsifiers, and evidence criteria for evaluation. Accept any admissible implementation satisfying the same requirements.",
   "artifact_cases": [
@@ -131,6 +131,151 @@
       "evidence_required": [
         "Separate computation, two representation round trips, algebra-morphism preservation, universal uniqueness, and induction claims.",
         "Classify derivation, exhaustive finite evidence, sampled tests, and unrun formal/model evaluations honestly."
+      ]
+    },
+    {
+      "id": "reward-carrier-keeps-multiplicity-not-order",
+      "scenario": "A first-use reward-combination boundary must aggregate independently earned rewards. Accepted requirements make award order irrelevant but require every occurrence to count. The candidate public API exposes a list and callers repeatedly normalize it; a proposed set replacement removes duplicates.",
+      "required_behavior": [
+        "Combining two independently earned copies of reward r records two occurrences, regardless of combination order or grouping.",
+        "Preserve source-required provenance, failure behavior, and effect order outside the count observation."
+      ],
+      "expected_artifact": [
+        "Derive the carrier and combine operation from count observations and interacting equations. A native count map or any equivalent observation-preserving representation is admissible; no generic algebra framework is required.",
+        "Reject idempotence for this reward algebra. Compare complete caller contracts rather than treating an internally retained list as intrinsically wrong."
+      ],
+      "falsifier": "A set returns one occurrence for combine(singleton(r),singleton(r)), or apparent commutativity is obtained by erasing a required audit distinction or reordering effects.",
+      "required_valid_counterpart": "Empty combination is neutral; differently grouped and permuted combinations retain each reward's complete count.",
+      "evidence_required": [
+        "Count-preservation, identity, associativity, and commutativity at an explicit evidence strength, with a duplicate-reward non-law witness.",
+        "The obligations removed from callers, the required distinctions retained, and a source-supported owner-local change."
+      ]
+    },
+    {
+      "id": "ordered-observation-refutes-bag-replacement",
+      "scenario": "A superficially similar combination API records an ordered audit trace. Its accepted public contract distinguishes action A followed by B from B followed by A. A proposal replaces the trace with reward counts because counts combine commutatively.",
+      "required_behavior": [
+        "Preserve the ordered audit trace and required failure or partial-effect observations.",
+        "Allow both valid action sequences when authorized; rejecting all combinations is not an adequate repair."
+      ],
+      "expected_artifact": [
+        "Reject commutativity under this observation and preserve a trace-bearing native representation. A separately derived count projection may coexist without replacing the authoritative trace.",
+        "Let the required observation adjudicate the proposed law, rather than weaken the contract to obtain the algebra used in the reward-count case."
+      ],
+      "falsifier": "The proposed comparator identifies [A,B] with [B,A], or grants permission to reorder execution because a derived count projection agrees.",
+      "required_valid_counterpart": "Grouping an already ordered concatenation differently preserves its order; swapping A and B does not.",
+      "evidence_required": [
+        "An asymmetric ordered witness and the accepted source that makes order observable.",
+        "Separate accounting observations, execution effects, and effect-safe retry claims."
+      ]
+    },
+    {
+      "id": "unifying-step-retains-residual-and-immediate-output",
+      "scenario": "Separate production traversals interpret reward accumulation and completion for a finite challenge language with Done, Reward(r,next), and Gate(token,next). Accepted semantics emit immediately available rewards without requiring an event. A gate consumes one matching event; that event cannot satisfy another sequential gate.",
+      "required_behavior": [
+        "Gate(x,Reward(r,Done)) emits r and completes on its first x, not on a later event.",
+        "Gate(x,Gate(x,Reward(r,Done))) requires two x events; preserve the residual behavior after the first.",
+        "Reward(r,Done) emits r without an event, and Done does not emit the reward again."
+      ],
+      "expected_artifact": [
+        "Derive a native step returning emitted rewards and a sufficient residual challenge, then derive the production observations from that common semantics, or retain an existing equally adequate owner.",
+        "Do not consolidate an independent verification oracle onto the production step or require an additional interpreter framework."
+      ],
+      "falsifier": "Reward emission is delayed until a second event, one x passes both sequential gates, completed residuals emit again, or equal current status is used to erase different next-event behavior.",
+      "required_valid_counterpart": "A nonmatching event leaves the waiting gate unchanged; after one matching event the second gate still waits, and after the second it emits exactly once.",
+      "evidence_required": [
+        "Immediate/no-input observations, matching and nonmatching traces, reward multiplicity, and residual-state continuation checks.",
+        "A general preservation argument or explicitly bounded differential evidence; production sharing does not establish oracle independence."
+      ]
+    },
+    {
+      "id": "rotation-laws-need-an-observation-anchor",
+      "scenario": "A tile API has clockwise and counterclockwise rotation, with four-turn and inverse properties. Existing observations use only empty or symmetric rasters. Two alternative implementations make both rotations identity or exchange their directions. The accepted row-major contract maps clockwise([[1,2],[3,4]]) to [[3,1],[4,2]].",
+      "required_behavior": [
+        "Preserve the stated clockwise direction, inverse direction, and dimension changes for non-square rasters.",
+        "Distinguish semantic equality from agreement under an uninformative observation."
+      ],
+      "expected_artifact": [
+        "Expose that both wrong implementations satisfy the structural equations, then add the requirement-bound asymmetric observation that rejects them.",
+        "Keep valid rotations and existing useful properties; do not call the finite anchor a complete universal characterization."
+      ],
+      "falsifier": "An all-identity or direction-swapped implementation passes the claimed discriminator, or all-size equivalence is inferred from zero-sized rendering.",
+      "required_valid_counterpart": "Correct clockwise and counterclockwise rotations remain inverses and satisfy the asymmetric anchor; an empty raster can still be valid input.",
+      "evidence_required": [
+        "Executed or explicitly proposed wrong-model controls, nonempty asymmetric observations, and dimensional checks under the host's actual representation.",
+        "Separate law conformance, law adequacy, finite model coverage, and a general theorem."
+      ]
+    },
+    {
+      "id": "generator-omission-hides-a-public-operation",
+      "scenario": "A finite expression API admits Literal(nonnegative integer), Add, and Negate with mathematical-integer semantics. A generator still constructs only Literal and Add, and every sampled evaluation is nonnegative. A proposed optimization uses that mined regularity to reject negative results.",
+      "required_behavior": [
+        "Evaluate Negate(Literal(1)) as -1 and preserve valid nested uses of all three public constructors.",
+        "Do not turn unexercised public operations into an implicit domain restriction."
+      ],
+      "expected_artifact": [
+        "Reject the nonnegativity claim and inspect effective constructor and interaction coverage. Extend valid public generation to exercise Negate and its compositions, not merely list its name in unreachable generator code.",
+        "Keep malformed-ingress tests separate, and shrink a failing expression while preserving its valid-domain preconditions and relevant failure."
+      ],
+      "falsifier": "The suite declares the full algebra covered without ever evaluating Negate, promotes sampled nonnegativity into authority, or shrinks to an invalid fixture that fails before evaluation.",
+      "required_valid_counterpart": "Literal(1) and Add(Literal(1),Literal(2)) still evaluate correctly; Negate(Negate(Literal(1))) evaluates to 1.",
+      "evidence_required": [
+        "Observed constructor/depth/interaction coverage for the executed population and a minimal valid negative-result witness.",
+        "Explicit sample/discard/timeout limits; unbounded-domain or resource claims cannot be inferred from the retained cases."
+      ]
+    },
+    {
+      "id": "mined-idempotence-cannot-overrule-required-counts",
+      "scenario": "The accepted reward contract requires two independently earned identical awards to count twice. The incumbent incorrectly stores rewards in a set, so equation discovery reports combine(x,x) = x. A refactor would replace the set with correct additive counts, but a newly generated regression property insists on idempotence.",
+      "required_behavior": [
+        "Honor accepted duplicate-award semantics rather than preserve the incumbent's bug as a compatibility law.",
+        "Retain independently justified identity and associative-combination properties."
+      ],
+      "expected_artifact": [
+        "Adjudicate the mined equation against source authority and an independent count observation; reject the false idempotence property and correct the production carrier or interpreter.",
+        "Justify the oracle change independently; changing a test does not retroactively make its failing execution a pass."
+      ],
+      "falsifier": "Preserve the set to satisfy the discovered law, silently weaken the required counts, or delete all regression properties instead of rejecting the unsupported one.",
+      "required_valid_counterpart": "A singleton award remains one occurrence and combining with empty changes nothing; the duplicate case yields two.",
+      "evidence_required": [
+        "Distinguish accepted requirement, implementation regularity, candidate equation, and retained regression property.",
+        "Independent requirement-to-observation justification for both the production correction and the rejected equation."
+      ]
+    },
+    {
+      "id": "reference-model-permits-representation-replacement",
+      "scenario": "A finite pure expression language has Literal and left-to-right checked Add with bounded integer arithmetic. A transparent syntax interpreter is a candidate semantic model. A proposed compact instruction representation changes internal nodes and may reassociate additions. The accepted observation includes success value or overflow failure; optimization must retain the original evaluation order.",
+      "required_behavior": [
+        "Preserve success versus overflow and the exact successful value under the declared bounds and left-to-right nesting.",
+        "Do not preserve incidental tree or instruction-list equality as part of the public contract."
+      ],
+      "expected_artifact": [
+        "Establish the simple model's relation to the accepted semantics, then compare the lowered implementation through those observations and a translation or simulation argument.",
+        "Use an existing sufficient oracle or direct proof instead when adequate; no mandatory second implementation or public IR."
+      ],
+      "falsifier": "At bounds [-2,2], Add(Add(2,1),-1) fails but the reassociated Add(2,Add(1,-1)) succeeds; a value-only or unbounded-integer model hides the distinction.",
+      "required_valid_counterpart": "Add(Add(1,1),-1) succeeds with 1 under both correct representations, even though their internal data differs.",
+      "evidence_required": [
+        "Failure-aware differential or derivational evidence bound to the admitted model and host arithmetic; explicitly label any finite domain.",
+        "Separate model validation, implementation conformance, and measured full-workload performance; shared production logic is not independent verification."
+      ]
+    },
+    {
+      "id": "adequate-algebra-rejects-unearned-extra-layer",
+      "scenario": "A live proposal replaces an existing count-map owner and native fold with a generic algebra/interpreter framework. The incumbent already preserves required multiplicity, effects, and all sanctioned construction paths behind a complete caller contract. No missing capability, duplicated production semantics, material resource cost, or supported change burden is evidenced.",
+      "required_behavior": [
+        "Retain the complete caller contract and required observations while resolving the explicit replacement proposal.",
+        "Keep ordinary implementation and mechanical documentation work nonactivating when the proposal is absent and no semantic invalidator appears."
+      ],
+      "expected_artifact": [
+        "Preserve the adequate incumbent against this live proposal; an already-dispositive comparison needs no ADD worksheet, second model, new observation layer, or categorical framework.",
+        "Distinguish that preservation decision from routine nonactivation, which produces no disposition or receipt."
+      ],
+      "falsifier": "Treat reading the book or naming an algebra as a dividend, manufacture another challenger, or create a preservation receipt for routine work with no live semantic pressure.",
+      "required_valid_counterpart": "The same native count operations preserve duplicate awards and expose no implementation-specific choreography to callers.",
+      "evidence_required": [
+        "An unchanged adequate-artifact control plus a near-miss with no live proposal; score retained behavior and avoided obligations, not algebra vocabulary.",
+        "Preserve the pre-existing trigger, comparison, and authority rules."
       ]
     }
   ]

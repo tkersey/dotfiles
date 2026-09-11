@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17.8-caller-contracts-v1"
+      "source_fingerprint": "universalist-boundary-decision-v17.8-caller-contracts-algebra-derivation-v1"
     },
     "triggers": [
       {
