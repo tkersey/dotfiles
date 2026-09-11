@@ -149,8 +149,9 @@ improves a concrete artifact or proof beyond the routine kernel. Use
 `references/efficacy-evaluation.md` and
 `references/routing-evaluation-cases.json` only while tuning or auditing the
 skill; neither belongs in ordinary runtime context. The corpus includes 20
-routing cases and 20 artifact-level discriminators: 12 in that corpus plus eight
-in `references/representation-evaluation-cases.json`. Both corpora are audit-only.
+routing cases and 28 artifact-level discriminators: 12 in that corpus plus 16
+in `references/representation-evaluation-cases.json` (eight eliminator-first and
+eight algebra-derived cases). Both corpora are audit-only.
 Written fixtures are not
 model-run results or evidence of improved efficacy.
 
@@ -159,6 +160,14 @@ latent recognition; continuation-sensitive state distinctions, ordered phases,
 and indexed transitions in effects/coalgebras; and fold/interpreter fusion in
 property-test derivation. They should produce simpler repository-native artifacts,
 not more theorem names or framework code.
+
+`references/domain-algebra/algebra-driven-design.md` supplies a conditional
+derivation from required uses to interacting equations, observation carriers,
+and a native realization. It includes multiplicity versus order, unified
+observations with residual behavior, and optional reference-model replacement.
+Property-test derivation adds law-adequacy countermodels and generator/observer
+checks. These sharpen existing decisions without new routes, mandatory models,
+or an additional common-path pass.
 
 ## Eliminator-first representation
 

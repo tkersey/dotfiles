@@ -130,6 +130,41 @@ Do not infer initiality or parametricity from a typed-looking interface or finit
 round trips. Authored cases, finite witness checks, host benchmarks, and paired
 model runs remain separate evidence; report which actually ran.
 
+### Algebra-derived design cases
+
+The same `representation-evaluation-cases.json` also contains eight cases for
+carrier derivation, ordered-observation counterexamples, unified step semantics,
+law adequacy, generator omissions, mined-law authority, reference-model
+replacement, and preservation of an adequate incumbent. They extend artifact
+expectations, not activation policy or the construction-card corpus.
+
+For a focused ablation, restore the pre-change ADD reference at the same path
+and omit only its new conditional recognition link and associated property-test
+sections. Keep the pre-existing caller-contract/information-hiding guidance from
+PR #285, kernel, other references, accepted evidence, model, tools, and budgets
+fixed. Hold the receiving Plan version fixed within each contrast; evaluate its
+algebra-first integration separately instead of confounding companion changes
+with a Universalist contribution. Reserve expectations, falsifiers, and scoring
+criteria for the evaluator; present only scenarios and required behavior to the
+agent. Reuse the same independent holdouts and accept equivalent lawful designs.
+
+Evaluate operation/representation changes and proof, not whether the response
+recites equations. A bag must preserve multiplicity; it must lose to a trace when
+order is required. A unified step must preserve immediate outputs and subsequent
+behavior without merging away an independent oracle. An all-identity rotation or
+unexercised public constructor must not pass the claimed discriminator. Mined
+regularities do not overrule accepted requirements. A transparent model is useful
+only when it supplies a discriminating observation or argument; its existence is
+not a success metric. An adequate incumbent should survive, and routine work
+without a live proposal should remain nonactivating.
+
+Finite checks of the examples establish their declared finite observations only.
+They do not demonstrate that an agent discovers the design, that the method
+improves model outcomes, or that a host implementation meets a resource bound.
+Report authored cases, local model checks, paired agent runs, and performance
+measurements separately. The corpus remains `authored_not_model_replayed` until
+actual runs provide separately attributed evidence; no new runtime gate is added.
+
 ## Corpus evolution
 
 Freeze additions to the construction-card corpus until repeated paired cases

@@ -70,6 +70,17 @@ retired with their replacements or retain a distinct, explicit compatibility dut
 
 ## Proof and derivation
 
+At a live compositional seam whose operations or observation carrier remain
+unresolved, an optional [algebra-first derivation](../../universalist/references/domain-algebra/algebra-driven-design.md)
+can express representative required uses, relate the operations by equations,
+and use contradictions to revise the vocabulary before choosing representation.
+Reuse the current candidate comparison and caller contract. A compact semantic
+model may be an evidence-producing action when it discriminates a consequential
+replacement; it is not a mandatory prototype or second implementation. Bind the
+model to accepted semantics and compare required outputs, traces, failures, and
+residual behavior, not incidental internals. The resulting representation stays
+revisable within the seam's authority envelope; add no phase, artifact, or loop.
+
 Use action-contract.md for family exclusion, valid-domain preservation, independent
 coverage, discriminator, and claim strength. Identify admission, ownership,
 transitions, lifetime, and bypass closure, not just the constructor's name. Record
