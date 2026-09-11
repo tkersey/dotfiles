@@ -167,6 +167,7 @@ keepRemoteControlAwakeWhilePluggedIn = true
 followUpQueueMode = "queue"
 dock-icon-preference = "codex-system"
 realtimeVoiceScreenContextEnabled = true
+conversationDetailMode = "STEPS_PROSE"
 
 [desktop.appearanceLightChromeTheme]
 accent = "#d7827e"
