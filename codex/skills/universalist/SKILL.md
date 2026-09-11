@@ -103,6 +103,13 @@ standalone disposition template; the same applicable obligations remain.
    fold or loop remains the baseline. Church-style callbacks alone establish
    neither parametricity, initiality, confidentiality, nor a performance gain;
    apply the existing observation, effect, resource, and claim-strength obligations.
+   At a live interface choice, compare the smallest complete caller contracts and
+   a representative use: what must the caller know, choose, sequence, synchronize,
+   or clean up? Which implementation facts or duties disappear, and which
+   source-supported change becomes owner-local? Credit genuine information hiding
+   only with laws, required observations, authority, effects, and resources preserved.
+   Fewer exports or relocated obligations alone do not qualify. Reuse the existing
+   comparison; this adds no activation trigger, artifact, or claim of universality.
 4. Record the compact disposition:
 
 ```text
@@ -131,8 +138,8 @@ Invalidates when:
 
 A more abstract candidate does not dominate because it is more general.
 “Smallest” is relative to required observations, compatibility, effects,
-resources, host capabilities, and migration cost—not source length or
-categorical sophistication.
+resources, host capabilities, caller obligations, and migration cost—not source
+length, export count, or categorical sophistication.
 
 ## Evidence-indexed disclosure
 
@@ -187,7 +194,7 @@ algebra.
 Do not escalate merely because a local helper is possible, domain rules remain
 unstable, the stronger model cannot be tested, required compatibility forbids
 the transition, or the abstraction's onboarding and resource cost dominates
-its reduction in semantic risk.
+its evidenced reduction in semantic risk or consumer burden.
 
 Diff size, retry count, elapsed time, vocabulary, and theoretical
 interest do not establish consequentiality.

@@ -113,7 +113,11 @@ principal user/caller:
   end user | maintainer | integrator | future implementer | test author | automation
 ```
 
-Name the expected reasonable belief for that principal.
+Name the expected reasonable belief for that principal. Where an accessible
+caller-facing contract exists, predict normal, failure, and lifecycle behavior
+before inspecting the implementation. Compare that prediction with the actual
+path and effects; ground a mismatch in accepted obligations, not a preferred API.
+Do not derive the expected contract retrospectively from what the code does.
 
 ### 2. Scan for affordance traps
 

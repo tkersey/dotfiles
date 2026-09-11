@@ -146,11 +146,14 @@ What plausible bypass exists?
 What can fail?
 Who may reverse or retire it?
 What proof makes the transition credible?
+What design decision should callers not need to know?
+Who still knows it, and which local change forces coordinated edits?
 ```
 
 Writes and transitions outrank readers and names when identifying authority.
 Architecture is a hypothesis supported by responsibilities, dependency direction,
-and preserved observations, not folder names.
+and preserved observations, not folder names. Trace shared design knowledge, not
+just execution phases; keep independent verification and authority boundaries.
 
 ### 3. Form rival explanations
 
@@ -326,7 +329,8 @@ Use this admission test:
 7. Does it change what a future agent inspects, preserves, rejects, changes, or
    proves?
 
-If not, keep it as evidence, local implementation detail, or noise.
+If not, retain necessary local API knowledge for interface-contract routing;
+keep other material as evidence, local implementation detail, or noise.
 
 ### 11. Route durable knowledge
 
@@ -336,6 +340,7 @@ Route knowledge only after doctrine induction. Prefer the strongest owner:
 representation or code
 test, property, model, or static tooling
 CI or release gate
+local interface contract
 concise repository guidance
 ADR or reference
 canonical negative ledger

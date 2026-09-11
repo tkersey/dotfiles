@@ -60,6 +60,11 @@ adjudication there instead of allocating this plan.
 ## Signal and evidence:
 ## Ordinary candidate:
 ## Comparison universe and dominance relation:
+When caller burden distinguishes live candidates, include a representative use and
+supported change here: knowledge or choreography removed, change localized, and
+material cost tradeoffs. Count genuine information hiding, not concealed obligations.
+Preserve required laws and observations; interface depth establishes no universal
+property or representation-independence proof. Reuse the existing comparison.
 ## Primary architectural axis, typed hole, and necessary interacting law family:
 ## Relevant cards and dispositions:
 ## Alternatives considered (reuse the grounded law-derived challenger, if any):

@@ -48,9 +48,20 @@ ablation or normalization
 
 A candidate dominates only if no weaker on required behavior, observations,
 compatibility, enforcement, proof, effects, and resources, while reducing accidental
-distinctions, duplicate owners, invalid states, bypasses, reconstruction paths, or
-unearned factors. Fewer lines or files alone proves nothing. Removing required-valid
+distinctions, duplicate owners, invalid states, bypasses, reconstruction paths,
+unearned factors, caller knowledge or choreography, or change amplification. Fewer
+lines, files, or exported methods alone proves nothing. Removing required-valid
 behavior is a requirement change, not a better construction.
+
+Within the existing alternative comparison, sketch the smallest complete interface
+contracts, a representative caller, and a source-supported change. Identify what
+callers must know, choose, order, synchronize, or clean up, and which duties or
+implementation decisions the owner can make irrelevant to them. A larger module
+can earn a simpler interface; relocating the same obligations behind configuration
+cannot. If the contract requires implementation knowledge or avoidable sequencing
+exceptions, reconsider the boundary rather than omit those facts. Keep selected
+contract documentation beside the interface in the realization work. Do not add
+another design loop, score, report, or requirement to implement both alternatives.
 
 Classify each factor's obligation as live, moved, expired, duplicated, invalid, or
 unknown; disposition the factor as preserve, factor, quotient, ablate, normalize, or

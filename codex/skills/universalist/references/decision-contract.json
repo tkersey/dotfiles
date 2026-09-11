@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17.7-astra-compat-v1"
+      "source_fingerprint": "universalist-boundary-decision-v17.8-caller-contracts-v1"
     },
     "triggers": [
       {
@@ -179,12 +179,17 @@
         "success_signals": [
           "incomparable minima remain underdetermined",
           "Universalist nominates while Actuating selects",
-          "required-valid behavior is preserved as well as invalid behavior excluded"
+          "required-valid behavior is preserved as well as invalid behavior excluded",
+          "a complete sufficient interface removes evidenced caller knowledge or lifecycle work and localizes a supported change",
+          "representative use and change evidence refine the existing comparison without new activation or artifacts"
         ],
         "failure_signals": [
           "Universalist selects or reopens Actuating target architecture",
           "candidate wins by omitted obligations",
-          "interacting state, effect, resource, or observation obligations are certified only in isolation"
+          "interacting state, effect, resource, or observation obligations are certified only in isolation",
+          "relocation, fewer exports, or hidden configuration preserves the same consumer obligations but is credited as reduction",
+          "lower caller burden is treated as a universal property or permits weaker laws, observations, authority, effects, or resource constraints",
+          "an unranked material tradeoff is reported as dominance"
         ],
         "rationale": "Minimality is relative to one complete current obligation set."
       },
@@ -338,7 +343,8 @@
           "opacity or a single interpreter is treated as a uniqueness proof",
           "a coalgebra is assumed final or finite observations are called Yoneda without the correspondence",
           "a missing universal proof obstructs an otherwise adequate structure-only artifact",
-          "lawful fusion or phase composition silently changes required effects, failure behavior, or valid traces"
+          "lawful fusion or phase composition silently changes required effects, failure behavior, or valid traces",
+          "representation independence is inferred from opacity without preservation under permitted operations and required future observations"
         ],
         "rationale": "Advanced mechanics remain evidence-bound."
       },

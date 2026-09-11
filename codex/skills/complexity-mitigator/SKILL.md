@@ -48,7 +48,9 @@ Handoff instead:
    misplaced factors.
 5. Preserve essential factors and unresolved specification risk.
 6. Winnow in this order: delegate, flatten, rename, localize, collapse, then
-   extract only after stable repetition is evidenced.
+   extract when a coherent design decision or lifecycle can be hidden behind a
+   simpler sufficient contract. Single-use encapsulation needs no second caller;
+   reusable generalization across cases needs evidenced commonality.
 7. State the recomposition rule and smallest proof signal.
 8. Return a handoff; do not implement.
 
@@ -86,6 +88,8 @@ Complexity preflight:
 - Do not select architecture, review credit, mutation, or closure.
 - Do not confuse fewer lines with lower understanding cost.
 - Do not delete essential policy or unresolved external obligations.
-- Do not extract abstractions before stable shape is visible.
+- Do not extract for hypothetical reuse or before a coherent shape is visible.
+  Name what the caller can stop knowing or doing; a pass-through helper or a
+  configuration facade that retains the same obligations is not a clarity cut.
 - If behavior is unclear, request an executable learning surface such as an
   example matrix, contract test, fixture set, or state table.
