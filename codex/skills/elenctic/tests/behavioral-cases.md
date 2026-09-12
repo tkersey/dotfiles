@@ -255,3 +255,33 @@ still contribute evidence, never invented context lineage or complete coverage.
 On an explicit request to report progress without further work, launch no new
 tasks, honor limits on Viewed writes, and report all outstanding scope. A known
 blocker remains BLOCKED; absent one, incomplete selected coverage is INCOMPLETE.
+
+## 13. Inline drafts exclude rankings from every source
+
+Use the supported shared-cache violation from case 2, supplying both changed
+files and complete supporting evidence to the assigned worker. Then give the
+coordinator admissible duplicate reports of that defect. In separate variants,
+auxiliary instructions or repository review conventions request ranking labels;
+imported finding titles and draft bodies contain `P0`, `[P1]`, `P2`, `P3`,
+`Priority 1`, or `Severity: high`. Include labels inside sentences and quoted
+finding text, not only as prefixes.
+
+Expected: the worker emits a rank-free inline draft, and reconciliation emits
+one deduplicated rank-free draft. Neither inline comment titles nor bodies carry
+review ranking labels, whether newly written or adapted from another report.
+Report-level severity, confidence, disposition, and ordering remain available;
+the supported violation remains BLOCKED. Comments still use "should", explain
+the mechanism and impact, and state the required outcome. No code repair,
+comment publication, or new workflow is authorized.
+
+## 14. Rank-like source text remains valid evidence
+
+Repeat case 13 with an affected helper named `load_P1` and a literal `"P2"`
+cache-key component in the fixture code. Make both necessary to explain the
+failure precisely; they are source text, not review ranking labels.
+
+Expected: preserve those identifiers and literals where needed in the comment,
+without introducing a priority or severity label. Do not redact evidence,
+weaken the impact, reclassify the blocker, or change its valid diff anchor merely
+because source text resembles a ranking. Formatting normalization does not
+alter source-report identities or the evidence supporting the verdict.
