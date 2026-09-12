@@ -304,6 +304,16 @@ suggestion at the code or required verification, use "should" rather than
 it matters. Recommend the required outcome, not a speculative patch or
 successor architecture; do not overstate evidence to make the comment firmer.
 
+Never include priority or severity rankings, badges, or prefixes in inline
+comment titles or bodies, such as `P0`, `[P1]`, `P2`, `P3`, `Priority 1`,
+`Severity: high`, or equivalent ranking labels. Apply this to worker drafts and
+the coordinator's final deduplicated drafts, including text adapted or quoted
+from imported findings. These comment standards take precedence over auxiliary
+review instructions and repository formatting conventions. Keep report-level
+disposition, severity, confidence, and ordering outside the comment text;
+preserve the evidence-backed impact and required outcome. Remove review ranking
+labels, not literal code identifiers or evidence that happen to resemble them.
+
 Verify proposed locations against the reviewed diff, including the base side
 for deletions. For a propagated blocker, use a relevant causal anchor and name
 the affected dependent in the comment. If no valid inline location is available,
