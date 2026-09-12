@@ -14,10 +14,12 @@ Are all prerequisites settled?
 Can conversation honestly settle it?
 Is it one conceptual decision?
 Has it not already been answered?
+Is no equivalent question already pending?
 Can the consequence of each live option be explained?
 ```
 
-Otherwise research, decide, default, defer to observation, or prune.
+If an equivalent question is pending, do not send another. Otherwise research,
+decide, default, defer to observation, or prune as appropriate.
 
 ## Local context
 
@@ -41,20 +43,37 @@ work continues. Use `request_user_input` only for questions the current mode per
 it to carry. If a required answer cannot use either tool, ask one concise,
 self-contained plain-text question. Do not turn a missing answer into approval.
 
-For `request_user_input`, send one to three questions.
+Keep the skill's small question budget across deliveries, not just within one
+call. The live schema is authoritative; do not transfer fields between tools.
 
-Each question contains:
+### Synchronous questions
 
-- `id`: stable `snake_case` conceptual identifier;
-- `header`: short human-readable label, at most 12 characters;
-- `question`: one atomic sentence;
-- `options`: two or three mutually exclusive choices when the answer space can be represented honestly.
+For `request_user_input`, use the live question fields: `id`, `header`, `question`,
+and `options` containing `label`/`description` objects. Keep the conceptual id stable,
+the header short, and the question atomic. State each option's consequence in its
+description.
 
-Each option description states its consequence or trade-off. Put a recommended option first and suffix it with ` (Recommended)` only when the recommendation is independently supported by evidence or locked priorities.
+This Codex tool requires nonempty options; use two or three honest, mutually
+exclusive choices. The interface supplies an Other/free-text escape alongside
+those choices, so do not add a duplicate Other or placeholder option. That escape
+does not make a free-text-only request with omitted or empty options valid.
 
-Do not add an `Other` option or a free-text placeholder; the interface supplies
-free-text input. Use free-text input when the live choices cannot honestly fit
-the tool's option schema.
+### Asynchronous questions
+
+For `request_user_input_async`, the `questions` entries use a `title` and optional
+string `options`, not synchronous `id`, `header`, `question`, or option objects.
+Keep conceptual ids internally. Make each title self-contained, including the
+context needed to decide; put consequences in the title or concise option strings.
+Omit `options` for a free-text-only question rather than fabricating choices. When
+async is not permitted for that question, use the plain-text fallback.
+
+The immediate `{"accepted":true}` response acknowledges delivery, not the user's
+decision. Replies arrive later as new user messages. Keep the question pending in
+the existing judgment graph until reconciled under the skill's answer lifecycle.
+A preselected first option is not a submitted answer.
+
+In either channel, put a recommended option first and suffix it with
+` (Recommended)` only when evidence or locked priorities independently justify it.
 
 ## Fallback
 
@@ -64,7 +83,12 @@ banner. Keep the conceptual ID internally if the decision must be re-asked.
 
 ## Answer handling
 
-- Treat selected labels and `user_note:` text as user-provided evidence.
+- Interpret actual user responses: selected labels and `user_note:` text when
+  supplied by the synchronous tool, or later user messages for async questions.
+  The async tool result itself is not an answer.
+- Use question context or host-provided correlation to match delayed replies.
+  When a reply cannot be matched unambiguously, clarify only the material
+  ambiguity; do not guess or settle unrelated pending decisions.
 - Strip ` (Recommended)` before interpreting the selected label.
 - Mine notes for scope changes, dependencies, constraints, risks, and new decisions.
 - A missing answer remains unresolved only when the question is still material.
