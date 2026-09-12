@@ -72,6 +72,10 @@ material consequence
 status: unresolved | locked | defaulted | observation-needed | pruned
 ```
 
+Mark a delivered question awaiting a reply as pending on its existing decision node,
+retaining the sent question context. Pending is delivery metadata: the decision
+status remains `unresolved`. A confirmed delivery failure does not mark the question pending.
+
 Do not create a universal lane matrix, readiness receipt, or parallel summary state.
 
 ## Workflow
@@ -121,6 +125,9 @@ rollout, rollback, or operational ownership
 
 The current frontier contains only unresolved user-owned decisions whose prerequisites are settled.
 
+Pending questions remain in that frontier and block dependent decisions, but are
+not eligible to be sent again. Select only questions without a pending delivery.
+
 Do not ask a question that depends on another unresolved answer. Lock the prerequisite first, then recompute the graph.
 
 When the frontier contains more than three decisions, ask the one to three with the greatest downstream fanout, irreversibility, risk if wrong, or ability to prune descendants.
@@ -132,18 +139,38 @@ Read [references/question-interface.md](references/question-interface.md) only w
 Questions must be:
 
 - atomic and identified by a stable `snake_case` id;
-- limited to one to three per round;
+- limited to one to three per round, counting already pending questions toward
+  a maximum of three outstanding and respecting stricter host per-call or per-turn limits;
 - bounded when honest options can represent the answer space;
 - explicit about the consequence of each option;
 - accompanied by only enough local context to explain why the question is next and what it decides.
 
 Recommend an option only when evidence or already locked priorities justify the recommendation independently of the missing answer. Do not manufacture a recommendation for a genuinely normative choice.
 
+Delivery acknowledgment, silence, and UI preselection do not lock or default a
+decision, grant approval, or start another question round. While a reply is
+pending, continue only independent authorized work; hold conclusions and effects
+that depend on it. For standalone clarification, that means research and evidence
+gathering, not planning or implementation.
+
+When no independent work remains, yield through the host or caller's supported
+mechanism with the unresolved dependency visible. Do not poll, resend the
+question, invent busywork, or report clarification complete.
+
 ### 6. Recompute after every answer
 
-Update locked decisions, detect newly introduced scope or dependencies, prune subsumed branches, and expose the next dependency-ready frontier.
+Match each reply to its conceptual decision and sent question context, not
+arrival order. Reconcile it against the latest authoritative ask before updating
+the graph. Partial replies leave unanswered decisions pending. Clear the pending
+marker when the reply is reconciled or the question is superseded or pruned. A
+late reply to an obsolete question must not silently restore old scope or settle
+a different decision.
 
-Use the same question id when re-asking the same conceptual decision.
+Then update locked decisions, detect newly introduced scope or dependencies, prune
+subsumed branches, and expose the next dependency-ready frontier.
+
+Reuse the same conceptual id only when a material unresolved answer needs
+clarification; do not re-ask merely because a reply has not arrived.
 
 Apply an explicit user change to the target, scope, constraints, or authority and
 recompute affected decisions without asking the user to confirm the same choice.
@@ -176,6 +203,9 @@ Suspend that branch. Do not keep rephrasing the question, solicit a guess, or si
 
 ### 9. Close when the frontier is empty
 
+An empty set of questions eligible to send is not an empty judgment frontier.
+A still-applicable material question awaiting an answer prevents closure.
+
 Closure requires:
 
 - no unresolved material user-owned decision has settled prerequisites;
@@ -188,7 +218,10 @@ Use a final confirmation only when the synthesis changed or reframed the authori
 
 ## Composition and output ownership
 
-When another workflow invokes `$grill-me`, that workflow owns persistence, schemas, receipts, readiness, continuation, and terminal output. Return the locked judgments and observation-bound branches in the caller's native state, then relinquish control.
+When another workflow invokes `$grill-me`, that workflow owns persistence, schemas,
+receipts, readiness, continuation, and terminal output. Return locked judgments,
+observation-bound branches, and any pending dependencies in the caller's native state. Yielding with pending dependencies is not closure;
+the caller may continue independent authorized work without treating them as settled.
 
 `$grill-me` never asserts `plan_allowed`, emits a universal decision packet, or translates into a second competing handoff artifact.
 
