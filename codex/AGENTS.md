@@ -27,6 +27,11 @@
 
 ### Git
 
+- Prefer rebase and fast-forward integration over merge commits. Use merge
+  commits only when explicitly requested, required by repository policy, or
+  necessary to preserve shared history or required commit provenance; explain
+  the exception. Rebase conflicts alone are not an exception. This preference
+  does not authorize rewriting history others depend on.
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
 - Before `git commit`, run a final narrow status check for session-owned `.ledger/*` changes; if publishable, stage the current-turn/session-owned rows with the work they explain.
