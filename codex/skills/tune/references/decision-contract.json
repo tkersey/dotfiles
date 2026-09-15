@@ -4,7 +4,7 @@
     "skill": {
       "name": "tune",
       "kind": "mixed",
-      "source_fingerprint": "unified-create-edit-evidence-tune-v5-cognitive-compilation-v1"
+      "source_fingerprint": "unified-create-edit-evidence-tune-v6-software-agent-performance-v1"
     },
     "triggers": [
       {
@@ -50,6 +50,47 @@
         "exclusions": [
           "specified wording replacement only"
         ]
+      },
+      {
+        "trigger_id": "TUNE-SOFTWARE-PERFORMANCE",
+        "description": "The user requests software performance diagnosis or optimization, including a specified code optimization in edit mode; a skill package is not required.",
+        "cue_literals": [
+          "optimize this code",
+          "profile",
+          "bottleneck",
+          "hotspot",
+          "p95",
+          "p99",
+          "latency",
+          "throughput",
+          "allocation",
+          "algorithmic improvement"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "unrelated feature development",
+          "cosmetic application edits",
+          "skill-only wording change without a performance objective"
+        ]
+      },
+      {
+        "trigger_id": "TUNE-AGENT-PERFORMANCE",
+        "description": "The user requests better agent-system task quality, reliability, latency, cost, or execution efficiency, including mixed prompt/tool/harness targets.",
+        "cue_literals": [
+          "agent performance",
+          "agent effectiveness",
+          "task success",
+          "cost per successful task",
+          "prompt caching",
+          "tool latency",
+          "orchestration overhead",
+          "agent reliability"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "skill activation question without an agent-performance objective",
+          "unrelated feature development"
+        ]
       }
     ],
     "routes": [
@@ -93,6 +134,47 @@
         "description": "Stop because required target, authority, evidence, expected delta, or package boundary is missing.",
         "aliases": [
           "blocked"
+        ],
+        "terminal": true
+      },
+      {
+        "route_id": "TUNE-PERFORMANCE-EXPERIMENT",
+        "description": "Baseline and diagnose the selected software or agent target, then execute one authorized attributable experiment with protected-contract validation.",
+        "aliases": [
+          "performance-experiment"
+        ],
+        "terminal": false
+      },
+      {
+        "route_id": "TUNE-PERFORMANCE-ACCEPT",
+        "description": "Retain a measured objective improvement after correctness or quality guardrails pass, then continue from the new baseline if the objective still requires work.",
+        "aliases": [
+          "retain-gain"
+        ],
+        "terminal": false
+      },
+      {
+        "route_id": "TUNE-PERFORMANCE-REJECT",
+        "description": "Reject an invalid or regressing candidate, restore only session-owned changes when authorized, and continue from the accepted baseline where justified.",
+        "aliases": [
+          "reject-experiment"
+        ],
+        "terminal": false
+      },
+      {
+        "route_id": "TUNE-PERFORMANCE-INCONCLUSIVE",
+        "description": "Report a performance candidate as unverified or inconclusive when available measurements cannot establish its claimed effect; do not count it as an accepted gain.",
+        "aliases": [
+          "inconclusive",
+          "unverified"
+        ],
+        "terminal": true
+      },
+      {
+        "route_id": "TUNE-PERFORMANCE-COMPLETE",
+        "description": "Close with measured results and a stopping reason when the objective is met, no worthwhile supported candidate remains, or the authorized budget is exhausted.",
+        "aliases": [
+          "performance-complete"
         ],
         "terminal": true
       }
@@ -216,6 +298,145 @@
           "incomparability silently collapsed"
         ],
         "rationale": "Tune changes no more future behavior than the requested or evidenced delta requires."
+      },
+      {
+        "clause_id": "TUNE-PERFORMANCE-001",
+        "trigger_refs": [
+          "TUNE-SOFTWARE-PERFORMANCE",
+          "TUNE-AGENT-PERFORMANCE"
+        ],
+        "expected_routes": [
+          "TUNE-PERFORMANCE-EXPERIMENT",
+          "TUNE-PERFORMANCE-ACCEPT",
+          "TUNE-PERFORMANCE-REJECT",
+          "TUNE-PERFORMANCE-INCONCLUSIVE",
+          "TUNE-PERFORMANCE-COMPLETE",
+          "TUNE-PROPOSE",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "target objective, representative workload, and protected acceptance criteria",
+          "baseline and mechanism evidence or explicit execution limit",
+          "attributable experiment, before/after observations, and stopping reason"
+        ],
+        "success_signals": [
+          "target selects evidence and procedures before mutation",
+          "specified edits do not bypass performance validation",
+          "mixed targets share an objective and only load implicated guides",
+          "baseline shifts only after a supported accepted gain"
+        ],
+        "failure_signals": [
+          "software work requires skill-package discovery or activation history",
+          "optimization chosen from grep or fixed score without mechanism evidence",
+          "first win ends a still-incomplete requested objective",
+          "noisy or unmeasured change reported as verified improvement"
+        ],
+        "rationale": "Software and agent optimization share an evidence-driven loop without inheriting irrelevant skill-authoring prerequisites."
+      },
+      {
+        "clause_id": "TUNE-SOFTWARE-PRESERVATION-001",
+        "trigger_refs": [
+          "TUNE-SOFTWARE-PERFORMANCE"
+        ],
+        "expected_routes": [
+          "TUNE-PERFORMANCE-EXPERIMENT",
+          "TUNE-PERFORMANCE-ACCEPT",
+          "TUNE-PERFORMANCE-REJECT",
+          "TUNE-PERFORMANCE-INCONCLUSIVE",
+          "TUNE-PERFORMANCE-COMPLETE",
+          "TUNE-PROPOSE",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "explicit preservation relation and assumptions",
+          "fresh candidate compared against an independent baseline or specification",
+          "relevant output, error, effect, numerical, concurrency, and security checks"
+        ],
+        "success_signals": [
+          "preservation argument distinguished from executed evidence and residual uncertainty",
+          "approximation uses an existing allowance or explicit bounded authorization",
+          "local gains validated against the end-to-end objective"
+        ],
+        "failure_signals": [
+          "unchanged golden files treated as candidate verification",
+          "checklist or equal hashes claimed as universal equivalence proof",
+          "ordering, safety, security, or accuracy silently weakened",
+          "microbenchmark or asymptotic change presented as measured system speedup"
+        ],
+        "rationale": "Optimization must protect required observations and substantiate its actual performance claim, not merely change code."
+      },
+      {
+        "clause_id": "TUNE-AGENT-QUALITY-001",
+        "trigger_refs": [
+          "TUNE-AGENT-PERFORMANCE"
+        ],
+        "expected_routes": [
+          "TUNE-PERFORMANCE-EXPERIMENT",
+          "TUNE-PERFORMANCE-ACCEPT",
+          "TUNE-PERFORMANCE-REJECT",
+          "TUNE-PERFORMANCE-INCONCLUSIVE",
+          "TUNE-PERFORMANCE-COMPLETE",
+          "TUNE-PROPOSE",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "matched task evaluations and model/tool/configuration provenance",
+          "quality and reliability guards alongside latency/cost",
+          "attempt/failure denominators and relevant cache-state conditions"
+        ],
+        "success_signals": [
+          "task outcomes and resource costs jointly adjudicated",
+          "retry and failed-attempt costs included; zero-success cost per success is undefined",
+          "cold/warm/concurrent cache conditions and interference are disclosed",
+          "pinned model policy and human/tool authority preserved"
+        ],
+        "failure_signals": [
+          "fewer tokens or calls treated as sufficient evidence of improvement",
+          "hard failures omitted from latency or cost comparison",
+          "unobserved cache hits or live model efficacy invented",
+          "quality loss or changed model policy accepted silently"
+        ],
+        "rationale": "Agent efficiency is measured against successful outcomes rather than cheaper attempts or smaller prompts alone."
+      },
+      {
+        "clause_id": "TUNE-PERFORMANCE-AUTHORITY-001",
+        "trigger_refs": [
+          "TUNE-SOFTWARE-PERFORMANCE",
+          "TUNE-AGENT-PERFORMANCE"
+        ],
+        "expected_routes": [
+          "TUNE-PERFORMANCE-EXPERIMENT",
+          "TUNE-PERFORMANCE-ACCEPT",
+          "TUNE-PERFORMANCE-REJECT",
+          "TUNE-PERFORMANCE-INCONCLUSIVE",
+          "TUNE-PERFORMANCE-COMPLETE",
+          "TUNE-PROPOSE",
+          "TUNE-NO-ACTION",
+          "TUNE-BLOCKED"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [
+          "mutation and publication authority",
+          "permission for effectful workloads, paid evaluations, and evidence export when applicable"
+        ],
+        "success_signals": [
+          "inspect remains read-only and no-file-change requests produce no files",
+          "production load, spend, secrets, and external effects remain separately bounded",
+          "one experiment need not create a commit or new receipt",
+          "blocked effects do not stop independent authorized work"
+        ],
+        "failure_signals": [
+          "profiling writes or installation bypass an explicit no-file-changes request",
+          "optimization request treated as deployment or paid-API authority",
+          "shared history or unrelated files rewritten for rollback"
+        ],
+        "rationale": "A broader optimization surface does not broaden mutation, publication, privacy, or operational authority."
       }
     ],
     "instrumentation": {
