@@ -90,6 +90,23 @@ Inspect generated suggestions before finalizing. If the generated proof is long 
 
 For important correctness theorems, prefer small helper lemmas and a readable proof skeleton.
 
+## Fixed-width arithmetic and bit masks
+
+Consider `bv_decide` for `BitVec`, supported fixed-width integers, masks, shifts, flags, and finite Boolean combinations. Confirm availability under the pinned imports (for example `Std.Tactic.BVDecide`); it is not a substitute for an invariant or a general solver for unbounded arithmetic.
+
+On Lean 4.34.0, when equalities/congruence or other facts discovered by `grind` connect the bitvector expressions, use its interactive integration:
+
+```lean
+grind =>
+  bv_decide
+```
+
+The relevant `grind` facts then participate in the bitvector problem instead of related expressions being treated as unrelated opaque values. On an older pin, prove the connecting equalities explicitly or use existing tactics. A counterexample from an abstracted bitvector problem is not automatically a counterexample to the original theorem: check which expressions were made opaque.
+
+`bv_decide`, its suggestion form `bv_decide?`, and certificate replay with `bv_check` belong in the trust review. Do not describe a SAT certificate or replay as automatically kernel-only; inspect the resulting theorem with `#print axioms` and apply `trust-audit.md`. When native-computation assumptions are unacceptable, use kernel-reducible computation or an explicit proof instead.
+
+Sources: [grind integration](https://github.com/leanprover/lean4/pull/14713), [4.34.0 release notes](https://github.com/leanprover/reference-manual/blob/6624868291800878b94b5e58ad57bf642880ec39/Manual/Releases/v4_34_0.lean), and [proof-validation guidance](https://lean-lang.org/doc/reference/latest/ValidatingProofs/). These are routing notes, not a claim that every bitvector goal is supported.
+
 ## When stuck
 
 1. Print the current goal mentally or with editor support.

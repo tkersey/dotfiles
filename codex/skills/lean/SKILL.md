@@ -15,7 +15,7 @@ You are working in Lean 4. The default deliverable is a checked Lean artifact: a
 4. **No fake certainty.** Do not invent theorem names, imports, syntax, or tactic availability. Confirm library facts by local search, `#check`, `#print`, dependency source, or documentation matching the pinned version.
 5. **No silent weakening.** If the requested theorem is false or mismatched with the implementation, give a counterexample or mismatch explanation, then propose the minimal corrected statement.
 6. **No hidden placeholders.** Do not leave `sorry`, `admit`, new `axiom`s, unsolved goals, intentionally broken declarations, or scratch `example`s unless the user explicitly requests a sketch. Report any remaining placeholders.
-7. **Trust-expanding features are visible.** `unsafe`, `partial`, `noncomputable`, `native_decide`, `decide +native`, `@[implemented_by]`, `@[csimp]`, external code, generated code, IO, FFI, clocks, filesystems, networks, randomness, concurrency, and adapters must be isolated or reported when relevant to the claim.
+7. **Trust-expanding features are visible.** `unsafe`, `partial`, `noncomputable`, `native_decide`, `decide +native`, `bv_decide`, `bv_check`, `@[implemented_by]`, `@[csimp]`, external code, generated code, IO, FFI, clocks, filesystems, networks, randomness, concurrency, and adapters must be isolated or reported when relevant to the claim.
 
 ## First-pass triage
 
@@ -133,7 +133,10 @@ Never write "the software is proved correct" unless the production implementatio
    apply?
    aesop?
    grind
+   bv_decide
    ```
+
+   For fixed-width arithmetic and bit masks, consult the bitvector section of `references/proof-playbook.md`; account for native-computation trust before using that automation.
 
 8. Replace fragile broad automation with helper lemmas when the theorem supports a correctness claim.
 9. Re-run the project-aware check command after each meaningful proof repair.
@@ -216,7 +219,7 @@ theorem step_preserves_inv
   ...
 ```
 
-For many-step properties, prove one-step preservation first, then lift over traces/input lists by induction.
+For many-step properties, prove one-step preservation first, then lift over traces/input lists by induction. Intrinsic contracts and verification-generator syntax are experimental and version-sensitive; consult `references/version-sensitive-features.md` before choosing them over the pure model.
 
 ## Termination policy
 
@@ -255,19 +258,16 @@ Add `[simp]` only for canonical, directionally simplifying, terminating, broadly
 
 Run this lane for production verification, high assurance, proof certificates, external-code claims, generated-code claims, or any user request involving "audit", "prove correct", "sound", "no assumptions", or "trust".
 
-Scan changed Lean files:
+For high-assurance or untrusted artifacts, review toolchain soundness and provenance using `references/trust-audit.md`. Preserve the project pin; report relevant advisories and recommend a patched toolchain rather than silently upgrading. Sandbox untrusted builds before executing their code.
+
+Scan changed Lean files with the packaged script (resolve `lean_skill_root` to this skill's actual installation):
 
 ```bash
-rg -n --glob '*.lean' --glob '!.lake/**' --glob '!lake-packages/**' \
-  '\b(sorry|admit|axiom|unsafe|partial|noncomputable|native_decide)\b|@\[(implemented_by|csimp)\]|implemented_by|csimp|decide \+native' .
+lean_skill_root="$HOME/.agents/skills/lean"
+bash "$lean_skill_root/scripts/lean_trust_audit.sh" path/to/file-or-directory
 ```
 
-If this replacement skill's script is available, prefer:
-
-```bash
-lean_skill_root="$(realpath "$HOME/.agents/skills/lean")"
-"$lean_skill_root/scripts/lean_trust_audit.sh" path/to/file-or-directory
-```
+If the script is unavailable, use the feature list in `references/trust-audit.md`. A clean lexical scan is not a proof or axiom audit; the script's zero exit status does not mean no findings.
 
 For each theorem supporting the final claim, temporarily inspect:
 
@@ -284,7 +284,7 @@ Classify the footprint:
 - native-evaluation/compiler trust such as `Lean.trustCompiler` or native-computation assertion axioms;
 - external correspondence/adapters/runtime assumptions.
 
-For adversarial or high-risk proof artifacts, consider the stronger validation ladder: clean build, `#print axioms`, `lean4checker --fresh Module.Name` if available, and external checker/comparator workflows when the environment and risk justify them.
+For adversarial or high-risk proof artifacts, follow the stronger validation ladder in `references/trust-audit.md`: clean build, `#print axioms`, `lean4checker --fresh Module.Name` if available, and sandboxed comparator/external checking when justified. An empty axiom list does not establish checker soundness or statement fidelity.
 
 ## Build and cache diagnosis
 
@@ -299,7 +299,7 @@ Do not treat a dependency download/build failure as a theorem failure. Separate:
 - namespace/module naming mistakes;
 - CI command differences.
 
-Use `lake update` only when dependency resolution changes are intended. For proof repair and local correctness work, preserving the lock state is usually the right answer.
+Use `lake update` only when dependency resolution changes are intended. For proof repair and local correctness work, preserving the lock state is usually the right answer. For elan setup or structured Lake lint output, consult `references/setup-and-workflow.md`; do not confuse installation with a project upgrade or diagnostic success with a clean lint result.
 
 ## If stuck
 
