@@ -2,7 +2,7 @@
 name: negative-ledger
 description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Project the route gate before repeating a route; transact only inspectable decision-shaping negative evidence through the passive Negative Evidence definition; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
-  version: "8.1.1"
+  version: "8.2.0"
 ---
 
 # Negative Ledger
@@ -173,6 +173,9 @@ For review-driven repair, apply the owner boundary in
 
 Capture only when a failure changes future routing: witnessed no-effect attempt, local/global regression, unsound route, complexity disproportionate to value, revert with concrete rationale, repeated proof-wound pattern, or a strategy pivot whose abandoned route would otherwise be retried.
 
+Before capture or promotion, apply the [scope challenge](#exclusion-scope-challenge)
+to the proposed exclusion; a witnessed failure alone does not justify its breadth.
+
 Append only through:
 
 ```bash
@@ -207,6 +210,49 @@ ledger transact \
   --input promotion=promotion.json \
   --format json
 ```
+
+## Exclusion Scope Challenge
+
+Ask whether a materially different realization of the excluded route could meet
+the same requirement under the declared applicability conditions. Distinguish a
+failed implementation from a failed strategy; the broader the suppressed search
+space, the stronger the scope argument must be. Inspect existing witnesses or
+proofs first; use a discriminating evaluation only when necessary and authorized.
+No fixed number of challenges or successful samples establishes a universal ban.
+
+An inspectable success within the claimed exclusion scope is counterevidence to
+that breadth. A success outside the scope is not. Confirm that a case exercises
+the disputed route, uses an independently justified requirement as oracle, and
+isolates the route rather than an invalid fixture or unrelated environment error.
+An imagined alternative warrants scrutiny, not a claimed successful execution.
+
+A successful sample alone does not refute a failure-rate, cost, or risk claim.
+Evaluate counterevidence against the recorded hypothesis and its measurement
+conditions; contrary samples can warrant investigation without changing the gate.
+Do not treat a variable outcome as a deterministic impossibility proof.
+
+Use the existing hypothesis, observed outcome, evidence, exclusion rule,
+applicability, and reopening fields to retain the supported boundary. For example,
+a stale cache entry may justify excluding reuse when the key omits a semantic
+input, not all caching. For a new record, choose the narrowest useful supported
+scope; retain `need-evidence` or `capture_candidate` when support is inadequate.
+Do not weaken required active-record structure to make the transaction pass.
+
+For counterevidence to an existing active record, preserve the gate until the
+source-owned lifecycle legally changes it. When replacing an overbroad exclusion,
+capture any still-supported narrower exclusion before superseding the old record,
+and link the evidence and replacement through structured source references.
+Reopening still requires proved changes to identified existing criteria; evidence
+that the old conclusion was unjustified is not a fabricated artifact change.
+Use proof-bearing supersession when appropriate instead of inventing criteria.
+
+Scope review grants no retry or mutation permission. Do not bypass an active
+exact applicable exclusion by calling the retry a test, sandbox, or experiment.
+Use the supported lifecycle and enclosing authority before a previously excluded
+retry becomes permissible; then project the current gate again. An unchanged or
+inapplicable challenge requires no write. Stop when the scope is supported,
+narrowed, or left pending evidence. A corrected exclusion does not automatically
+activate Learnings or grant architecture-selection authority.
 
 ## Lifecycle Transitions
 
@@ -371,3 +417,7 @@ qualifying evidence through the definition's `capture` transaction.
 - Do not capture every transient test failure merely because implicit activation occurred.
 - Do not bypass failed `route-gate`, `memory-note`, or doctor projections; those boundaries must fail closed.
 - Do not invoke a sibling source merely because Negative Ledger activated.
+
+For changes to exclusion-scope reasoning, use the Negative Ledger cases in
+[validation-probes.md](../learnings/validation-probes.md). This is package
+validation, not a runtime dependency or activation of Learnings.

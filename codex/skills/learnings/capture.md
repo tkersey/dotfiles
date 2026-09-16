@@ -35,8 +35,10 @@
    run `rebind-existing`; it must validate the complete current store, replace
    only stale Ledger binding metadata, and leave event bytes unchanged. Stop on
    every invalid row; do not skip or reinterpret it.
-4. Gather exact evidence and changed paths.
-5. Distill objective, inflection, proof, and transferable rule.
+4. Gather exact evidence, artifact identity, and changed paths. Distinguish the
+   observed result from its proposed explanation and transferable claim.
+5. Distill objective, inflection, proof, and a bounded rule using the
+   [claim discipline](#bounded-claims) below.
 6. Author `learning.json` as one `submission.record` packet, then append from
    the verified repo root:
 
@@ -59,3 +61,43 @@
    explicitly asks.
 
 Use the [disposition invariant](SKILL.md#disposition-invariant) as the internal proof line.
+
+## Bounded claims
+
+Use the existing record fields; do not add a parallel schema or evidence store:
+
+- `learning`: the conditional claim and the observation it preserves. State an
+  inferred mechanism as an inference, not an observed fact.
+- `application`: prerequisites, the current artifact facts to inspect, and when
+  not to apply the rule. An untested boundary is not a proved failure.
+- `evidence`: inspectable source/artifact references, the actual check and result,
+  any executed boundary challenge, and material uncertainty or untested scope.
+  Keep proposed checks distinct from executed evidence.
+
+For example, a faster parse benchmark supports reuse for the tested immutable
+configuration, not "cache all configuration." The application must address
+semantic inputs in the cache key and mutation/invalidation before wider reuse.
+Keep the supporting case when narrowing a rule after a counterexample.
+
+Capture a useful scoped observation without demanding an adversarial run for
+every row. Before elevating it into wider technical guidance, apply
+[memory admission](memory-admission.md#technical-generalization). Action labels
+such as `codify_now` express intended use, not evidential confidence.
+
+## Refinement instead of accumulation
+
+If new evidence changes the claim or its application boundary, append the
+corrected bounded learning with `supersedes_id` when it replaces an earlier row;
+use `related_ids` for relevant non-replacement relationships. Preserve useful
+supporting evidence and the reason for revision. Leave unrelated rules alone.
+When admitted guidance changes, follow the existing
+[supersession or withdrawal](memory-admission.md#supersession-and-withdrawal)
+workflow; never edit old events or compiled memory.
+
+No change is a valid outcome. Do not append a warning beside a rule that needs
+correction, manufacture paraphrases to count successful reuses, or bypass
+idempotency just to add evidence to an unchanged claim. The current fingerprint
+uses status and learning text, not the evidence array; this workflow adds no
+evidence-enrichment operation. A failed learning does not automatically warrant
+an operational exclusion: Negative Ledger must satisfy its own activation and
+capture gates.
