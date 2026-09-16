@@ -20,6 +20,45 @@ At least one must also hold:
 
 Do not admit every `do_more` row, raw chronology, weak `review_later` candidates, failed-hypothesis exclusions better owned by `negative-ledger`, operating-correction events better handled as standing policy, or synesthetic mappings.
 
+## Technical generalization
+
+Before admitting a generalized technical procedure, operating default, or
+failure shield, verify that its evidence supports the scope of future behavior.
+`codify_now`, recurrence, and an explicit request to remember are eligibility
+signals, not proof of a technical claim. Repeating one narrow fixture does not
+establish broader applicability.
+
+Identify the most plausible false application within the proposed scope. Use
+existing inspectable evidence or, when needed and authorized, a discriminating
+boundary check proportionate to the claim's breadth and consequence. Confirm
+that the case actually exercises the rule, that the oracle follows an independent
+requirement, and that any failure concerns the rule rather than an invalid
+fixture, unrelated defect, or environment failure. A suspected counterexample is
+not an executed result; passing tests do not prove unrestricted generality.
+
+When refining a rule from a counterexample, preserve and recheck the original
+supporting case, replay the challenge, and check a distinct relevant boundary
+before claiming that the refinement generalizes. Reuse adequate existing tests
+or proofs; do not require fixed rounds, a challenger agent, or new experiments
+for every admission.
+If execution is unavailable or unauthorized, narrow to supported guidance or
+defer elevation rather than inventing validation. Capture/admission remain
+separate and insufficient validation does not invalidate an otherwise sound
+canonical capture or independent object-level delivery.
+
+For variable model/workflow outcomes, one failed run followed by a successful
+run does not establish causality. Use matched or repeated comparisons when a
+high-impact causal claim depends on them; otherwise retain the uncertainty.
+For deterministic properties, prefer direct checks or proofs of the condition.
+
+User preferences and explicit requirements derive authority from their source;
+do not subject them to technical falsification. A narrow observation can remain
+useful without becoming a universal procedure. If validation narrows or replaces
+a canonical claim, update it through the capture/supersession workflow before
+admission. Do not edit the deterministic projection to smuggle in a revised rule.
+Stop when scope is supported, narrowed, or elevation deferred; do not manufacture
+additional learning rows or validation loops.
+
 ## Definition projection and admission
 
 After the source owner accepts admission, load `$memory-source-notes` and pass

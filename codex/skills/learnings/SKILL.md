@@ -2,7 +2,7 @@
 name: learnings
 description: "Capture or recall evidence-backed execution learnings; evaluate capture at validation transitions, strategy pivots, footguns, retry loops, and material delivery or handoff. Also handle explicit learning-memory admission and supersession."
 metadata:
-  version: "8.1.0"
+  version: "8.2.0"
 ---
 
 # Learnings
@@ -10,6 +10,10 @@ metadata:
 ## Mission
 
 Maintain a repo-local, evidence-backed execution-learning store and selectively admit only high-value learning snapshots to the global Codex memory compiler.
+
+Preserve what happened without overstating what follows. Capture the narrowest
+useful claim supported by evidence; wider technical guidance must earn its scope.
+Retrieval relevance is neither current applicability nor exclusion authority.
 
 Authority split:
 
@@ -122,7 +126,7 @@ the Negative Evidence definition's `capture` transaction, then use its
 ## Guardrails
 
 - Ground every row in observed evidence.
-- Write rules, not changelog bullets.
+- Write bounded rules, not changelog bullets or unsupported universal claims.
 - Do not append from an unverified non-repo cwd.
 - Do not force-add local-only source stores.
 - Do not bypass the Ledger API or edit persistent-adapter records directly.
@@ -130,3 +134,7 @@ the Negative Evidence definition's `capture` transaction, then use its
 - Do not write compiled memory directly.
 - Do not use source notes to bypass the canonical store.
 - Do not invoke a sibling source merely because Learnings activated.
+
+For changes to these learning-validation rules, use
+[validation-probes.md](validation-probes.md). These are package evaluation cases,
+not a runtime checklist or a prerequisite to capture.
