@@ -36,12 +36,6 @@ max_concurrent_threads_per_session = 21
 [apps._default]
 enabled = false
 
-[realtime]
-version = "v2"
-type = "conversational"
-transport = "webrtc"
-voice = "marin"
-
 [memories]
 generate_memories = true
 use_memories = true
