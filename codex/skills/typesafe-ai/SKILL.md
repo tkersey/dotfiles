@@ -33,10 +33,13 @@ For CLI-only tasks, report the per-dimension scores and `needs_review` flags
 from the JSON results. If the command is unavailable, do not claim a CLI result.
 
 The CLI reads `TYPESAFE_API_KEY` from the process environment and sends document
-text to TypeSafe. Use it on documents in the user's requested scope, and never
-print or place the key in command arguments. Its default technical-accuracy
-score judges the document alone: `needs_review` is a triage flag, not proof that
-claims are true or false. Factual verification needs relevant source evidence;
+text to TypeSafe. Run it when the user explicitly asks to use TypeSafe for those
+documents or prior session authorization covers that disclosure. For a generic
+local review request, explain the upload and ask before invoking the CLI; file
+scope alone is not consent. Never print or place the key in command arguments.
+Its default technical-accuracy score judges the document alone: `needs_review`
+is a triage flag, not proof that claims are true or false. Factual verification
+needs relevant source evidence;
 use an API or SDK workflow that includes that evidence in the state.
 
 ## Read the live docs for integrations
