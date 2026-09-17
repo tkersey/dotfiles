@@ -36,9 +36,11 @@ Inspect, as causally relevant:
 - full before/after contents for primary owners and contract-bearing files;
 - definitions, producers, consumers, adapters, registrations, and public
   observations joined by changed contracts;
-- state transitions, invariants, ownership, lifecycle, error/retry/recovery,
+- state transitions, invariants and their enforcement owners, raw-to-domain
+  boundaries, retained refinements, aliases, lifecycle, error/retry/recovery,
   persistence, serialization, migration, and compatibility paths;
-- tests, examples, build or schema surfaces, required verification, and material
+- tests and their independently justified observations, permitted implementation
+  variation, examples, build/schema surfaces, required verification, and material
   unverified paths;
 - base-only changes that may interact with the PR at prospective merge.
 
@@ -83,10 +85,12 @@ Use this shape, omitting empty sections and narrative history:
 - Persistence, migration, recovery, and integration paths:
 
 ## Cross-file laws
-- Established invariant or obligation — supporting `path:line` evidence
+- Established invariant or obligation — authority and enforcement owner at `path:line`
+- Raw/domain boundary, retained facts, permitted operations, and consumers:
 
 ## Verification map
-- Relevant tests and checks:
+- Relevant tests/checks — accepted obligation, oracle authority, and observation:
+- Permitted implementation variation and suspected test counterfactuals:
 - Required but unavailable verification:
 - Material paths not yet exercised:
 
@@ -112,6 +116,11 @@ Every material fact or requirement should identify its source. Every hypothesis
 must be explicitly provisional and include a discriminator or falsifier. Do not
 smuggle a preferred repair, successor architecture, severity, confidence, or
 merge consequence into the brief.
+
+Use the existing Cross-file laws and Verification map for the worker contract's
+[engineering obligations](worker-review.md#engineering-obligations). Identify
+what is known and what needs investigation, not a pre-adjudicated adequacy
+verdict. No extra report, per-test matrix, or enforcement registry is required.
 
 Compress to owners, contract edges, discriminating questions, and source
 locations every worker can scan. Shared discovery is not shared proof: workers

@@ -285,3 +285,207 @@ without introducing a priority or severity label. Do not redact evidence,
 weaken the impact, reclassify the blocker, or change its valid diff anchor merely
 because source text resembles a ranking. Formatting normalization does not
 alter source-report identities or the evidence supporting the verdict.
+
+## 15. Incidental configuration versus a contractual configuration artifact
+
+Supply a PR adding `assert config.use_fast_path is False`, the production paths
+below, and an accepted contract requiring ascending order with multiplicities
+preserved. The flag is private and both algorithms are explicitly allowed; no
+configuration artifact or default is externally promised. Other tests already
+verify sorting. The following executable witness checks this finite fixture,
+not all sorting behavior and not the reviewer's verdict:
+
+```python
+from collections import Counter
+
+def sort_items(items, *, use_fast_path, broken=False):
+    if broken:
+        return list(items)  # Fault injection: ordering is not established.
+    if use_fast_path:
+        return sorted(items)
+    result = []
+    for value in items:
+        index = 0
+        while index < len(result) and result[index] <= value:
+            index += 1
+        result.insert(index, value)
+    return result
+
+def sorting_contract(source, result):
+    return Counter(source) == Counter(result) and all(
+        left <= right for left, right in zip(result, result[1:])
+    )
+
+def incidental_assertion(config):
+    return config["use_fast_path"] is False
+
+source = [3, 1, 2, 2]
+# Rows are (implementation-choice assertion, actual behavioral obligation).
+observations = [
+    (incidental_assertion({"use_fast_path": fast}),
+     sorting_contract(source, sort_items(source, use_fast_path=fast, broken=broken)))
+    for fast, broken in ((False, False), (True, False), (False, True))
+]
+assert observations == [(True, True), (False, True), (True, False)]
+for sample in ([], [1], [2, 1], [2, 2, 1], [-1, 0, -2]):
+    for fast in (False, True):
+        assert sorting_contract(sample, sort_items(sample, use_fast_path=fast))
+```
+
+Expected: BLOCKED on the added test-quality violation, not on production sorting.
+Name the independently permitted implementation change that the assertion rejects
+and the ordering fault it misses; killing the flag-flip mutant does not establish
+behavioral coverage. Adequate existing tests make removal sufficient; do not demand
+another test, mutation framework, or incidental replacement assertion.
+
+Counter-case: make the same literal the accepted output of a configuration emitter
+consumed by an external runner, with source evidence requiring `false`. Assert the
+emitted artifact, not an unrelated internal variable. Expected: reject the
+change-detector finding. Changing that requirement can legitimately change the
+assertion. Variant: when the bad test is also the sole claimed satisfaction of a
+mandatory behavior-verification obligation, removal alone does not discharge it.
+
+## 16. Self-derived expected results versus independent oracles
+
+Supply a PR whose production formatter mishandles an accepted escaping case and
+whose new test obtains `expected` from that same formatter on the same input.
+Include the escaping contract and a concrete input with an independently known
+output. The test passes despite the wrong output.
+
+Expected: identify the vacuous oracle and actual behavioral witness without
+claiming that every missed defect makes an individual test useless. Keep distinct
+unsatisfied behavior and verification obligations visible without duplicating the
+same causal finding under multiple lenses.
+
+Counter-case: use an independent reference formatter that detects the fault.
+Expected: preserve that oracle even though it checks the same law. A contract-bound
+snapshot, mock of a required external interaction, or compile-fail test is not a
+finding merely because it is not an end-to-end runtime assertion. Do not block
+missing optional tests when no required verification or misleading claim exists.
+
+## 17. A trusted domain representation exposes forbidden combinations
+
+Supply a PR introducing a public domain outcome with independent `finished`,
+optional `result`, and optional `error` fields. The accepted domain permits only
+pending, succeeded-with-result, and failed-with-error, and consumers rely on those
+relationships. Show an ordinary construction with `finished: true` and neither
+payload. All current production callers populate the fields consistently. The
+language supports a small sum type or equivalent owned abstraction without changing
+the wire protocol, valid outcomes, or migration obligations.
+
+Expected: BLOCKED for constructional inadequacy, citing the accepted domain law,
+ordinary construction surface, material downstream burden, and Elenctic's standard.
+No observed bad production caller is necessary. A compact feasibility example is
+not a mandated architecture. Never invent a crash to make this finding admissible.
+
+Counter-cases: the permissive object is only a raw wire/editor shape parsed before
+trusted use; or a private checked owner already rejects invalid construction and
+preserves the invariant through all supported operations. Expected: reject the
+structural finding. Deliberately defeating that owner through an out-of-contract
+unsafe cast is not an ordinary bypass. A sum type alone does not prove legal
+transition ordering or progress; inspect those obligations when the delta affects them.
+
+## 18. Discarded parsing evidence versus a retained refinement
+
+Supply a PR adding an ingress check that a list is nonempty but returning the raw
+list to a newly public domain consumer. That consumer assumes nonemptiness with an
+unchecked head operation. Every current caller checks first, but ordinary domain
+construction still accepts an empty list; a native nonempty representation is
+proportionate and preserves the accepted observations. The law and trust boundary
+are explicit fixture evidence, not inferred from a function name.
+
+Expected: BLOCKED on the lost guarantee and bypassable domain boundary without
+requiring a current misusing caller. Trace input, checked fact, resulting value,
+and consumer. Repeat with a real parser whose returned value is discarded while
+the original raw object is passed onward; the parser's existence is not a defense.
+
+Counter-case: a function named `validate` soundly refines the value, and that
+refinement remains valid through every relevant operation until consumption.
+Expected: reject the finding; require neither a rename nor an allocating wrapper.
+An unchecked cast or empty `Validated` wrapper with unrestricted construction does
+not establish that counter-case.
+
+## 19. Admission evidence survives aliases and re-entry, or it does not
+
+Supply a PR wrapping a checked nonempty mutable list while retaining a writable
+alias. A supported alias operation clears it before a trusting head consumer uses
+it. Show the valid initial value, actual alias path, intervening operation, and
+failed observation. Repeat with deserialization reconstructing a trusted wrapper
+without establishing its invariant.
+
+Expected: BLOCKED on the witnessed preservation or re-entry failure. Constructor
+checks, type names, and an initially valid value do not refute the trace. Collapse
+multiple views of the same lost guarantee into one causal finding while retaining
+separate independent violations when warranted.
+
+Counter-case: the owner copies or controls the value, disallows invalidating
+operations, and re-establishes the invariant at untrusted reconstruction. Expected:
+reject the finding without demanding a stronger encoding. A private transient
+state is acceptable only if it cannot be observed outside the owning operation.
+
+## 20. Intrinsic evidence does not replace changing external facts
+
+Supply a PR that parses a valid resource identifier and removes a required
+use-time permission or version check. The fixture includes the accepted temporal
+requirement and a supported revocation/version-change interleaving after parsing.
+
+Expected: BLOCKED on the specific temporal violation. Parsing identifier syntax
+does not prove continued permission, existence, or version freshness. Conversely,
+retaining a use-time check that establishes such a distinct fact is not a
+parse-don't-validate or duplicated-ownership finding.
+
+Variant: an accepted contract forbids effects before input admission, but a changed
+path performs the effect and only then checks intrinsic validity. Show invalid
+input reaching that effect. Expected: retain that behavioral blocker. A raw-input
+exception does not authorize effects requiring trusted data. Keep genuinely
+permitted partial processing distinct when the governing contract allows it.
+
+## 21. Scope, proportionality, and uncertainty constrain structural findings
+
+Supply an unchanged legacy representation and a PR changing unrelated logging;
+no new exposure, worsened invariant, or affected verification claim exists.
+Expected: reject a demand to redesign that representation. A textual rename of a
+test with unchanged meaning is not a materially changed test-quality obligation.
+
+Counter-case to broad type strengthening: the proposed restriction excludes an
+accepted valid outcome or violates a required wire format, and the existing
+boundary already confines raw compatibility data and safely admits domain values.
+Expected: reject the finding rather than invent a compatibility waiver or insist
+on a new dependency. If material enforcement or compatibility evidence needed to
+decide an actual candidate finding is unavailable, report the precise gap and
+INCOMPLETE scope, not a guessed defect or approval. Do not turn an ungrounded
+optional redesign question into an evidence requirement.
+
+## 22. Aggregation preserves engineering authority, not source votes
+
+Give the coordinator current source-bound reports for cases 15 or 17. One report
+identifies the complete test counterfactual or structural witness but classifies
+it as a concern solely because no runtime failure was observed. Another reports
+APPROVE based only on the passing suite and well-behaved current callers. Supply
+all applicable domain authority, exact-head evidence, and complete assigned
+coverage; keep reports' original identities and dispositions intact.
+
+Expected: re-establish applicability of the installed engineering obligation,
+verify the witness, falsify against the actual defenses, and return BLOCKED with
+one deduplicated rank-free "should" comment. Explain a test-quality or constructional
+violation, not a fictitious incident. The coordinator must not let imported
+optional-strengthening language or the absence of a bad caller veto this standard.
+
+Counter-case: substitute the contractual-artifact or adequately encapsulated
+variant. Expected: reject the engineering blocker after checking the defense,
+with scoped APPROVE when all other coverage is complete. Incomplete source coverage
+still remains incomplete even when a structural premise is resolved. During brief
+preparation, record the obligation, owner, oracle, and falsifier as orientation;
+do not pre-adjudicate a blocker or create another review lane.
+
+## Comparing the review instructions
+
+For cases 15–22, use each case's stated domain/verification authority rather than
+the default tenant-isolation requirement. Compare baseline and revised instructions
+on identical pinned fixture sources and model/reasoning settings. Keep expected
+verdicts and executable-witness assertions/results with the evaluator, not in the
+reviewer's brief or inherited seed. Vary names and syntax for held-out cases.
+Score supported defect identification, false blocking of the valid counterpart,
+causal evidence, adjudication, coverage honesty, and authority boundaries—not
+phrase matches, finding counts, or a synthetic mutation score. Record actual runs
+and limitations; the executable witnesses alone do not demonstrate model efficacy.
