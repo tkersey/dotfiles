@@ -2,18 +2,15 @@
 name: typesafe-ai
 license: MIT
 description: >
-  Build AI-powered software with TypeSafe: small units of AI intelligence you
-  can use like programming primitives. Its System One models, including Jev,
-  turn natural language and application state into typed judgments and
-  probabilities that code can combine. Use when a feature needs programmable
-  common sense, when brainstorming what AI could make possible in an app, or
-  when an LLM prompt-and-parse step could become a structured decision.
-  Applications include routing, ranking, extraction, verification, and
-  interactive experiences; these are starting points, not the limits.
-  Read live docs and cookbooks to find useful patterns and discover new combinations.
+  Build AI-powered software with TypeSafe or review local text and Markdown with
+  the typesafe CLI. Use when an app needs programmable common sense, typed
+  judgments and probabilities from System One models such as Jev, brainstorming
+  AI possibilities, or replacing LLM prompt-and-parse with structured decisions.
+  Examples include routing, ranking, extraction, verification, and interactive
+  experiences. Use the CLI for document scoring across review dimensions.
 ---
 
-# Build with TypeSafe
+# Use TypeSafe
 
 TypeSafe makes units of AI intelligence usable like programming primitives: small
 judgments you can compose into larger capabilities. Its **System One models** return
@@ -23,11 +20,32 @@ typed answers and probabilities rather
 than generating text or reasoning explanations. Code owns the workflow; the model
 supplies programmable common sense where ordinary code needs semantic understanding.
 
-## Read the live docs
+## Review documents with the CLI
 
-**The live TypeSafe docs are the source of truth. Read them as part of the task.**
-This skill gives direction; the docs carry current concepts, prompting guidance,
-API contracts, SDK usage, models, limits, and worked examples.
+For document review or triage, use the installed `typesafe` command when it fits
+the request. Check `typesafe --help` for the installed version. It reads UTF-8
+text or Markdown paths, or `-` for stdin; `typesafe [--rubric FILE] DOCUMENT...`
+emits one JSON result per document. A JSON rubric can define multiple Score
+dimensions in one request. See the [CLI README](https://github.com/tkersey/skills-zig/blob/main/apps/typesafe/README.md)
+for its rubric format and limits.
+
+For CLI-only tasks, report the per-dimension scores and `needs_review` flags
+from the JSON results. If the command is unavailable, do not claim a CLI result.
+
+The CLI reads `TYPESAFE_API_KEY` from the process environment and sends document
+text to TypeSafe. Use it on documents in the user's requested scope, and never
+print or place the key in command arguments. Its default technical-accuracy
+score judges the document alone: `needs_review` is a triage flag, not proof that
+claims are true or false. Factual verification needs relevant source evidence;
+use an API or SDK workflow that includes that evidence in the state.
+
+## Read the live docs for integrations
+
+**For API integrations, the live TypeSafe docs are the source of truth. Read them
+as part of that work.** This skill gives direction; the docs carry current
+concepts, prompting guidance, API contracts, SDK usage, models, limits, and
+worked examples. For CLI operation, use the installed help and CLI README;
+consult the Score guidance below when designing a custom rubric.
 
 - Start with the [documentation index](https://docs.typesafe.ai/llms.txt) to discover
   relevant pages and cookbooks. Use targeted reads rather than loading the entire site.
