@@ -10,6 +10,12 @@ reconcile the evidence, and return real blockers or a scoped approval.
 **The file is the causal anchor, not the evidence boundary.** Each worker reviews
 its assigned file's changes and their causal consequences elsewhere.
 
+Behavioral test adequacy and constructional adequacy are explicit review
+obligations, not optional style preferences. Apply their evidence thresholds,
+scope, and exceptions from the [worker contract](references/worker-review.md#engineering-obligations)
+in both file review and reconciliation; a demonstrated violation may block
+without an observed runtime bug. Do not add review lanes or expand the campaign.
+
 ## Invocation
 
 ```text

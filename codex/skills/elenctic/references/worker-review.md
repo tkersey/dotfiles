@@ -131,7 +131,116 @@ construction that falsifies an incumbent claim. Line-count reduction and novelty
 alone are insufficient. Identify the failed obligation or upstream cause without
 selecting a successor architecture or turning the review into a repair plan.
 
+## Engineering obligations
+
+These are mandatory Elenctic acceptance standards for new or materially changed
+tests and domain boundaries within the assigned causal scope. The installed
+contract supplies this engineering authority; the subject must still supply
+independent evidence of the domain law, supported behavior, and compatibility
+constraints. Do not invent those facts or require the repository to repeat these
+standards before applying them. They supplement the auxiliary concerns and govern
+Elenctic disposition where optional-strengthening language would otherwise hide
+a demonstrated violation. They do not impose Actuating gates or change its lenses.
+
+### Behavioral test adequacy
+
+Tests should constrain incorrect behavior, not permitted implementation freedom.
+For each new or materially changed test, identify its accepted obligation and
+oracle authority, the relevant violation it can distinguish, and the legitimate
+implementation variation it should tolerate. Carry these questions through the
+existing investigation; require no per-test annotations, matrix, or report fields.
+
+Challenge a suspected test with contract-aware counterfactuals: a plausible wrong
+behavior that its assertion misses, or an allowed implementation change that its
+assertion rejects. Establish why the expectation is or is not independently
+justified; no individual test must detect every defect. A configuration literal,
+snapshot, mock interaction, compile-fail check, or serialized artifact can itself
+be the right observation when it has an accepted contract. A requirement change
+can legitimately require an assertion change; that alone does not indict a test.
+
+Trace expected values to their authority. Reusing a defective production helper
+as the oracle can make a test vacuous; an independent reference implementation
+checking the same law is not redundant production ownership. Do not judge by
+assertion syntax, test size, framework, or whether the observation is end-to-end.
+A killed mutant is useful only when its change violates the relevant obligation;
+rejecting a permitted configuration flip is not evidence of behavioral coverage.
+Source reasoning or isolated witnesses suffice; require no mutation framework,
+coverage percentage, additional suite, or universal fault-detection proof.
+
+A demonstrated assertion that merely freezes a noncontractual implementation
+choice is a test-quality violation, even when other behavioral tests are adequate.
+State what independent obligation is absent and the concrete false confidence
+or needless change barrier. The minimum outcome is removal or contract-grounded
+verification, not necessarily another test. Existing adequate coverage can make
+removal sufficient; deletion must not leave a required verification obligation
+unmet. Missing optional tests alone remain nonblocking, and an uninformative test
+does not establish that production behavior is wrong.
+
+### Constructional adequacy and evidence-preserving parsing
+
+Changed trusted domain boundaries should enforce stable domain invariants through
+the representation or owning abstraction when a proportionate language-native
+construction can do so while preserving required-valid behavior and compatibility.
+Do not leave domain-forbidden combinations or discarded checked facts dependent
+on every ordinary caller remembering a rule that the boundary can enforce.
+
+Trace the actual values and guarantees, not names:
+
+```text
+raw input -> check/conversion -> established fact and resulting value
+          -> constructors, aliases, transitions, adapters, reconstruction
+          -> consumer relying on the fact
+```
+
+Identify the accepted law, its responsible boundary, an ordinary construction or
+permitted operation admitting a forbidden state or losing the guarantee, and the
+consumer or correctness burden that makes this material. A public outcome shape
+with independent completion/result/error fields may supply a structural witness
+even when current callers happen to populate them consistently. Documentary
+preconditions and current caller discipline alone do not satisfy a boundary's
+obligation to establish trusted domain values. Deliberate unsafe casts, reflection,
+or corrupt memory outside the supported trust model are not ordinary bypasses.
+
+Inspect whether successful checks preserve the needed evidence through use.
+Discarded parser results, consumers accepting the original raw value, unchecked
+reconstruction, and mutable aliases can defeat the boundary. A `parse` name,
+`Validated` wrapper, brand, or unchecked cast proves nothing. A sound refinement
+or checked constructor with controlled operations can suffice; a function named
+`validate` need not allocate a wrapper to preserve its guarantee.
+
+Distinguish raw input, editor drafts, wire compatibility shapes, and confined
+intermediate states from trusted domain values. Private transient invalidity is
+acceptable only when it cannot escape its owning operation. Check construction,
+mutation, serialization/re-entry, lifetime, and progress separately: a sum type
+can exclude invalid combinations without enforcing legal transition ordering.
+Parsing intrinsic facts does not discharge changing authorization, freshness,
+resource-existence, concurrency, or transaction obligations. Keep checks that
+establish distinct facts or operate at a different trust/time boundary.
+
+Show why the burden is avoidable at proportionate cost, considering the actual
+language, ownership, compatibility, migration, and required-valid observations.
+A compact alternative may demonstrate feasibility, not select a repair or demand
+a rewrite. Adequate existing encapsulation defeats the claim; maximal type strength,
+new dependencies, invalidating required-valid behavior, and unrelated legacy
+cleanup are not goals. An evidenced incompatibility or distinct boundary obligation
+can defeat applicability. An unresolved material premise is an evidence gap, not
+permission to assume either adequacy or a structural defect.
+
+Conceptual sources: [Parse, don't validate](https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/)
+and [Change-detector tests](https://testing.googleblog.com/2015/01/testing-on-toilet-change-detector-tests.html).
+The rules above are self-contained; these sources explain the rationale, not
+additional runtime dependencies or authority to invent subject requirements.
+
 ## Adjudicate before reporting
+
+Apply the engineering obligations above in both worker adjudication and
+campaign reconciliation. A concrete test counterfactual or structural witness
+can establish their violation without an observed production failure or an
+already-misusing caller. For these findings, reachability means the actual
+test or ordinary construction/operation surface, not an invented incident.
+Cite this review standard separately from the subject evidence establishing
+its applicability, delta, and material impact. Do not downgrade a supported
+violation merely because the current suite passes or no runtime bug is shown.
 
 Within the same investigation, weigh current evidence, counterevidence,
 reachability, delta causality, accepted authority, and existing mitigations.
@@ -142,7 +251,7 @@ them as concerns. Assign each retained finding exactly one disposition:
 |---|---|
 | **Concern** | A grounded nonblocking issue or open question worth clarifying or improving, without an established material failure path or unmet merge condition. Name the observation and useful clarification or follow-up; do not assert an unproved defect. |
 | **Risk** | A credible conditional failure or exposure with a concrete trigger, mechanism, and impact, but no established material violation or unmet mandatory merge condition. State the unresolved premise, existing mitigation, and validation or risk-acceptance decision still needed; classification alone is not approval. |
-| **Merge blocker** | Current evidence establishes a material violation of an accepted requirement, invariant, or compatibility contract, or an unmet mandatory merge condition, including missing required verification. Cite the authority, witness or missing required evidence, and obligation that must be satisfied before merge. |
+| **Merge blocker** | Current evidence establishes a material violation of an accepted requirement, invariant, or compatibility contract, or an unmet mandatory merge condition, including missing required verification or a demonstrated violation of the engineering obligations above. Cite the authority, behavioral/structural witness, test counterfactual, or missing required evidence, and obligation that must be satisfied before merge. |
 
 Disposition is not severity or confidence. Use the strongest disposition the
 evidence supports: a high-impact suspicion is not automatically a blocker, and
@@ -176,12 +285,20 @@ it should not block merge. Determine whether:
   change and remains unsatisfied;
 - the cited requirement, invariant, compatibility obligation, or merge
   condition is accepted, applicable, and mandatory before merge;
-- the triggering path is supported and reachable, or the exact mandatory
-  evidence is identified and genuinely absent;
+- the triggering path is supported and reachable, a concrete test
+  counterfactual or structural witness establishes an engineering violation,
+  or the exact mandatory evidence is identified and genuinely absent;
 - caller obligations, existing defenses, companion changes, mitigations, base
   behavior, or an applicable authorized exception defeat or narrow the claim;
 - the required outcome is truly a merge prerequisite rather than an optional
   strengthening, preference, legitimate follow-up, or speculative redesign.
+
+For engineering blockers, specifically test the counter-case: is the asserted
+configuration itself contractual; is the oracle independent; does an existing
+owner preserve the invariant; is this only a raw or confined intermediate
+state; does refinement already retain the fact; or would the proposed standard
+break compatibility, required-valid behavior, or a distinct temporal check?
+Require concrete applicability and a material burden, not a preferred syntax.
 
 Inspect readily available evidence that could exonerate or narrow the finding.
 Do not retain a blocker merely because it is severe, plausible, confidently
@@ -226,6 +343,8 @@ does not prove another. Each finding should compactly establish:
 - **Evidence and impact:** observed fact and decision-relevant question for a
   concern; trigger, mechanism, impact, and unresolved premise for a risk;
   established violation or missing mandatory evidence for a merge blocker.
+  Distinguish behavioral defects, test-quality violations, constructional
+  violations, and verification gaps as evidence bases, not new dispositions.
   Do not invent a failing execution to fill a field.
 - **Scope and certainty:** local, propagated, or both; introduced or newly
   exposed by this delta; material assumptions and verification limits.
