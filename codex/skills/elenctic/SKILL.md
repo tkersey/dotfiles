@@ -1,12 +1,13 @@
 ---
 name: elenctic
-description: "Explicit-only Elenctic runs an exact-head PR review campaign for the current branch or an explicit PR, forking prepared file reviewers with at most 20 active at once, reconciling their evidence, and projecting accepted complete reviews to Viewed. Finish with real blockers or scoped approval; never edit code, post comments, submit reviews, approve, or merge."
+description: "Explicit-only Elenctic adjudicates the authenticated gh user's prior review threads, then runs an exact-head PR review campaign for the current branch or an explicit PR, forking prepared file reviewers with at most 20 active at once, reconciling their evidence, and projecting accepted complete reviews to Viewed. Resolve only justified own-root threads; finish with real blockers or scoped approval. Never edit code, post comments, submit reviews, approve, or merge."
 ---
 
 # Elenctic
 
-Run one PR review campaign: prepare the change, delegate its selected files,
-reconcile the evidence, and return real blockers or a scoped approval.
+Run one PR review campaign: adjudicate the viewer's outstanding review threads,
+prepare the change, delegate its selected files, reconcile the evidence, and
+return real blockers or a scoped approval.
 **The file is the causal anchor, not the evidence boundary.** Each worker reviews
 its assigned file's changes and their causal consequences elsewhere.
 
@@ -32,8 +33,8 @@ not modes or a separate CLI. A request without a PR or branch target resolves th
 open PR associated with the current branch through `gh pr view` without a PR
 argument. Pass an explicit PR number, URL, or named branch as its positional
 selector; never replace it with the current branch. If no unique open PR can be
-resolved, stop without creating tasks or mutating Viewed state and request the
-missing PR selector. Do not fall back to a local-file review.
+resolved, stop without creating tasks or mutating Viewed or review-thread state
+and request the missing PR selector. Do not fall back to a local-file review.
 
 For `resume`, first identify the established campaign from the caller or current
 coordinator context and follow the recovery rules in [campaign.md](references/campaign.md).
@@ -53,10 +54,20 @@ not a compatibility route or a hidden read-only workflow.
 ## Run the campaign
 
 Follow [campaign.md](references/campaign.md). An accepted explicit invocation
-authorizes the coordinator to prepare the resolved PR, create and observe its
-review tasks, and attempt epoch-checked Viewed projection under that contract.
+authorizes the coordinator to adjudicate prior threads, attempt justified
+resolution of the authenticated viewer's own-root threads, prepare the resolved
+PR, create and observe its review tasks, and attempt epoch-checked Viewed
+projection under that contract. Honor narrower caller limits on mutations.
 Aggregation is automatic campaign reconciliation; continuation resumes the same
 work rather than selecting another review workflow.
+
+After target and exact-epoch binding, first follow
+[prior-review-threads.md](references/prior-review-threads.md), including on resume
+and when every file is already Viewed. Verify replies and relevant code changes;
+challenge both the claimed fix and the original finding. Resolve only what current
+evidence justifies, report semantic and mutation outcomes separately, then
+continue the existing review. No eligible own threads is a fast path, not an error.
+Thread adjudication never establishes file coverage or authorizes Viewed writes.
 
 The coordinator prepares one source-bound [Campaign Brief](references/campaign-brief.md)
 and immutable seed containing its full prepared analysis history, then assigns
@@ -78,11 +89,15 @@ same-name aggregation.
 
 ## Authority and limits
 
-Workers remain read-only. Only the coordinator may create review tasks or
-attempt Viewed projection from accepted complete selected reports. Projection is
-best effort, not an atomic head-bound write, and Viewed never proves coverage.
+Workers remain read-only, including review-thread state. Only the coordinator
+may resolve justified unresolved own-root threads under the prior-thread contract,
+create review tasks, or attempt Viewed projection from accepted complete selected
+reports. Both projections are best effort, not atomic head-bound writes; neither
+GitHub state proves semantic closure or review coverage. Never resolve another
+reviewer's thread or reopen a resolved thread. Report-only/read-only requests
+permit inspection, not thread mutations.
 Neither role may edit source or the index, implement repairs, stage, commit,
-publish comments, submit GitHub reviews, approve, merge, or unmark files.
+publish comments or replies, submit GitHub reviews, approve, merge, or unmark files.
 
 Safe targeted tests and scratch reproductions are allowed; isolate generated
 output and avoid commands that rewrite reviewed files or affect other external
