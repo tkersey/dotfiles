@@ -11,14 +11,18 @@ streaks, or fix/review loops. Never expand the assignment to every changed file.
 in the assigned file and what that change makes wrong, unsafe, unjustified, or
 unnecessarily difficult elsewhere. Follow all authority and safety limits in
 [SKILL.md](../SKILL.md); inherited campaign invocation text does not authorize a
-worker to coordinate, aggregate, mutate Viewed, edit, publish, approve, or merge.
+worker to coordinate, aggregate, mutate Viewed, resolve or reopen review threads,
+edit, publish, approve, or merge. Prior-thread adjudication and any authorized
+resolution belong to the coordinator; do not rerun that preflight in a worker.
 Safe isolated targeted tests and scratch reproductions remain allowed.
 
 The campaign coordinator also reuses the adjudication, blocker-falsification,
 reporting, and proposed-comment standards below during reconciliation. That does
 not authorize substituting a coordinator review for an assigned worker; campaign
 coverage, identity, and verdict scope remain governed by
-[campaign.md](campaign.md).
+[campaign.md](campaign.md). In the final campaign report, its existing-thread
+deduplication rule replaces duplicate proposed comments with verified thread
+links; it never drops the supported finding or changes worker coverage.
 
 ## Bind the assigned change
 

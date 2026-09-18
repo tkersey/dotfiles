@@ -1,7 +1,8 @@
 # PR Review Campaign
 
 Use this coordinator contract after an explicit invocation accepted by
-[SKILL.md](../SKILL.md). Bind one exact PR epoch, analyze the change as a whole,
+[SKILL.md](../SKILL.md). Bind one exact PR epoch, adjudicate the authenticated
+viewer's prior review threads, then analyze the change as a whole,
 publish a source-bound Campaign Brief, freeze that prepared context in one
 immutable seed, fork bounded file reviewers from the seed, admit their exact-head
 reports, project accepted progress into GitHub's Viewed state, and reconcile the
@@ -37,21 +38,26 @@ or correctness.
 ## Coordinator authority
 
 SKILL.md owns invocation acceptance, target resolution, and rejection of retired
-standalone selectors. An accepted explicit invocation authorizes preparation,
-creation and observation of review tasks, and Viewed projection for the resolved
-PR under this contract. Resume is campaign continuation; reconciliation and
-partial progress reports are campaign operations, not separate entry points.
+standalone selectors. An accepted explicit invocation authorizes prior-thread
+adjudication and justified own-root resolution, preparation, creation and
+observation of review tasks, and Viewed projection for the resolved PR under this
+contract. Follow [prior-review-threads.md](prior-review-threads.md) for the narrow
+resolution authority and honor caller mutation limits. Resume is campaign
+continuation; reconciliation and partial progress reports are campaign
+operations, not separate entry points.
 
 Authority does not extend to code edits, commits, comment publication, GitHub
-review or approval submission, merge, or unmarking files. A worker assignment or
-inherited invocation does not grant coordinator authority.
+review or approval submission, merge, unmarking files, resolving other reviewers'
+threads, or reopening resolved threads. A worker assignment or inherited
+invocation does not grant coordinator authority, including thread mutations.
 
 ## Bind one exact PR epoch
 
 Require an open pull request and bind:
 
 ```text
-repository name with owner
+repository host and name with owner
+authenticated viewer ID and login
 pull request number and node ID
 base-tip object ID
 review merge-base object ID
@@ -66,7 +72,10 @@ campaign instance ID
 campaign ID
 ```
 
-Use `gh` as the GitHub authority. Begin with the compact PR identity:
+Use `gh` as the GitHub authority. Bind the host from the resolved PR URL and use
+that URL for later PR reads rather than resolving a different target. Pass the
+same host to every API call and require the inventory/preflight viewer to match.
+Begin with the compact PR identity:
 
 ```bash
 gh pr view <pr> --json id,number,url,state,baseRefOid,headRefOid,changedFiles
@@ -77,11 +86,12 @@ with paginated GraphQL rather than assuming `gh pr view --json files` is
 complete:
 
 ```bash
-gh api graphql --paginate \
+gh api --hostname "$host" graphql --paginate \
   -f owner='<owner>' \
   -f name='<repo>' \
   -F number=<pr-number> \
   -f query='query($owner:String!,$name:String!,$number:Int!,$endCursor:String){
+    viewer{id login}
     repository(owner:$owner,name:$name){
       pullRequest(number:$number){
         id
@@ -103,7 +113,7 @@ Require both identity reads to report `state: OPEN`. Resolve the immutable revie
 base separately from the base-branch tip, using the pinned base and head SHAs:
 
 ```bash
-gh api \
+gh api --hostname "$host" \
   "repos/<owner>/<repo>/compare/<base-sha>...<head-sha>" \
   --jq .merge_base_commit.sha
 ```
@@ -148,12 +158,13 @@ elenctic-campaign-v1:<owner/name>#<pr>@<head-sha>:<selected-set-digest>:<coordin
 The base tip, review merge base, complete inventory, initial Viewed-state map,
 selected unchecked set, pre-Viewed exclusions, and identities form one immutable
 review epoch. Before launching another worker, admitting a report, marking a file
-Viewed, or issuing a final verdict, re-read the PR identity and require
-`state: OPEN`. If state, base, or head moved:
+Viewed, resolving a review thread, or issuing a final verdict, re-read the PR
+identity and require `state: OPEN`. If state, base, or head moved:
 
 1. stop launching assignments for the old epoch;
 2. mark unadmitted old reports stale and do not project them to Viewed;
-3. preserve old blockers only as hypotheses;
+3. preserve old blockers and prior-thread conclusions only as hypotheses; stop
+   further old-epoch thread resolutions without undoing observed mutations;
 4. invalidate the Campaign Brief and seed for new work;
 5. enumerate the new exact inventory;
 6. continue only through an explicit restart or resume decision that repeats
@@ -163,6 +174,21 @@ Do not reuse an old report merely because its target file's bytes appear
 unchanged. Its causal evidence and inherited context may depend on another file
 that changed.
 
+## Adjudicate prior review threads first
+
+After binding the exact epoch and before capability checks or shared preparation,
+follow [prior-review-threads.md](prior-review-threads.md). This coordinator-only
+preflight runs even when the unchecked selection is empty. No eligible own-root
+threads proceeds directly to the existing review; incomplete reads are reported,
+not treated as no threads. On accepted resume, refresh this preflight without
+resnapshotting file selection, replacing the seed, or duplicating assignments.
+
+Keep semantic dispositions, GitHub mutation outcomes, and file coverage separate.
+Carry current verified concerns and evidence gaps into reconciliation; do not
+mark a file Viewed or create a worker merely because its thread was investigated.
+The brief may locate these questions but must not turn prior-thread conclusions
+into inherited findings or pre-adjudicate worker results.
+
 ## Prepare and freeze shared context
 
 When the selected unchecked set is nonempty and worker creation is authorized,
@@ -171,9 +197,11 @@ first resolve the native task-control capabilities in
 that retain the full prepared history, direct IDs and parent provenance,
 assignment delivery, result reads, and bounded waits. Inspect the native
 app-server route before treating an absent agent-facing tool as unavailable.
-If no qualifying route is available, return **INCOMPLETE** before deep preparation;
-do not create a trial reviewer or silently substitute another backend. A returned
-fork ID must still prove the required history boundary and lineage when exercised.
+If no qualifying route is available, return before deep shared preparation with
+incomplete file coverage; retain any verified prior-thread blocker and apply the
+final verdict rules. Do not create a trial reviewer or substitute another backend.
+A returned fork ID must still prove the required history boundary and lineage
+when exercised.
 
 For that authorized work, follow [campaign-brief.md](campaign-brief.md) before
 creating assignments or workers:
@@ -303,9 +331,10 @@ its governing authority. Challenge provisional hypotheses and report material
 contradictions or omissions. No inherited conclusion becomes a finding without
 ordinary Elenctic evidence and adjudication.
 
-Do not aggregate, edit, mark Viewed, post comments, submit a review, approve, or
-merge. Emit the required Review identity with pr, campaign_id, assignment_id,
-campaign_context_id, campaign_seed_thread_id, and coverage.
+Do not aggregate, edit, mark Viewed, resolve or reopen review threads, post
+comments, submit a review, approve, or merge. Emit the required Review identity
+with pr, campaign_id, assignment_id, campaign_context_id, campaign_seed_thread_id,
+and coverage.
 ```
 
 Do not select a different model unless the caller explicitly requested one.
@@ -319,8 +348,9 @@ Do not substitute clean `create_thread` tasks, copied summaries, generic
 subagents, or independent `codex exec` sessions. Native app-server forks through
 CAS preserve the same thread history and are an admitted transport, not a
 summary-based substitute. If the runtime cannot establish one immutable seed,
-fork every worker from it by direct ID, and preserve parent provenance, return
-**INCOMPLETE** before worker launch.
+fork every worker from it by direct ID, and preserve parent provenance, stop
+before worker launch with incomplete file coverage. Preserve verified blockers
+and apply the final verdict rules rather than hiding them behind INCOMPLETE.
 
 Each worker performs the complete internal file-review contract exactly once.
 The campaign does not replace that investigation with the Campaign Brief, a
@@ -473,7 +503,7 @@ write or derive semantic coverage from projection success. See GitHub's
 Mutation form:
 
 ```bash
-gh api graphql \
+gh api --hostname "$host" graphql \
   -f pullRequestId='<pull-request-node-id>' \
   -f "path=$assignment_path" \
   -f query='mutation($pullRequestId:ID!,$path:String!){
@@ -504,8 +534,9 @@ coverage, and an unverifiable final epoch withholds a current-head verdict.
 
 When every assignment is accepted, incomplete, failed, stale, or needs-input and
 no worker remains running, automatically reconcile admitted selected-worker and
-excluded-file evidence. Reuse **Adjudicate before reporting**, **Falsify provisional
-blockers**, **Return one report**, and **End with the decision** from
+excluded-file evidence together with current verified prior-thread evidence.
+Reuse **Adjudicate before reporting**, **Falsify provisional blockers**,
+**Return one report**, and **End with the decision** from
 [worker-review.md](worker-review.md); the coverage rules and aggregate identity
 below govern the campaign result. Do not ask the user to select aggregation.
 
@@ -514,6 +545,8 @@ below govern the campaign result. Do not ask the user to select aggregation.
 Source dispositions are inputs, not ceilings on aggregate judgment:
 
 - source **real blockers** nominate claims to re-establish, not inherited gates;
+- verified prior-thread evidence contributes current concerns and gaps, including
+  on pre-Viewed paths, but never supplies file coverage or Viewed eligibility;
 - complete current-candidate reports contribute only their identified target
   coverage, independently of verdict; approval is not evidence against an
   omitted defect;
@@ -573,21 +606,25 @@ For every deduplicated candidate blocker:
 A blocker is retained only when current evidence—not historical repetition—
 establishes delta causality, mandatory authority, concrete basis, defense
 survival, and merge necessity. Reclassify, reject, or mark incomplete under the
-same standard used by workers. Draft one proposed inline comment per deduplicated
-real blocker, verify its current diff anchor, and retain the blocker with
-**inline location unavailable** when no valid anchor exists.
+same standard used by workers. For a blocker already represented by an open
+review thread, verify its current state and link it as **Existing review thread**
+instead of drafting a duplicate. Otherwise draft one proposed inline comment per
+deduplicated real blocker, verify its current diff anchor, and retain the blocker
+with **inline location unavailable** when no valid anchor exists. Preserve distinct
+defects and all current blocker evidence regardless of thread or Viewed state.
 
 Reconciliation itself does not launch reviewers or begin an unrelated audit.
 Bound it by contracts, contradictions, and unresolved premises already exposed
-by admitted reports or the current Campaign Brief. The brief locates questions;
-verify its premises against source before using them. Stop each question when
+by admitted reports, adjudicated prior threads, or the current Campaign Brief.
+The brief locates questions; verify its premises against source before using them. Stop each question when
 resolved or a named evidence gap prevents a decision. This is synthesis within
 the campaign, not another review lane or loop.
 
 File completion is a scheduling fact, not sufficient semantic closure. Reconcile
 the cross-file obligations, contradictions, and decision-limiting questions
-exposed by admitted reports and the Campaign Brief against current source. Use
-the existing brief and coverage notes, not a new matrix, ledger, or reviewer.
+exposed by admitted reports, prior-thread evidence, and the Campaign Brief
+against current source. Use the existing brief and coverage notes, not a new
+matrix, ledger, or reviewer.
 An unresolved material question makes the affected aggregate scope incomplete;
 nonblocking concerns do not become new merge gates. Do not upgrade an incomplete
 assignment or authorize Viewed merely because another report resolves a premise.
@@ -600,7 +637,7 @@ weight.
 
 Before the aggregate verdict, recheck the PR epoch again. Head movement makes
 whole-campaign approval unavailable, invalidates the seed for new work, and
-prevents any remaining Viewed writes.
+prevents any remaining Viewed or review-thread writes.
 
 ## Coverage and final decision
 
@@ -612,12 +649,20 @@ from incomplete reports. Only accepted complete reports supply selected-file
 coverage or Viewed eligibility. An interim report must disclose outstanding work
 rather than silently shrinking the frozen scope.
 
+Apply the prior-thread contract's semantic/effect distinction. Incomplete thread
+inventory or ownership withholds campaign approval without erasing valid file
+coverage. Decision-relevant thread gaps constrain the affected scope; complete
+adjudication with only a denied/uncertain resolution write does not itself create
+a blocker or invalidate semantic approval. Never describe the PR as clean while
+a verified prior-thread blocker survives, even on a pre-Viewed path.
+
 Verdict semantics are:
 
 - any current blocker surviving aggregate falsification -> **BLOCKED**, even
-  when other files are not reviewed;
-- no surviving blocker with incomplete selected-set coverage or an unresolved
-  material cross-file obligation within the scope being decided -> **INCOMPLETE**,
+  when other files are not reviewed or its anchor was pre-Viewed;
+- no surviving blocker with incomplete prior-thread inventory/ownership,
+  incomplete selected-set coverage, or an unresolved material thread/cross-file
+  obligation within the scope being decided -> **INCOMPLETE**,
   with the affected scope and evidence gap named;
 - scoped **APPROVE** -> every selected unchecked file has accepted complete
   current-head coverage, exposed cross-file obligations in that scope are
@@ -627,25 +672,27 @@ Verdict semantics are:
   the campaign base tip, exposed whole-PR obligations are reconciled, no blocker
   survives, and relevant integration evidence is complete.
 
-Never issue a vacuous approval when the selected set is empty. Launch no workers;
-aggregate separately admissible current-head Elenctic evidence when available,
-but issue whole-PR approval only when every excluded file has complete,
+Never issue a vacuous approval when the selected set is empty. The prior-thread
+preflight still runs and its verified blockers still constrain the verdict. Launch
+no workers; aggregate separately admissible current-head Elenctic evidence when
+available, but issue whole-PR approval only when every excluded file has complete,
 base-tip-current evidence. Otherwise report that every file was pre-Viewed and
 withhold an Elenctic whole-PR approval.
 
 ## Resume and recover
 
 `$elenctic resume` continues the established campaign. Recheck its exact open PR
-epoch, retain accepted complete assignments, continue running selected work, and
+epoch and refresh the prior-thread preflight before resuming scheduling or writes.
+Retain accepted complete assignments, continue running selected work, and
 requeue unassigned, stale, retryable failed, and incomplete work only within the
 frozen selected set. Surface needs-input assignments without granting permission.
 Reconcile an ambiguous prior launch before retrying it. Do not resnapshot Viewed
 state or expand the selected set during a same-epoch continuation.
 
 If the caller explicitly asks for an interim report without more work, launch
-no additional tasks and report all current evidence and outstanding coverage.
-Honor any narrower limit on Viewed writes; do not turn the report into approval
-of an incompletely reviewed scope.
+no additional tasks, perform no thread mutations, and report all current evidence
+and outstanding coverage. Honor any narrower limit on Viewed writes; do not turn
+the report into approval of an incompletely reviewed scope.
 
 When the current coordinator still has the Campaign Brief identity, seed thread
 ID, assignment IDs, fork receipts, and worker thread IDs, resume through direct
@@ -673,7 +720,13 @@ establishes membership and is not a recovery fallback.
 
 ## Campaign report
 
-Before the final verdict, report:
+Before the final verdict, include **Prior review threads** using the prior-thread
+contract: host/viewer, candidate, inventory completeness, counts, and linked
+outcomes with replies, relevant changes, semantic evidence, and separately
+observed mutation results. A complete empty inventory needs only one sentence.
+Reference existing open threads instead of duplicate final comment drafts.
+
+Then report:
 
 ```text
 PR campaign:
@@ -717,8 +770,12 @@ reports.
 ## Hard rules
 
 - An explicit invocation accepted by SKILL.md in the current coordinator is
-  required before preparation, task creation, or Viewed writes; retired
-  standalone requests and worker assignments never grant that authority.
+  required before thread preflight/resolution, preparation, task creation, or
+  Viewed writes; retired standalone requests and worker assignments never grant
+  that authority.
+- Adjudicate unresolved own-root threads first, including on resume and empty
+  file selection; only the coordinator may resolve justified threads. Never
+  equate resolution with file coverage or let Viewed exclusions hide blockers.
 - Deeply analyze the complete PR construction and publish one source-bound
   Campaign Brief before creating any worker.
 - Treat the brief as orientation, never as review evidence, a finding, or a
@@ -737,7 +794,7 @@ reports.
   infer review coverage, correctness, or approval from it.
 - Attempt Viewed only from accepted complete evidence at the checked epoch;
   stop on a raced or uncertain projection and never claim atomic head binding.
-- Never unmark Viewed, post comments, submit a review, approve, merge, or edit
-  source code.
+- Never unmark Viewed, resolve other reviewers' threads, reopen resolved threads,
+  post comments or replies, submit a review, approve, merge, or edit source code.
 - Keep primary preparation, task execution, Seq provenance, GitHub progress
   projection, and Elenctic semantic authority distinct.
