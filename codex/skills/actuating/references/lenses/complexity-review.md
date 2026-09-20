@@ -38,10 +38,16 @@ Return the native structured review object with `findings`, `overall_correctness
 `overall_explanation`, and `overall_confidence_score`, never a bare status word.
 Supported findings retain native `title`, `body`, `confidence_score`, `priority`,
 and `code_location` (`absolute_file_path` and `line_range.start`/`line_range.end`).
-When no supported findings remain, use an empty `findings` array and
-`overall_correctness: "patch is correct"`; use `"patch is incorrect"` only with
-supported findings. Disclose material evidence gaps in `overall_explanation`
-without asserting complete coverage. This search priority does not
+An empty `findings` array means no actionable defect was established in the
+inspected scope, not that validation or the review obligation is complete. Retain
+the native correctness vocabulary: `"patch is correct"` with no supported findings,
+`"patch is incorrect"` with supported findings. Neither label grants closeout credit.
+In `overall_explanation`, state inspected scope and material evidence limitations:
+the missing observation, attempted check/mode, actual blocker (or unknown cause),
+and affected conclusion. Do not fabricate a code finding for unavailable validation
+or report a blocked/skipped check as passed. Actuating owns evidence adequacy and
+credit; confidence does not supply missing evidence.
+This search priority does not
 exclude other concrete in-scope defects. Review Fold owns admission and Actuating
 owns selection. Do not minimize raw line count, remove independent oracles, select
 repairs, or launch a separate reduction audit.
