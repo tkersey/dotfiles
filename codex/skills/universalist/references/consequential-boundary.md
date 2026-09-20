@@ -17,87 +17,28 @@ routes are materially different.
 clearly dominates, the evidence is only syntactic duplication, or the task is
 wholly internal to one unchanged boundary.
 
-**Return:**
+**Return:** one decision-changing argument using the receiving workflow's evidence:
+comparison, native artifact, enforcement and residual ownership, transition when
+needed, falsifier, invalidators, and claim strength. Missing evidence and adequate
+but incomparable candidates remain unresolved; do not manufacture a final route.
 
-```text
-Context identifier / proof lease:
-Boundary and owner:
-Ordinary candidate:
-Alternative candidates:
-Comparison universe:
-Architectural axis and typed hole:
-Latent-structure disposition, if material:
-Relevant card dispositions:
-Nominated or standalone-selected route:
-Boundary Artifact Contract:
-Enforcement allocation:
-Residual obligations:
-Invalidation triggers:
-Law:
-Falsifier:
-Claim strength:
-Evidence debt or obstruction:
-```
-
-In Actuating composition this module nominates; Actuating selects.
+In Actuating composition this module nominates; Actuating selects. Its adapter
+owns presentation across every loaded reference: the templates below are evidence
+guides, not additional packets or mandatory headings. Applicable proof remains
+required, and existing receiving-workflow evidence may discharge it by reference.
 
 
 ## World, boundary, and context inventory
 
-Ground the consequential packet in repository evidence before comparing
-abstractions:
+Ground the seam in its objects, operations, invariants, observations, primitives,
+composition, and equality/coherence; identify source, target, owner, and information
+preserved, forgotten, generated, or observed. Reuse the common-path evidence and
+record material additions once. Specialized structures are required only by the
+selected mechanic, not by this inventory's existence.
 
-```text
-World:
-  objects:
-  transformations:
-  invariants:
-  observations:
-  primitives:
-  composition:
-  equality / coherence:
-
-Boundary:
-  kind:
-  source:
-  target:
-  owner:
-  preserved:
-  forgotten:
-  generated:
-  observed:
-
-Context:
-  requirements:
-  authority:
-  compatibility:
-  effects:
-  resources:
-  host capabilities:
-  validity horizon:
-
-Typed hole:
-  axis:
-  kind:
-```
-
-When latent structure is material, add:
-
-```text
-representative instances
-carriers / operations / observations
-candidate equations / non-laws
-candidate pattern / encoding relation
-discriminating law / nearest false friend
-generalization dividend
-transition witness
-```
-
-When a specialized mechanic is material, add only the structures required by
-its card.
-
-Do not escalate when this inventory cannot be grounded in repository evidence.
-Return evidence debt instead.
+When evidence is missing, use the entrypoint's evidence/authority rules: obtain an
+available authorized discriminator, or return unresolved debt. Do not fill gaps
+with doctrine or silently proceed through the affected mutation.
 
 ## Current-context contract
 
@@ -135,27 +76,11 @@ layer, deployment topology, or external authority cannot provide it.
 
 ## Ordinary candidate and comparison universe
 
-State the ordinary repository-native candidate first:
-
-```text
-record
-tagged union
-checked constructor
-adapter
-explicit parameter
-state machine
-operation IR
-handler
-labelled graph
-query
-bounded loop
-canonical merge
-typed compatibility witness
-```
-
-Carry forward the common path's grounded law-derived challenger, if one survives.
-Do not rediscover it in a second pass. A first-use boundary can supply enough
-requirements and operations to derive an alternative without duplicated code.
+Carry forward the incumbent, ordinary native candidate, and grounded alternatives
+from the common path. Do not rediscover them. First-use requirements can justify an
+alternative without duplicated code. Expand only for a live requirement, material
+tradeoff, or evidence capable of overturning the nomination; stop when further
+alternatives cannot change the decision, not at a fixed candidate count.
 
 Then define the comparison universe:
 
@@ -253,27 +178,11 @@ unsound certificates. Do not force unrelated axes into one global winner.
 
 ## Latent-structure integration
 
-When the recognition gate fired, carry forward the packet from
-`latent-structure-recognition.md`:
-
-```text
-Current encoding and representative instances:
-Carriers / operations / observations:
-Candidate equations:
-Known non-laws / counterexamples:
-Candidate general pattern:
-Encoding relation:
-Nearest false friend:
-Discriminating law:
-Generalization dividend:
-Transition witness:
-```
-
-The recognition is one input to comparison. It does not select a route.
-
-Classify the current encoding exactly as defined by the recognition module and
-retain the recognized pattern only when its generalization dividend is
-material. `analogy only` remains explanatory metadata.
+Carry forward recognition evidence without another packet: current encoding,
+representative instances or first-use derivation, operations and observations,
+laws and non-laws, encoding relation, nearest false friend, discriminator, dividend,
+and transition need. Use the recognition module's relation definitions. Recognition
+informs comparison but does not select; `analogy only` remains explanatory metadata.
 
 ## Construction-card evaluation
 
@@ -311,34 +220,16 @@ specialized mechanic on the common path merely because it exists.
 
 ## Boundary Artifact Contract
 
-A nominated direction is not yet architecture. Lower it into one
-repository-native Boundary Artifact Contract candidate:
+Lower the nomination into a repository-native contract: owner, carrier, public
+construction/elimination/composition, interpretation, required observations,
+compatibility, enforcement, bypass prevention, residuals, resources, invalidators,
+and claim strength. Include specialized witnesses and migration only when material.
 
-```text
-Context identifier / proof lease:
-Boundary and owner:
-Requirements discharged:
-Current encoding / generalization relation, if material:
-Representation / carrier:
-Public constructors:
-Public eliminators:
-Legal compositions:
-Specialized arrows / witnesses / pasting, if selected:
-Interpreter / projection / handler:
-Required observations:
-Compatibility / migration:
-Transition witness / retirement, if material:
-Bypass prevention:
-Enforcement allocation:
-Residual obligations:
-Invalidation triggers:
-Resource bound:
-Claim strength:
-Applicability rationales:
-```
-
-Complete every applicable field. Use `not applicable` with an
-artifact-specific rationale rather than inventing ceremonial structure.
+These are applicable evidence obligations, not a serialization format. Reuse
+existing facts and proof references. Explain nonapplicability when it affects the
+claim; do not emit boilerplate fields or invent structures to populate a template.
+The durable plan retains its exact consumer-required shape only when its independent
+storage gate fires outside Actuating.
 
 ### Construction surface
 
@@ -448,120 +339,42 @@ A context-relative boundary artifact satisfies every applicable law:
 
 ## Claim-appropriate witness contract
 
-Keep claim kind separate from realization strength. A lawful categorical model
-(`structure`) is not automatically a universal construction (`universal`).
-Use the existing proof-profile surface; do not add a workflow or route.
+Keep claim kind (`structure` or `universal`) independent of realization strength
+(`literal`, `effective realization`, or `bounded approximation`). A lawful structure
+needs its carrier, operations, applicable laws, preservation under interpretation
+and permitted operations, effectivity, and discriminator—not invented universality.
+A coalgebra need not be final; an observation vocabulary need not claim Yoneda.
 
-For a **structure** claim, establish the carrier and operations, their applicable
-laws, preservation by interpretation and permitted operations, effectivity, and a
-discriminating counterexample. A coalgebra needs transition/observation laws,
-not finality. An observation vocabulary needs preservation and, before quotienting,
-adequacy under required future continuations, not a fabricated Yoneda argument.
-A lawful transformation needs its hypotheses and observation-preserving equation;
-performance or resource improvements need their own evidence.
-
-Information hiding can realize an abstract interface of operations, laws, and
-sanctioned observations without exposing its representation. To claim representation
-independence, establish a relation preserved by public construction and every
-permitted operation, with agreement on required observations and future continuations;
-account for aliasing, lifetime, effects, and bypasses where relevant. For a functional
-abstraction `alpha: R -> A` and matched unary operations, the commuting obligation is
-`alpha o op_R = op_A o alpha`; observations must agree through `alpha` as well.
-Use the appropriate simulation or relational argument when a functional abstraction
-is not justified. Do not force this model onto every interface or infer the claim
-from opacity. If distinctions are quotiented, the equivalence must respect permitted
-operations and required future observations, not merely today's examples.
-
-Lower caller burden is a context-relative design benefit, not an initiality,
-finality, parametricity, equivalence, or uniqueness proof. Preserve the selected
-claim's existing proof profile; an ordinary encapsulation needs no invented
-universal construction, and a genuine universal claim still needs the following.
+For representation independence, universal construction, lawful transformation, or
+bounded approximation, load [claim-appropriate-proof.md](claim-appropriate-proof.md)
+and apply only the live claim's obligations. Universal claims require a diagram,
+competitors, maps, factorization, and uniqueness; opacity, one interpreter, and
+passing samples are not enough. Performance claims need their own evidence.
+A missing stronger proof does not obstruct an adequate weaker artifact. Residual or
+obstructed requirements remain undischarged; no approximation may silently erase
+required distinctions or required-valid behavior.
 
 ### Universal witness contract
 
-Only a nomination that claims a **universal construction** additionally requires
-an explicit diagram, admissible competitors and maps, factorization equations,
-and a uniqueness argument. The full profile is:
-
-```text
-Existence:
-  the repository-native artifact or bounded approximation can be built.
-
-Preservation:
-  required observations, invariants, compatibility, and effects commute.
-
-Mediation:
-  every admissible competitor has the required comparison path.
-
-Canonicality:
-  the comparison is unique up to declared equivalence or normalization.
-
-Effectivity:
-  construction, comparison, validation, interpretation, and invalidation fit
-  the budget.
-
-Falsifier:
-  a nearby weaker or illegal construction fails observably.
-```
-
-Opacity, a single public interpreter, canonical IDs, and removal of bypasses
-may enforce a representation. They do not by themselves prove mediation or
-uniqueness. Show why every admissible competitor factors and why two mediators
-with the required equations are equal under the declared equivalence. Tests can
-falsify a claim or exhaust a finite universe; sampled success is not a universal
-proof. Any restriction of the competitor universe must come from requirements
-or an explicitly bounded claim, not from excluding an inconvenient alternative.
-
-A missing universal proof is evidence debt about that stronger claim, not an
-obstruction to an adequate structure-only implementation. Nominate the weaker
-honest artifact when it suffices, without silently retaining universal wording.
-
-State claim strength:
-
-```text
-literal
-effective realization
-bounded approximation
-```
-
-These strengths apply independently to structure and universal claims. A bounded
-approximation states its domain, included and excluded behaviors or competitors,
-possible losses, evidence strength, and refinement condition. It must not erase
-required distinctions or reject required-valid behavior without declaring the
-remaining requirement residual or obstructed. Neither disposition discharges it.
+The [universal witness contract](claim-appropriate-proof.md#universal-witness-contract)
+retains existence, preservation, mediation, canonicality, effectivity, and falsifier
+obligations. Load it for a live universal claim, not every consequential decision.
 
 ## Transition witness
 
-When recognition or comparison changes the architecture, construct one
-observation-preserving transition:
+When comparison changes an existing architecture, supply an observation-preserving
+transition: current encoding to native form, translation and interpretation,
+preservation law, compatibility boundary, first witness, cutover and retirement
+order, rollback, completion condition, and invalidators. Reuse recognition's
+transition if already supplied; a nomination describes required work, not completed
+implementation evidence.
 
-```text
-Current encoding:
-Generalized repository-native form:
-Encode / translate:
-Interpret / project:
-Preservation law:
-Compatibility boundary:
-First witness seam:
-Cutover order:
-Retired obligations and bypasses:
-Rollback:
-Stop condition:
-Invalidation triggers:
-```
-
-Normally:
-
-1. introduce the new core behind the current boundary;
-2. translate one representative existing case;
-3. prove observational agreement with the incumbent;
-4. route one caller through the new interpretation;
-5. extend only to instances governed by the same law;
-6. close raw construction or bypass paths;
-7. retire compatibility adapters only after their callers are gone.
-
-Do not widen migration merely because the generalized representation can express
-more.
+Normally introduce the core behind the existing boundary, translate and verify a
+representative caller, extend within the same law, close raw construction/bypass
+paths, and retire adapters after their callers leave. A first witness is a migration
+checkpoint, not completion of all authorized callers or proof of complete coverage.
+Do not widen migration merely because the representation can express more. Do not
+invent migration for a first-use boundary without an incumbent to migrate.
 
 ## Residual obligations
 
@@ -622,7 +435,9 @@ underdetermined
 witnessed obstruction
 ```
 
-Missing evidence remains unresolved. It is not obstruction.
+Missing evidence and incomparable adequate candidates remain unresolved. Neither
+establishes obstruction. A demonstrated impossibility of a demanded canonical
+choice obstructs that claim only, not an adequate weaker construction.
 
 A real obstruction requires:
 
@@ -642,28 +457,10 @@ and obstruction evidence conflict, report the conflict explicitly.
 
 ## Execution-time reclassification
 
-Whenever new execution evidence may change the owner, requirements,
-observations, compatibility, effects, resources, axis, typed hole, law,
-falsifier, enforcement, residuals, route, or seam decomposition, reclassify
-before the next affected mutation:
-
-```text
-Prior disposition or decision:
-New evidence:
-Material semantic delta:
-Outcome: retain / split / escalate / obstruct
-Invalidated artifacts: receipt / plan / proof lease / none
-Successor packets: owner + axis + seam / none
-```
-
-- **retain** — same owner, axis, law, falsifier, route, and obligations;
-- **split** — one packet per independently governed seam;
-- **escalate** — stop and repeat this module;
-- **obstruct** — no honest current route remains.
-
-Before Actuating selects, revise the nomination in place. After materialization,
-return the evidence to Actuating. Never reopen its Construction or overwrite an
-existing root receipt.
+Use [reclassification.md](../reclassification.md) before the next affected mutation
+when new evidence changes the decision's owner, context, laws, observations,
+enforcement, residuals, route, or decomposition. Reuse unchanged decisions silently.
+Actuating alone may reopen its target; never overwrite an existing root receipt.
 
 ## Route assignment
 
@@ -710,29 +507,8 @@ route, authority grant, or reason to widen the seam.
 
 ## Return packet
 
-Return one bounded packet to the kernel or receiving workflow:
-
-```text
-Context identifier / proof lease:
-Boundary and owner:
-Requirements and observations:
-Ordinary candidate:
-Alternatives:
-Comparison universe:
-Axis and typed hole:
-Recognition disposition:
-Card dispositions:
-Nominated or standalone-selected route:
-Boundary Artifact Contract:
-Enforcement matrix:
-Transition witness:
-Residual obligations:
-Invalidation triggers:
-Law:
-Falsifier:
-Claim strength:
-Evidence debt / underdetermination / obstruction:
-```
-
-Do not include unloaded mechanics, unrelated axes, or a durable plan unless the
-independent-durability gate fires.
+Return the material decision and evidence once, in the receiving workflow's form.
+Analysis, implementation, and a bounded Actuating nomination have different
+completion criteria; honor the already-authorized task instead of treating one
+verified seam as a universal stopping rule. Do not include unloaded mechanics,
+unrelated axes, or a durable plan without independent durability need.

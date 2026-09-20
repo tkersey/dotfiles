@@ -4,6 +4,14 @@ Use only when the Universalist decision must remain independently durable.
 When Actuating owns the current Construction, carry the nomination and
 adjudication there instead of allocating this plan.
 
+This template is a standalone storage-consumer format, not a runtime reporting
+requirement. Preserve its headings for the owner definition; reuse evidence and
+cross-references instead of repeating prose under overlapping fields. Never force
+a selected route or terminal receipt while evidence is missing or adequate
+candidates are incomparable. A claim-scoped canonical obstruction does not obstruct
+an adequate weaker construction; record the scope and constructive alternatives.
+A first witness is a checkpoint, not completion of remaining authorized migration.
+
 ## Track:
 ## Composition context: standalone / Actuating-composed
 ## Decision owner:

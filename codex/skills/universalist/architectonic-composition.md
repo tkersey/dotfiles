@@ -19,11 +19,15 @@ smallest argument Architectonic can adjudicate: owner and operation, law and
 required-valid observations, material decision delta, representative boundary or
 caller sketch, discriminator, and material transition/residual/invalidation costs.
 Use Architectonic's existing assessment rather than a second report or receipt.
+This presentation rule takes precedence over templates in every loaded reference;
+reuse evidence without omitting applicable proof obligations.
 These supporting results do not create or rename Universalist routes.
 
-Start with the incumbent and ordinary repository-native candidate. Carry forward
-at most one grounded law-derived challenger, including a first-use boundary when
-the actual law justifies it. Load recognition, consequential comparison, advanced
+Start with the incumbent and ordinary repository-native candidate. Reuse grounded
+law-derived alternatives, including first-use boundaries justified by actual laws.
+Consider another only for a live requirement, material tradeoff, or evidence that
+could overturn the nomination; stop when further alternatives cannot change the
+decision, not at a fixed quota. Load recognition, consequential comparison, advanced
 mechanics, and theory references only at their existing evidence gates. A review
 with no mutations still needs consequential comparison before recommending a
 materially different candidate; absence of a write does not waive that obligation.

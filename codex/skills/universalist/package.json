@@ -1,7 +1,7 @@
 {
   "name": "universalist",
-  "version": "17.8.0",
-  "description": "Semantic-pressure-triggered boundary decisions with bounded law-derived alternatives, claim-appropriate proofs, 56 lazy construction cards, and optional standalone durability.",
+  "version": "17.9.0",
+  "description": "Semantic-pressure-triggered boundary decisions with evidence-bounded law-derived alternatives, claim-appropriate proofs, 56 lazy construction cards, and optional standalone durability.",
   "private": true,
   "unified_mechanics": true,
   "custom_subagents": true,
@@ -26,5 +26,6 @@
   "artifacts": "context-relative-boundary-contract",
   "latent_structure_recognition": true,
   "progressive_disclosure": "evidence-indexed",
-  "artifact_evaluation_cases": 28
+  "artifact_evaluation_cases": 28,
+  "workflow_evaluation_cases": 7
 }

@@ -26,7 +26,13 @@ Successor packets: owner + axis + seam / none
 - **retain** — the same owner, axis, law, falsifier, route, and obligations hold;
 - **split** — independently governed owners or axes appeared;
 - **escalate** — the route materially changed; repeat consequential analysis;
-- **obstruct** — no honest current route is representable or authorized.
+- **obstruct** — counterevidence closes every active constructive alternative for the
+  affected required claim; missing evidence or authorization alone is not obstruction.
+
+If discrimination is incomplete, retain the reclassification as unresolved without
+forcing one of these completed outcomes or a terminal receipt. Pause only the
+affected mutation; resolve available evidence under the entrypoint's authority
+rules and continue independent authorized work.
 
 Before Actuating selects a target architecture, revise the nomination in
 place. After implementation begins, return material evidence to Actuating;
