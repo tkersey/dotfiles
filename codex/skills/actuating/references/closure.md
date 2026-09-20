@@ -59,18 +59,21 @@ For full `complete`, require:
 ```text
 required Ship/provider state matches the exact head
 no review epoch remains open; all terminal semantic outcomes are folded
-all five auxiliary lenses have terminal semantic outcomes and are adjudicated
-five consecutive distinct native/default standard cleans on the unchanged head
+all five auxiliary obligations have terminal, adjudicated, credited outcomes
+five consecutive distinct native/default standard cleans credited on the unchanged head
 no unresolved current accepted liability
 no unauthorized semantic change, containment, narrowing, risk, or deferral
 all completeness and historical claims match their actual evidence horizon
 no later falsifier of the Goal, family, mechanism, proof, publication, or review
 ```
 
-The first standard clean counts as one; the next four run serially. Material
-findings or head changes reset all credit. Clean reviews are adversarial attempts,
-not a universal soundness proof. A completion-relevant unavailable source cannot
-be silently credited; retain the authorized bounded or non-complete outcome.
+Apply [Review-credit admission](review-contract.md#review-credit-admission) to
+both accounting and user/PR narration. The first credited standard counts as one;
+the next four run serially. A held required obligation cannot become complete merely
+because all receipts say `clean`; preserve its limitation and actual disposition.
+Material findings or head changes reset all credit. Clean reviews are adversarial
+attempts, not a universal soundness proof. Retain the authorized bounded or
+non-complete outcome when required evidence remains unavailable.
 
 An exact same-claim witness revokes family exclusion immediately. A sanctioned
 path absent from the source-derived coverage basis revokes that claim. Reopen the causal

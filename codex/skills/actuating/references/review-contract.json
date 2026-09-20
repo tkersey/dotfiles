@@ -1,6 +1,6 @@
 {
   "schema": "actuating-review-contract/v17",
-  "contract_id": "actuating-review-contract-v19",
+  "contract_id": "actuating-review-contract-v20",
   "required_lenses": [
     {
       "name": "standard",
@@ -233,6 +233,33 @@
       "clean",
       "findings"
     ]
+  },
+  "review_credit": {
+    "owner": "actuating",
+    "guidance_ref": "codex/skills/actuating/references/review-contract.md#review-credit-admission",
+    "handoff_fields": [
+      "credit_disposition",
+      "credit_basis"
+    ],
+    "default_disposition": "hold",
+    "credit_requires": [
+      "authentic current result",
+      "no unresolved findings",
+      "adequate evidence for the requested review obligation"
+    ],
+    "limitation_dispositions": [
+      "recovered",
+      "covered",
+      "not-required",
+      "unresolved"
+    ],
+    "consumers": [
+      "standard count",
+      "auxiliary completion",
+      "user and PR completion statements"
+    ],
+    "hold_effect": "no advance; preserve unrelated valid credit; pause dependent confirmation or completion",
+    "invalidation": "existing finding, changed-input, and missing pre-review proof rules still apply"
   },
   "universalist_compilation": {
     "owner": "actuating",

@@ -24,7 +24,7 @@ const c = json('references/review-contract.json');
 const d = json('references/decision-contract.json').skill_decision_contract;
 const names = ['standard','soundness-skeptic','footgun-finder','invariant-ace','complexity-mitigator','fresh-eyes'];
 assert.equal(c.schema, 'actuating-review-contract/v17');
-assert.equal(c.contract_id, 'actuating-review-contract-v19');
+assert.equal(c.contract_id, 'actuating-review-contract-v20');
 assert.equal(d.contract_version, 'SKDC-v1');
 assert.equal(d.skill.source_fingerprint, 'actuating-construction-compiler-v15');
 assert.deepEqual(c.required_lenses.map(l => l.name), names);
@@ -222,6 +222,7 @@ assert(challenger.failure_signals.includes('Glaze adds a trigger, pass, report, 
 // End pairing source-contract regressions.
 console.log('actuating: contract, routing, proof ownership, challenger pairing, retired surfaces, and reference links passed');
 JS
+node "$skill_root/tests/test-review-credit.mjs"
 sh "$skill_root/tests/test-construction-cycle-scenarios.sh"
 sh "$skill_root/tests/test-post-elimination-scenarios.sh"
 JAQ_BIN="$jaq_bin" sh "$skill_root/tests/test-semantic-hotspot-scenarios.sh"

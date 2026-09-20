@@ -25,11 +25,14 @@ review with no custom Actuating instruction file or argument. Auxiliaries retain
 their checked-in lenses; none substitutes for standard.
 
 Only a completely realized, locally proved candidate is `reviewable`. Require
-five consecutive distinct native/default standard cleans on one unchanged head;
-the initial standard counts as one and the next four run serially. All five
-auxiliary outcomes must also be terminal and adjudicated. A material finding or
-head change resets all credit. Reviews falsify; they do not prove soundness by
-failing to find a bug.
+five consecutive distinct native/default standard cleans on one unchanged head,
+each admitted by [Review-credit admission](references/review-contract.md#review-credit-admission).
+The initial credited standard counts as one and the next four run serially. All
+five auxiliaries must be terminal, adjudicated, and credited for their requested
+obligations. An acknowledged limitation or raw `clean` receipt is not that decision.
+Use the same dispositions for counts and user/PR completion statements. A material
+finding or head change resets all credit. Reviews falsify; they do not prove
+soundness by failing to find a bug.
 
 Read [closure.md](references/closure.md). `implement` ends at local completion;
 publication and convergence belong to bare Actuating and `review-closeout`.

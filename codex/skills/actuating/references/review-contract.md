@@ -51,11 +51,78 @@ request_fingerprint = sha256(
 )
 ```
 
-Supply only request ID and fingerprint through CAS's workflow binding. Credit only
-structured `clean` or `findings` outcomes with the exact current tuple, instruction
-and workflow bindings, strong principal, owner-lived transport, and the required
-backend capability. Process exit, prose, and thread handles are not verdicts.
-Hashes bind concrete evidence bytes; they do not prove semantic equivalence.
+Supply only request ID and fingerprint through CAS's workflow binding. Accept
+structured `clean` or `findings` outcomes for adjudication only with the exact
+current tuple, instruction and workflow bindings, strong principal, owner-lived
+transport, and the required backend capability. These checks authenticate the
+result; they do not award review credit. Process exit, prose, and thread handles
+are not verdicts. Hashes do not prove semantic equivalence or evidence delivery.
+Keep required scope and usable prior evidence in existing accessible repository/task
+documentation or a supported context channel, without customizing standard review.
+
+## Review-credit admission
+
+Before advancing a standard count, completing an auxiliary obligation, or publishing
+review completion, Actuating adjudicates the full result, including its explanation,
+against the requested scope and current evidence. Preserve CAS's original receipt.
+Adjudicate findings through Review Fold and retain existing unusable-result and
+invalidation paths; an evidence limitation is not itself a fabricated code finding.
+
+```text
+authentic current result + no unresolved findings + adequate evidence for the
+requested review obligation -> credit; otherwise -> hold
+```
+
+Record `credit_disposition: credit | hold` and a concise `credit_basis` in the
+existing per-request handoff or Working Set. An absent disposition means `hold`,
+including for historical receipts; do not infer adequacy from `clean`,
+`patch is correct`, a confidence score, or a successful review-process exit.
+This is an owner decision, not a CAS receipt field or a new persistent record.
+
+For a reported limitation, identify the affected claim and missing observation,
+the attempted check and relevant mode/inputs, and the actual blocker (or unknown
+cause). Resolve its relevance before credit, using the existing evidence:
+
+| Limitation disposition | Basis needed for credit |
+|---|---|
+| `recovered` | The missing observation completed, and any review reasoning dependent on it was reassessed. |
+| `covered` | An identified current evidence source discharges the affected obligation; relevant subject, inputs, mode, environment, and scope support reuse. |
+| `not-required` | The existing requested scope supports the narrower conclusion without this observation; no required obligation was weakened to obtain credit. |
+| `unresolved` | Materiality or sufficiency remains unestablished: hold the affected credit. |
+
+Keep the disposition and source-supported basis together when reducing the result.
+One sentence usually suffices; ordinary adequate reviews need no new evidence
+inventory. An unsuccessful exploratory command does not automatically invalidate
+a review. A material or unassessed gap cannot be silently accepted either.
+
+A generic passing check does not establish equivalence to a named ReleaseSafe
+check with unspecified flags. A context digest does not establish access to its
+premises. Exit zero with skipped tests is not execution-pass evidence. Distinguish
+reviewer-reported observations from actual command results. Reuse never relabels
+the original blocked command as passed or establishes that the reviewer used
+another result. When the missing observation affects independent review reasoning,
+validation reuse alone is insufficient without that reasoning being completed.
+
+Recover only the missing observation within existing authority, using a concrete
+recovery hypothesis; stop rather than repeat an unchanged blocker. Do not weaken
+tests, bypass sandbox boundaries, broaden permissions, or rerun the whole matrix
+for a favorable label. A parent-run check may discharge validation but is not an
+independent reviewer confirmation. Reassess dependent review reasoning as needed;
+credit the original obligation at most once. This is distinct from verdictless
+transport recovery and does not consume or extend its allowance.
+
+A held result neither advances nor by itself resets existing credit. Continue
+independent authorized work; a held standard pauses serial confirmations until
+credited or invalidated, rather than being skipped to fill the quota. All required auxiliaries
+need credit, not merely terminal receipts and an acknowledged caveat. Findings,
+changed inputs, and newly discovered missing pre-review proof retain their existing
+invalidation rules. Do not downgrade such missing proof to a review-only limitation.
+
+Derive standard counts, auxiliary completion, and user/PR readiness statements
+from these same owner dispositions, never directly from receipt labels. Preserve
+material limitations and the accepted scope even after credit. An unresolved
+required obligation prevents an unqualified complete/all-clean claim; correcting
+a summary does not itself recover the obligation or change the receipt.
 
 ## Review epoch
 
@@ -99,9 +166,9 @@ A verdictless terminal has no semantic outcome. Permit one fresh exact-request
 recovery; it remains part of the barrier after invalidation. A second verdictless
 terminal blocks. Do not interpret an observation timeout as terminal failure.
 
-The initial standard clean counts as one. Four later standard confirmations run
-serially, producing five consecutive distinct native/default standard cleans on
-one unchanged head. A material finding stops confirmation. A material head change
+The initial credited standard counts as one. Four later standard confirmations
+run serially, producing five consecutive distinct native/default standard cleans
+admitted under Review-credit admission on one unchanged head. A material finding stops confirmation. A material head change
 resets all review credit; the proved successor starts a new initial wave under
 the selected scheduling mode.
 
