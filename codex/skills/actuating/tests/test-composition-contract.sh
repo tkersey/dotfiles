@@ -26,7 +26,8 @@ const skill = text('SKILL.md');
 const protectedSections = {
   "Public routes": "8e2aec586fe33dfc69d573c15a9fdc425547bf8bdf8c4952e5f0fbdd8fb6c222",
   "Review-epoch immutability and evidence acquisition": "1db48d44444f7f346820393de4305a42da9da7e3f4a2ea1acce4563a3867aed4",
-  "Review and closure": "9e9bf083b07812cb0cb2675d223bc94554fb51cfeecc1f1b7b3ff9edd0752225",
+  // #300 adds explicit evidence admission without changing review quotas.
+  "Review and closure": "a577a29c392abf9ca61f3bb06f958ba03dbf0688b1564b42ce99a48a324256bb",
   "Realization and common proof obligations": "df2f70beac4ca71c55ca4e4bc8c6f63c23453aafe8ef7406102832f658055ad8"
 };
 // Relocation changes where the section is read, not its accepted bytes.
@@ -37,15 +38,14 @@ const protectedSources = {
 assert(skill.includes('[review-closeout.md](review-closeout.md)'), 'review guide not routed');
 for (const [name, digest] of Object.entries(protectedSections))
   assert.equal(sha256(section(protectedSources[name] ?? skill,name)),digest,`protected Actuating section: ${name}`);
-// Four auxiliary lenses now return the native structured review object.
-// These pins preserve the reviewed output correction and all search instructions.
+// #300 separates no-findings verdicts from validation completeness in all five lenses.
+// Pin that intentional correction while retaining every lens search instruction.
 const lensBlobs = {
-  'soundness-review.md':'0969ec78b6f03d73ab0bdeae1f5a987c8e8d477f',
-  // #285 changed the caller-expectation inquiry; pin the already-merged bytes.
-  'footgun-review.md':'68a0b86f1e902817320c3f817c0490c3e384bcbc',
-  'invariant-review.md':'0c945b75733ef5dc80d51033217d729dc9529f6e',
-  'complexity-review.md':'70e1fbab51f246b4f8aacb8fcc7f649339381a2e',
-  'fresh-eyes-review.md':'392289a1e913435e5ad9abf2721b24ad0119682f'
+  'soundness-review.md':'bcc7632af93e1d24ac9ad90806eac4a3f152a195',
+  'footgun-review.md':'5e03cc4edeb5566fcf18a5f84022d22441de0ba2',
+  'invariant-review.md':'0aaf1e6a7ec7a5b79d0b546db82ff0768d5bfcd0',
+  'complexity-review.md':'2d0d3e05b49623ccb1435bbe1220009fe06de38e',
+  'fresh-eyes-review.md':'29d68a33492533184d103204a586ec3cc7e4800f'
 };
 for (const [name, digest] of Object.entries(lensBlobs)) {
   const bytes = Buffer.from(text(`references/lenses/${name}`));
