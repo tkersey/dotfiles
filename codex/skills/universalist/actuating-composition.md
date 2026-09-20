@@ -1,4 +1,4 @@
-# Actuating composition
+# Universalist in Actuating
 
 ## Actuating composition
 
@@ -12,7 +12,11 @@ code-bound argument that changes Actuating's decision: trigger evidence, owner
 and operation, required law/observations, discriminator, and material migration,
 residual, or invalidation consequences. For counterexample-driven work, identify
 the enabling freedom removed or lawfully controlled. Reuse supplied facts and proof references. No fixed field projection
-or second Working Set report is required.
+or second Working Set report is required. This presentation rule takes precedence
+over packet and field templates in every loaded Universalist reference. Applicable
+evidence and proof obligations still hold; satisfy them by reusing the receiving
+workflow's evidence rather than repeating it. Standalone serialization never applies
+here, and its plan/receipt machinery remains unloaded.
 
 Return `unresolved` when evidence is missing or adequate candidates remain
 incomparable; name that reason and the smallest available discriminator. This

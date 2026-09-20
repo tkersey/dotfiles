@@ -52,6 +52,11 @@ Syntactic duplication alone is not enough. Reuse the common path's derivation ra
 
 ## Recognition packet
 
+The fields below guide applicable evidence, not mandatory headings or a separate
+report. Reuse the common-path or receiving-workflow argument; the Actuating adapter
+owns presentation when composed. The techniques are available ways to establish
+that evidence, not a requirement to repeat work already discharged.
+
 ```text
 Current encoding:
 Representative instances:
@@ -153,7 +158,11 @@ Anti-unify behavior and proof obligations, not merely shared syntax. At a first-
 
 ### 4. Nominate a small candidate family
 
-Discriminate the supplied challenger against the ordinary candidate. Use at most three nearby interpretations only when an actual ambiguity needs a third; do not fill a candidate quota.
+Discriminate supplied candidates against the ordinary baseline. Consider another
+interpretation only when grounded evidence addresses a live requirement, separates
+a material tradeoff, or could overturn the nomination. Stop expanding when further
+alternatives cannot change the decision; neither a fixed count nor speculative
+enumeration is a reason to stop or continue.
 
 For each candidate record:
 
@@ -248,7 +257,9 @@ The transition should normally be staged:
 6. close raw construction or bypass paths;
 7. retire compatibility adapters only after their callers are gone.
 
-Do not widen the migration merely because the general pattern can express more.
+A first witness is a checkpoint, not completion of remaining authorized callers or
+proof that every sanctioned path is covered. Do not widen the migration merely
+because the general pattern can express more.
 
 ### 8. Return to ordinary Universalist adjudication
 
@@ -258,7 +269,7 @@ Compare:
 ordinary candidate
 recognized repository-native realization
 other relevant theorem-card candidates
-preserve or obstruction
+preserve, unresolved comparison, or witnessed obstruction
 ```
 
 The existing comparison universe, dominance relation, current-context contract, host capabilities, effectivity, and authority rules determine the route.

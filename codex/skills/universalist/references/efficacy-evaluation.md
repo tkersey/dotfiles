@@ -19,6 +19,13 @@ Do not combine materially different Universalist versions into one efficacy
 rate. Quotient worker continuations into their root lineage and separate
 injected mandate text from observed decision effects.
 
+Bind each run to the actual loaded files and immutable commit, not just a corpus
+label. `routing-evaluation-cases.json.skill_fingerprint` names the intended current
+subject and must match `decision-contract.json` before replay. The unchanged
+representation corpus's `skill_version: 17.8.0` records its authoring baseline,
+not a claim that a later subject was evaluated. Attribute historical results to
+their original source; do not relabel them when refreshing metadata.
+
 ## Measure routing before outcome
 
 Evaluate implicit routing with
@@ -48,12 +55,12 @@ conditions:
 A. No Universalist
 B. Routine kernel only
    trigger evidence + incoming candidate + owner + observations + law +
-   falsifier + ordinary candidate + bounded law-derived challenger when grounded
+   falsifier + ordinary candidate + evidence-bounded law-derived alternatives when grounded
 C. Full Universalist
    routine kernel + gated latent recognition + eligible construction cards
 ```
 
-The bounded challenger is now in the routine kernel, so include it in both B
+Law-derived alternatives belong to the routine kernel, so include them in both B
 and C. To isolate that root change, optionally pair B with the same kernel with
 only that question disabled; report this contrast separately, not as C > B.
 
@@ -164,6 +171,42 @@ improves model outcomes, or that a host implementation meets a resource bound.
 Report authored cases, local model checks, paired agent runs, and performance
 measurements separately. The corpus remains `authored_not_model_replayed` until
 actual runs provide separately attributed evidence; no new runtime gate is added.
+
+## Decision-sufficiency ablation
+
+Keep contract repair separate from procedural ablation. Compare the repaired
+baseline with the decision-sufficiency version using the same repository states,
+accepted evidence, model configuration, tools, budgets, and companion instructions.
+Record the exact commit and effective source for both; a version string alone is
+not a repair-only baseline. The existing A/B/C comparison separately measures the
+incremental value of the kernel and advanced mechanics.
+
+Use `workflow_cases` in `routing-evaluation-cases.json` alongside the existing
+routing and artifact cases, plus independent repository holdouts. Workflow cases
+are evaluator expectations, not runtime policy or an executable runner. Present
+only scenarios and authorized requirements to the agent; keep expected outcomes,
+falsifiers, and scoring criteria out of its context. Accept equivalent lawful
+solutions rather than a preferred encoding or exact words.
+
+Measure architectural correctness and completion together: preserved valid behavior,
+excluded invalid states and bypasses, claim-scoped obstruction, authority compliance,
+required caller/migration coverage, and actual verification. Also record unnecessary
+reference exposure, duplicate reports, speculative alternatives, unsupported claims,
+and premature returns. Fewer tokens or headings cannot compensate for a missing law,
+unauthorized experiment, or unfinished migration. Needed proof detail is not ceremony.
+
+Use focused contrasts for candidate quotas, packet presentation, first-seam stopping,
+and available-evidence continuation before attributing a bundled gain to one change.
+Hold all other source fixed and disclose unavoidable coupling. Include an adequate
+incumbent, first-use state construction, effectful fusion/replay, unordered adequate
+tradeoffs, a grounded third alternative, missing authority, multi-seam completion,
+and Actuating composition.
+
+Report source/JSON/link checks, authored fixtures, finite witness checks, paired
+Astra runs, and host performance measurements separately. A successful static check
+or finite countermodel does not show that Astra discovered or implemented the result.
+No behavioral efficacy or latency improvement is established until paired runs
+actually supply that evidence. This evaluation adds no runtime gate or test runner.
 
 ## Corpus evolution
 

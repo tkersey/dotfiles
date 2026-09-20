@@ -5,252 +5,156 @@ description: "Choose or reconsider a semantic code boundary when ownership, repr
 
 # Universalist
 
-Universalist recognizes **latent law-bearing structure** and nominates the
-smallest context-relative, correct-by-construction boundary justified by current
-repository evidence.
-
-Category theory is a hidden recognizer and optimizer. It must change what the
-architecture owns, permits, excludes, composes, observes, preserves, identifies,
-generates, interprets, proves, or refuses to invent. Otherwise it is explanatory
-metadata.
-
-Default discipline:
-
-```text
-one live semantic decision
-one owned boundary
-one current context
-one primary architectural axis
-one typed hole with its interacting law family
-one ordinary candidate first
-one smallest effective artifact
-one governing law family and one discriminator
-```
-
-Activation is semantic-pressure-triggered. Disclosure and escalation are
-proportional.
+Recognize **latent law-bearing structure** and nominate the smallest
+context-relative, correct-by-construction boundary justified by repository
+evidence. Category theory must change the artifact, ownership, admitted behavior,
+composition, observations, transformation, or proof; otherwise it is explanatory
+metadata. Lower to repository-native code, not a categorical framework by default.
 
 ## Boundary-decision trigger (`UNI-BOUNDARY`)
 
-Explicit `$universalist` invocation always activates this skill.
+Explicit `$universalist` invocation always activates this skill. Implicit use
+requires current evidence of a live semantic boundary decision: changed ownership
+or authority, admitted behavior, representation, composition, compatibility,
+information retention, effects, failure semantics, or proof; a law distributed
+across owners; materially different live candidates; a fired prior invalidator;
+or an Actuating architecture-reconsideration handoff.
 
-For implicit invocation, activate only when current repository evidence
-establishes at least one of these conditions:
+Repeated obligations count even before the missing owner is named. Syntactic
+duplication, shared vocabulary, category-shaped names, and merely crossing or
+preserving an accepted boundary do not. Skip routine implementation, validation,
+tests, formatting, documentation correction, review bookkeeping, mechanical
+rebasing, `$ship`, `$land`, and isolated owner-local repair unless new semantic
+boundary evidence appears. A semantic rebase conflict can supply that evidence;
+publication or landing returns it to Actuating instead of creating a duplicate
+local pass.
 
-- current work must choose, introduce, remove, migrate, bypass, or materially
-  change boundary ownership, authority, admitted behavior, representation,
-  composition, compatibility, information retention, effects, failure
-  semantics, or proof;
-- repeated implementations distribute one invariant, composition law,
-  interpreter, observation vocabulary, transition rule, or compatibility rule
-  across owners;
-- at least two materially different boundary candidates remain live;
-- new evidence fires an invalidator of a prior boundary disposition;
-- Actuating has reopened architecture and requests a bounded nomination.
-
-Repeated obligations are boundary evidence even when the missing owner has not
-yet been named. Syntactic duplication, a shared noun, or a category-shaped name
-alone is insufficient.
-
-Do not activate merely because work crosses, preserves, validates, publishes,
-merges, or mechanically transports an already accepted boundary. Skip routine
-implementation, tests, formatting, documentation correction, review
-bookkeeping, mechanical rebasing, `$ship`, `$land`, and isolated owner-local
-repair under an unchanged architecture unless that work exposes new semantic
-boundary evidence.
-
-A rebase conflict activates only when it reveals incompatible semantic owners,
-representations, laws, or migrations. Ship or Land work that exposes such
-pressure returns it to Actuating for architecture reconsideration instead of
-running a duplicate publication- or landing-local Universalist pass.
-
-When the same owner, axis, law, falsifier, route, obligations, and invalidators
-remain current, reuse the existing disposition silently. Re-enter through
-`UNI-RECLASSIFY` only after material new evidence. Nonactivation has no route,
-record, or receipt; silence is the correct representation.
-
-Team/subagent mode remains explicit-request only.
+No implicit trigger means no activation, route, record, or receipt. Reuse an
+unchanged disposition silently. Team/subagent mode remains explicit-request only.
 
 ## Common path
 
-The standalone ordinary/preserve path must complete without loading any deeper
-reference. Inside Actuating, read [actuating-composition.md](actuating-composition.md)
-instead of also emitting the standalone disposition template; the same applicable
-obligations remain.
+An exact incumbent or uncontested ordinary artifact without a specialized proof
+claim needs only this entrypoint.
+Inside Actuating, load [actuating-composition.md](actuating-composition.md) before
+nominating; it owns presentation and authority across every loaded module.
 Inside Architectonic, use [architectonic-composition.md](architectonic-composition.md)
 for a read-only nomination in its existing assessment; do not use the Actuating
 binding or select a standalone decision.
 
-1. Attribute the trigger evidence. If no implicit trigger condition is
-   evidenced, stop without a disposition.
-2. Inspect the incumbent seam: owner, admitted inputs, construction paths,
-   operations, sanctioned observations, effects, resources, compatibility,
-   bypasses, and failure behavior.
-3. State the incoming incumbent or ordinary repository-native candidate first:
-   record, tagged union, checked constructor, adapter, explicit parameter,
-   state machine, operation IR, handler, labelled graph, query, bounded loop,
-   canonical merge, or one typed compatibility witness.
-   Before treating it as dispositive, ask: **what representation or composition
-   would make the required behavior structural rather than a repeated obligation?**
-   Ordinary-first is a comparison baseline, not a ceiling on reasoning. Consider
-   at most one grounded law-derived challenger, including on a first-use boundary
-   with no duplication. Do not invent a challenger when current evidence already
-   decides the question. Derive an artifact, lawful transformation, or reusable
-   proof; it may still be an ordinary constructor or loop. Preserve required-valid
-   behavior as well as excluding invalid behavior. Keep necessary state, effect,
-   resource, and observation interactions in the same argument. Reuse any equivalent
-   challenger supplied by the receiving workflow; no second pass or packet.
-   For a representation alternative, choose by required elimination: does the next
-   boundary need inspectable data, or only its fold? Consider removing intermediate
-   materialization only when its inspection, sharing, persistence, authorization,
-   and rewriting roles are absent or preserved elsewhere. A native datatype plus
-   fold or loop remains the baseline. Church-style callbacks alone establish
-   neither parametricity, initiality, confidentiality, nor a performance gain;
-   apply the existing observation, effect, resource, and claim-strength obligations.
-   At a live interface choice, compare the smallest complete caller contracts and
-   a representative use: what must the caller know, choose, sequence, synchronize,
-   or clean up? Which implementation facts or duties disappear, and which
-   source-supported change becomes owner-local? Credit genuine information hiding
-   only with laws, required observations, authority, effects, and resources preserved.
-   Fewer exports or relocated obligations alone do not qualify. Reuse the existing
-   comparison; this adds no activation trigger, artifact, or claim of universality.
-4. Record the compact disposition:
+Ground the decision in the incumbent's owner, admitted inputs, construction and
+operation paths, sanctioned observations, effects, resources, compatibility,
+bypasses, and failure behavior. Start with the incumbent or an ordinary native
+candidate: a record, tagged union, checked constructor, adapter, parameter, state
+machine, operation IR, handler, graph, query, loop, merge, or compatibility witness.
 
-```text
-Trigger evidence:
-Boundary:
-Disposition: preserve / ordinary / escalate
-Incoming incumbent or ordinary candidate:
-Owner:
-Required observations:
-Law:
-Falsifier:
-Material decision delta: preservation / owner / admitted-domain / representation / composition / compatibility / migration / effects / failure-semantics / proof / obstruction
-Mechanic: ordinary / card:<id>
-Invalidates when:
-```
+Ask: **what representation or composition would make the required behavior
+structural rather than a repeated obligation?** Ordinary-first is a baseline,
+not a ceiling. First-use boundaries can support law-derived alternatives without
+duplication. Reuse supplied candidates and evidence; do not repeat their derivation.
+Consider another alternative only when grounded evidence shows it addresses a live
+requirement, distinguishes a material tradeoff, or could overturn the nomination.
+Stop expanding when further alternatives cannot change the decision; neither a
+candidate quota nor speculative enumeration establishes sufficiency.
 
-5. **preserve** only when live change pressure exists and the incumbent already
-   owns the law exactly. Continue the receiving workflow without adding an
-   abstraction. Boundary presence without live pressure is nonactivation, not
-   preservation.
-6. **ordinary** when one uncontested repository-native artifact closes the seam.
-   Name its owner, observation-preserving transition, every residual runtime
-   check owner, and the first falsifying test or counterexample.
-7. **escalate** only when one of the evidence gates below fires.
-8. Stop after the first verified seam unless the user explicitly widens scope.
+Preserve required-valid behavior as well as excluding invalid behavior. Keep the
+smallest interacting law family together: constructor validity with permitted
+mutation, observations with future transitions, and descriptions with their effects
+and resources. One coherent seam is the unit of reasoning, not a limit on the
+already authorized task.
 
-A more abstract candidate does not dominate because it is more general.
-“Smallest” is relative to required observations, compatibility, effects,
-resources, host capabilities, caller obligations, and migration cost—not source
-length, export count, or categorical sophistication.
+For a representation choice, ask whether consumers need inspectable data or only
+its fold. Remove materialization only when inspection, sharing, persistence,
+authorization, identity, replay, and rewriting roles are absent or preserved.
+Native data with a fold or loop remains the baseline. Church-style callbacks alone
+prove neither parametricity, initiality, confidentiality, nor a performance gain.
+
+For a live interface choice, compare complete caller contracts and a representative
+use and source-supported change: knowledge, choices, sequencing, synchronization,
+and cleanup removed; change made owner-local; and costs introduced. Fewer exports,
+relocated duties, or hidden configuration are not genuine information hiding.
+Preserve laws, observations, authority, effects, and resources; lower caller burden
+is not a universality or representation-independence proof.
+
+Convey the trigger, boundary and owner, incoming candidate, required observations,
+law and falsifier, disposition, material decision delta, mechanic (`ordinary` or
+`card:<id>`), and invalidators once, using existing workflow evidence where possible.
+These are evidence obligations, not mandatory headings or a second report. A delta
+can concern preservation, ownership, admitted domain, representation, composition,
+compatibility, migration, effects, failure semantics, proof, or witnessed obstruction.
+Do not fabricate a delta or final route for an unresolved decision.
+
+**Preserve** only against live change pressure when the incumbent already owns the
+law exactly. **Ordinary** nominates the smallest uncontested native artifact; name
+the observation-preserving transition, residual runtime-check owners, and first
+falsifying test or counterexample. **Escalate** only through an evidenced gate below.
+An adequate constructor, fold, or loop remains a successful result.
+
+“Smallest” is relative to required behavior and observations, compatibility,
+authority, effects, resources, host capabilities, caller obligations, and migration
+cost—not source length, export count, or categorical sophistication. Do not claim
+dominance across unranked material tradeoffs.
 
 ## Evidence-indexed disclosure
 
-Load only the next module justified by evidence already established. Do not read
-the whole reference corpus to search for a reason to escalate.
+Load only material justified by evidence already established, not the corpus to
+search for a reason to escalate. Reuse the current argument across modules.
 
-| Evidence established | Load exactly | Required return |
+| Evidence | Load | Contribution |
 |---|---|---|
-| Live change pressure exists and the incumbent is exact | nothing | compact `preserve` disposition with a preservation delta |
-| One ordinary artifact clearly closes the seam | nothing | compact `ordinary` nomination and transition |
-| Repeated obligations, an imminent constrained variant, or a grounded law-derived challenger needs discrimination | `references/latent-structure-recognition.md` | encoding relation, false friend, discriminator, dividend, transition need |
-| At least two plausible routes materially differ | `references/consequential-boundary.md` | context-relative comparison and Boundary Artifact Contract candidate |
-| A specific typed hole survives ordinary comparison | `advanced-mechanics.md`, then its selected registry fragment only | evidence-bound card disposition |
-| One advanced card remains live | only that card's `theory_refs` | effective repository-native lowering and proof profile |
-| A consequential decision must remain independently durable outside Actuating | `references/durable-decision.md` | one Ledger-addressed plan and, after standalone adjudication, one root receipt |
-| User explicitly requests Universalist subagents/team mode | `references/workflow/team-routing.md`, `references/workflow/subagent-packet-contract.md`, and `references/workflow/subagent-orchestration.md` | bounded read-only packets and one root synthesis |
-| Evidence is unknown or candidates remain incomparable | nothing automatically | evidence debt or underdetermination |
+| Repeated semantic obligations, a distributed owner, repeated interpreter/composition/transition structure, an imminent law-constrained variant, or a grounded challenger needs discrimination (`UNI-RECOGNIZE`) | `references/latent-structure-recognition.md` | encoding relation, nearest false friend, discriminator, material dividend, transition need |
+| At least two plausible candidates materially differ in behavior, ownership, representation, compatibility, migration, enforcement, information retention, legal composition, effects, resources, invalidation, or proof (`UNI-CONSEQUENTIAL`) | `references/consequential-boundary.md` before the next affected mutation | comparison and native Boundary Artifact Contract |
+| A specific typed hole survives ordinary and consequential comparison | `advanced-mechanics.md`, then only relevant registry fragments | evidence-bound card disposition and exact `theory_refs` |
+| A representation-independence, universal-construction, lawful-transformation, or bounded-approximation claim is live | `references/claim-appropriate-proof.md` | only the applicable proof obligations; no stronger claim by default |
+| A consequential decision needs independent cross-session, actor, migration, or supersession addressing outside Actuating (`UNI-DURABLE`) | `references/durable-decision.md` | Ledger-addressed plan and, after standalone adjudication, one root receipt |
+| User explicitly requests team mode | `references/workflow/team-routing.md`, `references/workflow/subagent-packet-contract.md`, `references/workflow/subagent-orchestration.md` | bounded read-only packets and root synthesis |
+| Evidence is missing or candidates are incomparable | no doctrine automatically | resolve available evidence or return unresolved debt as below |
 
-### Latent-structure gate (`UNI-RECOGNIZE`)
+Recognition requires a law or counterexample separating the nearest false friend
+and a material reduction or centralization of obligations, lawful transformation,
+or reusable proof. A grounded first-use derivation is sufficient; resemblance is not.
+A specialized card requires its actual prerequisites, not a name or signal count.
 
-Read `references/latent-structure-recognition.md` only when repository evidence
-contains a repeated semantic obligation, a distributed owner, repeated
-interpreter/composition/transition structure, or an imminent variant already
-constrained by the same law, or the common path has already derived a concrete
-alternative whose governing law needs discrimination. That alternative may arise
-at a first-use boundary; it does not require a second implementation. This changes
-recognition after activation, not the boundary-decision trigger.
+Repeated falsification, growing predicates or bypasses, downstream rejection of
+representable invalid states, conflated owners, duplicated projections, and missing
+protocol structure can justify comparison. Diff size, retries, elapsed time, a
+possible local helper, or theoretical interest cannot. An unstable rule, forbidden
+migration, unwitnessable stronger model, or dominant onboarding/resource cost is
+not a reason to force abstraction.
 
-Syntactic duplication, shared vocabulary, or a category-shaped name is
-insufficient. Recognition must identify a nearest false friend and one
-executable law or counterexample that distinguishes it. A recognized pattern
-survives only when it removes or centralizes a material obligation, enables a
-lawful transformation, or strengthens a reusable proof with an object-level delta.
-
-### Consequential-decision gate (`UNI-CONSEQUENTIAL`)
-
-A route is consequential only when at least two plausible candidates materially
-differ in persistent behavior, owner or authority, admitted domain,
-representation, compatibility, migration, enforcement, information retention,
-legal composition, effects, resources, invalidation, or proof obligations.
-
-When that condition holds, read `references/consequential-boundary.md` before
-the next affected mutation. Otherwise remain on the common path.
-
-Strong escalation evidence includes repeated falsification of the same route
-family, a boundary that keeps accumulating predicates or bypasses, invalid
-states that remain representable and are only rejected downstream, one owner
-absorbing unrelated law families, duplicated projections, a missing
-protocol/state-machine artifact, or proof obligations exposing an implicit
-algebra.
-
-Do not escalate merely because a local helper is possible, domain rules remain
-unstable, the stronger model cannot be tested, required compatibility forbids
-the transition, or the abstraction's onboarding and resource cost dominates
-its evidenced reduction in semantic risk or consumer burden.
-
-Diff size, retry count, elapsed time, vocabulary, and theoretical
-interest do not establish consequentiality.
-
-### Advanced-mechanics gate
-
-When a specific typed hole survives ordinary and consequential comparison,
-read [advanced-mechanics.md](advanced-mechanics.md) before registry selection.
-Select by the hole, not theorem appeal; the route name never upgrades proof.
-
-### Durability gate (`UNI-DURABLE`)
-
-Do not load Ledger plan mechanics merely because a boundary decision is
-consequential.
-
-Read `references/durable-decision.md` only when the decision must remain
-independently addressable outside the active Actuating run across sessions,
-actors, migration, or supersession. Actuating's ephemeral Architecture Working
-Set is never a durability carrier.
-
-Never load the durability module in Actuating composition.
+Consequentiality alone never requires storage. Never load standalone durability
+in Actuating; its ephemeral Architecture Working Set is not a durability carrier.
 
 ## Route discipline
 
-Assign routes only after lowering:
+Assign a route only after lowering or establishing a claim-scoped obstruction:
 
-- `UNI-PRESERVE` — preserve an already exact boundary against live change
-  pressure.
-- `UNI-ORDINARY` — nominate the smallest ordinary repository-native artifact.
-- `UNI-CANONICAL` — nominate an advanced construction only when it materially
-  strengthens the ordinary candidate and has a complete claim-appropriate
-  effective witness; this route name does not itself assert universality.
-- `UNI-OBSTRUCT` — stop only when no honest representable or effective artifact
-  remains, or an explicitly primitive bypass is contained.
+- `UNI-PRESERVE` — an exact incumbent survives live change pressure.
+- `UNI-ORDINARY` — an adequate ordinary native artifact closes the seam.
+- `UNI-CANONICAL` — an advanced construction materially strengthens the ordinary
+  candidate with a complete claim-appropriate effective witness. The name does
+  not assert universality.
+- `UNI-OBSTRUCT` — evidence closes the constructive alternatives for the affected
+  required claim; no honest representable or effective artifact satisfies it.
 
-Do not add a `UNI-SKIP` route. No live semantic decision means Universalist did
-not activate.
+Missing evidence and incomparable adequate candidates remain **unresolved** or
+**underdetermined**, not `UNI-OBSTRUCT`. These are supporting outcomes, not new
+routes. A proven obstruction to a demanded canonical choice is scoped to that
+claim; it does not obstruct an adequate weaker construction. Explicitly primitive
+bypasses must be contained with authority, failure behavior, and residuals named;
+their existence alone is not an impossibility proof. Do not add `UNI-SKIP`.
 
-If several candidates are incomparable minima, the result is
-**underdetermined**. Do not manufacture a winner.
-
-The machine-readable authority for trigger, route, and clause identifiers is
-`references/decision-contract.json`. This file supplies their operational
-semantics. Change semantic policy, the contract, and the durable plan template
-together.
+`references/decision-contract.json` owns machine-readable trigger, route, and
+clause identifiers; this entry and the applicable references supply operational
+semantics. Change semantic policy, contract, and durable plan template together.
 
 ## Actuating composition
 
-Inside Actuating, load [actuating-composition.md](actuating-composition.md) before
-nominating. Actuating owns the invocation point, selection, mutation, and closure;
-Universalist returns `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed`.
-Never load standalone durability mechanics in this composition.
+Inside Actuating, return `candidate`, `preserve-incumbent`, `unresolved`, or
+`obstructed` under [actuating-composition.md](actuating-composition.md). Actuating
+owns invocation, selection, experiments, mutation, and closure; Universalist only
+nominates. Its presentation rule overrides loaded reference templates without
+weakening evidence obligations. Never allocate standalone durability here.
 
 ## Architectonic composition
 
@@ -263,50 +167,40 @@ claim-appropriate obligations still apply.
 
 ## Execution-time reclassification (`UNI-RECLASSIFY`)
 
-Reuse an unchanged disposition silently. When new evidence may materially change
-its owner, requirements, observations, compatibility, effects, resources, axis,
-typed hole, law, falsifier, enforcement, residuals, route, or decomposition, read
-[reclassification.md](reclassification.md) before the next affected mutation.
-Do not reopen Actuating's target or overwrite a root receipt.
+When new evidence may change the owner, requirements, observations, compatibility,
+effects, resources, axis, typed hole, law, falsifier, enforcement, residuals, route,
+or decomposition, read [reclassification.md](reclassification.md) before the next
+affected mutation. Reuse unchanged decisions silently. Never reopen Actuating's
+target independently or overwrite a root receipt.
 
 ## Evidence and obstruction
 
-Keep distinct:
+Distinguish evidenced true, evidenced absent, unknown/not inspected,
+underdetermined, and witnessed obstruction. An obstruction requires attributed
+counterevidence, a reproducible counterexample, stability under comparison maps,
+an effectivity account, a falsifier, a reopening condition, and resolution of
+every active constructive alternative. A failed attempt is not nonexistence.
 
-```text
-evidenced true
-evidenced absent
-unknown / not inspected
-underdetermined
-witnessed obstruction
-```
-
-Unknown evidence is epistemic debt, not nonexistence. A real obstruction
-requires attributed counterevidence, a reproducible counterexample, stability
-under the declared comparison maps, an effectivity account, a falsifier, a
-reopening condition, and resolution of every active constructive alternative.
-
-Return evidence debt rather than loading more doctrine automatically. Return
-obstruction rather than inventing evidence, authority, policy,
-representability, effect laws, host capability, resource feasibility, or
-coherence.
+In standalone work, obtain missing evidence through the smallest relevant
+inspection or already-authorized safe discriminator when available. Uninspected
+code is not unavailable evidence. If access, evidence, or authority is genuinely
+missing, return the debt and next discriminator rather than inventing policy,
+capability, coherence, or a winner. Do not run unauthorized or external-effect
+experiments. Inside Actuating, return the discriminator; Actuating owns further
+experimentation under its review-epoch rules. Block only the affected decision
+and continue independent authorized work.
 
 ## Output contract
 
-Use repository and domain language by default:
+Complete the requested kind and scope of work. Analysis returns a supported
+nomination or unresolved result; authorized implementation includes the requested
+verification, callers, and migration. A first witness does not establish coverage
+of every sanctioned path or complete a multi-seam request. Do not widen work merely
+because a general construction could express more. Inside Actuating, completion
+is the bounded nomination; Actuating owns selection, mutation, and closure.
 
-```text
-These repeated tenant checks are one distributed agreement rule.
-Introduce one owner-controlled compatibility object.
-Translate one existing caller through its checked constructor.
-Preserve both sanctioned projections.
-Retire unchecked pair construction after the witness seam verifies.
-```
-
-Add category names, encoding relations, mediators, canonicality claims, and
-expert proof detail only when the user requests expert explanation or the
-selected mechanic requires them.
-
-Do not emit routine no-op ceremony. Report the trigger evidence, boundary
-decision, and material architecture delta that matter to the receiving
-workflow.
+Use repository and domain language. Add categorical names, encoding relations,
+mediators, and expert proof detail only when requested or necessary to the selected
+claim. Report decision-changing evidence and consequences, not repeated packets,
+no-op receipts, or a transcript of the reasoning procedure. Exact serialization
+is required only by an actual consumer, such as the standalone durable contract.

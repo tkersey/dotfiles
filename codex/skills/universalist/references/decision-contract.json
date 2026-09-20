@@ -4,7 +4,7 @@
     "skill": {
       "name": "universalist",
       "kind": "mixed",
-      "source_fingerprint": "universalist-boundary-decision-v17.8-caller-contracts-algebra-derivation-v1"
+      "source_fingerprint": "universalist-boundary-decision-v17.9-decision-sufficiency-v1"
     },
     "triggers": [
       {
@@ -105,7 +105,7 @@
       },
       {
         "route_id": "UNI-OBSTRUCT",
-        "description": "Report an evidenced obstruction or underdetermination.",
+        "description": "Report a witnessed obstruction to the affected required claim after constructive alternatives close; missing evidence and incomparable adequate candidates remain unresolved, not this terminal route.",
         "aliases": [],
         "terminal": true
       }
@@ -140,8 +140,10 @@
           "the incoming incumbent or ordinary candidate is explicit",
           "preservation defeats live change pressure without adding abstraction",
           "Actuating owns its invocation point and receives one nomination",
-          "ordinary-first supplies a baseline rather than suppressing one grounded law-derived alternative",
-          "an equivalent receiving-workflow challenger is reused without a second pass"
+          "ordinary-first supplies a baseline rather than suppressing grounded law-derived alternatives",
+          "an equivalent receiving-workflow challenger is reused without a second pass",
+          "applicable evidence is conveyed once using the receiving workflow representation without duplicate packets",
+          "completion follows the authorized task; one coherent seam bounds reasoning rather than ending a multi-seam request"
         ],
         "failure_signals": [
           "boundary presence or crossing is treated as sufficient activation",
@@ -152,7 +154,10 @@
           "symptom-only patch",
           "missing falsifier or material decision delta",
           "a first-use boundary is denied law-derived alternatives solely because no duplicate exists",
-          "a challenger or extra packet is manufactured when evidence is already dispositive"
+          "a challenger or extra packet is manufactured when evidence is already dispositive",
+          "a fixed candidate quota truncates a grounded decision-changing alternative",
+          "a first witness is reported as completion despite remaining authorized callers or migration",
+          "available authorized evidence is returned as unavailable without inspection"
         ],
         "rationale": "Activation is useful only when semantic pressure exists and yields one exact disposition."
       },
@@ -395,11 +400,14 @@
         ],
         "success_signals": [
           "unknown remains epistemic debt",
-          "obstruction is selected only after constructive alternatives close"
+          "obstruction is selected only after constructive alternatives close",
+          "an obstruction to a demanded canonical choice is scoped to that claim and does not obstruct an adequate weaker construction"
         ],
         "failure_signals": [
           "failed implementation treated as nonexistence",
-          "missing evidence treated as obstruction"
+          "missing evidence treated as obstruction",
+          "incomparable adequate candidates treated as obstruction",
+          "missing authorization treated as proof that no construction exists"
         ],
         "rationale": "Obstruction is an evidenced result rather than a fallback label."
       },
@@ -462,7 +470,7 @@
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "Only independently durable standalone decisions need a plan-bound receipt; ordinary activations carry trigger and material-delta evidence in the receiving context, while nonactivation remains silent."
+      "rationale": "Only independently durable standalone decisions need a plan-bound receipt; ordinary activations carry trigger and material-delta evidence in the receiving context, while nonactivation remains silent. Required artifacts name evidence obligations, not mandatory headings; an actual consumer alone requires exact serialization. Unresolved evidence or incomparable adequate candidates do not force a final route or terminal receipt."
     }
   }
 }

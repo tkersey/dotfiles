@@ -1,4 +1,4 @@
-# Universalist 17.8.0
+# Universalist 17.9.0
 
 Universalist is an implicitly invocable **boundary-decision** lens with
 evidence-indexed progressive disclosure.
@@ -43,7 +43,10 @@ for rediscovering an ambient boundary.
 ## Common path
 
 `SKILL.md` is complete for an exact incumbent and an uncontested ordinary
-repository-native boundary. Every actual activation receives:
+repository-native boundary without a specialized proof claim. An actual activation
+conveys the following evidence once; the headings are an example, not a required
+packet. Reuse the receiving workflow's fields and proof references. Unresolved
+evidence or incomparable adequate candidates do not force a final disposition:
 
 ```text
 Trigger evidence:
@@ -60,12 +63,20 @@ Invalidates when:
 ```
 
 Ordinary-first is a baseline, not an intellectual ceiling. On an activated
-boundary, consider one grounded law-derived alternative before treating the
-ordinary candidate as dispositive; no duplication is required at a first-use
-boundary. Reuse a supplied challenger and emit no extra packet. Keep the smallest
-interacting law family together and preserve required-valid behavior.
+boundary, consider grounded law-derived alternatives capable of changing the
+decision; no duplication is required at a first-use boundary. Reuse supplied
+candidates. Expand only for a live requirement, material tradeoff, or evidence that
+could overturn the nomination. There is no fixed candidate/card quota and no
+license for speculative enumeration. Keep the smallest interacting law family
+together and preserve required-valid behavior.
 
-Activation is narrow; disclosure and escalation remain proportional.
+Activation is narrow; disclosure and escalation remain proportional. One coherent
+seam bounds reasoning, not completion: authorized implementation continues through
+the requested verification, callers, and migration. A first witness is a checkpoint.
+Standalone work resolves available authorized evidence before returning debt; missing
+access or authority remains unresolved without unauthorized experiments. Continue
+independent work. Inside Actuating, return the bounded nomination and discriminator;
+Actuating owns experiments, selection, mutation, and closure.
 
 ## Evidence-indexed disclosure
 
@@ -75,6 +86,7 @@ Activation is narrow; disclosure and escalation remain proportional.
 | At least two routes materially differ | `references/consequential-boundary.md` |
 | A concrete typed hole remains | artifact selector, registry, and matching card fragments |
 | One advanced card remains live | only that card's exact `theory_refs` |
+| Representation independence, universal construction, lawful transformation, or bounded approximation is claimed | applicable sections of `references/claim-appropriate-proof.md` |
 | A decision needs independent durability outside an active Actuating run | `references/durable-decision.md` |
 | User explicitly requests team mode | `references/workflow/` |
 
@@ -95,7 +107,10 @@ obstructed
 
 `unresolved` reports missing evidence or incomparable adequate candidates. It is
 a nomination result, not a new mode or evidence of obstruction. Actuating owns
-any further authorized discrimination.
+any further authorized discrimination under its review-epoch rules. The adapter's
+presentation rule takes precedence over all loaded reference templates without
+weakening evidence obligations. A demonstrated obstruction to a demanded canonical
+choice is limited to that claim, not an adequate weaker construction.
 
 Do not run a duplicate root or worker pass merely because realization crosses an
 already accepted boundary. Actuating reconstructs the incumbent from the
@@ -151,9 +166,17 @@ improves a concrete artifact or proof beyond the routine kernel. Use
 skill; neither belongs in ordinary runtime context. The corpus includes 20
 routing cases and 28 artifact-level discriminators: 12 in that corpus plus 16
 in `references/representation-evaluation-cases.json` (eight eliminator-first and
-eight algebra-derived cases). Both corpora are audit-only.
-Written fixtures are not
-model-run results or evidence of improved efficacy.
+eight algebra-derived cases). Seven additional `workflow_cases` in the routing
+corpus discriminate unresolved tradeoffs, claim-scoped canonical obstruction,
+available evidence, missing authority, a grounded third candidate, multi-seam
+completion, and Actuating presentation/authority. All are audit-only.
+
+The routing fingerprint matches the current decision contract. The unchanged
+representation corpus's `skill_version: 17.8.0` is its authoring baseline, not a
+current replay result. Bind every run to the actual source commit and effective
+instructions. Written fixtures and static checks are not paired Astra results or
+evidence of improved efficacy. See `references/efficacy-evaluation.md` for the
+repair-only versus procedural-ablation contrast and the separate A/B/C comparison.
 
 Worked derivations live in existing references: compatible-pair adequacy in
 latent recognition; continuation-sensitive state distinctions, ordered phases,
