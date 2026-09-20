@@ -37,6 +37,7 @@ max_concurrent_threads_per_session = 21
 enabled = false
 
 [memories]
+version = "v2"
 generate_memories = true
 use_memories = true
 dedicated_tools = true
