@@ -77,6 +77,9 @@ The standalone ordinary/preserve path must complete without loading any deeper
 reference. Inside Actuating, read [actuating-composition.md](actuating-composition.md)
 instead of also emitting the standalone disposition template; the same applicable
 obligations remain.
+Inside Architectonic, use [architectonic-composition.md](architectonic-composition.md)
+for a read-only nomination in its existing assessment; do not use the Actuating
+binding or select a standalone decision.
 
 1. Attribute the trigger evidence. If no implicit trigger condition is
    evidenced, stop without a disposition.
@@ -248,6 +251,15 @@ Inside Actuating, load [actuating-composition.md](actuating-composition.md) befo
 nominating. Actuating owns the invocation point, selection, mutation, and closure;
 Universalist returns `candidate`, `preserve-incumbent`, `unresolved`, or `obstructed`.
 Never load standalone durability mechanics in this composition.
+
+## Architectonic composition
+
+Inside Architectonic, load [architectonic-composition.md](architectonic-composition.md)
+before nominating. Architectonic owns scope, adjudication, and recommendations;
+Universalist returns a bounded candidate argument, not selection or acceptance.
+This read-only assessment does not adopt a durable standalone decision or authorize
+mutation, nested teams, or plan/root receipts. Existing evidence gates and
+claim-appropriate obligations still apply.
 
 ## Execution-time reclassification (`UNI-RECLASSIFY`)
 
