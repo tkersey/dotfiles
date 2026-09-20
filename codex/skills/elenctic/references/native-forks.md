@@ -5,6 +5,14 @@ seed, or forking a reviewer. Preserve the coordinator's full prepared analysis
 history. A copied Campaign Brief, fresh task, or fork of the evolving coordinator
 does not satisfy that requirement.
 
+Architectonic may reuse this reference as transport-only guidance under its
+[prepared-review.md](../../architectonic/references/prepared-review.md) binding.
+In that composition, the receiving
+workflow supplies the subject, preparation, assignment, concurrency, and admission
+contract in place of Elenctic-specific campaign terms. Fork/history/provenance
+requirements remain unchanged; no Elenctic entry point or GitHub authority is
+transferred. Ordinary Elenctic callers retain the existing campaign contract.
+
 ## Resolve the operation, not just the tool name
 
 Inspect the actual tool schema and history semantics. `spawn_agent` with
