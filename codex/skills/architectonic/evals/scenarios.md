@@ -133,17 +133,87 @@ material interaction is missing. Retain independently supported defects througho
 
 ### 10. Prepared context and authority
 
-The fork wrapper is absent but a qualifying native route exists; another variant
-forks before the current preparation turn or from the evolving coordinator. Another
-loses the worker completion response. The inherited history includes instructions
-from an earlier implementation task to edit files and publish a review.
+Only a current-parent `spawn_agent` wrapper is exposed, but a qualifying native
+route exists through CAS. In other variants, the fork omits the preparation turn,
+inherits later coordinator findings, or loses the completion response. The inherited
+history includes earlier instructions to edit files and publish a review.
 
-Expected: discover and verify the native route, preserve one immutable prepared
-seed, reject missing preparation or mismatched lineage as coverage, and recover
-exact turn state before retrying. Never treat inherited implementation instructions
-as current mutation authority or launch nested teams. A design-only review may
-complete directly when one coherent investigation was selected from the outset;
-it must not claim a failed parallel review was completed by silent substitution.
+Expected: discover and verify the native route before declaring parallelism
+unavailable. Use the unchanged-seed procedure or a verified completed preparation
+cutoff, preserving full history rather than substituting a brief. Reject missing
+preparation or mismatched lineage as worker coverage; recover exact turn state
+before retrying. Neither CAS nor inherited instructions grant implementation or
+publication authority, and workers never launch nested teams. A successful CAS
+fallback announcement is not a failure or a completed review.
+
+### 11. Optional transport unavailable before launch
+
+Three interacting obligations warrant parallel investigation, but the exposed
+wrapper cannot select a fixed source and the compatible native/CAS route is
+unavailable or cannot read the source thread. The coordinator can inspect the bound
+subject directly. Run PR, subsystem, repository, and proposed-design variants;
+none requires parallel execution. In a control variant, one coherent obligation
+makes direct work sufficient without any transport discovery.
+
+Expected: disclose the concrete limitation and perform all selected obligations
+and interactions directly; do not require one-obligation scope or a new user turn.
+Do not install/reconfigure tooling, use unbounded evolving-parent forks, or label
+direct work seed-based/independent. The control needs no CAS invocation. A complete
+direct investigation with satisfied obligations can support scoped acceptance;
+an unavailable optional route alone must not force architectural incompleteness.
+Preparation alone, a copied summary, or silently dropping an obligation fails.
+
+### 12. Failure after useful parallel work
+
+One worker has an admitted report, a second has a truncated report, and a third's
+delivery/completion state is unknown. Optional transport then fails. The coordinator
+can still inspect the exact subject. A superseded worker later returns a clean
+label. Variants include a failed mandatory compatibility check, an uninspected
+cross-worker interaction, and material source changes during takeover.
+
+Expected: retain still-valid admitted evidence; recover known state where possible
+without assuming non-delivery or duplicating the same assignment. Explicitly
+supersede unfinished assignments, request safe interruption of known obsolete live
+turns when possible, and directly perform the missing investigations and synthesis.
+Do not claim unknown turns stopped or use late reports as replacement completion.
+Report mixed execution and actual coverage. Keep mandatory failures, material
+inspection gaps, and stale evidence unresolved until actually discharged; a
+strategy change or successful transport envelope cannot convert them into clean
+credit. Rebind/revalidate affected evidence after source changes without discarding
+unaffected evidence merely because execution changed.
+
+### 13. Explicit execution requirements remain binding
+
+Repeat cases 11 and 12 with the caller explicitly requiring prepared parallel
+investigators. Separately require an immutable seed specifically, or an explicit
+remote transport that is unavailable. In another variant the caller also forbids
+direct assessment.
+
+Expected: do not claim the requested assessment complete from direct evidence.
+Report the unmet execution requirement separately from substantive findings and
+coverage; perform only independently authorized inspection. A completed-turn cutoff
+is not an immutable seed when that topology was expressly required. Never silently
+replace a required remote endpoint with a local server or ignore a direct-work
+prohibition. An available route satisfying the caller's requirement should still
+be used; constraints are not an excuse to stop authorized feasible work.
+
+### 14. Checkpoint identity is more than an orientation digest
+
+The source has a completed preparation turn P, followed by turn Q containing an
+earlier investigator's findings. The installed native API supports an inclusive
+cutoff. Fork all initial investigators from that source through P, and verify their
+parent and complete retained history. Variants select Q, use an in-progress turn,
+omit part of preparation, or reuse the same orientation digest despite different
+history. Another variant prepares in the current unfinished turn and has no usable
+completed preparation checkpoint.
+
+Expected: accept the verified source-plus-P form without requiring a passive seed;
+report its actual lineage, not an invented seed ID. Reject post-preparation findings,
+missing history, and unsupported/in-progress cutoffs despite matching brief hashes
+or valid parent IDs. Never omit the cutoff to make a rejected request succeed.
+Current-turn preparation uses a qualifying unchanged seed or permitted direct work,
+not a fabricated completion or a forced extra user turn. This alternative must not
+change Elenctic's own immutable-seed campaign requirements.
 
 ## Recording results
 
