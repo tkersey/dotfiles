@@ -32,6 +32,9 @@ unchecked files, even though they receive no new campaign assignment.
 Inspect, as causally relevant:
 
 - repository instructions, PR description, accepted requirements, and non-goals;
+- the prior-thread preflight's complete discussion index, including resolved
+  threads, other reviewers' threads, relevant review summaries and PR comments,
+  substantive responses, and the source evidence behind them;
 - the complete changed-file inventory and merge-base-to-head delta;
 - full before/after contents for primary owners and contract-bearing files;
 - definitions, producers, consumers, adapters, registrations, and public
@@ -94,6 +97,13 @@ Use this shape, omitting empty sections and narrative history:
 - Required but unavailable verification:
 - Material paths not yet exercised:
 
+## Prior discussion
+- Discussion index / full-exchange source references and observation point:
+- Relevant thread/comment link — original obligation, mechanism, and covered paths:
+- Strongest substantive response — source-backed defense, constraint, or rebuttal:
+- Established facts versus unverified claims; remaining question or possible material change:
+- Missing or incomplete discussion evidence:
+
 ## Established facts
 - Source-backed fact — supporting `path:line` or immutable artifact identity
 
@@ -116,6 +126,15 @@ Every material fact or requirement should identify its source. Every hypothesis
 must be explicitly provisional and include a discriminator or falsifier. Do not
 smuggle a preferred repair, successor architecture, severity, confidence, or
 merge consequence into the brief.
+
+Prior discussion is shared evidence, not inherited judgment or mutation authority.
+Preserve the author's strongest actual argument and references to the complete
+exchange, not just the original accusation or a coordinator's disposition. Make
+the session-local index available through inherited history or an accessible
+source reference so workers can locate related discussions beyond the brief's
+examples. A summary never substitutes for reading a relevant full exchange.
+Apply the [discussion-aware rule](prior-review-threads.md#evaluate-findings-against-prior-discussion)
+without turning preparation into a fresh audit of every settled discussion.
 
 Use the existing Cross-file laws and Verification map for the worker contract's
 [engineering obligations](worker-review.md#engineering-obligations). Identify
@@ -166,6 +185,13 @@ just the brief: earlier implementation rationales, abandoned interpretations,
 and prior review conclusions must be revalidated before use. Applicable user
 requirements and constraints retain their authority. Matching brief digests or
 shared seed ancestry do not make correlated judgments independent.
+
+Independence does not mean ignoring prior responses. Workers must confront
+relevant discussion evidence during adjudication; coordinator reconciliation
+refreshes it before the final decision. A later reply or edit can change a
+finding without changing the PR head. Preserve the frozen brief and seed; handle
+discussion-only updates as current evidence under the prior-thread contract,
+not as a claim that every worker inherited the later exchange.
 
 Each worker performs the complete [internal file-review contract](worker-review.md)
 and blocker-falsification cut without invoking the public skill or becoming a
