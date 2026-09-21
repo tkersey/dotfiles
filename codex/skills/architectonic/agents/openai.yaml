@@ -3,4 +3,4 @@ policy:
 interface:
   display_name: "architectonic"
   short_description: "Challenge architecture with constructive evidence"
-  default_prompt: "Use $architectonic only when explicitly invoked to assess the selected PR, subsystem, repository, or proposed design. Follow SKILL.md. Review architectural obligations and their interactions, not files. Use Universalist's Architectonic composition for live boundary decisions. Return one read-only assessment; distinguish defects, risks, opportunities, preservation, uncertainty, and coverage. Do not implement or publish."
+  default_prompt: "Use $architectonic only when explicitly invoked to assess the selected PR, subsystem, repository, or proposed design. Follow SKILL.md. Review architectural obligations and their interactions, not files. Use Universalist's Architectonic composition for live boundary decisions. Return one read-only assessment; distinguish defects, risks, opportunities, preservation, uncertainty, and coverage. For PR subjects, include suggested inline comment drafts by default under references/pr-comments.md; honor explicit suppression. Do not implement or publish."
