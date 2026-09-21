@@ -1,6 +1,6 @@
 ---
 name: architectonic
-description: "Explicit-only architectural review of a PR, subsystem, repository, or proposed design. Reconstruct obligations and interactions, challenge the decomposition, and use Universalist for bounded constructive alternatives. Return evidenced defects, risks, opportunities, preservation, and uncertainty without editing or publishing."
+description: "Explicit-only architectural review of a PR, subsystem, repository, or proposed design. Reconstruct obligations and interactions, challenge the decomposition, and use Universalist for bounded constructive alternatives. Return evidenced findings and, for PRs, suggested inline comment drafts without editing or publishing."
 ---
 
 # Architectonic
@@ -86,8 +86,9 @@ current coverage explicitly incomplete. Do not invent hashes or deployment facts
    conflict, compare the combined alternatives or leave selection unresolved;
    never present both as independently adoptable. Reopen only affected arguments
    on new evidence, without confirmation streaks or fix/review loops.
-5. **Report once.** Return the architectural assessment below. Stop when selected
-   obligations and their material interactions are adjudicated or have named
+5. **Report once.** Return the architectural assessment below, including PR
+   comment drafts when applicable. Stop when selected obligations and their
+   material interactions are adjudicated or have named
    evidence gaps. Finding a defect does not finish the remaining selected scope;
    absence of findings does not establish coverage.
 
@@ -111,6 +112,13 @@ omit empty sections rather than emitting a mandatory matrix:
 - **Preserve / unresolved:** worthwhile decisions defended against actual pressure;
   unknown premises, incomparable alternatives, residual obligations, and the
   smallest useful evidence or owner decision needed.
+
+For a PR subject, include **Suggested inline PR comments** by default, following
+[pr-comments.md](references/pr-comments.md). Project retained actionable findings
+into copy-ready drafts after reconciliation, with verified locations and explicit
+blocking/nonblocking disposition. This includes justified nonblocking opportunities,
+not just blockers; do not invent findings or inline anchors. Honor an explicit
+summary-only or no-drafts request. Drafting is part of this assessment, not publishing.
 
 Use the dispositions and falsification cut in `references/investigation.md`.
 Separate semantic findings from coverage: complete means only that the declared
@@ -150,5 +158,6 @@ and permission settings when delegating. Workers do not spawn further workers.
 Sanitize source excerpts and reports; never publish secrets, private reasoning,
 or raw inherited messages/tool payloads.
 
-Skill-development evaluation cases live in [evals/scenarios.md](evals/scenarios.md).
-They are not instructions to load another review lane during ordinary use.
+Skill-development evaluation cases live in [evals/scenarios.md](evals/scenarios.md)
+and [evals/pr-comments.md](evals/pr-comments.md). They are not instructions to load
+another review lane during ordinary use.
