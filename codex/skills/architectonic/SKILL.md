@@ -51,8 +51,11 @@ current coverage explicitly incomplete. Do not invent hashes or deployment facts
 
 ## Run the assessment
 
-1. **Reconstruct once.** After a shallow inventory, select direct or parallel
-   investigation; resolve the selected parallel route before deep preparation.
+1. **Reconstruct once.** After a shallow inventory, choose direct investigation
+   or capability-check useful parallelism under
+   [prepared-review.md](references/prepared-review.md) before deep preparation.
+   Parallelism is optional unless the caller requires it; a failed optional route
+   may change execution, never the scope or evidence obligations.
    Read applicable instructions, accepted objectives,
    non-goals, contracts, and relevant implementation/design evidence. Trace
    producers, owners, consumers, state/effect transitions, and external boundaries.
@@ -63,10 +66,11 @@ current coverage explicitly incomplete. Do not invent hashes or deployment facts
 2. **Assign obligations, not components.** Derive investigations from required
    behavior, supported change scenarios, and live architectural decisions. Keep
    interacting laws together; include missing owners and cross-boundary paths.
-   Do not create a lane per quality adjective, file, or auxiliary skill. For one
-   coherent investigation, work directly. For useful parallel investigations,
-   follow [prepared-review.md](references/prepared-review.md). Never represent
-   shared context as independent judgment.
+   Do not create a lane per quality adjective, file, or auxiliary skill. Work
+   directly when sufficient or when optional parallel transport is unavailable,
+   covering every selected obligation. When delegating, use the prepared-review
+   contract's verified-checkpoint, admission, and recovery rules. Never represent
+   shared context as independent judgment or a failed fork as completed review.
 3. **Investigate and construct.** Apply [investigation.md](references/investigation.md)
    to every selected obligation. Challenge both the incumbent and its strongest
    admissible alternative. Invoke the installed sibling `$universalist` only for
@@ -116,6 +120,12 @@ Withhold scoped acceptance when an applicable mandatory obligation is unmet or
 material coverage is incomplete. Retain supported findings alongside that gap.
 No findings with incomplete coverage means **no demonstrated defect within the
 examined evidence; assessment incomplete**, not approval.
+
+State the actual execution (direct, prepared-parallel, or mixed) and any material
+strategy change. Separate transport limitations from missing architectural evidence.
+Direct investigation can complete optional parallel work's outstanding obligations,
+but cannot satisfy an explicit parallel/topology/transport requirement. Report an
+unmet execution requirement without claiming the requested assessment complete.
 
 An opportunity can justify a substantial reorganization without becoming a
 blocker. Explain a defensible tradeoff rather than manufacturing dominance or a
