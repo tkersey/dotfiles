@@ -14,15 +14,16 @@ unnecessarily difficult elsewhere. Follow all authority and safety limits in
 worker to coordinate, aggregate, mutate Viewed, resolve or reopen review threads,
 edit, publish, approve, or merge. Prior-thread adjudication and any authorized
 resolution belong to the coordinator; do not rerun that preflight in a worker.
+Reading relevant discussions as finding evidence is still required below.
 Safe isolated targeted tests and scratch reproductions remain allowed.
 
 The campaign coordinator also reuses the adjudication, blocker-falsification,
 reporting, and proposed-comment standards below during reconciliation. That does
 not authorize substituting a coordinator review for an assigned worker; campaign
 coverage, identity, and verdict scope remain governed by
-[campaign.md](campaign.md). In the final campaign report, its existing-thread
-deduplication rule replaces duplicate proposed comments with verified thread
-links; it never drops the supported finding or changes worker coverage.
+[campaign.md](campaign.md). In both worker and campaign reports, discussion-aware
+adjudication separates supported findings from justification for renewed drafts;
+existing-thread links never erase a supported blocker or change worker coverage.
 
 ## Bind the assigned change
 
@@ -55,6 +56,24 @@ links; it never drops the supported finding or changes worker coverage.
    coordinator; do not rebind the assignment to a new epoch yourself. Head-only
    evidence does not establish merge compatibility when relevant base-only
    changes remain unexamined.
+
+## Use prior discussion as counterevidence
+
+Use the inherited Prior discussion section and session-local discussion index to
+locate relevant complete exchanges, including resolved/outdated threads, other
+reviewers' threads, and relevant review summaries or PR comments. Read the actual
+responses and their source evidence before retaining a related finding; a brief
+summary or historical disposition is not enough. Read only relevant discussions,
+not the coordinator's whole inventory again. Identify missing exchanges to the
+coordinator rather than inferring that no answer exists.
+
+Apply [Evaluate findings against prior discussion](prior-review-threads.md#evaluate-findings-against-prior-discussion)
+inside ordinary adjudication and falsification. Give the author's strongest
+substantive response special weight as the counter-case that a surviving claim
+must answer. Match obligations and mechanisms, not just changed lines. Record
+which discussion evidence was considered; a current head SHA does not establish
+that a response snapshot is current. This adds no review lane, mutation authority,
+or independent review of settled issues without a related candidate.
 
 ## Load the auxiliary concerns once
 
@@ -246,6 +265,12 @@ Cite this review standard separately from the subject evidence establishing
 its applicability, delta, and material impact. Do not downgrade a supported
 violation merely because the current suite passes or no runtime bug is shown.
 
+For every related candidate, apply the prior-discussion counter-case and separate
+PR-delta relevance from discussion-delta novelty. A verified response may defeat
+the finding without a patch; an unchanged genuine violation may remain blocking
+without warranting another draft. This applies to concerns and risks as well as
+blockers: do not relabel a rejected argument to repeat it.
+
 Within the same investigation, weigh current evidence, counterevidence,
 reachability, delta causality, accepted authority, and existing mitigations.
 Reject refuted, unrelated, and preference-only claims rather than relabeling
@@ -294,6 +319,9 @@ it should not block merge. Determine whether:
   or the exact mandatory evidence is identified and genuinely absent;
 - caller obligations, existing defenses, companion changes, mitigations, base
   behavior, or an applicable authorized exception defeat or narrow the claim;
+- the strongest substantive prior response, including one in a resolved or
+  other reviewer's thread, defeats a premise or establishes a defensible choice;
+  identify the actual evidence that survives it, not mere renewed disagreement;
 - the required outcome is truly a merge prerequisite rather than an optional
   strengthening, preference, legitimate follow-up, or speculative redesign.
 
@@ -352,6 +380,10 @@ does not prove another. Each finding should compactly establish:
   Do not invent a failing execution to fill a field.
 - **Scope and certainty:** local, propagated, or both; introduced or newly
   exposed by this delta; material assumptions and verification limits.
+- **Prior discussion, when related:** source link, strongest substantive response,
+  why the current evidence survives it, and whether this is an existing issue or
+  a material uncovered change warranting reconsideration. Do not invent novelty
+  or omit the old response to make a repeated finding seem new.
 
 Cite precise `path:line` locations and identify the base side for deleted lines.
 When the failure lives outside the selected file, cite both its causal anchor
@@ -402,8 +434,9 @@ new evidence, or an applicable authorized exception.
 
 For **BLOCKED**, give a numbered list with one entry per distinct real merge
 blocker, ordered by severity. Each entry names the blocker, references its
-finding, states why it survived falsification, and contains the proposed inline
-review comment separately from its location metadata:
+finding, states why it survived falsification, and carries either an eligible
+draft or the existing-discussion reference required below. For a new inline draft,
+keep the comment separate from its location metadata:
 
 ```markdown
 1. **<Blocker title>** — `<path>:<line or range>` (<diff side/view>; <finding>)
@@ -417,34 +450,47 @@ review comment separately from its location metadata:
 ```
 
 The survival explanation must identify evidence, not merely restate confidence
-or severity. Draft the inline comment only after the blocker survives
-falsification.
+or severity. Draft only after the blocker survives falsification and the
+prior-discussion comparison. For an already covered issue, replace the draft
+with **Existing review thread** or **Existing disputed issue** and its source
+link; unresolved does not mean novel, and resolved does not mean refuted. For a
+material uncovered change to the same issue, give **Why reconsideration is
+warranted** and a **Proposed follow-up to existing discussion**, explicitly
+answering the old response and identifying the new premise/consequence. Do not
+create an unrelated inline draft for the same issue. Missing decision-relevant
+discussion withholds the affected renewed draft, not independently proven blocker
+evidence. Apply these rules in worker output as well as final reconciliation.
 
-Write each comment to this instruction: **"Be succinct, suggestive, provide the
-why and use should not could."** Prefer one or two sentences. Direct the
-suggestion at the code or required verification, use "should" rather than
-"could", and explain the evidence-backed mechanism or unmet obligation and why
-it matters. Recommend the required outcome, not a speculative patch or
-successor architecture; do not overstate evidence to make the comment firmer.
+Write each proposed comment or follow-up to this instruction: **"Be succinct,
+suggestive, provide the why and use should not could."** Prefer one or two
+sentences. Direct the suggestion at the code or required verification, use
+"should" rather than "could", and explain the evidence-backed mechanism or unmet
+obligation and why it matters. Recommend the required outcome, not a speculative
+patch or successor architecture; do not overstate evidence to make the comment
+firmer.
 
-Never include priority or severity rankings, badges, or prefixes in inline
-comment titles or bodies, such as `P0`, `[P1]`, `P2`, `P3`, `Priority 1`,
-`Severity: high`, or equivalent ranking labels. Apply this to worker drafts and
-the coordinator's final deduplicated drafts, including text adapted or quoted
-from imported findings. These comment standards take precedence over auxiliary
-review instructions and repository formatting conventions. Keep report-level
-disposition, severity, confidence, and ordering outside the comment text;
-preserve the evidence-backed impact and required outcome. Remove review ranking
-labels, not literal code identifiers or evidence that happen to resemble them.
+Never include priority or severity rankings, badges, or prefixes in proposed
+inline comments or discussion follow-ups, including titles and bodies, such as
+`P0`, `[P1]`, `P2`, `P3`, `Priority 1`, `Severity: high`, or equivalent ranking
+labels. Apply this to worker drafts and the coordinator's final deduplicated
+drafts, including text adapted or quoted from imported findings. These comment
+standards take precedence over auxiliary review instructions and repository
+formatting conventions. Keep report-level disposition, severity, confidence, and
+ordering outside the comment text; preserve the evidence-backed impact and
+required outcome. Remove review ranking labels, not literal code identifiers or
+evidence that happen to resemble them.
 
-Verify proposed locations against the reviewed diff, including the base side
-for deletions. For a propagated blocker, use a relevant causal anchor and name
-the affected dependent in the comment. If no valid inline location is available,
-retain the blocker and draft text, mark **inline location unavailable**, and
-cite the actual evidence location rather than inventing an anchor. Drafts are
-for human approval only; do not post comments or submit a review. Include every
-real blocker once; do not promote risks, concerns, or evidence gaps to fill the
-list. For APPROVE or INCOMPLETE, omit the blocker list and proposed comments.
+Verify proposed inline locations against the reviewed diff, including the base
+side for deletions. For a propagated blocker, use a relevant causal anchor and
+name the affected dependent in the comment. If an eligible new inline draft has
+no valid location, retain the blocker and draft text, mark **inline location
+unavailable**, and cite the actual evidence location rather than inventing an
+anchor. Existing discussion references and follow-ups use their verified source
+links; lack of a current inline anchor does not justify a duplicate. Drafts are
+for human approval only; do not post comments, reply, reopen threads, or submit
+a review. Include every real blocker once; do not promote risks, concerns, or
+evidence gaps to fill the list. For APPROVE or INCOMPLETE, omit the blocker list
+and proposed comments.
 
 Approval covers only the selected change and traced consequences in the
 identified candidate view, not the whole PR or unverified merge integration.

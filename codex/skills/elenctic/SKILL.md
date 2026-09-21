@@ -1,6 +1,6 @@
 ---
 name: elenctic
-description: "Explicit-only Elenctic adjudicates the authenticated gh user's prior review threads, then runs an exact-head PR review campaign for the current branch or an explicit PR, forking prepared file reviewers with at most 20 active at once, reconciling their evidence, and projecting accepted complete reviews to Viewed. Resolve only justified own-root threads; finish with real blockers or scoped approval. Never edit code, post comments, submit reviews, approve, or merge."
+description: "Explicit-only Elenctic adjudicates the authenticated gh user's prior review threads, then runs an exact-head PR review campaign for the current branch or an explicit PR, forking prepared file reviewers with at most 20 active at once, reconciling their evidence against prior discussion, and projecting accepted complete reviews to Viewed. Resolve only justified own-root threads; renew commentary only for material uncovered changes. Finish with real blockers or scoped approval. Never edit code, post comments, submit reviews, approve, or merge."
 ---
 
 # Elenctic
@@ -66,8 +66,17 @@ After target and exact-epoch binding, first follow
 and when every file is already Viewed. Verify replies and relevant code changes;
 challenge both the claimed fix and the original finding. Resolve only what current
 evidence justifies, report semantic and mutation outcomes separately, then
-continue the existing review. No eligible own threads is a fast path, not an error.
-Thread adjudication never establishes file coverage or authorizes Viewed writes.
+continue the existing review. No eligible own threads skips resolution work,
+not discussion-aware finding evaluation. Thread adjudication never establishes
+file coverage or authorizes Viewed writes.
+
+Evaluate related findings against complete prior discussions regardless of their
+author or resolution state. Give substantive responses special weight as the
+mandatory counter-case. Separate a finding's merge consequence from justification
+for another comment: renewed commentary requires a material, uncovered change,
+not repetition or disagreement. Apply the prior-thread contract's
+[discussion-aware rule](references/prior-review-threads.md#evaluate-findings-against-prior-discussion)
+in shared preparation, worker adjudication, and final reconciliation.
 
 The coordinator prepares one source-bound [Campaign Brief](references/campaign-brief.md)
 and immutable seed containing its full prepared analysis history, then assigns

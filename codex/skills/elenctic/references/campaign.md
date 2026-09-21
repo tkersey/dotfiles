@@ -6,7 +6,7 @@ viewer's prior review threads, then analyze the change as a whole,
 publish a source-bound Campaign Brief, freeze that prepared context in one
 immutable seed, fork bounded file reviewers from the seed, admit their exact-head
 reports, project accepted progress into GitHub's Viewed state, and reconcile the
-evidence into real blockers or a scoped approval.
+evidence against relevant prior discussion into real blockers or a scoped approval.
 
 ## Governing invariants
 
@@ -179,15 +179,18 @@ that changed.
 After binding the exact epoch and before capability checks or shared preparation,
 follow [prior-review-threads.md](prior-review-threads.md). This coordinator-only
 preflight runs even when the unchecked selection is empty. No eligible own-root
-threads proceeds directly to the existing review; incomplete reads are reported,
-not treated as no threads. On accepted resume, refresh this preflight without
-resnapshotting file selection, replacing the seed, or duplicating assignments.
+threads skips resolution work, not discovery of relevant discussions; incomplete
+reads are reported, not treated as no threads. On accepted resume, refresh this
+preflight without resnapshotting file selection, replacing the seed, or duplicating
+assignments.
 
-Keep semantic dispositions, GitHub mutation outcomes, and file coverage separate.
-Carry current verified concerns and evidence gaps into reconciliation; do not
-mark a file Viewed or create a worker merely because its thread was investigated.
-The brief may locate these questions but must not turn prior-thread conclusions
-into inherited findings or pre-adjudicate worker results.
+Keep semantic dispositions, GitHub mutation outcomes, file coverage, and draft
+eligibility separate. Carry current verified concerns, substantive responses, and
+evidence gaps into reconciliation; do not mark a file Viewed or create a worker
+merely because its thread was investigated. The brief's Prior discussion section
+must preserve relevant arguments and full-exchange source references regardless
+of thread creator or resolution state, without turning historical conclusions
+into inherited findings or pre-adjudicating worker results.
 
 ## Prepare and freeze shared context
 
@@ -329,7 +332,10 @@ as hypotheses, not current evidence. Preserve applicable user requirements and
 constraints; revalidate every relied-on premise against the exact candidate and
 its governing authority. Challenge provisional hypotheses and report material
 contradictions or omissions. No inherited conclusion becomes a finding without
-ordinary Elenctic evidence and adjudication.
+ordinary Elenctic evidence and adjudication. Use the Prior discussion index and
+complete relevant exchanges to test related claims against the author's strongest
+substantive response. Separate real blockers from justification for renewed drafts
+under the worker contract; do not ignore resolved or other reviewers' discussions.
 
 Do not aggregate, edit, mark Viewed, resolve or reopen review threads, post
 comments, submit a review, approve, or merge. Emit the required Review identity
@@ -535,6 +541,10 @@ coverage, and an unverifiable final epoch withholds a current-head verdict.
 When every assignment is accepted, incomplete, failed, stale, or needs-input and
 no worker remains running, automatically reconcile admitted selected-worker and
 excluded-file evidence together with current verified prior-thread evidence.
+Refresh the discussion inventory and relevant exchanges under the prior-thread
+contract, including new threads, replies, edits, PR comments, and review summaries;
+an unchanged head does not make an old discussion snapshot current. Re-adjudicate
+affected claims without rewriting the seed or restarting unrelated work.
 Reuse **Adjudicate before reporting**, **Falsify provisional blockers**,
 **Return one report**, and **End with the decision** from
 [worker-review.md](worker-review.md); the coverage rules and aggregate identity
@@ -547,6 +557,9 @@ Source dispositions are inputs, not ceilings on aggregate judgment:
 - source **real blockers** nominate claims to re-establish, not inherited gates;
 - verified prior-thread evidence contributes current concerns and gaps, including
   on pre-Viewed paths, but never supplies file coverage or Viewed eligibility;
+- substantive prior responses are required counterevidence regardless of author,
+  resolution state, or anchor; verify their actual defenses and constraints,
+  rather than inheriting either the old finding or its dismissal;
 - complete current-candidate reports contribute only their identified target
   coverage, independently of verdict; approval is not evidence against an
   omitted defect;
@@ -599,23 +612,33 @@ For every deduplicated candidate blocker:
    or materially worsened by the current delta.
 3. Recheck mandatory authority, supported reachability, existing defenses,
    companion changes, integration state, and the minimum pre-merge obligation.
-4. Reconcile supporting and contradicting source reports without treating their
-   count as a vote.
+4. Reconcile supporting and contradicting source reports and the strongest
+   substantive prior responses without treating their count as a vote.
 5. Apply the worker contract's **Falsify provisional blockers** cut once.
 
 A blocker is retained only when current evidence—not historical repetition—
 establishes delta causality, mandatory authority, concrete basis, defense
 survival, and merge necessity. Reclassify, reject, or mark incomplete under the
-same standard used by workers. For a blocker already represented by an open
-review thread, verify its current state and link it as **Existing review thread**
-instead of drafting a duplicate. Otherwise draft one proposed inline comment per
-deduplicated real blocker, verify its current diff anchor, and retain the blocker
-with **inline location unavailable** when no valid anchor exists. Preserve distinct
-defects and all current blocker evidence regardless of thread or Viewed state.
+same standard used by workers. Apply
+[discussion-aware adjudication](prior-review-threads.md#evaluate-findings-against-prior-discussion)
+to all related findings before deciding whether a draft is justified. Verify the
+complete relevant exchange, not only whether a matching thread is open.
+
+For an already covered issue, link **Existing review thread** or **Existing
+disputed issue** instead of drafting again; preserve its supported merge
+consequence. Reconsideration requires a material uncovered discussion delta,
+separate from full-PR-delta relevance. Explain **Why reconsideration is warranted**
+and prefer a **Proposed follow-up to existing discussion** for the same issue.
+Only a genuinely distinct, uncovered retained blocker gets a separate new inline
+draft. Verify its current diff anchor, or retain it with **inline location
+unavailable** when no valid anchor exists. A missing relevant exchange withholds
+the affected renewed draft, not independently supported blocker evidence.
+Reject defeated claims rather than restating them as softer suggestions; do not
+let thread or Viewed state hide a real defect or manufacture novelty.
 
 Reconciliation itself does not launch reviewers or begin an unrelated audit.
 Bound it by contracts, contradictions, and unresolved premises already exposed
-by admitted reports, adjudicated prior threads, or the current Campaign Brief.
+by admitted reports, relevant prior discussions, or the current Campaign Brief.
 The brief locates questions; verify its premises against source before using them. Stop each question when
 resolved or a named evidence gap prevents a decision. This is synthesis within
 the campaign, not another review lane or loop.
@@ -637,7 +660,9 @@ weight.
 
 Before the aggregate verdict, recheck the PR epoch again. Head movement makes
 whole-campaign approval unavailable, invalidates the seed for new work, and
-prevents any remaining Viewed or review-thread writes.
+prevents any remaining Viewed or review-thread writes. Reconcile any observed
+late discussion change before finalizing affected findings or drafts; neither
+head checks nor discussion refreshes make the report atomic with future replies.
 
 ## Coverage and final decision
 
@@ -650,20 +675,22 @@ coverage or Viewed eligibility. An interim report must disclose outstanding work
 rather than silently shrinking the frozen scope.
 
 Apply the prior-thread contract's semantic/effect distinction. Incomplete thread
-inventory or ownership withholds campaign approval without erasing valid file
-coverage. Decision-relevant thread gaps constrain the affected scope; complete
-adjudication with only a denied/uncertain resolution write does not itself create
-a blocker or invalidate semantic approval. Never describe the PR as clean while
-a verified prior-thread blocker survives, even on a pre-Viewed path.
+inventory or ownership that can hide outstanding own concerns withholds campaign
+approval without erasing valid file coverage. Decision-relevant thread gaps
+constrain the affected scope; an unrelated missing historical exchange or a gap
+only in draft novelty is not a new merge gate. Complete adjudication with only
+a denied/uncertain resolution write does not itself create a blocker or invalidate
+semantic approval. Never describe the PR as clean while a verified prior-thread
+blocker survives, even on a pre-Viewed path or in a resolved discussion.
 
 Verdict semantics are:
 
 - any current blocker surviving aggregate falsification -> **BLOCKED**, even
   when other files are not reviewed or its anchor was pre-Viewed;
-- no surviving blocker with incomplete prior-thread inventory/ownership,
-  incomplete selected-set coverage, or an unresolved material thread/cross-file
-  obligation within the scope being decided -> **INCOMPLETE**,
-  with the affected scope and evidence gap named;
+- no surviving blocker with incomplete prior-thread inventory/ownership that can
+  hide outstanding own concerns, incomplete selected-set coverage, or an
+  unresolved material thread/cross-file obligation within the scope being
+  decided -> **INCOMPLETE**, with the affected scope and evidence gap named;
 - scoped **APPROVE** -> every selected unchecked file has accepted complete
   current-head coverage, exposed cross-file obligations in that scope are
   reconciled, no blocker survives, and relevant integration evidence is complete;
@@ -724,7 +751,10 @@ Before the final verdict, include **Prior review threads** using the prior-threa
 contract: host/viewer, candidate, inventory completeness, counts, and linked
 outcomes with replies, relevant changes, semantic evidence, and separately
 observed mutation results. A complete empty inventory needs only one sentence.
-Reference existing open threads instead of duplicate final comment drafts.
+For related retained findings, identify the strongest prior response and its
+current disposition, then distinguish an existing issue from a justified
+follow-up. No eligible own resolution threads is not proof of no relevant
+prior discussion. Do not repeat settled arguments or duplicate draft text.
 
 Then report:
 
@@ -763,7 +793,8 @@ separately bound base tip in the campaign summary. For v1 compatibility,
 whole-PR coverage is `not-established`. The explicit coverage fields preserve
 selected-set completion independently from whole-PR Elenctic coverage.
 
-Use the ordinary real-blocker list and inline-comment style. Add sanitized
+Use the ordinary real-blocker list and eligible-comment/follow-up style, replacing
+ineligible duplicate drafts with verified discussion references. Add sanitized
 supporting assignment/session provenance without repeating the complete worker
 reports.
 
@@ -776,6 +807,9 @@ reports.
 - Adjudicate unresolved own-root threads first, including on resume and empty
   file selection; only the coordinator may resolve justified threads. Never
   equate resolution with file coverage or let Viewed exclusions hide blockers.
+- Consider relevant discussions regardless of author or status; scrutinize
+  findings against substantive responses and require a material uncovered basis
+  for renewed commentary. Preserve real obligations without repeating arguments.
 - Deeply analyze the complete PR construction and publish one source-bound
   Campaign Brief before creating any worker.
 - Treat the brief as orientation, never as review evidence, a finding, or a
