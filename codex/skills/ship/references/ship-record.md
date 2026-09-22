@@ -46,6 +46,8 @@ ship_record:
 
 `action.result` is successful only after live PR readback matches repository,
 base/head identities, URL, open/draft state, and managed proof block.
+Creation, including partial-creation recovery, also requires the
+[assignment readback](../pull-request.md#new-pr-assignment).
 
 For Actuating input, Ship copies `actuation_binding` verbatim. It does not
 reconstruct the Goal, architecture, review state, or closure judgment.
