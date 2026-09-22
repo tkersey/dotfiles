@@ -61,6 +61,13 @@ projection under that contract. Honor narrower caller limits on mutations.
 Aggregation is automatic campaign reconciliation; continuation resumes the same
 work rather than selecting another review workflow.
 
+Incomplete selected-file coverage requires immediate coordinator-scheduled
+[continuation](references/campaign.md#continue-incomplete-assignments-immediately),
+even when the report contains real blockers. Preserve evidence across attempts;
+completion status neither establishes nor dismisses a finding. Do not finalize
+while authorized, runnable review work remains, and never retry a complete review
+merely to obtain a clean verdict.
+
 After target and exact-epoch binding, first follow
 [prior-review-threads.md](references/prior-review-threads.md), including on resume
 and when every file is already Viewed. Verify replies and relevant code changes;

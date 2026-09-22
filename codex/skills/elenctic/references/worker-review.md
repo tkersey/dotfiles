@@ -5,7 +5,9 @@ coordinator. Perform one integrated investigation in the assigned worker; this
 is not a public entry point or a separately invocable skill. Do not invoke
 `$elenctic`, create or resume a campaign, spawn reviewers, invoke auxiliary
 skills, dispatch CAS reviews, or run separate lens passes, verdicts, confirmation
-streaks, or fix/review loops. Never expand the assignment to every changed file.
+streaks, or fix/review loops. Coordinator-directed continuation finishes this
+same investigation; it is not another review lane. Never expand the assignment
+to every changed file or independently spawn a retry.
 
 **The file is the causal anchor, not the evidence boundary.** Review what changed
 in the assigned file and what that change makes wrong, unsafe, unjustified, or
@@ -349,16 +351,51 @@ Assign each provisional blocker exactly one result:
 - **Rejected:** the claim is false, refuted, unrelated, preference-only, already
   satisfied, or pre-existing without a new exposure, material worsening, or
   contract violation caused by this delta.
-- **Incomplete:** evidence needed to decide the blocker claim is missing or
-  stale; name the gap instead of preserving or inventing a blocker.
+- **Evidence pending:** an indispensable premise cannot yet be decided from
+  current evidence. Preserve the question, evidence, and missing discriminator
+  in the coverage note for further investigation; neither establish nor reject
+  a blocker on that basis. This is not a finding significance or file-completion
+  judgment, and does not erase independently supported findings.
 
-Run this cut once per provisional blocker. Do not recursively reconsider an
-unchanged result. A newly discovered issue must pass the ordinary investigation,
+Run this cut once per provisional blocker on unchanged evidence. Investigating
+an unresolved premise or considering material new evidence during continuation
+is allowed; repeated voting on an unchanged result is not. A newly discovered
+issue must pass the ordinary investigation,
 adjudication, and this cut if provisionally blocking; do not generate a
 replacement finding merely because another blocker was rejected. Move
 reclassified findings to their resulting report group, omit rejected claims,
 and carry decision-limiting gaps into coverage. After this cut, only retained
 merge blockers are real blockers.
+
+## Continue the assigned investigation
+
+File-level `INCOMPLETE` means the review is unfinished and requests immediate
+coordinator-scheduled continuation under
+[campaign.md](campaign.md#continue-incomplete-assignments-immediately). Report
+incomplete coverage even when a real blocker makes the verdict BLOCKED. Neither
+status changes a finding's merit, severity, or eligibility for a comment.
+
+When incomplete, use the existing coverage note to identify the exact unfinished
+paths/checks, available evidence, failed or untried evidence routes, and any real
+permission/source/runtime prerequisite. A missing read is not proof that required
+verification is absent from the PR. Do not stop at the first blocker or leave
+available work unexamined merely to request another turn.
+
+On a coordinator continuation, retain the assignment and pinned candidate.
+Investigate the named gaps and their causal consequences, including material
+new evidence or discussion; do not blindly redo completed work or seek a cleaner
+verdict. Return one consolidated whole-assignment report for this turn. Explicitly
+retain earlier findings or explain their evidence-backed refutation, narrowing,
+or reclassification, and account for earlier material gaps. No finding disappears
+because it came from an incomplete attempt or is absent from the latest summary.
+Unresolved claims remain questions, not confirmed or rejected defects by default.
+
+For a replacement worker, verify supplied prior evidence against the same
+candidate and complete any missing investigation; supplied reports do not grant
+coverage. Do not quote an old Review identity as the new result, invent attempt
+provenance, or treat continuation evidence as part of the immutable seed. Only
+the coordinator schedules further attempts or handles epoch invalidation. A
+complete review with blockers is complete, not an instruction to keep retrying.
 
 ## Return one report
 
@@ -398,8 +435,8 @@ findings even when other paths remain incomplete. Report **no findings in the
 reviewed scope** only when all three categories are empty and coverage is
 complete; never present missing lens instructions or stale evidence as clean.
 
-Immediately before the final decision, emit exactly one unquoted machine-readable
-identity line using canonical one-line JSON in this shape:
+Immediately before this turn's final decision, emit exactly one unquoted
+machine-readable identity line using canonical one-line JSON in this shape:
 
 ```text
 Review identity: {"schema":"elenctic-review-identity/v1","mode":"single-file","repo":"<owner/name>","pr":123,"campaign_id":"<campaign-id>","assignment_id":"<assignment-id>","campaign_context_id":"<brief-digest-or-exact-content-id>","campaign_seed_thread_id":"<seed-thread-id>","target":"<path>","base":"<review-merge-base-sha>","candidate":"<head-sha>","view":"pr-head","coverage":"<complete|incomplete>","verdict":"<BLOCKED|APPROVE|INCOMPLETE>"}
@@ -416,6 +453,9 @@ blocker may coexist with incomplete coverage. Bind every field to the exact
 assignment and reviewed state; never infer missing campaign provenance or
 reconstruct identities from mutable refs. The identity verdict must equal the
 final decision. This line is report provenance, not approval or closure authority.
+Keep the v1 schema and assignment-binding fields unchanged across continuations;
+the coordinator's exact worker/turn references distinguish attempts. Coverage and
+verdict reflect the consolidated current investigation, not the latest gap alone.
 
 ## End with the decision
 
@@ -430,7 +470,7 @@ new evidence, or an applicable authorized exception.
 |---|---|
 | **BLOCKED — Real blockers:** | At least one retained merge blocker remains after falsification, even if other paths are incomplete. List every distinct unsatisfied merge obligation using the numbered format below, with why it survived the strongest counter-case and the minimum evidence or outcome needed to clear it; refer to findings instead of restating the report. |
 | **APPROVE — No real blockers in the reviewed scope.** | The selected review is complete, no supported merge blocker remains, and no material evidence gap prevents the decision. Approval may coexist with nonblocking risks or concerns; briefly say why they do not block. Do not demand optional improvements or invent risk-acceptance gates. |
-| **INCOMPLETE — Approval withheld.** | No supported blocker is established, but missing/stale evidence, required lens coverage, relevant integration coverage, or an unreviewed/no-delta target prevents a decision. Name the specific missing evidence; do not invent a defect. |
+| **INCOMPLETE — Review unfinished.** | No supported blocker is established, but missing/stale evidence, required lens coverage, relevant integration coverage, or an unreviewed/no-delta target prevents a decision. Identify the unfinished work and any actual obstruction for immediate coordinator handling; do not invent or discard a finding. |
 
 For **BLOCKED**, give a numbered list with one entry per distinct real merge
 blocker, ordered by severity. Each entry names the blocker, references its
