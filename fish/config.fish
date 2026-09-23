@@ -36,11 +36,6 @@ abbr -a -g nvim-plugins '~/.local/share/nvim/lazy'
 set -gx EDITOR nvim
 set -Ux HOMEBREW_NO_ASK 1
 
-# goenv initialization
-set -x GOENV_ROOT $HOME/.goenv
-fish_add_path $GOENV_ROOT/bin
-goenv init - | source
-
 # bun
 set --export BUN_INSTALL "$HOME/.bun"
 set --export PATH $BUN_INSTALL/bin $PATH
