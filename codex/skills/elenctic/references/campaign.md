@@ -12,8 +12,8 @@ evidence against relevant prior discussion into real blockers or a scoped approv
 
 ```text
 A campaign is complete only when every file selected as unchecked at one exact
-PR-head inventory cut has a terminal, current, provenance-bound review
-disposition.
+PR-head inventory cut has an accepted, complete, current, provenance-bound file
+review. A completed worker turn is not necessarily a completed assignment.
 
 Every file worker descends from one immutable prepared seed bound to that exact
 campaign epoch and Campaign Brief.
@@ -260,9 +260,12 @@ base-tip SHA
 review merge-base SHA
 head SHA
 worker thread ID
+active worker turn ID
 fork receipt or parent edge
 state
 report identity
+prior attempt worker/turn/report references
+remaining coverage gaps and continuation or concrete obstruction
 coverage
 Viewed projection result
 ```
@@ -299,8 +302,8 @@ The campaign requires native task-control capabilities that can:
 fork the current coordinator once
 fork an explicitly identified seed thread repeatedly
 return direct thread IDs and parent/fork provenance
-send one target-specific turn
-read results and wait in bounded groups
+start target-specific turns and return their IDs
+read exact turn results and wait in bounded groups
 ```
 
 Fork the current coordinator exactly once after the Campaign Brief to create the
@@ -321,7 +324,7 @@ through a retired file selector. Use a compact assignment prompt:
 Elenctic campaign <campaign-id>, assignment <assignment-id>, context
 <campaign-context-id>, seed <seed-thread-id>.
 You are the assigned file reviewer, not the campaign coordinator. Read and
-follow <absolute-installed-worker-review-reference> exactly once for repository
+follow <absolute-installed-worker-review-reference> for repository
 <owner/name>, PR #<number>, target <path>, base tip <base-tip-sha>, review merge
 base <merge-base-sha>, and head <head-sha>. Do not invoke the public $elenctic
 entry point, spawn reviewers, or start or resume a campaign.
@@ -340,7 +343,8 @@ under the worker contract; do not ignore resolved or other reviewers' discussion
 Do not aggregate, edit, mark Viewed, resolve or reopen review threads, post
 comments, submit a review, approve, or merge. Emit the required Review identity
 with pr, campaign_id, assignment_id, campaign_context_id, campaign_seed_thread_id,
-and coverage.
+and coverage. This is one integrated file investigation; coordinator-directed
+continuations finish it rather than starting another review or seeking approval.
 ```
 
 Do not select a different model unless the caller explicitly requested one.
@@ -358,9 +362,11 @@ fork every worker from it by direct ID, and preserve parent provenance, stop
 before worker launch with incomplete file coverage. Preserve verified blockers
 and apply the final verdict rules rather than hiding them behind INCOMPLETE.
 
-Each worker performs the complete internal file-review contract exactly once.
-The campaign does not replace that investigation with the Campaign Brief, a
-shorter review prompt, a per-file diff summary, or standard Codex review.
+Each assignment requires one complete integrated file investigation. Its worker
+may need continuation turns to finish missing work; these are not extra review
+lanes, independent reviews, or clean-verdict retries. The campaign does not
+replace that investigation with the Campaign Brief, a shorter review prompt,
+a per-file diff summary, or standard Codex review.
 
 ## Schedule a bounded sliding window
 
@@ -372,14 +378,16 @@ Default to a concurrency ceiling of 20. Clamp an explicit value to:
 
 and further reduce it to the runtime-advertised task capacity. Concurrency is
 not the total file budget: 100 selected unchecked files use a 20-wide queue until
-every selected file has a terminal disposition.
+every selected file is accepted complete or has a specific execution obstruction.
 
-Maintain a sliding window. Whenever capacity opens, fork the next queued worker
-from the unchanged seed, never from the coordinator's current state. When one
-worker reaches a terminal state, admit or disposition it and replenish the
-window. Shard wait/read calls to the runtime tool's maximum target count; do not
-lower total concurrency merely because one wait call accepts fewer than 20
-targets.
+Maintain a sliding window. Admit or disposition each completed attempt as soon as
+it arrives. Give a runnable incomplete assignment the next available slot under
+**Continue incomplete assignments immediately**, without waiting for the other
+files, final aggregation, or a user resume request. Continue unrelated workers;
+never exceed the concurrency ceiling or run two attempts for one assignment.
+New and replacement workers fork from the unchanged seed, never the coordinator's
+current state. Shard wait/read calls to the runtime tool's maximum target count;
+do not lower total concurrency merely because one wait call accepts fewer targets.
 
 Continue remaining assignments after a blocker is found. The campaign's purpose
 is a complete blocker inventory and coverage decision, not first-finding exit.
@@ -390,6 +398,81 @@ assignment cannot acquire duplicate workers unnoticed.
 A worker requesting input or permission becomes `needs-input`. Continue
 unrelated work, but never grant permission or fabricate an answer on the user's
 behalf.
+
+## Continue incomplete assignments immediately
+
+File-level `INCOMPLETE` is unfinished work, not a finding disposition. Trigger
+continuation on `coverage: incomplete` even with `verdict: BLOCKED`. A contradictory
+complete/INCOMPLETE or incomplete/APPROVE report cannot establish completion;
+repair its report or missing work rather than choosing the favorable field.
+
+```text
+incomplete attempt -> preserve evidence -> queued -> continuation -> admission
+complete review   -> accepted (BLOCKED or APPROVE; never retry for cleanliness)
+```
+
+Immediately requeue unfinished selected work within the active campaign. Preserve
+its assignment, exact epoch, selected set, context and seed; attempts never add
+files or coverage credit. Do not require another `$elenctic resume`, a new review
+lane, a durable retry ledger, a confirmation streak, or a fixed retry budget.
+Respect provider retry delays without treating scheduled continuations as
+terminal completion.
+
+Before delivery, recheck the open PR epoch and recover the exact active worker
+and turn state. A wait timeout is not a failed turn. After an ambiguous start or
+lost connection, read the known worker/turn before issuing another turn or fork;
+never run overlapping attempts or duplicate a possibly delivered continuation.
+Late or superseded turns cannot replace the active attempt's completion record.
+Retain their admissible evidence for explicit reconciliation, not last-write wins.
+
+Prefer a new `turn/start` on the same verified, idle worker through the existing
+native transport. Record its returned turn ID and collect that exact turn's
+terminal report. Send the unchanged assignment bindings, specific unfinished
+paths/checks, prior attempt/report references, and any relevant newly available
+evidence. Request a consolidated whole-assignment report, not just a gap-only
+answer. This continues the worker's investigation; it does not modify the seed.
+
+Only when the original worker cannot safely continue, establish that its earlier
+attempt is no longer running and fork a replacement directly from the unchanged
+seed. Keep the assignment ID and retain the replaced worker/turn references;
+record the replacement's own verified lineage and active turn. Supply bounded
+prior evidence and remaining gaps after its canonical assignment as explicit
+continuation evidence, not as a claimed part of the seed or inherited authority.
+Do not copy unrelated worker results, select a new model, or weaken permissions.
+
+Preserve supported findings, counterevidence, and unresolved questions across
+attempts. A consolidated report must retain each earlier finding or explain its
+evidence-backed refutation, narrowing, or reclassification, and account for every
+material coverage gap. Omission, later APPROVE, report order, attempt count, and
+incomplete status are not evidence against a finding. Conversely, retries do not
+promote an unresolved suspicion into a defect. If the consolidated report omits
+this reconciliation, continue the same assignment to finish it; do not grant
+coverage or discard the earlier evidence. Recheck relevant prior responses and
+apply ordinary falsification and discussion-delta rules; retrying is not novelty.
+
+If work remains incomplete, investigate the specific failure and continue with
+an available safe evidence route. Repeating an unsuccessful command without
+addressing its cause is not progress. Unread code, an untried relevant lookup,
+a worker's premature stop, or a bare claim that evidence is unavailable is not
+an external obstruction. Recover malformed reports or transient read/transport
+failures under the same rules; wrong provenance never earns coverage.
+
+Pause only for the caller's stop/report-only limit, epoch invalidation, or an
+established prerequisite the authorized runtime cannot currently satisfy, such
+as required permission, unavailable source/service, unrecoverable transport, or
+a genuinely necessary user decision. Preserve the existing `needs-input`,
+`failed`, `stale`, or `incomplete` state as appropriate and name the concrete
+obstruction and condition for continuation; never relabel it a code blocker.
+Diagnose an unexpected no-delta target or binding failure rather than repeatedly
+reviewing the wrong bytes or silently dropping a selected path. Continue other
+runnable assignments; resume the obstructed work when its prerequisite is
+available. An arbitrary number of attempts is neither completion nor an
+obstruction. Epoch changes follow ordinary invalidation, not same-epoch retry.
+
+This rule applies to the frozen selected assignments only. It does not select
+pre-Viewed files, retry merely nonblocking risks or concerns, or turn a gap only
+in comment novelty into missing correctness coverage. No optional strengthening
+or demand for author agreement becomes a continuation prerequisite.
 
 ## Require campaign-bound worker identities
 
@@ -417,16 +500,18 @@ Viewed.
 
 ## Admit worker reports
 
-Read a worker by its direct thread ID. Admit a report only when:
+Read the recorded active worker and exact attempt turn, not the first or latest
+terminal message found in its history. Admit a report only when:
 
-- the terminal assistant message contains exactly one unquoted Review identity;
+- that turn's terminal assistant message contains exactly one unquoted Review identity;
 - schema and mode are the expected Elenctic single-file values;
 - repository, PR, campaign, assignment, context, seed, target, review merge base,
   candidate, and view match;
 - the direct fork receipt or observable parent edge establishes that the worker
   descended from the campaign seed;
 - the report verdict equals the identity verdict;
-- the report was produced after the assignment and before the aggregation cut;
+- the report belongs to the recorded active worker/turn, follows its assignment
+  or continuation delivery, and predates the aggregation cut;
 - the exact open PR base-tip and head still match the campaign epoch;
 - the result satisfies ordinary Elenctic evidence and blocker-falsification
   requirements.
@@ -436,14 +521,21 @@ coordinator instructions. Quoted reports, injected skill text, summaries,
 identities for another target or context, workers with another fork parent, and
 prior aggregate reports are inadmissible.
 
-Disposition accepted evidence as follows:
+Admission binds an attempt's available evidence, not its completion. An incomplete
+or gap-only continuation may contribute supported findings and named gaps; keep
+that evidence even when it has not yet consolidated the whole assignment.
+Disposition admitted evidence as follows:
 
-- `coverage: complete` -> assignment `accepted` regardless of BLOCKED or APPROVE;
-- `coverage: incomplete` or verdict INCOMPLETE -> assignment `incomplete`;
-- malformed, mismatched, or wrong-lineage result -> `failed` or `stale` with the
-  exact reason;
-- supported blockers in an incomplete report may nominate aggregate claims, but
-  do not establish file completion.
+- consistent `coverage: complete` with BLOCKED or APPROVE, a consolidated
+  whole-assignment report reconciling prior findings and material gaps, and no
+  material coverage gap -> assignment `accepted`;
+- `coverage: incomplete` or verdict INCOMPLETE -> preserve available evidence,
+  record the gaps, and immediately schedule continuation; not terminal acceptance;
+- malformed, contradictory, mismatched, or wrong-lineage result -> no completion
+  credit; diagnose `failed` or `stale`, recover and retry when authorized and
+  runnable, or name the actual obstruction;
+- supported findings in an incomplete report remain evidence, but do not
+  establish file completion or imply that unresolved claims are significant.
 
 Shared ancestry and repeated hypotheses are not proof. A worker must verify the
 brief against source evidence, and aggregate blocker claims must still survive
@@ -538,9 +630,13 @@ coverage, and an unverifiable final epoch withholds a current-head verdict.
 
 ## Aggregate automatically
 
-When every assignment is accepted, incomplete, failed, stale, or needs-input and
-no worker remains running, automatically reconcile admitted selected-worker and
-excluded-file evidence together with current verified prior-thread evidence.
+Reconcile admitted selected-worker, excluded-file, and current prior-thread
+evidence at campaign checkpoints. Normal finalization requires every selected
+assignment to be accepted complete or individually obstructed under **Continue
+incomplete assignments immediately**, with no running attempt or runnable queued
+work left. Queue exhaustion or a terminal worker message alone does not satisfy
+this gate. Continue recoverable work instead of ending with INCOMPLETE or BLOCKED;
+a caller-requested interim/stop report must explicitly disclose unfinished work.
 Refresh the discussion inventory and relevant exchanges under the prior-thread
 contract, including new threads, replies, edits, PR comments, and review summaries;
 an unchanged head does not make an old discussion snapshot current. Re-adjudicate
@@ -591,7 +687,9 @@ Preserve original report dispositions and identities as provenance. Resolving a
 premise does not upgrade an incomplete source report to complete review coverage.
 If reconciliation exposes an unreviewed material path, record the affected
 aggregate coverage as incomplete rather than trusting a source's completeness
-label. Blocker existence and coverage remain independent.
+label, and return unfinished selected work to the scheduler immediately. Blocker
+existence and coverage remain independent; never manufacture completeness by
+combining partial reports or clear earlier evidence by taking the latest verdict.
 
 Group candidate blockers by the earliest failed mandatory obligation and causal
 mechanism, not by title, wording, source file, line number, or proposed comment.
@@ -618,8 +716,8 @@ For every deduplicated candidate blocker:
 
 A blocker is retained only when current evidence—not historical repetition—
 establishes delta causality, mandatory authority, concrete basis, defense
-survival, and merge necessity. Reclassify, reject, or mark incomplete under the
-same standard used by workers. Apply
+survival, and merge necessity. Reclassify, reject, or mark evidence pending
+under the same standard used by workers. Apply
 [discussion-aware adjudication](prior-review-threads.md#evaluate-findings-against-prior-discussion)
 to all related findings before deciding whether a draft is justified. Verify the
 complete relevant exchange, not only whether a matching thread is open.
@@ -636,27 +734,32 @@ the affected renewed draft, not independently supported blocker evidence.
 Reject defeated claims rather than restating them as softer suggestions; do not
 let thread or Viewed state hide a real defect or manufacture novelty.
 
-Reconciliation itself does not launch reviewers or begin an unrelated audit.
+Reconciliation sends unfinished selected-file work back to the existing
+scheduler; it does not create independent reviewers or begin an unrelated audit.
 Bound it by contracts, contradictions, and unresolved premises already exposed
 by admitted reports, relevant prior discussions, or the current Campaign Brief.
-The brief locates questions; verify its premises against source before using them. Stop each question when
-resolved or a named evidence gap prevents a decision. This is synthesis within
-the campaign, not another review lane or loop.
+The brief locates questions; verify its premises against source before using them.
+A named recoverable gap is work to continue, not permission to finalize. Resolve
+questions through ordinary evidence checks and targeted assignment continuations,
+or name the concrete obstruction. This remains synthesis within the campaign,
+not another review lane or a repeated vote on unchanged findings.
 
 File completion is a scheduling fact, not sufficient semantic closure. Reconcile
 the cross-file obligations, contradictions, and decision-limiting questions
 exposed by admitted reports, prior-thread evidence, and the Campaign Brief
-against current source. Use the existing brief and coverage notes, not a new
-matrix, ledger, or reviewer.
+against current source. Use the existing brief, coverage notes, and assignment
+continuations, not a new matrix, ledger, or independent reviewer.
 An unresolved material question makes the affected aggregate scope incomplete;
 nonblocking concerns do not become new merge gates. Do not upgrade an incomplete
 assignment or authorize Viewed merely because another report resolves a premise.
 If a source completeness label is contradicted by an unreviewed material path,
-withdraw its coverage credit, disposition the affected selected assignment as
-incomplete, and withhold pending Viewed projection; never undo a prior checkbox
-write. Set affected selected-scope or whole-PR coverage to partial even if every
-source identity said complete. Shared seed context does not increase evidentiary
-weight.
+withdraw its coverage credit, mark the affected selected assignment incomplete,
+and immediately schedule its continuation. Preserve unrelated accepted work and
+withhold affected pending Viewed projection; never undo a prior checkbox write.
+Keep affected coverage partial until an admissible consolidated report completes
+the work, even if every earlier identity said complete. Reconcile again after
+continuation; do not finalize while that work is runnable. Shared seed context
+does not increase evidentiary weight.
 
 Before the aggregate verdict, recheck the PR epoch again. Head movement makes
 whole-campaign approval unavailable, invalidates the seed for new work, and
@@ -672,7 +775,9 @@ and pre-Viewed exclusions separately; exclusions are not missing campaign work.
 Use all current admitted evidence for semantic reconciliation, including blockers
 from incomplete reports. Only accepted complete reports supply selected-file
 coverage or Viewed eligibility. An interim report must disclose outstanding work
-rather than silently shrinking the frozen scope.
+rather than silently shrinking the frozen scope. Count selected files once,
+not attempts; report continuation activity and concrete remaining obstructions
+without presenting an incomplete attempt as a finished file.
 
 Apply the prior-thread contract's semantic/effect distinction. Incomplete thread
 inventory or ownership that can hide outstanding own concerns withholds campaign
@@ -683,14 +788,17 @@ a denied/uncertain resolution write does not itself create a blocker or invalida
 semantic approval. Never describe the PR as clean while a verified prior-thread
 blocker survives, even on a pre-Viewed path or in a resolved discussion.
 
-Verdict semantics are:
+Apply these verdict semantics only after the finalization gate above, or in an
+explicitly scoped interim/stop report. A supported blocker can be reported during
+execution but does not authorize abandoning runnable unfinished reviews:
 
 - any current blocker surviving aggregate falsification -> **BLOCKED**, even
   when other files are not reviewed or its anchor was pre-Viewed;
 - no surviving blocker with incomplete prior-thread inventory/ownership that can
   hide outstanding own concerns, incomplete selected-set coverage, or an
   unresolved material thread/cross-file obligation within the scope being
-  decided -> **INCOMPLETE**, with the affected scope and evidence gap named;
+  decided -> **INCOMPLETE**, with the affected scope, evidence gap, and actual
+  obstruction or caller stop named; runnable selected work must continue first;
 - scoped **APPROVE** -> every selected unchecked file has accepted complete
   current-head coverage, exposed cross-file obligations in that scope are
   reconciled, no blocker survives, and relevant integration evidence is complete;
@@ -710,11 +818,14 @@ withhold an Elenctic whole-PR approval.
 
 `$elenctic resume` continues the established campaign. Recheck its exact open PR
 epoch and refresh the prior-thread preflight before resuming scheduling or writes.
-Retain accepted complete assignments, continue running selected work, and
-requeue unassigned, stale, retryable failed, and incomplete work only within the
-frozen selected set. Surface needs-input assignments without granting permission.
-Reconcile an ambiguous prior launch before retrying it. Do not resnapshot Viewed
-state or expand the selected set during a same-epoch continuation.
+Retain accepted complete assignments, recover running attempts by worker/turn,
+and immediately continue runnable incomplete or retryable failed selected work
+under the same rule used during the active campaign. Preserve prior attempt
+references and reconcile earlier findings; resume is recovery, not a prerequisite
+for retry. Handle stale evidence through epoch/provenance recovery before any
+requeue. Surface concrete needs-input obstructions without granting permission.
+Reconcile ambiguous prior deliveries before retrying them. Do not resnapshot
+Viewed state or expand the selected set during a same-epoch continuation.
 
 If the caller explicitly asks for an interim report without more work, launch
 no additional tasks, perform no thread mutations, and report all current evidence
@@ -817,13 +928,17 @@ reports.
 - Create one immutable seed from the prepared coordinator and fork every worker
   directly from that seed; never use progressive forks or silently substitute
   clean tasks that omit the prepared context.
-- Freeze initial Viewed state and create one internal file worker only for each file
-  that was unchecked at the inventory cut.
+- Freeze initial Viewed state and create one assignment for each unchecked file;
+  continue it as needed with at most one active worker attempt per assignment.
 - Record pre-Viewed files as scope exclusions, never as Elenctic coverage.
 - Cap active workers at 20 and use a sliding window from the same seed.
 - Bind context, lineage, assignments, reports, and verdicts to one exact PR
   epoch; bracket best-effort Viewed attempts with epoch checks.
-- Continue collecting all file outcomes after finding a blocker.
+- Immediately continue incomplete selected reviews, including BLOCKED reports
+  with incomplete coverage and gaps found in reconciliation. Never finalize
+  while runnable work remains or retry a complete review to obtain approval.
+- Preserve evidence across attempts; a later report must reconcile earlier
+  findings rather than erase them by omission. Continue after finding a blocker.
 - Use GitHub Viewed state only to select the initial remaining-work set; never
   infer review coverage, correctness, or approval from it.
 - Attempt Viewed only from accepted complete evidence at the checked epoch;

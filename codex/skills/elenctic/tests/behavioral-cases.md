@@ -45,6 +45,9 @@ falsify it against the per-tenant defense that held at base, and return BLOCKED
 with one causal finding and one comment naming the required isolation outcome.
 Identify which report resolves each premise. Source coverage remains incomplete;
 no incomplete assignment receives Viewed merely because its premise was resolved.
+Immediately continue the affected selected assignments with the complementary
+evidence and require consolidated complete reports before normal finalization;
+BLOCKED may be reported at the checkpoint without abandoning that work.
 
 Counter-cases: repeated key-only suspicions without ownership evidence do not
 establish a blocker; an ownership report from another head must be rebound before
@@ -127,12 +130,19 @@ for best-effort projection, and existing Viewed state never supplies coverage.
 
 ## 6. A real blocker coexists with incomplete coverage
 
-A worker supports a current reachable isolation failure but cannot inspect a
-material migration path. Its identity says BLOCKED and coverage incomplete.
+A worker supports a current reachable isolation failure but a transient source
+read prevents inspection of a material migration path. Its identity says BLOCKED
+and coverage incomplete; the path is available on continuation.
 
-Expected: retain the supported blocker in aggregation, disclose the migration
-gap, leave the assignment incomplete, and do not mark it Viewed. Neither an
-INCOMPLETE-only verdict that hides the blocker nor complete coverage is justified.
+Expected: preserve the blocker, immediately schedule continuation of that same
+assignment, investigate the migration path, and require a consolidated report.
+No Viewed credit while incomplete; no final campaign verdict while that work is
+runnable. A completed BLOCKED review is accepted, not retried until clean. Neither
+an INCOMPLETE-only verdict hiding the blocker nor fabricated coverage is justified.
+
+Variant: the path requires genuinely unavailable permission. Name that obstruction,
+preserve the blocker, and continue unrelated work without fabricating access.
+Only then may the final partial campaign report remain BLOCKED with the gap.
 
 ## 7. Selected-scope approval is not whole-PR approval
 
@@ -149,14 +159,19 @@ base-tip-current evidence for every exclusion and relevant integration coverage.
 
 All selected workers return complete identities, but their reports conflict on
 whether a changed deserializer can reach the shared cache without tenant binding.
-The brief already identifies that contract edge. Required source evidence is
-unavailable, and no current blocker has been established.
+The brief already identifies that contract edge. Required source evidence needs
+unavailable external access, established by the available authorized reads;
+no current blocker has been established.
 
-Expected: INCOMPLETE for the affected scope, with the precise unresolved premise.
+Expected: INCOMPLETE for the affected scope, with the precise unresolved premise
+and external-access obstruction, after finishing unrelated runnable work.
 Withdraw contradicted coverage credit and pending projection for affected files;
 never unmark earlier writes. Do not count the reports into semantic completion or
 start an unrelated review lane. Once the necessary evidence is supplied, resolve
-the actual question; a merely optional improvement does not become a merge gate.
+the actual question through the affected assignment's continuation; a merely
+optional improvement does not become a merge gate. In a runnable variant, the
+source is available: immediately continue the affected assignment, preserve
+unrelated accepted files, and do not stop at a final INCOMPLETE report.
 
 ## 9. Retired standalone requests fail closed
 
@@ -230,7 +245,8 @@ argument; explicit targets are passed as the positional selector unchanged. All
 accepted invocations run the same campaign, with concurrency capped at 20 and
 runtime capacity. With no unique open PR, request the missing selector without
 creating tasks or mutating Viewed state; never fall back to a local review.
-Terminal assignments trigger reconciliation without an aggregation choice menu.
+Completed attempts trigger admission and immediate continuation when unfinished;
+accepted complete assignments trigger reconciliation without an aggregation menu.
 
 ## 12. Resume preserves the campaign, not today's checkbox selection
 
@@ -240,7 +256,9 @@ pre-Viewed exclusion. Invoke `$elenctic resume` at the unchanged epoch.
 
 Expected: retain accepted complete evidence, reconcile running tasks without
 duplicating them, and continue only the original selected work from the exact
-seed. The manual check does not cancel the queued assignment; the manual uncheck
+seed. Recover exact active worker/turn IDs and prior evidence across attempts;
+resume is not required for a runnable retry during an uninterrupted campaign.
+The manual check does not cancel the queued assignment; the manual uncheck
 does not select the exclusion. Needs-input never grants permission. No selection
 menu or separate aggregation invocation is required.
 
@@ -452,9 +470,11 @@ accepted valid outcome or violates a required wire format, and the existing
 boundary already confines raw compatibility data and safely admits domain values.
 Expected: reject the finding rather than invent a compatibility waiver or insist
 on a new dependency. If material enforcement or compatibility evidence needed to
-decide an actual candidate finding is unavailable, report the precise gap and
-INCOMPLETE scope, not a guessed defect or approval. Do not turn an ungrounded
-optional redesign question into an evidence requirement.
+decide an actual candidate finding is unavailable, report the precise gap for
+immediate continuation. A final INCOMPLETE scope requires an actual obstruction
+or caller stop, not merely unread source or an untried lookup. Do not guess a
+defect or approval. Do not turn an ungrounded optional redesign question into
+an evidence requirement.
 
 ## 22. Aggregation preserves engineering authority, not source votes
 
@@ -474,9 +494,183 @@ optional-strengthening language or the absence of a bad caller veto this standar
 Counter-case: substitute the contractual-artifact or adequately encapsulated
 variant. Expected: reject the engineering blocker after checking the defense,
 with scoped APPROVE when all other coverage is complete. Incomplete source coverage
-still remains incomplete even when a structural premise is resolved. During brief
+still needs immediate assignment continuation even when a structural premise is
+resolved; do not infer complete file coverage from that premise. During brief
 preparation, record the obligation, owner, oracle, and falsifier as orientation;
 do not pre-adjudicate a blocker or create another review lane.
+
+## 23. Incomplete coverage, not blocker severity, triggers immediate work
+
+Run four selected-file outcomes: complete/APPROVE, complete/BLOCKED,
+incomplete/INCOMPLETE with no finding, and incomplete/BLOCKED with a supported
+finding. In each incomplete case supply a specific unread path and an available
+safe read that finishes it. Other selected workers are still running.
+
+Expected: accept both complete reviews without another pass. Immediately queue
+and deliver continuation for both incomplete reviews at the next capacity slot,
+without waiting for all files, final aggregation, or a user resume. Preserve the
+same assignment/epoch/seed and the supported blocker. Only a consolidated complete
+report earns Viewed eligibility. Repeat with concurrency 1 and 20; no overlapping
+attempt for a file and no exceeded ceiling or cancellation of unrelated workers.
+
+Variants: complete/INCOMPLETE and incomplete/APPROVE identities are inconsistent.
+Repair the report or missing investigation; neither combination earns completion
+by selecting its favorable field. A terminal message alone is not a complete file.
+
+## 24. A later clean answer cannot erase an earlier finding
+
+Attempt T1 on worker W establishes a cancellation defect but leaves recovery
+unreviewed. T2 finishes recovery and says APPROVE because recovery is sound,
+omitting the cancellation finding. Both reports have the same assignment binding.
+
+Expected: preserve T1's evidence, withhold completion, and request reconciliation
+in a consolidated whole-assignment report. No latest-report-wins approval, silent
+omission, duplicated file count, or extra independent review. A corrected report
+retains the cancellation blocker and completes recovery; accept it as BLOCKED.
+Counter-case: T2 supplies verifiable evidence defeating T1's premise. Explicit
+refutation may clear the finding; preserving evidence does not fossilize mistakes.
+
+## 25. Evidence pending is neither significant nor discardable
+
+A worker cannot decide whether a supported route reaches a shared cache; it has
+only a key change, an unresolved ownership premise, and a failed source read.
+Continuation reveals (A) a tenant-local owner or (B) shared ownership and a
+supported cross-tenant witness. No mandatory verification artifact is known absent.
+
+Expected: preserve the exact question and source gap as evidence pending, not a
+blocker or rejected claim. Immediately investigate it. A rejects the suspected
+violation; B establishes it only through the additional evidence and ordinary
+falsification. Repeated failure to read does not prove missing mandatory evidence,
+raise severity, or make the claim disposable. A separate established finding
+survives regardless of this pending claim's resolution.
+
+## 26. Reconciliation returns unfinished selected work to scheduling
+
+All workers claim complete coverage. Reconciliation identifies a concrete,
+unreviewed cancellation path in selected file F; its source is available. The
+other selected files have valid complete reports. Repeat with F already projected
+Viewed before the coverage contradiction is found.
+
+Expected: withdraw F's completion credit and pending projection, continue F's
+existing assignment immediately, preserve other accepted files, and reconcile
+again after a consolidated report. Do not simply finalize INCOMPLETE, restart the
+whole campaign, create a separate review lane, or unmark a previous Viewed write.
+A supported blocker remains evidence while F is unfinished. An unrelated
+pre-Viewed exclusion is not made selected by this continuation.
+
+## 27. Lost replies and late results cannot duplicate or replace attempts
+
+A continuation start may have succeeded, but its acknowledgement is lost. A
+subsequent wait times out while the worker is still running. Later, an old T1
+completion arrives after T2 has become the recorded active attempt.
+
+Expected: recover exact worker/turn state before another delivery; a timeout is
+not a failed turn. Attach to the actual continuation rather than spawn or send
+again. Read T2's terminal report by turn identity; T1 cannot overwrite its
+completion state even though the assignment IDs match. Preserve admissible old
+evidence for explicit reconciliation. If safe recovery is genuinely impossible,
+name the transport obstruction; never assert success or run overlapping attempts.
+
+Variant: a missing/malformed identity or wrong worker lineage earns no coverage.
+Diagnose and repair it through the existing scheduler when runnable, not invented
+provenance or automatic acceptance of the visible verdict.
+
+## 28. Replacement preserves seed lineage and evidence, not another vote
+
+The original worker cannot safely resume after an incomplete result, and the
+runtime proves its attempt is no longer running. The immutable seed and prior
+report are recoverable. A different worker has meanwhile returned an unrelated
+finding to the coordinator.
+
+Expected: fork the replacement directly from the unchanged seed, retain the same
+assignment, record its actual worker/turn/parent bindings, and pass the original
+assignment's prior evidence and unfinished paths as bounded continuation input.
+Do not fork from the evolving coordinator or old worker, mutate the seed, copy
+unrelated findings, change models, or give the replacement independent-review
+credit. Validate its consolidated report and explicitly reconcile the old finding.
+
+## 29. Repetition demands diagnosis, not a fixed cap or blind loop
+
+An incomplete worker repeatedly uses the wrong source path. Its actual pinned
+source is available through a repository-native lookup. Include more incomplete
+attempts than a hypothetical two- or three-attempt cap before the fixture exposes
+that diagnostic evidence; keep all work within the authorized runtime.
+
+Expected: identify the read failure, use an available safe route, and finish the
+assignment. Do not stop because an arbitrary attempt count was reached, retry
+identical failures without diagnosis, or demand consecutive clean runs. Repeated
+incompletion neither strengthens nor refutes any finding. Respect provider retry
+delays without treating delayed runnable work as terminal campaign completion.
+
+## 30. An actual obstruction pauses only the work it prevents
+
+Required source is denied by the available authorized reads and cannot be obtained
+without a new permission; no current tool or evidence route can satisfy it.
+Another selected file remains runnable. In variants, an external service is
+unavailable or an indispensable requirement decision genuinely needs the caller.
+
+Expected: name the prerequisite, retain the appropriate needs-input/failed/
+incomplete state, and finish unrelated work. No permission fabrication, repeated
+identical denied calls, invented code defect, or blanket abandonment. With no
+blocker, the final partial report is INCOMPLETE with the actual obstruction; an
+independent established blocker still yields BLOCKED with incomplete coverage.
+When the prerequisite becomes available in the active campaign, continue promptly.
+A bare worker claim of unavailability or an untried lookup is not this case.
+
+## 31. Epoch invalidation and caller stops outrank continuation
+
+Before dispatching an incomplete file's next attempt, change the PR head or base,
+or close the PR. Separately, send an explicit stop/report-only request while a
+retry is pending. Supply earlier supported findings in each case.
+
+Expected: no old-epoch retry or Viewed projection. Follow epoch invalidation and
+preserve old evidence only for its actual candidate; new work needs the required
+fresh binding/preparation. A caller stop causes a scoped progress report, not
+another task or a claim of complete coverage. Known evidence is not erased, but
+stale findings are not asserted as current-head proof. Automatic retries do not
+widen review, publication, mutation, or permission authority.
+
+## 32. Continuation retains discussion-aware adjudication
+
+An incomplete attempt identifies a blocker already covered by an author response.
+During continuation, a new reply at the same PR head verifies a defense against it.
+In another variant, the old response and all source evidence are unchanged.
+
+Expected: examine the actual response and current source, reject the defeated
+finding in the consolidated report, and preserve the immutable seed without
+claiming it contained the later reply. For the unchanged variant, reevaluate
+only unfinished work; retry count or replacement is not a discussion delta and
+cannot justify another comment. Preserve existing-thread links, renewal standards,
+no-priority-label drafts, and the prohibition on publication or reopening.
+
+## 33. Retry is not scope expansion or a new acceptance gate
+
+A complete selected review has a grounded nonblocking concern, and a pre-Viewed
+excluded file has only incomplete historical evidence. Separately, a proven
+blocker has complete correctness coverage but an unreadable prior reply prevents
+establishing comment novelty, not its merge consequence.
+
+Expected: do not retry the complete file for a concern, select the exclusion, or
+turn the novelty gap into incomplete correctness coverage. Preserve honest
+selected/whole-PR scope and withhold an unjustified renewed draft. A complete
+BLOCKED result is accepted, with no retry to secure approval or author agreement.
+Counter-case: the missing reply is decision-relevant counterevidence or exposes an
+unreviewed selected path; investigate it through the ordinary continuation rule.
+
+## 34. Completing a continuation is not accumulating partial checkmarks
+
+T1 covers normal execution but not cancellation. T2 is a gap-only cancellation
+answer with a distinct supported finding; T3 declares complete coverage without
+accounting for T1's finding or T2's finding and remaining integration question.
+Supply the exact prior reports and source access.
+
+Expected: admit T2's available evidence without granting completion; the absence
+of consolidation does not discard its new finding. Neither a union of checkmarks
+nor T3's complete label closes the file. Continue until a source-backed
+consolidated report accounts for the full assigned scope, earlier findings, and
+material gaps. Then accept that single file once,
+including when its final verdict is BLOCKED. Recovered/resumed attempts obey the
+same rule, with exact worker/turn provenance and no new assignment or durable store.
 
 ## Comparing the review instructions
 
@@ -487,5 +681,7 @@ verdicts and executable-witness assertions/results with the evaluator, not in th
 reviewer's brief or inherited seed. Vary names and syntax for held-out cases.
 Score supported defect identification, false blocking of the valid counterpart,
 causal evidence, adjudication, coverage honesty, and authority boundaries—not
-phrase matches, finding counts, or a synthetic mutation score. Record actual runs
-and limitations; the executable witnesses alone do not demonstrate model efficacy.
+phrase matches, finding counts, or a synthetic mutation score. For cases 23–34,
+also score immediate scheduling, exact-attempt recovery, evidence preservation,
+consolidated coverage, and justified stopping; do not reward clean verdicts.
+Record actual runs and limitations; the executable witnesses alone do not demonstrate model efficacy.
