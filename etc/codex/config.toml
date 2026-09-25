@@ -12,6 +12,7 @@ service_tier = "default"
 
 [features]
 context_management.experimental_mode = true
+analytics_plan_history = true
 unified_exec = true
 personality = true
 memories = true
