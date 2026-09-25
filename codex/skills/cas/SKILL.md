@@ -16,7 +16,7 @@ CAS owns route execution and facts it directly observes. It does not decide
 Goal semantics, review credit, finding truth, repairs, mutation, publication,
 closure, what an automation ought to do, or whether its result is correct.
 
-Require installed CAS `0.6.0` or newer. There is no standalone automation
+Require installed CAS `0.6.5` or newer. There is no standalone automation
 product, compatibility skill, or legacy command route.
 
 ## Native surface
@@ -40,9 +40,11 @@ used. They do not create another product identity.
 ## Selected guidance
 
 Load the selected route before issuing its commands. Before an app-server-backed
-route, read [runtime-compatibility.md](runtime-compatibility.md) and establish its
-required profile for the exact executable/schema cache, or reuse an unchanged
-compatible result. Version strings alone are not compatibility proof.
+route, read [runtime-compatibility.md](runtime-compatibility.md). Establish the
+required profile for the exact runtime and transport, or reuse unchanged proof.
+`cas review run|start` performs its required live gate internally; do not add a
+redundant standalone preflight unless diagnosing or qualifying the runtime.
+Version strings alone are not compatibility proof.
 
 | Route | Selected guidance |
 |---|---|
