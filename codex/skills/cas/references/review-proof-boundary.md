@@ -1,14 +1,17 @@
 # CAS Review Proof Boundary
 
-Before `cas review run` or `cas review start`, require:
+Before `cas review run` or `cas review start`, require the installed CAS
+review capability:
 
 ```bash
-cas app-server preflight --cwd <repo> --profile review \
-  --app-server-transport managed-ws --json
 cas capabilities --json
 ```
 
-The exact resolved runtime must be compatible. Require
+`run` and `start` perform the exact-runtime `review`/`managed-ws` live gate
+internally. Do not duplicate it with a standalone preflight except for explicit
+diagnosis or qualification. A failed gate blocks the route before a
+`reviewThreadId` exists; no review attempt or clean verdict exists.
+Require the gate's compatible result and
 `cas_structured_review_v1: true`; workflow-bound starts additionally require
 `cas_workflow_bound_owner_lived_review_v1: true` and owner-lived
 `start --wait`.

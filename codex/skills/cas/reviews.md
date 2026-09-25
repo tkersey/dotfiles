@@ -24,7 +24,8 @@ cas review start --wait --cwd <repo> --base <base> \
 A process is not a review. An attempt exists only after `reviewThreadId`; a
 semantic verdict exists only when the structured verdict binds the exact
 target tuple. CAS reports the backend. The caller decides credit and finding
-disposition. A failed compatibility gate is blocked, never clean. See
+disposition. A failed compatibility gate blocks the route before an attempt
+exists; it is never a clean review. See
 [review-proof-boundary.md](references/review-proof-boundary.md).
 
 When the caller admits a new same-target attempt after terminal evidence, pass

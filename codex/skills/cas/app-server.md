@@ -20,13 +20,18 @@ CAS-managed WebSocket transport. Do not implicitly attach to, restart, or
 stop a user's daemon to make a failed owned route pass. Use the delegated
 daemon surface only for an authorized lifecycle operation.
 
-When a caller requires immutable prepared-seed fanout, bind the source thread
-ID and a completed seed turn ID once. Fork each child through that exact
-`lastTurnId` (inclusive), not the coordinator's subsequently evolving head.
-Use `excludeTurns:true` when only fork metadata is needed; retrieve required
+When a caller requires immutable prepared-seed fanout, fork one seed from the
+prepared source thread and verify its `forkedFromId` and retained history. Keep
+that seed free of assignments, findings, and follow-ups. Fork every child from
+the unchanged seed ID, and verify each child's `forkedFromId` names the seed.
+If selecting a `lastTurnId`, it must be an exact completed preparation turn
+and is inclusive; do not cut off current in-progress preparation. Use
+`excludeTurns:true` when only fork metadata is needed; retrieve required
 history with `thread/turns/list` and `thread/items/list`, following cursors.
-An in-progress or interrupted turn is not a completed seed. Do not use
-`thread/rollback` or mutate the source with `thread/revert` to simulate a fork.
+Direct forks from one source thread at a fixed completed `lastTurnId` form a
+separate completed-cutoff topology, with the source as each child's parent.
+Neither route uses `thread/rollback` or mutates the source with `thread/revert`
+to simulate a fork.
 
 Explicit transport or remote Code Mode host selection is fail-closed. The
 outbound Code Mode host is distinct from the inbound app-server endpoint and

@@ -10,8 +10,9 @@ caller explicitly requests prerelease testing.
 `cas review run|start` runs the exact-binary `review` gate over `managed-ws`
 internally before starting a review. Let that gate establish compatibility;
 do not run an identical standalone preflight first unless diagnosing or
-qualifying the runtime. A failed gate remains a blocked attempt, not a clean
-review or permission to try another transport.
+qualifying the runtime. A failed gate blocks the route before a
+`reviewThreadId` exists; no attempt or clean review exists, and failure does
+not permit switching transport.
 
 `cas app-server schema` is diagnostic inspection. Run it directly with the
 structural profile being inspected, without a preceding live preflight; its
