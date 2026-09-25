@@ -13,8 +13,12 @@ do not run an identical standalone preflight first unless diagnosing or
 qualifying the runtime. A failed gate remains a blocked attempt, not a clean
 review or permission to try another transport.
 
-For other app-server-backed routes whose required compatibility has not
-already been established, or for explicit diagnosis/qualification, run:
+`cas app-server schema` is diagnostic inspection. Run it directly with the
+structural profile being inspected, without a preceding live preflight; its
+result cannot establish live behavioral compatibility.
+
+For other app-server-backed execution routes whose required compatibility has
+not already been established, or for explicit diagnosis/qualification, run:
 
 ```bash
 cas app-server preflight \
@@ -29,7 +33,7 @@ Use these profiles:
 
 | Route | Profile |
 |---|---|
-| schema inspection, smoke check, generic instance execution | `core` |
+| smoke check, generic instance execution | `core` |
 | `cas review run|start` | Built-in `review` gate over `managed-ws` |
 | `cas session_inquiry preflight|run|start` | `session-inquiry` with `managed-ws` preflight and execution |
 | release conformance and the complete feature surface | `full` |
