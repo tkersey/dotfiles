@@ -10,7 +10,7 @@ The two repository configs are installed as symlinks:
 | Repository file | Symlink |
 | --- | --- |
 | `etc/codex/config.toml` | `/etc/codex/config.toml` |
-| `home/.codex/config.toml` | `~/.codex/config.toml` |
+| `home/codex/config.toml` | `~/.codex/config.toml` |
 
 Quit Codex/ChatGPT and running Codex CLI sessions, preserve any config edits
 that should be kept, and update your checkout. Then run the existing installer
@@ -32,7 +32,7 @@ linking it, keeping personal settings private.
 
 Reopen Codex after installation. Shared defaults live in
 `etc/codex/config.toml`; personal settings and the Developer Docs MCP server
-live in `home/.codex/config.toml`. User values override system defaults.
+live in `home/codex/config.toml`. User values override system defaults.
 Because the live files link into this checkout, edits and repository updates
 are reflected through those links. Keep the checkout at a revision containing
 both files.

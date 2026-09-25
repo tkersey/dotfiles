@@ -1,7 +1,7 @@
 # Shared defaults: /etc/codex/config.toml
 
 model = "gpt-6-astra"
-model_reasoning_effort = "high"
+model_reasoning_effort = "medium"
 model_context_window = 1000000
 model_auto_compact_token_limit = 900000
 plan_mode_reasoning_effort = "max"
@@ -49,6 +49,8 @@ max_unused_days = 180
 disable_on_external_context = false
 
 [tui]
+screen_reader_detection_done = true
+fullscreen_transcript = false
 auto_recap = false
 status_line = ["codex-version", "current-dir", "pull-request-number", "git-branch", "branch-changes", "weekly-limit", "five-hour-limit", "model-with-reasoning"]
 theme = "coldark-dark"
