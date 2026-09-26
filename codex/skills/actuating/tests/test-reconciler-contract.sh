@@ -15,6 +15,7 @@ else jaq_bin=jq
 fi
 node --input-type=module - "$skill_root" <<'JS'
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {readFileSync, readdirSync, existsSync} from 'node:fs';
 import {resolve, dirname, relative} from 'node:path';
 const root = resolve(process.argv[2]);
@@ -197,18 +198,18 @@ assert(construction.failure_signals.includes('a shared predicate, exhaustive swi
 assert(text('SKILL.md').includes('[architecture.md](architecture.md)'), 'architecture guide not routed');
 const rootStep = text('architecture.md').split('## Architecture compilation')[1].split('\n## ')[0].replace(/\s+/g, ' ');
 assert(rootStep.includes('When the existing Metanoetic trigger fires'));
-assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`'));
-assert(rootStep.includes('once per unchanged decision surface'));
-assert(rootStep.includes('reuse an already consumed challenger rather than adding a pass'));
+assert(rootStep.includes('apply `$glaze` then `$metanoetic` verbatim in one shared activation, before `$universalist`'));
+assert(rootStep.includes('One activation is not a cap on reasoning, evidence gathering, or useful revision'));
+assert(rootStep.includes('Reuse applicable findings rather than reinjecting the passages'));
 assert(rootStep.includes('Encouragement changes neither admissibility nor the proof bar'));
 assert(rootStep.includes('Add no separate Glaze report or adjudication stage'));
-assert(rootStep.includes('Let the pass discover which premises and evidence need reinspection'));
+assert(rootStep.includes('Let the inquiry discover which premises and evidence need reinspection'));
 assert(rootStep.includes('Keep the accepted Goal fixed'));
 assert(rootStep.includes('Only when architecture is live'));
 assert(text('counterexamples.md').includes('never changed expectations merely to agree with the candidate'));
 assert(text('counterexamples.md').includes('Prefer making that omission unavailable'));
 assert(text('references/counterexample-guided-normalization.md').includes('required-valid observation preservation'));
-assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in the same bounded challenger pass'));
+assert(text('agents/openai.yaml').includes('Glaze then Metanoetic verbatim in one shared activation'));
 const challenger = d.clauses.find(cl => cl.clause_id === 'ACT-METANOETIC-ADMISSIBILITY-001');
 // Preserve the resource obligation in the existing decision, not a new artifact.
 assert(challenger.required_artifacts.includes('resource account, smallest witness, and falsifier'));
@@ -216,9 +217,32 @@ assert(rootStep.includes('Supply the resource account in the existing decision: 
 assert(rootStep.includes('leave unestablished feasibility unresolved'));
 assert(rootStep.includes('Reuse evidence only while its subject and assumptions remain applicable'));
 assert(rootStep.includes('add no separate report or benchmark stage'));
-assert(challenger.success_signals.includes('one bounded Glaze-primed Metanoetic challenge under the existing trigger, before Universalist'));
+assert(challenger.success_signals.includes('one shared Glaze-primed Metanoetic activation under the existing trigger, before Universalist'));
 assert(challenger.success_signals.includes('canonical Glaze then Metanoetic instructions share one context; encouragement does not change admissibility or proof'));
-assert(challenger.failure_signals.includes('Glaze adds a trigger, pass, report, review, or acceptance authority'));
+assert(challenger.failure_signals.includes('Glaze adds a trigger, separate stage, report, review, or acceptance authority'));
+// Canonical byte preservation and wrapper boundaries; not model-efficacy evidence.
+for (const [name, digest] of Object.entries({"glaze": "eef7f7f41fd14f255bf3f36f9ff143e45f6db416af87e835cddfdadf41edd808", "metanoetic": "ade816044394c7dda348b3f0ba920354865197344042988fa6d43710f0b21a6a"})) {
+  const source = text(`../${name}/SKILL.md`);
+  const boundary = source.indexOf('\n---\n');
+  assert(boundary >= 0, `${name}: missing frontmatter boundary`);
+  assert.equal(createHash('sha256').update(source.slice(boundary + 5)).digest('hex'), digest,
+    `${name}: canonical body changed`);
+  const wrapper = source.slice(0, boundary) + text(`../${name}/agents/openai.yaml`);
+  for (const retired of ['one candidate-generation pass', 'a plausible nonlocal reframe',
+    'Use $metanoetic once to challenge a concrete incumbent']) assert(!wrapper.includes(retired), retired);
+}
+const mandate = text('../../AGENTS.md').split('## Metanoetic intelligence-escalation mandate\n')[1]
+  .split('\n## ')[0].replace(/\s+/g, ' ');
+assert(mandate.includes('no identified incumbent, advance challenger, or finished comparison is required'));
+assert(mandate.includes('user requirements, authorized effects, resource ceilings, and proof obligations remain binding'));
+assert(mandate.includes('The receiving workflow retains final selection, execution, and closure authority'));
+assert(!mandate.includes('It generates candidates only'));
+assert(rootStep.includes('no identified incumbent, advance alternative, or finished comparison is required'));
+assert(rootStep.includes('Task resource limits, read-only routes, and review-epoch freezes still apply'));
+assert(rootStep.includes('Develop comparisons and discriminators as needed before selection, not as prerequisites for inquiry'));
+assert(challenger.success_signals.includes('inquiry needs no identified incumbent, advance challenger, or finished comparison'));
+assert(challenger.success_signals.includes('selection obligations are developed during inquiry, not demanded as entry artifacts'));
+assert(challenger.failure_signals.includes('evaluation expectations changed merely to agree with the candidate'));
 // End pairing source-contract regressions.
 console.log('actuating: contract, routing, proof ownership, challenger pairing, retired surfaces, and reference links passed');
 JS

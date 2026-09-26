@@ -12,9 +12,9 @@
 
 ## Metanoetic intelligence-escalation mandate
 
-- Invoke `$metanoetic` before adjudication for a concrete incumbent when its skill description's escalation pressures are evidenced, or when explicitly requested. Substantiveness or consequentiality alone is insufficient.
-- Bind the incumbent and challengers to the original objective, target observation, acceptance criterion, or discriminator and current evidence. Reuse native workflow fields and any required falsifier. For explicit invocation, infer bindings from context; return `blocked` only without a concrete antecedent or comparison surface. Skip implicit invocation without a bounded comparison.
-- Run the canonical line verbatim exactly once per unchanged decision surface, within accepted scope and authority. It generates candidates only; the receiving workflow owns adjudication, evidence, selection, mutation, and closure, and may adopt, modify, reject, or retain the incumbent.
+- Invoke `$metanoetic` before relevant adjudication when its description's task-relevant pressures apply, or when explicitly requested. A grounded task or question is enough; no identified incumbent, advance challenger, or finished comparison is required. Infer the task from context; do not invent one. Skip routine implicit invocation without a task-relevant reason.
+- Ground inquiry in the accepted objective and available evidence. Model-owned assumptions, representations, and evaluation methods are revisable with justification; user requirements, authorized effects, resource ceilings, and proof obligations remain binding. Develop comparisons and discriminators as needed before selection; do not change expectations merely to agree with a candidate.
+- Apply the canonical line unchanged; do not repeat its injection without a new task-relevant purpose. One activation is not a cap on reasoning, evidence gathering, or useful revision; a new derivation can matter without a code change. Follow useful discoveries within task limits. The receiving workflow retains final selection, execution, and closure authority; retaining the incumbent is valid. Return the resulting work, not an invocation report.
 
 ## Universalist architecture-decision mandate
 

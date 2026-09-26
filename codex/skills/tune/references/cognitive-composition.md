@@ -117,12 +117,16 @@ not add an operator-count test or composition approval as a prerequisite for
 explicit `$metanoetic` invocation or a target workflow's native trigger. Those
 entry points retain their own binding, authority, and reuse rules.
 
-When authoring a target's integration, preserve its existing bounded comparison
-and selection ownership. Reuse an applicable in-flight or completed comparison;
-a new label, commit, reviewer, or review wave alone does not justify duplication.
-Materially changed objectives, authoritative constraints, or evidence may reopen
-that comparison. Reuse of a comparison does not waive the owner's requirement to
-refresh current subject or proof evidence. Add no invocation receipt.
+When authoring a target's integration, preserve task grounding, resource limits,
+and receiver-owned selection, proof, mutation, and closure. Do not require an
+identified incumbent, advance challenger, or finished comparison before inquiry,
+or confine the canonical intervention to candidate generation. Reuse applicable
+findings; a new label, commit, reviewer, or review wave alone does not justify
+reinjecting the passage. This suppresses duplicate activation, not investigation
+or useful revision. New evidence or a new derivation may warrant revisiting a
+comparison without a code change. Reuse does not waive required subject/proof
+refresh. Preserve user-fixed criteria while permitting justified revision of
+model-owned evaluation methods. Add no invocation receipt.
 
 ## Reject a composition when
 
