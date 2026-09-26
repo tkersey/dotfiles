@@ -5,5 +5,7 @@ interface:
   short_description: "Raise ambition; preserve proof"
   default_prompt: >-
     Use $glaze on the current task. Apply the canonical encouragement unchanged
-    to seek a materially better solution; return the work, with claims matched
-    to evidence, rather than reciting the passage.
+    to pursue a materially better result with ambition and resourcefulness,
+    including following useful insights through to completion rather than only
+    generating alternatives. Preserve scope and authority; return the work,
+    with claims matched to evidence, rather than reciting the passage.

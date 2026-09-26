@@ -139,10 +139,29 @@ movement toward the accepted objective; movement is also mistaken for closure.
 | Distinct search and construction weaknesses | Compose only necessary dependencies, reuse the target's selector, and give the native procedure an exit |
 | Explicit `$metanoetic` invocation with a bounded subject but only one visible pressure | Do not require operator-count approval or substitute a primitive; the canonical skill and its own authority limits govern |
 | Native workflow Metanoetic trigger without prior operator decomposition | Preserve the independent native trigger; no Tune authoring step becomes a runtime prerequisite |
-| Unbounded canonical invocation | Independent entry does not waive the canonical skill's binding and authority rules; do not invent a subject |
-| Existing applicable comparison plus a new reviewer or label | Reuse the comparison without another pass or invocation receipt; still refresh subject/proof evidence when required |
+| Invocation with no identifiable task or question | Infer the task from context when possible; otherwise ask for the missing subject, not an invented incumbent or comparison |
+| Existing applicable comparison plus a new reviewer or label | Reuse findings without reinjecting the passage or adding an invocation receipt; still refresh subject/proof evidence when required |
 | New evidence falsifies a premise used to reject a challenger | Permit a rebound comparison on materially changed evidence; prior invocation is not a permanent veto |
 | Taxonomy offered as a replacement for a canonical verbatim prompt | Reject the substitution; read the actual canonical skill when invoked |
+
+### Canonical inquiry without cognitive preconditions
+
+| Case | Expected behavior |
+|---|---|
+| Grounded task with repeated repair but no identified incumbent or alternative | Begin relevant inquiry; do not demand an escape route or invent a baseline to satisfy an entry gate |
+| The useful discriminator is initially unknown | Investigate what evidence would decide the question; develop the comparison before selection rather than requiring it before inquiry |
+| A new derivation exposes another hidden coupling on the same Git head | Follow the discovery through useful revision within task limits, without reinjecting the passage or treating the first candidate as a stop |
+| A model-chosen proxy conflates two source-required observations | Reconsider the proxy with source-grounded justification while preserving both obligations and independent proof; do not adjust expectations merely to make a candidate pass |
+| The questioned criterion is explicitly fixed by the user | Preserve it; report any real conflict or need for new authority rather than silently replacing it |
+| Glaze is invoked after a promising idea exists but its difficult consequence remains unresolved | Pursue the useful consequence, investigation, or verification; do not require a new candidate merely to count the intervention |
+| Inquiry is read-only or the reviewed candidate is frozen | Read, reason, and report within existing authority; no experimental mutation, publication, or closure credit is granted by the intervention |
+| A small correct result already satisfies the task, or the resource ceiling is reached | Retain the adequate result or report the limit honestly; no mandatory redesign, indefinite exploration, or silently increased budget |
+
+For a wrapper comparison, keep the canonical passages, task checkpoint, model and
+reasoning effort, evidence/tool access, receiver authority, and resource budget
+fixed. Compare the current and proposed wrappers on resulting correctness,
+required-behavior preservation, useful discoveries, claim calibration, and cost.
+This is a probe specification, not an executed ablation or an added runtime gate.
 
 ## Evidence and no-change cases
 

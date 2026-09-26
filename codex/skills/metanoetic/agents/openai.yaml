@@ -2,5 +2,10 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "metanoetic"
-  short_description: "Challenge an incumbent through a metanoetic reframe"
-  default_prompt: "Use $metanoetic once to challenge a concrete incumbent and search for a materially different frame, possibility-space topology, invariant, mechanism, solution class, artifact, or breakthrough candidate—including a mechanism that makes an incumbent-generated burden disappear. Preserve the canonical one-line escalation verbatim."
+  short_description: "Reconsider task framing; follow useful discoveries"
+  default_prompt: >-
+    Use $metanoetic on the current task or question. Apply the canonical passage
+    unchanged and follow useful discoveries through inquiry and revision;
+    no identified incumbent or advance challenger is required. Preserve user
+    requirements, authority, resource limits, and evidence-based claims.
+    Return the resulting work, not a recitation or invocation report.

@@ -8,24 +8,33 @@ source-fixed outcomes remain binding even when not derived from technical premis
 No pre-mutation theorem-identity certificate is needed to reconsider a mechanism.
 
 When the existing Metanoetic trigger fires, read both skills and apply `$glaze`
-then `$metanoetic` verbatim in the same bounded challenger pass, before `$universalist`.
-Run once per unchanged decision surface; reuse an already consumed challenger rather
-than adding a pass. The incumbent may be the construction, causal explanation,
-oracle/proof interpretation, or assessment of progress. Let the pass discover which
-premises and evidence need reinspection; do not confine it to selecting a different
-patch. A code rewrite or live architecture change is not a prerequisite for challenging
-a suspect model. Keep the accepted Goal fixed. Supplied boundaries must be
-`preserved`, `made irrelevant by mechanism change`, or `requires new authority`;
+then `$metanoetic` verbatim in one shared activation, before `$universalist`.
+A grounded task or question is enough; no identified incumbent, advance alternative,
+or finished comparison is required. Let the inquiry discover which premises and
+evidence need reinspection and follow useful discoveries through investigation and
+revision, not candidate generation alone. An incumbent may be the construction,
+causal explanation, oracle/proof interpretation, or assessment of progress; a code
+rewrite or live architecture change is not a prerequisite for reconsideration.
+Reuse applicable findings rather than reinjecting the passages for a new label,
+commit, reviewer, or review wave alone. One activation is not a cap on reasoning,
+evidence gathering, or useful revision; a new derivation can matter without a code
+change. Task resource limits, read-only routes, and review-epoch freezes still apply.
+
+Keep the accepted Goal fixed. Model-owned proxies and evaluation methods may be
+revised with source-grounded justification, never by changing expectations merely
+to agree with a candidate. Develop comparisons and discriminators as needed before
+selection, not as prerequisites for inquiry. At selection, supplied boundaries must
+be `preserved`, `made irrelevant by mechanism change`, or `requires new authority`;
 required observations, compatibility, effects, host capabilities, and authorized
 resource ceilings still govern selection. Supply the resource account in the existing
 decision: justify feasibility against those ceilings using applicable evidence or
 a concrete bound; leave unestablished feasibility unresolved. Reuse evidence only
 while its subject and assumptions remain applicable; add no separate report or
 benchmark stage. Incumbent representations and lifecycle burdens are evidence, not
-immutable constraints. Retaining a sound construction or
-refuting an allegation can be the right outcome. Actuating adjudicates the result.
-Encouragement changes neither admissibility nor the proof bar. Add no separate Glaze
-report or adjudication stage, and no mandatory second review of the review.
+immutable constraints. Retaining a sound construction or refuting an allegation can
+be the right outcome. Actuating retains final selection, execution, and closure
+authority. Encouragement changes neither admissibility nor the proof bar. Add no
+separate Glaze report or adjudication stage, and no mandatory second review of the review.
 
 Only when architecture is live, give `$universalist` one independently governed
 axis, one typed hole, and source-derived domain evidence. Require `candidate`,
