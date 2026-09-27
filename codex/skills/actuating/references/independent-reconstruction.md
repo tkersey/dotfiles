@@ -1,11 +1,31 @@
 # Independent reconstruction
 
-Use only when the user explicitly requests an independent reconstruction of a
-design or explanation within Actuating. For example: "Reconsider this design with
-an independent reconstruction." This is an opt-in technique, not a public mode,
-CLI command, default architecture pass, or review lane. A generic request for
-fresh eyes, `$glaze`, or `$metanoetic` does not by itself opt into this technique.
-Their independent entry points and canonical passages remain unchanged.
+Use when explicitly requested, or when Actuating judges that deriving a design
+or explanation without the accumulated rationale could materially improve a
+task-relevant decision. The user need not name the technique.
+
+Reasons may include repeated repair under a disputed explanation, an unsupported
+incumbent assumption constraining the candidate set, an unresolved consequential
+representation or ownership choice, or a fresh-eyes request that would benefit
+from a separate reasoning context. These are examples, not prerequisites. Do not
+require proof of anchoring, an advance alternative, or a failed ordinary pass.
+
+Select proportionately: a settled question, straightforward task, or uncertainty
+resolved by a direct source lookup does not need another context. A long history
+alone is not a reason. Reuse applicable reconstruction rather than adding routine
+fan-out. Keep autonomous selection internal; return the resulting work, not a
+selection receipt.
+
+Existing delegation authority, privacy limits, and resource ceilings still govern.
+Respect a no-delegation instruction. Choosing this technique does not authorize
+tool installation, new paid evaluations, additional data disclosure, or increased
+budgets; missing authority blocks only that effect, not independent authorized work.
+
+This is a discretionary technique, not a public mode, CLI command, default
+architecture pass, or review lane. A fresh-eyes request, `$glaze`, or `$metanoetic`
+may motivate selection but does not mandate another worker. Their independent
+entry points and canonical passages remain unchanged; reconstruction is never a
+prerequisite for them or for Universalist.
 
 The intervention separates requirements and evidence from the parent's persuasive
 account of why the incumbent is necessary. It does not erase the existing code,
@@ -82,8 +102,11 @@ report or new receipt. A stronger explanation can be the result without an edit.
 
 Stop the reconstruction when the question is answered sufficiently for the owning
 decision, no useful discriminator remains, the task budget is reached, or missing
-evidence/access prevents further necessary inquiry. Do not spawn fresh contexts
-repeatedly until one disagrees. Continue the enclosing authorized task normally.
+evidence/access prevents further necessary inquiry. Reuse applicable conclusions;
+a new task-relevant question or materially changed evidence may warrant another
+reconstruction, but a new label, reviewer, or commit alone does not. Do not spawn
+fresh contexts repeatedly until one disagrees. Continue the enclosing authorized
+task normally.
 This technique earns no CAS/Elenctic review credit, changes no review counts or
 reset rules, and neither replaces nor gates Glaze, Metanoetic, or Universalist.
 
