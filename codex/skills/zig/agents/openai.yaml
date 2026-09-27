@@ -2,14 +2,9 @@ policy:
   allow_implicit_invocation: true
 interface:
   display_name: "Zig"
-  short_description: "Route Zig work by surface and semantic failure family"
+  short_description: "Implement, review, and optimize Zig systems"
   default_prompt: >-
-    Use $zig for Zig 0.16.0 work. Verify the installed version and repository
-    state, then classify both the work surface and any active semantic family:
-    claim binding, lifetime escape, atomic transition, verifier completeness,
-    repository closure, or proof context. For material work, emit a ZSR-v1 route
-    before editing; let the active family constrain ownership, forbidden
-    shortcuts, and proof. Keep detailed comptime, allocator, pointer, FFI/layout,
-    concurrency, build, lint, fuzz, performance, and cache guidance in the
-    existing references. Treat proof as stale when its exact tree, command,
-    toolchain, target, options, dependencies, or generated artifacts change.
+    Use $zig to complete the requested Zig work against the repository's actual
+    toolchain and contracts. Consult relevant references, resolve consequential
+    risks, and return the result with relevant validation. Preserve the task's
+    scope and the receiving workflow's authority.

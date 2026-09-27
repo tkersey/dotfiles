@@ -1,16 +1,52 @@
-# Zig Semantic Failure Router
+# Zig semantic lenses
 
-The router is orthogonal to ordinary Zig task classification.
+Use these lenses to choose useful references for a live engineering question.
+They are non-exhaustive and can overlap. They are not stages, required labels,
+or a mutation gate. The root skill owns activation, scope, and completion.
 
-```text
-Axis A: migration, build, comptime, formatting, hazard, FFI, concurrency, performance...
-Axis B: claim-binding, lifetime-escape, atomic-transition,
-        verifier-completeness, repo-closure, proof-context
-```
+## Construction as a first-class path
 
-A task may activate several families.
+For new functionality, start from the desired behavior and its laws. Compare
+representations when the choice is consequential: ordinary runtime values,
+checked witnesses, tagged unions, generated types, comptime plans, or runtime
+interfaces. Ask which information must remain static and which can be ordinary
+data. Prefer making invalid states unrepresentable to repeatedly checking them.
+Do not invent a defect, counterexample, owner dispute, or packet to justify work
+under an already accepted design. A material change may need no named family.
 
-## Route schema
+## Lenses and discriminators
+
+| Lens | Relevant question | Reference |
+| --- | --- | --- |
+| Claim binding | What authoritative bytes/facts does a receipt, ref, hash, or verifier result actually bind? What can be substituted or omitted? | [Claim binding](claim_binding_playbook.md) |
+| Lifetime escape | Which backing owner remains alive, and what invalidates the borrow after return, reset, growth, or transfer? | [Ownership](memory_ownership_playbook.md) |
+| Failure guarantees | Does failure preserve the API's strong, basic, partial-progress, or durable/recoverable guarantee? | [Transitions](atomic_transition_playbook.md) |
+| Verifier completeness | Are both safe parsing and the promised semantic predicate established? Can well-encoded invalid values pass? | [Verifiers](verifier_completeness_playbook.md) |
+| Repository closure | Which build, registry, generator, golden, or aggregate check owns a changed artifact? Is the review scope correct? | [Closure](repo_closure_playbook.md) |
+| Evidence context | Do the relevant inputs and assumptions still match the validation being reused? | [Evidence](evidence_context_playbook.md) |
+
+A generic word such as `proof`, `commit`, `report`, or `manifest` is not itself an
+activation rule or a defect. Use its actual semantics in the Zig task. The same
+applies to a pointer, allocation, loop, `anytype`, or long function.
+
+## When uncertainty constrains action
+
+Resolve consequential uncertainty before changing the boundary that depends on
+it. Inspection, disposable probes, and focused tests may be the way to discover
+the answer; a completed audit packet is not a prerequisite. A specific unsafe or
+unauthorized action may be blocked while independent work continues.
+
+A claimed defect needs a concrete failing case or a source-level argument,
+clearly labeled if not executed. Unavailable tooling limits validation claims,
+not unrelated analysis. Revisit the selected boundary when new evidence changes
+it; do not repeat classification for its own sake.
+
+## Optional structured handoff
+
+Use ZSR-v1 only for an explicit structured audit or a known consuming interface.
+There is no default file, store, validator, or required pre-edit emission. Honor
+an existing consumer's required fields without inferring a new workflow gate.
+For human handoffs, concise prose is ordinarily sufficient.
 
 ```yaml
 zig_semantic_route:
@@ -32,83 +68,7 @@ zig_semantic_route:
   family_contracts: {}
 ```
 
-## Family cues
-
-### claim-binding
-
-```text
-fingerprint receipt certificate proof evidence ref cursor manifest
-checkpoint replay attestation verify passed hash identity signature
-```
-
-### lifetime-escape
-
-```text
-parse decode arena buffer slice ref snapshot report certificate
-returned field deinit reset refresh reallocate staging
-```
-
-### atomic-transition
-
-```text
-append put commit stage export import recover thaw restore replay
-ledger journal outbox event pair ownership transfer later allocation
-```
-
-### verifier-completeness
-
-```text
-parser decoder binary protocol WASM archive inspector verifier
-passed unknown section duplicate section varint LEB stack metadata export
-```
-
-### repo-closure
-
-```text
-new/moved/removed .zig file compile-fail fixture golden expected
-generated output path list manifest registry aggregate lint
-```
-
-### proof-context
-
-```text
-proof test check CAS receipt stale head dirty tree commit push rebase
-fork dependency cache permission worktree target optimize option
-```
-
-Broad words such as `proof`, `commit`, `manifest`, and `report` are family cues only when the repository/task is already known to be Zig.
-
-## Materiality
-
-Material:
-
-- behavior changes;
-- state or ownership changes;
-- public/internal protocol changes;
-- proof/certificate changes;
-- generated artifacts;
-- build/package/dependency changes;
-- low-level/hazardous changes;
-- test changes that authorize closure.
-
-Usually non-material:
-
-- typo-only docs;
-- formatter-only work with no semantic token change;
-- isolated comment correction;
-- version-neutral question with no edit.
-
-A non-material route may use `active_families: []`, but must name `no_family_reason`.
-
-## Gate behavior
-
-Mutation is blocked when:
-
-- material work was not classified before the first edit;
-- an active family lacks a family contract;
-- owner or repair boundary is absent;
-- no concrete counterexample exists for a claimed defect;
-- required proof is empty;
-- proof context is material but no epoch is required.
-
-The route should be regenerated when a new counterexample changes the active family or owner.
+Outside a consumer requiring this exact shape, omit inapplicable fields. Use the
+desired law rather than a fictional counterexample for constructive work. Empty
+forms, absent family labels, and missing proof epochs do not block mutation.
+Resources and evidence still need the real contracts described in the references.

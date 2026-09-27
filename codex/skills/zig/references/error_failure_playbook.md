@@ -1,136 +1,61 @@
-# Zig Error, Failure-Path, and Atomic Transition Playbook
+# Zig errors, failure paths, and ownership
 
-Use for fallible APIs, `try`/`catch`, `errdefer`, precise error sets, boundary mapping, partial mutation, ownership transfer, event/ledger writes, or cleanup proof.
-
-## Error contract
-
-State:
-
-```text
-precise error set
-domain/resource/environment/programmer categories
-translation boundary
-cleanup and rollback
-observable atomicity
-tests for success, domain failure, resource failure, and cleanup
-```
-
-## Error taxonomy
+Use for fallible APIs, error unions, `try`/`catch`, `errdefer`, boundary mapping,
+state mutation, publication, or cleanup. Identify the API's error categories,
+ownership and advertised [failure guarantee](atomic_transition_playbook.md).
 
 | Category | Examples | Handling |
 | --- | --- | --- |
-| Domain/protocol | invalid header/version/state | Precise error; caller may switch. |
-| Resource | OOM/no space/capacity | Propagate and inject in tests. |
-| Environment | file/permission/network | Add context at integration boundary. |
-| Programmer bug | impossible internal state | Assert/unreachable only with proof. |
-| Foreign/system | errno/status | Translate once in boundary module. |
+| Domain/protocol | Invalid header, version, or state | Precise error; caller can discriminate. |
+| Resource | OOM, no space, capacity, depth/work budget | Propagate; inject representative failures. |
+| Environment | File, permission, network | Preserve diagnostics; add context at the integration boundary. |
+| Programmer bug | Impossible internal state | Assert/unreachable only with a real invariant. |
+| Foreign/system | errno or status | Translate once at a boundary, including unknown statuses. |
 
-Do not turn domain failures into panics or bugs into vague `anyerror`.
-
-## Precise errors
-
-Prefer named/inferred error sets inside libraries.
+Prefer named or inferred error sets within libraries. Widen to `anyerror` only at
+a genuine integration/polymorphic boundary, not to hide an unclear contract.
+Do not convert ordinary domain/resource failures into panics or use vague errors
+to conceal a bug.
 
 ```zig
-const ParseError = error{
-    Empty,
-    InvalidChar,
-    Overflow,
-};
+const ParseError = error{ Empty, InvalidChar, Overflow };
 ```
 
-Widen only at genuine integration boundaries.
+## Propagation and cleanup
 
-## `try`, `catch`, and `errdefer`
+At a consequential fallible call, decide whether propagation is correct, whether
+translation belongs here, which resources have been acquired, and which state is
+already observable. `catch` must not discard useful evidence. A runtime budget
+that can be exhausted is not a justification for `catch unreachable`.
 
-For every `try`:
+Use `errdefer` for failure cleanup and disarm it only after a valid ownership
+transfer. Freeing memory does not restore counters, indexes, journals or events.
+Conversely, an API advertising partial progress does not require fictional
+transactional rollback. The transition playbook owns that distinction.
 
-- is propagation correct?
-- should it map to a domain error?
-- has state been acquired or mutated?
-- does rollback cover all owners?
-- does `catch` discard useful evidence?
-- is `catch unreachable` actually closed-world?
-
-Use `errdefer` for resource rollback, but do not confuse it with full transaction rollback.
-
-## Atomic-transition gate
-
-When later work can fail after mutation, inventory:
-
-```yaml
-failure_atomicity:
-  owners: []
-  first_observable_mutation:
-  later_fallible_steps: []
-  ownership_transfers: []
-  publications: []
-  commit_point:
-  rollback:
-  deterministic_failure_injection:
-  observable_pre_state:
-  observable_post_state:
-```
-
-Preferred:
-
-```text
-prepare fallible data
--> commit non-fallible state
--> publish
-```
-
-Prepare includes allocations, clones, parsing, validation, reservation, event/ref construction, and external preflight.
-
-Publish only after commit includes receipts, refs, events, outbox work, callbacks, and external visibility.
-
-## Partial mutation anti-patterns
-
-- append one half of an event pair;
-- commit owner A before owner B can fail;
-- transfer ownership then allocate returned evidence;
-- disarm rollback before all fallible work;
-- mutate counters/indexes but roll back only memory;
-- persist journal state before proof construction;
-- rollback that itself allocates/fails;
-- return a ref for a transition that later fails.
+For a strong guarantee, prepare fallible work before commit or supply complete,
+non-failing rollback. For irreversible effects, expose commit/recovery status and
+retry/idempotency semantics. Do not return an ordinary "nothing happened" error
+when state has committed but publication failed.
 
 ## Boundary mapping
 
-Centralize:
+Keep raw status/errno -> boundary-specific errors -> core domain behavior in one
+place. Preserve the detail needed to diagnose environment failures. Do not identify
+all `PermissionDenied` results as cache failures; consult the actual diagnostic.
 
-```text
-raw status/errno
--> boundary-specific error set
--> core domain behavior
-```
+## Tests and reporting
 
-Include unknown statuses.
+Exercise success, relevant domain/resource errors, partial acquisition cleanup,
+and ownership transfer exactly once. `std.testing.checkAllAllocationFailures`
+helps with allocation failures but does not cover I/O, callback, publication, or
+other non-allocation failures. Add targeted fail points where consequential.
 
-## Proof
+For strong guarantees, compare the full advertised pre-state with post-state.
+For other guarantees, test valid continued use, reported partial progress or
+recovery according to the contract. Tests should establish behavior, not merely
+freeze incidental configuration booleans or mirror the implementation.
 
-Test:
-
-1. success;
-2. each domain failure;
-3. allocation/resource failure;
-4. cleanup after partial acquisition;
-5. full observable pre-state equals post-state at each injected failure;
-6. no event/ref/receipt/publication escaped;
-7. ownership freed/transferred exactly once;
-8. durable external effects follow explicit recovery/idempotency protocol.
-
-Use `std.testing.checkAllAllocationFailures` for bounded allocation behavior and targeted fail indices for stateful transitions.
-
-## Reporting
-
-Report:
-
-- error set before/after;
-- widened/narrowed errors;
-- translation boundary;
-- resource rollback;
-- state rollback/commit point;
-- failure injection coverage;
-- remaining `catch unreachable` proofs;
-- unavailable atomicity proof.
+Report meaningful error-set changes, boundary translations, cleanup/commit
+behavior, executed checks, and unresolved risk in the receiving workflow's format.
+Use [evidence context](evidence_context_playbook.md) for reuse and unavailable lanes.

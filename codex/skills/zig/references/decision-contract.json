@@ -4,65 +4,164 @@
     "skill": {
       "name": "zig",
       "kind": "mixed",
-      "source_fingerprint": "generated-with-semantic-router-v3-tiger-style-astra-compat-v2"
+      "source_fingerprint": "zig-v3-capability-first"
     },
     "triggers": [
       {
         "trigger_id": "ZIG-DIRECT",
-        "description": "The task contains direct Zig files, tools, APIs, version-sensitive behavior, or an explicit Tiger Style review request.",
+        "description": "The requested task requires Zig-specific implementation, explanation, debugging, review or optimization; a Zig repository alone is insufficient.",
         "cue_literals": [
+          "Zig",
           ".zig",
-          "build.zig",
           "zig build",
-          "zig test",
-          "zig fmt",
-          "comptime",
-          "TigerStyle",
-          "Tiger Style",
-          "ZTS-v1"
+          "comptime"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "unrelated work in a repository that happens to contain Zig"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-CONSTRUCTION",
+        "description": "A known Zig task asks for ordinary material construction or representation selection, with or without a named semantic concern.",
+        "cue_literals": [
+          "implement",
+          "new API",
+          "representation"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "non-Zig work"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-NONMATERIAL",
+        "description": "A known Zig task asks for explanation, formatting or another change needing no semantic investigation.",
+        "cue_literals": [
+          "formatting-only",
+          "explain Zig"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "non-Zig work"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-UNRELATED",
+        "description": "The actual task does not require Zig expertise, even if the repository includes Zig.",
+        "cue_literals": [
+          "unrelated prose change"
         ],
         "cue_regexes": [],
         "exclusions": []
       },
       {
-        "trigger_id": "ZIG-SEMANTIC",
-        "description": "A known Zig repository or task contains a semantic failure-family cue.",
+        "trigger_id": "ZIG-BLOCKER",
+        "description": "A specific necessary action lacks authority, a defensible safety contract, or an indispensable dependency.",
         "cue_literals": [
-          "fingerprint",
-          "returned slice",
-          "rollback",
-          "verifier",
-          "golden",
-          "stale proof"
+          "missing authority",
+          "unsafe action",
+          "required dependency unavailable"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "non-Zig repository"
+          "missing route packet",
+          "empty family label",
+          "unfilled template"
         ]
       },
       {
-        "trigger_id": "ZIG-BOUNDEDNESS",
-        "description": "A known Zig surface contains work that can grow, wait, retry, recurse, allocate, or fan out and therefore needs the cross-cutting Tiger Style contract.",
+        "trigger_id": "ZIG-CLAIM",
+        "description": "A known Zig task contains a consequential question: Bind proof-like claims to the authoritative facts they promise to establish.",
         "cue_literals": [
-          "while true",
-          "recursion",
-          "retry loop",
-          "queue capacity",
-          "timeout",
-          "assertion pair",
-          "catch unreachable",
-          "function too long"
+          "fingerprint",
+          "receipt",
+          "certificate"
         ],
         "cue_regexes": [],
         "exclusions": [
-          "non-Zig repository"
+          "generic word outside a Zig-specific task"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-LIFETIME",
+        "description": "A known Zig task contains a consequential question: Establish backing ownership and the promised lifetime of escaping data.",
+        "cue_literals": [
+          "returned slice",
+          "arena",
+          "borrow"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "generic word outside a Zig-specific task"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-FAILURE",
+        "description": "A known Zig task contains a consequential question: Preserve the advertised failure guarantee, including legitimate partial progress.",
+        "cue_literals": [
+          "rollback",
+          "partial progress",
+          "commit point"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "generic word outside a Zig-specific task"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-VERIFIER",
+        "description": "A known Zig task contains a consequential question: Separate safe parsing from the exact promised semantic predicate.",
+        "cue_literals": [
+          "parser",
+          "verifier",
+          "valid encoding"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "generic word outside a Zig-specific task"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-CLOSURE",
+        "description": "A known Zig task contains a consequential question: Find actual build, registry, generator and aggregate-check owners in the correct change scope.",
+        "cue_literals": [
+          "golden",
+          "generated artifact",
+          "registry"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "generic word outside a Zig-specific task"
+        ]
+      },
+      {
+        "trigger_id": "ZIG-EVIDENCE",
+        "description": "A known Zig task contains a consequential question: Reuse evidence according to established relevant inputs and assumptions.",
+        "cue_literals": [
+          "stale evidence",
+          "changed dependency",
+          "proof context"
+        ],
+        "cue_regexes": [],
+        "exclusions": [
+          "generic word outside a Zig-specific task"
         ]
       }
     ],
     "routes": [
       {
+        "route_id": "ZIG-ROUTE-CONSTRUCT",
+        "description": "Complete ordinary Zig construction without inventing a defect or requiring an audit packet.",
+        "aliases": [
+          "construct",
+          "ordinary material work"
+        ],
+        "terminal": false
+      },
+      {
         "route_id": "ZIG-ROUTE-NONMATERIAL",
-        "description": "Perform version-aware non-material work without a semantic family.",
+        "description": "Complete narrow Zig work without unnecessary scans, packets or repeated checks.",
         "aliases": [
           "none",
           "formatting-only"
@@ -70,8 +169,24 @@
         "terminal": false
       },
       {
+        "route_id": "ZIG-ROUTE-SKIP",
+        "description": "Do not activate Zig-specific process for an unrelated task.",
+        "aliases": [
+          "skip"
+        ],
+        "terminal": true
+      },
+      {
+        "route_id": "ZIG-ROUTE-BLOCKED",
+        "description": "Block only the genuinely unsafe, unauthorized or unavailable action; continue independent authorized work.",
+        "aliases": [
+          "blocked"
+        ],
+        "terminal": false
+      },
+      {
         "route_id": "ZIG-ROUTE-CLAIM-BINDING",
-        "description": "Bind proof-like claims to authoritative bytes and strongest predicates.",
+        "description": "Bind proof-like claims to the authoritative facts they promise to establish.",
         "aliases": [
           "claim-binding"
         ],
@@ -79,7 +194,7 @@
       },
       {
         "route_id": "ZIG-ROUTE-LIFETIME",
-        "description": "Resolve escaping borrowed ownership and lifetime.",
+        "description": "Establish backing ownership and the promised lifetime of escaping data.",
         "aliases": [
           "lifetime-escape"
         ],
@@ -87,7 +202,7 @@
       },
       {
         "route_id": "ZIG-ROUTE-ATOMIC",
-        "description": "Enforce prepare/commit/publish atomicity.",
+        "description": "Preserve the advertised failure guarantee, including legitimate partial progress.",
         "aliases": [
           "atomic-transition"
         ],
@@ -95,7 +210,7 @@
       },
       {
         "route_id": "ZIG-ROUTE-VERIFIER",
-        "description": "Separate parser totality from semantic verifier completeness.",
+        "description": "Separate safe parsing from the exact promised semantic predicate.",
         "aliases": [
           "verifier-completeness"
         ],
@@ -103,7 +218,7 @@
       },
       {
         "route_id": "ZIG-ROUTE-REPO-CLOSURE",
-        "description": "Synchronize repository registries, generated artifacts, and aggregate proof.",
+        "description": "Find actual build, registry, generator and aggregate-check owners in the correct change scope.",
         "aliases": [
           "repo-closure"
         ],
@@ -111,67 +226,260 @@
       },
       {
         "route_id": "ZIG-ROUTE-PROOF-CONTEXT",
-        "description": "Bind final proof to the final repository, toolchain, target, and execution context.",
+        "description": "Reuse evidence according to established relevant inputs and assumptions.",
         "aliases": [
           "proof-context"
         ],
         "terminal": false
-      },
-      {
-        "route_id": "ZIG-ROUTE-BLOCKED",
-        "description": "Stop when version, evidence, owner, bounds, or proof context is insufficient.",
-        "aliases": [
-          "blocked"
-        ],
-        "terminal": true
       }
     ],
     "clauses": [
       {
-        "clause_id": "ZIG-ROUTER-001",
+        "clause_id": "ZIG-CONSTRUCT-001",
         "trigger_refs": [
-          "ZIG-DIRECT",
-          "ZIG-SEMANTIC",
-          "ZIG-BOUNDEDNESS"
+          "ZIG-CONSTRUCTION"
         ],
         "expected_routes": [
+          "ZIG-ROUTE-CONSTRUCT"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "requested behavior implemented",
+          "consequential representation choices resolved",
+          "relevant validation completed or honestly unavailable"
+        ],
+        "failure_signals": [
+          "fictional defect required before construction",
+          "missing paperwork blocks mutation",
+          "first implementation returned despite remaining authorized work"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-NARROW-001",
+        "trigger_refs": [
+          "ZIG-NONMATERIAL"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-NONMATERIAL"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-BLOCKED"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "narrow task completed without unrelated audits"
+        ],
+        "failure_signals": [
+          "version-neutral explanation blocked by missing compiler",
+          "full project map or route emission required for a small edit"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-SKIP-001",
+        "trigger_refs": [
+          "ZIG-UNRELATED"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-CONSTRUCT",
+          "ZIG-ROUTE-BLOCKED"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "unrelated task proceeds without Zig process"
+        ],
+        "failure_signals": [
+          "repository language alone triggers an audit"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-AUTHORITY-001",
+        "trigger_refs": [
+          "ZIG-BLOCKER"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-BLOCKED"
+        ],
+        "prohibited_routes": [],
+        "required_artifacts": [],
+        "success_signals": [
+          "real boundary preserved",
+          "independent authorized work continues"
+        ],
+        "failure_signals": [
+          "missing form treated as missing authority",
+          "review-only task silently becomes implementation",
+          "arbitrary filesystem path treated as disposable cache"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-CLAIM-001",
+        "trigger_refs": [
+          "ZIG-CLAIM"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-CLAIM-BINDING"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "Reject substituted or omitted bound facts; do not mistake a caller-provided hash for authority."
+        ],
+        "failure_signals": [
+          "irrelevant lens imposed from a keyword alone",
+          "unexecuted evidence reported as passing"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-LIFETIME-001",
+        "trigger_refs": [
+          "ZIG-LIFETIME"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-LIFETIME"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "Keep every escaping borrow backed by a valid owner, copy, transfer, or documented lifetime contract."
+        ],
+        "failure_signals": [
+          "irrelevant lens imposed from a keyword alone",
+          "unexecuted evidence reported as passing"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-FAILURE-001",
+        "trigger_refs": [
+          "ZIG-FAILURE"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-ATOMIC"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "Distinguish transactional rollback, basic validity, partial progress and durable recovery; test the promised guarantee."
+        ],
+        "failure_signals": [
+          "irrelevant lens imposed from a keyword alone",
+          "unexecuted evidence reported as passing"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-VERIFIER-001",
+        "trigger_refs": [
+          "ZIG-VERIFIER"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-VERIFIER"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "Exercise malformed and well-encoded semantically invalid inputs without equating fuzzing with universal proof."
+        ],
+        "failure_signals": [
+          "irrelevant lens imposed from a keyword alone",
+          "unexecuted evidence reported as passing"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-CLOSURE-001",
+        "trigger_refs": [
+          "ZIG-CLOSURE"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-REPO-CLOSURE"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "Use the actual working-tree or base-to-head scope; locator hits are not closure proof."
+        ],
+        "failure_signals": [
+          "irrelevant lens imposed from a keyword alone",
+          "unexecuted evidence reported as passing"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-EVIDENCE-001",
+        "trigger_refs": [
+          "ZIG-EVIDENCE"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-PROOF-CONTEXT"
+        ],
+        "prohibited_routes": [
+          "ZIG-ROUTE-SKIP"
+        ],
+        "required_artifacts": [],
+        "success_signals": [
+          "Invalidate affected evidence when relevant inputs change or relevance is unknown; provenance alone does not force a rerun."
+        ],
+        "failure_signals": [
+          "irrelevant lens imposed from a keyword alone",
+          "unexecuted evidence reported as passing"
+        ],
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
+      },
+      {
+        "clause_id": "ZIG-SCOPE-001",
+        "trigger_refs": [
+          "ZIG-DIRECT"
+        ],
+        "expected_routes": [
+          "ZIG-ROUTE-CONSTRUCT",
           "ZIG-ROUTE-NONMATERIAL",
+          "ZIG-ROUTE-BLOCKED",
           "ZIG-ROUTE-CLAIM-BINDING",
           "ZIG-ROUTE-LIFETIME",
           "ZIG-ROUTE-ATOMIC",
           "ZIG-ROUTE-VERIFIER",
           "ZIG-ROUTE-REPO-CLOSURE",
-          "ZIG-ROUTE-PROOF-CONTEXT",
-          "ZIG-ROUTE-BLOCKED"
+          "ZIG-ROUTE-PROOF-CONTEXT"
         ],
         "prohibited_routes": [],
-        "required_artifacts": [
-          "Zig version",
-          "artifact state",
-          "ZSR-v1 for material work",
-          "cross-cutting bounds, assertions, and applicable exceptions for material code",
-          "final proof bound to the final repository, toolchain, target, and execution context"
-        ],
+        "required_artifacts": [],
         "success_signals": [
-          "semantic family selected before first edit",
-          "owner and proof named",
-          "growing and waiting work has explicit bounds and failures",
-          "safety-relevant invariants have independent assertion pairs or a reason",
-          "final proof matches final context"
+          "only task-relevant references loaded",
+          "receiving workflow retains authority and reporting format"
         ],
         "failure_signals": [
-          "green build treated as sufficient for active family",
-          "semantic route selected after patching",
-          "unbounded loop, recursion, retry, allocation, or fanout introduced",
-          "operating error converted to unreachable without proof",
-          "stale proof after context change"
+          "mandatory ZSR-v1 for all material work",
+          "specialist becomes a required stage",
+          "duplicate verification without a changed input or specific uncertainty"
         ],
-        "rationale": "Zig expertise must govern route selection and cross-cutting safety before implementation."
+        "rationale": "Select expertise by the actual task and evidence; a structured packet is required only by an explicit request or known consumer."
       }
     ],
     "instrumentation": {
       "decision_receipt": "optional",
-      "rationale": "ZSR-v1 records material routing; existing cross-cutting constraints and final-context proof supply safety and closure evidence."
+      "rationale": "The contract describes observable behavior, not a runtime gate. No new store, required route packet, or mandatory model-evaluation stage."
     }
   }
 }

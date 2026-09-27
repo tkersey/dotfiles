@@ -1,40 +1,19 @@
-# Zig Build, Package, Target, Linker, and Repository Closure
+# Zig build, packages, targets, linking and repository closure
 
-Use for `build.zig`, `build.zig.zon`, cross compilation, package pins, C/C++ integration, generated artifacts, examples, compile-fail fixtures, repository path registries, release modes, linker options including LTO, or reproducibility.
+Use for `build.zig`, `build.zig.zon`, cross compilation, package pins, C/C++
+integration, generated artifacts, examples, compile-fail fixtures, release modes,
+linker/LTO options or reproducibility. Inspect the build inputs and steps relevant
+to the task; do not demand a full build contract before an unrelated edit.
 
-## Build contract
+## Toolchain and inputs
 
-State:
+Use `zig version`, `zig env`, `zig build --help` and the relevant compiler
+subcommand's help to establish actual support. Read the repository's pins and
+existing options before inventing commands. Important inputs can include target,
+CPU, optimize mode, dependencies/forks, C flags/includes, generated artifacts,
+linker/backend selection, PIE/PIC, section collection, stripping/debug info and LTO.
 
-```text
-Zig version
-targets and optimize modes
-dependencies/fingerprints/forks
-build steps and -D options
-C/linker inputs
-linker/backend options including LTO, LLD, new-linker, PIE/PIC, gc-sections, strip/debug-info
-generated artifacts
-repository registries/goldens
-test/lint/bench/fuzz steps
-```
-
-## Inspect first
-
-```bash
-zig version
-zig build --help
-zig build-exe --help | rg -- '-flto|-fno-lto|lld|new-linker'
-zig env
-find . -maxdepth 4 \( -name build.zig -o -name build.zig.zon \) -print
-zig_skill_root="$(realpath "$HOME/.agents/skills/zig")"
-uv run python3 "$zig_skill_root/scripts/zig_repo_closure_scan.py" --root .
-```
-
-Read existing steps before inventing commands.
-
-## Target and optimize matrix
-
-Low-level and ABI claims require relevant modes/targets.
+For low-level or ABI claims, include relevant modes/targets. Example candidates:
 
 ```bash
 zig build test -Doptimize=Debug
@@ -43,34 +22,30 @@ zig build test -Doptimize=ReleaseFast
 zig build -Doptimize=ReleaseSmall
 ```
 
-Target triples are part of proof for ABI/layout/endian/pointer-width/vector and LTO claims.
+They are not an automatic matrix. Pointer width, endian, ABI/layout, SIMD and
+optimizer assumptions determine the necessary lanes. Use the repository's harness
+when module imports, options or dependencies make bare `zig test` insufficient.
 
-## Link-time optimization (LTO)
+## LTO
 
-Treat LTO as a release/performance/linker decision, not a default correctness lane.
+LTO is a release/performance/linker choice, not a default correctness lane. Use it
+when cross-module inlining, dead-code removal, visible-call specialization or
+binary-size reduction is a plausible hypothesis and the target/linker supports it.
+Compare baseline and variant under the same workload, CPU, mode and correctness
+guard. Leave it out of ordinary debug iteration and unexplained link-failure triage
+unless the repository already requires it.
 
-Use LTO only when:
-
-```text
-release artifact or binary-size artifact is being tuned
-cross-module or whole-program optimization is plausible for the workload
-LLVM/LLD-capable target and linker path are available
-baseline and LTO variant can be measured under the same target, optimize mode, CPU, allocator, inputs, and correctness guard
-```
-
-Leave LTO off for ordinary debug iteration, compile-error triage, sanitizer/fuzzer minimization, profiler runs that require stable debug information, and unexplained link failures unless the repository already makes LTO part of the artifact contract.
-
-For Zig 0.16-era CLI usage, verify with the installed `zig build-exe --help` or relevant compiler subcommand help, then use explicit modes:
+Verify flags with the installed compiler before using these Zig 0.16 examples:
 
 ```bash
-zig build-exe src/main.zig -O ReleaseFast -flto       # full LTO
-zig build-exe src/main.zig -O ReleaseFast -flto=full  # explicit full LTO
-zig build-exe src/main.zig -O ReleaseFast -flto=thin  # ThinLTO
+zig build-exe src/main.zig -O ReleaseFast -flto
+zig build-exe src/main.zig -O ReleaseFast -flto=full
+zig build-exe src/main.zig -O ReleaseFast -flto=thin
 zig build-exe src/main.zig -O ReleaseSmall -flto=thin
 zig build-exe src/main.zig -fno-lto
 ```
 
-For `build.zig`, set LTO on the final compile artifact, and prefer the current `lto` field over deprecated boolean wrappers:
+For build-system configuration, set the final compile artifact's `lto` field:
 
 ```zig
 const exe = b.addExecutable(.{
@@ -81,112 +56,54 @@ const exe = b.addExecutable(.{
         .optimize = optimize,
     }),
 });
-
-exe.lto = .thin; // .none, .full, or .thin
-```
-
-When exposing it as a repository option, keep the default conservative and document CI coverage:
-
-```zig
 const lto = b.option(std.zig.LtoMode, "lto", "LTO mode: none, full, or thin") orelse .none;
 exe.lto = lto;
 ```
 
-Current Zig resolves non-`none` LTO through LLD. If the selected target/object format/linker path cannot use LLD, do not silently keep the optimization claim; report the exact unavailable linker lane or compiler error.
+Use `-Dlto=...` only if the repository exposes it. Prefer an explicit enum over a
+boolean when exposing the distinct modes, without adding options absent a real
+need. Check LLVM/LLD/backend and object-format availability; report the actual
+unavailable lane or link error rather than implying LTO is active everywhere.
+ThinLTO is a candidate when link-time/memory scaling matters; full LTO needs its
+own evidence. Do not promise that either improves performance.
 
-Measurement/proof for LTO must include:
+Record baseline/variant commands, workload/checksum, wall-time variance, artifact
+size and strip/debug state, target/CPU/mode, backend/linker flags, and build/link
+cost where relevant. Profiling that depends on stable DWARF/call graphs may need a
+separate lane from the shipping LTO build. Report unmeasured benefits as `UNMEASURED`.
 
-```text
-baseline command/result without LTO
-variant command/result with .thin or .full
-target triple, CPU, optimize mode, strip/debug-info state
-linker/backend flags: use_lld/use_new_linker/use_llvm/lto
-wall-time, binary-size, and workload-specific metric
-correctness guard output
-build/link time cost and memory pressure when relevant
-```
+## Packages and overrides
 
-Prefer `.thin` when link-time or memory scaling is the risk; try `.full` only when the artifact is small enough or a measurement justifies the slower/heavier link. Never imply LTO improves speed or size without benchmark data; report `UNMEASURED`.
+`build.zig.zon` is the dependency source of truth. Review URLs, versions/commits,
+content hashes, package fingerprints, paths and source provenance without treating
+all those fields as interchangeable identities. Use supported `zig fetch --save`
+workflows and inspect the resulting dependency change.
 
-## Packages
+For Zig 0.16 temporary forks, use the repository-supported `zig build --fork=/absolute/path`
+override; do not repurpose `.zig-cache` as one. Keep `zig-pkg` untracked unless
+intentionally vendored, but never infer that untracked dependency data is disposable.
+Preserve edits, local commits and fork targets. The cache helper cannot delete it.
+A relevant dependency/fork change invalidates affected validation, not unrelated
+checks; [evidence context](evidence_context_playbook.md) owns that rule.
 
-- `build.zig.zon` is dependency source of truth.
-- Use `zig fetch --save`.
-- Review name, URL, fingerprint/hash, version/tag, and paths.
-- Keep `zig-pkg/` untracked unless intentionally vendored.
-- Use `zig build --fork=/absolute/path` for temporary overrides.
-- Do not use `.zig-cache` as a dependency override.
-- Long-lived/security-sensitive pins need origin and release/commit provenance.
+## C translation and interoperability
 
-Dependency or fork changes invalidate prior proof epochs.
+Prefer build-system translation for new Zig 0.16 integrations. Match target,
+C flags, include paths and libc/system libraries at the correct module/artifact.
+Keep translated code behind a wrapper that converts raw C pointers/status and
+ownership once. Do not hand-edit generated translations. Validate ABI assumptions
+on the intended target and preserve a clear regeneration owner.
 
-## C translation and interop
+## Build options and artifacts
 
-Prefer build-system translation for new Zig 0.16 code.
+For a consequential option, make its purpose/default, artifact/test effect,
+ABI/generated-code implications and coverage discoverable. Avoid option explosion.
+Identify owners of changed source paths, compile-fail fixtures, diagnostic goldens,
+examples, checked docs, headers/constants and package/release manifests.
 
-Ensure:
-
-```text
-target/cflags match
-libc/system libraries linked at correct artifact
-translated code behind boundary wrapper
-raw C pointers/status/ownership converted once
-source/include paths attached to correct module
-generated translation not hand-edited
-```
-
-## Build options
-
-Each option states:
-
-```text
-purpose
-default
-artifact/test effect
-ABI/generated-code effect
-CI matrix coverage
-```
-
-Avoid option explosion. For LTO specifically, prefer an explicit enum option (`none|thin|full`) over a boolean, because `.thin` and `.full` have materially different build-cost profiles.
-
-## Repository closure
-
-When changing files/generated output, discover:
-
-```text
-source/path registries
-build enumeration
-lint/fmt path lists
-compile-fail registration
-goldens/expected output
-examples checked by CI
-generated headers/constants
-package/release manifests
-```
-
-For each changed path:
-
-```yaml
-changed_path:
-  build_owner:
-  registry_owner:
-  generator_owner:
-  golden_owner:
-  aggregate_proof:
-```
-
-A new file compiling locally is not closure if aggregate repository contracts omit it.
-
-Generated output rewrites invalidate proof that ran before regeneration.
-
-## CI/reproducibility
-
-- Zig version pinned/reported.
-- Build help exposes intended steps/options.
-- Build-system tests cover modules/dependencies.
-- Relevant optimize/target/LTO lanes exist when claimed.
-- Package pins/forks reviewed.
-- C translation matches target/cflags.
-- Cache/dependency policy explicit.
-- Repository closure scan reviewed.
-- Final proof epoch matches generated artifacts and dependencies.
+Use [repository closure](repo_closure_playbook.md) for optional locator commands and
+working-tree versus committed-review scope. String matching is not proof that a
+generator, dynamic registry or aggregate check includes the changed artifact.
+Run required aggregate commands against the actual intended inputs. A provenance
+change alone does not force all validation to rerun; do not reuse evidence across
+changed relevant inputs or unknown assumptions.
