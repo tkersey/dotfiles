@@ -21,6 +21,7 @@ ALLOWED_KINDS = {
     "ledger-retraction",
 }
 SKILLS_ROOT = Path(__file__).resolve().parents[2]
+CONTEXT_SCRIPT = SKILLS_ROOT / "ledger/scripts/ledger_context.py"
 SOURCE_DEFINITION = (
     SKILLS_ROOT
     / "negative-ledger/definitions/ledger/negative-evidence-protocol.json"
@@ -82,6 +83,25 @@ def _parse_json(raw: bytes, stage: str) -> Any:
         return json.loads(raw)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise AdapterError(f"{stage}: invalid JSON: {exc}") from exc
+
+
+def resolve_custody(repo: Path) -> dict[str, Any]:
+    """Consume the Ledger owner's read-only context; never duplicate its policy."""
+    raw = _require_success(
+        _run([sys.executable, str(CONTEXT_SCRIPT), "--repo", str(repo)], cwd=repo),
+        "ledger context",
+    )
+    context = _parse_json(raw, "ledger context")
+    if not isinstance(context, dict) or context.get("schema") != "ledger-workspace-context/v1":
+        raise AdapterError("ledger context: unexpected result schema")
+    root, store_id = context.get("store_root"), context.get("store_id")
+    if not isinstance(root, str) or not Path(root).is_absolute() or not isinstance(store_id, str) or not store_id:
+        raise AdapterError("ledger context: invalid custody identity")
+    if context.get("native_args") != ["--store-root", root, "--store-id", store_id]:
+        raise AdapterError("ledger context: invalid managed selector")
+    if context.get("storage_mutated") is not False or context.get("authority_granted") is not False:
+        raise AdapterError("ledger context: admission resolution must remain read-only")
+    return context
 
 
 def _require_passive_result(
@@ -166,14 +186,14 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
     repo = Path(args.repo).expanduser().resolve()
     if not repo.is_dir():
         raise AdapterError(f"repo: not a directory: {repo}")
+    context = resolve_custody(repo)
     ledger = _resolve_binary(args.ledger_bin, "LEDGER_BIN", "ledger")
     doctor_argv = [
         ledger,
         "doctor",
         "--definition",
         str(SOURCE_DEFINITION),
-        "--repo",
-        str(repo),
+        *context["native_args"],
         "--format",
         "json",
     ]
@@ -184,8 +204,7 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
         str(SOURCE_DEFINITION),
         "--projection",
         "memory-note",
-        "--repo",
-        str(repo),
+        *context["native_args"],
         "--param",
         f"id={args.id}",
         "--payload-only",
@@ -217,6 +236,7 @@ def inspect_projection(args: argparse.Namespace) -> tuple[bytes, dict[str, Any]]
         "projection_fingerprint": envelope["payload"]["projection_fingerprint"],
         "writer_fingerprint": expected_writer_fingerprint(args.kind, export_raw),
         "doctor": doctor,
+        "storage_context": context,
         "authority_granted": False,
         "storage_mutated": False,
     }
@@ -270,7 +290,7 @@ def build_parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--kind", choices=sorted(ALLOWED_KINDS), default="ledger-projection"
         )
-        command.add_argument("--repo", default=".")
+        command.add_argument("--repo", default=".", help="Evidence workspace; $ledger resolves canonical custody")
         command.add_argument("--ledger-bin")
         if name == "admit":
             command.add_argument("--memory-note-bin")

@@ -34,7 +34,9 @@
   does not authorize rewriting history others depend on.
 - Prefix `git merge --continue` and `git rebase --continue` with `GIT_EDITOR=true`.
 - Do not force-add paths matching `.git/info/exclude` unless explicitly asked.
-- Before `git commit`, run a final narrow status check for session-owned `.ledger/*` changes; if publishable, stage the current-turn/session-owned rows with the work they explain.
+- Before `git commit`, inspect session-owned changes and stage only authorized,
+  publishable artifacts. Source owners govern publication; `$ledger` governs custody.
+  Do not infer publishability merely because evidence explains work.
 
 ### Python
 
@@ -48,10 +50,11 @@
 
 ### Source evidence and memory
 
-- `.ledger/*` stores are canonical repo-local evidence. Read and mutate them only
-  through the owning skill's explicit Ledger definition and `ledger project`,
-  `ledger doctor`, or `ledger transact`; never hand-edit source JSONL. Invalid or
-  retired stores require the owner's explicit recovery policy, not skipped rows.
+- `$ledger` is the source of truth for evidence-storage location, context
+  resolution, and custody maintenance. Source owners select semantic definitions
+  and operations. Read and mutate canonical evidence only through those explicit
+  definitions and Ledger operations; never hand-edit records or bypass invalid
+  custody. Do not duplicate storage paths, lookup rules, or migration policy here.
 - Memory-source notes are immutable derived admission snapshots. Phase 2 owns
   `memory_summary.md`, `MEMORY.md`, and memory-root `skills/*`; do not edit them
   during ordinary work. Accepted admissions from `$learnings`, `$negative-ledger`,
