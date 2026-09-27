@@ -1,6 +1,12 @@
 //! Small Zig 0.16 patterns. Validate with the project's exact toolchain.
 const std = @import("std");
 
+fn wrappedSlot(capacity: usize, head: usize, offset: usize) usize {
+    std.debug.assert(capacity > 0 and head < capacity and offset <= capacity);
+    const tail = capacity - head;
+    return if (offset >= tail) offset - tail else head + offset;
+}
+
 pub fn RingBuffer(comptime T: type, comptime capacity: usize) type {
     if (capacity == 0) @compileError("RingBuffer capacity must be nonzero");
     return struct {
@@ -10,9 +16,8 @@ pub fn RingBuffer(comptime T: type, comptime capacity: usize) type {
         len: usize = 0,
 
         fn slot(self: *const Self, offset: usize) usize {
-            // Avoid head + offset overflow even for large zero-sized buffers.
-            const tail = capacity - self.head;
-            return if (offset >= tail) offset - tail else self.head + offset;
+            // Avoid head + offset overflow even for large capacities.
+            return wrappedSlot(capacity, self.head, offset);
         }
 
         pub fn push(self: *Self, value: T) void {
@@ -109,12 +114,10 @@ test "ring overwrites oldest values and rejects out-of-range reads" {
     try std.testing.expectEqual(@as(?u32, 100), one.at(0));
 }
 
-test "ring index arithmetic handles large zero-sized capacity" {
+test "ring index arithmetic handles large capacity" {
     const capacity = std.math.maxInt(usize);
-    var rb: RingBuffer(void, capacity) = .{ .head = capacity - 1, .len = capacity };
-    rb.push({});
-    try std.testing.expectEqual(@as(usize, 0), rb.head);
-    try std.testing.expect(rb.at(capacity - 1) != null);
+    try std.testing.expectEqual(@as(usize, 0), wrappedSlot(capacity, capacity - 1, 1));
+    try std.testing.expectEqual(capacity - 1, wrappedSlot(capacity, capacity - 1, capacity));
 }
 
 test "reflection plan including empty shape" {
