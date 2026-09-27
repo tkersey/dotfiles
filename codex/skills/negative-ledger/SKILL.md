@@ -2,7 +2,7 @@
 name: negative-ledger
 description: "Implicitly invoke when implementation, debugging, review, or validation encounters a witnessed failed/no-effect attempt, benchmark or test regression, revert, repeated same-cluster retry, abandoned strategy, or asks what has already been tried. Project the route gate before repeating a route; transact only inspectable decision-shaping negative evidence through the passive Negative Evidence definition; reopen only after proved applicability changes; selectively admit complete projections to Codex memory."
 metadata:
-  version: "8.2.0"
+  version: "8.3.0"
 ---
 
 # Negative Ledger
@@ -17,47 +17,51 @@ The structural boundary is the passive definition:
 ${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-The selected definition exclusively addresses the canonical store at
-`.ledger/negative-ledger/events.jsonl`, and every operation or projection is
-explicit.
+Its `events` logical slot in `$ledger`-resolved custody is canonical. The Ledger
+skill alone owns physical storage location, worktree-family registration,
+initialization, and migration policy. Do not derive a separate history from each
+checkout. Worktrees share evidence, not automatic applicability or exclusions.
 
-The memory-admission channel is:
+The derived memory-admission channel remains:
 
 ```text
 ~/.codex/memories/extensions/negative-ledger/notes/*.md
 ```
 
-`$negative-ledger` owns the meaning and lifecycle of current negative-evidence
-state. Ledger structurally replays the declared protocol and projects that
-state without acquiring its semantic authority. `memory-note` transports an
-immutable projection to Phase 2. Phase 2 decides whether to compile a route
-constraint, routing trigger, or reusable memory skill.
+`$negative-ledger` owns the meaning and lifecycle of negative-evidence state.
+Ledger replays/projects the declared protocol without semantic authority.
+`memory-note` transports an immutable projection to Phase 2, which decides
+whether to compile a route constraint, routing trigger, or reusable memory skill.
 
-Never use memory notes as the operational route gate. For accepted admission, load `$memory-source-notes` before invoking `run_memory_note_tool`.
+Never use memory notes as the operational route gate. For accepted admission,
+load `$memory-source-notes` before invoking `run_memory_note_tool`.
 
 ## Trigger Cues
 
 - `$negative-ledger`;
-- failed attempts, no-effect attempts, reverts, benchmark or test regressions;
+- failed/no-effect attempts, reverts, benchmark/test regressions;
 - repeated semantic routes or same-cluster retries;
-- strategy pivots that abandon a concrete route future work might repeat;
-- "what have we already tried?";
-- "do not retry this route";
+- strategy pivots abandoning a concrete route future work might repeat;
+- "what have we already tried?" or "do not retry this route";
 - route reopening after artifact-state changes;
 - fixed-point or review-governor negative evidence;
-- memory admission of an active/stale/reopened/superseded `NEG-*` projection.
+- memory admission of active/stale/reopened/superseded `NEG-*` projections.
 
 ## Activation Policy
 
 Activation is broad; capture is narrow.
 
-Invoke this skill implicitly when current work may change route selection because a concrete route failed, had no effect, regressed a signal, was reverted, was rejected by current proof/review evidence, or is about to be retried under the same cluster. Do not wait for the user to literally name `$negative-ledger`.
+Invoke implicitly when work may change route selection because a concrete route
+failed, had no effect, regressed a signal, was reverted, was rejected by current
+proof/review evidence, or is about to be retried under the same cluster. Do not
+wait for the user to name the skill.
 
-Before selecting a route that resembles a prior failure, project the canonical
-`route-gate`. A recalled `$learnings` row may trigger this check, but it cannot
-block directly.
-
-After a material strategy pivot, regression-confirmed revert, or closeout that leaves a failed route likely to recur, evaluate capture. A transient red test, syntax error, first incomplete implementation, or discarded local typo is `no-op` unless it exposes a durable failed hypothesis that changes future routing.
+Before selecting a route resembling a prior failure, project canonical
+`route-gate`. A recalled learning may trigger the check, not block directly.
+After a material strategy pivot, regression-confirmed revert, or closeout leaving
+a failed route likely to recur, evaluate capture. A transient red test, syntax
+error, first incomplete implementation, or discarded typo is `no-op` unless it
+exposes a durable failed hypothesis that changes future routing.
 
 Retain exactly one internal disposition for each material activation:
 
@@ -66,67 +70,42 @@ mapped       current ledger checked; no write required
 captured     witnessed negative evidence appended
 transitioned existing NEG record changed lifecycle state
 no-op        activation evaluated; evidence was not durable or route-shaping
-blocked      ledger unavailable/invalid or active exact/applicable exclusion matched
+blocked      context/store unavailable or invalid, or an active applicable exclusion matched
 ```
 
-A material closeout with no failed-route semantics does not activate this
-source. Do not query, doctor, or capture merely to manufacture a no-op receipt.
+A material closeout without failed-route semantics does not activate this source.
+Do not resolve storage, query, doctor, or capture to manufacture a no-op receipt.
 
 ## Canonical Store and CLI
 
-Before the first Ledger command in this workflow, load `$ledger` and complete
-`$ledger ensure` once. Require Ledger major version 1 and
-`ledger-artifact-abi/v1`:
-
-Reuse the unchanged `$ledger ensure` readiness result; recheck only when the
-executable, execution environment, or selected definition requirements change.
-
-Set the canonical definition once:
+Load `$ledger` and complete `$ledger ensure` before the first native command.
+Require Ledger 1.3.0 or newer within major version 1 and `ledger-artifact-abi/v1`.
+Reuse unchanged readiness; recheck for changed executable/environment or selected
+definition requirements.
 
 ```bash
 negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 ```
 
-Use only:
+Resolve the verified workspace through `$ledger`. Retain `store_root`, `store_id`,
+`repository_id`, and `workspace_root`. Every canonical doctor, transaction, and
+projection uses that managed selector, including memory admission. Only an
+authorized first capture may initialize; reads cannot silently create a new
+history. Legacy binding, rebinding, and cold adoption follow the Ledger skill's
+exact maintenance policy, not per-worktree initialization or fallback readers.
+
+Native surface:
 
 ```text
 ledger definition check --definition DEFINITION
-ledger transact --definition DEFINITION --operation capture|promote|transition|bind-existing|rebind-existing --repo REPO
-ledger project --definition DEFINITION --projection current-records|route-gate|memory-note --repo REPO
-ledger doctor --definition DEFINITION --repo REPO
+ledger transact --definition DEFINITION --operation capture|promote|transition|bind-existing|rebind-existing --store-root ROOT --store-id ID
+ledger project --definition DEFINITION --projection current-records|route-gate|memory-note --store-root ROOT --store-id ID
+ledger doctor --definition DEFINITION --store-root ROOT --store-id ID
 ```
 
-`ledger project --projection memory-note` is the authoritative source payload
-for memory admission. Never reconstruct it from a summary projection.
-
-Bind a pre-cutover current-format store exactly once before ordinary reads or
-writes. This validates every existing row and records the selected definition
-digest without rewriting the event log:
-
-```bash
-ledger transact \
-  --definition "$negative_ledger_definition" \
-  --operation bind-existing \
-  --repo "<repo-root>" \
-  --format json
-```
-
-When an authoritative external transport replaces an already-bound store and
-`ledger doctor` reports a stale binding, use the separate one-shot custody
-operation. It validates the complete current event log and replaces only the
-binding metadata:
-
-```bash
-ledger transact \
-  --definition "$negative_ledger_definition" \
-  --operation rebind-existing \
-  --repo "<repo-root>" \
-  --format json
-```
-
-Do not use rebind to choose between divergent ledgers or to bless an unknown
-store. Establish the authoritative transport and preserve the losing lineage as
-an explicit reconciliation input before rebinding.
+`memory-note` is the authoritative admission payload. Never reconstruct it from
+a summary projection. Do not use rebinding to select a divergent history or bless
+an unknown replacement; preserve lineages for explicit owner reconciliation.
 
 ## Valid Statuses
 
@@ -141,72 +120,80 @@ reopened
 superseded
 ```
 
-Only `active` can block, and only when witness evidence exists, exclusion scope is valid, applicability still matches the current artifact state, and the route/cluster match is exact enough for the declared scope.
-
-Fuzzy or lexical overlap is suggest-only.
+Only `active` may block: witness evidence, valid exclusion scope, current artifact
+applicability, and exact-enough route/cluster matching are all required. Fuzzy or
+lexical overlap is suggest-only.
 
 ## Route-Gate Workflow
 
 For review-driven repair, apply the owner boundary in
 [counterexample-construction-integration.md](references/counterexample-construction-integration.md).
 
-1. Identify `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, declared scope, target signal, and changed surface.
+1. Identify the resolved `repository_id`, immutable `artifact_state_id`, readable
+   `artifact_state_label`, route, cluster, scope, target signal, and changed surface.
+   For new captures, use the stable repository identity from Ledger context;
+   branch/worktree paths are provenance. A commit alone does not identify relevant
+   dirty code, fixtures, or configuration; use a supported immutable surface
+   identity when those affect the claim.
 2. Run:
 
    ```bash
    ledger project \
      --definition "$negative_ledger_definition" \
      --projection route-gate \
-     --repo "<repo-root>" \
+     --store-root "<context.store_root>" --store-id "<context.store_id>" \
      --param "artifact=<artifact-state-id>" \
      --param "identity=<declared-scope-identity>" \
      --format json
    ```
 
-3. Interpret exit codes: `0` no active exact exclusion, `2` active exact/applicable exclusion, `3` ledger unavailable or invalid.
-4. Pass the identity selected by the record's declared exact, route, route-family, cluster, authority-model, distinction-pattern, or proof-pattern scope.
+3. Interpret exit codes: `0` no active exact exclusion, `2` active exact/applicable
+   exclusion, `3` canonical context/store unavailable or invalid. Never turn a
+   failed managed lookup into an empty checkout-local gate.
+4. Pass the identity for the declared exact, route, route-family, cluster,
+   authority-model, distinction-pattern, or proof-pattern scope.
 5. Treat fuzzy candidates as search hints only.
-6. Re-check current applicability before route suppression.
-7. Resolve symbolic Git refs before the call, pass the immutable identity as `artifact`, and retain the human-readable source as `artifact_state_label` in capture data.
+6. Recheck current applicability before suppression. A record inapplicable to
+   this worktree does not, by itself, justify globally marking it stale/reopened
+   for another artifact. Global lifecycle changes retain their proof obligations.
+7. Resolve symbolic Git refs before the call. Pass immutable identity as
+   `artifact`, retaining readable provenance in `artifact_state_label`.
 
 ## Capture Workflow
 
-Capture only when a failure changes future routing: witnessed no-effect attempt, local/global regression, unsound route, complexity disproportionate to value, revert with concrete rationale, repeated proof-wound pattern, or a strategy pivot whose abandoned route would otherwise be retried.
+Capture only a failure that changes future routing: witnessed no-effect attempt,
+local/global regression, unsound route, complexity disproportionate to value,
+revert with concrete rationale, repeated proof-wound pattern, or a strategy pivot
+whose abandoned route would otherwise be retried.
 
-Before capture or promotion, apply the [scope challenge](#exclusion-scope-challenge)
-to the proposed exclusion; a witnessed failure alone does not justify its breadth.
-
-Append only through:
+Before capture/promotion, apply the [scope challenge](#exclusion-scope-challenge).
+A witnessed failure alone does not justify its breadth.
 
 ```bash
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation capture \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input capture=capture.json \
   --format json
 ```
 
-Captures without adequate witness evidence must become `need-evidence` or `capture_candidate`, never active exclusions.
+`capture.json` contains one `record`, including requested initial `status`.
+Inadequate witness evidence means `need-evidence` or `capture_candidate`, not an
+active exclusion. Active capture requires supported scope/identity, immutable
+artifact identity, structured source references, applicability conditions,
+a narrow exclusion, and identified reopening criteria. Select `need-evidence`
+when structure is incomplete; never assert `active` after Ledger rejects it.
 
-`capture.json` contains one `record` object, including its requested initial
-`status`. An active capture requires an explicit supported scope and its
-identity, an immutable artifact identity, structured source references,
-applicability conditions, a narrow exclusion rule, and identified reopening
-criteria. Select `need-evidence` before transaction when those structural
-requirements are incomplete; never assert `active` in prose after Ledger
-rejects it.
-
-Every transition to `active`, including promotion, reactivation, and
-reopening, requires the transition proof plus the complete replacement record,
-whose `status` is `active`. Use the dedicated operation so the event atomically
-replaces the reducer's retained record:
+Every transition to `active`, including promotion/reactivation/reopening,
+requires transition proof and a complete replacement record with status `active`.
+Use the dedicated operation to replace the reducer's retained record atomically:
 
 ```bash
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation promote \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input promotion=promotion.json \
   --format json
 ```
@@ -214,49 +201,48 @@ ledger transact \
 ## Exclusion Scope Challenge
 
 Ask whether a materially different realization of the excluded route could meet
-the same requirement under the declared applicability conditions. Distinguish a
-failed implementation from a failed strategy; the broader the suppressed search
-space, the stronger the scope argument must be. Inspect existing witnesses or
-proofs first; use a discriminating evaluation only when necessary and authorized.
+the same requirement under declared applicability conditions. Distinguish a
+failed implementation from a failed strategy; broader suppression requires a
+stronger scope argument. Inspect existing witnesses/proofs first; use a
+necessary, authorized discriminating evaluation when evidence is insufficient.
 No fixed number of challenges or successful samples establishes a universal ban.
 
-An inspectable success within the claimed exclusion scope is counterevidence to
-that breadth. A success outside the scope is not. Confirm that a case exercises
-the disputed route, uses an independently justified requirement as oracle, and
-isolates the route rather than an invalid fixture or unrelated environment error.
-An imagined alternative warrants scrutiny, not a claimed successful execution.
+An inspectable success within the exclusion scope is counterevidence to its
+breadth; success outside scope is not. Confirm the case exercises the disputed
+route, uses an independently justified requirement as oracle, and isolates the
+route rather than an invalid fixture or unrelated environment error. An imagined
+alternative warrants scrutiny, not a claimed successful execution.
 
 A successful sample alone does not refute a failure-rate, cost, or risk claim.
-Evaluate counterevidence against the recorded hypothesis and its measurement
-conditions; contrary samples can warrant investigation without changing the gate.
-Do not treat a variable outcome as a deterministic impossibility proof.
+Evaluate counterevidence against the recorded hypothesis and measurement
+conditions; contrary samples can warrant investigation without changing the
+gate. Do not treat variable outcomes as deterministic impossibility proofs.
 
-Use the existing hypothesis, observed outcome, evidence, exclusion rule,
-applicability, and reopening fields to retain the supported boundary. For example,
-a stale cache entry may justify excluding reuse when the key omits a semantic
-input, not all caching. For a new record, choose the narrowest useful supported
-scope; retain `need-evidence` or `capture_candidate` when support is inadequate.
-Do not weaken required active-record structure to make the transaction pass.
+Use existing hypothesis, outcome, evidence, exclusion, applicability, and
+reopening fields to retain the supported boundary. A stale cache entry may
+justify excluding reuse when its key omits a semantic input, not all caching.
+Choose the narrowest useful supported scope, retaining `need-evidence` or
+`capture_candidate` when support is inadequate. Do not weaken active structure
+just to make a transaction pass.
 
-For counterevidence to an existing active record, preserve the gate until the
-source-owned lifecycle legally changes it. When replacing an overbroad exclusion,
-capture any still-supported narrower exclusion before superseding the old record,
-and link the evidence and replacement through structured source references.
-Reopening still requires proved changes to identified existing criteria; evidence
-that the old conclusion was unjustified is not a fabricated artifact change.
-Use proof-bearing supersession when appropriate instead of inventing criteria.
+For counterevidence to an active record, preserve the gate until its legal
+source-owned lifecycle changes it. Capture any still-supported narrower
+exclusion before superseding an overbroad one, linking evidence/replacement with
+structured source references. Reopening still requires proved changes to
+identified existing criteria; an unjustified old conclusion is not a fabricated
+artifact change. Use proof-bearing supersession when appropriate.
 
-Scope review grants no retry or mutation permission. Do not bypass an active
-exact applicable exclusion by calling the retry a test, sandbox, or experiment.
-Use the supported lifecycle and enclosing authority before a previously excluded
-retry becomes permissible; then project the current gate again. An unchanged or
-inapplicable challenge requires no write. Stop when the scope is supported,
-narrowed, or left pending evidence. A corrected exclusion does not automatically
-activate Learnings or grant architecture-selection authority.
+Scope review grants no retry/mutation permission. Do not bypass an active exact
+applicable exclusion by calling the retry a test, sandbox, or experiment. Use
+supported lifecycle and enclosing authority before retry; project the gate again.
+An unchanged/inapplicable challenge requires no write. Stop when scope is
+supported, narrowed, or pending evidence. Correcting an exclusion does not
+activate Learnings automatically or grant architecture-selection authority.
 
 ## Lifecycle Transitions
 
-Use append-only status events. Every transition requires a JSON proof packet with a reason and structured source references:
+Use append-only status events. Every transition requires JSON proof with reason
+and structured source references:
 
 ```json
 {
@@ -266,9 +252,7 @@ Use append-only status events. Every transition requires a JSON proof packet wit
   "reason": "The prior evidence was accepted as a bounded risk.",
   "criterion_ids": [],
   "criterion_changes": [],
-  "source_refs": [
-    {"kind": "review", "ref": "PR 123 acceptance"}
-  ]
+  "source_refs": [{"kind": "review", "ref": "PR 123 acceptance"}]
 }
 ```
 
@@ -276,12 +260,12 @@ Use append-only status events. Every transition requires a JSON proof packet wit
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation transition \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input transition=transition.json \
   --format json
 ```
 
-Reopening requires a proved before/after change for an identified criterion already present on the record:
+Reopening requires a proved before/after change for a criterion already present:
 
 ```json
 {
@@ -290,13 +274,11 @@ Reopening requires a proved before/after change for an identified criterion alre
   "to": "reopened",
   "reason": "The implementation and representative fixture changed.",
   "criterion_ids": ["artifact-or-fixture-changed"],
-  "criterion_changes": [
-    {
-      "criterion_id": "artifact-or-fixture-changed",
-      "before": "commit abc123 with fixture v1",
-      "after": "commit def456 with fixture v2"
-    }
-  ],
+  "criterion_changes": [{
+    "criterion_id": "artifact-or-fixture-changed",
+    "before": "commit abc123 with fixture v1",
+    "after": "commit def456 with fixture v2"
+  }],
   "source_refs": [
     {"kind": "git", "ref": "commit:def456"},
     {"kind": "test", "ref": "zig build test-ledger --summary all"}
@@ -308,36 +290,35 @@ Reopening requires a proved before/after change for an identified criterion alre
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation transition \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input transition=reopen-proof.json \
   --format json
 ```
 
 Ledger rejects illegal edges, promotion without a complete active record,
-unknown criteria, and unchanged before/after claims before append.
-
-Never rewrite old events.
+unknown criteria, and unchanged before/after claims before append. Never rewrite
+old events. Concurrent worktrees do not weaken these transition preconditions.
 
 ## Memory Admission Gate
 
-A negative-ledger source note is allowed only when:
+A source note is allowed only when:
 
 1. a canonical `NEG-*` record exists;
-2. definition-bound `ledger doctor` passes;
-3. `ledger project --projection memory-note --param id=NEG-ID` returns a complete current projection;
-4. projection includes witness, applicability, narrow exclusion, and reopening criteria when status is active;
+2. definition-bound doctor passes in resolved canonical custody;
+3. `memory-note --param id=NEG-ID` returns a complete current projection;
+4. active projections include witness, applicability, exclusion, and reopening;
 5. the record is likely to matter in future related work;
-6. the note embeds the full bounded projection, stable repository identity, event-chain fingerprint, projection fingerprint, and any prior projection link.
+6. the note embeds the full bounded projection, stable repository identity,
+   event-chain/projection fingerprints, and any prior projection link.
 
-Do not admit prose-only negative-evidence claims, unpromoted `learnings` hits,
-partial `current-records` output, every `need-evidence` candidate, or stale
-history with no future routing value.
+Do not admit prose-only claims, unpromoted Learnings hits, partial
+`current-records` output, every `need-evidence` candidate, or stale history with
+no future routing value.
 
 ## Admission Workflow
 
-After the source owner accepts admission for a capture or lifecycle transition,
-load `$memory-source-notes` and resolve its installed root independently of the
-target repository, then use its validated adapter:
+After the source owner accepts admission, load `$memory-source-notes` and resolve
+its installed root independently of the target repository:
 
 ```bash
 memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
@@ -346,7 +327,7 @@ memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-
 ```bash
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
-  --repo "<repo-root>" \
+  --repo "<workspace-root>" \
   --id NEG-000001 \
   --kind ledger-projection
 ```
@@ -356,24 +337,26 @@ For a status transition:
 ```bash
 uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
   admit \
-  --repo "<repo-root>" \
+  --repo "<workspace-root>" \
   --id NEG-000001 \
   --kind ledger-status-transition
 ```
 
-The adapter runs the definition-bound doctor, obtains the source-owned
-projection, rejects incomplete projections, preserves the deterministic
-projection payload bytes, and invokes `memory-note` idempotently. It transports
-an accepted source decision; it does not decide recurrence, utility, or route
-applicability.
+The adapter's `--repo` identifies the evidence workspace. It delegates custody
+resolution to `$ledger` and passes the managed selector to native doctor/project;
+it must not use that workspace as the native storage address. It rejects
+incomplete projections, preserves deterministic payload bytes, and invokes the
+immutable writer idempotently. It transports an accepted decision, not a judgment
+about recurrence, utility, or route applicability.
 
-If the definition projection is unavailable, preserve the canonical Ledger transaction and report:
+If context/projection is unavailable, preserve any successful canonical transaction:
 
 ```text
 memory-note: not-attempted: ledger projection unavailable
 ```
 
-Do not reconstruct an authoritative projection from memory or prose.
+Do not reconstruct authority from memory/prose, fall back to local history, or
+rewrite old immutable notes/provenance during adoption.
 
 ## Proof Lines
 
@@ -394,30 +377,25 @@ memory-note: not-attempted: source admission gate not met
 memory-note: not-attempted: cli unavailable
 ```
 
-Report both layers separately.
+Report the layers separately.
 
 ## Learnings Relationship
 
-The learning source is historical candidate evidence, not the route-exclusion
-store. Legacy `.ledger/learnings/learnings.jsonl` and `.learnings.jsonl` are
-read only during migration. Verify current applicability and promote
-qualifying evidence through the definition's `capture` transaction.
+Learnings are historical candidate evidence, not route exclusions. Retired source
+stores are addressed only during owner-authorized recovery. Verify current
+applicability and promote qualifying evidence through canonical `capture`.
 
 ## Guardrails
 
-- Do not record vibes as negative evidence.
-- Do not convert one failed implementation into a broad strategy ban.
-- Do not block from fuzzy matches.
-- Do not use stale benchmarks without current applicability reasoning.
-- Do not treat absence of a ledger entry as novelty proof.
-- Do not bypass Ledger or hand-edit persistent-adapter records.
-- Do not let memory notes outrank the repo-local ledger.
-- Do not write compiled memory directly.
-- Do not publish incomplete projections to Phase 2.
-- Do not capture every transient test failure merely because implicit activation occurred.
-- Do not bypass failed `route-gate`, `memory-note`, or doctor projections; those boundaries must fail closed.
-- Do not invoke a sibling source merely because Negative Ledger activated.
+- Do not record vibes or turn one failed implementation into a broad strategy ban.
+- Do not block from fuzzy matches or use stale benchmarks without applicability.
+- Do not treat absence of an entry as novelty proof.
+- Do not bypass Ledger, hand-edit records, or use a checkout-local fallback.
+- Do not let memory notes outrank canonical custody or write compiled memory.
+- Do not publish incomplete projections or capture every transient red test.
+- Failed context, route-gate, memory-note, or doctor boundaries fail closed.
+- Do not invoke sibling sources merely because Negative Ledger activated.
 
-For changes to exclusion-scope reasoning, use the Negative Ledger cases in
-[validation-probes.md](../learnings/validation-probes.md). This is package
+For exclusion-scope changes, use Negative Ledger cases in
+[validation-probes.md](../learnings/validation-probes.md). These are package
 validation, not a runtime dependency or activation of Learnings.

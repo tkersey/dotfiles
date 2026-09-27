@@ -2,11 +2,14 @@
 
 ## Recall Workflow
 
+Use the context resolved in [store.md](store.md), never the current checkout as a
+storage selector:
+
 ```bash
 ledger project \
   --definition "$learnings_definition" \
   --projection recall \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --param "query=<focused component failure objective terms>" \
   --param "now=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --param search_limit=5 \
@@ -16,7 +19,7 @@ ledger project \
 
 Do not use `recall` as a substitute for current artifact inspection. Recall
 returns candidates, not instructions: its compact result omits evidence and
-full context.
+full context. Shared history does not establish applicability to this worktree.
 
 ## Before consequential use
 
@@ -27,16 +30,16 @@ canonical record, not just its score or summary:
 ledger project \
   --definition "$learnings_definition" \
   --projection record \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --param id=lrn-... \
   --format json
 ```
 
-Check the evidence, application conditions, and material uncertainty against the
+Check evidence, application conditions, and material uncertainty against the
 current artifact. Expand only candidates that could change the decision, not
 every search hit. Reuse an already inspected unchanged record within the task;
-recheck when the source or relevant artifact facts change. Missing evidence is
-not permission to reconstruct a canonical record from memory or assume it applies.
+recheck when source or relevant artifact facts change. Missing evidence is not
+permission to reconstruct a canonical record from memory or assume it applies.
 
 Apply the supported rule, use only a justified narrower interpretation, or leave
 it unapplied. An inapplicable learning does not prohibit the route. If current
@@ -53,7 +56,7 @@ parse-result reuse and request isolation need to agree on whether the reused
 object is immutable, copied, or shared and mutable.
 
 Resolve a missing precondition from inspectable evidence, or use a targeted
-interaction check when authorized and necessary. Its oracle must come from the
+interaction check when authorized and necessary. Its oracle comes from the
 independent task requirement, not either rule's wording. Do not call a suspected
 conflict witnessed without evidence; retain uncertainty or leave the unsupported
 combination unapplied. Narrow or supersede misleading guidance rather than
@@ -62,5 +65,5 @@ or invoke another source solely to perform this check.
 
 A learning cannot override an active exact applicable Negative Ledger exclusion.
 When a proposed route resembles a witnessed prior failure, use that source's
-canonical route gate and existing lifecycle; a positive learning is not a vote
-to bypass it. Otherwise recall alone does not activate Negative Ledger.
+canonical gate and lifecycle; a positive learning is not a vote to bypass it.
+Otherwise recall alone does not activate Negative Ledger.

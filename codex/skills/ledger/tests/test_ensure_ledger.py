@@ -21,7 +21,7 @@ CAT = shutil.which("cat")
 FORMULA = "tkersey/tap/ledger"
 
 
-def ledger_stub(version="1.0.3", abi="ledger-artifact-abi/v1", version_exit=0,
+def ledger_stub(version="1.3.0", abi="ledger-artifact-abi/v1", version_exit=0,
                 capabilities_exit=0):
     return f"""#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "$MOCK_LEDGER_LOG"
@@ -91,7 +91,7 @@ class BootstrapTests(unittest.TestCase):
     def calls(self, path):
         return path.read_text().splitlines() if path.exists() else []
 
-    def assert_ready(self, result, action="none", version="1.0.3"):
+    def assert_ready(self, result, action="none", version="1.3.0"):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout), {
             "schema": "ledger-bootstrap-ready/v1", "status": "ready",
@@ -109,7 +109,7 @@ class BootstrapTests(unittest.TestCase):
         self.assertTrue(error["remediation"])
 
     def test_supported_versions_do_not_provision(self):
-        for version in ("1.0.3", "1.0.4", "1.1.1"):
+        for version in ("1.3.0", "1.3.1", "1.4.1", "1.10.0"):
             with self.subTest(version=version):
                 self.write_executable("ledger", ledger_stub(version=version))
                 self.assert_ready(self.run_bootstrap(), version=version)
@@ -117,12 +117,14 @@ class BootstrapTests(unittest.TestCase):
 
     def test_bad_versions_and_missing_abi_are_blocked(self):
         for version, abi in (("1.0.2", "ledger-artifact-abi/v1"),
+                             ("1.2.1", "ledger-artifact-abi/v1"),
+                             ("1.2.99", "ledger-artifact-abi/v1"),
                              ("0.9.9", "ledger-artifact-abi/v1"),
                              ("2.0.0", "ledger-artifact-abi/v1"),
-                             ("1.0.3-rc.1", "ledger-artifact-abi/v1"),
+                             ("1.3.0-rc.1", "ledger-artifact-abi/v1"),
                              ("not-a-version", "ledger-artifact-abi/v1"),
-                             ("1.0.3", "ledger-artifact-abi/v2"),
-                             ("1.0.3", "")):
+                             ("1.3.0", "ledger-artifact-abi/v2"),
+                             ("1.3.0", "")):
             with self.subTest(version=version, abi=abi):
                 self.write_executable("ledger", ledger_stub(version, abi))
                 self.assert_blocked(self.run_bootstrap(), "version-or-abi-mismatch")
@@ -142,7 +144,7 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(self.calls(self.brew_log), [])
 
     def test_incompatible_binary_does_not_upgrade_without_authority(self):
-        self.write_executable("ledger", ledger_stub(version="1.0.2"))
+        self.write_executable("ledger", ledger_stub(version="1.2.1"))
         self.installed.touch()
         self.assert_blocked(self.run_bootstrap(), "version-or-abi-mismatch")
         self.assertEqual(self.calls(self.brew_log), [])
@@ -155,7 +157,7 @@ class BootstrapTests(unittest.TestCase):
 
     def test_upgrade_ignores_formula_override(self):
         self.env["LEDGER_BOOTSTRAP_FORMULA"] = "other/tap/not-ledger"
-        self.write_executable("ledger", ledger_stub(version="1.0.2"))
+        self.write_executable("ledger", ledger_stub(version="1.2.1"))
         self.installed.touch()
         self.assert_ready(self.run_bootstrap("--install"), action="upgraded")
         self.assertEqual(self.calls(self.brew_log),
@@ -165,7 +167,7 @@ class BootstrapTests(unittest.TestCase):
         for version_exit, capabilities_exit in ((7, 0), (0, 9)):
             with self.subTest(version_exit=version_exit,
                               capabilities_exit=capabilities_exit):
-                self.write_executable("ledger", ledger_stub(version="1.0.2"))
+                self.write_executable("ledger", ledger_stub(version="1.2.1"))
                 self.installed.touch()
                 self.env["MOCK_LEDGER_AFTER"] = ledger_stub(
                     version_exit=version_exit, capabilities_exit=capabilities_exit)
@@ -178,14 +180,14 @@ class BootstrapTests(unittest.TestCase):
                             "homebrew-install-failed", code=17)
 
     def test_failed_upgrade_does_not_emit_readiness(self):
-        self.write_executable("ledger", ledger_stub(version="1.0.2"))
+        self.write_executable("ledger", ledger_stub(version="1.2.1"))
         self.installed.touch()
         self.env["MOCK_BREW_EXIT"] = "17"
         self.assert_blocked(self.run_bootstrap("--install"),
                             "homebrew-upgrade-failed", code=2)
 
     def test_nonformula_binary_is_not_upgraded(self):
-        self.write_executable("ledger", ledger_stub(version="1.0.2"))
+        self.write_executable("ledger", ledger_stub(version="1.2.1"))
         self.assert_blocked(self.run_bootstrap("--install"),
                             "version-or-abi-mismatch-nonformula", code=2)
         self.assertEqual(self.calls(self.brew_log), [f"list --versions {FORMULA}"])
