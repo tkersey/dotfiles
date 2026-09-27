@@ -188,6 +188,75 @@ of progress, and state movement alone is not proof of closure.
 
 Do not let this instruction turn inspection or proposal-only work into mutation.
 
+## Worked cases: transfer the decision, not the vocabulary
+
+Use these cases when a target exhibits the corresponding causal pattern; they are
+not a startup reading requirement. Source: the user-supplied
+`actuating-efficacy-01a0726f-before-after-metanoetic-2026-09-07.md`, observing work
+through September 7, 2026, 07:18 PDT. Part B and the reconciliation qualify Part A.
+The report is not bundled here; the relevant reported facts and limits follow.
+These are historical observations, not current defects, reproduced measurements,
+or evidence that a doctrine word caused an improvement. The questions below are
+teaching formulations of the evidence, not quotations from private reasoning.
+
+### One obligation, two entry points
+
+- **Problem / misleading assumption:** Establishing return-clause constraints on
+  handler installation through `handle` was not evidence that successor
+  installation through `resume_with` carried the same obligation.
+- **Question:** Which sanctioned operations perform this semantic event, and can
+  one omit its obligation independently?
+- **Decisive evidence:** The report's Part B, item 3, records that the original
+  borrow analysis propagated return-clause constraints through `handle` but
+  omitted the existing `resume_with` path. The omission persisted through several
+  revisions before detection.
+- **Decision lesson:** Investigate coverage by semantic operation rather than file
+  proximity or the existence of a shared predicate. Reuse the target's current
+  source-derived coverage rule; do not add another review lane or duplicate rule.
+- **Limit:** This supports a pre-review coverage gap, not the claim that every
+  later lifetime issue belonged to one established failure family. Preserve
+  legitimate differences between operations; shared vocabulary is not shared law.
+
+### A restriction that should not be added
+
+- **Problem / misleading assumption:** A reviewer proposed restricting borrowed
+  state in a multi-shot handler, but a plausible accusation did not establish that
+  the accepted semantics prohibited that state.
+- **Question:** Is the state part of the captured body, or outside it under the
+  accepted handler semantics? What valid counterpart distinguishes those cases?
+- **Decisive evidence:** Part A's handler-state example reports a permitted program
+  that yielded, resumed twice, and returned `41`; explicitly capturing the same
+  borrow was rejected. Part B retains this as a supported adjudication success.
+- **Observed decision:** Reject the blanket restriction and preserve the permitted
+  behavior. Challenge the allegation and its suggested remedy separately.
+- **Limit:** This is not a general license to retain borrowed state or reject
+  reviewers. Current lifetime and capture rules still decide. Part B also corrects
+  separate shallow-resumption and shadowing examples: those reviewers themselves
+  offered behavior-preserving alternatives; do not credit doctrine with inventing
+  options that the source already contained.
+
+### An elegant consolidation that lost on measurement
+
+- **Problem / misleading assumption:** Consolidating clone metadata appeared
+  attractive, but a simpler arrangement did not guarantee lower allocation cost.
+- **Question:** Does this realization improve the accepted resource objective on
+  the same workloads while preserving required behavior?
+- **Decisive evidence:** Part A's allocation paragraph reports peak allocations
+  changing from `4,841` to `6,053` bytes and from `4,807` to `6,019` bytes on two
+  workloads. These are workload-specific historical measurements, not estimates
+  or current performance promises.
+- **Observed decision:** Revert the regressing variant while retaining useful
+  immutable sharing. Reject the losing realization, not every related technique.
+- **Limit:** Part B, item 4, distinguishes this good observed decision from the
+  unmeasured incremental benefit of Lift or any cognitive skill. Neither a local
+  regression nor a local win establishes universal performance or efficacy.
+
+For transfer, change domain names while preserving the causal question, and pair
+the case with a near miss where its proposed move would be wrong. Use the
+[worked-case transfer probes](cognitive-compilation-probes.md#worked-case-transfer).
+An equivalent native rule needs no edit; a useful precedent does not supply new
+authority, current applicability, or a mandatory implementation shape.
+
 ## Probe and evidence discipline
 
 For a proposed cognitive change, use
