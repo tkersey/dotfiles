@@ -3,7 +3,7 @@
 ## Canonical Operational Store
 
 ```text
-<repo>/.ledger/negative-ledger/events.jsonl
+<context.store_root>/.ledger/negative-ledger/events.jsonl
 ```
 
 Use the `ledger` CLI. Do not hand-edit the store and do not treat `.ledger/learnings/events.jsonl` as the operational negative-ledger authority.
@@ -14,7 +14,9 @@ The sole structural definition is:
 ${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json
 ```
 
-Every command selects this definition and names its operation or projection.
+Resolve the verified workspace through `$ledger` first and retain
+`context.store_root` and `context.store_id`. Every canonical command selects
+this definition and passes the paired managed selector.
 
 ## Generic Operations and Projections
 
@@ -23,52 +25,52 @@ negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negat
 
 ledger doctor \
   --definition "$negative_ledger_definition" \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --format json
 
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation bind-existing \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --format json
 
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation rebind-existing \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --format json
 
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation capture \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input capture=capture.json \
   --format json
 
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation promote \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input promotion=promotion.json \
   --format json
 
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation transition \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input transition=transition.json \
   --format json
 
 ledger project \
   --definition "$negative_ledger_definition" \
   --projection current-records \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --format json
 
 ledger project \
   --definition "$negative_ledger_definition" \
   --projection memory-note \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --param id=NEG-000001 \
   --format json
 ```
@@ -81,7 +83,7 @@ match, and `3` means the gate could not establish a valid result.
 ## Operational Versus Memory Authority
 
 ```text
-.ledger/negative-ledger/events.jsonl
+<context.store_root>/.ledger/negative-ledger/events.jsonl
   decides current route state
 
 extensions/negative-ledger/notes/*.md

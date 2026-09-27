@@ -34,7 +34,7 @@ class AdapterContextTests(unittest.TestCase):
         env = patch.dict(os.environ, {"CODEX_HOME": str(self.root / "codex"), "LEDGER_HOME": ""})
         env.start()
         self.addCleanup(env.stop)
-        self.selected = context.resolve(self.repo, initialize=True)
+        self.selected = context.resolve(self.repo, initialize=True, confirm_no_writers=True)
         self.args = adapter.build_parser().parse_args(["admit", "--repo", str(self.repo), "--id", "NEG-000001"])
         self.raw = b'{ "payload": {"neg_id":"NEG-000001", "status":"active", "projection_fingerprint":"exact"} }\n'
         self.calls = []

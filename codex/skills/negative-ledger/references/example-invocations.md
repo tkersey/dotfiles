@@ -1,5 +1,10 @@
 # Example Invocations
 
+Resolve the verified workspace through `$ledger` first and retain
+`context.store_root` and `context.store_id` for every canonical operation below.
+The admission adapter's `--repo` names the evidence workspace; it resolves
+managed custody internally.
+
 ## Implicit Route Check Before Retry
 
 ```md
@@ -20,7 +25,7 @@ negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negat
 ledger project \
   --definition "$negative_ledger_definition" \
   --projection route-gate \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --param "artifact=<full-commit-id>" \
   --param "identity=parser-tolerance" \
   --format json
@@ -64,18 +69,13 @@ Expected flow:
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation capture \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input capture=capture.json \
   --format json
 
-ledger project \
-  --definition "$negative_ledger_definition" \
-  --projection memory-note \
-  --repo "<repo-root>" \
-  --param id=NEG-000001 \
-  --payload-only \
-  --format json |
-  memory-note append --extension negative-ledger --kind ledger-projection --json -
+memory_source_notes_root="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/memory-source-notes")"
+uv run "$memory_source_notes_root/scripts/negative_ledger_memory_note.py" \
+  admit --repo "<workspace-root>" --id NEG-000001 --kind ledger-projection
 ```
 
 ## Reopen Old Evidence
@@ -116,7 +116,7 @@ Expected proof packet and flow:
 ledger transact \
   --definition "$negative_ledger_definition" \
   --operation transition \
-  --repo "<repo-root>" \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --input transition=reopen-proof.json \
   --format json
 ```

@@ -22,14 +22,16 @@ This specialist is read-only. It never captures ledger events, changes statuses,
 ## Method
 
 1. Establish `repository_id`, immutable `artifact_state_id`, human-readable `artifact_state_label`, route, cluster, every applicable native scope identity, target signal, and declared scope.
-2. Set the canonical definition and prove the store:
+2. Load `$ledger`, resolve the verified workspace without initializing, and retain
+   `context.store_root` and `context.store_id`. Set the canonical definition and
+   prove that managed store:
 
    ```bash
    negative_ledger_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/negative-ledger/definitions/ledger/negative-evidence-protocol.json")"
 
    ledger doctor \
      --definition "$negative_ledger_definition" \
-     --repo "<repo-root>" \
+     --store-root "<context.store_root>" --store-id "<context.store_id>" \
      --format json
    ```
 
@@ -39,7 +41,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
    ledger project \
      --definition "$negative_ledger_definition" \
      --projection route-gate \
-     --repo "<repo-root>" \
+     --store-root "<context.store_root>" --store-id "<context.store_id>" \
      --param "artifact=<immutable-artifact-state-id>" \
      --param "identity=<scope-identity>" \
      --format json
@@ -55,7 +57,7 @@ This specialist is read-only. It never captures ledger events, changes statuses,
    ledger project \
      --definition "$negative_ledger_definition" \
      --projection current-records \
-     --repo "<repo-root>" \
+     --store-root "<context.store_root>" --store-id "<context.store_id>" \
      --format json
    ```
 

@@ -8,12 +8,15 @@ deciding route meaning or authority.
 
 ## Read Path
 
+Resolve the verified workspace through `$ledger` and retain
+`context.store_root` and `context.store_id` for this managed Learnings history.
+
 ```bash
 learnings_definition="$(realpath "${CODEX_HOME:-$HOME/.codex}/skills/learnings/definitions/ledger/learnings-protocol.json")"
 ledger project \
   --definition "$learnings_definition" \
   --projection recall \
-  --repo <repo> \
+  --store-root "<context.store_root>" --store-id "<context.store_id>" \
   --param "query=<artifact> <objective> failed attempt regression revert no-effect avoid" \
   --param "now=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --param search_limit=10 \
