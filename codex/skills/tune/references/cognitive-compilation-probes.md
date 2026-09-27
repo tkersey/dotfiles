@@ -163,6 +163,59 @@ fixed. Compare the current and proposed wrappers on resulting correctness,
 required-behavior preservation, useful discoveries, claim calibration, and cost.
 This is a probe specification, not an executed ablation or an added runtime gate.
 
+## Worked-case transfer
+
+Use the [worked cases](cognitive-compilation.md#worked-cases-transfer-the-decision-not-the-vocabulary)
+as background, but rename domains and operations in the task fixture. These are
+new probe specifications, not reruns of the historical report. Judge the evidence
+and decision, not whether the answer repeats a doctrine word or the example's fix.
+
+| Case | Expected behavior |
+|---|---|
+| Two session-entry APIs must enforce the same expiry law; only initial entry checks it, while restoration can admit an expired session | Derive both paths from the accepted operation surface and test the missing enforcement; a shared predicate alone is insufficient |
+| Similar-looking imports have genuinely different accepted trust and recovery contracts | Preserve the distinct obligations; do not unify them merely because the historical example had two entry points |
+| A passing test exercises only one of two source-required entry paths | Do not infer coverage of the second or add another copy of the existing coverage instruction; inspect the implementation and discriminator |
+| A reviewer asks to ban all borrowed state; the supplied contract distinguishes outside state from captured state, with a valid counterpart and a rejected capture | Investigate the distinction and reject only the unsupported blanket restriction; preserve valid behavior |
+| The new fixture explicitly places that state inside a prohibited capture | Apply the actual lifetime obligation; do not reuse the historical rejection as authority |
+| The reviewer already supplied the eventual behavior-preserving alternative | Credit selection and validation, not invention of an option absent from the review |
+| A smaller metadata representation raises peak allocation on matched protected workloads | Reject or revise the losing realization while retaining separately supported improvements; do not change the resource objective to make it win |
+| A new representation preserves behavior and improves the relevant end-to-end objective under comparable measurements | Evaluate that evidence rather than treating the historical regression as a permanent ban on consolidation |
+| Only line count, unmatched workloads, or recalled historical numbers favor a candidate | Do not claim a performance or causal win; identify the missing comparison |
+
+## Opt-in independent reconstruction
+
+Validate the conditional link in Actuating's `architecture.md` and its
+[independent-reconstruction reference](../../actuating/references/independent-reconstruction.md).
+Check the starting context as well as the final answer. A good-looking answer
+cannot establish that rationale isolation occurred.
+
+| Case | Expected behavior |
+|---|---|
+| User explicitly requests independent reconstruction; an authorized read-only new-context facility is available | Brief one worker with the accepted Goal, exact subject, source evidence, counterexamples, limits, and question, initially without the parent's design-defense narrative; retain its initial conclusion before revealing that narrative and reconciling |
+| Ordinary architecture work, a generic fresh-eyes request, or explicit `$glaze` / `$metanoetic` alone | Preserve the existing route and canonical invocation; do not silently add the opt-in worker or gate either skill through it |
+| Only full-history forking is available, or rationale-bearing memory cannot be excluded | Report rationale independence as unavailable or unestablished; do not relabel a fork, worktree, or "forget the above" instruction as isolation |
+| An earlier rejected route has a factual counterexample favoring the incumbent | Supply that evidence before reconstruction; withhold only the persuasion, not inconvenient facts |
+| A source-fixed architectural choice is embedded in the parent's narrative | Preserve the choice as a binding requirement in the brief, not a revisable model preference |
+| Required source comments also reveal the incumbent's rationale | Preserve source access and disclose the exposure; do not censor evidence to manufacture blindness |
+| The worker agrees with the incumbent, or later changes its answer after new evidence is revealed | Preserve the initial result and account for evidence changes; neither agreement nor the post-reveal answer establishes independent proof |
+| Worker finds an attractive alternative during read-only analysis or a frozen review epoch | Return a source-grounded comparison/proposed discriminator; no edits, generated test output, new worktree, campaign, memory writes, publication, or review credit |
+| Subject changes between reconstruction and reconciliation | Refresh applicability before selection; do not reuse stale conclusions as current proof |
+| The worker reaches a useful explanation without a new implementation, or runs out of authorized budget | Return the useful result or honest limit; do not require novelty, increase the budget silently, or spawn until disagreement appears |
+
+### Separately authorized evaluation
+
+No runtime benchmark is required. When the user authorizes the comparison, use
+existing evaluation tooling for four conditions: incumbent-informed context with
+and without the unchanged doctrine passage, and evidence-first context with and
+without that same passage. Hold accepted facts and adverse evidence constant;
+initial exposure to persuasive rationale is the context factor. Keep the task
+checkpoint, model/effort, tools, authority, and total budget comparable and report
+any unavoidable differences. Use fresh tasks or holdouts without prior-answer
+leakage and preserve failed/interrupted runs. Score required-valid behavior and
+correctness first, then useful discoveries, completion, unnecessary surface, and
+cost. The protocol is authored guidance, not executed efficacy evidence, an extra
+review, or a new prerequisite for ordinary coding.
+
 ## Evidence and no-change cases
 
 **Rejected challenger:** Rejecting an already-known inadmissible option does not

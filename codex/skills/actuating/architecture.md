@@ -36,6 +36,13 @@ be the right outcome. Actuating retains final selection, execution, and closure
 authority. Encouragement changes neither admissibility nor the proof bar. Add no
 separate Glaze report or adjudication stage, and no mandatory second review of the review.
 
+When the user explicitly requests an independent reconstruction, follow
+[independent-reconstruction.md](references/independent-reconstruction.md) before
+reconciling the approaches. This opt-in read-only context technique is not a new
+mode, default pass, or review lane. It neither replaces nor gates the existing
+Glaze, Metanoetic, or Universalist entry points; all selection, mutation, proof,
+and closure authority stays with Actuating.
+
 Only when architecture is live, give `$universalist` one independently governed
 axis, one typed hole, and source-derived domain evidence. Require `candidate`,
 `preserve-incumbent`, `unresolved`, or `obstructed` with a compact code-bound argument,
