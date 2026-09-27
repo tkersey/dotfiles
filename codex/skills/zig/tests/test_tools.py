@@ -103,6 +103,16 @@ class CacheTests(Fixture):
         self.assertTrue(sentinel.exists())
         self.assertIn("CACHE_LAYOUT_REFUSED", result.stderr)
 
+    def test_global_cache_inside_project_is_refused_before_deletion(self):
+        self.env["TEST_GLOBAL_CACHE"] = str(self.root / "global")
+        sentinel = self.file("global/o/source.zig")
+        local = self.file(".zig-cache/o/item")
+        result = self.drain("--yes", "--include-global")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertTrue(sentinel.exists() and local.exists())
+        self.assertIn("CACHE_PATH_REFUSED", result.stderr)
+        self.assertNotIn("DRAINED", result.stdout)
+
     def test_missing_global_cache_never_reports_drained(self):
         self.env["TEST_GLOBAL_CACHE"] = str(self.base / "missing")
         result = self.drain("--yes", "--include-global")
@@ -237,6 +247,14 @@ class ClosureTests(Fixture):
         self.git("add", "build.zig")
         _, body = self.scan()
         self.assertEqual(len(body["changes"]), 1)
+
+    def test_staged_addition_survives_worktree_deletion(self):
+        self.repo()
+        added = self.file("new.zig")
+        self.git("add", "new.zig")
+        added.unlink()
+        _, body = self.scan()
+        self.assertEqual([(c["status"], c["path"]) for c in body["changes"]], [("A", "new.zig")])
 
     def test_clean_branch_requires_explicit_review_range(self):
         base = self.repo()

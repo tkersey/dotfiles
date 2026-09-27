@@ -70,11 +70,14 @@ def changed_paths(root: Path, base: str | None, head: str | None) -> tuple[list[
         return parse_name_status(data), scope
     if head:
         raise ScanError("--head requires --base")
-    if current.returncode == 0:
-        data = run(root, "git", "diff", "--name-status", "-z", "--find-renames", "HEAD", "--").stdout
-    else:
-        data = run(root, "git", "diff", "--cached", "--name-status", "-z", "--").stdout
-    rows = parse_name_status(data)
+    cached = run(root, "git", "diff", "--cached", "--name-status", "-z", "--find-renames", "--").stdout
+    unstaged = run(root, "git", "diff", "--name-status", "-z", "--find-renames", "--").stdout
+    rows = []
+    seen = set()
+    for row in parse_name_status(cached) + parse_name_status(unstaged):
+        if row["path"] not in seen:
+            rows.append(row)
+            seen.add(row["path"])
     rows += [{"status": "??", "path": os.fsdecode(p)} for p in untracked.split(b"\0") if p]
     return rows, {"kind": "working-tree", "head": current.stdout.decode().strip() or None}
 

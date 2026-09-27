@@ -114,7 +114,7 @@ def candidates(args: argparse.Namespace, root: Path) -> list[tuple[str, Path]]:
         cache = discovered_global(root)
         if args.global_path and directory(args.global_path) != cache:
             raise CacheError("CACHE_PATH_REFUSED: --global-path must match zig env; it is not a deletion override")
-        if cache in protected or root == cache or cache in root.parents:
+        if cache in protected or root == cache or cache in root.parents or root in cache.parents:
             raise CacheError(f"CACHE_PATH_REFUSED: global cache overlaps a protected root: {cache}")
         # Deliberately support object-store directories, not arbitrary contents.
         # Package storage (p) is preserved, even when it is in a global cache.
