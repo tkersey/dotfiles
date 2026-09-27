@@ -11,8 +11,8 @@ negative_route_gate:
     route_gate_projection: yes
     ledger_cli: ledger
     definition: negative-ledger/negative-evidence-protocol
-    store: .ledger/negative-ledger/events.jsonl
-    command: "ledger project --definition ... --projection route-gate --repo ... --param artifact=... --param identity=... --format json"
+    store: <context.store_root>/.ledger/negative-ledger/events.jsonl
+    command: "ledger project --definition ... --projection route-gate --store-root '<context.store_root>' --store-id '<context.store_id>' --param artifact=... --param identity=... --format json"
     exit_code: 0 | 2 | 3
     ledger_available: yes | no
   active_exclusion_match: yes | no | null

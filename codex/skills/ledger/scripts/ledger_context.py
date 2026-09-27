@@ -120,6 +120,8 @@ def storage_home() -> Path:
     selected = Path(override).expanduser() if override else codex / "ledger"
     if not selected.is_absolute():
         raise ContextError("Configured Ledger home must be absolute")
+    # Check the configured spelling before resolve() hides existing links.
+    no_symlinks(selected)
     return selected.resolve()
 
 
@@ -212,8 +214,18 @@ def native_doctor(binary: str, repo: Path, definitions: list[Path], native_args:
 def declared_slots(definitions: list[Path]) -> set[str]:
     slots: set[str] = set()
     for definition in definitions:
-        value = json.loads(definition.read_text())
-        for slot in value.get("storage", {}).get("slots", {}).values():
+        try:
+            value = json.loads(definition.read_text(encoding="utf-8"))
+        except UnicodeError as exc:
+            raise ContextError(f"Invalid definition encoding: {definition}") from exc
+        if not isinstance(value, dict):
+            raise ContextError(f"Invalid definition storage shape: {definition}")
+        storage = value.get("storage", {})
+        if not isinstance(storage, dict) or not isinstance(storage.get("slots", {}), dict):
+            raise ContextError(f"Invalid definition storage shape: {definition}")
+        for slot in storage.get("slots", {}).values():
+            if not isinstance(slot, dict):
+                raise ContextError(f"Invalid definition storage slot: {definition}")
             path = slot.get("path")
             if (not isinstance(path, str) or Path(path).is_absolute() or ".." in Path(path).parts
                     or "{" in path or slot.get("layout", "monolithic") != "monolithic"
@@ -314,8 +326,10 @@ def resolve(
         return checked_registration(root, common)
     if not initialize:
         raise ContextError("Repository custody is unregistered; authorize initialization or cold adoption through $ledger")
-    if adopt_from is not None and (not confirm_no_writers or not definitions):
-        raise ContextError("Cold adoption requires all owner definitions and --confirm-no-writers")
+    if not confirm_no_writers:
+        raise ContextError("Initialization requires --confirm-no-writers after quiescing legacy writers")
+    if adopt_from is not None and not definitions:
+        raise ContextError("Cold adoption requires all owner definitions")
     with registration_lock(common):
         if os.path.lexists(registration):
             if adopt_from is not None:
@@ -342,6 +356,11 @@ def resolve(
                 cold_adopt(source, stage, candidates, [p.resolve(strict=True) for p in definitions or []], ledger_bin)
             write_json(stage / MARKER, {"schema": MARKER_SCHEMA, "store_id": store_id})
             sync_directory(stage / ".ledger")
+            if adopt_from is None:
+                late_candidates = legacy_roots(root)
+                if late_candidates:
+                    raise ContextError("Legacy history appeared during initialization; reconcile before registration: "
+                                       + ", ".join(map(str, late_candidates)))
             os.rename(stage, custody)
             sync_directory(repos)
             if adopt_from is not None:
@@ -366,9 +385,9 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if (args.adopt_from or args.definition or args.confirm_no_writers) and not args.initialize:
-            raise ContextError("Adoption flags require --initialize")
-        if (args.definition or args.confirm_no_writers) and args.adopt_from is None:
-            raise ContextError("Adoption flags require --adopt-from")
+            raise ContextError("Initialization flags require --initialize")
+        if args.definition and args.adopt_from is None:
+            raise ContextError("Definitions require --adopt-from")
         result = resolve(args.repo, initialize=args.initialize, adopt_from=args.adopt_from,
                          definitions=args.definition, confirm_no_writers=args.confirm_no_writers,
                          ledger_bin=args.ledger_bin)

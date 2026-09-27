@@ -96,12 +96,15 @@ selector. Resolve again after a workspace change; the native CLI rechecks the
 root marker on each operation. Never replace a failed managed selector with
 `--repo`, another checkout, a symlink, or an empty store.
 
-Normal context resolution is read-only. An authorized first capture may use
-`--initialize`; the helper checks all registered worktrees for legacy history
-before publishing a fresh registration. Existing registration always wins over
-changed environment defaults. A missing established root is a continuity error,
-not first use. Legacy adoption is separate, explicit maintenance described in
-the context reference. Do not initialize simply to make a recall succeed.
+Normal context resolution is read-only. Before an authorized first capture,
+stop or upgrade writers that could still use legacy `--repo` custody. Fresh
+initialization requires `--initialize --confirm-no-writers`; the flag is an
+operator's quiescence assertion, not a lock on old executables. The helper checks
+all registered worktrees for legacy history twice before publishing a fresh
+registration. Existing registration always wins over changed environment defaults.
+A missing established root is a continuity error, not first use. Legacy adoption
+is separate, explicit maintenance described in the context reference. Do not
+initialize simply to make a recall succeed.
 
 Use workspace/branch/path and immutable artifact facts as provenance. New
 repository-scoped records should carry the returned stable `repository_id`

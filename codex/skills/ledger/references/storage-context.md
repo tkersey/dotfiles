@@ -54,8 +54,11 @@ uv run "$ledger_skill_root/scripts/ledger_context.py" --repo "<workspace-root>"
 ```
 
 Read-only resolution never creates metadata or a store. Before an authorized
-first capture, add `--initialize`. It checks every registered available worktree
-for legacy control trees and retired source files. Legacy evidence or unavailable
+first capture, stop or upgrade every writer that could still use legacy-local
+custody, then add `--initialize --confirm-no-writers`. The flag asserts that
+quiescence; it does not fence old executables. The helper checks every registered
+available worktree for legacy control trees and retired source files both before
+staging and immediately before publication. Legacy evidence or unavailable
 worktree coverage blocks empty initialization. There is no per-turn rebind.
 
 The result is `ledger-workspace-context/v1`. Preserve its `workspace_root`,
@@ -77,8 +80,8 @@ Do not mix selectors or retry with legacy `--repo` after failure.
 ## One-time cold adoption
 
 This is explicit maintenance, not automatic recovery. First stop/upgrade all
-writers that could still use legacy-local history. `--confirm-no-writers` is the
-operator's quiescence assertion, not a lock that fences old executables.
+writers that could still use legacy-local history. `--confirm-no-writers` has
+the same quiescence meaning as it does for fresh initialization.
 
 Select the authoritative source worktree and supply every owning definition
 needed to cover its static monolithic JSONL event stores:
