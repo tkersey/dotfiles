@@ -1,152 +1,83 @@
-# Zig Testing, Fuzzing, Mutation, and Failure Discovery
+# Zig testing, fuzzing and failure discovery
 
-Use for correctness hardening, parsers/verifiers, data structures, state transitions, fuzzing, allocation failure, compile-fail fixtures, optimizer/target behavior, or reproductions.
+Select checks for the contract at issue. Use the repository harness when modules,
+dependencies, build options, or generated imports matter. Honor required checks;
+additional checks should resolve a specific uncertainty rather than fill a matrix.
 
-## Test lanes
-
-| Lane | Purpose |
+| Lane | What it can establish |
 | --- | --- |
-| Unit | Local behavior and invariants. |
-| Build-system | Modules/deps/options/generated imports. |
-| Integration | Files/network/process/effects. |
-| Allocation-failure | OOM cleanup and atomicity. |
-| Fuzz | Parser totality/state exploration. |
-| Differential | Custom/optimized path versus reference. |
-| Semantic mutation | Verifier completeness and claim binding. |
-| Compile-fail | Invalid comptime/type shapes fail intentionally. |
-| Timeout/stress | Hangs/deadlocks/liveness. |
-| Optimize/target matrix | Safety, ABI, endian, optimizer differences. |
-| Proof-epoch | Bind result to exact artifact context. |
+| Unit/property | Exercised behavior and law instances; not incidental configuration snapshots. |
+| Build/integration | Actual module, dependency, option and effect integration. |
+| Allocation/non-allocation failure | Cleanup and the advertised state-transition guarantee. |
+| Fuzz | Sampled parser/state exploration, counterexamples and reproductions. |
+| Differential | Agreement with a sufficiently independent reference on tested inputs. |
+| Semantic mutation | Rejection of particular malformed or semantically invalid claims. |
+| Compile-fail | The intended unsupported shape is analyzed and rejected for the intended reason. |
+| Timeout/stress | Observed termination, cancellation and contention behavior. |
+| Mode/target matrix | Relevant ABI, endian, optimizer and runtime-safety assumptions. |
 
-Prefer repository build steps over bare `zig test` when modules/options/dependencies exist.
+A fuzz campaign does not prove totality. Two wrappers sharing the same faulty
+implementation are not independent oracles. Keep source-level arguments,
+compiler-enforced properties, empirical results and unexecuted suggestions distinct.
 
-## Core commands
+## Repository commands
+
+Inspect existing build steps and argument placement before using commands such as:
 
 ```bash
 zig build test
-zig build test --test-timeout 500ms
 zig build test -Doptimize=Debug
 zig build test -Doptimize=ReleaseSafe
 zig build test -Doptimize=ReleaseFast
 ```
 
-Inspect `zig build --help` before assuming runner argument placement.
+Do not run every mode for every edit. Use production mode and additional modes when
+they discriminate a relevant failure. Inspect the installed runner's timeout and
+fuzz/Smith interfaces; retain bounded inputs, seeds, corpus and minimized repros.
 
-## Fuzzing
+## Semantic mutations and state transitions
 
-A good Zig 0.16 Smith target:
+For verifiers and proof-like values, mutate the facts promised by the public API:
+omission, substitution, equal-length foreign refs, wrong domain/version/epoch,
+reordering/duplication, unknown sections, noncanonical varints, wrong tags/opcodes,
+actual-value/metadata disagreement, lower/upper bounds, extra/missing entities,
+and wrong final state/stack. Include valid encodings with invalid semantics.
+Each case should name the governing law, mutation, public predicate and expected
+outcome. A structured matrix is useful for complex coverage, not mandatory prose.
 
-- bounds generated work;
-- keeps corpus/reproduction;
-- compares to a reference when possible;
-- captures exact version/target/mode/seed;
-- tests parsers/state machines/zero-copy validators.
+For fallible state changes, test the guarantee in [transitions](atomic_transition_playbook.md).
+Allocation-failure enumeration does not cover publication, I/O, or callback errors.
+Check full observable rollback only when promised; test partial progress or durable
+recovery when that is the contract. Always test exact-once ownership handling.
 
-Fuzzing proves exploration and totality better than semantic completeness.
+## Force compile-time analysis
 
-## Semantic mutation matrix
+A top-level declaration can remain unanalyzed. Make negative fixtures instantiate
+the rejected type or call in `comptime`, and require an API-specific diagnostic.
+Nonzero exit alone can mean missing imports, the wrong toolchain, or syntax errors.
+Pair negatives with valid instantiations that exercise the same API. Test materially
+different generic branches: floats, empty/nonempty shapes, policies, and nested data.
 
-For proof/certificate/verifier code, mutate one trusted fact at a time.
+The bundled runner provides an executable fallback when a repository has no harness:
 
-Typical rows:
-
-```text
-claimed field changed
-field omitted
-zero/minimal evidence
-foreign equal-length ref
-reordered/duplicated evidence
-wrong version/domain/authority/epoch
-wrong opcode/tag
-unknown/duplicate section
-malformed/noncanonical varint
-metadata mismatch
-lower/upper bound violation
-extra/missing entity
-wrong final stack/state/result
-stale generated constant
-valid encoding with invalid semantics
+```bash
+uv run python3 "$zig_skill_root/tests/check_zig_examples.py" --zig zig --optimize Debug
 ```
 
-Each row names:
+It uses disposable caches, runs the reference test files, and checks forced
+compile-fail fixtures. Missing/wrong-version compilers are unavailable, never green.
+A file-level `zig test` still does not instantiate every possible generic shape;
+report exactly which cases ran. Do not add a new repository framework merely to
+run a few isolated compile-fail cases.
 
-```yaml
-mutation_case:
-  case_id:
-  governing_claim_or_law:
-  baseline:
-  mutation:
-  public_predicate:
-  expected_failure:
-  proof_command:
+## Skill-maintenance checks
+
+```bash
+uv run python3 -m unittest discover -s "$zig_skill_root/tests" -p 'test_*.py'
 ```
 
-## Allocation and atomicity failure
-
-Review:
-
-- each allocation index;
-- object unchanged after failed mutation;
-- partial insert rollback;
-- event/ledger/outbox rollback;
-- moved value freed exactly once;
-- no escaped ref/receipt;
-- failure after first observable mutation.
-
-`checkAllAllocationFailures` is useful but may not enumerate non-allocation failures; add targeted fail points where needed.
-
-## Negative compile-time proof
-
-Use repository-supported compile-fail fixtures for:
-
-```text
-unsupported type shape
-missing declaration/method
-illegal field
-invalid comptime value
-removed Zig API
-contract diagnostic
-```
-
-Check intended error text when the repository supports stable diagnostics.
-
-## Property/state-machine proof
-
-Prefer law-level tests for recurring families.
-
-Examples:
-
-```text
-encode/decode round trip
-commit/publish visibility law
-rollback preserves observable state
-public verifier equals strongest predicate
-proof fingerprint changes with every claimed field
-```
-
-## Reproduction record
-
-Preserve:
-
-```text
-Zig version
-repo/head/dirty fingerprint
-target/optimize/options
-dependency/fork state
-seed/corpus/input
-command
-expected/actual
-failure class
-proof epoch
-```
-
-## Checklist
-
-- Repository harness used.
-- Active semantic family has direct proof.
-- Fuzz target is bounded and reproducible.
-- Semantic mutation matrix exists for verifiers/claims.
-- Allocation and state atomicity failures are covered.
-- Compile-time invalid cases fail intentionally.
-- Optimizer/target-sensitive paths use a matrix.
-- Final proof epoch matches final tree/context.
+These tests exercise helper behavior, contracts and runner failure classification.
+They do not measure model effectiveness. Use the matched probes in
+[behavioral evaluation](../tests/behavioral_probes.md) for that separate question.
+Keep version, input, command and relevant environment with reproductions; apply
+[evidence context](evidence_context_playbook.md) for reuse and reporting.

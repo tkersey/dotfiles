@@ -1,57 +1,20 @@
-# Zig cache CI policy
+# CI cache policy
 
-Use this reference when configuring CI caches, investigating CI disk pressure, or deciding what to persist between jobs.
+Prefer an ephemeral local cache per job; do not share mutable local caches across
+concurrent jobs without a tested access protocol. Share global cache objects only
+under an explicit key/TTL policy. Include compiler version, host/target, relevant
+build/options/generated inputs, and dependency/fork identity where they affect
+compatibility. A cache hit is an optimization, not validation evidence.
 
-## Default stance
+Do not persist dependency working state that jobs mutate as a disposable cache.
+`zig-pkg` and global package storage may contain valuable edits or local commits.
+The bundled drain helper preserves packages and refuses unknown cache layouts;
+it is not a general filesystem garbage collector. Stop writers before cleanup,
+apply the identity/age checks in [cache hygiene](cache_hygiene_playbook.md), and
+report actual outcomes rather than requested flags.
 
-Prefer short-lived local caches and carefully keyed global caches. CI cache correctness matters more than maximizing hit rate.
-
-## Recommended cache key inputs
-
-Include at least:
-
-- Zig version.
-- Host OS and architecture.
-- Target triple or target matrix name.
-- `build.zig` hash.
-- `build.zig.zon` hash.
-- Dependency/fork mode, including whether `zig build --fork` is used.
-- Relevant C toolchain/sysroot/libc identifiers when C/C++ integration is involved.
-
-## Recommended layout
-
-```bash
-zig build \
-  --cache-dir "$RUNNER_TEMP/zig-local-cache" \
-  --global-cache-dir "$RUNNER_TOOL_CACHE/zig-global-cache" \
-  --summary all
-```
-
-Guidelines:
-
-- Local cache: one job, one workspace, disposable.
-- Global cache: share only with conservative keys and TTL.
-- `zig-out`: usually an artifact, not a CI cache. Upload it only when the job needs produced binaries/libs/docs.
-- `zig-pkg`: do not cache if dependencies are edited, patched, or replaced during the job. If cached, key it on `build.zig.zon` plus Zig version and branch/fork policy.
-
-## Drain order under CI disk pressure
-
-1. `.zig-cache` / configured local cache.
-2. `zig-out` if outputs have already been uploaded or are no longer needed.
-3. Old global-cache entries.
-4. `zig-pkg`, guarded by policy and only if dependency state can be refetched.
-
-After draining dependencies or global cache:
-
-```bash
-zig build --fetch=needed
-zig build --summary all
-```
-
-## Anti-patterns
-
-- Sharing the same mutable local cache across concurrent CI jobs.
-- Persisting `.zig-cache` forever across all branches.
-- Caching `zig-pkg` while also mutating packages during the job.
-- Treating `zig-out` as a safe cache when it contains release artifacts.
-- Deleting global cache as a hidden build step without logging reclaimed size and rebuild/fetch validation.
+After a deliberately authorized repository-specific dependency reset, restore
+its pinned dependencies with the repository's supported fetch/build command and
+validate the intended artifact. Never claim this helper verified a rebuild.
+Reuse validation according to [evidence context](evidence_context_playbook.md),
+not merely because a cache key or commit label stayed the same.

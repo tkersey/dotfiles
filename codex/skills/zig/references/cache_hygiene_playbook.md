@@ -1,157 +1,77 @@
-# Zig cache hygiene and disk-pressure playbook
+# Zig cache hygiene and disk pressure
 
-Use this playbook when a user reports disk pressure, runaway caches, stale build outputs, `No space left on device`, CI cache bloat, or confusion about `.zig-cache`, `zig-out`, `zig-pkg`, local cache, or global cache locations.
+Inventory before deletion. Cache cleanup is operational work: preserve user data,
+dependency edits/forks, intended outputs, and reproducibility. A familiar basename
+or a successful `zig env` does not by itself prove arbitrary contents disposable.
 
-## Operating principle
+| Class | Treatment |
+| --- | --- |
+| `.zig-cache`, legacy `zig-cache` | Normally rebuildable local cache; inspect identity, tracked files and nested repositories. |
+| `zig-out` | Generated install prefix/output; opt in only when those outputs are disposable. |
+| `zig-pkg` | Dependency working state, not automatically disposable. Never deleted by this helper. |
+| Global cache | Shared infrastructure; discover with `zig env`, verify supported object-store layout, and preserve packages. |
+| Custom paths | Require explicit identity and repository/CI policy; no arbitrary-path deletion override. |
 
-Do not blindly delete paths. First classify the path, estimate the reclaimable size, protect dependency edits, then validate a rebuild.
+## Guarded helper
 
-Zig cache work is operational systems work. The goal is to reclaim space while preserving intentional artifacts, local dependency edits, forks, and reproducibility.
-
-## Cache and output taxonomy
-
-| Path/class | Default action | What it is | Main risk |
-| --- | --- | --- | --- |
-| `.zig-cache` | Safe delete | Project-local build cache; rebuildable. | Forces recompilation. |
-| `zig-cache` | Safe delete when present | Legacy or custom local cache name. | Forces recompilation. |
-| `zig-out` | Optional delete | Build install prefix/output selected by `zig build -p/--prefix`; may contain binaries, libraries, generated assets, packages, docs, or PDBs. | Deletes outputs the user may still need. |
-| `zig-pkg` | Guarded delete | Zig 0.16 project-local fetched dependency tree next to `build.zig`. | May contain edited dependencies, local clones, or intentional vendoring. |
-| global Zig cache | Guarded drain | Shared compiler/package cache discovered by `zig env` or overridden by `--global-cache-dir`. | Forces rebuilds/refetches and can affect many projects. |
-| custom `--cache-dir` | Guarded drain | User-selected local cache path. | May be shared by CI/jobs if configured poorly. |
-| custom `--global-cache-dir` | Guarded drain | User-selected global cache path. | May be shared across repos, users, or CI jobs. |
-
-## Protocol
-
-1. **Inventory before deletion.**
-   - Record `zig version`.
-   - Capture `zig env` when available, especially `global_cache_dir`.
-   - Measure `.zig-cache`, `zig-cache`, `zig-out`, `zig-pkg`, and global cache size.
-   - Search for nested Zig projects before recursive deletion.
-
-2. **Classify candidates.**
-   - `.zig-cache` and `zig-cache`: local build cache; safe to delete.
-   - `zig-out`: generated output/install prefix; delete only if those outputs are not needed.
-   - `zig-pkg`: dependency working tree; delete only after checking local edits/forks/vendor policy.
-   - Global cache: shared cache; drain by explicit path and preferably by age/size policy.
-
-3. **Default to dry-run.**
-   - Show exact paths and sizes first.
-   - Require an explicit `--yes` flag or user confirmation before destructive deletion.
-   - Never delete paths outside the discovered project/cache roots.
-
-4. **Protect dependency edits.**
-   - Before deleting `zig-pkg`, detect nested git repositories.
-   - If any nested repo has uncommitted changes, report `CACHE_MODIFIED_DEPENDENCY_UNTOUCHED` and leave `zig-pkg` intact.
-   - Do not treat paths supplied to `zig build --fork` as cache.
-   - If the repository intentionally vendors `zig-pkg`, require explicit confirmation and repository-specific policy.
-
-5. **Drain in safe order.**
-   - First: `.zig-cache` / `zig-cache`.
-   - Second: `zig-out`, only when generated outputs are disposable.
-   - Third: global Zig cache entries, preferably by age.
-   - Last: `zig-pkg`, only when dependency edits/forks are protected.
-
-6. **Validate after draining.**
-   - If dependency state was touched, run `zig build --fetch=needed` or `zig build --fetch=all`.
-   - Run `zig build --summary all` or the repository’s normal build lane.
-   - Report `CACHE_REBUILD_VERIFIED` or `CACHE_REBUILD_UNVERIFIED`.
-
-7. **Prevent recurrence.**
-   - Use `--cache-dir` and `--global-cache-dir` to route caches to a larger or ephemeral disk.
-   - In CI, include Zig version, OS/architecture, target triple, `build.zig`, `build.zig.zon`, and dependency/fork state in cache keys.
-   - Apply TTLs to shared CI caches.
-
-## Result labels
-
-Use these labels in reports:
-
-- `CACHE_AUDITED`
-- `CACHE_DRY_RUN_ONLY`
-- `CACHE_LOCAL_DRAINED`
-- `CACHE_OUTPUT_DRAINED`
-- `CACHE_GLOBAL_DRAINED`
-- `CACHE_ZIG_PKG_DRAINED`
-- `CACHE_ZIG_PKG_SKIPPED`
-- `CACHE_MODIFIED_DEPENDENCY_UNTOUCHED`
-- `CACHE_ACTIVE_BUILD_REFUSED`
-- `CACHE_REBUILD_VERIFIED`
-- `CACHE_REBUILD_UNVERIFIED`
-- `CACHE_PATH_UNDISCOVERED`
-
-## Fast local triage
-
-From the project root:
+Resolve `zig_skill_root` to the loaded skill's directory. The existing shell
+entrypoint delegates to the standard-library Python implementation through `uv`.
 
 ```bash
-du -sh .zig-cache zig-cache zig-out zig-pkg 2>/dev/null
+bash "$zig_skill_root/scripts/zig_cache_drain.sh" --root .
+bash "$zig_skill_root/scripts/zig_cache_drain.sh" --root . --yes
+bash "$zig_skill_root/scripts/zig_cache_drain.sh" --root . --include-zig-out
+bash "$zig_skill_root/scripts/zig_cache_drain.sh" --root . --include-global --older-than 7
 ```
 
-Safe local cache cleanup:
+Default is dry-run. `--yes` authorizes the requested disposable cache cleanup,
+not unrelated deletion. One project root is inspected at a time; nested projects
+are not recursively swept by basename. Inventory and select them independently.
+The whole candidate selection is validated before any deletion.
+
+`--global-path` only asserts the path reported by `zig env`; it cannot select an
+arbitrary directory. Global object-store directories `o`, `h`, `z`, `b`, and `tmp`
+are supported; package storage `p` is preserved. Unknown layouts fail closed and
+need inspection. Missing paths, aliases overlapping protected roots, overlapping
+candidates, tracked contents, nested `.git` directories or worktree `.git` files,
+and symlink candidates are refused. Clean Git metadata would not establish that
+a dependency is safe to destroy: local commits and extracted edits also matter.
+
+`--include-zig-pkg` is retired and refuses the entire operation before deletion.
+Dependency cleanup needs a repository-specific preservation/recovery decision,
+not an inferred "clean" status or a blanket confirmation flag.
+
+`--older-than` considers descendants, not just parent directory mtime. Reported
+bytes are file-content estimates, not promised disk reclamation. Destructive use
+requires a working `pgrep` check and symlink-resistant platform deletion. Stop
+builds and other writers first: process checks and preflight are defensive checks,
+not a lock against a concurrently starting writer. Do not run against hostile or
+concurrently mutated cache directories.
+
+## Outcomes
+
+A successful deletion emits `CACHE_LOCAL_DRAINED`, `CACHE_OUTPUT_DRAINED`, or
+`CACHE_GLOBAL_DRAINED` for that path, then exits zero. Dry-run emits
+`CACHE_DRY_RUN_ONLY`; an empty selection emits `CACHE_NO_CHANGES`. Recent contents
+are skipped explicitly. A refusal, unavailable identity/process check, or deletion
+error exits nonzero and never claims the failed path was drained. Earlier
+successful deletions remain reported if a later operation fails.
+
+Inspect stdout and stderr. Do not infer success from a requested flag. The helper
+does not assert a successful rebuild. Use the repository's normal build command
+when rebuilding is in scope, and distinguish `CACHE_REBUILD_VERIFIED` from
+`CACHE_REBUILD_UNVERIFIED`.
+
+## Relocation and CI
+
+For recurring pressure, route caches deliberately rather than repeatedly deleting:
 
 ```bash
-rm -rf .zig-cache zig-cache
+zig build --cache-dir "$PWD/.zig-cache" --global-cache-dir "$HOME/.cache/zig"
 ```
 
-Optional generated-output cleanup:
-
-```bash
-rm -rf zig-out
-```
-
-Guarded `zig-pkg` inspection:
-
-```bash
-du -sh zig-pkg 2>/dev/null
-find zig-pkg -type d -name .git -print 2>/dev/null
-```
-
-If `zig-pkg` contains nested git repositories, inspect them before deletion:
-
-```bash
-find zig-pkg -type d -name .git -print0 2>/dev/null |
-while IFS= read -r -d '' gitdir; do
-  repo="${gitdir%/.git}"
-  echo "== $repo =="
-  git -C "$repo" status --short || true
-done
-```
-
-## Cache relocation
-
-Use this when disk pressure recurs or when a small project volume should not receive build-cache writes:
-
-```bash
-zig build \
-  --cache-dir "$PWD/.zig-cache" \
-  --global-cache-dir "$HOME/.cache/zig"
-```
-
-For a scratch disk:
-
-```bash
-zig build \
-  --cache-dir "/mnt/fast-scratch/$USER/project-zig-cache" \
-  --global-cache-dir "/mnt/fast-scratch/$USER/global-zig-cache"
-```
-
-Do not share a mutable local cache directory across concurrent jobs unless the workflow has been tested for that access pattern. Prefer one local cache per job and a shared global cache with a conservative key/TTL policy.
-
-## CI disk-pressure policy
-
-- Use an ephemeral project-local `--cache-dir` per job when disk pressure is frequent.
-- Cache the global cache only when the cache key includes Zig version, host OS/architecture, target triple, `build.zig`, `build.zig.zon`, and dependency/fork state.
-- Do not persist `.zig-cache` indefinitely across branches without a TTL.
-- Do not cache `zig-pkg` if the job mutates dependencies.
-- Drain `.zig-cache` first, then `zig-out`, then old global-cache entries, and only then guarded `zig-pkg`.
-- After dependency cache drain, run `zig build --fetch=needed` or `zig build --fetch=all`.
-
-## Review checklist
-
-- Did the report show sizes before deletion?
-- Did the command avoid `.git`, `node_modules`, and unrelated build systems?
-- Were nested Zig projects accounted for?
-- Were custom `--cache-dir` and `--global-cache-dir` settings considered?
-- Was `zig-pkg` protected from deleting local modifications?
-- Was `zig-out` treated as output, not cache?
-- Was a post-drain rebuild/fetch probe run?
-- Was recurrence addressed through cache routing, TTL, or CI cache keys?
+Use per-job local caches and conservative shared-cache keys/TTLs. Include the Zig
+version, host/target, relevant build inputs, and dependency/fork state. Preserve
+mutable dependency working trees. See [CI cache policy](cache_ci_policy.md).
+Diagnose the actual failing resource before changing cache routing for a sandbox
+permission error; see [evidence context](evidence_context_playbook.md).
